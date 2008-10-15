@@ -24,11 +24,11 @@ public class PhoneGap {
 	}
 	
 	public void takePhoto(){
-		
+		// TO-DO: Figure out what this should do
 	}
 	
 	public void playSound(){
-	
+		// TO-DO: Figure out what this should do
 	}
 	
 	public void vibrate(long pattern){
