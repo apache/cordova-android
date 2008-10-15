@@ -37,6 +37,10 @@ public class PhoneGap {
         vibrator.vibrate(pattern);
 	}
 	
+	/*
+	 * Android requires a provider, since it can fall back on triangulation and other means as well as GPS	
+	 */
+	
 	public void getLocation(String provider){
 		LocationManager locMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);		
 		Location myLoc = (Location) locMan.getLastKnownLocation(provider);
