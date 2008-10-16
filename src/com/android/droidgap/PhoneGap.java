@@ -5,11 +5,14 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Vibrator;
+import android.telephony.TelephonyManager;
 
 public class PhoneGap {
 	
-	public GeoTuple location;
-	public AccelTuple accel;
+	public static GeoTuple location;
+	public static AccelTuple accel;
+	public String uuid = getDeviceId();
+	public static String version = "0.1";
 	
     private Context mCtx;    
 
@@ -17,7 +20,7 @@ public class PhoneGap {
         this.mCtx = ctx;
     }
 	
-	public void updateAccel(AccelTuple accel){
+	public void updateAccel() {
 		accel.accelX = SensorManager.DATA_X;
 		accel.accelY = SensorManager.DATA_Y;
 		accel.accelZ = SensorManager.DATA_Z;		
@@ -49,4 +52,10 @@ public class PhoneGap {
 		String test = "<p>Test</p>";
 		return test;
 	}
+	
+	private String getDeviceId(){
+		TelephonyManager operator = (TelephonyManager) mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+		String uniqueId = operator.getDeviceId();
+		return uniqueId;
+	}	
 }
