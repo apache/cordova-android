@@ -5,11 +5,18 @@ import java.io.InputStream;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 public class DroidGap extends Activity {
 	
+	private static final String LOG_TAG = "DroidGap";
 	private WebView appView;
+	
+	private Handler mHandler = new Handler();
 	
     /** Called when the activity is first created. */
     @Override
@@ -17,7 +24,11 @@ public class DroidGap extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);        
          
-        appView = (WebView) findViewById(R.id.appView);        
+        appView = (WebView) findViewById(R.id.appView);
+        
+        /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */
+        
+        appView.setWebChromeClient(new MyWebChromeClient());
         appView.getSettings().setJavaScriptEnabled(true);
         appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);        
         
@@ -29,7 +40,7 @@ public class DroidGap extends Activity {
          * we can use HTML with both local and remote applications, but it means that we have to open the local file         
          */
                 
-        appView.loadUrl("http://infil00p.org/gap/");       
+        appView.loadUrl("http://www.infil00p.org/gap/demo/");
         
     }
     
@@ -58,8 +69,21 @@ public class DroidGap extends Activity {
     
     private void bindBrowser(WebView appView)
     {
-    	PhoneGap gap = new PhoneGap(this);
+    	PhoneGap gap = new PhoneGap(this, mHandler, appView);
     	appView.addJavascriptInterface(gap, "DroidGap");
+    }
+    
+    /**
+     * Provides a hook for calling "alert" from javascript. Useful for
+     * debugging your javascript.
+     */
+    final class MyWebChromeClient extends WebChromeClient {
+        @Override
+        public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+            Log.d(LOG_TAG, message);
+            result.confirm();
+            return true;
+        }
     }
     
 }
