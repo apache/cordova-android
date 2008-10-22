@@ -27,7 +27,7 @@ public class PhoneGap {
         this.mAppView = appView;
     }
 	
-	public void updateAccel(AccelTuple accel){
+	public void updateAccel(){
 		mHandler.post(new Runnable() {
 			public void run() {
 				int accelX = SensorManager.DATA_X;
