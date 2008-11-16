@@ -40,7 +40,7 @@ public class DroidGap extends Activity {
          * we can use HTML with both local and remote applications, but it means that we have to open the local file         
          */
                 
-        appView.loadUrl("http://www.infil00p.org/gap/demo/");
+        appView.loadUrl("http://m.translink.ca/app/");
         
     }
     
