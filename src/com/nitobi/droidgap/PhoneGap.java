@@ -4,13 +4,17 @@ import android.content.Context;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.location.LocationListener;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.webkit.WebView;
 
-public class PhoneGap {
+public class PhoneGap{
 	
+	private static final String LOG_TAG = "PhoneGap";
 	/*
 	 * UUID, version and availability	
 	 */
@@ -19,14 +23,17 @@ public class PhoneGap {
     private Context mCtx;    
     private Handler mHandler;
     private WebView mAppView;    
-
+    private GpsListener mGps;
+    private NetworkListener mNetwork;
+    
 	public PhoneGap(Context ctx, Handler handler, WebView appView) {
         this.mCtx = ctx;
         this.mHandler = handler;
         this.mAppView = appView;
+        mGps = new GpsListener(ctx);
+        mNetwork = new NetworkListener(ctx);
     }
 	
-
 	public void updateAccel(){
 		mHandler.post(new Runnable() {
 			public void run() {
@@ -60,14 +67,13 @@ public class PhoneGap {
 	public void getLocation(final String provider){
 		mHandler.post(new Runnable() {
             public void run() {
-        		LocationManager locMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
     			GeoTuple geoloc = new GeoTuple();
-        		if (locMan.isProviderEnabled(provider))
+    			Location loc = mGps.hasLocation() ?  mGps.getLocation() : mNetwork.getLocation();
+    			if (loc != null)
         		{
-        			Location myLoc = (Location) locMan.getLastKnownLocation(provider);
-        			geoloc.lat = myLoc.getLatitude();
-        			geoloc.lng = myLoc.getLongitude();
-        			geoloc.ele = myLoc.getAltitude();
+        			geoloc.lat = loc.getLatitude();
+        			geoloc.lng = loc.getLongitude();
+        			geoloc.ele = loc.getAltitude();
         		}
         		else
         		{
@@ -103,5 +109,7 @@ public class PhoneGap {
 	{
 		return true;	
 	}
+	
+
 	
 }
