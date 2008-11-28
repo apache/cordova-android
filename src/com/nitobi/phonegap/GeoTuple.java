@@ -1,4 +1,4 @@
-package com.nitobi.droidgap;
+package com.nitobi.phonegap;
 
 public class GeoTuple {
 	public double lat;

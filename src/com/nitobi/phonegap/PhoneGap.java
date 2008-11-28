@@ -1,4 +1,4 @@
-package com.nitobi.droidgap;
+package com.nitobi.phonegap;
 
 import android.content.Context;
 import android.hardware.SensorManager;

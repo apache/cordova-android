@@ -1,4 +1,4 @@
-package com.nitobi.droidgap;
+package com.nitobi.phonegap;
 
 import android.content.Context;
 import android.hardware.SensorManager;
@@ -12,31 +12,30 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.webkit.WebView;
 
-public class NetworkListener implements LocationListener {
+public class GpsListener implements LocationListener {
 
 	private Context mCtx;
 	private Location cLoc;
 	private LocationManager mLocMan;
 	private static final String LOG_TAG = "PhoneGap";
 	
-	public NetworkListener(Context ctx)
+	public GpsListener(Context ctx)
 	{
 		mCtx = ctx;
 		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
-		mLocMan.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000, 0, this);
-		cLoc = mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		mLocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
+		cLoc = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 	}
 	
 	public Location getLocation()
 	{
 		return cLoc;
 	}
-
+	
 	public void onProviderDisabled(String provider) {
 		// TODO Auto-generated method stub
 		Log.d(LOG_TAG, "The provider " + provider + " is disabled");
 	}
-
 
 	public void onProviderEnabled(String provider) {
 		// TODO Auto-generated method stub
@@ -66,4 +65,9 @@ public class NetworkListener implements LocationListener {
 		Log.d(LOG_TAG, "The location has been updated!");
 		cLoc = location;
 	}
+
+	public boolean hasLocation() {
+		return (cLoc != null);
+	}
+	
 }

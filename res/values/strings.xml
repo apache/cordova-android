@@ -2,4 +2,5 @@
 <resources>
     <string name="hello">Hello World, DroidGap</string>
     <string name="app_name">Droid Gap</string>
+<string name="url">http://www.infil00p.org/gap/demo</string>
 </resources>
