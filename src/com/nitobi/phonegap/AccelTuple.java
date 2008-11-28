@@ -1,4 +1,4 @@
-package com.nitobi.droidgap;
+package com.nitobi.phonegap;
 
 public class AccelTuple {
 	public long accelX;

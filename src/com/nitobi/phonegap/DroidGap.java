@@ -1,7 +1,8 @@
-package com.nitobi.droidgap;
+package com.nitobi.phonegap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -35,16 +36,26 @@ public class DroidGap extends Activity {
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         
-        /* 
-         * We need to decide whether this is a local or a remote app.  For the sake of clarity
-         * we can use HTML with both local and remote applications, but it means that we have to open the local file         
-         */
+        /* Load a URI from the strings.xml file */
+        String uri = null;
+        Class<R.string> c = R.string.class;
+        Field f;
+        int i = 0;
+        
+        try {
+        	f = c.getField("url");
+        	i = f.getInt(f);
+        	uri = this.getResources().getString(i);
+        } catch (Exception e)
+        {
+        	uri = "http://www.phonegap.com";
+        }
                 
-        appView.loadUrl("http://www.infil00p.org/gap/demo/");
+        appView.loadUrl(uri);
         
     }
     
-    private void loadFile(WebView appView){
+    protected void loadFile(WebView appView){
         try {
             InputStream is = getAssets().open("index.html");
                       
