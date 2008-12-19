@@ -1,10 +1,13 @@
 package com.nitobi.phonegap;
 
+import java.io.IOException;
+
 import android.content.Context;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationListener;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -84,6 +87,24 @@ public class PhoneGap{
         		mAppView.loadUrl("javascript:gotLocation(" + geoloc.lat + ", " + geoloc.lng + ")");
             }
         });
+	}
+	
+	public void playSound(final String filename)
+	{
+		MediaPlayer mp = new MediaPlayer();
+		
+		try {
+			mp.setDataSource("file:///android_asset/" + filename);
+			mp.prepare();
+			mp.start();
+		} catch (IllegalArgumentException e) {
+			//TO-DO: Load a Javascript Exception thrower
+		} catch (IllegalStateException e) {
+			//TO-DO: Load a Javascript Exception thrower
+		} catch (IOException e) {
+			//TO-DO: Load a Javascript Exception thrower
+		}
+		
 	}
 	
 	public String outputText(){
