@@ -13,7 +13,7 @@ import android.util.Log;
 import android.webkit.WebView;
 
 public class GpsListener implements LocationListener {
-
+	
 	private Context mCtx;
 	private Location cLoc;
 	private LocationManager mLocMan;
