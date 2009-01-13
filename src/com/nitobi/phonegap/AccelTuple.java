@@ -21,6 +21,7 @@ package com.nitobi.phonegap;
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
 public class AccelTuple {
 	public long accelX;
 	public long accelY;
