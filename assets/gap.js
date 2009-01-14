@@ -196,6 +196,7 @@ var Device = {
         if (Device.available || Device.whatPlatform == "Android") {
         	try {
         		document.location = "javascript:" + "window.DroidGap." + command + "()";
+        		alert('document.location=' + document.location);
         	} catch(e) {
         		console.log("Command '" + command + "' has not been executed, because of exception: " + e);
                 alert("Error executing command '" + command + "'.")
@@ -213,11 +214,14 @@ var Device = {
         
         init: function() {
             Device.exec("getloc");
+            alert('initialized Location function and getloc was called');
         },
         
         set: function(lat, lon) {
             Device.Location.lat = lat;
             Device.Location.lon = lon;
+            alert('Device.Location let is' + lat);
+            alert('Device.Location lon is' + lon);
             if(Device.Location.callback != null) {
                 Device.Location.callback(lat, lon)
                 Device.Location.callback = null;

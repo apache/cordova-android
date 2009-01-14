@@ -115,7 +115,53 @@ public class PhoneGap{
 		MediaPlayer mp = new MediaPlayer();
 		
 		try {
-			mp.setDataSource("file:///android_asset/" + filename);
+			// MediaServer does not allow reading of urls out of app data folder
+			// thus we grab raw file and submit via file descriptor
+			// instead
+			// InputStream is = mCtx.getAssets().open(filename);
+			// work around cannot play audio streams
+			// to get around security restriction on MediaPlayer
+			// until Android sdk 1.1
+			// thus these changes and the playSound js
+			// needs moved to Dev.x so that we can if statement out
+			// via the sdk number
+			
+			if(getSDKVersion() == "1")
+			{
+				// The hack way audio stored in R.raw.filename
+				// and we if statement check our way through
+				// to match the window.DroidGap.playSound(filename.mp3)
+				////call on the html side
+				
+				int oursound;
+				
+				if (filename == "bird.mp3") {
+					 mp.create(mCtx, R.raw.bird);
+
+				}
+				if (filename == "on.mp3") {
+					mp.create(mCtx, R.raw.on);
+				}
+				if (filename == "off.mp3"){
+					mp.create(mCtx, R.raw.off);
+				}
+			}
+			if(getSDKVersion() == "1.1")
+			{
+				//TODO: do right way here when Google fixes it
+				// as we have a security exception preventing 
+				// playing audio file form file:///android_asset/ location
+				mp.setDataSource("file:///android_asset/" + filename);
+				mp.prepare();
+				mp.start();
+			}
+			
+            
+            
+			 
+			
+			//mp.setDataSource("file:///android_asset/" + filename);
+			//mp.setDataSource("http://ventrix.nsdc.gr/stuff/TERMITES_SKONH.mp3");
 			mp.prepare();
 			mp.start();
 		} catch (IllegalArgumentException e) {
@@ -142,16 +188,31 @@ public class PhoneGap{
 		return uuid;
 	}
 	
+	public String getModel()
+	{
+		String model = android.os.Build.MODEL;
+		return model;
+	}
+	public String getProductName()
+	{
+		String productname = android.os.Build.PRODUCT;
+		return productname;
+	}
+	public String getOSVersion()
+	{
+		String osversion = android.os.Build.VERSION.RELEASE;
+		return osversion;
+	}
+	public String getSDKVersion()
+	{
+		String sdkversion = android.os.Build.VERSION.SDK;
+		return sdkversion;
+	}
+	
 	public String getVersion()
 	{
 		return version;
 	}	
 	
-	public boolean exists()
-	{
-		return true;	
-	}
-	
-
 	
 }
