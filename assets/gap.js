@@ -157,7 +157,18 @@ var Device = {
         	    Device.gapVersion = window.IPoddGap.getVersion();
         	    
         	}
-        	
+        	if (!window.DroidGap || !window.IPhoneGap || !window.IPodGap )
+        	{
+        		 Device.available = "__gap";
+                 Device.model = "__gap_device_model";
+                 Device.version = "__gap_device_version";
+                 Device.osversion = "_gap_device_os";
+                 Device.sdkfwversion = "_gap_device_sdkversion";
+                 
+                 Device.gapVersion = "__gap_version";
+     			Device.uuid = "__gap_device_uniqueid";
+     			alert("GAP is not supported!");
+        	}
        
     },
     
