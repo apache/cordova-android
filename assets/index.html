@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+
+
+<title>PhoneGap 0.1</title>
+<meta name="viewport" content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+<style type="text/css" media="screen">@import "file:///android_asset/iui.css";</style>
+<script type="application/x-javascript" src="file:///android_asset/iui.js"></script>
+<script type="application/x-javascript" src="file:///android_asset/gap.js"></script>
+
+<script>
+
+initGap = function() {
+     Device.init();
+     Device.Location.callback = updateLocation;
+     //Device.Acceleration.callback = updateAccel;
+}
+
+function addLoadEvent(func) {    
+    var oldonload = window.onload;
+    if (typeof window.onload != 'function') {
+        window.onload = func;
+    } else {
+        window.onload = function() {
+            oldonload();
+            func();
+        }
+    }
+}
+
+updateSettings = function() {
+  $('platform').value = Device.model;
+  $('version').value = Device.version;
+  $('osversion').value = Device.osversion;
+  $('sdkversion').value = Device.sdkfwversion;
+  $('gap_version').value = Device.gapVersion;
+  $('uuid').value = Device.uuid;
+}
+
+updateLocation = function(lat,lon) {
+  $('lat').value = lat;
+  $('lon').value = lon;
+}
+
+updateAccel = function(){
+	$('accelx').value = accelX;
+	$('accely').value = accelY;
+	$('accelz').value = accelZ;
+	
+	setTimeout(updateAccel,100);
+}
+
+
+addLoadEvent(initGap);
+
+</script>
+</head><body orient="landscape">
+    <div class="toolbar">
+        <h1 id="pageTitle">Main</h1>
+        <a style="display: none;" id="backButton" class="button" href="#"></a>
+    </div>
+    
+    <ul id="home" title="Main" selected="true">
+        <li><a href="#system" onclick="updateSettings();return false;">System...</a></li>
+           <li><a href="#geo" onclick="Device.Location.init();">Geo-Location...</a></li> 
+        <!--   <li><a href="#geo" onclick="updateLocation();">Geo-Location...</a></li> -->
+        <li><a href="#accel" onclick="updateAccel();">Accelerometer...</a></li>
+        <li><a href="#vibration" onclick="Device.vibrate();">Vibration</a></li>
+        <li><a href="#vibration" onclick="Device.playSound('on.mp3")">Play Sound</a></li>
+        <li><a href="#photo" onclick="Device.Image.getFromPhotoLibrary();">Photo...</a></li>
+        <li><a href="http://phonegap.com/" target="_self">About</a></li>
+    </ul>
+    
+    <div id="system" title="System" class="panel">
+        <h2>PhoneGap</h2>
+        <fieldset>
+          
+            <div class="row">
+                <label>Version</label>
+                <input disabled="enabled" id="gap_version" name="gap_version" value="" type="text"></input>
+            </div>
+        </fieldset>
+        
+        <h2>Device</h2>
+        <fieldset>
+            <div class="row">
+                <label>Platform</label>
+                <input disabled="enabled" id="platform" name="platform" value="" type="text"></input>
+            </div>        
+            <div class="row">
+                <label>OS Version</label>
+                <input disabled="enabled" id="osversion" name="osversion" value="" type="text"></input>
+            </div>
+            <div class="row">
+                <label>SDK Version</label>
+                <input disabled="enabled" id="sdkversion" name="sdkversion" vale="" type="text"></input>
+                </div>
+            <div class="row">
+                <label>Version</label>
+                <input disabled="enabled" id="version" name="version" value="" type="text"></input>
+            </div>
+            <div class="row">
+                <label>UUID</label>
+                <input style="font-size: 10px;" disabled="enabled" id="uuid" name="uuid" value="" type="text"></input>
+            </div>
+        </fieldset>
+    </div>
+    
+    <div id="geo" title="Geo Location" class="panel">
+        
+        <h2>Location</h2>
+        <fieldset>
+            <div class="row">
+                <label>Lat</label>
+                <input disabled="enabled" name="lat" id="lat" value="" type="text"></input>
+            </div>        
+            <div class="row">
+                <label>Lon</label>
+                <input disabled="enabled" name="lon" id="lon" value="" type="text"></input>
+            </div>
+            <div class="row">
+              <a class="button blueButton" type="submit" onclick="Device.Location.init();">Update Location</a>
+            </div>
+        </fieldset>
+        
+    </div>
+    
+    <div id="accel" title="Accelerometer" class="panel">
+        
+        <h2>Accelerometer</h2>
+        <fieldset>
+            <div class="row">
+                <label>X</label>
+                <input disabled="enabled" name="accelx" id="accelx" value="" type="text"></input>
+            </div>        
+            <div class="row">
+                <label>Y</label>
+                <input disabled="enabled" name="accely" id="accely" value="" type="text"></input>
+            </div>
+            <div class="row">
+                <label>Z</label>
+                <input disabled="enabled" name="accelz" id="accelz" value="" type="text"></input>
+            </div>
+        </fieldset>
+    </div>
+    
+    
+    
+<div id="preloader"></div></body></html>
