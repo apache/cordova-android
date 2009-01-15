@@ -24,7 +24,7 @@
 
 
 try {
-    $ // Test if it is alread used
+    $ // Test if it is already used
 } catch(e) {
     $ = function(id){
         return document.getElementById(id)
@@ -34,8 +34,11 @@ try {
 // Acceleration Handling
 
 var accelX = 0;
+alert('accelX initially =' + accelX);
 var accelY = 0;
+alert('accelY initially =' + accelY);
 var accelZ = 0;
+alert('accelZ initially =' + accelZ);
 
 function gotAcceleration(x,y,z){
 	x = eval(x);
@@ -70,8 +73,7 @@ var Device = {
     isIPhone: null,
     isIPod: null,
     isAndroid: null,
-    isSymbian: null,
-    isBlackberry: null,
+    
     whatPlatform: "",
     osversion: "",
     sdkfwversion: "",
@@ -82,6 +84,9 @@ var Device = {
     FNSDKFWVersion: "",
     FNUUID: "",
     FNGapVersion: "",
+    
+    
+    
     
 
     
@@ -97,29 +102,29 @@ var Device = {
 	        // to their AppTitle
 	        // yes the hack sucks..but its working at this point so..
 	        
-	
-	
+	        alert('window.DroidGap=' + window.DroidGap);
+	        alert('window.IPhoneGap=' + window.IPhoneGap);
+	        alert('window.IPodGap=' + window.IPodGap);
 	
         	 if (window.DroidGap)
         	 {
         		Device.whatPlatform = "Android";
-        		
+        		alert('Device.whatPlatform=' + Device.whatPlatform);
         		Device.model = window.DroidGap.getModel();
-        		
+        		alert('Device.model=' + Device.model);
         		Device.version = window.DroidGap.getProductName();
-        		
+        		alert('Device.version=' + Device.version);
         		Device.osversion = window.DroidGap.getOSVersion();
-        		
+        		alert('Device.osversion=' + Device.osversion);
         		Device.sdkfwversion = window.DroidGap.getSDKVersion();
-        		
+        		alert('Device.sdkfwversion=' + Device.sdkfwversion);
         		Device.available = true;
-        		
+        		alert('Device.available=' + Device.available);
         	    Device.uuid = window.DroidGap.getUuid();
-        	    
+        	    alert('Device.uuid=' + Device.uuid);
         	    Device.gapVersion = window.DroidGap.getVersion();
-        	    
-        	}
-        	if (window.IPhoneGap)
+        	    alert('Device.gapVersion=' + Device.gapVersion);
+        	} else if (window.IPhoneGap)
         	{
         		Device.whatPlatform = "IPhone";
         		
@@ -137,8 +142,7 @@ var Device = {
         	    
         	    Device.gapVersion = window.IPhoneGap.getVersion();
         	    
-        	}
-        	if (window.IPodGap)
+        	}else if (window.IPodGap)
         	{
         		Device.whatPlatform = "IPod";
         		
@@ -156,8 +160,7 @@ var Device = {
         	    
         	    Device.gapVersion = window.IPoddGap.getVersion();
         	    
-        	}
-        	if (!window.DroidGap || !window.IPhoneGap || !window.IPodGap )
+        	} else
         	{
         		 Device.available = "__gap";
                  Device.model = "__gap_device_model";
@@ -193,9 +196,9 @@ var Device = {
                 alert("Error executing command '" + command + "'.")
             }
         }
-        if (Device.available || Device.whatPlatform == "Android") {
+        if (Device.available || Device.whatPlatform == "Android" || command == "getloc") {
         	try {
-        		document.location = "javascript:" + "window.DroidGap." + command + "()";
+        		document.location = "javascript:" + "window.DroidGap.getLocation()";
         		alert('document.location=' + document.location);
         	} catch(e) {
         		console.log("Command '" + command + "' has not been executed, because of exception: " + e);
