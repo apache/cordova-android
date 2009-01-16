@@ -28,6 +28,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationListener;
+import android.location.LocationProvider;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,6 +50,7 @@ public class PhoneGap{
     private WebView mAppView;    
     private GpsListener mGps;
     private NetworkListener mNetwork;
+    protected LocationProvider provider;
     
 	public PhoneGap(Context ctx, Handler handler, WebView appView) {
         this.mCtx = ctx;
@@ -84,11 +86,9 @@ public class PhoneGap{
         vibrator.vibrate(pattern);
 	}
 	
-	/*
-	 * Android requires a provider, since it can fall back on triangulation and other means as well as GPS	
-	 */
+
 	
-	public void getLocation(final String provider){
+	public void getLocation( ){
 		mHandler.post(new Runnable() {
             public void run() {
     			GeoTuple geoloc = new GeoTuple();

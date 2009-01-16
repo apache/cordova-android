@@ -158,7 +158,7 @@ var Device = {
         		
         	    Device.uuid = window.IPodGap.getUuid();
         	    
-        	    Device.gapVersion = window.IPoddGap.getVersion();
+        	    Device.gapVersion = window.IPodGap.getVersion();
         	    
         	} else
         	{
@@ -178,28 +178,34 @@ var Device = {
     exec: function(command) {
     	// Different platforms have different ways the js browser bridge is called
     	// to get a native object so we handle each difference
+    	// 
     	
     	
-        if (Device.available || Device.whatPlatform == "IPhone") {
+    	
+        if ( Device.whatPlatform == "IPhone") {
             try {
+            	
                 document.location = "gap:" + command;
             } catch(e) {
                 console.log("Command '" + command + "' has not been executed, because of exception: " + e);
                 alert("Error executing command '" + command + "'.")
             }
-        }
-        if (Device.available || Device.whatPlatform == "IPod") {
+        } else
+        if ( Device.whatPlatform == "IPod") {
         	try {
                 document.location = "gap:" + command;
             } catch(e) {
                 console.log("Command '" + command + "' has not been executed, because of exception: " + e);
                 alert("Error executing command '" + command + "'.")
             }
-        }
-        if (Device.available || Device.whatPlatform == "Android" || command == "getloc") {
+        } else
+        if (Device.whatPlatform == "Android" || command == "getloc") {
         	try {
-        		document.location = "javascript:" + "window.DroidGap.getLocation()";
-        		alert('document.location=' + document.location);
+        		alert('start here');
+        		
+        		document.location="javascript:window.DroidGap.getLocation()";
+        		
+        		alert('window.DroidGap.getLocation()=' + window.DroidGap.getLocation());
         	} catch(e) {
         		console.log("Command '" + command + "' has not been executed, because of exception: " + e);
                 alert("Error executing command '" + command + "'.")
@@ -217,7 +223,8 @@ var Device = {
         
         init: function() {
             Device.exec("getloc");
-            alert('initialized Location function and getloc was called');
+            alert(' getloc was called');
+            
         },
         
         set: function(lat, lon) {
@@ -275,6 +282,7 @@ var Device = {
 }
 
 function gotLocation(lat, lon) {
+	alert('gotLocation lat=' + lat + " gotLocation lon=" + lon);
     return Device.Location.set(lat, lon)
 }
 
