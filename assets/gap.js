@@ -22,6 +22,17 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/*
+ * At times we have to do polling in javascript, that is have function run at a specified interval 
+ * repeated times.  However, certain function polling will reduce battery life thus
+ * each of those features should have its own user defined interval
+ * that our js reads in and uses with of course conservative value used
+ * is consumer has not set one or the user of this library has not set one.
+ * 
+ * Timeout only runs function twice not repeated times and thus we use
+ * setInterval. This should correct problems with 
+ * both GPS and Accelerometer readings on Android
+ */
 
 try {
     $ // Test if it is already used

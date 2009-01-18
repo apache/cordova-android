@@ -16,9 +16,10 @@
 initGap = function() {
 	 // Device.init() initializes OS-Device values
      Device.init();
-     // Device.Location.callback = updateLocation sets to funciotn updateLocation so that lat and lon can be passed
-     Device.Location.callback = updateLocation;
+     
+     
      // Device.Location.init() to initalize location
+     Device.Location.init();
      
      //Device.Acceleration.callback = updateAccel;
 }
@@ -44,11 +45,17 @@ updateSettings = function() {
   $('uuid').value = Device.uuid;
 }
 
-updateLocation = function(lat,lon) {
-  alert('lat=' + lat + ' lon=' + lon);
+updateLocation = function(lat, lon) {
+	// updateLocatin based on user input
+	
+  
   $('lat').value = lat;
   $('lon').value = lon;
+  
+  
+  
 }
+
 
 updateAccel = function(){
 	$('accelx').value = accelX;
@@ -70,7 +77,7 @@ addLoadEvent(initGap);
     
     <ul id="home" title="Main" selected="true">
         <li><a href="#system" onclick="updateSettings();return false;">System...</a></li>
-           <li><a href="#geo" onclick="Device.Location.init();">Geo-Location...</a></li> 
+           <li><a href="#geo" onclick="">Geo-Location...</a></li> 
         <!--   <li><a href="#geo" onclick="updateLocation();">Geo-Location...</a></li> -->
         <li><a href="#accel" onclick="updateAccel();">Accelerometer...</a></li>
         <li><a href="#vibration" onclick="Device.vibrate();">Vibration</a></li>
@@ -114,24 +121,25 @@ addLoadEvent(initGap);
         </fieldset>
     </div>
     
-    <div id="geo" title="Geo Location" class="panel">
-        <form id="searchForm"  action="POST">
+     <div id="geo" title="Geo Location" class="panel" >
+        
         <h2>Location</h2>
         <fieldset>
             <div class="row">
                 <label>Lat</label>
-                <input disabled="enabled" name="lat" id="lat" value="" type="text"></input>
+                <input  name="lat" id="lat" value="000.000" type="text"/>
             </div>        
             <div class="row">
                 <label>Lon</label>
-                <input disabled="enabled" name="lon" id="lon" value="" type="text"></input>
+                <input  name="lon" id="lon" value="000.000" type="text"/>
             </div>
             <div class="row">
-              <a class="button blueButton" type="submit" onclick="updateLocation();">Update Location</a>
+              <a class="button blueButton" type="submit" onclick="updateLocation(lat, lon);">Update Location</a>
             </div>
         </fieldset>
-        </form>
+        
     </div>
+    
     
     <div id="accel" title="Accelerometer" class="panel">
         
