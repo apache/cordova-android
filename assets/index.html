@@ -47,15 +47,35 @@ updateSettings = function() {
 
 updateLocation = function(lat, lon) {
 	// updateLocatin based on user input
-	
-  
-  $('lat').value = lat;
-  $('lon').value = lon;
-  
-  
-  
+	// $('lat') is already the dom object
+	// thus we need to
+	// associate with a Device.Location.lat var
+  $('lat').value = document.getElementById('lat').value;
+  $('lon').value = document.getElementById('lon').value;
+  Device.myLat = document.getElementById('lat').value;
+  Device.myLon = document.getElementById('lon').value;
 }
 
+readLocation = function() {
+     //assume that Device.Location.set ran once and thus
+    // Device.Location.lat and Device>location.lon are set
+  Device.Location.init();
+  $('userlat').value = Device.Location.lat;
+  $('userlon').value = Device.Location.lon;
+  //we need to poll but have poll of functions run more than once during specified interval
+  setInterval('readLocation()', Device.myGPSInterval);
+
+}
+
+userSetIntervals = function() {
+	//allow user to set intervals for gps and accel polling
+	//otherwise mad user to do to excessive polling of GPS values and etc
+	//which reduces battery power
+	$('usersgpsInterval').value = document.getElementById('usergpsInterval').value;
+	Device.myGPSInterval = document.getElementById('usergpsInterval').value;
+	$('useraccelInterval').value = document.getElementById('useraccelInterval').value;
+	Device.myAccelInterval = document.getElementById('useraccelInterval').value;
+}
 
 updateAccel = function(){
 	$('accelx').value = accelX;
@@ -77,7 +97,9 @@ addLoadEvent(initGap);
     
     <ul id="home" title="Main" selected="true">
         <li><a href="#system" onclick="updateSettings();return false;">System...</a></li>
-           <li><a href="#geo" onclick="">Geo-Location...</a></li> 
+        <li><a href="#geo" onclick="">Change Location...</a></li> 
+        <li><a href="#readgeo" onclick="readLocation();">Read Location...</a></li>
+        <li><a href="#setintervals" onclick="">Set user Intervals...</a></li>
         <!--   <li><a href="#geo" onclick="updateLocation();">Geo-Location...</a></li> -->
         <li><a href="#accel" onclick="updateAccel();">Accelerometer...</a></li>
         <li><a href="#vibration" onclick="Device.vibrate();">Vibration</a></li>
@@ -121,9 +143,9 @@ addLoadEvent(initGap);
         </fieldset>
     </div>
     
-     <div id="geo" title="Geo Location" class="panel" >
+     <div id="geo" title="Geo Location" class="panel"  >
         
-        <h2>Location</h2>
+        <h2>Change Location</h2>
         <fieldset>
             <div class="row">
                 <label>Lat</label>
@@ -134,12 +156,48 @@ addLoadEvent(initGap);
                 <input  name="lon" id="lon" value="000.000" type="text"/>
             </div>
             <div class="row">
-              <a class="button blueButton" type="submit" onclick="updateLocation(lat, lon);">Update Location</a>
-            </div>
+              <a class="button blueButton" type="submit" onclick="updateLocation();">Update Location</a>
+            </div> 
+            
         </fieldset>
         
     </div>
     
+    <div id="readgeo" title="Read Location" class="panel"  >
+        
+        <h2>Read Location</h2>
+        <fieldset>
+            <div class="row">
+                <label>Lat</label>
+                <input disabled="enabled" name="lat" id="userlat" value="" type="text"/>
+            </div>        
+            <div class="row">
+                <label>Lon</label>
+                <input disabled="enable"  name="lon" id="userlon" value="" type="text"/>
+            </div>
+         </fieldset>
+        
+    </div>
+    
+    <div id="setintervals" title="Set Intervals" class="panel"  >
+        
+        <h2>Change Intervals</h2>
+        <fieldset>
+            <div class="row">
+                <label>GPS </label>
+                <input  name="lat" id="lat" value="60000" type="text"/>
+            </div>        
+            <div class="row">
+                <label>Accel</label>
+                <input  name="lon" id="lon" value="60000" type="text"/>
+            </div>
+            <div class="row">
+              <a class="button blueButton" type="submit" onclick="userSetIntervals();">Set Intervals</a>
+            </div> 
+            
+        </fieldset>
+        
+    </div>
     
     <div id="accel" title="Accelerometer" class="panel">
         

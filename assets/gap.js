@@ -96,7 +96,11 @@ var Device = {
     FNUUID: "",
     FNGapVersion: "",
     
+    myLat: "",
+    myLon: "",
     
+    myGPSInterval: "30000",
+    myAccelInterval: "30000",
     
     
 
