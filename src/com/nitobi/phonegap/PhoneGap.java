@@ -1,5 +1,26 @@
 package com.nitobi.phonegap;
-
+/* License (MIT)
+ * Copyright (c) 2008 Nitobi
+ * website: http://phonegap.com
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * “Software”), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 import java.io.IOException;
 
 import android.content.Context;
@@ -7,6 +28,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationListener;
+import android.location.LocationProvider;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,6 +50,7 @@ public class PhoneGap{
     private WebView mAppView;    
     private GpsListener mGps;
     private NetworkListener mNetwork;
+    protected LocationProvider provider;
     
 	public PhoneGap(Context ctx, Handler handler, WebView appView) {
         this.mCtx = ctx;
@@ -63,11 +86,9 @@ public class PhoneGap{
         vibrator.vibrate(pattern);
 	}
 	
-	/*
-	 * Android requires a provider, since it can fall back on triangulation and other means as well as GPS	
-	 */
+
 	
-	public void getLocation(final String provider){
+	public void getLocation( ){
 		mHandler.post(new Runnable() {
             public void run() {
     			GeoTuple geoloc = new GeoTuple();
@@ -94,7 +115,53 @@ public class PhoneGap{
 		MediaPlayer mp = new MediaPlayer();
 		
 		try {
-			mp.setDataSource("file:///android_asset/" + filename);
+			// MediaServer does not allow reading of urls out of app data folder
+			// thus we grab raw file and submit via file descriptor
+			// instead
+			// InputStream is = mCtx.getAssets().open(filename);
+			// work around cannot play audio streams
+			// to get around security restriction on MediaPlayer
+			// until Android sdk 1.1
+			// thus these changes and the playSound js
+			// needs moved to Dev.x so that we can if statement out
+			// via the sdk number
+			
+			if(getSDKVersion() == "1")
+			{
+				// The hack way audio stored in R.raw.filename
+				// and we if statement check our way through
+				// to match the window.DroidGap.playSound(filename.mp3)
+				////call on the html side
+				
+				int oursound;
+				
+				if (filename == "bird.mp3") {
+					 mp.create(mCtx, R.raw.bird);
+
+				}
+				if (filename == "on.mp3") {
+					mp.create(mCtx, R.raw.on);
+				}
+				if (filename == "off.mp3"){
+					mp.create(mCtx, R.raw.off);
+				}
+			}
+			if(getSDKVersion() == "1.1")
+			{
+				//TODO: do right way here when Google fixes it
+				// as we have a security exception preventing 
+				// playing audio file form file:///android_asset/ location
+				mp.setDataSource("file:///android_asset/" + filename);
+				mp.prepare();
+				mp.start();
+			}
+			
+            
+            
+			 
+			
+			//mp.setDataSource("file:///android_asset/" + filename);
+			//mp.setDataSource("http://ventrix.nsdc.gr/stuff/TERMITES_SKONH.mp3");
 			mp.prepare();
 			mp.start();
 		} catch (IllegalArgumentException e) {
@@ -121,16 +188,31 @@ public class PhoneGap{
 		return uuid;
 	}
 	
+	public String getModel()
+	{
+		String model = android.os.Build.MODEL;
+		return model;
+	}
+	public String getProductName()
+	{
+		String productname = android.os.Build.PRODUCT;
+		return productname;
+	}
+	public String getOSVersion()
+	{
+		String osversion = android.os.Build.VERSION.RELEASE;
+		return osversion;
+	}
+	public String getSDKVersion()
+	{
+		String sdkversion = android.os.Build.VERSION.SDK;
+		return sdkversion;
+	}
+	
 	public String getVersion()
 	{
 		return version;
 	}	
 	
-	public boolean exists()
-	{
-		return true;	
-	}
-	
-
 	
 }
