@@ -293,7 +293,6 @@ var Device = {
     		return Device.exec(xsound + clip);
 	},
 	
-	// notifications
 	notification: {
 		watchPosition: function(filter) {
 			window.DroidGap.notificationWatchPosition(filter);

@@ -15,11 +15,11 @@
 
 initGap = function() {
 	 // Device.init() initializes OS-Device values
-     // UNDO Device.init();
+     Device.init();
      
      
      // Device.Location.init() to initalize location
-     // UNDO Device.Location.init();
+     Device.Location.init();
      
      //Device.Acceleration.callback = updateAccel;
 }
@@ -99,11 +99,11 @@ receiveSmsNotification = function(func)
 function onReceiveSms(number, message)
 {
 	$('number').value = number;
-	$('message').value = message
+	$('message').value = message;
 }
 
 
- // UNDO addLoadEvent(initGap);
+addLoadEvent(initGap);
 
 </script>
 </head><body  orient="landscape">
