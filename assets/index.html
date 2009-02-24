@@ -15,11 +15,11 @@
 
 initGap = function() {
 	 // Device.init() initializes OS-Device values
-     Device.init();
+     // UNDO Device.init();
      
      
      // Device.Location.init() to initalize location
-     Device.Location.init();
+     // UNDO Device.Location.init();
      
      //Device.Acceleration.callback = updateAccel;
 }
@@ -86,7 +86,24 @@ updateAccel = function(){
 }
 
 
-addLoadEvent(initGap);
+receiveSmsNotification = function(func)
+{
+   if (func == 'watchPosition') {
+       Device.notification.watchPosition('SMS');
+   } else
+   if (func == 'clearWatch') {
+       Device.notification.clearWatch('SMS');
+   }
+} 
+
+function onReceiveSms(number, message)
+{
+	$('number').value = number;
+	$('message').value = message
+}
+
+
+ // UNDO addLoadEvent(initGap);
 
 </script>
 </head><body  orient="landscape">
@@ -105,6 +122,7 @@ addLoadEvent(initGap);
         <li><a href="#vibration" onclick="Device.vibrate();">Vibration</a></li>
         <li><a href="#vibration" onclick="Device.playSound('on.mp3")">Play Sound</a></li>
         <li><a href="#photo" onclick="Device.Image.getFromPhotoLibrary();">Photo...</a></li>
+        <li><a href="#notification" onclick="notification();">Notification...</a></li>
         <li><a href="http://phonegap.com/" target="_self">About</a></li>
     </ul>
     
@@ -218,6 +236,26 @@ addLoadEvent(initGap);
         </fieldset>
     </div>
     
-    
+    <div id="notification" title="notification" class="panel">
+    	<h2>Notification</h2>
+    	<fieldset>
+    		<div class="row">
+    		<a class="button leftButton" type="submit" onclick="receiveSmsNotification('watchPosition');">startSmsListener</a>
+    		<a class="button blueButton" type="submit" onclick="receiveSmsNotification('clearWatch');">stopSmsListener</a>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<label>from:</label>
+    		<input disabled="enabled" id="number" type="text"></input>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<label>message:</label>
+    		<input disabled="enabled" id="message" type="text"></input>
+    		</div>
+    	</fieldset>
+    </div>
     
 <div id="preloader"></div></body></html>
