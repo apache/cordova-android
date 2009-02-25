@@ -22,16 +22,11 @@ package com.nitobi.phonegap;
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import android.content.Context;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationListener;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Vibrator;
-import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.webkit.WebView;
 
 public class GpsListener implements LocationListener {
 	
