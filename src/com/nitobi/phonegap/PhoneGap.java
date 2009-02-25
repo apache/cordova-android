@@ -233,6 +233,16 @@ public class PhoneGap{
     		mCtx.unregisterReceiver(mSmsListener);
     	}	
     }
-
+    
+    public void httpGet(String url, String file)
+    /**
+     * grabs a file from specified url and saves it to a name and location
+     * the base directory /sdcard is abstracted so that paths may be the same from one mobile OS to another
+     * TODO: JavaScript call backs and error handling
+     */
+    {
+    	HttpHandler http = new HttpHandler();
+    	http.get(url, file);
+    }
 }
 

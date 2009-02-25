@@ -300,7 +300,13 @@ var Device = {
 		clearWatch: function(filter) {
 			window.DroidGap.notificationClearWatch(filter);
 		} 
-	}	
+	},
+	
+	http: {
+		get: function(url, file) {
+			window.DroidGap.httpGet(url, file);
+		}
+	}
 }
 
 function gotLocation(lat, lon) {
