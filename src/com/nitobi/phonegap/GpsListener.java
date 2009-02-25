@@ -50,6 +50,7 @@ public class GpsListener implements LocationListener {
 	
 	public Location getLocation()
 	{
+		cLoc = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 		return cLoc;
 	}
 	

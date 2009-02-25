@@ -50,6 +50,7 @@ public class NetworkListener implements LocationListener {
 	
 	public Location getLocation()
 	{
+		cLoc = mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 		return cLoc;
 	}
 
