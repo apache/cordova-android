@@ -25,8 +25,7 @@ public final class R {
         public static final int on=0x7f040002;
     }
     public static final class string {
-        public static final int app_name=0x7f050001;
-        public static final int hello=0x7f050000;
-        public static final int url=0x7f050002;
+        public static final int app_name=0x7f050000;
+        public static final int url=0x7f050001;
     }
 }

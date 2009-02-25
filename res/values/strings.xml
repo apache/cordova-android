@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, PhoneGap</string>
     <string name="app_name">PhoneGap</string>
-<string name="url">http://phonegap.com/demo2/</string>
+	  <string name="url">file:///android_asset/index.html</string>
 </resources>
