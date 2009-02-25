@@ -86,6 +86,31 @@ updateAccel = function(){
 }
 
 
+receiveSmsNotification = function(func)
+{
+   if (func == 'watchPosition') {
+       Device.notification.watchPosition('SMS');
+   } else
+   if (func == 'clearWatch') {
+       Device.notification.clearWatch('SMS');
+   }
+} 
+
+function onReceiveSms(number, message)
+{
+	$('number').value = number;
+	$('message').value = message;
+}
+
+http = function(func)
+{
+	if (func == 'get') {
+		Device.http.get($('httpGetUrl').value, $('httpGetFile').value)	
+	}
+}
+
+
+
 addLoadEvent(initGap);
 
 </script>
@@ -105,6 +130,8 @@ addLoadEvent(initGap);
         <li><a href="#vibration" onclick="Device.vibrate();">Vibration</a></li>
         <li><a href="#vibration" onclick="Device.playSound('on.mp3")">Play Sound</a></li>
         <li><a href="#photo" onclick="Device.Image.getFromPhotoLibrary();">Photo...</a></li>
+        <li><a href="#notification" onclick="notification();">Notification...</a></li>
+        <li><a href="#http" onclick="http();">HTTP...</a></li>
         <li><a href="http://phonegap.com/" target="_self">About</a></li>
     </ul>
     
@@ -218,6 +245,48 @@ addLoadEvent(initGap);
         </fieldset>
     </div>
     
+    <div id="notification" title="notification" class="panel">
+    	<h2>Notification</h2>
+    	<fieldset>
+    		<div class="row">
+    		<a class="button leftButton" type="submit" onclick="receiveSmsNotification('watchPosition');">startSmsListener</a>
+    		<a class="button blueButton" type="submit" onclick="receiveSmsNotification('clearWatch');">stopSmsListener</a>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<label>from:</label>
+    		<input disabled="enabled" id="number" type="text"></input>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<label>message:</label>
+    		<input disabled="enabled" id="message" type="text"></input>
+    		</div>
+    	</fieldset>
+    </div>
     
+    <div id="http" title="http" class="panel">
+    	<h2>HTTP</h2>
+    	<p><i>Make sure your Android sdk sdcard is mounted!</i></p>
+    	<fieldset>
+    		<div class="row">
+    		<a class="button leftButton" type="submit" onclick="http('get');">HTTP get remote_url</a>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<label>remote_url:</label>
+    		<input type=text name="httpGetUrl" id="httpGetUrl" size=60 maxlength=2048 value="http://hullomail.com/hulloworld.mp3" style="width: 30ex"></input>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<label>destination:</label>
+    		<input type=text name="httpGetFile" id="httpGetFile" size=60 maxlength=2048 value="/hullophonegap.mp3" style="width: 30ex"></input>
+    		</div>
+    	</fieldset>
+    </div>
     
 <div id="preloader"></div></body></html>
