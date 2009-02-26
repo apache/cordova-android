@@ -306,7 +306,30 @@ var Device = {
 		get: function(url, file) {
 			window.DroidGap.httpGet(url, file);
 		}
-	}
+	},
+	storage: {
+       result: "",
+       testSDCard: function(){
+           Device.storage.result = window.DroidGap.testSaveLocationExists();
+           return Device.storage.result;
+       },
+       testExistence: function(file){
+           Device.storage.result = window.DroidGap.testDirOrFileExists(file);
+           return Device.storage.result;
+       },
+       delFile: function(file){
+           Device.storage.result = window.DroidGap.deleteFile(file);
+           return Device.storage.result;
+       },
+       delDir: function(file){
+           Device.storage.result = window.DroidGap.deleteDirectory(file);
+           return Device.storage.result;
+       },
+       createDir: function(file){
+           Device.storage.result = window.DroidGap.createDirectory(file);
+           return Device.storage.result;
+             }
+     } 
 }
 
 function gotLocation(lat, lon) {

@@ -49,6 +49,7 @@ public class PhoneGap{
     private NetworkListener mNetwork;
     protected LocationProvider provider;
     SmsListener mSmsListener;
+    DirectoryManager fileManager;
     
 	public PhoneGap(Context ctx, Handler handler, WebView appView) {
         this.mCtx = ctx;
@@ -57,6 +58,7 @@ public class PhoneGap{
         mGps = new GpsListener(ctx);
         mNetwork = new NetworkListener(ctx);
         mSmsListener = new SmsListener(ctx,mAppView);
+        fileManager = new DirectoryManager();
     }
 	
 	public void updateAccel(){
@@ -244,5 +246,35 @@ public class PhoneGap{
     	HttpHandler http = new HttpHandler();
     	http.get(url, file);
     }
+    public String testSaveLocationExists(){
+        if (fileManager.testSaveLocationExists())
+            return "SD Card available";
+        else
+            return "SD Card unavailable";
+    }
+    public String testDirOrFileExists(String file){
+        if (fileManager.isDirtoryOrFileExists(file))
+            return "File exists";
+        else
+            return "No this file";
+    }
+    public String deleteDirectory (String dir){
+        if (fileManager.deleteDir(dir))
+            return "Completed";
+        else
+            return "Not completed";
+    }
+    public String deleteFile (String file){
+        if (fileManager.deleteFile(file))
+            return "Completed";
+        else
+            return "Not completed";
+    }
+      public String createDirectory(String dir){
+        if (fileManager.createDirectory(dir))
+            return "Completed";
+        else
+            return "Not completed";
+    } 
 }
 
