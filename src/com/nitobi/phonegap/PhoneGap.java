@@ -244,5 +244,46 @@ public class PhoneGap{
     	HttpHandler http = new HttpHandler();
     	http.get(url, file);
     }
+    
+    
+    /**
+     * AUDIO
+     * TODO: Basic functions done but needs more work on error handling and call backs, remove record hack
+     */
+    AudioHandler audio = new AudioHandler("/sdcard/tmprecording.mp3");
+    public void startRecordingAudio(String file)
+    {
+    	/* for this to work the recording needs to be specified in the constructor,
+    	 * a hack to get around this, I'm moving the recording after it's complete 
+    	 */
+    	audio.startRecording(file);
+    }
+    
+    public void stopRecordingAudio()
+    {
+    	audio.stopRecording();
+    }
+    
+    public void startPlayingAudio(String file)
+    {
+    	audio.startPlaying(file);
+    }
+    
+    public void stopPlayingAudio()
+    {
+    	audio.stopPlaying();
+    }
+    
+    public long getCurrentPositionAudio()
+    {
+    	System.out.println(audio.getCurrentPosition());
+    	return(audio.getCurrentPosition());
+    }
+    
+    public long getDurationAudio(String file)
+    {
+    	System.out.println(audio.getDuration(file));
+    	return(audio.getDuration(file));
+    }  
 }
 

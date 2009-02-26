@@ -105,8 +105,30 @@ function onReceiveSms(number, message)
 http = function(func)
 {
 	if (func == 'get') {
-		Device.http.get($('httpGetUrl').value, $('httpGetFile').value)	
+		Device.http.get($('httpGetUrl').value, $('httpGetFile').value);	
 	}
+}
+
+audio = function(func)
+{
+	if (func == 'startPlaying') {
+		Device.audio.startPlaying($('audioFile').value);
+	} else
+	if (func == 'stopPlaying') {
+		Device.audio.stopPlaying();
+	} else
+	if (func == 'startRecording') {
+		Device.audio.startRecording($('audioFile').value);
+	} else
+	if (func == 'stopRecording') {
+		Device.audio.stopRecording();
+	} else
+	if (func == 'getCurrentPosition') {
+		$('posdur').value = Device.audio.getCurrentPosition();
+	} else
+	if (func == 'getDuration') {
+		$('posdur').value = Device.audio.getDuration($('audioFile').value);
+	} 
 }
 
 
@@ -130,6 +152,7 @@ addLoadEvent(initGap);
         <li><a href="#vibration" onclick="Device.vibrate();">Vibration</a></li>
         <li><a href="#vibration" onclick="Device.playSound('on.mp3")">Play Sound</a></li>
         <li><a href="#photo" onclick="Device.Image.getFromPhotoLibrary();">Photo...</a></li>
+        <li><a href="#audio" onclick="audio();">Audio...</a></li>
         <li><a href="#notification" onclick="notification();">Notification...</a></li>
         <li><a href="#http" onclick="http();">HTTP...</a></li>
         <li><a href="http://phonegap.com/" target="_self">About</a></li>
@@ -288,5 +311,40 @@ addLoadEvent(initGap);
     		</div>
     	</fieldset>
     </div>
+    
+    <div id="audio" title="audio" class="panel">
+    	<h2>Audio</h2>
+    	<fieldset>
+    		<div class="row">
+    		<label>AudioFile:</label>
+    		<input type=text name="audioFile" id="audioFile" size=60 maxlength=2048 value="/hullophonegap.mp3" style="width: 30ex"></input>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<a class="button leftButton" type="submit" onclick="audio('startRecording');">startRecording</a>
+    		<a class="button blueButton" type="submit" onclick="audio('stopRecording');">stopRecording</a>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<a class="button leftButton" type="submit" onclick="audio('startPlaying');">startPlaying</a>
+    		<a class="button blueButton" type="submit" onclick="audio('stopPlaying');">stopPlaying</a>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<label>info:</label>
+    		<input disabled="enabled" id="posdur" type="text" />
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<a class="button leftButton" type="submit" onclick="audio('getDuration');">getDuration</a>
+    		<a class="button blueButton" type="submit" onclick="audio('getCurrentPosition');">getPosition</a>
+    		</div>
+    	</fieldset>
+    </div>
+    
     
 <div id="preloader"></div></body></html>

@@ -306,7 +306,29 @@ var Device = {
 		get: function(url, file) {
 			window.DroidGap.httpGet(url, file);
 		}
+	},
+	
+	audio: {
+		startRecording: function(file) {
+			window.DroidGap.startRecordingAudio(file);
+		},
+		stopRecording: function() {
+			window.DroidGap.stopRecordingAudio();
+		},
+		startPlaying: function(file) {
+			window.DroidGap.startPlayingAudio(file);
+		},
+		stopPlaying: function() {
+			window.DroidGap.stopPlayingAudio();
+		},
+		getCurrentPosition: function() {
+			return window.DroidGap.getCurrentPositionAudio();
+		},
+		getDuration: function(file) {
+			return window.DroidGap.getDurationAudio(file);
+		}
 	}
+
 }
 
 function gotLocation(lat, lon) {
