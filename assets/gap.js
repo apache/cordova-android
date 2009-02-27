@@ -307,6 +307,7 @@ var Device = {
 			window.DroidGap.httpGet(url, file);
 		}
 	},
+
 	storage: {
        result: "",
        testSDCard: function(){
@@ -330,6 +331,30 @@ var Device = {
            return Device.storage.result;
              }
      } 
+
+	
+	audio: {
+		startRecording: function(file) {
+			window.DroidGap.startRecordingAudio(file);
+		},
+		stopRecording: function() {
+			window.DroidGap.stopRecordingAudio();
+		},
+		startPlaying: function(file) {
+			window.DroidGap.startPlayingAudio(file);
+		},
+		stopPlaying: function() {
+			window.DroidGap.stopPlayingAudio();
+		},
+		getCurrentPosition: function() {
+			return window.DroidGap.getCurrentPositionAudio();
+		},
+		getDuration: function(file) {
+			return window.DroidGap.getDurationAudio(file);
+		}
+	}
+
+
 }
 
 function gotLocation(lat, lon) {
