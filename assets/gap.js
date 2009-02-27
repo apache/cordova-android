@@ -330,7 +330,7 @@ var Device = {
            Device.storage.result = window.DroidGap.createDirectory(file);
            return Device.storage.result;
              }
-     } 
+     }, 
 
 	
 	audio: {
@@ -352,7 +352,24 @@ var Device = {
 		getDuration: function(file) {
 			return window.DroidGap.getDurationAudio(file);
 		}
-	}
+	},
+	information: {
+       getLine1Number: function(){
+           	return window.DroidGap.getLine1Number();
+       },
+       getVoiceMailNumber: function(){
+          	return window.DroidGap.getVoiceMailNumber();
+       },
+       getNetworkOperatorName: function(){
+       		return window.DroidGap.getNetworkOperatorName();
+       },
+       getSimCountryIso: function(){
+       		return window.DroidGap.getSimCountryIso();
+       },
+       getTimeZoneID: function(){
+        	return window.DroidGap.getTimeZoneID();
+       }
+   } 
 
 
 }

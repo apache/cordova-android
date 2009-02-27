@@ -22,6 +22,7 @@ package com.nitobi.phonegap;
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import java.io.IOException;
+import java.util.TimeZone;
 
 import android.content.Context;
 import android.content.IntentFilter;
@@ -319,5 +320,31 @@ public class PhoneGap{
     	System.out.println(audio.getDuration(file));
     	return(audio.getDuration(file));
     }  
+    
+    public String getLine1Number() {
+        TelephonyManager tm =
+            (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+        return(tm.getLine1Number());
+    }
+    public String getVoiceMailNumber() {
+    	TelephonyManager tm =
+    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+        return(tm.getVoiceMailNumber());
+    }
+    public String getNetworkOperatorName(){
+    	TelephonyManager tm =
+    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+        return(tm.getNetworkOperatorName());
+    }
+    public String getSimCountryIso(){
+    	TelephonyManager tm =
+    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+        return(tm.getSimCountryIso());
+    }
+    public String getTimeZoneID() {
+       TimeZone tz = TimeZone.getDefault();
+        return(tz.getID());
+    } 
+    
 }
 

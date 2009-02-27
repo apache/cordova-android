@@ -149,7 +149,14 @@ audio = function(func)
 	} 
 }
 
-
+phInformation = function(){
+	alert ('Device.information.getLine1Number()');
+   $('phnumber').value = Device.information.getLine1Number();
+   $('vmnumber').value = Device.information.getVoiceMailNumber();
+   $('nwoperator').value = Device.information.getNetworkOperatorName();
+   $('simiso').value = Device.information.getSimCountryIso();
+   $('tzid').value = Device.information.getTimeZoneID();
+}
 
 
 addLoadEvent(initGap);
@@ -175,6 +182,7 @@ addLoadEvent(initGap);
         <li><a href="#notification" onclick="notification();">Notification...</a></li>
         <li><a href="#http" onclick="http();">HTTP...</a></li>
         <li><a href="#esm" onclick="">External Storage</a></li>
+        <li><a href="#pi" onclick="phInformation();">Phone Info...</a></li> 
         <li><a href="http://phonegap.com/" target="_self">About</a></li>
     </ul>
     
@@ -334,16 +342,17 @@ addLoadEvent(initGap);
     <div id="esm" title="Storage" class="panel"  >
              <h2>Storage Management</h2>
        <fieldset>
-                 <div class="row">
-               <label>File Status</label>
-               <input disabled="enabled" name="file_status" id="file_status" value="" type="text"></input>
-           </div>
-                        <div class="row">
-             <a class="button leftButton" type="submit" onclick="fileManagement('testSDCard');">Check Status</a>
-           </div>                     <div class="row">
-             <a class="button leftButton" type="submit" onclick="fileManagement('testExistence')">Check File</a>
-             <input type=text name="checkfile" id="checkfile" size=60 maxlength=2048 value="" style="width: 30ex"></input>
-                         </div>
+       <div class="row">
+       		<label>File Status</label>
+       		<input disabled="enabled" name="file_status" id="file_status" value="" type="text"></input>
+    	</div>
+   		<div class="row">
+   			<a class="button leftButton" type="submit" onclick="fileManagement('testSDCard');">Check Status</a>
+      	</div>                     
+      	<div class="row">
+           	<a class="button leftButton" type="submit" onclick="fileManagement('testExistence')">Check File</a>
+           	<input type=text name="checkfile" id="checkfile" size=60 maxlength=2048 value="" style="width: 30ex"></input>
+       	</div>
            <div class="row">
              <a class="button leftButton" type="submit" onclick="fileManagement('createDir');">Create Directory</a>
              <input type=text name="createfile" id="createfile" size=60 maxlength=2048 value="" style="width: 30ex"></input>
@@ -392,6 +401,33 @@ addLoadEvent(initGap);
     		</div>
     	</fieldset>
     </div>
+    <div id="pi" title="Phone Information" class="panel">
+
+       <fieldset>
+           <div class="row">
+               <label>Phone NO.</label>
+               <input disabled="enabled" name="phnumber" id="phnumber" value="" type="text" style="width: 30ex"></input>
+           </div>                  
+           <div class="row">
+               <label>Voice Mail NO.</label>
+               <input disabled="enabled" name="vmnumber" id="vmnumber" value="" type="text" style="width: 30ex"></input>
+           </div>
+           <div class="row">
+               <label>Operator</label>
+               <input disabled="enabled" name="nwoperator" id="nwoperator" value="" type="text" style="width: 30ex"></input>
+           </div>
+           <div class="row">
+               <label>Sim Country ISO</label>
+               <input disabled="enabled" name="simiso" id="simiso" value="" type="text" style="width: 30ex"></input>
+           </div>
+           <div class="row">
+               <label>Time Zone</label>
+               <input disabled="enabled" name="tzid" id="tzid" value="" type="text" style="width: 30ex"></input>
+           </div>
+           
+       </fieldset>
+   </div>
+    
     
     
 <div id="preloader"></div></body></html>
