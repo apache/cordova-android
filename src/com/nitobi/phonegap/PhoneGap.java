@@ -248,38 +248,42 @@ public class PhoneGap{
     	http.get(url, file);
     }
 
+    /*
+     * TODO: FIX! These should not be returning arbitrary Strings!
+     */
     public String testSaveLocationExists(){
         if (fileManager.testSaveLocationExists())
             return "SD Card available";
         else
             return "SD Card unavailable";
     }
-    public String testDirOrFileExists(String file){
-        if (fileManager.isDirtoryOrFileExists(file))
+    public String testFileExists(String file){
+        if (fileManager.testFileExists(file))
             return "File exists";
         else
             return "No this file";
     }
+    
     public String deleteDirectory (String dir){
-        if (fileManager.deleteDir(dir))
+        if (fileManager.deleteDirectory(dir))
             return "Completed";
         else
             return "Not completed";
     }
+    
     public String deleteFile (String file){
         if (fileManager.deleteFile(file))
             return "Completed";
         else
             return "Not completed";
     }
-      public String createDirectory(String dir){
-        if (fileManager.createDirectory(dir))
+    
+    public String createDirectory(String dir){
+    	if (fileManager.createDirectory(dir))
             return "Completed";
         else
             return "Not completed";
     } 
-
-    
     
     /**
      * AUDIO
@@ -326,21 +330,25 @@ public class PhoneGap{
             (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
         return(tm.getLine1Number());
     }
+    
     public String getVoiceMailNumber() {
     	TelephonyManager tm =
     		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
         return(tm.getVoiceMailNumber());
     }
+    
     public String getNetworkOperatorName(){
     	TelephonyManager tm =
     		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
         return(tm.getNetworkOperatorName());
     }
+    
     public String getSimCountryIso(){
     	TelephonyManager tm =
     		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
         return(tm.getSimCountryIso());
     }
+    
     public String getTimeZoneID() {
        TimeZone tz = TimeZone.getDefault();
         return(tz.getID());

@@ -315,7 +315,7 @@ var Device = {
            return Device.storage.result;
        },
        testExistence: function(file){
-           Device.storage.result = window.DroidGap.testDirOrFileExists(file);
+           Device.storage.result = window.DroidGap.testFileExists(file);
            return Device.storage.result;
        },
        delFile: function(file){
@@ -329,7 +329,7 @@ var Device = {
        createDir: function(file){
            Device.storage.result = window.DroidGap.createDirectory(file);
            return Device.storage.result;
-             }
+       }
      }, 
 
 	

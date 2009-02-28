@@ -6,7 +6,7 @@ import android.os.Environment;
 
 public class DirectoryManager {
 	
-	protected boolean isDirtoryOrFileExists (String name){
+	protected boolean testFileExists (String name){
 		boolean status;
 		if ((testSaveLocationExists())&&(!name.equals(""))){
     		File path = Environment.getExternalStorageDirectory();
@@ -41,7 +41,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected boolean deleteDir (String fileName){
+	protected boolean deleteDirectory(String fileName){
 		boolean status;
 		SecurityManager checker = new SecurityManager();
 			
@@ -75,7 +75,7 @@ public class DirectoryManager {
 		return status;
 	
 	}
-	protected boolean deleteFile (String fileName){
+	protected boolean deleteFile(String fileName){
 		boolean status;
 		SecurityManager checker = new SecurityManager();
 			

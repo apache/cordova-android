@@ -2,11 +2,16 @@ package com.nitobi.phonegap;
 
 import java.io.File;
 
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaRecorder;
+import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnPreparedListener;
+import android.util.Log;
 
-public class AudioHandler implements OnCompletionListener {
+public class AudioHandler implements OnCompletionListener, OnPreparedListener, OnErrorListener {
 	private MediaRecorder recorder;
 	private boolean isRecording = false;
 	MediaPlayer mPlayer;
@@ -33,11 +38,9 @@ public class AudioHandler implements OnCompletionListener {
 	}
 	
 	private void moveFile(String file) {
-		/* this is just a hck that I will remove later */
+		/* this is a hack to save the file as the specified name */
 		File f = new File (this.recording);
 		f.renameTo(new File("/sdcard" + file));
-		System.out.println(this.recording);
-		System.out.println(file);
 	}
 	
 	public void stopRecording(){
@@ -57,14 +60,25 @@ public class AudioHandler implements OnCompletionListener {
 			try {
 				mPlayer = new MediaPlayer();
 				isPlaying=true;
-				mPlayer.setDataSource("/sdcard/" + file);
-				mPlayer.prepare();
-				mPlayer.setOnCompletionListener(this);
-				mPlayer.start();
+				Log.d("Audio startPlaying", "audio: " + file);
+				if (isStreaming(file))
+				{
+					Log.d("AudioStartPlaying", "Streaming");
+					// Streaming prepare async
+					mPlayer.setDataSource(file);
+					mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  
+					mPlayer.prepareAsync();
+				} else {
+					Log.d("AudioStartPlaying", "File");
+					// Not streaming prepare synchronous, abstract base directory
+					mPlayer.setDataSource("/sdcard/" + file);
+					mPlayer.prepare();
+				}
+				mPlayer.setOnPreparedListener(this);
 			} catch (Exception e) { e.printStackTrace(); }
 		}
 	} 
-	
+
 	public void stopPlaying() {
 		if (isPlaying) {
 			mPlayer.stop();
@@ -73,6 +87,7 @@ public class AudioHandler implements OnCompletionListener {
 		}
 	}
 	
+	@Override
 	public void onCompletion(MediaPlayer mPlayer) {
 		mPlayer.stop();
 		mPlayer.release();
@@ -86,17 +101,57 @@ public class AudioHandler implements OnCompletionListener {
 		} else { return(-1); }
 	}
 	
+	private boolean isStreaming(String file) 
+	{
+		if (file.contains("http://")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	public long getDuration(String file) {
 		long duration = -2;
-		if (isPlaying==false) {
+		if (!isPlaying & !isStreaming(file)) {
 			try {
 				mPlayer = new MediaPlayer();
 				mPlayer.setDataSource("/sdcard/" + file);
 				mPlayer.prepare();
 				duration = mPlayer.getDuration();
 				mPlayer.release();
-			} catch (Exception e) { e.printStackTrace(); return(-1); }
-			return duration;
-		} else { return -1; }
+			} catch (Exception e) { e.printStackTrace(); return(-3); }
+		} else
+		if (isPlaying & !isStreaming(file)) {
+			duration = mPlayer.getDuration();
+		} else 
+		if (isPlaying & isStreaming(file)) {
+			try {
+				duration = mPlayer.getDuration();
+			} catch (Exception e) { e.printStackTrace(); return(-4); }
+		}else { return -1; }
+		return duration;
+	}
+
+	@Override
+	public void onPrepared(MediaPlayer mPlayer) {
+		if (isPlaying) {
+			mPlayer.setOnCompletionListener(this);
+			mPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener()
+			{
+				@Override
+				public void onBufferingUpdate(MediaPlayer mPlayer, int percent)
+				{
+					/* TODO: call back, e.g. update outer progress bar */
+					Log.d("AudioOnBufferingUpdate", "percent: " + percent); 
+				}
+			});
+			mPlayer.start();
+		}
+	}
+
+	@Override
+	public boolean onError(MediaPlayer mPlayer, int arg1, int arg2) {
+		Log.e("AUDIO onError", "error " + arg1 + " " + arg2);
+		return false;
 	}
 }
