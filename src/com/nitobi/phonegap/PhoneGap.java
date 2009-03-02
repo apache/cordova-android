@@ -51,6 +51,7 @@ public class PhoneGap{
     protected LocationProvider provider;
     SmsListener mSmsListener;
     DirectoryManager fileManager;
+    AudioHandler audio; 
     
 	public PhoneGap(Context ctx, Handler handler, WebView appView) {
         this.mCtx = ctx;
@@ -60,6 +61,7 @@ public class PhoneGap{
         mNetwork = new NetworkListener(ctx);
         mSmsListener = new SmsListener(ctx,mAppView);
         fileManager = new DirectoryManager();
+        audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);
     }
 	
 	public void updateAccel(){
@@ -285,7 +287,7 @@ public class PhoneGap{
      * AUDIO
      * TODO: Basic functions done but needs more work on error handling and call backs, remove record hack
      */
-    AudioHandler audio = new AudioHandler("/sdcard/tmprecording.mp3");
+    
     public void startRecordingAudio(String file)
     {
     	/* for this to work the recording needs to be specified in the constructor,
@@ -320,6 +322,13 @@ public class PhoneGap{
     	System.out.println(audio.getDuration(file));
     	return(audio.getDuration(file));
     }  
+    
+    public void setAudioOutputDevice(String output){
+    	audio.setAudioOutputDevice(output);
+    }
+    public int getAudioOutputDevice(){
+    	return audio.getAudioOutputDevice();
+    }
     
     public String getLine1Number() {
         TelephonyManager tm =
