@@ -250,35 +250,59 @@ public class PhoneGap{
     	http.get(url, file);
     }
 
-    public String testSaveLocationExists(){
+    /**
+	 * Check if SD card is ready and already mounted 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int testSaveLocationExists(){
         if (fileManager.testSaveLocationExists())
-            return "SD Card available";
+            return 0;
         else
-            return "SD Card unavailable";
+            return 1;
     }
-    public String testDirOrFileExists(String file){
+    
+    /**
+	 * Check if a specific directory of file exists
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int testDirOrFileExists(String file){
         if (fileManager.isDirtoryOrFileExists(file))
-            return "File exists";
+            return 0;
         else
-            return "No this file";
+            return 1;
     }
-    public String deleteDirectory (String dir){
+    /**
+	 * Delete a specific directory. 
+	 * Everyting in side the directory would be gone.
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int deleteDirectory (String dir){
         if (fileManager.deleteDir(dir))
-            return "Completed";
+            return 0;
         else
-            return "Not completed";
+            return 1;
     }
-    public String deleteFile (String file){
+    
+    /**
+	 * Delete a specific file. 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int deleteFile (String file){
         if (fileManager.deleteFile(file))
-            return "Completed";
+            return 0;
         else
-            return "Not completed";
+            return 1;
     }
-      public String createDirectory(String dir){
-        if (fileManager.createDirectory(dir))
-            return "Completed";
+    
+    /**
+	 * Create a new directory. 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int createDirectory(String dir){
+    	if (fileManager.createDirectory(dir))
+            return 0;
         else
-            return "Not completed";
+            return 1;
     } 
 
     
