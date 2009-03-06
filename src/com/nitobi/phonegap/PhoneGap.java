@@ -51,6 +51,7 @@ public class PhoneGap{
     protected LocationProvider provider;
     SmsListener mSmsListener;
     DirectoryManager fileManager;
+    AudioHandler audio; 
     
 	public PhoneGap(Context ctx, Handler handler, WebView appView) {
         this.mCtx = ctx;
@@ -60,6 +61,7 @@ public class PhoneGap{
         mNetwork = new NetworkListener(ctx);
         mSmsListener = new SmsListener(ctx,mAppView);
         fileManager = new DirectoryManager();
+        audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);
     }
 	
 	public void updateAccel(){
@@ -248,48 +250,96 @@ public class PhoneGap{
     	http.get(url, file);
     }
 
+<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
     /*
      * TODO: FIX! These should not be returning arbitrary Strings!
      */
     public String testSaveLocationExists(){
+=======
+    /**
+	 * Check if SD card is ready and already mounted 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int testSaveLocationExists(){
+>>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         if (fileManager.testSaveLocationExists())
-            return "SD Card available";
+            return 0;
         else
-            return "SD Card unavailable";
+            return 1;
     }
+<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
     public String testFileExists(String file){
         if (fileManager.testFileExists(file))
             return "File exists";
+=======
+    
+    /**
+	 * Check if a specific directory of file exists
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int testDirOrFileExists(String file){
+        if (fileManager.isDirtoryOrFileExists(file))
+            return 0;
+>>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         else
-            return "No this file";
+            return 1;
     }
+<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
     
     public String deleteDirectory (String dir){
         if (fileManager.deleteDirectory(dir))
             return "Completed";
+=======
+    /**
+	 * Delete a specific directory. 
+	 * Everyting in side the directory would be gone.
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int deleteDirectory (String dir){
+        if (fileManager.deleteDir(dir))
+            return 0;
+>>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         else
-            return "Not completed";
+            return 1;
     }
     
+<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
     public String deleteFile (String file){
+=======
+    /**
+	 * Delete a specific file. 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int deleteFile (String file){
+>>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         if (fileManager.deleteFile(file))
-            return "Completed";
+            return 0;
         else
-            return "Not completed";
+            return 1;
     }
     
+<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
     public String createDirectory(String dir){
     	if (fileManager.createDirectory(dir))
             return "Completed";
+=======
+    /**
+	 * Create a new directory. 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int createDirectory(String dir){
+    	if (fileManager.createDirectory(dir))
+            return 0;
+>>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         else
-            return "Not completed";
+            return 1;
     } 
     
     /**
      * AUDIO
      * TODO: Basic functions done but needs more work on error handling and call backs, remove record hack
      */
-    AudioHandler audio = new AudioHandler("/sdcard/tmprecording.mp3");
+    
     public void startRecordingAudio(String file)
     {
     	/* for this to work the recording needs to be specified in the constructor,
@@ -324,6 +374,13 @@ public class PhoneGap{
     	System.out.println(audio.getDuration(file));
     	return(audio.getDuration(file));
     }  
+    
+    public void setAudioOutputDevice(String output){
+    	audio.setAudioOutputDevice(output);
+    }
+    public int getAudioOutputDevice(){
+    	return audio.getAudioOutputDevice();
+    }
     
     public String getLine1Number() {
         TelephonyManager tm =

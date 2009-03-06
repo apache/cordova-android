@@ -146,7 +146,17 @@ audio = function(func)
 	} else
 	if (func == 'getDuration') {
 		$('posdur').value = Device.audio.getDuration($('audioFile').value);
-	} 
+	}else
+	if (func == 'setEarpiece') {
+		Device.audio.setAudioOutputDevice(func);
+	} else
+	if (func == 'setSpeaker') {
+		Device.audio.setAudioOutputDevice(func);
+	}else
+	if (func == 'getAudioOutputDevice') {
+		$('audoutput').value = Device.audio.getAudioOutputDevice();
+	}
+	
 }
 
 phInformation = function(){
@@ -390,6 +400,18 @@ addLoadEvent(initGap);
     		<div class="row">
     		<a class="button leftButton" type="submit" onclick="audio('getDuration');">getDuration</a>
     		<a class="button blueButton" type="submit" onclick="audio('getCurrentPosition');">getPosition</a>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<a class="button leftButton" type="submit" onclick="audio('setEarpiece');">Earpiece</a>
+    		<a class="button blueButton" type="submit" onclick="audio('setSpeaker');">Speaker</a>
+    		</div>
+    	</fieldset>
+    	<fieldset>
+    		<div class="row">
+    		<a class="button leftButton" type="submit" onclick="audio('getAudioOutputDevice');">Audio Output</a>
+    		<input disabled="enabled" id="audoutput" type="text" style="width: 30ex"/>
     		</div>
     	</fieldset>
     </div>

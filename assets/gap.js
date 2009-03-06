@@ -351,6 +351,12 @@ var Device = {
 		},
 		getDuration: function(file) {
 			return window.DroidGap.getDurationAudio(file);
+		},
+		setAudioOutputDevice: function(output){
+			window.DroidGap.setAudioOutputDevice(output);
+		},
+		getAudioOutputDevice: function (){
+			return window.DroidGap.getAudioOutputDevice();
 		}
 	},
 	information: {

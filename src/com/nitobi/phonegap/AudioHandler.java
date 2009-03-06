@@ -2,6 +2,7 @@ package com.nitobi.phonegap;
 
 import java.io.File;
 
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnErrorListener;
@@ -18,9 +19,11 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 	private boolean isPlaying = false;
 	private String recording;
 	private String saveFile;
+	private Context mCtx;
 	
-	public AudioHandler(String file) {
+	public AudioHandler(String file, Context ctx) {
 		this.recording = file;
+		this.mCtx = ctx;
 	}
 	
 	public void startRecording(String file){
@@ -87,7 +90,6 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		}
 	}
 	
-	@Override
 	public void onCompletion(MediaPlayer mPlayer) {
 		mPlayer.stop();
 		mPlayer.release();
@@ -153,5 +155,26 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 	public boolean onError(MediaPlayer mPlayer, int arg1, int arg2) {
 		Log.e("AUDIO onError", "error " + arg1 + " " + arg2);
 		return false;
+	}
+	
+	protected void setAudioOutputDevice(String output){
+		System.out.println ("Change audio setting to be "+output);
+		AudioManager audiMgr = (AudioManager) mCtx.getSystemService(Context.AUDIO_SERVICE);
+		if (output.contains("Speaker"))
+			audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_SPEAKER, AudioManager.ROUTE_ALL);
+		else if (output.contains("Earpiece")){
+			audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_EARPIECE, AudioManager.ROUTE_ALL);
+		}else
+			System.out.println("input error");
+			
+	}
+	protected int getAudioOutputDevice(){
+		AudioManager audiMgr = (AudioManager) mCtx.getSystemService(Context.AUDIO_SERVICE);
+		if (audiMgr.getRouting(AudioManager.MODE_NORMAL) == AudioManager.ROUTE_EARPIECE)
+			return 1;
+		else if (audiMgr.getRouting(AudioManager.MODE_NORMAL) == AudioManager.ROUTE_SPEAKER)
+			return 2;
+		else
+			return -1;
 	}
 }
