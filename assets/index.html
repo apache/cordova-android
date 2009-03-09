@@ -152,10 +152,10 @@ audio = function(func)
 		$('posdur').value = Device.audio.getDuration($('audioFile').value);
 	}else
 	if (func == 'setEarpiece') {
-		Device.audio.setAudioOutputDevice(func);
+		Device.audio.setAudioOutputDevice(1);
 	} else
 	if (func == 'setSpeaker') {
-		Device.audio.setAudioOutputDevice(func);
+		Device.audio.setAudioOutputDevice(2);
 	}else
 	if (func == 'getAudioOutputDevice') {
 		$('audoutput').value = Device.audio.getAudioOutputDevice();

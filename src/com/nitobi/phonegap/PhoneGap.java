@@ -261,7 +261,6 @@ public class PhoneGap{
     }
     
     public long getFreeDiskSpace(){
-    	System.out.println("FOOOOOOOO");
         long freeDiskSpace=fileManager.getFreeDiskSpace();
         return freeDiskSpace;
     }
@@ -357,9 +356,10 @@ public class PhoneGap{
     	return(audio.getDuration(file));
     }  
     
-    public void setAudioOutputDevice(String output){
+    public void setAudioOutputDevice(int output){
     	audio.setAudioOutputDevice(output);
     }
+    
     public int getAudioOutputDevice(){
     	return audio.getAudioOutputDevice();
     }

@@ -26,7 +26,7 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		this.mCtx = ctx;
 	}
 	
-	public void startRecording(String file){
+	protected void startRecording(String file){
 		if (!isRecording){
 			saveFile=file;
 			recorder = new MediaRecorder();
@@ -46,7 +46,7 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		f.renameTo(new File("/sdcard" + file));
 	}
 	
-	public void stopRecording(){
+	protected void stopRecording(){
 		try{
 			if((recorder != null)&&(isRecording))
 			{
@@ -58,7 +58,7 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		}catch (Exception e){e.printStackTrace();}
 	}	
 	
-	public void startPlaying(String file) {
+	protected void startPlaying(String file) {
 		if (isPlaying==false) {
 			try {
 				mPlayer = new MediaPlayer();
@@ -82,7 +82,7 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		}
 	} 
 
-	public void stopPlaying() {
+	protected void stopPlaying() {
 		if (isPlaying) {
 			mPlayer.stop();
 			mPlayer.release();
@@ -96,7 +96,7 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		isPlaying=false;
     } 
 	
-	public long getCurrentPosition() {
+	protected long getCurrentPosition() {
 		if (isPlaying) 
 		{
 			return(mPlayer.getCurrentPosition());
@@ -112,7 +112,7 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		}
 	}
 	
-	public long getDuration(String file) {
+	protected long getDuration(String file) {
 		long duration = -2;
 		if (!isPlaying & !isStreaming(file)) {
 			try {
@@ -154,17 +154,17 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		return false;
 	}
 	
-	protected void setAudioOutputDevice(String output){
-		System.out.println ("Change audio setting to be "+output);
+	protected void setAudioOutputDevice(int output){
+		// Changes the default audio output device to speaker or earpiece 
 		AudioManager audiMgr = (AudioManager) mCtx.getSystemService(Context.AUDIO_SERVICE);
-		if (output.contains("Speaker"))
+		if (output == (2))
 			audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_SPEAKER, AudioManager.ROUTE_ALL);
-		else if (output.contains("Earpiece")){
+		else if (output == (1)){
 			audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_EARPIECE, AudioManager.ROUTE_ALL);
 		}else
-			System.out.println("input error");
-			
+			Log.e("AudioHandler setAudioOutputDevice", " unknown output device");	
 	}
+	
 	protected int getAudioOutputDevice(){
 		AudioManager audiMgr = (AudioManager) mCtx.getSystemService(Context.AUDIO_SERVICE);
 		if (audiMgr.getRouting(AudioManager.MODE_NORMAL) == AudioManager.ROUTE_EARPIECE)

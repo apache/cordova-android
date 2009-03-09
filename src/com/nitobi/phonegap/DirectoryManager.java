@@ -4,6 +4,7 @@ import java.io.File;
 
 import android.os.Environment;
 import android.os.StatFs;
+import android.util.Log;
 
 public class DirectoryManager {
 	
@@ -13,7 +14,6 @@ public class DirectoryManager {
     		File path = Environment.getExternalStorageDirectory();
             File newPath = constructFilePaths(path.toString(), name);
             status = newPath.exists();
-    		
     	}else{
     		status = false;
     	}
@@ -33,7 +33,6 @@ public class DirectoryManager {
 				long blockSize = stat.getBlockSize();
 				long availableBlocks = stat.getAvailableBlocks();
 				freeSpace = availableBlocks*blockSize/1024;
-				
 			} catch (Exception e) {e.printStackTrace(); }
 		} else { return -1; }
 		return (freeSpace);
@@ -71,17 +70,15 @@ public class DirectoryManager {
             File newPath = constructFilePaths(path.toString(), fileName);
 			checker.checkDelete(newPath.toString());
 			if(newPath.isDirectory()){
-				System.out.println("Dir = "+ fileName);
 				String[] listfile = newPath.list();
-				
+				// delete all files within the specified directory and then delete the directory
 				try{
 					for (int i=0; i < listfile.length; i++){
-						System.out.println(listfile[i].toString()+" length = "+listfile.length);
 						File deletedFile = new File (newPath.toString()+"/"+listfile[i].toString());
 						deletedFile.delete();
 					}
-				
 					newPath.delete();
+					Log.i("DirectoryManager deleteDirectory", fileName);
 					status = true;
 				}catch (Exception e){
 					e.printStackTrace();
@@ -93,8 +90,8 @@ public class DirectoryManager {
 		}else
 			status = false;
 		return status;
-	
 	}
+	
 	protected boolean deleteFile(String fileName){
 		boolean status;
 		SecurityManager checker = new SecurityManager();
@@ -106,7 +103,7 @@ public class DirectoryManager {
 			checker.checkDelete(newPath.toString());
 			if (newPath.isFile()){
 				try {
-					System.out.println("deleting the file");
+					Log.i("DirectoryManager deleteFile", fileName);
 					newPath.delete();
 					status = true;
 				}catch (SecurityException se){

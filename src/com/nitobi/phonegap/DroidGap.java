@@ -23,6 +23,7 @@ package com.nitobi.phonegap;
  */
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -64,8 +65,12 @@ public class DroidGap extends Activity {
         appView.loadUrl("file:///android_asset/index.html");
         
     }
-    
-    
+	
+	@Override
+    public void onConfigurationChanged(Configuration newConfig) {
+      //don't reload the current page when the orientation is changed
+      super.onConfigurationChanged(newConfig);
+    } 
     
     private void bindBrowser(WebView appView)
     {

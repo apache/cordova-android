@@ -36,7 +36,7 @@ public class SmsListener extends BroadcastReceiver
         }
     }
         
-    public void onReceiveSMS(String sendersNumber, String smsContent) 
+    protected void onReceiveSMS(String sendersNumber, String smsContent) 
     /**
      * Call back to Java Script
      */
