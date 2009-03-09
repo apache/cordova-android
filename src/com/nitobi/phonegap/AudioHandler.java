@@ -134,13 +134,11 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		return duration;
 	}
 
-	@Override
 	public void onPrepared(MediaPlayer mPlayer) {
 		if (isPlaying) {
 			mPlayer.setOnCompletionListener(this);
 			mPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener()
 			{
-				@Override
 				public void onBufferingUpdate(MediaPlayer mPlayer, int percent)
 				{
 					/* TODO: call back, e.g. update outer progress bar */
@@ -151,7 +149,6 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		}
 	}
 
-	@Override
 	public boolean onError(MediaPlayer mPlayer, int arg1, int arg2) {
 		Log.e("AUDIO onError", "error " + arg1 + " " + arg2);
 		return false;

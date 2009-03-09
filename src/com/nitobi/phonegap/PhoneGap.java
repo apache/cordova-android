@@ -249,80 +249,56 @@ public class PhoneGap{
     	HttpHandler http = new HttpHandler();
     	http.get(url, file);
     }
+    
+    
 
-<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
-    /*
-     * TODO: FIX! These should not be returning arbitrary Strings!
-     */
-    public String testSaveLocationExists(){
-=======
-    /**
-	 * Check if SD card is ready and already mounted 
-	 * TODO: JavaScript Call backs for success and error handling 
-	 */
+    	
     public int testSaveLocationExists(){
->>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         if (fileManager.testSaveLocationExists())
             return 0;
         else
             return 1;
     }
-<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
-    public String testFileExists(String file){
+
+    public int testFileExists(String file){
         if (fileManager.testFileExists(file))
-            return "File exists";
-=======
-    
-    /**
-	 * Check if a specific directory of file exists
-	 * TODO: JavaScript Call backs for success and error handling 
-	 */
-    public int testDirOrFileExists(String file){
-        if (fileManager.isDirtoryOrFileExists(file))
             return 0;
->>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         else
             return 1;
     }
-<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
     
-    public String deleteDirectory (String dir){
-        if (fileManager.deleteDirectory(dir))
-            return "Completed";
-=======
+    public int testDirectoryExists(String file){
+        if (fileManager.testFileExists(file))
+            return 0;
+        else
+            return 1;
+    } 
+
     /**
 	 * Delete a specific directory. 
 	 * Everyting in side the directory would be gone.
 	 * TODO: JavaScript Call backs for success and error handling 
 	 */
     public int deleteDirectory (String dir){
-        if (fileManager.deleteDir(dir))
+        if (fileManager.deleteDirectory(dir))
             return 0;
->>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         else
             return 1;
     }
     
-<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
-    public String deleteFile (String file){
-=======
+
     /**
 	 * Delete a specific file. 
 	 * TODO: JavaScript Call backs for success and error handling 
 	 */
     public int deleteFile (String file){
->>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         if (fileManager.deleteFile(file))
             return 0;
         else
             return 1;
     }
     
-<<<<<<< HEAD:android/src/com/nitobi/phonegap/PhoneGap.java
-    public String createDirectory(String dir){
-    	if (fileManager.createDirectory(dir))
-            return "Completed";
-=======
+
     /**
 	 * Create a new directory. 
 	 * TODO: JavaScript Call backs for success and error handling 
@@ -330,10 +306,10 @@ public class PhoneGap{
     public int createDirectory(String dir){
     	if (fileManager.createDirectory(dir))
             return 0;
->>>>>>> 6959002f1187829f33e279633e0446cc750ab6d3:android/src/com/nitobi/phonegap/PhoneGap.java
         else
             return 1;
     } 
+    
     
     /**
      * AUDIO

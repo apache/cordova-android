@@ -308,27 +308,31 @@ var Device = {
 		}
 	},
 
-	storage: {
+	file: {
        result: "",
-       testSDCard: function(){
-           Device.storage.result = window.DroidGap.testSaveLocationExists();
-           return Device.storage.result;
+       testSaveLocationExists: function(){
+           Device.file.result = window.DroidGap.testSaveLocationExists();
+           return Device.file.result;
        },
-       testExistence: function(file){
-           Device.storage.result = window.DroidGap.testFileExists(file);
-           return Device.storage.result;
+       testFileExists: function(file){
+           Device.file.result = window.DroidGap.testFileExists(file);
+           return Device.file.result;
        },
-       delFile: function(file){
-           Device.storage.result = window.DroidGap.deleteFile(file);
-           return Device.storage.result;
+       testDirectoryExists: function(file){
+           Device.file.result = window.DroidGap.testFileExists(file);
+           return Device.file.result;
        },
-       delDir: function(file){
-           Device.storage.result = window.DroidGap.deleteDirectory(file);
-           return Device.storage.result;
+       deleteFile: function(file){
+           Device.file.result = window.DroidGap.deleteFile(file);
+           return Device.file.result;
        },
-       createDir: function(file){
-           Device.storage.result = window.DroidGap.createDirectory(file);
-           return Device.storage.result;
+       deleteDirectory: function(file){
+           Device.file.result = window.DroidGap.deleteDirectory(file);
+           return Device.file.result;
+       },
+       createDirectory: function(file){
+           Device.file.result = window.DroidGap.createDirectory(file);
+           return Device.file.result;
        }
      }, 
 
