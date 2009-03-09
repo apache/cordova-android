@@ -259,6 +259,12 @@ public class PhoneGap{
         else
             return 1;
     }
+    
+    public long getFreeDiskSpace(){
+    	System.out.println("FOOOOOOOO");
+        long freeDiskSpace=fileManager.getFreeDiskSpace();
+        return freeDiskSpace;
+    }
 
     public int testFileExists(String file){
         if (fileManager.testFileExists(file))

@@ -3,6 +3,7 @@ package com.nitobi.phonegap;
 import java.io.File;
 
 import android.os.Environment;
+import android.os.StatFs;
 
 public class DirectoryManager {
 	
@@ -18,6 +19,25 @@ public class DirectoryManager {
     	}
 		return status;
 	}
+	
+	protected long getFreeDiskSpace(){
+		/*
+		 * gets the available SD card free space or returns -1 if the SD card is not mounted.
+		 */
+		String status = Environment.getExternalStorageState();
+		long freeSpace = 0;
+		if (status.equals(Environment.MEDIA_MOUNTED)) {
+			try {
+				File path = Environment.getExternalStorageDirectory();
+				StatFs stat = new StatFs(path.getPath());
+				long blockSize = stat.getBlockSize();
+				long availableBlocks = stat.getAvailableBlocks();
+				freeSpace = availableBlocks*blockSize/1024;
+				
+			} catch (Exception e) {e.printStackTrace(); }
+		} else { return -1; }
+		return (freeSpace);
+	}	
 	
 	protected boolean createDirectory(String directoryName){
 		boolean status;
@@ -98,8 +118,8 @@ public class DirectoryManager {
 		}else
 			status = false;
 		return status;
-	
 	}
+	
 	private File constructFilePaths (String file1, String file2){
 		File newPath;
 		newPath = new File(file1+"/"+file2);

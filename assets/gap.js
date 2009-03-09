@@ -310,8 +310,8 @@ var Device = {
 
 	file: {
        result: "",
-       testSaveLocationExists: function(){
-           Device.file.result = window.DroidGap.testSaveLocationExists();
+       getFreeDiskSpace: function(){
+           Device.file.result = window.DroidGap.getFreeDiskSpace();
            return Device.file.result;
        },
        testFileExists: function(file){
