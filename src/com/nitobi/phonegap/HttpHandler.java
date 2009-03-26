@@ -11,7 +11,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 public class HttpHandler {
 
-	public Boolean get(String url, String file)
+	protected Boolean get(String url, String file)
 	{
 		HttpEntity entity = getHttpEntity(url);
 		try {

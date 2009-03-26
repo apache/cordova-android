@@ -306,7 +306,82 @@ var Device = {
 		get: function(url, file) {
 			window.DroidGap.httpGet(url, file);
 		}
-	}
+	},
+
+	file: {
+       result: "",
+       getFreeDiskSpace: function(){
+           Device.file.result = window.DroidGap.getFreeDiskSpace();
+           return Device.file.result;
+       },
+       testFileExists: function(file){
+           Device.file.result = window.DroidGap.testFileExists(file);
+           return Device.file.result;
+       },
+       testDirectoryExists: function(file){
+           Device.file.result = window.DroidGap.testFileExists(file);
+           return Device.file.result;
+       },
+       deleteFile: function(file){
+           Device.file.result = window.DroidGap.deleteFile(file);
+           return Device.file.result;
+       },
+       deleteDirectory: function(file){
+           Device.file.result = window.DroidGap.deleteDirectory(file);
+           return Device.file.result;
+       },
+       createDirectory: function(file){
+           Device.file.result = window.DroidGap.createDirectory(file);
+           return Device.file.result;
+       }
+     }, 
+
+	
+	audio: {
+		startRecording: function(file) {
+			window.DroidGap.startRecordingAudio(file);
+		},
+		stopRecording: function() {
+			window.DroidGap.stopRecordingAudio();
+		},
+		startPlaying: function(file) {
+			window.DroidGap.startPlayingAudio(file);
+		},
+		stopPlaying: function() {
+			window.DroidGap.stopPlayingAudio();
+		},
+		getCurrentPosition: function() {
+			return window.DroidGap.getCurrentPositionAudio();
+		},
+		getDuration: function(file) {
+			return window.DroidGap.getDurationAudio(file);
+		},
+		setAudioOutputDevice: function(output){
+			window.DroidGap.setAudioOutputDevice(output);
+		},
+		getAudioOutputDevice: function (){
+			return window.DroidGap.getAudioOutputDevice();
+		}
+	},
+	information: {
+       getLine1Number: function(){
+           	return window.DroidGap.getLine1Number();
+       },
+       getVoiceMailNumber: function(){
+          	return window.DroidGap.getVoiceMailNumber();
+       },
+       getNetworkOperatorName: function(){
+       		return window.DroidGap.getNetworkOperatorName();
+       },
+       getSimCountryIso: function(){
+       		return window.DroidGap.getSimCountryIso();
+       },
+       getTimeZoneID: function(){
+        	return window.DroidGap.getTimeZoneID();
+       }
+   } 
+
+
 }
 
 function gotLocation(lat, lon) {

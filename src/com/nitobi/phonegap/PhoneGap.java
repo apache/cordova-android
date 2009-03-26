@@ -22,6 +22,7 @@ package com.nitobi.phonegap;
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import java.io.IOException;
+import java.util.TimeZone;
 
 import android.content.Context;
 import android.content.IntentFilter;
@@ -49,6 +50,8 @@ public class PhoneGap{
     private NetworkListener mNetwork;
     protected LocationProvider provider;
     SmsListener mSmsListener;
+    DirectoryManager fileManager;
+    AudioHandler audio; 
     
 	public PhoneGap(Context ctx, Handler handler, WebView appView) {
         this.mCtx = ctx;
@@ -57,6 +60,8 @@ public class PhoneGap{
         mGps = new GpsListener(ctx);
         mNetwork = new NetworkListener(ctx);
         mSmsListener = new SmsListener(ctx,mAppView);
+        fileManager = new DirectoryManager();
+        audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);
     }
 	
 	public void updateAccel(){
@@ -244,5 +249,149 @@ public class PhoneGap{
     	HttpHandler http = new HttpHandler();
     	http.get(url, file);
     }
+    
+    
+
+    	
+    public int testSaveLocationExists(){
+        if (fileManager.testSaveLocationExists())
+            return 0;
+        else
+            return 1;
+    }
+    
+    public long getFreeDiskSpace(){
+        long freeDiskSpace=fileManager.getFreeDiskSpace();
+        return freeDiskSpace;
+    }
+
+    public int testFileExists(String file){
+        if (fileManager.testFileExists(file))
+            return 0;
+        else
+            return 1;
+    }
+    
+    public int testDirectoryExists(String file){
+        if (fileManager.testFileExists(file))
+            return 0;
+        else
+            return 1;
+    } 
+
+    /**
+	 * Delete a specific directory. 
+	 * Everyting in side the directory would be gone.
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int deleteDirectory (String dir){
+        if (fileManager.deleteDirectory(dir))
+            return 0;
+        else
+            return 1;
+    }
+    
+
+    /**
+	 * Delete a specific file. 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int deleteFile (String file){
+        if (fileManager.deleteFile(file))
+            return 0;
+        else
+            return 1;
+    }
+    
+
+    /**
+	 * Create a new directory. 
+	 * TODO: JavaScript Call backs for success and error handling 
+	 */
+    public int createDirectory(String dir){
+    	if (fileManager.createDirectory(dir))
+            return 0;
+        else
+            return 1;
+    } 
+    
+    
+    /**
+     * AUDIO
+     * TODO: Basic functions done but needs more work on error handling and call backs, remove record hack
+     */
+    
+    public void startRecordingAudio(String file)
+    {
+    	/* for this to work the recording needs to be specified in the constructor,
+    	 * a hack to get around this, I'm moving the recording after it's complete 
+    	 */
+    	audio.startRecording(file);
+    }
+    
+    public void stopRecordingAudio()
+    {
+    	audio.stopRecording();
+    }
+    
+    public void startPlayingAudio(String file)
+    {
+    	audio.startPlaying(file);
+    }
+    
+    public void stopPlayingAudio()
+    {
+    	audio.stopPlaying();
+    }
+    
+    public long getCurrentPositionAudio()
+    {
+    	System.out.println(audio.getCurrentPosition());
+    	return(audio.getCurrentPosition());
+    }
+    
+    public long getDurationAudio(String file)
+    {
+    	System.out.println(audio.getDuration(file));
+    	return(audio.getDuration(file));
+    }  
+    
+    public void setAudioOutputDevice(int output){
+    	audio.setAudioOutputDevice(output);
+    }
+    
+    public int getAudioOutputDevice(){
+    	return audio.getAudioOutputDevice();
+    }
+    
+    public String getLine1Number() {
+        TelephonyManager tm =
+            (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+        return(tm.getLine1Number());
+    }
+    
+    public String getVoiceMailNumber() {
+    	TelephonyManager tm =
+    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+        return(tm.getVoiceMailNumber());
+    }
+    
+    public String getNetworkOperatorName(){
+    	TelephonyManager tm =
+    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+        return(tm.getNetworkOperatorName());
+    }
+    
+    public String getSimCountryIso(){
+    	TelephonyManager tm =
+    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+        return(tm.getSimCountryIso());
+    }
+    
+    public String getTimeZoneID() {
+       TimeZone tz = TimeZone.getDefault();
+        return(tz.getID());
+    } 
+    
 }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 
 
@@ -105,16 +106,79 @@ function onReceiveSms(number, message)
 http = function(func)
 {
 	if (func == 'get') {
-		Device.http.get($('httpGetUrl').value, $('httpGetFile').value)	
+		Device.http.get($('httpGetUrl').value, $('httpGetFile').value);	
 	}
 }
 
+fileManagement = function(x){
+   if (x == 'getFreeDiskSpace'){
+       $('file_status').value = Device.file.getFreeDiskSpace();
+   }else
+   if (x == 'testFileExists'){
+       $('file_status').value = Device.file.testFileExists($('checkfile').value);
+   }else
+   if (x == 'testDirectoryExists'){
+	   $('file_status').value = Device.file.testDirectoryExists($('checkdir').value);
+   }else
+   if (x == 'createDir'){
+       $('file_status').value = Device.file.createDirectory($('createfile').value);
+         }else
+   if (x == 'delFile'){
+       $('file_status').value = Device.file.deleteFile($('delfile').value);
+   }else
+   if (x == 'delDir'){
+       $('file_status').value = Device.file.deleteDirectory($('deldir').value);
+   }
+} 
+
+audio = function(func)
+{
+	if (func == 'startPlaying') {
+		Device.audio.startPlaying($('audioFile').value);
+	} else
+	if (func == 'stopPlaying') {
+		Device.audio.stopPlaying();
+	} else
+	if (func == 'startRecording') {
+		Device.audio.startRecording($('audioFile').value);
+	} else
+	if (func == 'stopRecording') {
+		Device.audio.stopRecording();
+	} else
+	if (func == 'getCurrentPosition') {
+		$('posdur').value = Device.audio.getCurrentPosition();
+	} else
+	if (func == 'getDuration') {
+		$('posdur').value = Device.audio.getDuration($('audioFile').value);
+	}else
+	if (func == 'setEarpiece') {
+		Device.audio.setAudioOutputDevice(1);
+	} else
+	if (func == 'setSpeaker') {
+		Device.audio.setAudioOutputDevice(2);
+	}else
+	if (func == 'getAudioOutputDevice') {
+		$('audoutput').value = Device.audio.getAudioOutputDevice();
+	}
+	
+}
+
+phInformation = function(){
+	alert ('Device.information.getLine1Number()');
+   $('phnumber').value = Device.information.getLine1Number();
+   $('vmnumber').value = Device.information.getVoiceMailNumber();
+   $('nwoperator').value = Device.information.getNetworkOperatorName();
+   $('simiso').value = Device.information.getSimCountryIso();
+   $('tzid').value = Device.information.getTimeZoneID();
+}
 
 
 addLoadEvent(initGap);
 
 </script>
-</head><body  orient="landscape">
+</head>
+
+<body  orient="landscape">
     <div class="toolbar">
         <h1 id="pageTitle">Main</h1>
         <a style="display: none;" id="backButton" class="button" href="#"></a>
@@ -130,8 +194,11 @@ addLoadEvent(initGap);
         <li><a href="#vibration" onclick="Device.vibrate();">Vibration</a></li>
         <li><a href="#vibration" onclick="Device.playSound('on.mp3")">Play Sound</a></li>
         <li><a href="#photo" onclick="Device.Image.getFromPhotoLibrary();">Photo...</a></li>
+        <li><a href="#audio" onclick="audio();">Audio...</a></li>
         <li><a href="#notification" onclick="notification();">Notification...</a></li>
         <li><a href="#http" onclick="http();">HTTP...</a></li>
+        <li><a href="#file" onclick="">File IO...</a></li>
+        <li><a href="#pi" onclick="phInformation();">Phone Info...</a></li> 
         <li><a href="http://phonegap.com/" target="_self">About</a></li>
     </ul>
     
@@ -171,7 +238,6 @@ addLoadEvent(initGap);
     </div>
     
      <div id="geo" title="Geo Location" class="panel"  >
-        
         <h2>Change Location</h2>
         <fieldset>
             <div class="row">
@@ -185,13 +251,10 @@ addLoadEvent(initGap);
             <div class="row">
               <a class="button blueButton" type="submit" onclick="updateLocation();">Update Location</a>
             </div> 
-            
         </fieldset>
-        
     </div>
     
     <div id="readgeo" title="Read Location" class="panel"  >
-        
         <h2>Read Location</h2>
         <fieldset>
             <div class="row">
@@ -203,11 +266,9 @@ addLoadEvent(initGap);
                 <input disabled="enable"  name="lon" id="userlon" value="" type="text"/>
             </div>
          </fieldset>
-        
     </div>
     
     <div id="setintervals" title="Set Intervals" class="panel"  >
-        
         <h2>Change Intervals</h2>
         <fieldset>
             <div class="row">
@@ -221,13 +282,10 @@ addLoadEvent(initGap);
             <div class="row">
               <a class="button blueButton" type="submit" onclick="userSetIntervals();">Set Intervals</a>
             </div> 
-            
         </fieldset>
-        
     </div>
     
     <div id="accel" title="Accelerometer" class="panel">
-        
         <h2>Accelerometer</h2>
         <fieldset>
             <div class="row">
@@ -289,4 +347,103 @@ addLoadEvent(initGap);
     	</fieldset>
     </div>
     
-<div id="preloader"></div></body></html>
+    <div id="file" title="file IO" class="panel"  >
+             <h2>file IO</h2>
+       <fieldset>
+       <div class="row">
+       		<label>File IO</label>
+       		<input disabled="enabled" name="file_status" id="file_status" value="" type="text"></input>
+    	</div>
+   		<div class="row">
+   			<a class="button leftButton" type="submit" onclick="fileManagement('getFreeDiskSpace');">getFreeDiskSpace</a>
+      	</div>                     
+      	<div class="row">
+           	<a class="button leftButton" type="submit" onclick="fileManagement('testFileExists')">testFileExists</a>
+           	<input type=text name="checkfile" id="checkfile" value="/hullophonegap.mp3" size=60 maxlength=2048 value="" style="width: 30ex"></input>
+       	</div>
+        <div class="row">
+           	<a class="button leftButton" type="submit" onclick="fileManagement('testDirectoryExists')">testDirExists</a>
+           	<input type=text name="checkdir" id="checkdir" value="/foo" size=60 maxlength=2048 value="" style="width: 30ex"></input>
+       	</div>
+        <div class="row">
+      		<a class="button leftButton" type="submit" onclick="fileManagement('createDir');">Create Directory</a>
+            <input type=text name="createfile" id="createfile" value="/foo" size=60 maxlength=2048 value="" style="width: 30ex"></input>
+        </div>
+        <div class="row">
+           	<a class="button leftButton" type="submit" onclick="fileManagement('delFile');">Delete File</a>
+            <input type=text name="delfile" id="delfile" value="/hullophonegap.mp3" size=60 maxlength=2048 value="" style="width: 30ex"></input>
+        </div>
+        <div class="row">
+            <input type=text name="deldir" id="deldir" value="/foo" size=60 maxlength=2048 value="" style="width: 30ex"></input>
+            <a class="button leftButton" type="submit" onclick="fileManagement('delDir');">Delete Directory</a>
+        </div>
+        </fieldset>
+	</div> 
+    
+    <div id="audio" title="audio" class="panel">
+    	<h2>Audio</h2>
+    	<p><i>Make sure your Android sdk sdcard is mounted!</i></p>
+    	<fieldset>
+    		<div class="row">
+    			<label>AudioFile:</label>
+    			<input type=text name="audioFile" id="audioFile" size=60 maxlength=2048 value="/hullophonegap.mp3" style="width: 30ex"></input>
+    		</div>
+    		<div class="row">
+    			<a class="button leftButton" type="submit" onclick="audio('startRecording');">startRecording</a>
+    			<a class="button blueButton" type="submit" onclick="audio('stopRecording');">stopRecording</a>
+    		</div>
+    		<div class="row">
+    			<a class="button leftButton" type="submit" onclick="audio('startPlaying');">startPlaying</a>
+    			<a class="button blueButton" type="submit" onclick="audio('stopPlaying');">stopPlaying</a>
+    		</div>
+    		<div class="row">
+    			<label>info:</label>
+    			<input disabled="enabled" id="posdur" type="text" />
+    		</div>
+    		<div class="row">
+    			<a class="button leftButton" type="submit" onclick="audio('getDuration');">getDuration</a>
+    			<a class="button blueButton" type="submit" onclick="audio('getCurrentPosition');">getPosition</a>
+    		</div>
+    		<div class="row">
+    			<a class="button leftButton" type="submit" onclick="audio('setEarpiece');">Earpiece</a>
+    			<a class="button blueButton" type="submit" onclick="audio('setSpeaker');">Speaker</a>
+    		</div>
+    		<div class="row">
+    			<a class="button leftButton" type="submit" onclick="audio('getAudioOutputDevice');">getAudioDevice</a>
+    			<input disabled="enabled" id="audoutput" type="text" style="width: 30ex"/>
+    		</div>
+		</fieldset>
+	</div>
+		
+		    
+    <div id="pi" title="Phone Information" class="panel">
+       <fieldset>
+           <div class="row">
+               <label>Phone NO.</label>
+               <input disabled="enabled" name="phnumber" id="phnumber" value="" type="text" style="width: 30ex"></input>
+           </div>                  
+           <div class="row">
+               <label>Voice Mail NO.</label>
+               <input disabled="enabled" name="vmnumber" id="vmnumber" value="" type="text" style="width: 30ex"></input>
+           </div>
+           <div class="row">
+               <label>Operator</label>
+               <input disabled="enabled" name="nwoperator" id="nwoperator" value="" type="text" style="width: 30ex"></input>
+           </div>
+           <div class="row">
+               <label>Sim Country ISO</label>
+               <input disabled="enabled" name="simiso" id="simiso" value="" type="text" style="width: 30ex"></input>
+           </div>
+           <div class="row">
+               <label>Time Zone</label>
+               <input disabled="enabled" name="tzid" id="tzid" value="" type="text" style="width: 30ex"></input>
+           </div> 
+       </fieldset>
+   </div>
+    
+<div id="preloader"></div>
+		
+</body>
+</html>
+
+
