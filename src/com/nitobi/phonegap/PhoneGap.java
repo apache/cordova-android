@@ -57,8 +57,7 @@ public class PhoneGap{
         this.mCtx = ctx;
         this.mHandler = handler;
         this.mAppView = appView;
-        mGps = new GpsListener(ctx);
-        mNetwork = new NetworkListener(ctx);
+
         mSmsListener = new SmsListener(ctx,mAppView);
         fileManager = new DirectoryManager();
         audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);
@@ -90,8 +89,6 @@ public class PhoneGap{
         vibrator.vibrate(pattern);
 	}
 	
-
-	
 	public void getLocation( ){
 		mHandler.post(new Runnable() {
             public void run() {
@@ -113,13 +110,6 @@ public class PhoneGap{
             }
         });
 	}
-	
-	
-	public String outputText(){
-		String test = "<p>Test</p>";
-		return test;
-	}
-	
 
 	public String getUuid()
 	{

@@ -89,8 +89,10 @@ public class DroidGap extends Activity {
     
     private void bindBrowser(WebView appView)
     {
+    	// The PhoneGap class handles the Notification and Android Specific crap
     	PhoneGap gap = new PhoneGap(this, mHandler, appView);
-    	appView.addJavascriptInterface(gap, "DroidGap");
+    	appView.addJavascriptInterface(gap, "Droid");
+    	
     }
     
     /**

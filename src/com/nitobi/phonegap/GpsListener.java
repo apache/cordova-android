@@ -34,12 +34,14 @@ public class GpsListener implements LocationListener {
 	private Location cLoc;
 	private LocationManager mLocMan;
 	private static final String LOG_TAG = "PhoneGap";
+	private GeoListener owner;
 	
-	public GpsListener(Context ctx)
+	public GpsListener(Context ctx, int interval, GeoListener m)
 	{
+		owner = m;
 		mCtx = ctx;
 		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
-		mLocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
+		mLocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 0, this);
 		cLoc = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 	}
 	
