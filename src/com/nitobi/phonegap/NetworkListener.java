@@ -81,8 +81,22 @@ public class NetworkListener implements LocationListener {
 	}
 
 
+	/*
+	 * The GPS is the primary form of Geolocation in PhoneGap.  Only fire the success variables if the GPS is down
+	 * for some reason
+	 */
 	public void onLocationChanged(Location location) {
 		Log.d(LOG_TAG, "The location has been updated!");
+		if (!owner.mGps.hasLocation())
+		{
+			owner.success(location);
+		}
 		cLoc = location;
 	}
+	
+	public void stop()
+	{
+		mLocMan.removeUpdates(this);
+	}
+	
 }

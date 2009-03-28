@@ -1,6 +1,7 @@
 package com.nitobi.phonegap;
 
 import android.content.Context;
+import android.location.Location;
 import android.webkit.WebView;
 
 public class GeoListener {
@@ -14,24 +15,41 @@ public class GeoListener {
 	
 	int interval;
 	
-	GeoListener(String key, Context ctx, int time, String succ, String fail)
+	GeoListener(String i, Context ctx, int time, WebView appView)
 	{
-		id = key;
+		id = i;
 		interval = time;
 		mCtx = ctx;
         mGps = new GpsListener(mCtx, interval, this);
         mNetwork = new NetworkListener(mCtx, interval, this);
+        mAppView = appView;
 	}
 	
-	void success()
+	void success(Location loc)
 	{
 		/*
 		 * We only need to figure out what we do when we succeed!
 		 */
-		mAppView.loadUrl("javascript:geoLocation.success(" + ")");
+		mAppView.loadUrl("javascript:GeoLocation.success(" + id + ", " + loc.getLatitude() + ", " + loc.getLongitude() + ")");
 	}
 	
 	void fail()
 	{
+		// Do we need to know why?  How would we handle this?
+		mAppView.loadUrl("javascript:GeoLocation.fail(" + id + ")");
+	}
+	
+	// This stops the listener
+	void stop()
+	{
+		mGps.stop();
+		mNetwork.stop();
+	}
+
+	public Location getCurrentLocation() {
+		Location loc = mGps.getLocation();
+		if (loc == null)
+			loc = mNetwork.getLocation();
+		return loc;
 	}
 }

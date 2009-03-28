@@ -82,11 +82,16 @@ public class GpsListener implements LocationListener {
 
 	public void onLocationChanged(Location location) {
 		Log.d(LOG_TAG, "The location has been updated!");
-		cLoc = location;
+		owner.success(location);
 	}
 
 	public boolean hasLocation() {
 		return (cLoc != null);
+	}
+
+	public void stop()
+	{
+		mLocMan.removeUpdates(this);
 	}
 	
 }
