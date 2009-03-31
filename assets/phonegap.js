@@ -540,22 +540,21 @@ Notification.prototype.beep = function(count, volume)
 
 Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options)
 {
-  this.global_success = successCallback;
-  this.fail = errorCallback;
+  Geolocation.global_success = successCallback;
+  Geolocation.fail = errorCallback;
   Geo.getCurrentLocation();
 }
 
 // Run the global callback
-Geolocation.prototype.gotCurrentPosition = function(lat, lng)
+Geolocation.gotCurrentPosition = function(latitude, longitude)
 {
-  alert('foo');
-  if (lat == 0 || lng == 0)
+  if (latitude == "undefined" || longitude == "undefined")
   {
     this.fail();
   }
   else
   {
-    var p = { "lat" : lat, "lng": lng };
+    p = { lat: latitude, lng: longitude }
     this.global_success(p);
   }
 }
@@ -586,7 +585,7 @@ Geolocation.prototype.watchPosition = function(successCallback, errorCallback, o
  * Retrieve and stop this listener from listening to the GPS
  *
  */
-Geolocation.prototype.success = function(key, lat, lng)
+Geolocation.success = function(key, lat, lng)
 {
   this.listeners[key].success(lat,lng);
 }
