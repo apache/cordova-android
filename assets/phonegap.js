@@ -546,15 +546,17 @@ Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallba
 }
 
 // Run the global callback
-Geolocation.gotCurrentPosition = function(latitude, longitude)
+Geolocation.gotCurrentPosition = function(lat, lng)
 {
-  if (latitude == "undefined" || longitude == "undefined")
+  if (lat == "undefined" || lng == "undefined")
   {
     this.fail();
   }
   else
   {
-    p = { lat: latitude, lng: longitude }
+    p = {};
+    p.latitude = lat;
+    p.longitude = lng;
     this.global_success(p);
   }
 }
