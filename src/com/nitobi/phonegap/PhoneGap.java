@@ -42,13 +42,12 @@ public class PhoneGap{
 	 * UUID, version and availability	
 	 */
 	public boolean droid = true;
-	private String version = "0.1";	
-    private Context mCtx;    
+	public static String version = "0.2";
+	public static String platform = "Android";
+	public static String uuid;
+	private Context mCtx;
     private Handler mHandler;
-    private WebView mAppView;    
-    private GpsListener mGps;
-    private NetworkListener mNetwork;
-    protected LocationProvider provider;
+    private WebView mAppView;
     SmsListener mSmsListener;
     DirectoryManager fileManager;
     AudioHandler audio; 
@@ -61,6 +60,7 @@ public class PhoneGap{
         mSmsListener = new SmsListener(ctx,mAppView);
         fileManager = new DirectoryManager();
         audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);
+        uuid = getUuid();
     }
 	
 	public void updateAccel(){
@@ -75,48 +75,25 @@ public class PhoneGap{
 				
 	}
 	
-	public void takePhoto(){
-		// TO-DO: Figure out what this should do
-	}
-	
-	public void playSound(){
-		// TO-DO: Figure out what this should do
-	}
-	
 	public void vibrate(long pattern){
-        // Start the vibration
+        // Start the vibration, 0 defaults to half a second.
+		if (pattern == 0)
+			pattern = 500;
         Vibrator vibrator = (Vibrator) mCtx.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(pattern);
 	}
 	
-	public void getLocation( ){
-		mHandler.post(new Runnable() {
-            public void run() {
-    			GeoTuple geoloc = new GeoTuple();
-    			Location loc = mGps.hasLocation() ?  mGps.getLocation() : mNetwork.getLocation();
-    			if (loc != null)
-        		{
-        			geoloc.lat = loc.getLatitude();
-        			geoloc.lng = loc.getLongitude();
-        			geoloc.ele = loc.getAltitude();
-        		}
-        		else
-        		{
-        			geoloc.lat = 0;
-        			geoloc.lng = 0;
-        			geoloc.ele = 0;
-        		}
-        		mAppView.loadUrl("javascript:gotLocation(" + geoloc.lat + ", " + geoloc.lng + ")");
-            }
-        });
-	}
-
 	public String getUuid()
 	{
 
 		TelephonyManager operator = (TelephonyManager) mCtx.getSystemService(Context.TELEPHONY_SERVICE);
 		String uuid = operator.getDeviceId();
 		return uuid;
+	}
+	
+	public void init()
+	{
+		mAppView.loadUrl("javascript:Device.setData('Android','" + version + "','" + this.getUuid() + "')");
 	}
 	
 	public String getModel()
@@ -144,6 +121,9 @@ public class PhoneGap{
 	{
 		return version;
 	}	
+	
+	// Old SMS code, figure out what to do with this!
+	// BTW: This is awesome!
 	
 	public void notificationWatchPosition(String filter)
 	/**

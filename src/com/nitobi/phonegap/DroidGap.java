@@ -91,8 +91,10 @@ public class DroidGap extends Activity {
     {
     	// The PhoneGap class handles the Notification and Android Specific crap
     	PhoneGap gap = new PhoneGap(this, mHandler, appView);
-    	appView.addJavascriptInterface(gap, "Droid");
-    	
+    	GeoBroker geo = new GeoBroker(appView, this);
+    	// This creates the new javascript interfaces for PhoneGap
+    	appView.addJavascriptInterface(gap, "Device");
+    	appView.addJavascriptInterface(geo, "Geo");
     }
     
     /**

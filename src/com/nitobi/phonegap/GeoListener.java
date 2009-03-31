@@ -30,7 +30,15 @@ public class GeoListener {
 		/*
 		 * We only need to figure out what we do when we succeed!
 		 */
-		mAppView.loadUrl("javascript:GeoLocation.success(" + id + ", " + loc.getLatitude() + ", " + loc.getLongitude() + ")");
+		if(id != "global")
+		{
+			mAppView.loadUrl("javascript:Geolocation.success(" + id + ", " + loc.getLatitude() + ", " + loc.getLongitude() + ")");
+		}
+		else
+		{
+			mAppView.loadUrl("javascript:Geolocation.gotCurrentPosition(" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
+			this.stop();
+		}
 	}
 	
 	void fail()

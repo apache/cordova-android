@@ -23,25 +23,9 @@ public class GeoBroker {
 		mAppView = view;
 	}
 	
-	public GeoTuple getCurrentLocation()
+	public void getCurrentLocation()
 	{
-		GeoListener listener = new GeoListener("0", mCtx, 60000, mAppView);
-		Location loc = listener.getCurrentLocation();
-		GeoTuple geo = new GeoTuple();
-		if (loc == null)
-		{
-			geo.lat = 0;
-			geo.lng = 0;
-			geo.ele = 0;
-		}
-		else
-		{
-			geo.lng = loc.getLongitude();
-			geo.lat = loc.getLatitude();
-			geo.ele = 0;
-		}
-		listener.stop();
-		return geo;
+		GeoListener listener = new GeoListener("global", mCtx, 10000, mAppView);
 	}
 	
 	public String start(int freq, String key)
