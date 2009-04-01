@@ -10,9 +10,9 @@
 	  <script type="text/javascript" charset="utf-8">
 
     var deviceInfo = function(){
-      document.getElementById("platform").innerHTML = Device.platform;
-      document.getElementById("version").innerHTML = Device.version;
-      document.getElementById("uuid").innerHTML = Device.uuid;
+      document.getElementById("platform").innerHTML = Device.getPlatform();
+      document.getElementById("version").innerHTML = Device.getVersion();
+      document.getElementById("uuid").innerHTML = Device.getUuid();
     }
     
     var getLocation = function() {

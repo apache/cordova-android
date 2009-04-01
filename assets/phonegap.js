@@ -81,7 +81,7 @@
      */
     
     Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
-    	this.getCurrentAcceleration(successCallback, errorCallback, options);
+    	navigator.accelerometer.getCurrentAcceleration(successCallback, errorCallback, options);
     	// TODO: add the interval id to a list so we can clear all watches
      	var frequency = (options != undefined)? options.frequency : 10000;
     	return setInterval(function() {
@@ -602,4 +602,29 @@ Geolocation.prototype.clearWatch = function(watchId)
   Geo.stop(watchId);
 }
 
+/* Identical to the iPhone, except we have to create this in the JS */
+
+_accel = {}
+_accel.x = 0;
+_accel.y = 0;
+_accel.z = 0;
+
+function gotAccel(x,y,z)
+{
+  _accel.x = x;
+  _accel.y = y;
+  _accel.z = z;
+}
+
+Accelerometer.base_method = Accelerometer.prototype.watchAcceleration
+Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options)
+{
+  Accel.start();
+  Accelerometer.base_method(successCallback, errorCallback, options);
+}
+
+Accelerometer.prototype.clearWatch = function(watchId){
+  clearInterval(watchId);
+  Accel.stop();
+}
 

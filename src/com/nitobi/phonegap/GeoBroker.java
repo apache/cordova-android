@@ -3,7 +3,6 @@ package com.nitobi.phonegap;
 import java.util.HashMap;
 
 import android.content.Context;
-import android.location.Location;
 import android.webkit.WebView;
 
 /*

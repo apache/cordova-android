@@ -25,9 +25,10 @@ package com.nitobi.phonegap;
 import java.lang.reflect.Field;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
@@ -39,8 +40,7 @@ public class DroidGap extends Activity {
 	
 	private static final String LOG_TAG = "DroidGap";
 	private WebView appView;
-	
-	private Handler mHandler = new Handler();
+	private String uri;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -55,7 +55,7 @@ public class DroidGap extends Activity {
         
         /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */
         
-        appView.setWebChromeClient(new MyWebChromeClient());
+        appView.setWebChromeClient(new GapClient(this));
         appView.getSettings().setJavaScriptEnabled(true);
         appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);        
         
@@ -63,7 +63,6 @@ public class DroidGap extends Activity {
         bindBrowser(appView);
         
         /* Load a URI from the strings.xml file */
-        String uri = null;
         Class<R.string> c = R.string.class;
         Field f;
         
@@ -72,12 +71,12 @@ public class DroidGap extends Activity {
         try {
           f = c.getField("url");
           i = f.getInt(f);
-          uri = this.getResources().getString(i);
+          this.uri = this.getResources().getString(i);
         } catch (Exception e)
         {
-          uri = "http://www.phonegap.com";
+          this.uri = "http://www.phonegap.com";
         }
-        appView.loadUrl(uri);
+        appView.loadUrl(this.uri);
         
     }
 	
@@ -90,21 +89,35 @@ public class DroidGap extends Activity {
     private void bindBrowser(WebView appView)
     {
     	// The PhoneGap class handles the Notification and Android Specific crap
-    	PhoneGap gap = new PhoneGap(this, mHandler, appView);
+    	PhoneGap gap = new PhoneGap(this, appView);
     	GeoBroker geo = new GeoBroker(appView, this);
+    	AccelListener accel = new AccelListener(this, appView);
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "Device");
     	appView.addJavascriptInterface(geo, "Geo");
+    	appView.addJavascriptInterface(accel, "Accel");
     }
-    
+        
     /**
      * Provides a hook for calling "alert" from javascript. Useful for
      * debugging your javascript.
      */
-    final class MyWebChromeClient extends WebChromeClient {
+    final class GapClient extends WebChromeClient {
+    	
+    	Context mCtx;
+    	GapClient(Context ctx)
+    	{
+    		mCtx = ctx;
+    	}
+    	
     	@Override
         public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
             Log.d(LOG_TAG, message);
+            // This shows the dialog box.  This can be commented out for dev
+            AlertDialog.Builder alertBldr = new AlertDialog.Builder(mCtx);
+            alertBldr.setMessage(message);
+            alertBldr.setTitle("Alert");
+            alertBldr.show();
             result.confirm();
             return true;
         }

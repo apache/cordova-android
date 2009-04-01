@@ -26,14 +26,13 @@ import java.util.TimeZone;
 
 import android.content.Context;
 import android.content.IntentFilter;
-import android.hardware.SensorManager;
-import android.location.Location;
-import android.location.LocationProvider;
-import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.telephony.TelephonyManager;
 import android.webkit.WebView;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 
 public class PhoneGap{
 	
@@ -46,15 +45,13 @@ public class PhoneGap{
 	public static String platform = "Android";
 	public static String uuid;
 	private Context mCtx;
-    private Handler mHandler;
     private WebView mAppView;
     SmsListener mSmsListener;
     DirectoryManager fileManager;
     AudioHandler audio; 
     
-	public PhoneGap(Context ctx, Handler handler, WebView appView) {
+	public PhoneGap(Context ctx, WebView appView) {
         this.mCtx = ctx;
-        this.mHandler = handler;
         this.mAppView = appView;
 
         mSmsListener = new SmsListener(ctx,mAppView);
@@ -63,16 +60,12 @@ public class PhoneGap{
         uuid = getUuid();
     }
 	
-	public void updateAccel(){
-		mHandler.post(new Runnable() {
-			public void run() {
-				int accelX = SensorManager.DATA_X;
-				int accelY = SensorManager.DATA_Y;
-				int accelZ = SensorManager.DATA_Z;
-        		mAppView.loadUrl("javascript:gotAcceleration(" + accelX + ", " + accelY + "," + accelZ + ")");
-			}			
-		});
-				
+	public void beep(long pattern)
+	{
+		RingtoneManager beeper = new RingtoneManager(mCtx);
+		Uri ringtone = beeper.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		Ringtone notification = beeper.getRingtone(mCtx, ringtone);
+		notification.play();
 	}
 	
 	public void vibrate(long pattern){
@@ -81,6 +74,11 @@ public class PhoneGap{
 			pattern = 500;
         Vibrator vibrator = (Vibrator) mCtx.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(pattern);
+	}
+	
+	public String getPlatform()
+	{
+		return this.platform;
 	}
 	
 	public String getUuid()
