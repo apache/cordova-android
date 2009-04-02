@@ -529,7 +529,7 @@ Notification.prototype.vibrate = function(mills)
 
 Notification.prototype.beep = function(count, volume)
 {
-  Device.notify();
+  Device.beep(count);
 }
 
 /*
