@@ -35,11 +35,10 @@ public class AccelListener implements SensorListener{
 		sensorManager.unregisterListener(this);
 	}
 	
-	@Override
 	public void onAccuracyChanged(int sensor, int accuracy) {
 		// This should call the FAIL method
 	}
-	@Override
+	
 	public void onSensorChanged(int sensor, float[] values) {
 		if (sensor != SensorManager.SENSOR_ACCELEROMETER || values.length < 3)
 		      return;
