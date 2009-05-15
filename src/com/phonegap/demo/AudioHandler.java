@@ -1,6 +1,7 @@
 package com.phonegap.demo;
 
 import java.io.File;
+import java.io.IOException;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -34,7 +35,15 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 			recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 			recorder.setOutputFile(this.recording);
-			recorder.prepare();
+			try {
+				recorder.prepare();
+			} catch (IllegalStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			isRecording = true;
 			recorder.start();
 		}
