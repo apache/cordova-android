@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta name="viewport" content="width=320; user-scalable=no" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>PhoneGap</title>
+	  <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	  <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+	  <script type="text/javascript" charset="utf-8">
+
+    var deviceInfo = function(){
+      document.getElementById("platform").innerHTML = Device.getPlatform();
+      document.getElementById("version").innerHTML = Device.getVersion();
+      document.getElementById("uuid").innerHTML = Device.getUuid();
+    }
+    
+    var getLocation = function() {
+      var suc = function(p){
+		    alert(p.latitude + " " + p.longitude);
+      };
+      var fail = function(){};
+      navigator.geolocation.getCurrentPosition(suc,fail);
+    }
+    
+    var beep = function(){
+	    navigator.notification.beep(2);
+    }
+	
+  	var vibrate = function(){
+  	  navigator.notification.vibrate(0);
+  	}
+	
+  	var getContact = function(){
+  	  var suc = function(c){ alert("Contact 4: " + c.contacts[3].name); };
+  		var fail = function(){};
+  		navigator.ContactManager.get(suc, fail);
+  	}
+  	
+  	var watchAccel = function() {
+  		var suc = function(a){
+  			document.getElementById('x').innerHTML = roundNumber(a.x);
+  			document.getElementById('y').innerHTML = roundNumber(a.y);
+  			document.getElementById('z').innerHTML = roundNumber(a.z);
+  		};
+  		var fail = function(){};
+  		var opt = {};
+  		opt.frequency = 100;
+  		timer = navigator.accelerometer.watchAcceleration(suc,fail,opt);
+  	}
+    	
+    function roundNumber(num) {
+      var dec = 3;
+      var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+      return result;
+    }
+    
+	  var preventBehavior = function(e) { 
+      e.preventDefault(); 
+    };
+
+
+		function init(){
+		  document.addEventListener("touchmove", preventBehavior, false);
+		  deviceInfo();
+		}
+		
+	  </script>
+  </head>
+  <body onload="init();" id="stage" class="theme">
+    <h1>Welcome to PhoneGap!</h1>
+    <h2>this file is located at assets/index.html</h2>
+    <div id="info">
+      <h4>Platform: <span id="platform">&nbsp;</span></h4>
+      <h4>Version: <span id="version">&nbsp;</span></h4>
+      <h4>UUID:   <span id="uuid">&nbsp;</span></h4>
+    </div>
+    <dl id="accel-data">
+      <dt>X:</dt><dd id="x">&nbsp;</dd>
+      <dt>Y:</dt><dd id="y">&nbsp;</dd>
+      <dt>Z:</dt><dd id="z">&nbsp;</dd>
+    </dl>
+    <a href="#" class="btn large" onclick="watchAccel();">Watch Accelerometer</a>
+    <a href="#" class="btn large" onclick="getLocation();">Get Location</a>
+	<a href="tel://411" class="btn large">Call 411</a>
+    <a href="#" class="btn" onclick="beep();">Beep</a>
+    <a href="#" class="btn" onclick="vibrate();">Vibrate</a>    
+  </body>
+</html>
