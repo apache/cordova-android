@@ -9,8 +9,7 @@
 	  <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>	  
 	  <script type="text/javascript" charset="utf-8">
 	  
-    var deviceInfo = function(){
-      console.log(device.platform);
+    var deviceInfo = function(){      
       document.getElementById("platform").innerHTML = device.platform;
       document.getElementById("version").innerHTML = device.version;
       document.getElementById("uuid").innerHTML = device.uuid;
@@ -63,7 +62,7 @@
 
 		function init(){
 		  // Android is SLOW!!!!  This is not present yet!
-		  setTimeout(deviceInfo, 200);
+		  setTimeout(deviceInfo, 1);
 		  document.addEventListener("touchmove", preventBehavior, false);	
 		}
 		
