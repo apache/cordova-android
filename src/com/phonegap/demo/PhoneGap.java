@@ -65,7 +65,10 @@ public class PhoneGap{
 		RingtoneManager beeper = new RingtoneManager(mCtx);
 		Uri ringtone = beeper.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		Ringtone notification = beeper.getRingtone(mCtx, ringtone);
-		notification.play();
+		for (long i = 0; i < pattern; ++i)
+		{
+			notification.play();
+		}
 	}
 	
 	public void vibrate(long pattern){

@@ -6,18 +6,19 @@
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>PhoneGap</title>
 	  <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title" charset="utf-8">
-	  <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>	  
 	  <script type="text/javascript" charset="utf-8">
-
+	  
     var deviceInfo = function(){
-      document.getElementById("platform").innerHTML = Device.getPlatform();
-      document.getElementById("version").innerHTML = Device.getVersion();
-      document.getElementById("uuid").innerHTML = Device.getUuid();
+      console.log(device.platform);
+      document.getElementById("platform").innerHTML = device.platform;
+      document.getElementById("version").innerHTML = device.version;
+      document.getElementById("uuid").innerHTML = device.uuid;
     }
     
     var getLocation = function() {
       var suc = function(p){
-		    alert(p.latitude + " " + p.longitude);
+		    alert(p.coords.latitude + " " + p.coords.longitude);
       };
       var fail = function(){};
       navigator.geolocation.getCurrentPosition(suc,fail);
@@ -61,8 +62,9 @@
 
 
 		function init(){
-		  document.addEventListener("touchmove", preventBehavior, false);
-		  deviceInfo();
+		  // Android is SLOW!!!!  This is not present yet!
+		  setTimeout(deviceInfo, 200);
+		  document.addEventListener("touchmove", preventBehavior, false);	
 		}
 		
 	  </script>
