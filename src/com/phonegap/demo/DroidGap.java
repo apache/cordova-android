@@ -27,6 +27,7 @@ import java.lang.reflect.Field;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
@@ -125,6 +126,20 @@ public class DroidGap extends Activity {
             result.confirm();
             return true;
         }
+    }
+    
+    // This is required to start the camera activity!  It has to come from the previous activity
+    public void startCamera()
+    {
+    	Intent i = new Intent(this, CameraPreview.class);
+    	startActivityForResult(i, 0);
+    }
+    
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent)
+    {
+    	    super.onActivityResult(requestCode, resultCode, intent);
+    	    Bundle extras = intent.getExtras();
+    	    // Send the graphic back to the class that needs it
     }
     
 }
