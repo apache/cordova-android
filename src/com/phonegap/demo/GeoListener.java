@@ -44,7 +44,13 @@ public class GeoListener {
 	void fail()
 	{
 		// Do we need to know why?  How would we handle this?
-		mAppView.loadUrl("javascript:GeoLocation.fail(" + id + ")");
+		if (id != "global") {
+			mAppView.loadUrl("javascript:Geolocation.fail(" + id + ")");
+		}
+		else
+		{
+			mAppView.loadUrl("javascript:Geolocation.fail()");
+		}
 	}
 	
 	// This stops the listener
