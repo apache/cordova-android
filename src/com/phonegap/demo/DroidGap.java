@@ -45,7 +45,7 @@ public class DroidGap extends Activity {
 	private PhoneGap gap;
 	private GeoBroker geo;
 	private AccelListener accel;
-	
+	private CameraLauncher launcher;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -63,6 +63,9 @@ public class DroidGap extends Activity {
         appView.setWebChromeClient(new GapClient(this));
         appView.getSettings().setJavaScriptEnabled(true);
         appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);        
+        
+        
+        launcher = new CameraLauncher(appView, this);
         
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
@@ -128,6 +131,7 @@ public class DroidGap extends Activity {
         }
     }
     
+    	    	
     // This is required to start the camera activity!  It has to come from the previous activity
     public void startCamera()
     {
@@ -137,9 +141,11 @@ public class DroidGap extends Activity {
     
     protected void onActivityResult(int requestCode, int resultCode, Intent intent)
     {
-    	    super.onActivityResult(requestCode, resultCode, intent);
-    	    Bundle extras = intent.getExtras();
-    	    // Send the graphic back to the class that needs it
+    	byte [] data;
+    	super.onActivityResult(requestCode, resultCode, intent);
+    	data = intent.getByteArrayExtra("picture");    	     
+    	// Send the graphic back to the class that needs it
+    	launcher.processPicture(data);
     }
     
 }

@@ -18,9 +18,15 @@ import android.view.SurfaceHolder.Callback;
 public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 
     private static final String TAG = "CameraApiTest";
+    private SurfaceView mSurfaceView;
+    private SurfaceHolder mSurfaceHolder;
+    
     Camera mCamera;
     boolean mPreviewRunning = false;
-
+    
+    int quality;
+    Intent mIntent;
+    
     public void onCreate(Bundle icicle)
     {
         super.onCreate(icicle);
@@ -34,7 +40,8 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 
         mSurfaceHolder = mSurfaceView.getHolder();
         mSurfaceHolder.addCallback(this);
-        mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);                    
+        mIntent = this.getIntent();
     }
 
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
@@ -57,17 +64,24 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
     }
 
     /*
-     * Take JPEG Data and do what now?
+     * We got the data, send it back to PhoneGap to be handled and processed.
      * 
      */
     
     Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera c) {
             Log.e(TAG, "PICTURE CALLBACK: data.length = " + data.length);
-            mCamera.startPreview();
+            storeAndExit(data);
         }
     };
 
+    // Store what we have and get out!
+    public void storeAndExit(byte[] data)
+    {
+    	 mIntent.putExtra("picture", data);
+         setResult(RESULT_OK, mIntent);            
+         finish();
+    }
     
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
@@ -137,7 +151,4 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
         mCamera.release();
     }
 
-    private SurfaceView mSurfaceView;
-    private SurfaceHolder mSurfaceHolder;
-	
 }
