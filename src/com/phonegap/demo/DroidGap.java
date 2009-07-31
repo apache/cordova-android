@@ -63,10 +63,7 @@ public class DroidGap extends Activity {
         appView.setWebChromeClient(new GapClient(this));
         appView.getSettings().setJavaScriptEnabled(true);
         appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);        
-        
-        
-        launcher = new CameraLauncher(appView, this);
-        
+                
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         
@@ -96,10 +93,10 @@ public class DroidGap extends Activity {
     
     private void bindBrowser(WebView appView)
     {
-    	// The PhoneGap class handles the Notification and Android Specific crap
     	gap = new PhoneGap(this, appView);
     	geo = new GeoBroker(appView, this);
     	accel = new AccelListener(this, appView);
+    	launcher = new CameraLauncher(appView, this);
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "Device");
     	appView.addJavascriptInterface(geo, "Geo");
