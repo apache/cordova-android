@@ -30,13 +30,20 @@ public class GeoListener {
 		/*
 		 * We only need to figure out what we do when we succeed!
 		 */
+		
+		String params; 
+		/*
+		 * Build the giant string to send back to Javascript!
+		 */
+		params = loc.getLatitude() + "," + loc.getLongitude() + ", " + loc.getAltitude() + "," + loc.getAccuracy() + "," + loc.getBearing();
+		params += "," + loc.getSpeed() + "," + loc.getTime();
 		if(id != "global")
 		{
-			mAppView.loadUrl("javascript:Geolocation.success(" + id + ", " + loc.getLatitude() + ", " + loc.getLongitude() + ")");
+			mAppView.loadUrl("javascript:navigator.geolocation.success(" + id + "," +  params + ")");
 		}
 		else
 		{
-			mAppView.loadUrl("javascript:Geolocation.gotCurrentPosition(" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
+			mAppView.loadUrl("javascript:navigator.geolocation.gotCurrentPosition(" + params + ")");
 			this.stop();
 		}
 	}
@@ -44,7 +51,13 @@ public class GeoListener {
 	void fail()
 	{
 		// Do we need to know why?  How would we handle this?
-		mAppView.loadUrl("javascript:GeoLocation.fail(" + id + ")");
+		if (id != "global") {
+			mAppView.loadUrl("javascript:navigator.geolocation.fail(" + id + ")");
+		}
+		else
+		{
+			mAppView.loadUrl("javascript:navigator.geolocation.fail()");
+		}
 	}
 	
 	// This stops the listener

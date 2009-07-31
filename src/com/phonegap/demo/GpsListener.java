@@ -54,6 +54,7 @@ public class GpsListener implements LocationListener {
 	public void onProviderDisabled(String provider) {
 		// TODO Auto-generated method stub
 		Log.d(LOG_TAG, "The provider " + provider + " is disabled");
+		owner.fail();
 	}
 
 	public void onProviderEnabled(String provider) {
@@ -68,6 +69,7 @@ public class GpsListener implements LocationListener {
 		if(status == 0)
 		{
 			Log.d(LOG_TAG, provider + " is OUT OF SERVICE");
+			owner.fail();
 		}
 		else if(status == 1)
 		{

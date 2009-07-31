@@ -308,11 +308,21 @@ function Device() {
     this.gap      = null;
     this.uuid     = null;
     try {
+<<<<<<< HEAD:android/assets/www/phonegap.js
         if (window['DroidGap'] != undefined && window.DroidGap.exists()) {
             this.available = true;
             this.isAndroid = true;
             this.uuid = window.DroidGap.getUuid();
             this.gapVersion = window.DroidGap.getVersion();
+=======
+        if (window.DroidGap) {
+            this.available = true;
+            this.uuid = window.DroidGap.getUuid();
+	    this.version = window.DroidGap.getOSVersion();
+            this.gapVersion = window.DroidGap.getVersion();
+	    this.platform = window.DroidGap.getPlatform();
+	    this.name = window.DroidGap.getProductName();
+>>>>>>> 4c08b34a81e55a3146e67a8ad2282b7082b640e0:android/assets/www/phonegap.js
         } else {          
             this.platform = DeviceInfo.platform;
             this.version  = DeviceInfo.version;
@@ -508,9 +518,12 @@ function Media(src) {
 	this.src = src;
 }
 
+<<<<<<< HEAD:android/assets/www/phonegap.js
 Media.prototype.record = function() {
 }
 
+=======
+>>>>>>> 4c08b34a81e55a3146e67a8ad2282b7082b640e0:android/assets/www/phonegap.js
 Media.prototype.play = function() {
 }
 
@@ -677,6 +690,7 @@ PhoneGap.addConstructor(function() {
  * @param {Object} vel
  * @constructor
  */
+<<<<<<< HEAD:android/assets/www/phonegap.js
 function Position(lat, lng, acc, alt, altacc, head, vel) {
 	/**
 	 * The latitude of the position.
@@ -910,8 +924,215 @@ var Device = {
     {
             DroidGap.beep();
     }
+=======
+function Position(coords, timestamp) {
+	this.coords = coords;
+        this.timestamp = new Date().getTime();
 }
 
+function Coordinates(lat, lng, alt, acc, head, vel) {
+	/**
+	 * The latitude of the position.
+	 */
+	this.latitude = lat;
+	/**
+	 * The longitude of the position,
+	 */
+	this.longitude = lng;
+	/**
+	 * The accuracy of the position.
+	 */
+	this.accuracy = acc;
+	/**
+	 * The altitude of the position.
+	 */
+	this.altitude = alt;
+	/**
+	 * The direction the device is moving at the position.
+	 */
+	this.heading = head;
+	/**
+	 * The velocity with which the device is moving at the position.
+	 */
+	this.speed = vel;
+}
+
+/**
+ * This class specifies the options for requesting position data.
+ * @constructor
+ */
+function PositionOptions() {
+	/**
+	 * Specifies the desired position accuracy.
+	 */
+	this.enableHighAccuracy = true;
+	/**
+	 * The timeout after which if position data cannot be obtained the errorCallback
+	 * is called.
+	 */
+	this.timeout = 10000;
+}
+
+/**
+ * This class contains information about any GSP errors.
+ * @constructor
+ */
+function PositionError() {
+	this.code = null;
+	this.message = "";
+}
+
+PositionError.UNKNOWN_ERROR = 0;
+PositionError.PERMISSION_DENIED = 1;
+PositionError.POSITION_UNAVAILABLE = 2;
+PositionError.TIMEOUT = 3;
+/**
+ * This class provides access to the device SMS functionality.
+ * @constructor
+ */
+function Sms() {
+
+}
+
+/**
+ * Sends an SMS message.
+ * @param {Integer} number The phone number to send the message to.
+ * @param {String} message The contents of the SMS message to send.
+ * @param {Function} successCallback The function to call when the SMS message is sent.
+ * @param {Function} errorCallback The function to call when there is an error sending the SMS message.
+ * @param {PositionOptions} options The options for accessing the GPS location such as timeout and accuracy.
+ */
+Sms.prototype.send = function(number, message, successCallback, errorCallback, options) {
+	
+>>>>>>> 4c08b34a81e55a3146e67a8ad2282b7082b640e0:android/assets/www/phonegap.js
+}
+
+PhoneGap.addConstructor(function() {
+    if (typeof navigator.sms == "undefined") navigator.sms = new Sms();
+});
+/**
+ * This class provides access to the telephony features of the device.
+ * @constructor
+ */
+function Telephony() {
+	
+}
+
+/**
+ * Calls the specifed number.
+ * @param {Integer} number The number to be called.
+ */
+Telephony.prototype.call = function(number) {
+	
+}
+
+PhoneGap.addConstructor(function() {
+    if (typeof navigator.telephony == "undefined") navigator.telephony = new Telephony();
+});
+/**
+ * This class exposes mobile phone interface controls to JavaScript, such as
+ * native tab and tool bars, etc.
+ * @constructor
+ */
+function UIControls() {
+    this.tabBarTag = 0;
+    this.tabBarCallbacks = {};
+}
+
+/**
+ * Create a native tab bar that can have tab buttons added to it which can respond to events.
+ */
+UIControls.prototype.createTabBar = function() {};
+
+/**
+ * Show a tab bar.  The tab bar has to be created first.
+ * @param {Object} [options] Options indicating how the tab bar should be shown:
+ * - \c height integer indicating the height of the tab bar (default: \c 49)
+ * - \c position specifies whether the tab bar will be placed at the \c top or \c bottom of the screen (default: \c bottom)
+ */
+UIControls.prototype.showTabBar = function(options) {};
+
+/**
+ * Hide a tab bar.  The tab bar has to be created first.
+ */
+UIControls.prototype.hideTabBar = function(animate) {};
+
+/**
+ * Create a new tab bar item for use on a previously created tab bar.  Use ::showTabBarItems to show the new item on the tab bar.
+ *
+ * If the supplied image name is one of the labels listed below, then this method will construct a tab button
+ * using the standard system buttons.  Note that if you use one of the system images, that the \c title you supply will be ignored.
+ *
+ * <b>Tab Buttons</b>
+ *   - tabButton:More
+ *   - tabButton:Favorites
+ *   - tabButton:Featured
+ *   - tabButton:TopRated
+ *   - tabButton:Recents
+ *   - tabButton:Contacts
+ *   - tabButton:History
+ *   - tabButton:Bookmarks
+ *   - tabButton:Search
+ *   - tabButton:Downloads
+ *   - tabButton:MostRecent
+ *   - tabButton:MostViewed
+ * @param {String} name internal name to refer to this tab by
+ * @param {String} [title] title text to show on the tab, or null if no text should be shown
+ * @param {String} [image] image filename or internal identifier to show, or null if now image should be shown
+ * @param {Object} [options] Options for customizing the individual tab item
+ *  - \c badge value to display in the optional circular badge on the item; if null or unspecified, the badge will be hidden
+ */
+UIControls.prototype.createTabBarItem = function(name, label, image, options) {};
+
+/**
+ * Update an existing tab bar item to change its badge value.
+ * @param {String} name internal name used to represent this item when it was created
+ * @param {Object} options Options for customizing the individual tab item
+ *  - \c badge value to display in the optional circular badge on the item; if null or unspecified, the badge will be hidden
+ */
+UIControls.prototype.updateTabBarItem = function(name, options) {};
+
+/**
+ * Show previously created items on the tab bar
+ * @param {String} arguments... the item names to be shown
+ * @param {Object} [options] dictionary of options, notable options including:
+ *  - \c animate indicates that the items should animate onto the tab bar
+ * @see createTabBarItem
+ * @see createTabBar
+ */
+UIControls.prototype.showTabBarItems = function(tabs, options) {};
+
+/**
+ * Manually select an individual tab bar item, or nil for deselecting a currently selected tab bar item.
+ * @param {String} tabName the name of the tab to select, or null if all tabs should be deselected
+ * @see createTabBarItem
+ * @see showTabBarItems
+ */
+UIControls.prototype.selectTabBarItem = function(tab) {};
+
+/**
+ * Function called when a tab bar item has been selected.
+ * @param {Number} tag the tag number for the item that has been selected
+ */
+UIControls.prototype.tabBarItemSelected = function(tag) {
+    if (typeof(this.tabBarCallbacks[tag]) == 'function')
+        this.tabBarCallbacks[tag]();
+};
+
+/**
+ * Create a toolbar.
+ */
+UIControls.prototype.createToolBar = function() {};
+
+/**
+ * Function called when a tab bar item has been selected.
+ * @param {String} title the title to set within the toolbar
+ */
+UIControls.prototype.setToolBarTitle = function(title) {};
+
+PhoneGap.addConstructor(function() {
+    window.uicontrols = new UIControls();
+});
 /*
  * Since we can't guarantee that we will have the most recent, we just try our best!
  *
@@ -920,14 +1141,22 @@ var Device = {
 
 Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options)
 {
+<<<<<<< HEAD:android/assets/www/phonegap.js
   var position = Geo.getCurrentPosition();
+=======
+  var position = Geo.getCurrentLocation();
+>>>>>>> 4c08b34a81e55a3146e67a8ad2282b7082b640e0:android/assets/www/phonegap.js
   this.global_success = successCallback;
   this.fail = errorCallback;
 }
 
 
 // Run the global callback
+<<<<<<< HEAD:android/assets/www/phonegap.js
 Geolocation.prototype.gotCurrentPosition = function(lat, lng)
+=======
+Geolocation.prototype.gotCurrentPosition = function(lat, lng, alt, altacc, head, vel, stamp)
+>>>>>>> 4c08b34a81e55a3146e67a8ad2282b7082b640e0:android/assets/www/phonegap.js
 {
   if (lat == 0 || lng == 0)
   {
@@ -935,11 +1164,16 @@ Geolocation.prototype.gotCurrentPosition = function(lat, lng)
   }
   else
   {
+<<<<<<< HEAD:android/assets/www/phonegap.js
     var p = { "lat" : lat, "lng": lng };
     this.global_success(p);
+=======
+    coords = new Coordinates(lat, lng, alt, altacc, head, vel);
+    loc = new Position(coords, stamp);
+    this.global_success(loc);
+>>>>>>> 4c08b34a81e55a3146e67a8ad2282b7082b640e0:android/assets/www/phonegap.js
   }
 }
-
 
 /*
  * This turns on the GeoLocator class, which has two listeners.
@@ -966,9 +1200,15 @@ Geolocation.prototype.watchPosition = function(successCallback, errorCallback, o
  * Retrieve and stop this listener from listening to the GPS
  *
  */
+<<<<<<< HEAD:android/assets/www/phonegap.js
 Geolocation.prototype.success(key, lat, lng)
+=======
+Geolocation.prototype.success = function(key, lat, lng, alt, altacc, head, vel, stamp)
+>>>>>>> 4c08b34a81e55a3146e67a8ad2282b7082b640e0:android/assets/www/phonegap.js
 {
-  this.listeners[key].success(lat,lng);
+  var coords = new Coordinates(lat, lng, alt, altacc, head, vel);
+  var loc = new Position(coords, stamp);
+  this.listeners[key].success(loc);
 }
 
 Geolocation.prototype.fail(key)
@@ -981,6 +1221,7 @@ Geolocation.prototype.clearWatch = function(watchId)
   Geo.stop(watchId);
 }
 
+<<<<<<< HEAD:android/assets/www/phonegap.js
 
 Notification.prototype.vibrate = function(mills)
 {
@@ -997,3 +1238,98 @@ Notification.prototype.beep = function(count, volume)
 {
   Device.notify();
 }
+=======
+
+Notification.prototype.vibrate = function(mills)
+{
+  DroidGap.vibrate(mills);
+}
+
+/*
+ * On the Android, we don't beep, we notify you with your 
+ * notification!  We shouldn't keep hammering on this, and should
+ * review what we want beep to do.
+ */
+
+Notification.prototype.beep = function(count, volume)
+{
+  DroidGap.beep(count);
+}
+// Need to define these for android
+_accel = {}
+_accel.x = 0;
+_accel.y = 0;
+_accel.z = 0;
+
+function gotAccel(x, y, z)
+{
+	_accel.x = x;
+	_accel.y = y;
+	_accel.z = z;
+}
+
+/**
+ * This class provides access to device accelerometer data.
+ * @constructor
+ */
+function Accelerometer() {
+	/**
+	 * The last known acceleration.
+	 */
+	this.lastAcceleration = null;
+}
+
+/**
+ * Asynchronously aquires the current acceleration.
+ * @param {Function} successCallback The function to call when the acceleration
+ * data is available
+ * @param {Function} errorCallback The function to call when there is an error 
+ * getting the acceleration data.
+ * @param {AccelerationOptions} options The options for getting the accelerometer data
+ * such as timeout.
+ */
+Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
+	// If the acceleration is available then call success
+	// If the acceleration is not available then call error
+
+	// Created for iPhone, Iphone passes back _accel obj litteral
+	if (typeof successCallback == "function") {
+		var accel = new Acceleration(_accel.x,_accel.y,_accel.z);
+		Accelerometer.lastAcceleration = accel;
+		successCallback(accel);
+	}
+}
+
+/**
+ * Asynchronously aquires the acceleration repeatedly at a given interval.
+ * @param {Function} successCallback The function to call each time the acceleration
+ * data is available
+ * @param {Function} errorCallback The function to call when there is an error 
+ * getting the acceleration data.
+ * @param {AccelerationOptions} options The options for getting the accelerometer data
+ * such as timeout.
+ */
+
+Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
+	// TODO: add the interval id to a list so we can clear all watches
+ 	var frequency = (options != undefined)? options.frequency : 10000;
+	
+	Accel.start(frequency);
+	return setInterval(function() {
+		navigator.accelerometer.getCurrentAcceleration(successCallback, errorCallback, options);
+	}, frequency);
+}
+
+/**
+ * Clears the specified accelerometer watch.
+ * @param {String} watchId The ID of the watch returned from #watchAcceleration.
+ */
+Accelerometer.prototype.clearWatch = function(watchId) {
+	Accel.stop();
+	clearInterval(watchId);
+}
+
+PhoneGap.addConstructor(function() {
+    if (typeof navigator.accelerometer == "undefined") navigator.accelerometer = new Accelerometer();
+});
+>>>>>>> 4c08b34a81e55a3146e67a8ad2282b7082b640e0:android/assets/www/phonegap.js

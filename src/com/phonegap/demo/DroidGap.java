@@ -93,6 +93,7 @@ public class DroidGap extends Activity {
     
     private void bindBrowser(WebView appView)
     {
+
     	gap = new PhoneGap(this, appView);
     	geo = new GeoBroker(appView, this);
     	accel = new AccelListener(this, appView);
