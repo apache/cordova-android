@@ -13,7 +13,9 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.SurfaceHolder.Callback;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 
@@ -42,7 +44,16 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
         mSurfaceHolder.addCallback(this);
         mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);                    
         mIntent = this.getIntent();
+        
+        Button stopButton = (Button) findViewById(R.id.go);
+        stopButton.setOnClickListener(mSnapListener);
     }
+    
+    private OnClickListener mSnapListener = new OnClickListener() {
+        public void onClick(View v) {
+        	mCamera.takePicture(null, null, mPictureCallback);
+        }
+    };
 
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
         MenuItem item = menu.add(0, 0, 0, "goto gallery");

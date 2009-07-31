@@ -104,6 +104,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(gap, "Device");
     	appView.addJavascriptInterface(geo, "Geo");
     	appView.addJavascriptInterface(accel, "Accel");
+    	appView.addJavascriptInterface(launcher, "GapCam");
     }
         
     /**
