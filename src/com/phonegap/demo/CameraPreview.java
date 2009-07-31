@@ -1,10 +1,16 @@
 package com.phonegap.demo;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import org.apache.commons.codec.binary.Base64;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.graphics.Bitmap.CompressFormat;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,7 +25,7 @@ import android.widget.Button;
 
 public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 
-    private static final String TAG = "CameraApiTest";
+    private static final String TAG = "PhoneGapCamera";
     private SurfaceView mSurfaceView;
     private SurfaceHolder mSurfaceHolder;
     
@@ -44,6 +50,8 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
         mSurfaceHolder.addCallback(this);
         mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);                    
         mIntent = this.getIntent();
+        
+        quality = mIntent.getIntExtra("quality", 100);
         
         Button stopButton = (Button) findViewById(R.id.go);
         stopButton.setOnClickListener(mSnapListener);
@@ -86,12 +94,29 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
         }
     };
 
-    // Store what we have and get out!
+    /*
+     * We can't just store and exit, because Android freezes up when we try to cram a picture across a process in a Bundle.
+     * We HAVE to compress this data and send back the compressed data  
+     */
     public void storeAndExit(byte[] data)
     {
-    	 mIntent.putExtra("picture", data);
-         setResult(RESULT_OK, mIntent);            
-         finish();
+    	ByteArrayOutputStream jpeg_data = new ByteArrayOutputStream();
+		Bitmap myMap = BitmapFactory.decodeByteArray(data, 0, data.length);
+		try {
+			if (myMap.compress(CompressFormat.JPEG, quality, jpeg_data))
+			{
+				byte[] code  = jpeg_data.toByteArray();
+				byte[] output = Base64.encodeBase64(code);
+				String js_out = output.toString();
+				mIntent.putExtra("picture", js_out);
+				setResult(RESULT_OK, mIntent);
+			}	
+		}
+		catch(Exception e)
+		{
+			//Do shit here
+		}
+        finish();
     }
     
     public boolean onKeyDown(int keyCode, KeyEvent event)

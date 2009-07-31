@@ -134,19 +134,28 @@ public class DroidGap extends Activity {
     
     	    	
     // This is required to start the camera activity!  It has to come from the previous activity
-    public void startCamera()
+    public void startCamera(int quality)
     {
     	Intent i = new Intent(this, CameraPreview.class);
+    	i.setAction("android.intent.action.PICK");
+    	i.putExtra("quality", quality);
     	startActivityForResult(i, 0);
     }
     
     protected void onActivityResult(int requestCode, int resultCode, Intent intent)
     {
-    	byte [] data;
+    	String data;
     	super.onActivityResult(requestCode, resultCode, intent);
-    	data = intent.getByteArrayExtra("picture");    	     
-    	// Send the graphic back to the class that needs it
-    	launcher.processPicture(data);
+    	if (resultCode == RESULT_OK)
+    	{
+    		data = intent.getStringExtra("picture");    	     
+    		// Send the graphic back to the class that needs it
+    		launcher.processPicture(data);
+    	}
+    	else
+    	{
+    		launcher.failPicture("Did not complete!");
+    	}
     }
     
 }

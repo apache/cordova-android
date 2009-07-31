@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PhoneGap</string>
-	<string name="url">file:///android_asset/index.html</string>
+	<string name="url">file:///android_asset/www/index.html</string>
 	<string name="go">Snap</string>
 </resources>
