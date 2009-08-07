@@ -67,10 +67,11 @@
     function dump_pic(data)
     {
       var viewport = document.getElementById('viewport');
+      console.log(data);
       viewport.style.display = "";
       viewport.style.position = "absolute";
       viewport.style.top = "10px";
-  `   viewport.style.left = "10px";
+      viewport.style.left = "10px";
       document.getElementById("test_img").src = "data:image/jpeg;base64," + data;
     }
 
@@ -114,7 +115,6 @@
     <a href="#" class="btn large" onclick="show_pic();">Get a Picture</a>
     <div id="viewport" class="viewport">       
       <img style="width:60px;height:60px" id="test_img" src="" />
-      <a href="#" class="btn large" onclick="close();">Close</a>
     </div> 
   </body>
 </html>

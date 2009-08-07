@@ -107,7 +107,7 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 			{
 				byte[] code  = jpeg_data.toByteArray();
 				byte[] output = Base64.encodeBase64(code);
-				String js_out = output.toString();
+				String js_out = new String(output);
 				mIntent.putExtra("picture", js_out);
 				setResult(RESULT_OK, mIntent);
 			}	
