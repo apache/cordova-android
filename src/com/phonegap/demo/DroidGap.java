@@ -27,6 +27,7 @@ import java.lang.reflect.Field;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
@@ -43,7 +44,8 @@ public class DroidGap extends Activity {
 	private String uri;
 	private PhoneGap gap;
 	private GeoBroker geo;
-	private AccelListener accel;	
+	private AccelListener accel;
+	private CameraLauncher launcher;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -61,7 +63,7 @@ public class DroidGap extends Activity {
         appView.setWebChromeClient(new GapClient(this));
         appView.getSettings().setJavaScriptEnabled(true);
         appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);        
-        
+                
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         
@@ -91,15 +93,16 @@ public class DroidGap extends Activity {
     
     private void bindBrowser(WebView appView)
     {
-    	// The PhoneGap class handles the Notification and Android Specific crap
-    	this.gap = new PhoneGap(this, appView);
-    	this.geo = new GeoBroker(appView, this);
-    	this.accel = new AccelListener(this, appView);    	
+
+    	gap = new PhoneGap(this, appView);
+    	geo = new GeoBroker(appView, this);
+    	accel = new AccelListener(this, appView);
+    	launcher = new CameraLauncher(appView, this);
     	// This creates the new javascript interfaces for PhoneGap
-    	// Ewww - It's called DroidGap again. :(
-    	appView.addJavascriptInterface(gap, "DroidGap");    	
+    	appView.addJavascriptInterface(gap, "DroidGap");
     	appView.addJavascriptInterface(geo, "Geo");
     	appView.addJavascriptInterface(accel, "Accel");
+    	appView.addJavascriptInterface(launcher, "GapCam");
     }
         
     /**
@@ -125,6 +128,32 @@ public class DroidGap extends Activity {
             result.confirm();
             return true;
         }
+    }
+    
+    	    	
+    // This is required to start the camera activity!  It has to come from the previous activity
+    public void startCamera(int quality)
+    {
+    	Intent i = new Intent(this, CameraPreview.class);
+    	i.setAction("android.intent.action.PICK");
+    	i.putExtra("quality", quality);
+    	startActivityForResult(i, 0);
+    }
+    
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent)
+    {
+    	String data;
+    	super.onActivityResult(requestCode, resultCode, intent);
+    	if (resultCode == RESULT_OK)
+    	{
+    		data = intent.getStringExtra("picture");    	     
+    		// Send the graphic back to the class that needs it
+    		launcher.processPicture(data);
+    	}
+    	else
+    	{
+    		launcher.failPicture("Did not complete!");
+    	}
     }
     
 }

@@ -8,7 +8,7 @@
 	  <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title" charset="utf-8">
 	  <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>	  
 	  <script type="text/javascript" charset="utf-8">
-	  
+
     var deviceInfo = function(){      
       document.getElementById("platform").innerHTML = device.platform;
       document.getElementById("version").innerHTML = device.version;
@@ -55,18 +55,44 @@
       return result;
     }
     
-	  var preventBehavior = function(e) { 
+	var preventBehavior = function(e) { 
       e.preventDefault(); 
     };
 
+    function show_pic()
+    {
+      navigator.camera.getPicture(dump_pic, fail, { quality: 50 }); 
+    }
 
-		function init(){
-		  // Android is SLOW!!!!  This is not present yet!
-		  setTimeout(deviceInfo, 1);
-		  document.addEventListener("touchmove", preventBehavior, false);	
-		}
+    function dump_pic(data)
+    {
+      var viewport = document.getElementById('viewport');
+      console.log(data);
+      viewport.style.display = "";
+      viewport.style.position = "absolute";
+      viewport.style.top = "10px";
+      viewport.style.left = "10px";
+      document.getElementById("test_img").src = "data:image/jpeg;base64," + data;
+    }
+
+    function close()
+    {
+      var viewport = document.getElementById('viewport');
+      viewport.style.position = "relative";
+      viewport.style.display = "none";
+    }
+
+    function fail(fail)
+    {
+      alert(fail);
+    }
+
+	function init(){
+		document.addEventListener("touchmove", preventBehavior, false);
+		setTimeout(deviceInfo, 1);
+	}
 		
-	  </script>
+  </script>
   </head>
   <body onload="init();" id="stage" class="theme">
     <h1>Welcome to PhoneGap!</h1>
@@ -85,6 +111,10 @@
     <a href="#" class="btn large" onclick="getLocation();">Get Location</a>
 	<a href="tel://411" class="btn large">Call 411</a>
     <a href="#" class="btn" onclick="beep();">Beep</a>
-    <a href="#" class="btn" onclick="vibrate();">Vibrate</a>    
+    <a href="#" class="btn" onclick="vibrate();">Vibrate</a>
+    <a href="#" class="btn large" onclick="show_pic();">Get a Picture</a>
+    <div id="viewport" class="viewport">       
+      <img style="width:60px;height:60px" id="test_img" src="" />
+    </div> 
   </body>
 </html>
