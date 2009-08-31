@@ -8,6 +8,7 @@ import android.content.Context;
 import android.hardware.SensorListener;
 import android.webkit.WebView;
 
+@SuppressWarnings("deprecation")
 public class AccelListener implements SensorListener{
 
 	WebView mAppView;
