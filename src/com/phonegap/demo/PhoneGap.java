@@ -162,70 +162,7 @@ public class PhoneGap{
     	http.get(url, file);
     }
     
-    
 
-    	
-    public int testSaveLocationExists(){
-        if (fileManager.testSaveLocationExists())
-            return 0;
-        else
-            return 1;
-    }
-    
-    public long getFreeDiskSpace(){
-        long freeDiskSpace=fileManager.getFreeDiskSpace();
-        return freeDiskSpace;
-    }
-
-    public int testFileExists(String file){
-        if (fileManager.testFileExists(file))
-            return 0;
-        else
-            return 1;
-    }
-    
-    public int testDirectoryExists(String file){
-        if (fileManager.testFileExists(file))
-            return 0;
-        else
-            return 1;
-    } 
-
-    /**
-	 * Delete a specific directory. 
-	 * Everyting in side the directory would be gone.
-	 * TODO: JavaScript Call backs for success and error handling 
-	 */
-    public int deleteDirectory (String dir){
-        if (fileManager.deleteDirectory(dir))
-            return 0;
-        else
-            return 1;
-    }
-    
-
-    /**
-	 * Delete a specific file. 
-	 * TODO: JavaScript Call backs for success and error handling 
-	 */
-    public int deleteFile (String file){
-        if (fileManager.deleteFile(file))
-            return 0;
-        else
-            return 1;
-    }
-    
-
-    /**
-	 * Create a new directory. 
-	 * TODO: JavaScript Call backs for success and error handling 
-	 */
-    public int createDirectory(String dir){
-    	if (fileManager.createDirectory(dir))
-            return 0;
-        else
-            return 1;
-    } 
     
     
     /**
