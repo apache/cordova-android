@@ -21,13 +21,12 @@ package com.phonegap.demo;
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import java.io.IOException;
+
 import java.util.TimeZone;
 
 import android.content.Context;
 import android.content.IntentFilter;
 import android.net.Uri;
-import android.os.Handler;
 import android.os.Vibrator;
 import android.telephony.TelephonyManager;
 import android.webkit.WebView;
@@ -41,7 +40,7 @@ public class PhoneGap{
 	 * UUID, version and availability	
 	 */
 	public boolean droid = true;
-	public static String version = "0.2";
+	public static String version = "0.8.0";
 	public static String platform = "Android";
 	public static String uuid;
 	private Context mCtx;
@@ -62,9 +61,8 @@ public class PhoneGap{
 	
 	public void beep(long pattern)
 	{
-		RingtoneManager beeper = new RingtoneManager(mCtx);
-		Uri ringtone = beeper.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone notification = beeper.getRingtone(mCtx, ringtone);
+		Uri ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		Ringtone notification = RingtoneManager.getRingtone(mCtx, ringtone);
 		for (long i = 0; i < pattern; ++i)
 		{
 			notification.play();
@@ -161,9 +159,6 @@ public class PhoneGap{
     	HttpHandler http = new HttpHandler();
     	http.get(url, file);
     }
-    
-
-    
     
     /**
      * AUDIO
