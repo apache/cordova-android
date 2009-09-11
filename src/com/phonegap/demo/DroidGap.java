@@ -47,6 +47,7 @@ public class DroidGap extends Activity {
 	private AccelListener accel;
 	private CameraLauncher launcher;
 	private ContactManager mContacts;
+	private FileUtils fs;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -100,12 +101,15 @@ public class DroidGap extends Activity {
     	accel = new AccelListener(this, appView);
     	launcher = new CameraLauncher(appView, this);
     	mContacts = new ContactManager(this, appView);
+    	fs = new FileUtils();
+    	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
     	appView.addJavascriptInterface(geo, "Geo");
     	appView.addJavascriptInterface(accel, "Accel");
     	appView.addJavascriptInterface(launcher, "GapCam");
     	appView.addJavascriptInterface(mContacts, "ContactHook");
+    	appView.addJavascriptInterface(fs, "FileUtil");
     }
         
     /**
