@@ -1,13 +1,24 @@
 package com.phonegap.demo;
 
 import android.provider.Contacts.People;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.net.Uri;
 import android.database.Cursor;
 
 public class ContactManager {
 		
-	private void getColumnData(Cursor cur){ 
+	public void grabContacts()
+	{
+		Uri people = android.provider.Contacts.People.CONTENT_URI;
+		Uri phone = android.provider.Contacts.Phones.CONTENT_URI;		
+	}
+	
+	private void getColumnData(Cursor cur){
+		
+		ContentResolver cr = getContentResolver();
+		
+		
 	    if (cur.moveToFirst()) {
 
 	        String name; 
@@ -21,6 +32,8 @@ public class ContactManager {
 	            name = cur.getString(nameColumn);
 	            phoneNumber = cur.getString(phoneColumn);
 	           	
+	            
+	            
 	        } while (cur.moveToNext());
 
 	    }
