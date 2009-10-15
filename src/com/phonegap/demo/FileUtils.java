@@ -92,13 +92,26 @@ public class FileUtils {
     
     public int write(String filename, String data)
     {
-    	try {
-			FileOutputStream out = new FileOutputStream(filename);
-			PrintStream p = new PrintStream(out);
-			p.print(data);
-		} catch (FileNotFoundException e) {
-			return -1;
-		}    	
-    	return 0;
+    	{  
+    		int i=0;
+    		String FilePath="/sdcard/" + filename;
+    		try {
+    			ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes());    			
+    			byte buff[] = new byte[1024];    
+    			FileOutputStream out=
+    				new FileOutputStream(FilePath);
+    			do {
+    				int numread = in.read(buff);
+    				if (numread <= 0)
+                       	break;
+    				out.write(buff, 0, numread);
+    				System.out.println("numread" + numread);
+    				i++;
+    			} while (true);
+    			out.flush();
+    			out.close();	
+    		} catch (Exception e) { e.printStackTrace(); }
+    	}
+		return 0;
     }
 }
