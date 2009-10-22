@@ -87,11 +87,12 @@
       alert(fail);
     }
 
-	function foo()
-	{
-		ContactHook.findContacts();
-	}
-    
+  	// This is just to do this.
+  	function readFile()
+  	{  	
+   		navigator.file.read('/sdcard/phonegap.txt', fail , fail);
+  	}
+
 	function init(){
 		document.addEventListener("touchmove", preventBehavior, false);
 		setTimeout(deviceInfo, 1);
@@ -118,7 +119,7 @@
     <a href="#" class="btn" onclick="beep();">Beep</a>
     <a href="#" class="btn" onclick="vibrate();">Vibrate</a>
     <a href="#" class="btn" onclick="show_pic();">Get a Picture</a>
-    <a href="#" class="btn" onclick="foo();">Fire Contact Code</a>
+    <a href="#" class="btn" onclick="readFile();">Read from file</a>
     <div id="viewport" class="viewport">       
       <img style="width:60px;height:60px" id="test_img" src="" />
     </div> 
