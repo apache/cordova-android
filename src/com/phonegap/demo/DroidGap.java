@@ -100,7 +100,7 @@ public class DroidGap extends Activity {
     	accel = new AccelListener(this, appView);
     	launcher = new CameraLauncher(appView, this);
     	mContacts = new ContactManager(this, appView);
-    	fs = new FileUtils();
+    	fs = new FileUtils(appView);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
