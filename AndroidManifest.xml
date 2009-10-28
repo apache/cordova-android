@@ -2,17 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.phonegap.demo" android:versionName="1.0.1" android:versionCode="2">
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.ACCESS_GPS" />
-    <uses-permission android:name="android.permission.ACCESS_ASSISTED_GPS" />
-    <uses-permission android:name="android.permission.ACCESS_LOCATION" />
+    <uses-permission android:name="android.permission.VIBRATE" />    
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />   
     
     <application android:icon="@drawable/icon" android:label="@string/app_name"
     	android:debuggable="true">
@@ -29,6 +28,6 @@
         		<action android:name="android.intent.action.PICK" />        		
         </activity>
     </application>
-	<uses-sdk android:minSdkVersion="3" />
+	<uses-sdk android:minSdkVersion="4" />
 
 </manifest> 

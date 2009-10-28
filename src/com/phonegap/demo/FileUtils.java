@@ -2,11 +2,20 @@ package com.phonegap.demo;
 
 import java.io.*;
 
+import android.webkit.WebView;
+
 public class FileUtils {
 
+
+	WebView mView;
 	DirectoryManager fileManager;
 	FileReader f_in;
 	FileWriter f_out;
+	
+	FileUtils(WebView view)
+	{
+		mView = view;
+	}
 	
     public int testSaveLocationExists(){
         if (fileManager.testSaveLocationExists())
@@ -87,20 +96,20 @@ public class FileUtils {
 		} catch (IOException e) {
 			data = "FAIL: IO ERROR";		
 		}
-
+		
+		mView.loadUrl("javascript:navigator.file.hasRead('" + data + "')");
     	return data;
     }
     
     public int write(String filename, String data)
     {
-    	{  
     		int i=0;
     		String FilePath="/sdcard/" + filename;
     		try {
     			ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes());    			
     			byte buff[] = new byte[1024];    
     			FileOutputStream out=
-    				new FileOutputStream(FilePath);
+    				new FileOutputStream(FilePath, true);
     			do {
     				int numread = in.read(buff);
     				if (numread <= 0)
@@ -110,9 +119,11 @@ public class FileUtils {
     				i++;
     			} while (true);
     			out.flush();
-    			out.close();	
-    		} catch (Exception e) { e.printStackTrace(); }
-    	}
+    			out.close();
+    			mView.loadUrl("javascript:navigator.file.winCallback('File written')");
+    		} catch (Exception e) { 
+    			mView.loadUrl("javascript:navigator.file.failCallback('Fail')"); 
+    		}
 		return 0;
     }
 }
