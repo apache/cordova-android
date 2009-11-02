@@ -26,6 +26,7 @@ import java.util.TimeZone;
 
 import android.content.Context;
 import android.content.IntentFilter;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Vibrator;
 import android.telephony.TelephonyManager;
@@ -83,8 +84,7 @@ public class PhoneGap{
 	}
 	
 	public String getUuid()
-	{
-
+	{		
 		TelephonyManager operator = (TelephonyManager) mCtx.getSystemService(Context.TELEPHONY_SERVICE);
 		String uuid = operator.getDeviceId();
 		return uuid;

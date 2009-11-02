@@ -61,10 +61,11 @@ public class DroidGap extends Activity {
         
         /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */
         
-        appView.setWebChromeClient(new GapClient(this));
+        appView.setWebChromeClient(new GapClient(this));        
         appView.getSettings().setJavaScriptEnabled(true);
-        appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);        
-                
+        appView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);                        
+
+        
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         
@@ -131,6 +132,8 @@ public class DroidGap extends Activity {
             result.confirm();
             return true;
         }
+    	
+
     }
     
     	    	
