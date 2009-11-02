@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="PhoneGap" default="help">
+<project name="PhoneGap">
 
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contain the path to the SDK. It should *NOT* be checked in in Version
