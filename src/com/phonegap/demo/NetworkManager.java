@@ -28,7 +28,7 @@ public class NetworkManager {
 	
 	public boolean isReachable(String uri)
 	{		
-		boolean reached = true;
+		boolean reached = isAvailable();
 		try {
 			DefaultHttpClient httpclient = new DefaultHttpClient();
 			HttpGet httpget = new HttpGet(uri);
