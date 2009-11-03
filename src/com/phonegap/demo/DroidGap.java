@@ -47,6 +47,7 @@ public class DroidGap extends Activity {
 	private AccelListener accel;
 	private CameraLauncher launcher;
 	private FileUtils fs;
+	private NetworkManager netMan;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -100,6 +101,7 @@ public class DroidGap extends Activity {
     	accel = new AccelListener(this, appView);
     	launcher = new CameraLauncher(appView, this);
     	fs = new FileUtils(appView);
+    	netMan = new NetworkManager(this, appView);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
@@ -107,6 +109,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(accel, "Accel");
     	appView.addJavascriptInterface(launcher, "GapCam");
     	appView.addJavascriptInterface(fs, "FileUtil");
+    	appView.addJavascriptInterface(netMan, "NetworkManager");
     }
         
     /**
