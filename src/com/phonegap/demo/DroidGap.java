@@ -99,7 +99,7 @@ public class DroidGap extends Activity {
     	geo = new GeoBroker(appView, this);
     	accel = new AccelListener(this, appView);
     	launcher = new CameraLauncher(appView, this);
-    	mContacts = new ContactManager(this);
+    	mContacts = new ContactManager(this, appView);
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
     	appView.addJavascriptInterface(geo, "Geo");
