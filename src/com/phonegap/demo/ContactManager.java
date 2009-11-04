@@ -1,8 +1,5 @@
 package com.phonegap.demo;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.People;
 import android.util.Log;
@@ -14,6 +11,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 
 public class ContactManager {
+	
+	public class ContactTriplet
+	{
+		public String name = "";
+		public String email = "";
+		public String phone = "";
+	}
 	
 	private static final String LOG_TAG = "Contact Query";
 	Activity mApp;
@@ -28,114 +32,213 @@ public class ContactManager {
 		mView = view;
 	}
 			
-	private void processResults(Cursor cur){
+		
+	
+	public void search(String name, String npa, String email)
+	{
+		
+		if (email.length() > 0)
+			searchByEmail(email);		
+		else
+			searchPeople(name, npa);
+	}
+	
+	private void searchByEmail(String email)
+	{						
+		String[] projection = new String[] {
+								ContactMethods._ID,
+								ContactMethods.DATA,
+								ContactMethods.KIND,
+								ContactMethods.PERSON_ID
+							};
+		String[] variables = new String[] {
+				 email
+		};
+		
+		try{
+			Cursor myCursor = mApp.managedQuery(mEmail, projection, 
+						"contact_methods." + ContactMethods.DATA + " = ?" + "AND contact_methods.kind = 1", variables , ContactMethods.DATA + " ASC");
+			getMethodData(myCursor);
+						
+		}
+		catch (SQLiteException ex)
+		{
+			Log.d(LOG_TAG, ex.getMessage());
+		}
 				
+	}
+	
+	private void searchPeople(String name, String number)
+	{
+			String conditions = "";
+		
+			if (name.length() == 0)
+			{
+				name = "%";
+				conditions += People.NAME + "LIKE ? AND ";
+			}
+			else
+			{
+				conditions += People.NAME + " = ? AND ";
+			}
+		
+			if (number.length() == 0)
+				number = "%";
+			else
+			{
+				number = number.replace('+', '%');
+				number = number.replace('.', '%');
+				number = number.replace('-', '%');
+			}
+			
+			conditions += People.NUMBER + " LIKE ? ";
+			
+			String[] projection = new String[] {
+								People._ID,
+								People.NAME,
+								People.NUMBER,
+								People.PRIMARY_EMAIL_ID
+			};
+			
+			String[] variables = new String[] {
+					name, number
+			};
+			
+			try{
+				Cursor myCursor = mApp.managedQuery(mPeople, projection, 
+								conditions, variables , People.NAME + " ASC");
+				processResults(myCursor);
+			}
+			catch (SQLiteException ex)
+			{
+					Log.d(LOG_TAG, ex.getMessage());
+			}		
+	
+	}
+
+	private void processResults(Cursor cur){
+		
 	    if (cur.moveToFirst()) {
 
 	        String name; 
 	        String phoneNumber;	        
+	        String email_id;
 	        String email;
 	        
 	        int nameColumn = cur.getColumnIndex(People.NAME);
 	        int phoneColumn = cur.getColumnIndex(People.NUMBER);
-	        int emailColumn = cur.getColumnIndex(ContactMethods.DATA);
+	        int emailIdColumn = cur.getColumnIndex(People.PRIMARY_EMAIL_ID);
+	        
 	        do {
 	            // Get the field values
 	            name = cur.getString(nameColumn);	            
 	            phoneNumber = cur.getString(phoneColumn);
-	            email = cur.getString(emailColumn);
+	            email_id = cur.getString(emailIdColumn);
+	            if (email_id != null)
+	            	email = getEmail(email_id);
+	            else
+	            	email = "";
 	            
-	            mView.loadUrl("javascript:navigator.addressBook.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +")");
+	            mView.loadUrl("javascript:navigator.AddressBook.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
 	            	            
 	        } while (cur.moveToNext());
 
 	    }
-	}
+	    else
+	    {
+	    	mView.loadUrl("javascript:navigator.AddressBook.fail('None found!')");
+	    }
+	}	
 	
-	public void search(String rawdata)
-	{
-		String conditions = "";						
-		String name = "";
-		String phone = "";
-		String email = "";
-		
-		try {
-			JSONObject data = new JSONObject(rawdata);
-
-			if (data.has("givenName"))
-				name += data.getString("givenName");			
-			if (data.has("familyName"))
-				name += data.getString("familyName");
-			
-			if (name.length() > 0)
-			{
-				conditions += "people.name = ?";
-			}
-				
-			if (data.has("phone"))
-			{
-				phone = data.getString("phone");
-				if(conditions.length() > 0)
-					conditions += "AND ";
-				conditions += "people.number LIKE ?";
-			}
-			if (data.has("email"))
-			{
-				email = data.getString("email");
-				if(conditions.length() > 0)
-					conditions += "AND ";
-				conditions += "contact_methods.data = ?";
-			}
-
-			conditions += "AND contact_methods.kind = 1";			
-			
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		String[] projection = new String[] {
-				ContactMethods._ID,
-				People.NAME,
-				People.NUMBER,
-				ContactMethods.DATA				
-		};
-		
-		String[] params = new String[] { name, phone, email };
-		
-		Cursor myCursor = mApp.managedQuery(mEmail, projection, 
-				conditions, params , ContactMethods.DATA + " ASC");
-		
-		processResults(myCursor);
-	}
-	
-	
-	private String getPhoneColumnData(Cursor cur){
-		
-		ContentResolver cr = mApp.getContentResolver();
-			        
-        String email = "";
-        String kind; 
+	private void getMethodData(Cursor cur)
+	{        
+        ContactTriplet data = new ContactTriplet();
+        String id;    
+        String email;
+        
 	    if (cur.moveToFirst()) {
 
-	        int emailColumn = cur.getColumnIndex(ContactMethods.DATA);
-	        int kindColumn = cur.getColumnIndex(ContactMethods.KIND);	        
+	        int idColumn = cur.getColumnIndex(ContactMethods._ID);
+	        int emailColumn = cur.getColumnIndex(ContactMethods.DATA);	        
 	        do {
 	            // Get the field values	            
+	            id = cur.getString(idColumn);
 	            email = cur.getString(emailColumn);
-	            kind = cur.getString(kindColumn);
-	            	            
+	            
+	            data = getContactData(id);
+	            if(data != null)
+	            {
+	            	data.email = email;	            
+	            	mView.loadUrl("javascript:navigator.AddressBook.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"')");
+	            }	           
+	            else
+	            {
+	            	mView.loadUrl("javascript:navigator.AddressBook.fail('Not found')");
+	            }
 	        } while (cur.moveToNext());
 	       
+	    }	 
+	}		
+	
+	private ContactTriplet getContactData(String id) {
+		ContactTriplet data = null;
+		String[] projection = new String[] {
+				People._ID,
+				People.NAME,
+				People.NUMBER,
+				People.PRIMARY_EMAIL_ID
+		};
+
+		String[] variables = new String[] {
+				id
+		};
+
+		try{
+			Cursor myCursor = mApp.managedQuery(mPeople, projection, 
+				People.PRIMARY_EMAIL_ID + " = ?", variables , People.NAME + " ASC");
+			data = getTriplet(myCursor);
+		}
+		catch (SQLiteException ex)
+		{
+			Log.d(LOG_TAG, ex.getMessage());
+		}		
+		
+		return data;
+	}
+
+	private ContactTriplet getTriplet(Cursor cur) {
+		 ContactTriplet data = new ContactTriplet();         
+		 if (cur.moveToFirst()) {
+
+			 int nameColumn = cur.getColumnIndex(People.NAME); 
+		     int numberColumn = cur.getColumnIndex(People.NUMBER);	        
+		     do {
+		         	            
+		    	 data.name = cur.getString(nameColumn);
+		    	 data.phone = cur.getString(numberColumn);
+		    	 
+		     } while (cur.moveToNext());	       
+		 }
+		return data;
+	}
+
+	private String getEmailColumnData(Cursor cur)
+	{					        
+        String email = "";         
+	    if (cur.moveToFirst()) {
+
+	        int emailColumn = cur.getColumnIndex(ContactMethods.DATA);	        
+	        do {
+	            // Get the field values	            
+	            email = cur.getString(emailColumn);	            	            
+	        } while (cur.moveToNext());	       
 	    }
 	    return email;
 	}
 	
-	
 	private String getEmail(String id)
 	{		
-		String email = "";
-		
+		String email = "";		
 		String[] projection = new String[] {
 								ContactMethods._ID,
 								ContactMethods.DATA,
@@ -145,10 +248,11 @@ public class ContactManager {
 				 id
 		};
 		
-		try{
-		Cursor myCursor = mApp.managedQuery(mEmail, projection, 
-						"contact_methods." + ContactMethods._ID + " = ?" + "AND contact_methods.kind = 1", variables , ContactMethods.DATA + " ASC");
-		email = getPhoneColumnData(myCursor);
+		try
+		{
+			Cursor myCursor = mApp.managedQuery(mEmail, projection, 
+						"contact_methods." + ContactMethods._ID + " = ?" + " AND contact_methods.kind = 1", variables , ContactMethods.DATA + " ASC");
+			email = getEmailColumnData(myCursor);
 		}
 		catch (SQLiteException ex)
 		{
