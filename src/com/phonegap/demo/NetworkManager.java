@@ -27,6 +27,13 @@ public class NetworkManager {
 		return conn;
 	}
 	
+	public boolean isWifiActive()
+	{
+		NetworkInfo info = sockMan.getActiveNetworkInfo();
+		String type = info.getTypeName();
+		return type.equals("WIFI");
+	}
+	
 	public boolean isReachable(String uri)
 	{
 		if (uri.indexOf("http://") == -1)
