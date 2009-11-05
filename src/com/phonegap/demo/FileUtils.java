@@ -101,7 +101,7 @@ public class FileUtils {
     	return data;
     }
     
-    public int write(String filename, String data)
+    public int write(String filename, String data, boolean append)
     {
     		int i=0;
     		String FilePath="/sdcard/" + filename;
@@ -109,7 +109,7 @@ public class FileUtils {
     			ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes());    			
     			byte buff[] = new byte[1024];    
     			FileOutputStream out=
-    				new FileOutputStream(FilePath, true);
+    				new FileOutputStream(FilePath, append);
     			do {
     				int numread = in.read(buff);
     				if (numread <= 0)
