@@ -23,17 +23,22 @@ public class NetworkManager {
 	public boolean isAvailable()
 	{
 		NetworkInfo info = sockMan.getActiveNetworkInfo();
-		return info.isConnected();
+		boolean conn = info.isConnected();
+		return conn;
 	}
 	
 	public boolean isReachable(String uri)
-	{		
+	{
+		if (uri.indexOf("http://") == -1)
+			uri = "http://" + uri;
 		boolean reached = isAvailable();
 		try {
 			DefaultHttpClient httpclient = new DefaultHttpClient();
 			HttpGet httpget = new HttpGet(uri);
 			httpclient.execute(httpget);			
-		} catch (Exception e) { reached = false;}
+		} catch (Exception e) { 
+			reached = false;
+		}
 		return reached;
 	}
 	
