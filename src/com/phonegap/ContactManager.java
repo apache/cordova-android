@@ -167,6 +167,8 @@ public class ContactManager {
 	        } while (cur.moveToNext());
 	        if (all)
 	        	mView.loadUrl("javascript:navigator.ContactManager.droidDone()");
+	        else
+	        	mView.loadUrl("javascript:navigator.AddressBook.droidDoneContacts();");
 	    }
 	    else
 	    {
@@ -195,13 +197,8 @@ public class ContactManager {
 	            	data.email = email;	            
 	            	mView.loadUrl("javascript:navigator.AddressBook.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"')");
 	            }	           
-	            else
-	            {
-	            	mView.loadUrl("javascript:navigator.AddressBook.fail('Not found')");
-	            }
 	        } while (cur.moveToNext());
-	     
-	        
+	        mView.loadUrl("javascript:navigator.AddressBook.droidDoneContacts();");	        
 	    }	 
 	}		
 	
