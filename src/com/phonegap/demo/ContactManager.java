@@ -32,7 +32,26 @@ public class ContactManager {
 		mView = view;
 	}
 			
-		
+	// This is to add backwards compatibility to the OLD Contacts API\
+	public void getContactsAndSendBack()
+	{
+		String[] projection = new String[] {
+				People._ID,
+				People.NAME,
+				People.NUMBER,
+				People.PRIMARY_EMAIL_ID
+			};
+
+		try{
+			Cursor myCursor = mApp.managedQuery(mPeople, projection, 
+				null, null , People.NAME + " ASC");
+			processResults(myCursor, true);
+		}
+		catch (SQLiteException ex)
+		{
+			Log.d(LOG_TAG, ex.getMessage());
+		}		
+	}
 	
 	public void search(String name, String npa, String email)
 	{
@@ -107,7 +126,7 @@ public class ContactManager {
 			try{
 				Cursor myCursor = mApp.managedQuery(mPeople, projection, 
 								conditions, variables , People.NAME + " ASC");
-				processResults(myCursor);
+				processResults(myCursor, false);
 			}
 			catch (SQLiteException ex)
 			{
@@ -116,7 +135,7 @@ public class ContactManager {
 	
 	}
 
-	private void processResults(Cursor cur){
+	private void processResults(Cursor cur, boolean all){
 		
 	    if (cur.moveToFirst()) {
 
@@ -139,10 +158,15 @@ public class ContactManager {
 	            else
 	            	email = "";
 	            
-	            mView.loadUrl("javascript:navigator.AddressBook.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
+	            // Code for backwards compatibility with the OLD Contacts API
+	            if (all)
+	            	mView.loadUrl("javascript:navigator.AddressBook.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
+	            else
+	            	mView.loadUrl("javascript:navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"')");
 	            	            
 	        } while (cur.moveToNext());
-
+	        if (all)
+	        	mView.loadUrl("javascript:navigator.ContactManager.droidDone()");
 	    }
 	    else
 	    {
@@ -176,7 +200,8 @@ public class ContactManager {
 	            	mView.loadUrl("javascript:navigator.AddressBook.fail('Not found')");
 	            }
 	        } while (cur.moveToNext());
-	       
+	     
+	        
 	    }	 
 	}		
 	

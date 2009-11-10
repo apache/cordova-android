@@ -64,7 +64,11 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 		        recorder.release(); 
 			}
 			moveFile(saveFile);
-		}catch (Exception e){e.printStackTrace();}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}	
 	
 	protected void startPlaying(String file) {
@@ -87,11 +91,14 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 					mPlayer.prepare();
 				}
 				mPlayer.setOnPreparedListener(this);
-			} catch (Exception e) { e.printStackTrace(); }
+			} catch (Exception e) 
+			{ 
+				e.printStackTrace(); 
+			}
 		}
 	} 
 
-	protected void stopPlaying() {
+	public void stopPlaying() {
 		if (isPlaying) {
 			mPlayer.stop();
 			mPlayer.release();
