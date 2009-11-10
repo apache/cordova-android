@@ -1,4 +1,4 @@
-package com.phonegap.demo;
+package com.phonegap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

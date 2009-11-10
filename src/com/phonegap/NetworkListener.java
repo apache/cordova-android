@@ -1,4 +1,4 @@
-package com.phonegap.demo;
+package com.phonegap;
 /* License (MIT)
  * Copyright (c) 2008 Nitobi
  * website: http://phonegap.com
@@ -28,34 +28,34 @@ import android.location.LocationListener;
 import android.os.Bundle;
 import android.util.Log;
 
-public class GpsListener implements LocationListener {
-	
+public class NetworkListener implements LocationListener {
+
 	private Context mCtx;
 	private Location cLoc;
 	private LocationManager mLocMan;
 	private static final String LOG_TAG = "PhoneGap";
-	private GeoListener owner;
+	GeoListener owner;
 	
-	public GpsListener(Context ctx, int interval, GeoListener m)
+	public NetworkListener(Context ctx, int interval, GeoListener m)
 	{
 		owner = m;
 		mCtx = ctx;
 		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
-		mLocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 0, this);
-		cLoc = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		mLocMan.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, interval, 0, this);
+		cLoc = mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 	}
 	
 	public Location getLocation()
 	{
-		cLoc = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		cLoc = mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 		return cLoc;
 	}
-	
+
 	public void onProviderDisabled(String provider) {
 		// TODO Auto-generated method stub
 		Log.d(LOG_TAG, "The provider " + provider + " is disabled");
-		owner.fail();
 	}
+
 
 	public void onProviderEnabled(String provider) {
 		// TODO Auto-generated method stub
@@ -69,7 +69,6 @@ public class GpsListener implements LocationListener {
 		if(status == 0)
 		{
 			Log.d(LOG_TAG, provider + " is OUT OF SERVICE");
-			owner.fail();
 		}
 		else if(status == 1)
 		{
@@ -82,15 +81,19 @@ public class GpsListener implements LocationListener {
 	}
 
 
+	/*
+	 * The GPS is the primary form of Geolocation in PhoneGap.  Only fire the success variables if the GPS is down
+	 * for some reason
+	 */
 	public void onLocationChanged(Location location) {
 		Log.d(LOG_TAG, "The location has been updated!");
-		owner.success(location);
+		if (!owner.mGps.hasLocation())
+		{
+			owner.success(location);
+		}
+		cLoc = location;
 	}
-
-	public boolean hasLocation() {
-		return (cLoc != null);
-	}
-
+	
 	public void stop()
 	{
 		mLocMan.removeUpdates(this);

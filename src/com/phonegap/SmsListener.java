@@ -1,4 +1,4 @@
-package com.phonegap.demo;
+package com.phonegap;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

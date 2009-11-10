@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.phonegap.demo" android:versionName="1.0.1" android:versionCode="2">
+      package="com.phonegap" android:versionName="1.1" android:versionCode="3">
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
     <application android:icon="@drawable/icon" android:label="@string/app_name"
-    	android:debuggable="true">
+    	android:debuggable="false">
         <activity android:name=".DroidGap"
                   android:label="@string/app_name" android:configChanges="orientation|keyboardHidden">
             <intent-filter>

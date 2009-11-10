@@ -1,4 +1,4 @@
-package com.phonegap.demo;
+package com.phonegap;
 
 import android.webkit.WebView;
 
