@@ -172,7 +172,10 @@ public class ContactManager {
 	    }
 	    else
 	    {
-	    	mView.loadUrl("javascript:navigator.AddressBook.fail('None found!')");
+	    	if(all)
+	    		mView.loadUrl("javascript:navigator.ContactManager.fail()");
+	    	else
+	    		mView.loadUrl("javascript:navigator.AddressBook.fail('None found!')");
 	    }
 	}	
 	
