@@ -25,7 +25,7 @@ public class AudioHandler implements OnCompletionListener, OnPreparedListener, O
 	public AudioHandler(String file, Context ctx) {
 		this.recording = file;
 		this.mCtx = ctx;
-	}
+	}	
 	
 	protected void startRecording(String file){
 		if (!isRecording){

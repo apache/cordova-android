@@ -47,15 +47,13 @@ public class PhoneGap{
 	private Context mCtx;
     private WebView mAppView;
     SmsListener mSmsListener;
-    DirectoryManager fileManager;
     AudioHandler audio; 
     
 	public PhoneGap(Context ctx, WebView appView) {
         this.mCtx = ctx;
         this.mAppView = appView;
 
-        mSmsListener = new SmsListener(ctx,mAppView);
-        fileManager = new DirectoryManager();
+        mSmsListener = new SmsListener(ctx,mAppView);        
         audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);
         uuid = getUuid();
     }
