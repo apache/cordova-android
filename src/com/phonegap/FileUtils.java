@@ -104,7 +104,7 @@ public class FileUtils {
     public int write(String filename, String data, boolean append)
     {
     		int i=0;
-    		String FilePath="/sdcard/" + filename;
+    		String FilePath= filename;
     		try {
     			ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes());    			
     			byte buff[] = new byte[1024];    
