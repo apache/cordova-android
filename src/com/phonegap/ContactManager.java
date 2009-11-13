@@ -160,9 +160,9 @@ public class ContactManager {
 	            
 	            // Code for backwards compatibility with the OLD Contacts API
 	            if (all)
-	            	mView.loadUrl("javascript:navigator.AddressBook.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
+	            	mView.loadUrl("javascript:navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"')");	            	
 	            else
-	            	mView.loadUrl("javascript:navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"')");
+	            	mView.loadUrl("javascript:navigator.AddressBook.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
 	            	            
 	        } while (cur.moveToNext());
 	        if (all)
