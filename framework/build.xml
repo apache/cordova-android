@@ -58,6 +58,6 @@
          targets are used.
     -->
 
-    <setup />
+    <setup import="false"/>
 
 </project>
