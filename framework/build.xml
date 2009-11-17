@@ -57,5 +57,7 @@
          This will ensure that the properties are setup correctly but that your customized
          targets are used.
     -->
+
     <setup />
+
 </project>
