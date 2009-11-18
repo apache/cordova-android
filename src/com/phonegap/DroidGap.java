@@ -51,6 +51,7 @@ public class DroidGap extends Activity {
 	private ContactManager mContacts;
 	private FileUtils fs;
 	private NetworkManager netMan;
+	private CompassListener mCompass;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -109,6 +110,7 @@ public class DroidGap extends Activity {
     	mContacts = new ContactManager(this, appView);
     	fs = new FileUtils(appView);
     	netMan = new NetworkManager(this, appView);
+    	mCompass = new CompassListener(this, appView);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
@@ -118,6 +120,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(mContacts, "ContactHook");
     	appView.addJavascriptInterface(fs, "FileUtil");
     	appView.addJavascriptInterface(netMan, "NetworkManager");
+    	appView.addJavascriptInterface(mCompass, "CompassHook");
     }
         
     /**
