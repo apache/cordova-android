@@ -58,6 +58,23 @@
          targets are used.
     -->
 
-    <setup import="false"/>
+    <setup />
+
+    <!--  Grab the files, concatenate them and shove them in the 
+          assets directory -->
+    
+    <target name="move_files">
+      <concat destfile="assets/www/phonegap.js">
+        <fileset dir="../js" includes="phonegap.js.base" />
+        <fileset dir="../js" includes="*.js" />
+      </concat>
+    </target>
+
+
+    <target name="phonegap_debug" depends="move_files, debug">
+    </target> 
+
+    <target name="phonegap_release" depends="move_files, release">
+    </target>
 
 </project>
