@@ -51,7 +51,6 @@ public class PhoneGap{
 	public PhoneGap(Context ctx, WebView appView) {
         this.mCtx = ctx;
         this.mAppView = appView;
-            
         audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);
         uuid = getUuid();
     }
@@ -117,6 +116,7 @@ public class PhoneGap{
 		return version;
 	}	
 	
+
     
     public void httpGet(String url, String file)
     /**
