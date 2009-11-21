@@ -46,14 +46,12 @@ public class PhoneGap{
 	public static String uuid;
 	private Context mCtx;
     private WebView mAppView;
-    SmsListener mSmsListener;
     AudioHandler audio; 
     
 	public PhoneGap(Context ctx, WebView appView) {
         this.mCtx = ctx;
         this.mAppView = appView;
-
-        mSmsListener = new SmsListener(ctx,mAppView);        
+            
         audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);
         uuid = getUuid();
     }
@@ -119,33 +117,6 @@ public class PhoneGap{
 		return version;
 	}	
 	
-	// Old SMS code, figure out what to do with this!
-	// BTW: This is awesome!
-	
-	public void notificationWatchPosition(String filter)
-	/**
-	 * Starts the listener for incoming notifications of type filter
-	 * TODO: JavaScript Call backs for success and error handling. More filter types. 
-	 */
-	{
-		if (filter.contains("SMS"))
-		{
-    		IntentFilter mFilter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
-    		mCtx.registerReceiver(mSmsListener,mFilter);
-		}
-	}
-	
-    public void notificationClearWatch(String filter) 
-	/**
-	 * Stops the listener for incoming notifications of type filter
-	 * TODO: JavaScript Call backs for success and error handling 
-	 */
-    {
-    	if (filter.contains("SMS")) 
-    	{
-    		mCtx.unregisterReceiver(mSmsListener);
-    	}	
-    }
     
     public void httpGet(String url, String file)
     /**
