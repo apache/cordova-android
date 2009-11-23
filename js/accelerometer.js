@@ -1,3 +1,10 @@
+function Acceleration(x, y, z)
+{
+  this.x = x;
+  this.y = y;
+  this.z = z;
+}
+
 // Need to define these for android
 _accel = {}
 _accel.x = 0;
