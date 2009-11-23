@@ -16,7 +16,7 @@ public class GeoBroker {
 	private Context mCtx;
 	private HashMap<String, GeoListener> geoListeners;
 	
-	GeoBroker(WebView view, Context ctx)
+	public GeoBroker(WebView view, Context ctx)
 	{
 		mCtx = ctx;
 		mAppView = view;
