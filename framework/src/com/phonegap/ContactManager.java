@@ -153,7 +153,7 @@ public class ContactManager {
 	            name = cur.getString(nameColumn);	            
 	            phoneNumber = cur.getString(phoneColumn);
 	            email_id = cur.getString(emailIdColumn);
-	            if (email_id != null)
+	            if (email_id != null && email_id.length() > 0)
 	            	email = getEmail(email_id);
 	            else
 	            	email = "";
@@ -250,8 +250,7 @@ public class ContactManager {
 	private String getEmailColumnData(Cursor cur)
 	{					        
         String email = "";         
-	    if (cur.moveToFirst()) {
-
+	    if (cur != null && cur.moveToFirst()) {
 	        int emailColumn = cur.getColumnIndex(ContactMethods.DATA);	        
 	        do {
 	            // Get the field values	            
