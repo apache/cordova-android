@@ -23,7 +23,7 @@ public class AccelListener implements SensorEventListener{
 	
 	private long lastUpdate = -1;
 	
-	AccelListener(Context ctx, WebView appView)
+	public AccelListener(Context ctx, WebView appView)
 	{
 		mCtx = ctx;
 		mAppView = appView;		
