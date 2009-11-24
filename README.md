@@ -17,7 +17,7 @@ ant phonegap_debug or ant phonegap_release
 
 Getting Started with Eclipse
 -------------------------------------------------------------
-The wiki article to get started with Eclipse can be found at [http://phonegap.pbworks.com/Getting-started-with-Android-PhoneGap-in-Eclipse-(Tested)](http://phonegap.pbworks.com/Getting-started-with-Android-PhoneGap-in-Eclipse-(Tested))
+The wiki article to get started with Eclipse can be found at [http://phonegap.pbworks.com/Getting-started-with-Android-PhoneGap-in-Eclipse-(Tested)](http://phonegap.pbworks.com/Getting-started-with-Android-PhoneGap-in-Eclipse-(Tested\))
 
 Android 1.5
 ------------------------------------------------------------
