@@ -48,5 +48,5 @@ ContactManager.prototype.droidAddContact = function(name, phone, email)
 
 ContactManager.prototype.droidDone = function()
 {
-  win(this.contacts);
+  this.win(this.contacts);
 }
