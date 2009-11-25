@@ -29,8 +29,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JsResult;
@@ -38,11 +40,14 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
+import android.widget.LinearLayout;
 
 public class DroidGap extends Activity {
 	
 	private static final String LOG_TAG = "DroidGap";
 	private WebView appView;
+	private LinearLayout root;
+	
 	private String uri;
 	private PhoneGap gap;
 	private GeoBroker geo;
@@ -60,38 +65,37 @@ public class DroidGap extends Activity {
         getWindow().requestFeature(Window.FEATURE_NO_TITLE); 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN); 
-        setContentView(R.layout.main);        
+        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
+        
+        LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+        		ViewGroup.LayoutParams.FILL_PARENT, 0.0F);
          
-        appView = (WebView) findViewById(R.id.appView);
+        LinearLayout.LayoutParams webviewParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+        		ViewGroup.LayoutParams.FILL_PARENT, 1.0F);
         
-        /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */
-        
+        root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Color.BLACK);
+        root.setLayoutParams(containerParams);
+                
+        appView = new WebView(this);
+        appView.setLayoutParams(webviewParams);
+
+        /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */        
         appView.setWebChromeClient(new GapClient(this));
         appView.setInitialScale(100);
+        
         WebSettings settings = appView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
-
         
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         
-        /* Load a URI from the strings.xml file */
-        Class<R.string> c = R.string.class;
-        Field f;
-        
-        int i = 0;
-        
-        try {
-          f = c.getField("url");
-          i = f.getInt(f);
-          this.uri = this.getResources().getString(i);
-        } catch (Exception e)
-        {
-          this.uri = "http://www.phonegap.com";
-        }
-        appView.loadUrl(this.uri);
+        root.addView(appView);                   
+        setContentView(root);                
+
         
     }
 	
@@ -123,6 +127,12 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(mCompass, "CompassHook");
     }
         
+    
+	public void loadUrl(String url)
+	{
+		appView.loadUrl(url);
+	}
+
     /**
      * Provides a hook for calling "alert" from javascript. Useful for
      * debugging your javascript.

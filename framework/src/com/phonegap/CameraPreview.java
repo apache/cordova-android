@@ -20,14 +20,19 @@ import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 public class CameraPreview extends Activity implements SurfaceHolder.Callback{
 
     private static final String TAG = "PhoneGapCamera";
     private SurfaceView mSurfaceView;
     private SurfaceHolder mSurfaceHolder;
+    
+    private RelativeLayout root;
     
     Camera mCamera;
     boolean mPreviewRunning = false;
@@ -42,10 +47,33 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
         Log.e(TAG, "onCreate");
 
         getWindow().setFormat(PixelFormat.TRANSLUCENT);
-
-        setContentView(R.layout.preview);
-        mSurfaceView = (SurfaceView)findViewById(R.id.surface);
-
+        
+        RelativeLayout.LayoutParams containerParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+        		ViewGroup.LayoutParams.FILL_PARENT);
+        LinearLayout.LayoutParams surfaceParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+        		ViewGroup.LayoutParams.FILL_PARENT, 0.0F);
+        RelativeLayout.LayoutParams buttonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 
+        		ViewGroup.LayoutParams.WRAP_CONTENT);
+        
+        root = new RelativeLayout(this);
+        root.setLayoutParams(containerParams);
+        
+        mSurfaceView = new SurfaceView(this);
+        mSurfaceView.setLayoutParams(surfaceParams);
+        root.addView(mSurfaceView);
+        
+        Button stopButton = new Button(this);
+        stopButton.setText("click");
+        buttonParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        buttonParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        buttonParams.rightMargin = 5;
+        buttonParams.topMargin = 5;
+        
+        stopButton.setLayoutParams(buttonParams);
+        root.addView(stopButton);
+        
+        setContentView(root);
+        
         mSurfaceHolder = mSurfaceView.getHolder();
         mSurfaceHolder.addCallback(this);
         mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);                    
@@ -53,7 +81,7 @@ public class CameraPreview extends Activity implements SurfaceHolder.Callback{
         
         quality = mIntent.getIntExtra("quality", 100);
         
-        Button stopButton = (Button) findViewById(R.id.go);
+        
         stopButton.setOnClickListener(mSnapListener);
     }
     
