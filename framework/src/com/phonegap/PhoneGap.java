@@ -116,7 +116,6 @@ public class PhoneGap{
 		return version;
 	}	
 	
-
     
     public void httpGet(String url, String file)
     /**
