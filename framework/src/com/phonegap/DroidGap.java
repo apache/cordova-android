@@ -187,7 +187,7 @@ public class DroidGap extends Activity {
 
     public WebView getView()
     {
-      return this.WebView;
+      return this.appView;
     }
       
 }
