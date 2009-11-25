@@ -70,6 +70,9 @@
       </concat>
     </target>
 
+    <target name="jar" depends="move_files, compile">
+      <jar jarfile="phonegap.jar" basedir="bin/classes"/>
+    </target>
 
     <target name="phonegap_debug" depends="move_files, debug">
     </target> 
