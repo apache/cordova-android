@@ -25,7 +25,7 @@
     
     <application android:icon="@drawable/icon" android:label="@string/app_name"
     	android:debuggable="false">
-        <activity android:name=".DroidGap"
+        <activity android:name=".StandAlone"
                   android:label="@string/app_name" android:configChanges="orientation|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
