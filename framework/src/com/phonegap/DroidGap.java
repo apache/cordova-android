@@ -45,7 +45,7 @@ import android.widget.LinearLayout;
 public class DroidGap extends Activity {
 	
 	private static final String LOG_TAG = "DroidGap";
-	private WebView appView;
+	protected WebView appView;
 	private LinearLayout root;
 	
 	private String uri;
@@ -126,8 +126,8 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(netMan, "NetworkManager");
     	appView.addJavascriptInterface(mCompass, "CompassHook");
     }
-        
-    
+           
+ 
 	public void loadUrl(String url)
 	{
 		appView.loadUrl(url);
@@ -184,5 +184,10 @@ public class DroidGap extends Activity {
     		launcher.failPicture("Did not complete!");
     	}
     }
-    
+
+    public WebView getView()
+    {
+      return this.WebView;
+    }
+      
 }
