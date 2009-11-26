@@ -8,7 +8,7 @@ import android.webkit.WebSettings;
 
 public class WebViewReflect {
 	   private static Method mWebSettings_setDatabaseEnabled;
-
+	   private static Method mWebSettings_setDatabasePath;
 	   static 
 	   {
 		   checkCompatibility();
@@ -41,18 +41,32 @@ public class WebViewReflect {
 	       try {
 	           mWebSettings_setDatabaseEnabled = WebSettings.class.getMethod(
 	                   "setDatabaseEnabled", new Class[] { boolean.class } );
+	           mWebSettings_setDatabasePath = WebSettings.class.getMethod(
+	        		   "setDatabasePath", new Class[] { String.class });
 	           /* success, this is a newer device */
 	       } catch (NoSuchMethodException nsme) {
 	           /* failure, must be older device */
 	       }
 	   }
 
-
 	   public static void setStorage(WebSettings setting, boolean enable, String path) {
 	       if (mWebSettings_setDatabaseEnabled != null) {
 	           /* feature is supported */
-	           setting.setDatabaseEnabled(enable);
-	           setting.setDatabasePath(path);
+	    	   try {
+				mWebSettings_setDatabaseEnabled.invoke(setting, true);
+				mWebSettings_setDatabasePath.invoke(setting, path);
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	   //setting.setDatabaseEnabled(enable);
+	           //setting.setDatabasePath(path);
 	       } else {
 	           /* feature not supported, do something else */
 	           System.out.println("dump not supported");

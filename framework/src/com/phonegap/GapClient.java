@@ -41,7 +41,7 @@ public class GapClient extends WebChromeClient {
         result.confirm();
         return true;
     }
-	
+
     public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
     	     long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
     {
@@ -58,4 +58,5 @@ public class GapClient extends WebChromeClient {
     		quotaUpdater.updateQuota(currentQuota);
     	}
     }
+
 }
