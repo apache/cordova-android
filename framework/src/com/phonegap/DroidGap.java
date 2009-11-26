@@ -22,7 +22,6 @@ package com.phonegap;
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import java.lang.reflect.Field;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -38,15 +37,17 @@ import android.view.WindowManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
+import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.LinearLayout;
+import android.os.Build.*;
 
 public class DroidGap extends Activity {
-	
+		
 	private static final String LOG_TAG = "DroidGap";
 	protected WebView appView;
-	private LinearLayout root;
+	private LinearLayout root;	
 	
 	private String uri;
 	private PhoneGap gap;
@@ -57,6 +58,7 @@ public class DroidGap extends Activity {
 	private FileUtils fs;
 	private NetworkManager netMan;
 	private CompassListener mCompass;
+	private WebViewReflect eclairCheck;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -80,9 +82,11 @@ public class DroidGap extends Activity {
                 
         appView = new WebView(this);
         appView.setLayoutParams(webviewParams);
-
+        
+        WebViewReflect.checkCompatibility();
+        
         /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */        
-        appView.setWebChromeClient(new GapClient(this));
+        appView.setWebChromeClient(new PhoneGapClient(this));
         appView.setInitialScale(100);
         
         WebSettings settings = appView.getSettings();
@@ -90,13 +94,17 @@ public class DroidGap extends Activity {
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
         
+
+    	Package pack = this.getClass().getPackage();
+    	String appPackage = pack.getName();
+    	
+        WebViewReflect.setStorage(settings, true, "/data/data/" + appPackage + "/app_database/");
+        
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         
         root.addView(appView);                   
-        setContentView(root);                
-
-        
+        setContentView(root);                        
     }
 	
 	@Override
@@ -137,28 +145,13 @@ public class DroidGap extends Activity {
      * Provides a hook for calling "alert" from javascript. Useful for
      * debugging your javascript.
      */
-    final class GapClient extends WebChromeClient {
+    final class PhoneGapClient extends GapClient {
     	
-    	Context mCtx;
-    	GapClient(Context ctx)
-    	{
-    		mCtx = ctx;
+    	PhoneGapClient(Context ctx){
+    		super(ctx);
     	}
     	
-    	@Override
-        public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-            Log.d(LOG_TAG, message);
-            // This shows the dialog box.  This can be commented out for dev
-            AlertDialog.Builder alertBldr = new AlertDialog.Builder(mCtx);
-            alertBldr.setMessage(message);
-            alertBldr.setTitle("Alert");
-            alertBldr.show();
-            result.confirm();
-            return true;
-        }
-    	
     }
-    
     	    	
     // This is required to start the camera activity!  It has to come from the previous activity
     public void startCamera(int quality)
