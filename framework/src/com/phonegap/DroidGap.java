@@ -85,8 +85,12 @@ public class DroidGap extends Activity {
         
         WebViewReflect.checkCompatibility();
         
-        /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */        
-        appView.setWebChromeClient(new PhoneGapClient(this));
+        /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */       
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ECLAIR)
+        	appView.setWebChromeClient(new EclairClient(this));        	
+        else
+        	appView.setWebChromeClient(new GapClient(this));
+        
         appView.setInitialScale(100);
         
         WebSettings settings = appView.getSettings();
@@ -141,22 +145,66 @@ public class DroidGap extends Activity {
 		appView.loadUrl(url);
 	}
 
-    /**
-     * Provides a hook for calling "alert" from javascript. Useful for
-     * debugging your javascript.
-     */
-    final class PhoneGapClient extends GapClient {
-    	
-    	PhoneGapClient(Context ctx){
-    		super(ctx);
-    	}
-    	
-    }
+  /**
+    * Provides a hook for calling "alert" from javascript. Useful for
+    * debugging your javascript.
+  */
+	public class GapClient extends WebChromeClient {				
+		
+		Context mCtx;
+		public GapClient(Context ctx)
+		{
+			mCtx = ctx;
+		}
+		
+		@Override
+	    public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+	        Log.d(LOG_TAG, message);
+	        // This shows the dialog box.  This can be commented out for dev
+	        AlertDialog.Builder alertBldr = new AlertDialog.Builder(mCtx);
+	        alertBldr.setMessage(message);
+	        alertBldr.setTitle("Alert");
+	        alertBldr.show();
+	        result.confirm();
+	        return true;
+	    }
+		
+	  
+
+	}
+	
+	public final class EclairClient extends GapClient
+	{		
+		private long MAX_QUOTA = 2000000;
+		
+		public EclairClient(Context ctx) {
+			super(ctx);
+			// TODO Auto-generated constructor stub
+		}
+		
+		public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
+		    	     long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
+		{
+		    	
+			if( estimatedSize < MAX_QUOTA)
+		    	{	
+		    		long newQuota = estimatedSize;
+		    		quotaUpdater.updateQuota(newQuota);
+		    	}
+		    else
+		    	{
+		    		// Set the quota to whatever it is and force an error
+		    		// TODO: get docs on how to handle this properly
+		    		quotaUpdater.updateQuota(currentQuota);
+		    	}
+		}		
+	}
+	
     	    	
     // This is required to start the camera activity!  It has to come from the previous activity
     public void startCamera(int quality)
     {
-    	Intent i = new Intent(this, CameraPreview.class);
+    Intent i = new Intent(this, CameraPreview.class);
     	i.setAction("android.intent.action.PICK");
     	i.putExtra("quality", quality);
     	startActivityForResult(i, 0);
