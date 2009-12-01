@@ -95,7 +95,7 @@ public class ContactManager {
 			if (name.length() == 0)
 			{
 				name = "%";
-				conditions += People.NAME + "LIKE ? AND ";
+				conditions += People.NAME + " LIKE ? AND ";
 			}
 			else
 			{
@@ -169,7 +169,7 @@ public class ContactManager {
 	        if (all)
 	        	mView.loadUrl("javascript:navigator.ContactManager.droidDone()");
 	        else
-	        	mView.loadUrl("javascript:navigator.Contacts.droidDoneContacts();");
+	        	mView.loadUrl("javascript:navigator.Contacts.droidDone();");
 	    }
 	    else
 	    {
