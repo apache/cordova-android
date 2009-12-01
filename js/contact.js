@@ -21,15 +21,21 @@ var ContactEmail = function()
   this.address = "";
 }
 
+var ContactPhoneNumber = function()
+{
+  this.types = [];
+  this.number = "";
+}
+
 
 var Contacts = function()
 {
   this.records = [];  
 }
 
-var Contacts.prototype.find = function(obj, win, fail)
+Contacts.prototype.find = function(obj, win, fail)
 {
-  if(obj.name)
+  if(obj.name != null)
   {
    ContactHook.search(name, "", ""); 
   }
@@ -37,7 +43,7 @@ var Contacts.prototype.find = function(obj, win, fail)
   this.fail = fail;
 }
 
-var Contacts.prototype.droidFoundContact = function(name, npa, email)
+Contacts.prototype.droidFoundContact = function(name, npa, email)
 {
   var contact = new Contact();
   contact.name = new ContactName();
@@ -54,7 +60,11 @@ var Contacts.prototype.droidFoundContact = function(name, npa, email)
   this.records.push(contact);
 }
 
-var Contacts.prototype.droidDone = function()
+Contacts.prototype.droidDone = function()
 {
   this.win(this.records);
 }
+
+PhoneGap.addConstructor(function() {
+  if(typeof navigator.Contacts == "undefined") navigator.Contacts = new Contacts();
+});
