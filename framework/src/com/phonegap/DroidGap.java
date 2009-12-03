@@ -92,6 +92,7 @@ public class DroidGap extends Activity {
         	appView.setWebChromeClient(new GapClient(this));
         
         appView.setInitialScale(100);
+        appView.setVerticalScrollBarEnabled(false);
         
         WebSettings settings = appView.getSettings();
         settings.setJavaScriptEnabled(true);
