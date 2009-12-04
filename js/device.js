@@ -18,13 +18,7 @@ function Device() {
             this.gapVersion = window.DroidGap.getVersion();
             this.platform = window.DroidGap.getPlatform();
             this.name = window.DroidGap.getProductName();  
-        } else {          
-            this.platform = DeviceInfo.platform;
-            this.version  = DeviceInfo.version;
-            this.name     = DeviceInfo.name;
-            this.gap      = DeviceInfo.gap;
-            this.uuid     = DeviceInfo.uuid;
-        }
+        } 
     } catch(e) {
         this.available = false;
     }
@@ -32,7 +26,4 @@ function Device() {
 
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
-    var event = document.createEvent("Events");
-    event.initEvent('deviceReady', false, false);
-    document.dispatchEvent(event);
 });

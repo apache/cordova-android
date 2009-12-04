@@ -17,7 +17,7 @@ PhoneGap = {
 
 /**
  * Boolean flag indicating if the PhoneGap API is available and initialized.
- */
+ */ // TODO: Remove this, it is unused here ... -jm
 PhoneGap.available = DeviceInfo.uuid != undefined;
 
 /**
@@ -27,28 +27,51 @@ PhoneGap.available = DeviceInfo.uuid != undefined;
  */
 PhoneGap.addConstructor = function(func) {
     var state = document.readyState;
-    if (state != 'loaded' && state != 'complete')
-        PhoneGap._constructors.push(func);
+    if ( state == 'loaded' || state == 'complete' )
+	  {
+		  func();
+	  }
     else
-        func();
+	  {
+        PhoneGap._constructors.push(func);
+	  }
 };
-(function() {
-    var timer = setInterval(function() {
-        var state = document.readyState;
-        if (state != 'loaded' && state != 'complete')
-            return;
-        clearInterval(timer);
-        while (PhoneGap._constructors.length > 0) {
-            var constructor = PhoneGap._constructors.shift();
-            try {
-                constructor();
-            } catch(e) {
-                if (typeof(debug['log']) == 'function')
-                    debug.log("Failed to run constructor: " + debug.processMessage(e));
-                else
-                    alert("Failed to run constructor: " + e.message);
+
+(function() 
+ {
+    var timer = setInterval(function()
+	{
+							
+		var state = document.readyState;
+							
+    if ( state == 'loaded' || state == 'complete' )
+		{
+			clearInterval(timer); // stop looking
+			// run our constructors list
+			while (PhoneGap._constructors.length > 0) 
+			{
+				var constructor = PhoneGap._constructors.shift();
+				try 
+				{
+					constructor();
+				} 
+				catch(e) 
+				{
+					if (typeof(debug['log']) == 'function')
+					{
+						debug.log("Failed to run constructor: " + debug.processMessage(e));
+					}
+					else
+					{
+						alert("Failed to run constructor: " + e.message);
+					}
+				}
             }
-        }
+			// all constructors run, now fire the deviceready event
+			var e = document.createEvent('Events'); 
+			e.initEvent('deviceready');
+			document.dispatchEvent(e);
+		}
     }, 1);
 })();
 
@@ -65,11 +88,48 @@ PhoneGap.exec = function() {
     if (PhoneGap.queue.timer == null)
         PhoneGap.queue.timer = setInterval(PhoneGap.run_command, 10);
 };
+
 /**
- * Internal function used to dispatch the request to PhoneGap.  This needs to be implemented per-platform to
- * ensure that methods are called on the phone in a way appropriate for that device.
+ * Internal function used to dispatch the request to PhoneGap.  It processes the
+ * command queue and executes the next command on the list.  If one of the
+ * arguments is a JavaScript object, it will be passed on the QueryString of the
+ * url, which will be turned into a dictionary on the other end.
  * @private
  */
 PhoneGap.run_command = function() {
-};
+    if (!PhoneGap.available || !PhoneGap.queue.ready)
+        return;
 
+    PhoneGap.queue.ready = false;
+
+    var args = PhoneGap.queue.commands.shift();
+    if (PhoneGap.queue.commands.length == 0) {
+        clearInterval(PhoneGap.queue.timer);
+        PhoneGap.queue.timer = null;
+    }
+
+    var uri = [];
+    var dict = null;
+    for (var i = 1; i < args.length; i++) {
+        var arg = args[i];
+        if (arg == undefined || arg == null)
+            arg = '';
+        if (typeof(arg) == 'object')
+            dict = arg;
+        else
+            uri.push(encodeURIComponent(arg));
+    }
+    var url = "gap://" + args[0] + "/" + uri.join("/");
+    if (dict != null) {
+        var query_args = [];
+        for (var name in dict) {
+            if (typeof(name) != 'string')
+                continue;
+            query_args.push(encodeURIComponent(name) + "=" + encodeURIComponent(dict[name]));
+        }
+        if (query_args.length > 0)
+            url += "?" + query_args.join("&");
+    }
+    document.location = url;
+
+};

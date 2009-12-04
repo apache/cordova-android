@@ -103,27 +103,22 @@ public class FileUtils {
     
     public int write(String filename, String data, boolean append)
     {
-    		int i=0;
     		String FilePath= filename;
     		try {
-    			ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes());    			
-    			byte buff[] = new byte[1024];    
-    			FileOutputStream out=
-    				new FileOutputStream(FilePath, append);
-    			do {
-    				int numread = in.read(buff);
-    				if (numread <= 0)
-                       	break;
-    				out.write(buff, 0, numread);
-    				System.out.println("numread" + numread);
-    				i++;
-    			} while (true);
+				byte [] rawData = data.getBytes();
+    			ByteArrayInputStream in = new ByteArrayInputStream(rawData);    			    			
+    			FileOutputStream out= new FileOutputStream(FilePath, false);
+    			byte buff[] = new byte[rawData.length];
+    			in.read(buff, 0, buff.length);
+    			out.write(buff, 0, rawData.length);
     			out.flush();
-    			out.close();
+    			out.close();    			
     			mView.loadUrl("javascript:navigator.file.winCallback('File written')");
     		} catch (Exception e) { 
     			mView.loadUrl("javascript:navigator.file.failCallback('Fail')"); 
     		}
 		return 0;
     }
+    
+
 }
