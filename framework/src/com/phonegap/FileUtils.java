@@ -107,7 +107,7 @@ public class FileUtils {
     		try {
 				byte [] rawData = data.getBytes();
     			ByteArrayInputStream in = new ByteArrayInputStream(rawData);    			    			
-    			FileOutputStream out= new FileOutputStream(FilePath, false);
+    			FileOutputStream out= new FileOutputStream(FilePath, append);
     			byte buff[] = new byte[rawData.length];
     			in.read(buff, 0, buff.length);
     			out.write(buff, 0, rawData.length);
