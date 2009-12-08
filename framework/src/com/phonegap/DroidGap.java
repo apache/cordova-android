@@ -49,7 +49,6 @@ public class DroidGap extends Activity {
 	protected WebView appView;
 	private LinearLayout root;	
 	
-	private String uri;
 	private PhoneGap gap;
 	private GeoBroker geo;
 	private AccelListener accel;
@@ -58,7 +57,9 @@ public class DroidGap extends Activity {
 	private FileUtils fs;
 	private NetworkManager netMan;
 	private CompassListener mCompass;
-	private WebViewReflect eclairCheck;
+	private Storage	cupcakeStorage;
+	
+	
 	
     /** Called when the activity is first created. */
 	@Override
@@ -89,7 +90,10 @@ public class DroidGap extends Activity {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ECLAIR)
         	appView.setWebChromeClient(new EclairClient(this));        	
         else
+        {        
         	appView.setWebChromeClient(new GapClient(this));
+        	cupcakeStorage = new Storage(appView);
+        }
         
         appView.setInitialScale(100);
         appView.setVerticalScrollBarEnabled(false);
@@ -127,7 +131,7 @@ public class DroidGap extends Activity {
     	mContacts = new ContactManager(this, appView);
     	fs = new FileUtils(appView);
     	netMan = new NetworkManager(this, appView);
-    	mCompass = new CompassListener(this, appView);
+    	mCompass = new CompassListener(this, appView);    	    	
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
@@ -138,6 +142,11 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(fs, "FileUtil");
     	appView.addJavascriptInterface(netMan, "NetworkManager");
     	appView.addJavascriptInterface(mCompass, "CompassHook");
+    	if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.DONUT)
+    	{
+    		cupcakeStorage = new Storage(appView);
+    		appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
+    	}
     }
            
  
