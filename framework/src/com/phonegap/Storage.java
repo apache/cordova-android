@@ -29,8 +29,6 @@ public class Storage {
 	
 	public void executeSql(String query, String[] params, String tx_id)
 	{
-		if(txid.length() == 0)
-		{
 			try{
 				txid = tx_id;
 				Cursor myCursor = myDb.rawQuery(query, params);			
@@ -38,9 +36,10 @@ public class Storage {
 			}
 			catch (SQLiteException ex)
 			{
-				Log.d(LOG_TAG, ex.getMessage());
+				Log.d(LOG_TAG, ex.getMessage());	
+				txid = "";
+				//TODO: Call FAIL!
 			}
-		}
 	}
 	
 	public void processResults(Cursor cur)
@@ -61,10 +60,11 @@ public class Storage {
 						 resultString += ",";
 				 }
 				 resultString += "}";
-				 appView.loadUrl("javascript:droiddb.addResult('" + resultString + "')");
+				 appView.loadUrl("javascript:droiddb.addResult('" + resultString + "', " + txid + ")");
 			 } while (cur.moveToNext());
-			 appView.loadUrl("javascript:droiddb.completeQuery()");
+			 appView.loadUrl("javascript:droiddb.completeQuery(" + txid + ")");
 			 txid = "";
+			 myDb.close();
 		 }
 	}
 		

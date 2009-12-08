@@ -4,24 +4,24 @@
  * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
  */
 
-var droiddb = new function()
+var DroidDB = function()
 {
   this.txQueue = [];
 }
 
-droiddb.prototype.addResult(rawdata, tx_id)
+DroidDB.prototype.addResult = function(rawdata, tx_id)
 {
   eval("var data = " + rawdata);
-  var tx = this.txQueue(tx_id);
+  var tx = this.txQueue[tx_id];
   tx.resultSet.push(data);
 }
 
-droiddb.prototype.completeQuery(tx_id)
+DroidDB.prototype.completeQuery = function(tx_id)
 {
-  var tx = this.txQueue(tx_id);
+  var tx = this.txQueue[tx_id];
   var r = new result();
   r.rows.resultSet = tx.resultSet;
-  r.rows.length = resultSet.length;
+  r.rows.length = tx.resultSet.length;
   tx.win(r);
 }
 
@@ -30,7 +30,7 @@ var DatabaseShell = function()
   
 }
 
-DatabaseShell.transaction(process)
+DatabaseShell.prototype.transaction = function(process)
 {
   tx = new Tx();
   process(tx);
@@ -45,7 +45,7 @@ var Tx = function()
 
 Tx.prototype.executeSql = function(query, params, win, fail)
 {
-  droidStorage.executeSql(query, params, tx_id);
+  droidStorage.executeSql(query, params, this.id);
   tx.win = win;
   tx.fail = fail;
 }
@@ -66,12 +66,18 @@ Rows.prototype.item = function(row_id)
   return this.resultSet[id];
 }
 
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
 PhoneGap.addConstructor(function() {
-  if (typeof navigator.openDatabase == "undefined") {
-    var openDatabase = function(name, version, display_name, size)
-    {
-      droidStorage.openDatabase(name, version, display_name, size)
-      db_object = new DatabaseShell();
-    }
+  if (typeof navigator.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+  window.droiddb = new DroidDB();
   }
 });
+
