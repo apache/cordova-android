@@ -25,6 +25,12 @@ DroidDB.prototype.completeQuery = function(tx_id)
   tx.win(r);
 }
 
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
 var DatabaseShell = function()
 {
   

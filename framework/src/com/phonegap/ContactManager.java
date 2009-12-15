@@ -163,20 +163,20 @@ public class ContactManager {
 	            if (all)
 	            	mView.loadUrl("javascript:navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"')");	            	
 	            else
-	            	mView.loadUrl("javascript:navigator.Contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
+	            	mView.loadUrl("javascript:navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
 	            	            
 	        } while (cur.moveToNext());
 	        if (all)
 	        	mView.loadUrl("javascript:navigator.ContactManager.droidDone()");
 	        else
-	        	mView.loadUrl("javascript:navigator.Contacts.droidDone();");
+	        	mView.loadUrl("javascript:navigator.contacts.droidDone();");
 	    }
 	    else
 	    {
 	    	if(all)
 	    		mView.loadUrl("javascript:navigator.ContactManager.fail()");
 	    	else
-	    		mView.loadUrl("javascript:navigator.Contacts.fail('None found!')");
+	    		mView.loadUrl("javascript:navigator.contacts.fail('None found!')");
 	    }
 	}	
 	
@@ -202,7 +202,7 @@ public class ContactManager {
 	            	mView.loadUrl("javascript:navigator.Contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"')");
 	            }	           
 	        } while (cur.moveToNext());
-	        mView.loadUrl("javascript:navigator.Contacts.droidDoneContacts();");	        
+	        mView.loadUrl("javascript:navigator.contacts.droidDoneContacts();");	        
 	    }	 
 	}		
 	

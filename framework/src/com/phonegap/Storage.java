@@ -38,7 +38,7 @@ public class Storage {
 			{
 				Log.d(LOG_TAG, ex.getMessage());	
 				txid = "";
-				//TODO: Call FAIL!
+				appView.loadUrl("droiddb.fail(" + ex.getMessage() + "," +  txid + ")");			
 			}
 	}
 	

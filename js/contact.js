@@ -66,5 +66,5 @@ Contacts.prototype.droidDone = function()
 }
 
 PhoneGap.addConstructor(function() {
-  if(typeof navigator.Contacts == "undefined") navigator.Contacts = new Contacts();
+  if(typeof navigator.contacts == "undefined") navigator.contacts = new Contacts();
 });

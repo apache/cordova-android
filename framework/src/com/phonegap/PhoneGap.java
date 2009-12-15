@@ -29,6 +29,7 @@ import android.content.IntentFilter;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.webkit.WebView;
 import android.media.Ringtone;
@@ -80,15 +81,12 @@ public class PhoneGap{
 	
 	public String getUuid()
 	{		
-		TelephonyManager operator = (TelephonyManager) mCtx.getSystemService(Context.TELEPHONY_SERVICE);
-		String uuid = operator.getDeviceId();
+		//TelephonyManager operator = (TelephonyManager) mCtx.getSystemService(Context.TELEPHONY_SERVICE);		
+		//String uuid = operator.getDeviceId();
+		String uuid = Settings.Secure.getString(mCtx.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		return uuid;
 	}
 	
-	public void init()
-	{
-		mAppView.loadUrl("javascript:Device.setData('Android','" + version + "','" + this.getUuid() + "')");
-	}
 	
 	public String getModel()
 	{
@@ -174,31 +172,7 @@ public class PhoneGap{
     
     public int getAudioOutputDevice(){
     	return audio.getAudioOutputDevice();
-    }
-    
-    public String getLine1Number() {
-        TelephonyManager tm =
-            (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
-        return(tm.getLine1Number());
-    }
-    
-    public String getVoiceMailNumber() {
-    	TelephonyManager tm =
-    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
-        return(tm.getVoiceMailNumber());
-    }
-    
-    public String getNetworkOperatorName(){
-    	TelephonyManager tm =
-    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
-        return(tm.getNetworkOperatorName());
-    }
-    
-    public String getSimCountryIso(){
-    	TelephonyManager tm =
-    		(TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
-        return(tm.getSimCountryIso());
-    }
+    }       
     
     public String getTimeZoneID() {
        TimeZone tz = TimeZone.getDefault();
