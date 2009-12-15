@@ -35,6 +35,7 @@ public class GpsListener implements LocationListener {
 	private LocationManager mLocMan;
 	private static final String LOG_TAG = "PhoneGap";
 	private GeoListener owner;
+	private boolean hasData = false;
 	
 	public GpsListener(Context ctx, int interval, GeoListener m)
 	{
@@ -48,6 +49,7 @@ public class GpsListener implements LocationListener {
 	public Location getLocation()
 	{
 		cLoc = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		hasData = true;
 		return cLoc;
 	}
 	
@@ -88,7 +90,7 @@ public class GpsListener implements LocationListener {
 	}
 
 	public boolean hasLocation() {
-		return (cLoc != null);
+		return hasData;
 	}
 
 	public void stop()

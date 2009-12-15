@@ -15,6 +15,7 @@ public class GeoBroker {
     private WebView mAppView;
 	private Context mCtx;
 	private HashMap<String, GeoListener> geoListeners;
+	private GeoListener listener;
 	
 	public GeoBroker(WebView view, Context ctx)
 	{
@@ -23,8 +24,9 @@ public class GeoBroker {
 	}
 	
 	public void getCurrentLocation()
-	{
-		GeoListener listener = new GeoListener("global", mCtx, 10000, mAppView);
+	{		
+		if (listener == null)
+			listener = new GeoListener("global", mCtx, 10000, mAppView);
 	}
 	
 	public String start(int freq, String key)
