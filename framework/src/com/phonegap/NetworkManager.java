@@ -23,7 +23,9 @@ public class NetworkManager {
 	public boolean isAvailable()
 	{
 		NetworkInfo info = sockMan.getActiveNetworkInfo();
-		boolean conn = info.isConnected();
+		boolean conn = false;
+		if(info != null)
+			conn = info.isConnected();
 		return conn;
 	}
 	

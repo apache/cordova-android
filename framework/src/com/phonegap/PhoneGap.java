@@ -114,7 +114,7 @@ public class PhoneGap{
 		return version;
 	}	
 	
-    
+	
     public void httpGet(String url, String file)
     /**
      * grabs a file from specified url and saves it to a name and location
