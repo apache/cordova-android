@@ -26,6 +26,7 @@ package com.phonegap;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -172,13 +173,39 @@ public class DroidGap extends Activity {
 	        Log.d(LOG_TAG, message);
 	        // This shows the dialog box.  This can be commented out for dev
 	        AlertDialog.Builder alertBldr = new AlertDialog.Builder(mCtx);
+	        GapOKDialog okHook = new GapOKDialog();
+	        GapCancelDialog cancelHook = new GapCancelDialog();
 	        alertBldr.setMessage(message);
 	        alertBldr.setTitle("Alert");
+	        alertBldr.setCancelable(true);
+	        alertBldr.setPositiveButton("OK", okHook);
+	        alertBldr.setNegativeButton("Cancel", cancelHook);
 	        alertBldr.show();
 	        result.confirm();
 	        return true;
 	    }
 		
+		/*
+		 * This is the Code for the OK Button
+		 */
+		
+		public class GapOKDialog implements DialogInterface.OnClickListener {
+
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				dialog.dismiss();
+			}			
+		
+		}
+		
+		public class GapCancelDialog implements DialogInterface.OnClickListener {
+
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				dialog.dismiss();
+			}			
+		
+		}
 	  
 
 	}

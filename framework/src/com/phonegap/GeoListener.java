@@ -40,12 +40,7 @@ public class GeoListener {
 		if(id != "global")
 		{
 			mAppView.loadUrl("javascript:navigator.geolocation.success(" + id + "," +  params + ")");
-		}
-		else
-		{
-			mAppView.loadUrl("javascript:navigator.geolocation.gotCurrentPosition(" + params + ")");
-			this.stop();
-		}
+		}		
 	}
 	
 	void fail()

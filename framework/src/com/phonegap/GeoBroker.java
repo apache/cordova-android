@@ -3,6 +3,7 @@ package com.phonegap;
 import java.util.HashMap;
 
 import android.content.Context;
+import android.location.Location;
 import android.webkit.WebView;
 
 /*
@@ -15,7 +16,6 @@ public class GeoBroker {
     private WebView mAppView;
 	private Context mCtx;
 	private HashMap<String, GeoListener> geoListeners;
-	private GeoListener listener;
 	
 	public GeoBroker(WebView view, Context ctx)
 	{
@@ -24,9 +24,13 @@ public class GeoBroker {
 	}
 	
 	public void getCurrentLocation()
-	{		
-		if (listener == null)
-			listener = new GeoListener("global", mCtx, 10000, mAppView);
+	{				
+		GeoListener listener = new GeoListener("global", mCtx, 10000, mAppView);
+		Location loc = listener.getCurrentLocation();
+		String params = loc.getLatitude() + "," + loc.getLongitude() + ", " + loc.getAltitude() + "," + loc.getAccuracy() + "," + loc.getBearing();
+		params += "," + loc.getSpeed() + "," + loc.getTime();
+		mAppView.loadUrl("javascript:navigator.geolocation.gotCurrentPosition(" + params + ")");
+		listener.stop();
 	}
 	
 	public String start(int freq, String key)

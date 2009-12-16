@@ -49,6 +49,6 @@ public class CompassListener implements SensorEventListener{
 	public void onSensorChanged(SensorEvent event) {
 		// We only care about the orientation as far as it refers to Magnetic North
 		float heading = event.values[0];
-		mAppView.loadUrl("javascript:gotBearing(" + heading + ")");
+		mAppView.loadUrl("javascript:navigator.compass.setHeading(" + heading + ")");
 	}
 }
