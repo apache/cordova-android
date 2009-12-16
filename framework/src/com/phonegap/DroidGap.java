@@ -32,6 +32,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -237,7 +238,31 @@ public class DroidGap extends Activity {
 		}		
 	}
 	
-    	    	
+  
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {       
+        	String testUrl = appView.getUrl();
+            appView.goBack();
+            if(appView.getUrl() == testUrl)
+            {
+            	return super.onKeyDown(keyCode, event);
+            }
+        }
+        
+        if (keyCode == KeyEvent.KEYCODE_MENU) 
+        {
+        	appView.loadUrl("javascript:fireMenuEvent()");
+        }
+        
+        if (keyCode == KeyEvent.KEYCODE_SEARCH) 
+        {
+        	appView.loadUrl("javascript:fireSearchEvent()");
+        }
+        
+        return false;
+    }
+	
     // This is required to start the camera activity!  It has to come from the previous activity
     public void startCamera(int quality)
     {
