@@ -252,12 +252,12 @@ public class DroidGap extends Activity {
         
         if (keyCode == KeyEvent.KEYCODE_MENU) 
         {
-        	appView.loadUrl("javascript:fireMenuEvent()");
+        	appView.loadUrl("javascript:keyEvent.menuTrigger()");
         }
         
         if (keyCode == KeyEvent.KEYCODE_SEARCH) 
         {
-        	appView.loadUrl("javascript:fireSearchEvent()");
+        	appView.loadUrl("javascript:keyEvent.searchTrigger()");
         }
         
         return false;
