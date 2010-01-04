@@ -1,5 +1,6 @@
 package com.phonegap;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.*;
 import android.util.Log;
@@ -12,19 +13,25 @@ public class Storage {
 	String path;
 	String txid = "";
 	WebView appView;
+	Context mCtx;
 	
 	Storage(WebView view)
-	{
-		Package pack = this.getClass().getPackage();
-    	String appPackage = pack.getName();
-    	path = "/data/data/" + appPackage + "/databases/";
+	{    	
 		appView = view;
+	}
+	
+	public void setStorage(String appPackage)
+	{
+		path = "/data/data/" + appPackage + "/databases/";
 	}
 	
 	public void openDatabase(String db, String version, String display_name, long size)
 	{
-		path += db + ".db";
-		myDb = SQLiteDatabase.openOrCreateDatabase(path, null);
+		if (path != null)
+		{
+			path += db + ".db";
+			myDb = SQLiteDatabase.openOrCreateDatabase(path, null);
+		}
 	}
 	
 	public void executeSql(String query, String[] params, String tx_id)

@@ -94,7 +94,6 @@ public class DroidGap extends Activity {
         else
         {        
         	appView.setWebChromeClient(new GapClient(this));
-        	cupcakeStorage = new Storage(appView);
         }
         
         appView.setInitialScale(100);
@@ -113,7 +112,9 @@ public class DroidGap extends Activity {
         
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
-        
+        if(cupcakeStorage != null)
+        	cupcakeStorage.setStorage(appPackage);
+                
         root.addView(appView);                   
         setContentView(root);                        
     }
