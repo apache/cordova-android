@@ -1,6 +1,0 @@
-Note: phonegap.js goes in the assets/www directory.  To get this file, please
-build it from the top level by running make:
-
-make
-
-The file will be concatenated and minified, and will be stored in lib/android

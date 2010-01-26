@@ -17,7 +17,7 @@ PhoneGap = {
 
 /**
  * Boolean flag indicating if the PhoneGap API is available and initialized.
- */
+ */ // TODO: Remove this, it is unused here ... -jm
 PhoneGap.available = DeviceInfo.uuid != undefined;
 
 /**
@@ -27,28 +27,51 @@ PhoneGap.available = DeviceInfo.uuid != undefined;
  */
 PhoneGap.addConstructor = function(func) {
     var state = document.readyState;
-    if (state != 'loaded' && state != 'complete')
-        PhoneGap._constructors.push(func);
+    if ( state == 'loaded' || state == 'complete' )
+	  {
+		  func();
+	  }
     else
-        func();
+	  {
+        PhoneGap._constructors.push(func);
+	  }
 };
-(function() {
-    var timer = setInterval(function() {
-        var state = document.readyState;
-        if (state != 'loaded' && state != 'complete')
-            return;
-        clearInterval(timer);
-        while (PhoneGap._constructors.length > 0) {
-            var constructor = PhoneGap._constructors.shift();
-            try {
-                constructor();
-            } catch(e) {
-                if (typeof(debug['log']) == 'function')
-                    debug.log("Failed to run constructor: " + debug.processMessage(e));
-                else
-                    alert("Failed to run constructor: " + e.message);
+
+(function() 
+ {
+    var timer = setInterval(function()
+	{
+							
+		var state = document.readyState;
+							
+    if ( state == 'loaded' || state == 'complete' )
+		{
+			clearInterval(timer); // stop looking
+			// run our constructors list
+			while (PhoneGap._constructors.length > 0) 
+			{
+				var constructor = PhoneGap._constructors.shift();
+				try 
+				{
+					constructor();
+				} 
+				catch(e) 
+				{
+					if (typeof(debug['log']) == 'function')
+					{
+						debug.log("Failed to run constructor: " + debug.processMessage(e));
+					}
+					else
+					{
+						alert("Failed to run constructor: " + e.message);
+					}
+				}
             }
-        }
+			// all constructors run, now fire the deviceready event
+			var e = document.createEvent('Events'); 
+			e.initEvent('deviceready');
+			document.dispatchEvent(e);
+		}
     }, 1);
 })();
 
@@ -65,14 +88,51 @@ PhoneGap.exec = function() {
     if (PhoneGap.queue.timer == null)
         PhoneGap.queue.timer = setInterval(PhoneGap.run_command, 10);
 };
+
 /**
- * Internal function used to dispatch the request to PhoneGap.  This needs to be implemented per-platform to
- * ensure that methods are called on the phone in a way appropriate for that device.
+ * Internal function used to dispatch the request to PhoneGap.  It processes the
+ * command queue and executes the next command on the list.  If one of the
+ * arguments is a JavaScript object, it will be passed on the QueryString of the
+ * url, which will be turned into a dictionary on the other end.
  * @private
  */
 PhoneGap.run_command = function() {
-};
+    if (!PhoneGap.available || !PhoneGap.queue.ready)
+        return;
 
+    PhoneGap.queue.ready = false;
+
+    var args = PhoneGap.queue.commands.shift();
+    if (PhoneGap.queue.commands.length == 0) {
+        clearInterval(PhoneGap.queue.timer);
+        PhoneGap.queue.timer = null;
+    }
+
+    var uri = [];
+    var dict = null;
+    for (var i = 1; i < args.length; i++) {
+        var arg = args[i];
+        if (arg == undefined || arg == null)
+            arg = '';
+        if (typeof(arg) == 'object')
+            dict = arg;
+        else
+            uri.push(encodeURIComponent(arg));
+    }
+    var url = "gap://" + args[0] + "/" + uri.join("/");
+    if (dict != null) {
+        var query_args = [];
+        for (var name in dict) {
+            if (typeof(name) != 'string')
+                continue;
+            query_args.push(encodeURIComponent(name) + "=" + encodeURIComponent(dict[name]));
+        }
+        if (query_args.length > 0)
+            url += "?" + query_args.join("&");
+    }
+    document.location = url;
+
+};
 function Acceleration(x, y, z)
 {
   this.x = x;
@@ -294,58 +354,76 @@ Compass.prototype.setError = function(message) {
 PhoneGap.addConstructor(function() {
     if (typeof navigator.compass == "undefined") navigator.compass = new Compass();
 });
-/**
- * This class provides access to the device contacts.
- * @constructor
- */
-
-function Contact(jsonObject) {
-	  this.firstName = "";
-	  this.lastName = "";
-    this.name = "";
-    this.phones = {};
-    this.emails = {};
-  	this.address = "";
+var Contact = function(){
+  this.name = null;
+  this.emails = [];
+  this.phones = [];
 }
 
-Contact.prototype.displayName = function()
+var ContactName = function()
 {
-    // TODO: can be tuned according to prefs
-	return this.name;
+  this.formatted = "";
+  this.familyName = "";
+  this.givenName = "";
+  this.additionalNames = [];
+  this.prefixes = [];
+  this.suffixes = [];
 }
 
-function ContactManager() {
-	// Dummy object to hold array of contacts
-	this.contacts = [];
-	this.timestamp = new Date().getTime();
+
+var ContactEmail = function()
+{
+  this.types = [];
+  this.address = "";
 }
 
-ContactManager.prototype.getAllContacts = function(successCallback, errorCallback, options) {
-	// Interface
+var ContactPhoneNumber = function()
+{
+  this.types = [];
+  this.number = "";
+}
+
+
+var Contacts = function()
+{
+  this.records = [];  
+}
+
+Contacts.prototype.find = function(obj, win, fail)
+{
+  if(obj.name != null)
+  {
+   ContactHook.search(name, "", ""); 
+  }
+  this.win = win;
+  this.fail = fail;
+}
+
+Contacts.prototype.droidFoundContact = function(name, npa, email)
+{
+  var contact = new Contact();
+  contact.name = new ContactName();
+  contact.name.formatted = name;
+  contact.name.givenName = name;
+  var mail = new ContactEmail();
+  mail.types.push("home");
+  mail.address = email;
+  contact.emails.push(mail);
+  phone = new ContactPhoneNumber();
+  phone.types.push("home");
+  phone.number = npa;
+  contact.phones.push(phone);
+  this.records.push(contact);
+}
+
+Contacts.prototype.droidDone = function()
+{
+  this.win(this.records);
 }
 
 PhoneGap.addConstructor(function() {
-    if (typeof navigator.ContactManager == "undefined") navigator.ContactManager = new ContactManager();
+  if(typeof navigator.contacts == "undefined") navigator.contacts = new Contacts();
 });
-ContactManager.prototype.getAllContacts = function(successCallback, errorCallback, options) {
-  this.win = successCallback;
-  this.fail = errorCallback;
-	ContactHook.getContactsAndSendBack();
-}
-
-ContactManager.prototype.droidAddContact = function(name, phone, email)
-{
-  var contact = new Contact();
-  contact.name = name;
-  contact.phones.primary = phone;
-  contact.emails.primary = email;
-  this.contacts.push(contact);
-}
-
-ContactManager.prototype.droidDone = function()
-{
-  win(this.contacts);
-}
 /**
  * this represents the mobile device, and provides properties for inspecting the model, version, UUID of the
  * phone, etc.
@@ -366,13 +444,7 @@ function Device() {
             this.gapVersion = window.DroidGap.getVersion();
             this.platform = window.DroidGap.getPlatform();
             this.name = window.DroidGap.getProductName();  
-        } else {          
-            this.platform = DeviceInfo.platform;
-            this.version  = DeviceInfo.version;
-            this.name     = DeviceInfo.name;
-            this.gap      = DeviceInfo.gap;
-            this.uuid     = DeviceInfo.uuid;
-        }
+        } 
     } catch(e) {
         this.available = false;
     }
@@ -380,9 +452,6 @@ function Device() {
 
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
-    var event = document.createEvent("Events");
-    event.initEvent('deviceReady', false, false);
-    document.dispatchEvent(event);
 });
 /**
  * This class provides generic read and write access to the mobile device file system.
@@ -680,6 +749,28 @@ Geolocation.prototype.clearWatch = function(watchId)
 {
   Geo.stop(watchId);
 }
+function KeyEvent() 
+{
+}
+
+KeyEvent.prototype.menuTrigger = function()
+{
+  var e = document.createEvent('Events');
+  e.initEvent('menuKeyDown');
+  document.dispatchEvent(e);
+}
+
+KeyEvent.prototype.searchTrigger= function()
+{
+  var e = document.createEvent('Events');
+  e.initEvent('searchKeyDown');
+  document.dispatchEvent(e);
+}
+
+if (document.keyEvent == null || typeof document.keyEvent == 'undefined')
+{
+  window.keyEvent = document.keyEvent = new KeyEvent();
+}
 /**
  * This class provides access to the device media, interfaces to both sound and video
  * @constructor
@@ -951,3 +1042,92 @@ PositionError.UNKNOWN_ERROR = 0;
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
 PositionError.TIMEOUT = 3;
+/*
+ * This is purely for the Android 1.5/1.6 HTML 5 Storage
+ * I was hoping that Android 2.0 would deprecate this, but given the fact that 
+ * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
+ */
+
+var DroidDB = function()
+{
+  this.txQueue = [];
+}
+
+DroidDB.prototype.addResult = function(rawdata, tx_id)
+{
+  eval("var data = " + rawdata);
+  var tx = this.txQueue[tx_id];
+  tx.resultSet.push(data);
+}
+
+DroidDB.prototype.completeQuery = function(tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  var r = new result();
+  r.rows.resultSet = tx.resultSet;
+  r.rows.length = tx.resultSet.length;
+  tx.win(r);
+}
+
+DroidDB.prototype.fail = function(reason, tx_id)
+{
+  var tx = this.txQueue[tx_id];
+  tx.fail(reason);
+}
+
+var DatabaseShell = function()
+{
+  
+}
+
+DatabaseShell.prototype.transaction = function(process)
+{
+  tx = new Tx();
+  process(tx);
+}
+
+var Tx = function()
+{
+  droiddb.txQueue.push(this);
+  this.id = droiddb.txQueue.length - 1;
+  this.resultSet = [];
+}
+
+Tx.prototype.executeSql = function(query, params, win, fail)
+{
+  droidStorage.executeSql(query, params, this.id);
+  tx.win = win;
+  tx.fail = fail;
+}
+
+var result = function()
+{
+  this.rows = new Rows();
+}
+
+var Rows = function()
+{
+  this.resultSet = [];
+  this.length = 0;
+}
+
+Rows.prototype.item = function(row_id)
+{
+  return this.resultSet[id];
+}
+
+var dbSetup = function(name, version, display_name, size)
+{
+    droidStorage.openDatabase(name, version, display_name, size)
+    db_object = new DatabaseShell();
+    return db_object;
+}
+
+PhoneGap.addConstructor(function() {
+  if (typeof navigator.openDatabase == "undefined") 
+  {
+    navigator.openDatabase = window.openDatabase = dbSetup;
+  window.droiddb = new DroidDB();
+  }
+});
+

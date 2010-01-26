@@ -1,0 +1,101 @@
+#!/usr/bin/env ruby
+
+class Build
+  def start(*args)
+    @android_sdk_path, @name, @pkg, @www, @path = args
+
+    build_jar
+    create_android
+    generate_manifest
+    copy_libs
+    write_java
+  end
+  
+  # creates framework/phonegap.jar using android_sdk_path 
+  # 
+  # TODO
+  # - write out local.properties with android sdk every time
+  def build_jar
+    `touch #{ @android_sdk_path }` unless File.exists? @android_sdk_path
+    `ant jar`
+  end 
+
+  # runs android create project
+  def create_android
+    `android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+  end
+
+  # creates an AndroidManifest.xml for the project
+  def generate_manifest
+    manifest = ""
+    open('framework/AndroidManifest.xml', 'r') do |old| 
+      manifest = old.read
+      manifest.gsub! 'package="com.phonegap"', "package=\"#{ @pkg }\""
+      manifest.gsub! 'android:name=".StandAlone"', ".#{ @name }"
+    end
+    open("#{ @path }/AndroidManifest.xml", 'w') {|x| x.puts manifest }
+  end
+
+  # copies stuff from framework into the project
+  #
+  # TODO need to allow for www import
+  # - copy www into #{ @path }/assets/www
+  # - copy www/icon.png into #{ @path }/res/drawable/icon.png
+  #
+  def copy_libs
+    `cp framework/phonegap.jar #{ @path }/libs`
+    `cp framework/res/values/strings.xml #{ @path }/res/values/strings.xml`
+    `cp framework/res #{ @path }/res`
+    `cp framework/assets/www #{ @path }/assets/wwww`
+  end
+
+  # this is so fucking unholy yet oddly beautiful
+  # not sure if I should thank Ruby or apologize for this abusive use of string interpolation
+  def write_java
+    j = "
+    package #{ @pkg };
+
+    import android.app.Activity;
+    import android.os.Bundle;
+    import com.phonegap.*;
+
+    public class #{ @name } extends DroidGap
+    {
+        @Override
+        public void onCreate(Bundle savedInstanceState)
+        {
+            super.onCreate(savedInstanceState);
+            super.loadUrl(\"file:///android_asset/www/index.html\");
+        }
+    }
+    "
+    open("#{ @path }/src/#{ @pkg.gsub '.', '/' }",'w') { |f| f.puts j }
+  end
+  #
+end
+
+
+if(ARGV.length == 5)
+  Build.new.start(ARGV)  
+else
+  puts <<-EOF
+  
+  DroidGap: An Android PhoneGap Project Generator
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  Creates a fresh Android/PhoneGap app for hybrid mobile web hacking.
+  
+  Usage:
+  
+    ./droidgap <android_sdk_path> <name> <package_name> <www> <path>
+  
+  Params:
+  
+  android_sdk_path ... The path to your Android SDK install.
+  name ............... The name of your application.
+  package_name ....... The name of your package (For example: com.nitobi.demo)
+  www ................ The name of your Web App.
+  path ............... Location of where you want to work on your application.
+  
+  EOF
+end

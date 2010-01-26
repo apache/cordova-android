@@ -7,7 +7,7 @@ Pre-requisites
   * Java JDK 1.5
   * Android SDK Package [http://developer.android.com](http://developer.android.com)
   * Apache ANT (For build script)
-  * Ruby, Rubygems, nokogiri (for build.rb)
+  * Ruby
 
 Recommended:
 ----------------------------------------------------------------
