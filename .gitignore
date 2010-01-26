@@ -2,3 +2,4 @@ default.properties
 bin
 gen
 assets/www/phonegap.js
+local.properties
