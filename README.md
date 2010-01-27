@@ -18,10 +18,9 @@ Getting Started with PhoneGap/Android
 
 1. From the root of this repo run the following command to generate a new PhoneGap/Android app:
 
-    ./droidgap <android_sdk_path> <name> <package_name> <www> <path>
+<pre>    
+    ./droidgap [android_sdk_path] [name] [package_name] [www] [path]
 
-Params:
-<pre>
     android_sdk_path ... The path to your Android SDK install.
     name ............... The name of your application.
     package_name ....... The name of your package (For example: com.nitobi.demo)
