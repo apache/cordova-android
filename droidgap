@@ -1,25 +1,34 @@
 #!/usr/bin/env ruby
 
 class Build
-  def start(*args)
-    @android_sdk_path, @name, @pkg, @www, @path = args
-
+  attr_reader :android_sdk_path, :name, :pkg, :www, :path
+  
+  def initialize(*a)
+    @android_sdk_path, @name, @pkg, @www, @path = a
+  end
+  
+  # runs the build script
+  def run
     build_jar
     create_android
     generate_manifest
     copy_libs
     write_java
-  end
+  end 
   
   # removes local.properties and recreates based on android_sdk_path 
   # then generates framework/phonegap.jar
   def build_jar
-    `rm framework/local.properties`
+    `rm framework/local.properties` if File.exists? 'framework/local.properties'
+    `rm framework/phonegap.jar`     if File.exists? 'framework/phonegap.jar'
+    `rm framework/phonegap.js`      if File.exists? 'framework/phonegap.js'
     `ECHO 'sdk-location=#{ @android_sdk_path }' > framework/local.properties`
-    `ant jar`
+    `cd framework; ant jar`
   end 
 
   # runs android create project
+  # TODO need to allow more flexible SDK targetting
+  # TODO validate Android SDK
   def create_android
     `android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
@@ -42,10 +51,11 @@ class Build
   # - copy www/icon.png into #{ @path }/res/drawable/icon.png
   #
   def copy_libs
+    `mkdir -p #{ @path }/assets/wwww`
     `cp framework/phonegap.jar #{ @path }/libs`
     `cp framework/res/values/strings.xml #{ @path }/res/values/strings.xml`
-    `cp framework/res #{ @path }/res`
-    `cp framework/assets/www #{ @path }/assets/wwww`
+    `cp -R framework/res #{ @path }/res`
+    `cp -R example #{ @path }/assets/wwww`
   end
 
   # this is so fucking unholy yet oddly beautiful
@@ -68,14 +78,17 @@ class Build
         }
     }
     "
-    open("#{ @path }/src/#{ @pkg.gsub '.', '/' }",'w') { |f| f.puts j }
+    dir = "#{ @path }/src/#{ @pkg.gsub '.', '/' }";
+    cls = "#{ @name }.java"
+    pth = File.join(dir,cls)
+    open(pth,'w') { |f| f.puts j }
   end
   #
 end
 
 
-if(ARGV.length == 5)
-  Build.new.start(ARGV)  
+if ARGV.length == 5
+  Build.new(*ARGV).run
 else
   puts <<-EOF
   

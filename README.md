@@ -15,15 +15,18 @@ Recommended:
 
 Getting Started with PhoneGap Android
 --------------------------------------
-1. Make sure you have Ruby and the nokogiri gem installed. Run 'gem list' to see a list of installed Ruby gems, and 'gem install nokogiri' from command-line if you don't have it.
-2. Clone the repository using git, from command line: git clone git://github.com/phonegap/phonegap-android.git
-3. Run 'cd phonegap-android/framework'
-4. Create a local.properties file with the following line in it:
 
-    sdk-location=/path/to/your/androidsdk
-    
-5. Run 'ant jar' - this will create the phonegap.jar file and build a fresh phonegap.js for use in your HTML/JS/CSS-based application (for accessing native functionality).
-6. cd back to the root directory (cd ..)
+1. Clone the repository using git, from command line: git clone git://github.com/phonegap/phonegap-android.git
+2. Run the following command:
+
+    ./droidgap <android_sdk_path> <name> <package_name> <www> <path>
+
+
+
+
+
+
+
 7. Run 'ruby build.rb <app-name> <package_name> <wwwdir> <path>', where:
  - app-name: Name of application without spaces
  - package name: Java namespace of package ( i.e. com.nitobi.demo). This must be unique otherwise it won't load properly on your phone
