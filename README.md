@@ -1,37 +1,29 @@
-PhoneGap Android
-=============================================================
-PhoneGap Android is an Android application library that allows for PhoneGap-based projects to be built for the Android Platform. PhoneGap-based applications are, at the core, an application written in web-based languages, generally HTML, CSS and JavaScript. 
+PhoneGap/Android
+================
+PhoneGap/Android is an Android application library that allows for PhoneGap based projects to be built for the Android Platform. PhoneGap based applications are, at the core, an application written with web technology: HTML, CSS and JavaScript. 
 
 Pre-requisites
--------------------------------------------------------------
-  * Java JDK 1.5
-  * Android SDK Package [http://developer.android.com](http://developer.android.com)
-  * Apache ANT (For build script)
-  * Ruby
+--------------
+- Java JDK 1.5
+- Android SDK Package [http://developer.android.com](http://developer.android.com)
+- Apache ANT
+- Ruby
 
-Recommended:
-----------------------------------------------------------------
-  * Eclipse (Recommended for back-end debugging, not required)
+Recommended
+-----------
+- Eclipse (Great for debugging and extending PhoneGap/Android with your own Java plugins.)
 
-Getting Started with PhoneGap Android
+Getting Started with PhoneGap/Android
 --------------------------------------
 
-1. Clone the repository using git, from command line: git clone git://github.com/phonegap/phonegap-android.git
-2. Run the following command:
+1. From the root of this repo run the following command:
 
     ./droidgap <android_sdk_path> <name> <package_name> <www> <path>
 
+Params
 
 
 
-
-
-
-7. Run 'ruby build.rb <app-name> <package_name> <wwwdir> <path>', where:
- - app-name: Name of application without spaces
- - package name: Java namespace of package ( i.e. com.nitobi.demo). This must be unique otherwise it won't load properly on your phone
- - www-dir: www directory which includes an icon.png file for the icon
- - path: The path to copy the final project assets into, i.e. the final build path
 8. Now you can use the generated Android code that is located in the 'path' directory from the above step and do what you want with it: import into Eclipse to test with the simulator or otherwise.
 
 Using Eclipse with PhoneGap

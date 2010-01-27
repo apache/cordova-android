@@ -13,6 +13,7 @@ class Build
     create_android
     generate_manifest
     copy_libs
+    add_name_to_strings
     write_java
   end 
   
@@ -38,25 +39,41 @@ class Build
     manifest = ""
     open('framework/AndroidManifest.xml', 'r') do |old| 
       manifest = old.read
+      manifest.gsub! 'android:versionCode="5"', 'android:versionCode="1"'
       manifest.gsub! 'package="com.phonegap"', "package=\"#{ @pkg }\""
       manifest.gsub! 'android:name=".StandAlone"', "android:name=\".#{ @name }\""
+      manifest.gsub! 'android:minSdkVersion="5"', 'android:minSdkVersion="3"'
     end
-    open("#{ @path }/AndroidManifest.xml", 'w') {|x| x.puts manifest }
+    open("#{ @path }/AndroidManifest.xml", 'w') { |x| x.puts manifest }
   end
 
   # copies stuff from framework into the project
-  #
-  # TODO need to allow for www import
-  # - copy www into #{ @path }/assets/www
-  # - copy www/icon.png into #{ @path }/res/drawable/icon.png
-  #
+  # TODO need to allow for www import inc icon
   def copy_libs
     `mkdir -p #{ @path }/assets/wwww`
     `cp framework/phonegap.jar #{ @path }/libs`
     `cp framework/res/values/strings.xml #{ @path }/res/values/strings.xml`
-    `cp -R framework/res #{ @path }/res`
-    `cp -R example #{ @path }/assets/wwww`
+    `cp framework/res/layout/main.xml #{ @path }/res/layout/main.xml`
+    `cp framework/res/layout/preview.xml #{ @path }/res/layout/preview.xml`
+    %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
+      `cp framework/res/drawable/icon.png #{ @path }/res/#{ e }/icon.png`
+    end 
+    `cp -R example #{ @path }/assets`
+    `mv #{ @path }/assets/example #{ @path }/assets/www`
   end
+  
+  # puts app name in strings
+  def add_name_to_strings
+    x = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+    <resources>
+      <string name=\"app_name\">#{ @name }</string>
+      <string name=\"go\">Snap</string>
+    </resources>
+    "
+    open("#{ @path }/res/values/strings.xml", 'w') do |f| 
+      f.puts x.gsub('    ','')
+    end 
+  end 
 
   # this is so fucking unholy yet oddly beautiful
   # not sure if I should thank Ruby or apologize for this abusive use of string interpolation
@@ -81,7 +98,7 @@ class Build
     dir = "#{ @path }/src/#{ @pkg.gsub '.', '/' }";
     cls = "#{ @name }.java"
     pth = File.join(dir,cls)
-    open(pth,'w') { |f| f.puts j }
+    open(pth,'w') { |f| f.puts j.gsub('    ','') }
   end
   #
 end
