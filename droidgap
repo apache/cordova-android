@@ -11,12 +11,11 @@ class Build
     write_java
   end
   
-  # creates framework/phonegap.jar using android_sdk_path 
-  # 
-  # TODO
-  # - write out local.properties with android sdk every time
+  # removes local.properties and recreates based on android_sdk_path 
+  # then generates framework/phonegap.jar
   def build_jar
-    `touch #{ @android_sdk_path }` unless File.exists? @android_sdk_path
+    `rm framework/local.properties`
+    `ECHO 'sdk-location=#{ @android_sdk_path }' > framework/local.properties`
     `ant jar`
   end 
 
@@ -31,7 +30,7 @@ class Build
     open('framework/AndroidManifest.xml', 'r') do |old| 
       manifest = old.read
       manifest.gsub! 'package="com.phonegap"', "package=\"#{ @pkg }\""
-      manifest.gsub! 'android:name=".StandAlone"', ".#{ @name }"
+      manifest.gsub! 'android:name=".StandAlone"', "android:name=\".#{ @name }\""
     end
     open("#{ @path }/AndroidManifest.xml", 'w') {|x| x.puts manifest }
   end
@@ -80,10 +79,10 @@ if(ARGV.length == 5)
 else
   puts <<-EOF
   
-  DroidGap: An Android PhoneGap Project Generator
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  DroidGap: PhoneGap/Android Project Generator
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  Creates a fresh Android/PhoneGap app for hybrid mobile web hacking.
+  Creates a fresh app for hybrid mobile web hacking. Delicious robot!
   
   Usage:
   
@@ -94,8 +93,8 @@ else
   android_sdk_path ... The path to your Android SDK install.
   name ............... The name of your application.
   package_name ....... The name of your package (For example: com.nitobi.demo)
-  www ................ The name of your Web App.
-  path ............... Location of where you want to work on your application.
+  www ................ The path to your www folder. (Wherein your HTML, CSS and JS app is.)
+  path ............... The path to generate the application.
   
   EOF
 end
