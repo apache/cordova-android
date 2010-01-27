@@ -20,14 +20,14 @@ Getting Started with PhoneGap/Android
 
     ./droidgap <android_sdk_path> <name> <package_name> <www> <path>
 
-    Params:
-
+Params:
+<pre>
     android_sdk_path ... The path to your Android SDK install.
     name ............... The name of your application.
     package_name ....... The name of your package (For example: com.nitobi.demo)
     www ................ The path to your www folder. (Wherein your HTML, CSS and JS app is.)
     path ............... The path to generate the application.
-
+</pre>
 
 Thats it!
 
