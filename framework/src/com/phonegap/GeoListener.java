@@ -2,6 +2,7 @@ package com.phonegap;
 
 import android.content.Context;
 import android.location.Location;
+import android.location.LocationManager;
 import android.webkit.WebView;
 
 public class GeoListener {
@@ -10,6 +11,7 @@ public class GeoListener {
 	String failCallback;
     GpsListener mGps; 
     NetworkListener mNetwork;
+    LocationManager mLocMan;
     Context mCtx;
     private WebView mAppView;
 	
@@ -20,8 +22,14 @@ public class GeoListener {
 		id = i;
 		interval = time;
 		mCtx = ctx;
-        mGps = new GpsListener(mCtx, interval, this);
-        mNetwork = new NetworkListener(mCtx, interval, this);
+		mGps = null;
+		mNetwork = null;
+		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
+	
+		if (mLocMan.getProvider(LocationManager.GPS_PROVIDER) != null)
+			mGps = new GpsListener(mCtx, interval, this);
+		if (mLocMan.getProvider(LocationManager.NETWORK_PROVIDER) != null)
+			mNetwork = new NetworkListener(mCtx, interval, this);
         mAppView = appView;
 	}
 	
@@ -63,9 +71,13 @@ public class GeoListener {
 	}
 
 	public Location getCurrentLocation() {
-		Location loc = mGps.getLocation();
-		if (loc == null)
+		Location loc = null;
+		if (mGps != null)
+			loc = mGps.getLocation();
+		if (loc == null && mNetwork != null)
 			loc = mNetwork.getLocation();
+		else
+			loc = new Location(LocationManager.NETWORK_PROVIDER);
 		return loc;
 	}
 }
