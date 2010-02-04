@@ -1,31 +1,44 @@
 #!/usr/bin/env ruby
-
+require 'fileutils'
 class Build
-  attr_reader :android_sdk_path, :name, :pkg, :www, :path
+  attr_reader :android_sdk_path, :name, :pkg, :www, :path, :dir
   
   def initialize(*a)
     @android_sdk_path, @name, @pkg, @www, @path = a
+	@s = File::SEPARATOR
+	@dir = Dir.pwd + @s
   end
   
   # runs the build script
   def run
+	puts "Building the JAR..."
     build_jar
+	puts "Creating Android project..."
     create_android
+	puts "Generating manifest..."
     generate_manifest
+	puts "Copying over libraries and assets..."
     copy_libs
+	puts "Adding some application name to strings.xml..."
     add_name_to_strings
+	puts "Writing application Java code..."
     write_java
+	puts "Complete!"
   end 
   
   # removes local.properties and recreates based on android_sdk_path 
   # then generates framework/phonegap.jar
   def build_jar
-    `rm framework/local.properties` if File.exists? 'framework/local.properties'
-    `rm framework/phonegap.jar`     if File.exists? 'framework/phonegap.jar'
-    `rm framework/phonegap.js`      if File.exists? 'framework/phonegap.js'
-    `ECHO 'sdk-location=#{ @android_sdk_path }' > framework/local.properties`
-    `cd framework; ant jar`
-  end 
+	FileUtils.rm "#{ @dir }framework#{@s}local.properties" if File.exists? "#{ @dir }framework#{@s}local.properties"
+    FileUtils.rm "#{ @dir }framework#{@s}phonegap.js" if File.exists? "#{ @dir }framework#{@s}phonegap.js"
+	FileUtils.rm "#{ @dir }framework#{@s}phonegap.jar" if File.exists? "#{ @dir }framework#{@s}phonegap.jar"
+    open("#{ @dir }framework#{@s}local.properties", 'w') do |f| 
+      f.puts "sdk.dir=#{ @android_sdk_path }"
+    end 
+	Dir.chdir(@dir + "framework")
+    `ant jar`
+	Dir.chdir(@dir)
+  end
 
   # runs android create project
   # TODO need to allow more flexible SDK targetting
@@ -37,29 +50,29 @@ class Build
   # creates an AndroidManifest.xml for the project
   def generate_manifest
     manifest = ""
-    open('framework/AndroidManifest.xml', 'r') do |old| 
+    open(@dir + 'framework/AndroidManifest.xml', 'r') do |old| 
       manifest = old.read
       manifest.gsub! 'android:versionCode="5"', 'android:versionCode="1"'
       manifest.gsub! 'package="com.phonegap"', "package=\"#{ @pkg }\""
       manifest.gsub! 'android:name=".StandAlone"', "android:name=\".#{ @name }\""
       manifest.gsub! 'android:minSdkVersion="5"', 'android:minSdkVersion="3"'
     end
-    open("#{ @path }/AndroidManifest.xml", 'w') { |x| x.puts manifest }
+    open("#{ @path }#{@s}AndroidManifest.xml", 'w') { |x| x.puts manifest }
   end
 
   # copies stuff from framework into the project
   # TODO need to allow for www import inc icon
   def copy_libs
-    `mkdir -p #{ @path }/assets/wwww`
-    `cp framework/phonegap.jar #{ @path }/libs`
-    `cp framework/res/values/strings.xml #{ @path }/res/values/strings.xml`
-    `cp framework/res/layout/main.xml #{ @path }/res/layout/main.xml`
-    `cp framework/res/layout/preview.xml #{ @path }/res/layout/preview.xml`
+	FileUtils.mkdir_p "#{ @path }#{@s}assets#{@s}www"
+	FileUtils.cp "#{ @dir }framework#{@s}phonegap.jar", "#{ @path }#{@s}libs"
+	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}values#{@s}strings.xml", "#{ @path }#{@s}res#{@s}values#{@s}strings.xml"
+	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}layout#{@s}main.xml", "#{ @path }#{@s}res#{@s}layout#{@s}main.xml"
+	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}layout#{@s}preview.xml", "#{ @path }#{@s}res#{@s}layout#{@s}preview.xml"
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
-      `cp framework/res/drawable/icon.png #{ @path }/res/#{ e }/icon.png`
-    end 
-    `cp -R example #{ @path }/assets`
-    `mv #{ @path }/assets/example #{ @path }/assets/www`
+	  FileUtils.cp "#{ @dir }framework#{@s}res#{@s}drawable#{@s}icon.png", "#{ @path }#{@s}res#{@s}#{ e }#{@s}icon.png"
+    end
+	FileUtils.cp_r "#{ @www }#{ @s }", "#{ @path }#{ @s }assets#{ @s }"
+	FileUtils.mv "#{ @path }#{ @s }assets#{ @s }#{ @www }", "#{ @path }#{ @s }assets#{ @s }www"
   end
   
   # puts app name in strings
@@ -70,7 +83,7 @@ class Build
       <string name=\"go\">Snap</string>
     </resources>
     "
-    open("#{ @path }/res/values/strings.xml", 'w') do |f| 
+    open("#{ @path }#{@s}res#{@s}values#{@s}strings.xml", 'w') do |f| 
       f.puts x.gsub('    ','')
     end 
   end 
@@ -95,7 +108,7 @@ class Build
         }
     }
     "
-    dir = "#{ @path }/src/#{ @pkg.gsub '.', '/' }";
+    dir = "#{ @path }#{@s}src#{@s}#{ @pkg.gsub '.', '/' }";
     cls = "#{ @name }.java"
     pth = File.join(dir,cls)
     open(pth,'w') { |f| f.puts j.gsub('    ','') }
