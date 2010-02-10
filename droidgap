@@ -29,7 +29,6 @@ class Build
   # removes local.properties and recreates based on android_sdk_path 
   # then generates framework/phonegap.jar
   def build_jar
-<<<<<<< HEAD
 	FileUtils.rm "#{ @dir }framework#{@s}local.properties" if File.exists? "#{ @dir }framework#{@s}local.properties"
     FileUtils.rm "#{ @dir }framework#{@s}phonegap.js" if File.exists? "#{ @dir }framework#{@s}phonegap.js"
 	FileUtils.rm "#{ @dir }framework#{@s}phonegap.jar" if File.exists? "#{ @dir }framework#{@s}phonegap.jar"
@@ -40,22 +39,14 @@ class Build
     `ant jar`
 	Dir.chdir(@dir)
   end
-=======
-    `rm framework/local.properties` if File.exists? 'framework/local.properties'
-    `rm framework/phonegap.jar`     if File.exists? 'framework/phonegap.jar'
-    `rm framework/phonegap.js`      if File.exists? 'framework/phonegap.js'
-    `ECHO 'sdk.dir=#{ @android_sdk_path }' > framework/local.properties`
-    `cd framework; ant jar`
-  end 
->>>>>>> 3862632af1dbcdb1dae081abb77dbb0400843c00
 
   # runs android create project
   # TODO need to allow more flexible SDK targetting
   # TODO validate Android SDK
   def create_android
-    `#{ @android_sdk_path }/tools/android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
-    `mkdir -p #{ @path }/assets/www`  
-    `cp -R #{ @www } #{ @path }/assets/www`
+    `android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+	FileUtils.mkdir_p "#{ @path }#{@s}assets#{@s}www"
+    FileUtils.cp_r "#{ @www }#{ @s }.", "#{ @path }#{ @s }assets#{ @s }www#{ @s }"
   end
 
   # creates an AndroidManifest.xml for the project
@@ -74,23 +65,13 @@ class Build
   # copies stuff from framework into the project
   # TODO need to allow for www import inc icon
   def copy_libs
-<<<<<<< HEAD
-	FileUtils.mkdir_p "#{ @path }#{@s}assets#{@s}www"
 	FileUtils.cp "#{ @dir }framework#{@s}phonegap.jar", "#{ @path }#{@s}libs"
 	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}values#{@s}strings.xml", "#{ @path }#{@s}res#{@s}values#{@s}strings.xml"
 	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}layout#{@s}main.xml", "#{ @path }#{@s}res#{@s}layout#{@s}main.xml"
 	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}layout#{@s}preview.xml", "#{ @path }#{@s}res#{@s}layout#{@s}preview.xml"
-=======
-    `cp framework/phonegap.jar #{ @path }/libs`
-    `cp framework/res/values/strings.xml #{ @path }/res/values/strings.xml`
-    `cp framework/res/layout/main.xml #{ @path }/res/layout/main.xml`
-    `cp framework/res/layout/preview.xml #{ @path }/res/layout/preview.xml`
->>>>>>> 3862632af1dbcdb1dae081abb77dbb0400843c00
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
 	  FileUtils.cp "#{ @dir }framework#{@s}res#{@s}drawable#{@s}icon.png", "#{ @path }#{@s}res#{@s}#{ e }#{@s}icon.png"
     end
-	FileUtils.cp_r "#{ @www }#{ @s }", "#{ @path }#{ @s }assets#{ @s }"
-	FileUtils.mv "#{ @path }#{ @s }assets#{ @s }#{ @www }", "#{ @path }#{ @s }assets#{ @s }www"
   end
   
   # puts app name in strings
