@@ -23,7 +23,7 @@ class Build
     `rm framework/local.properties` if File.exists? 'framework/local.properties'
     `rm framework/phonegap.jar`     if File.exists? 'framework/phonegap.jar'
     `rm framework/phonegap.js`      if File.exists? 'framework/phonegap.js'
-    `ECHO 'sdk-location=#{ @android_sdk_path }' > framework/local.properties`
+    `ECHO 'sdk.dir=#{ @android_sdk_path }' > framework/local.properties`
     `cd framework; ant jar`
   end 
 
@@ -31,7 +31,9 @@ class Build
   # TODO need to allow more flexible SDK targetting
   # TODO validate Android SDK
   def create_android
-    `android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+    `#{ @android_sdk_path }/tools/android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+    `mkdir -p #{ @path }/assets/www`  
+    `cp -R #{ @www } #{ @path }/assets/www`
   end
 
   # creates an AndroidManifest.xml for the project
@@ -50,7 +52,6 @@ class Build
   # copies stuff from framework into the project
   # TODO need to allow for www import inc icon
   def copy_libs
-    `mkdir -p #{ @path }/assets/wwww`
     `cp framework/phonegap.jar #{ @path }/libs`
     `cp framework/res/values/strings.xml #{ @path }/res/values/strings.xml`
     `cp framework/res/layout/main.xml #{ @path }/res/layout/main.xml`
