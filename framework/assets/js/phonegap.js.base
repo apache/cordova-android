@@ -72,7 +72,7 @@ PhoneGap.addConstructor = function(func) {
 			e.initEvent('deviceready');
 			document.dispatchEvent(e);
 		}
-    }, 1);
+    }, 5);
 })();
 
 

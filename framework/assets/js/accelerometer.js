@@ -3,10 +3,11 @@ function Acceleration(x, y, z)
   this.x = x;
   this.y = y;
   this.z = z;
+  this.timestamp = new Date().getTime();
 }
 
 // Need to define these for android
-_accel = {}
+_accel = {};
 _accel.x = 0;
 _accel.y = 0;
 _accel.z = 0;
