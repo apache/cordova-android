@@ -75,9 +75,9 @@ class Build
 	Dir.chdir("#{ @dir }framework#{ @s }assets#{ @s }js")
 	basedir = "."
 	js = Dir.new(basedir).entries
-	phonegapjs = ""
+	phonegapjs = IO.read('phonegap.js.base');
 	js.each do |script|
-		next if script[0].chr == "."
+		next if script[0].chr == "." or script == "phonegap.js.base"
 		phonegapjs += IO.read(script)
 		phonegapjs += "\n\n"
 	end
