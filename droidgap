@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+# ./droidgap /Users/brianleroux/Code/android-sdk-mac MyApp com.westcoastlogic example /Users/brianleroux/Desktop/MyApp
 class Build
   attr_reader :android_sdk_path, :name, :pkg, :www, :path
   
