@@ -1,5 +1,5 @@
 var Contact = function(){
-  this.name = null;
+  this.name = new ContactName();
   this.emails = [];
   this.phones = [];
 }
@@ -37,7 +37,18 @@ Contacts.prototype.find = function(obj, win, fail)
 {
   if(obj.name != null)
   {
-   ContactHook.search(name, "", ""); 
+	// Build up the search term that we'll use in SQL, based on the structure/contents of the contact object passed into find.
+	   var searchTerm = '';
+	   if (obj.name.givenName && obj.name.givenName.length > 0) {
+			searchTerm = obj.name.givenName.split(' ').join('%');
+	   }
+	   if (obj.name.familyName && obj.name.familyName.length > 0) {
+			searchTerm += obj.name.familyName.split(' ').join('%');
+	   }
+	   if (!obj.name.familyName && !obj.name.givenName && obj.name.formatted) {
+			searchTerm = obj.name.formatted;
+	   }
+	   ContactHook.search(searchTerm, "", ""); 
   }
   this.win = win;
   this.fail = fail;

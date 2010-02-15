@@ -14,46 +14,12 @@ function Geolocation() {
     };
 };
 
-/**
- * Asynchronously aquires the current position.
- * @param {Function} successCallback The function to call when the position
- * data is available
- * @param {Function} errorCallback The function to call when there is an error 
- * getting the position data.
- * @param {PositionOptions} options The options for getting the position data
- * such as timeout.
- */
-Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options) {
-    var referenceTime = 0;
-    if (this.lastPosition)
-        referenceTime = this.lastPosition.timeout;
-    else
-        this.start(options);
-
-    var timeout = 20000;
-    var interval = 500;
-    if (typeof(options) == 'object' && options.interval)
-        interval = options.interval;
-
-    if (typeof(successCallback) != 'function')
-        successCallback = function() {};
-    if (typeof(errorCallback) != 'function')
-        errorCallback = function() {};
-
-    var dis = this;
-    var delay = 0;
-    var timer = setInterval(function() {
-        delay += interval;
-
-        if (typeof(dis.lastPosition) == 'object' && dis.lastPosition.timestamp > referenceTime) {
-            successCallback(dis.lastPosition);
-            clearInterval(timer);
-        } else if (delay >= timeout) {
-            errorCallback();
-            clearInterval(timer);
-        }
-    }, interval);
-};
+Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options)
+{
+  var position = Geo.getCurrentLocation();
+  this.global_success = successCallback;
+  this.fail = errorCallback;
+}
 
 /**
  * Asynchronously aquires the position repeatedly at a given interval.
@@ -111,23 +77,6 @@ Geolocation.prototype.setError = function(message) {
         f(message);
     }
 };
-
-PhoneGap.addConstructor(function() {
-    if (typeof navigator.geolocation == "undefined") navigator.geolocation = new Geolocation();
-});
-/*
-* Since we can't guarantee that we will have the most recent, we just try our best!
-*
-* Also, the API doesn't specify which version is the best version of the API
-*/
- 
-Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options)
-{
-  var position = Geo.getCurrentLocation();
-  this.global_success = successCallback;
-  this.fail = errorCallback;
-}
- 
  
 // Run the global callback
 Geolocation.prototype.gotCurrentPosition = function(lat, lng, alt, altacc, head, vel, stamp)
@@ -140,6 +89,7 @@ Geolocation.prototype.gotCurrentPosition = function(lat, lng, alt, altacc, head,
   {
     coords = new Coordinates(lat, lng, alt, altacc, head, vel);
     loc = new Position(coords, stamp);
+	this.lastPosition = loc;
     this.global_success(loc);
   }
 }
@@ -185,3 +135,16 @@ Geolocation.prototype.clearWatch = function(watchId)
 {
   Geo.stop(watchId);
 }
+// Taken from Jesse's geo fix (similar problem) in PhoneGap iPhone. Go figure, same browser!
+function __proxyObj(origObj, proxyObj, funkList) {
+	for (var v in funkList) {
+		origObj[funkList[v]] = proxyObj[funkList[v]];
+	}
+}
+PhoneGap.addConstructor(function() {
+	navigator._geo = new Geolocation();
+	__proxyObj(navigator.geolocation, navigator._geo,
+		["setLocation", "getCurrentPosition", "watchPosition",
+		 "clearWatch", "setError", "start", "stop", "gotCurrentPosition"]
+	);
+});
