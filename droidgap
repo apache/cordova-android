@@ -78,8 +78,8 @@ class Build
 	phonegapjs = IO.read('phonegap.js.base');
 	js.each do |script|
 		next if script[0].chr == "." or script == "phonegap.js.base"
-		phonegapjs += IO.read(script)
-		phonegapjs += "\n\n"
+		phonegapjs << IO.read(script)
+		phonegapjs << "\n\n"
 	end
 	Dir.chdir("#{ @dir}")
 	File.open("#{ @path }#{ @s }assets#{ @s }www#{ @s }phonegap.js", 'w') {|f| f.write(phonegapjs) }
