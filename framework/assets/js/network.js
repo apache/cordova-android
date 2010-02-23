@@ -6,11 +6,9 @@ function NetworkStatus() {
 	this.code = null;
 	this.message = "";
 }
-
 NetworkStatus.NOT_REACHABLE = 0;
 NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
 NetworkStatus.REACHABLE_VIA_WIFI_NETWORK = 2;
-
 /**
  * This class provides access to device Network data (reachability).
  * @constructor
@@ -23,16 +21,6 @@ function Network() {
      */
 	this.lastReachability = null;
 };
-
-/**
- * 
- * @param {Function} successCallback
- * @param {Function} errorCallback
- * @param {Object} options  (isIpAddress:boolean)
- */
-Network.prototype.isReachable = function(hostName, successCallback, options) {
-}
-
 /**
  * Called by the geolocation framework when the reachability status has changed.
  * @param {Reachibility} reachability The current reachability status.
@@ -40,21 +28,27 @@ Network.prototype.isReachable = function(hostName, successCallback, options) {
 Network.prototype.updateReachability = function(reachability) {
     this.lastReachability = reachability;
 };
-
-PhoneGap.addConstructor(function() {
-    if (typeof navigator.network == "undefined") navigator.network = new Network();
-});
+/**
+ * 
+ * @param {Object} uri
+ * @param {Function} win
+ * @param {Object} options  (isIpAddress:boolean)
+ */
 Network.prototype.isReachable = function(uri, win, options)
 {
   var status = new NetworkStatus();
   if(NetworkManager.isReachable(uri))
   {
-    if (NetworkManager.isWifiActive)
-      status.code = 2;
-    else
-      status.code = 1;
+    if (NetworkManager.isWifiActive()) {
+      status.code = NetworkStatus.REACHABLE_VIA_WIFI_NETWORK;
+    } else {
+      status.code = NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK;
+	}
+  } else {
+    status.code = NetworkStatus.NOT_REACHABLE;
   }
-  else
-      status.code = 0;
   win(status);
-}
+};
+PhoneGap.addConstructor(function() {
+    if (typeof navigator.network == "undefined") navigator.network = new Network();
+});

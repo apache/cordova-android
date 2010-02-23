@@ -2,12 +2,12 @@
 require 'fileutils'
 
 class Build
-  attr_reader :android_sdk_path, :name, :pkg, :www, :path
+  attr_reader :android_sdk_path, :name, :pkg, :www, :path, :dir
   
   def initialize(*a)
     @android_sdk_path, @name, @pkg, @www, @path = a
-    @android_dir = File.expand_path(File.dirname(__FILE__))
-    @framework_dir = File.join(@android_dir, "framework")
+	@s = File::SEPARATOR
+	@dir = Dir.pwd + @s
   end
   
   # runs the build script
@@ -18,104 +18,83 @@ class Build
     copy_libs
     add_name_to_strings
     write_java
-    puts "Complete!"
+	puts "Complete!"
   end 
   
   # removes local.properties and recreates based on android_sdk_path 
   # then generates framework/phonegap.jar
   def build_jar
-    puts "Building the JAR..."
-
-    %w(local.properties phonegap.js phonegap.jar).each do |f|
-      FileUtils.rm File.join(@framework_dir, f) if File.exists? File.join(@framework_dir, f)
-    end
-
-    open(File.join(@framework_dir, "local.properties"), 'w') do |f|
+	puts "Building the JAR..."
+	FileUtils.rm "#{ @dir }framework#{@s}local.properties" if File.exists? "#{ @dir }framework#{@s}local.properties"
+    FileUtils.rm "#{ @dir }framework#{@s}phonegap.js" if File.exists? "#{ @dir }framework#{@s}phonegap.js"
+	FileUtils.rm "#{ @dir }framework#{@s}phonegap.jar" if File.exists? "#{ @dir }framework#{@s}phonegap.jar"
+    open("#{ @dir }framework#{@s}local.properties", 'w') do |f| 
       f.puts "sdk.dir=#{ @android_sdk_path }"
-    end
-
-    Dir.chdir(@framework_dir)
+    end 
+	Dir.chdir(@dir + "framework")
     `ant jar`
-    Dir.chdir(@android_dir)
+	Dir.chdir(@dir)
   end
 
   # runs android create project
   # TODO need to allow more flexible SDK targetting
   # TODO validate Android SDK
   def create_android
-    puts "Creating Android project..."
-    
-    target_id = `android list targets` =~ /id:\s*(\d+).*android-5/ ? $1 : 5
-    
-    `android create project -t #{target_id} -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
-    
-    FileUtils.mkdir_p File.join(@path, "assets", "www")
-    FileUtils.cp_r File.join(@www, "."), File.join(@path, "assets", "www")
+	puts "Creating Android project..."
+    `android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+	FileUtils.mkdir_p "#{ @path }#{@s}assets#{@s}www"
+    FileUtils.cp_r "#{ @www }#{ @s }.", "#{ @path }#{ @s }assets#{ @s }www#{ @s }"
   end
 
   # creates an AndroidManifest.xml for the project
   def generate_manifest
-    puts "Generating manifest..."
+	puts "Generating manifest..."
     manifest = ""
-    open(File.join(@framework_dir, "AndroidManifest.xml"), 'r') do |old|
-      manifest = old.read
-      manifest.gsub! 'android:versionCode="5"', 'android:versionCode="1"'
-      manifest.gsub! 'package="com.phonegap"', "package=\"#{ @pkg }\""
-      manifest.gsub! 'android:name=".StandAlone"', "android:name=\".#{ @name }\""
-      manifest.gsub! 'android:minSdkVersion="5"', 'android:minSdkVersion="3"'
+    open(@dir + 'framework/AndroidManifest.xml', 'r') do |old| 
+		manifest = old.read
+		manifest.gsub! 'android:versionCode="5"', 'android:versionCode="1"'
+		manifest.gsub! 'package="com.phonegap"', "package=\"#{ @pkg }\""
+		manifest.gsub! 'android:name=".StandAlone"', "android:name=\".#{ @name }\""
+		manifest.gsub! 'android:minSdkVersion="5"', 'android:minSdkVersion="3"'
     end
-    open(File.join(@path, "AndroidManifest.xml"), 'w') { |x| x.puts manifest }
+    open("#{ @path }#{@s}AndroidManifest.xml", 'w') { |x| x.puts manifest }
   end
 
   # copies stuff from framework into the project
   # TODO need to allow for www import inc icon
   def copy_libs
-    puts "Copying over libraries and assets and creating phonegap.js..."
-    
-    framework_res_dir = File.join(@framework_dir, "res")
-    app_res_dir = File.join(@path, "res")
-
-    FileUtils.mkdir_p File.join(@path, "libs")
-    FileUtils.cp File.join(@framework_dir, "phonegap.jar"), File.join(@path, "libs")
-
-    FileUtils.mkdir_p File.join(app_res_dir, "values")
-    FileUtils.cp File.join(framework_res_dir, "values","strings.xml"), File.join(app_res_dir, "values", "strings.xml")
-
-    FileUtils.mkdir_p File.join(app_res_dir, "layout")
-    %w(main.xml preview.xml).each do |f|
-      FileUtils.cp File.join(framework_res_dir, "layout", f), File.join(app_res_dir, "layout", f)
-    end
-
+	puts "Copying over libraries and assets and creating phonegap.js..."
+	FileUtils.cp "#{ @dir }framework#{@s}phonegap.jar", "#{ @path }#{@s}libs"
+	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}values#{@s}strings.xml", "#{ @path }#{@s}res#{@s}values#{@s}strings.xml"
+	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}layout#{@s}main.xml", "#{ @path }#{@s}res#{@s}layout#{@s}main.xml"
+	FileUtils.cp "#{ @dir }framework#{@s}res#{@s}layout#{@s}preview.xml", "#{ @path }#{@s}res#{@s}layout#{@s}preview.xml"
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
-      FileUtils.mkdir_p File.join(app_res_dir, e)
-      FileUtils.cp File.join(framework_res_dir, "drawable", "icon.png"), File.join(app_res_dir, e, "icon.png")
+		FileUtils.cp "#{ @dir }framework#{@s}res#{@s}drawable#{@s}icon.png", "#{ @path }#{@s}res#{@s}#{ e }#{@s}icon.png"
     end
-
-    # concat JS and put into www folder.
-    js_dir = File.join(@framework_dir, "assets", "js")
-
-    phonegapjs = IO.read(File.join(js_dir, 'phonegap.js.base'))
-
-    Dir.new(js_dir).entries.each do |script|
-      next if script[0].chr == "." or script == "phonegap.js.base"
-
-      phonegapjs << IO.read(File.join(js_dir, script))
-      phonegapjs << "\n\n"
-    end
-
-    File.open(File.join(@path, "assets", "www", "phonegap.js"), 'w') {|f| f.write(phonegapjs) }
+	# concat JS and put into www folder.
+	Dir.chdir("#{ @dir }framework#{ @s }assets#{ @s }js")
+	basedir = "."
+	js = Dir.new(basedir).entries
+	phonegapjs = IO.read('phonegap.js.base');
+	js.each do |script|
+		next if script[0].chr == "." or script == "phonegap.js.base"
+		phonegapjs += IO.read(script)
+		phonegapjs += "\n\n"
+	end
+	Dir.chdir("#{ @dir}")
+	File.open("#{ @path }#{ @s }assets#{ @s }www#{ @s }phonegap.js", 'w') {|f| f.write(phonegapjs) }
   end
   
   # puts app name in strings
   def add_name_to_strings
-    puts "Adding some application name to strings.xml..."
+	puts "Adding some application name to strings.xml..."
     x = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     <resources>
       <string name=\"app_name\">#{ @name }</string>
       <string name=\"go\">Snap</string>
     </resources>
     "
-    open(File.join(@path, "res", "values", "strings.xml"), 'w') do |f|
+    open("#{ @path }#{@s}res#{@s}values#{@s}strings.xml", 'w') do |f| 
       f.puts x.gsub('    ','')
     end 
   end 
@@ -123,7 +102,7 @@ class Build
   # this is so fucking unholy yet oddly beautiful
   # not sure if I should thank Ruby or apologize for this abusive use of string interpolation
   def write_java
-    puts "Writing application Java code..."
+	puts "Writing application Java code..."
     j = "
     package #{ @pkg };
 
@@ -141,11 +120,10 @@ class Build
         }
     }
     "
-    
-    code_dir = File.join(@path, "src", @pkg.gsub('.', File::SEPARATOR))
-
-    FileUtils.mkdir_p(code_dir)
-    open(File.join(code_dir, "#{@name}.java"),'w') { |f| f.puts j.gsub('    ','') }
+    dir = "#{ @path }#{@s}src#{@s}#{ @pkg.gsub '.', '/' }";
+    cls = "#{ @name }.java"
+    pth = File.join(dir,cls)
+    open(pth,'w') { |f| f.puts j.gsub('    ','') }
   end
   #
 end
