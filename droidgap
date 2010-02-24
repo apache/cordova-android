@@ -7,13 +7,8 @@ class Build
   
   def initialize(*a)
     @android_sdk_path, @name, @pkg, @www, @path = a
-<<<<<<< HEAD:droidgap
-	  @s = File::SEPARATOR
-	  @dir = Dir.pwd + @s
-=======
     @android_dir = File.expand_path(File.dirname(__FILE__))
     @framework_dir = File.join(@android_dir, "framework")
->>>>>>> 594e77690c3ea072feb173168127c8c4fe83aeec:droidgap
   end
   
   # runs the build script
@@ -47,14 +42,14 @@ class Build
   # TODO need to allow more flexible SDK targetting
   # TODO validate Android SDK
   def create_android
-	  puts "Creating Android project..."
-    `android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+    target_id = 5 # `android list targets` =~ /id:\s*(\d+).*android-5/ ? $1 : 5    
+    puts "Creating Android project... #{ target_id }"
+    `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
   
   def include_www
     puts "Adding www folder to project..."
-    target_id = `android list targets` =~ /id:\s*(\d+).*android-5/ ? $1 : 5    
-    `android create project -t #{target_id} -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+    
     FileUtils.mkdir_p File.join(@path, "assets", "www")
     FileUtils.cp_r File.join(@www, "."), File.join(@path, "assets", "www")
   end
