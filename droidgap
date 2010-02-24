@@ -43,7 +43,7 @@ class Build
   # TODO validate Android SDK
   def create_android
     target_id = 5 # `android list targets` =~ /id:\s*(\d+).*android-5/ ? $1 : 5    
-    puts "Creating Android project... #{ target_id }"
+    puts "Creating Android project for SDK target level #{ target_id }"
     `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
   
