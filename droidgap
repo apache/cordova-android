@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'fileutils'
 
+# ./droidgap /Users/brianleroux/Code/android-sdk-mac MyApp com.westcoastlogic example /Users/brianleroux/Desktop/MyApp
 class Build
   attr_reader :android_sdk_path, :name, :pkg, :www, :path, :dir
   
@@ -14,6 +15,7 @@ class Build
   def run
     build_jar
     create_android
+    include_www
     generate_manifest
     copy_libs
     add_name_to_strings
@@ -24,14 +26,14 @@ class Build
   # removes local.properties and recreates based on android_sdk_path 
   # then generates framework/phonegap.jar
   def build_jar
-	puts "Building the JAR..."
-	FileUtils.rm "#{ @dir }framework#{@s}local.properties" if File.exists? "#{ @dir }framework#{@s}local.properties"
-    FileUtils.rm "#{ @dir }framework#{@s}phonegap.js" if File.exists? "#{ @dir }framework#{@s}phonegap.js"
-	FileUtils.rm "#{ @dir }framework#{@s}phonegap.jar" if File.exists? "#{ @dir }framework#{@s}phonegap.jar"
-    open("#{ @dir }framework#{@s}local.properties", 'w') do |f| 
+    puts "Building the JAR..."
+    %w(local.properties phonegap.js phonegap.jar).each do |f|
+      FileUtils.rm File.join(@framework_dir, f) if File.exists? File.join(@framework_dir, f)
+    end
+    open(File.join(@framework_dir, "local.properties"), 'w') do |f|
       f.puts "sdk.dir=#{ @android_sdk_path }"
     end 
-	Dir.chdir(@dir + "framework")
+    Dir.chdir(@framework_dir)
     `ant jar`
 	Dir.chdir(@dir)
   end
@@ -40,10 +42,15 @@ class Build
   # TODO need to allow more flexible SDK targetting
   # TODO validate Android SDK
   def create_android
-	puts "Creating Android project..."
-    `android create project -t 5 -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
-	FileUtils.mkdir_p "#{ @path }#{@s}assets#{@s}www"
-    FileUtils.cp_r "#{ @www }#{ @s }.", "#{ @path }#{ @s }assets#{ @s }www#{ @s }"
+    target_id = 5 # `android list targets` =~ /id:\s*(\d+).*android-5/ ? $1 : 5    
+    puts "Creating Android project... #{ target_id }"
+    `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+  end
+  
+  def include_www
+    puts "Adding www folder to project..."
+    FileUtils.mkdir_p File.join(@path, "assets", "www")
+    FileUtils.cp_r File.join(@www, "."), File.join(@path, "assets", "www")
   end
 
   # creates an AndroidManifest.xml for the project
@@ -71,18 +78,18 @@ class Build
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
 		FileUtils.cp "#{ @dir }framework#{@s}res#{@s}drawable#{@s}icon.png", "#{ @path }#{@s}res#{@s}#{ e }#{@s}icon.png"
     end
-	# concat JS and put into www folder.
-	Dir.chdir("#{ @dir }framework#{ @s }assets#{ @s }js")
-	basedir = "."
-	js = Dir.new(basedir).entries
-	phonegapjs = IO.read('phonegap.js.base');
-	js.each do |script|
-		next if script[0].chr == "." or script == "phonegap.js.base"
-		phonegapjs += IO.read(script)
-		phonegapjs += "\n\n"
-	end
-	Dir.chdir("#{ @dir}")
-	File.open("#{ @path }#{ @s }assets#{ @s }www#{ @s }phonegap.js", 'w') {|f| f.write(phonegapjs) }
+    # concat JS and put into www folder.
+    js_dir = File.join(@framework_dir, "assets", "js")
+
+    phonegapjs = IO.read(File.join(js_dir, 'phonegap.js.base'))
+
+    Dir.new(js_dir).entries.each do |script|
+      next if script[0].chr == "." or script == "phonegap.js.base"
+      phonegapjs << IO.read(File.join(js_dir, script))
+      phonegapjs << "\n\n"
+    end
+
+    File.open(File.join(@path, "assets", "www", "phonegap.js"), 'w') {|f| f.write(phonegapjs) }
   end
   
   # puts app name in strings
@@ -149,7 +156,7 @@ else
   name ............... The name of your application.
   package_name ....... The name of your package (For example: com.nitobi.demo)
   www ................ The path to your www folder. (Wherein your HTML, CSS and JS app is.)
-  path ............... The path to generate the application.
+  path ............... The path to generate the Android application.
   
   EOF
 end
