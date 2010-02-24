@@ -66,8 +66,10 @@ public class GeoListener {
 	// This stops the listener
 	void stop()
 	{
-		mGps.stop();
-		mNetwork.stop();
+		if(mGps != null)
+			mGps.stop();
+		if(mNetwork != null)
+			mNetwork.stop();
 	}
 
 	public Location getCurrentLocation() {
