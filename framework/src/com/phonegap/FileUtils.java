@@ -97,7 +97,7 @@ public class FileUtils {
 			data = "FAIL: IO ERROR";		
 		}
 		
-		mView.loadUrl("javascript:navigator.file.hasRead('" + data + "')");
+		mView.loadUrl("javascript:navigator.FileReader.hasRead('" + data + "')");
     	return data;
     }
     
@@ -113,9 +113,9 @@ public class FileUtils {
     			out.write(buff, 0, rawData.length);
     			out.flush();
     			out.close();    			
-    			mView.loadUrl("javascript:navigator.file.winCallback('File written')");
+    			mView.loadUrl("javascript:navigator.file.onsuccess('File written')");
     		} catch (Exception e) { 
-    			mView.loadUrl("javascript:navigator.file.failCallback('Fail')"); 
+    			mView.loadUrl("javascript:navigator.file.onerror('Fail')"); 
     		}
 		return 0;
     }
