@@ -60,8 +60,7 @@ public class DroidGap extends Activity {
 	private NetworkManager netMan;
 	private CompassListener mCompass;
 	private Storage	cupcakeStorage;
-	
-	
+	private CryptoHandler crypto;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -134,7 +133,8 @@ public class DroidGap extends Activity {
     	mContacts = new ContactManager(this, appView);
     	fs = new FileUtils(appView);
     	netMan = new NetworkManager(this, appView);
-    	mCompass = new CompassListener(this, appView);    	    	
+    	mCompass = new CompassListener(this, appView);  
+    	crypto = new CryptoHandler(appView);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
@@ -145,6 +145,8 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(fs, "FileUtil");
     	appView.addJavascriptInterface(netMan, "NetworkManager");
     	appView.addJavascriptInterface(mCompass, "CompassHook");
+    	appView.addJavascriptInterface(crypto, "GapCrypto");
+    	
     	if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.DONUT)
     	{
     		cupcakeStorage = new Storage(appView);
