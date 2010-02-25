@@ -17,7 +17,6 @@ function FileMgr()
 	this.tempFolderPath = "../../tmp";
 	this.freeDiskSpace = -1;
 	this.getFileBasePaths();
-	this.getFreeDiskSpace();
 }
 
 // private, called from Native Code
@@ -193,8 +192,6 @@ FileReader.prototype.readAsText = function(file)
 	}
 	this.fileName = file;
 	navigator.fileMgr.addFileReader(this.fileName,this);
-	//alert("Calling File.read : " + this.fileName);
-	//window.location = "gap://File.readFile/"+ file;
 
   	return FileUtil.read(fileName);
 }
@@ -225,14 +222,5 @@ FileWriter.prototype.writeAsText = function(file,text,bAppend)
 	navigator.fileMgr.addFileWriter(file,this);
 	this.readyState = 0; // EMPTY
   	var call = FileUtil.write(file, text, bAppend);
-	if(call > 0)
-		this.onerror();
-	else
-	  	this.oncomplete();
 	this.result = null;
 }
-
-
-
-
-
