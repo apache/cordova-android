@@ -42,5 +42,5 @@ Importing a PhoneGap/Android app into Eclipse
 
 For more info see
 -----------------
-http://docs.phonegap.com
-http://wiki.phonegap.com
+- [http://docs.phonegap.com](http://docs.phonegap.com)
+- [http://wiki.phonegap.com](http://wiki.phonegap.com)

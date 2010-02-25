@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'fileutils'
 
+# ./droidgap /Users/brianleroux/Code/android-sdk-mac MyApp com.westcoastlogic example /Users/brianleroux/Desktop/MyApp
 class Build
   attr_reader :android_sdk_path, :name, :pkg, :www, :path
   
@@ -14,26 +15,24 @@ class Build
   def run
     build_jar
     create_android
+    include_www
     generate_manifest
     copy_libs
     add_name_to_strings
     write_java
-    puts "Complete!"
+	  puts "Complete!"
   end 
   
   # removes local.properties and recreates based on android_sdk_path 
   # then generates framework/phonegap.jar
   def build_jar
     puts "Building the JAR..."
-
     %w(local.properties phonegap.js phonegap.jar).each do |f|
       FileUtils.rm File.join(@framework_dir, f) if File.exists? File.join(@framework_dir, f)
     end
-
     open(File.join(@framework_dir, "local.properties"), 'w') do |f|
       f.puts "sdk.dir=#{ @android_sdk_path }"
-    end
-
+    end 
     Dir.chdir(@framework_dir)
     `ant jar`
     Dir.chdir(@android_dir)
@@ -43,11 +42,13 @@ class Build
   # TODO need to allow more flexible SDK targetting
   # TODO validate Android SDK
   def create_android
-    puts "Creating Android project..."
-    
-    target_id = `android list targets` =~ /id:\s*(\d+).*android-5/ ? $1 : 5
-    
-    `android create project -t #{target_id} -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+    target_id = 5 # `android list targets` =~ /id:\s*(\d+).*android-5/ ? $1 : 5    
+    puts "Creating Android project... #{ target_id }"
+    `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+  end
+  
+  def include_www
+    puts "Adding www folder to project..."
     
     FileUtils.mkdir_p File.join(@path, "assets", "www")
     FileUtils.cp_r File.join(@www, "."), File.join(@path, "assets", "www")
@@ -98,7 +99,6 @@ class Build
 
     Dir.new(js_dir).entries.each do |script|
       next if script[0].chr == "." or script == "phonegap.js.base"
-
       phonegapjs << IO.read(File.join(js_dir, script))
       phonegapjs << "\n\n"
     end
@@ -123,7 +123,7 @@ class Build
   # this is so fucking unholy yet oddly beautiful
   # not sure if I should thank Ruby or apologize for this abusive use of string interpolation
   def write_java
-    puts "Writing application Java code..."
+	  puts "Writing application Java code..."
     j = "
     package #{ @pkg };
 
@@ -171,7 +171,7 @@ else
   name ............... The name of your application.
   package_name ....... The name of your package (For example: com.nitobi.demo)
   www ................ The path to your www folder. (Wherein your HTML, CSS and JS app is.)
-  path ............... The path to generate the application.
+  path ............... The path to generate the Android application.
   
   EOF
 end

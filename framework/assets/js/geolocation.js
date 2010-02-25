@@ -89,6 +89,7 @@ Geolocation.prototype.gotCurrentPosition = function(lat, lng, alt, altacc, head,
   {
     coords = new Coordinates(lat, lng, alt, altacc, head, vel);
     loc = new Position(coords, stamp);
+	this.lastPosition = loc;
     this.global_success(loc);
   }
 }
