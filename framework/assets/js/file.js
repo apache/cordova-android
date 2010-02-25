@@ -195,15 +195,8 @@ FileReader.prototype.readAsText = function(file)
 	navigator.fileMgr.addFileReader(this.fileName,this);
 	//alert("Calling File.read : " + this.fileName);
 	//window.location = "gap://File.readFile/"+ file;
-	this.onerror = errorCallback;
-  	this.oncomplete = successCallback;
 
   	return FileUtil.read(fileName);
-}
-
-FileReader.prototype.hasRead(data)
-{
-
 }
 
 // File Writer
@@ -232,6 +225,10 @@ FileWriter.prototype.writeAsText = function(file,text,bAppend)
 	navigator.fileMgr.addFileWriter(file,this);
 	this.readyState = 0; // EMPTY
   	var call = FileUtil.write(file, text, bAppend);
+	if(call > 0)
+		this.onerror();
+	else
+	  	this.oncomplete();
 	this.result = null;
 }
 
