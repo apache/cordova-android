@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta name="viewport" content="width=320; user-scalable=no" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>PhoneGap</title>
+    <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	<style>
+	.contact
+	{
+		padding: 8px;
+		background:rgba(64,64,64,0.5);
+		border: 1px solid rgba(128,128,128,0.5);
+		opacity: 0.8;
+		-moz-border-radius: 8px;
+		-webkit-border-radius: 8px;
+		margin-bottom: .5em;
+	}
+
+
+	</style>
+    <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+    <script type="text/javascript" charset="utf-8">
+	
+	var defaultContactTemplate = "<div class='item' onclick='onContactClick(CONTACTID);'><div>First Name : <strong>FNAME</strong></div><div>Last Name : <strong>LNAME</strong></div><div>Email : EMAIL</div><div>Tel : TELNO</div></div>";
+
+var _anomFunkMap = {};
+var _anomFunkMapNextId = 0; 
+
+function anomToNameFunk(fun)
+{
+	var funkId = "f" + _anomFunkMapNextId++;
+	var funk = function()
+	{
+		fun.apply(this,arguments);
+		_anomFunkMap[funkId] = null;
+	};
+	_anomFunkMap[funkId] = funk;
+	
+	return "_anomFunkMap." + funkId;
+}
+
+function GetFunctionName(fn)
+{
+  if (fn) 
+  {
+      var m = fn.toString().match(/^\s*function\s+([^\s\(]+)/);
+      return m ? m[1] : anomToNameFunk(fn);
+  } else {
+    return null;
+  }
+}
+
+	function onGetTenBtn()
+	{
+
+		navigator.contacts.getAllContacts(onGetAllContacts,null,{pageSize:10});
+	}
+	
+	function onGetAllContacts(res)
+	{
+		var child = document.getElementById('contactList'); 
+		var listMarkup = "";
+		for(var n = 0; n < res.length; n++)
+		{
+			listMarkup += getContactMarkup(res[n]);
+		}
+		child.innerHTML = listMarkup;
+		child.style.display = "block";
+	}
+
+
+	function onPickBtn()
+	{
+		navigator.contacts.chooseContact(onPickContactCallback);
+	}
+	
+	function onPickContactCallback(contactObj)
+	{
+	   var child = document.getElementById('contactPicked'); 
+
+	   child.innerHTML =  getContactMarkup(contactObj);
+	   child.style.display = "block";
+
+	}
+	
+	function getContactMarkup(contact)
+	{
+		var contactTemplate = defaultContactTemplate;
+		contactTemplate = contactTemplate.replace(/FNAME/g,contact.firstName);
+		contactTemplate = contactTemplate.replace(/LNAME/g,contact.lastName);
+		contactTemplate = contactTemplate.replace(/CONTACTID/g,contact.recordID);
+		
+		if(contact.emails[0].value != null)
+		{
+			contactTemplate = contactTemplate.replace(/EMAIL/g,contact.emails[0].value);
+		}
+		else
+		{
+			contactTemplate = contactTemplate.replace(/EMAIL/g,"");
+		}
+		
+		if(contact.phoneNumbers[0].value != null)
+		{
+			contactTemplate = contactTemplate.replace(/TELNO/g,contact.phoneNumbers[0].value);
+		}
+		else
+		{
+			contactTemplate = contactTemplate.replace(/TELNO/g,"");
+		}
+		
+		return contactTemplate;
+	}
+	
+	function onContactClick(id)
+	{
+		navigator.contacts.displayContact(id);
+	}
+	
+	function onGotContactCount(num)
+	{
+		document.getElementById("contactCountDiv").innerHTML = "Contact Count : " + num;
+	}
+	
+	function onGotContactCountError(err)
+	{
+		alert("error getting contacts :: " + err);
+	}
+
+
+	
+	function onWinLoad()
+	{
+		document.addEventListener("deviceready",onDeviceReady,false);
+	}
+	
+	function onDeviceReady()
+	{
+		navigator.contacts.contactsCount(onGotContactCount,onGotContactCountError);
+	}
+    
+    </script>
+  </head>
+  
+  <body id="stage" class="theme" onload="onWinLoad()">
+  
+  	<div class="topBar">
+		<a href="index.html">
+			<span class="back_button">Back</span>
+		</a>
+		<span class="pageTitle">Contacts</span>	
+	</div>
+	
+	
+	<h2 id="contactCountDiv">Getting contact count ...</h2>
+	
+	<a href="#" onclick="onPickBtn();">
+		<div class="item">
+			<h2>Pick a Contact</h2>
+		</div>
+	</a>
+	
+	<div id="contactPicked" style="display:none"></div>
+	
+	<a href="#" onclick="onGetTenBtn();">
+		<div class="item">
+			<h2>Get first 10 contacts</h2>
+		</div>
+	</a>
+	
+	<div id="contactList" style="display:none"></div>
+  
+  
+  </body>
+</html>

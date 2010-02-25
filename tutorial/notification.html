@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta name="viewport" content="width=320; user-scalable=no" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>PhoneGap</title>
+    <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+    <script type="text/javascript" charset="utf-8">
+
+
+	var isActivityShowing = false;
+	
+	function onAlertBtn()
+	{
+		navigator.notification.alert("Custom Message","Custom Title", "Custom Label");
+	}
+	
+	function onActivityBtn()
+	{
+		
+		if(isActivityShowing)
+		{
+			navigator.notification.activityStop();
+		}
+		else
+		{
+			navigator.notification.activityStart();
+		}
+		
+		isActivityShowing = !isActivityShowing;
+		
+		document.getElementById("activityText").innerHTML = isActivityShowing ? "Hide Activity Indicator" : "Show Activity Indicator";
+		
+	}
+	
+	function onLoadingBtn()
+	{
+		navigator.notification.loadingStart({duration:2});
+	}
+	
+	function onVibrateBtn()
+	{
+		navigator.notification.vibrate(100); // note, iPhone ignores the ms param
+	}
+	
+	function onBeepBtn()
+	{
+		navigator.notification.beep();
+	}
+
+	function onWinLoad()
+	{
+	
+		document.addEventListener("deviceready",onDeviceReady,false);
+	}
+	
+	function onDeviceReady()
+	{
+		
+	}
+    
+    </script>
+  </head>
+  
+  <body id="stage" class="theme" onload="onWinLoad()">
+	<div class="topBar">
+		<a href="index.html">
+			<span class="back_button">Back</span>
+		</a>
+		<span class="pageTitle">Notification</span>	
+	</div>
+	
+  <a href="#" onclick="onAlertBtn();">
+	<div class="item">
+	<h2>Show Custom Alert</h2>
+  </div></a>
+  
+  <a href="#" onclick="onActivityBtn();">
+	<div class="item">
+	<h2 id="activityText">Show Activity Indicator</h2>
+  </div>
+  </a>
+  
+  <a href="#" onclick="onVibrateBtn();">
+	<div class="item">
+	<h2>Vibrate</h2>
+  </div>
+  </a>
+  
+  <a href="#" onclick="onLoadingBtn();">
+	<div class="item">
+	<h2>Show Loading ( 2 Seconds )</h2>
+  </div>
+  </a>
+  
+  <a href="#" onclick="onBeepBtn();">
+	<div class="item">
+	<h2>Beep</h2>
+  </div>
+  </a>
+  
+  </body>
+</html>
