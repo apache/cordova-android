@@ -216,6 +216,7 @@ public class DroidGap extends Activity {
 	
 	public final class EclairClient extends GapClient
 	{		
+		private String TAG = "PhoneGapLog";
 		private long MAX_QUOTA = 2000000;
 		
 		public EclairClient(Context ctx) {
@@ -239,6 +240,13 @@ public class DroidGap extends Activity {
 		    		quotaUpdater.updateQuota(currentQuota);
 		    	}
 		}		
+		
+		// This is a test of console.log, because we don't have this in Android 2.01
+		public void addMessageToConsole(String message, int lineNumber, String sourceID)
+		{
+			Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);
+		}
+		
 	}
 	
   
