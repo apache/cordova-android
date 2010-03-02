@@ -109,6 +109,9 @@ public class DroidGap extends Activity {
     	
         WebViewReflect.setStorage(settings, true, "/data/data/" + appPackage + "/app_database/");
         
+        // Turn on DOM storage!
+        WebViewReflect.setDomStorage(settings);
+        
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         if(cupcakeStorage != null)
