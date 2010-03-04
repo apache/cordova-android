@@ -37,8 +37,7 @@ public class NetworkManager {
 			String type = info.getTypeName();
 			return type.equals("WIFI");
 		}
-		else
-			return false;
+		return false;
 	}
 	
 	public boolean isReachable(String uri)

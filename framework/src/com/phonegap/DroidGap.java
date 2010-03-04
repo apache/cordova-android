@@ -86,9 +86,8 @@ public class DroidGap extends Activity {
         appView.setLayoutParams(webviewParams);
         
         WebViewReflect.checkCompatibility();
-        
-        /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */       
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ECLAIR)
+                
+        if (android.os.Build.VERSION.RELEASE.startsWith("2."))
         	appView.setWebChromeClient(new EclairClient(this));        	
         else
         {        
@@ -150,7 +149,8 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(mCompass, "CompassHook");
     	appView.addJavascriptInterface(crypto, "GapCrypto");
     	
-    	if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.DONUT)
+    	
+    	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
     	{
     		cupcakeStorage = new Storage(appView);
     		appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
