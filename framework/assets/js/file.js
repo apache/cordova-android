@@ -1,109 +1,226 @@
-/**
- * This class provides generic read and write access to the mobile device file system.
- */
-function File() {
-	/**
-	 * The data of a file.
-	 */
-	this.data = "";
-	/**
-	 * The name of the file.
-	 */
-	this.name = "";
-}
+
+
+
+PhoneGap.addConstructor(function() { if (typeof navigator.fileMgr == "undefined") navigator.fileMgr = new FileMgr();});
+
 
 /**
- * Reads a file from the mobile device. This function is asyncronous.
- * @param {String} fileName The name (including the path) to the file on the mobile device. 
- * The file name will likely be device dependent.
- * @param {Function} successCallback The function to call when the file is successfully read.
- * @param {Function} errorCallback The function to call when there is an error reading the file from the device.
+ * This class provides iPhone read and write access to the mobile device file system.
+ * Based loosely on http://www.w3.org/TR/2009/WD-FileAPI-20091117/#dfn-empty
  */
-File.prototype.read = function(fileName, successCallback, errorCallback) {
-	
+function FileMgr() 
+{
+	this.fileWriters = {}; // empty maps
+	this.fileReaders = {};
+
+	this.docsFolderPath = "../../Documents";
+	this.tempFolderPath = "../../tmp";
+	this.freeDiskSpace = -1;
+	this.getFileBasePaths();
 }
 
-/**
- * Writes a file to the mobile device.
- * @param {File} file The file to write to the device.
+// private, called from Native Code
+FileMgr.prototype._setPaths = function(docs,temp)
+{
+	this.docsFolderPath = docs;
+	this.tempFolderPath = temp;
+}
+
+// private, called from Native Code
+FileMgr.prototype._setFreeDiskSpace = function(val)
+{
+	this.freeDiskSpace = val;
+}
+
+
+// FileWriters add/remove
+// called internally by writers
+FileMgr.prototype.addFileWriter = function(filePath,fileWriter)
+{
+	this.fileWriters[filePath] = fileWriter;
+}
+
+FileMgr.prototype.removeFileWriter = function(filePath)
+{
+	this.fileWriters[filePath] = null;
+}
+
+// File readers add/remove
+// called internally by readers
+FileMgr.prototype.addFileReader = function(filePath,fileReader)
+{
+	this.fileReaders[filePath] = fileReader;
+}
+
+FileMgr.prototype.removeFileReader = function(filePath)
+{
+	this.fileReaders[filePath] = null;
+}
+
+/*******************************************
+ *
+ *	private reader callback delegation
+ *	called from native code
  */
-File.prototype.write = function(file) {
-	
-}
-
-PhoneGap.addConstructor(function() {
-    if (typeof navigator.file == "undefined") navigator.file = new File();
-});
-
-File.prototype.read = function(fileName, successCallback, errorCallback) {
-  this.failCallback = errorCallback; 
-  this.winCallback = successCallback;
-
-  return FileUtil.read(fileName);
-}
-
-File.prototype.hasRead = function(data)
+FileMgr.prototype.reader_onloadstart = function(filePath,result)
 {
-  if(data.substr("FAIL"))
-    this.failCallback(data);
-  else
-    this.winCallback(data);
+	this.fileReaders[filePath].onloadstart(result);
 }
 
-/**
- * Writes a file to the mobile device.
- * @param {File} file The file to write to the device.
- */
-File.prototype.write = function(file, str, mode, successCallback, failCallback) {
-  this.winCallback = successCallback;
-  this.failCallback = failCallback;
-  var call = FileUtil.write(file, str, mode);
-}
-
-File.prototype.testFileExists = function(file, successCallback, failCallback)
+FileMgr.prototype.reader_onprogress = function(filePath,result)
 {
-  var exists = FileUtil.testFileExists(file);
-  if(exists)
-    successCallback();
-  else
-    failCallback();
-  return exists;
+	this.fileReaders[filePath].onprogress(result);
 }
 
-File.prototype.testDirectoryExists = function(file, successCallback, failCallback)
+FileMgr.prototype.reader_onload = function(filePath,result)
 {
-  var exists = FileUtil.testDirectoryExists(file);
-  if(exists)
-    successCallback();
-  else
-    failCallback();
-  return exists;
+	this.fileReaders[filePath].result = unescape(result);
+	this.fileReaders[filePath].onload(this.fileReaders[filePath].result);
 }
 
-File.prototype.createDirectory = function(dir, successCallback, failCallback)
+FileMgr.prototype.reader_onerror = function(filePath,err)
 {
-  var good = FileUtils.createDirectory(dir);
-  good ? successCallback() : failCallback();
+	this.fileReaders[filePath].result = err;
+	this.fileReaders[filePath].onerror(err);
 }
 
-File.prototype.deleteDirectory = function(dir, successCallback, failCallback)
+FileMgr.prototype.reader_onloadend = function(filePath,result)
 {
-  var good = FileUtils.deleteDirectory(dir);
-  good ? successCallback() : failCallback();
+	this.fileReaders[filePath].onloadend(result);
 }
 
-File.prototype.deleteFile = function(dir, successCallback, failCallback)
+/*******************************************
+ *
+ *	private writer callback delegation
+ *	called from native code
+*/
+FileMgr.prototype.writer_onerror = function(filePath,err)
 {
-  var good = FileUtils.deleteFile(dir);
-  good ? successCallback() : failCallback();
+	this.fileWriters[filePath].onerror(err);
 }
 
-File.prototype.getFreeDiskSpace = function(successCallback, failCallback)
+FileMgr.prototype.writer_oncomplete = function(filePath,result)
 {
-  var diskSpace =  FileUtils.getFreeDiskSpace();
-  if(diskSpace > 0)
-    successCallback();
-  else
-    failCallback();
-  return diskSpace;
+	this.fileWriters[filePath].oncomplete(result); // result contains bytes written
+}
+
+
+FileMgr.prototype.getFileBasePaths = function()
+{
+	//PhoneGap.exec("File.getFileBasePaths");
+}
+
+FileMgr.prototype.testFileExists = function(fileName, successCallback, errorCallback)
+{
+	var test = FileUtil.testFileExists(fileName);
+	test ? successCallback() : errorCallback();
+}
+
+FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, errorCallback)
+{
+	this.successCallback = successCallback;
+	this.errorCallback = errorCallback;
+	var test = FileUtil.testDirectoryExists(dirName);
+	test ? successCallback() : errorCallback();
+}
+
+FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback)
+{
+	this.successCallback = successCallback;
+	this.errorCallback = errorCallback;
+	var test = FileUtils.createDirectory(dirName);
+	test ? successCallback() : errorCallback();
+}
+
+FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback)
+{
+	this.successCallback = successCallback;
+	this.errorCallback = errorCallback;
+	var test = FileUtils.deleteDirectory(dirName);
+	test ? successCallback() : errorCallback();
+}
+
+FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback)
+{
+	this.successCallback = successCallback;
+	this.errorCallback = errorCallback;
+	FileUtils.deleteFile(fileName);
+	test ? successCallback() : errorCallback();
+}
+
+FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback)
+{
+	if(this.freeDiskSpace > 0)
+	{
+		return this.freeDiskSpace;
+	}
+	else
+	{
+		this.successCallback = successCallback;
+		this.errorCallback = errorCallback;
+		this.freeDiskSpace = FileUtils.getFreeDiskSpace();
+  		(this.freeDiskSpace > 0) ? successCallback() : errorCallback();
+	}
+}
+
+
+// File Reader
+
+
+function FileReader()
+{
+	this.fileName = "";
+	this.result = null;
+	this.onloadstart = null;
+	this.onprogress = null;
+	this.onload = null;
+	this.onerror = null;
+	this.onloadend = null;
+}
+
+
+FileReader.prototype.abort = function()
+{
+	// Not Implemented
+}
+
+FileReader.prototype.readAsText = function(file)
+{
+	if(this.fileName && this.fileName.length > 0)
+	{
+		navigator.fileMgr.removeFileReader(this.fileName,this);
+	}
+	this.fileName = file;
+	navigator.fileMgr.addFileReader(this.fileName,this);
+
+  	return FileUtil.read(fileName);
+}
+
+// File Writer
+
+function FileWriter()
+{
+	this.fileName = "";
+	this.result = null;
+	this.readyState = 0; // EMPTY
+	this.result = null;
+	this.onerror = null;
+	this.oncomplete = null;
+}
+
+FileWriter.prototype.writeAsText = function(file,text,bAppend)
+{
+	if(this.fileName && this.fileName.length > 0)
+	{
+		navigator.fileMgr.removeFileWriter(this.fileName,this);
+	}
+	this.fileName = file;
+	if(bAppend != true)
+	{
+		bAppend = false; // for null values
+	}
+	navigator.fileMgr.addFileWriter(file,this);
+	this.readyState = 0; // EMPTY
+  	var call = FileUtil.write(file, text, bAppend);
+	this.result = null;
 }

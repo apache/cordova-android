@@ -60,8 +60,7 @@ public class DroidGap extends Activity {
 	private NetworkManager netMan;
 	private CompassListener mCompass;
 	private Storage	cupcakeStorage;
-	
-	
+	private CryptoHandler crypto;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -87,9 +86,8 @@ public class DroidGap extends Activity {
         appView.setLayoutParams(webviewParams);
         
         WebViewReflect.checkCompatibility();
-        
-        /* This changes the setWebChromeClient to log alerts to LogCat!  Important for Javascript Debugging */       
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.ECLAIR)
+                
+        if (android.os.Build.VERSION.RELEASE.startsWith("2."))
         	appView.setWebChromeClient(new EclairClient(this));        	
         else
         {        
@@ -109,6 +107,9 @@ public class DroidGap extends Activity {
     	String appPackage = pack.getName();
     	
         WebViewReflect.setStorage(settings, true, "/data/data/" + appPackage + "/app_database/");
+        
+        // Turn on DOM storage!
+        WebViewReflect.setDomStorage(settings);
         
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
@@ -134,7 +135,8 @@ public class DroidGap extends Activity {
     	mContacts = new ContactManager(this, appView);
     	fs = new FileUtils(appView);
     	netMan = new NetworkManager(this, appView);
-    	mCompass = new CompassListener(this, appView);    	    	
+    	mCompass = new CompassListener(this, appView);  
+    	crypto = new CryptoHandler(appView);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
@@ -145,7 +147,10 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(fs, "FileUtil");
     	appView.addJavascriptInterface(netMan, "NetworkManager");
     	appView.addJavascriptInterface(mCompass, "CompassHook");
-    	if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.DONUT)
+    	appView.addJavascriptInterface(crypto, "GapCrypto");
+    	
+    	
+    	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
     	{
     		cupcakeStorage = new Storage(appView);
     		appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
@@ -214,6 +219,7 @@ public class DroidGap extends Activity {
 	
 	public final class EclairClient extends GapClient
 	{		
+		private String TAG = "PhoneGapLog";
 		private long MAX_QUOTA = 2000000;
 		
 		public EclairClient(Context ctx) {
@@ -237,6 +243,13 @@ public class DroidGap extends Activity {
 		    		quotaUpdater.updateQuota(currentQuota);
 		    	}
 		}		
+		
+		// This is a test of console.log, because we don't have this in Android 2.01
+		public void addMessageToConsole(String message, int lineNumber, String sourceID)
+		{
+			Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);
+		}
+		
 	}
 	
   
