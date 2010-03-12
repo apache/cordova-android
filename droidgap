@@ -45,7 +45,7 @@ class Build
     android_exec = File.join(@android_sdk_path, "tools", "android");
     target_id = 5 
     puts "Creating Android project... #{ target_id }"
-    `#{android_exec} create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+    `"#{android_exec}" create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
   
   def include_www
