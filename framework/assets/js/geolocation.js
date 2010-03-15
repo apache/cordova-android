@@ -109,7 +109,7 @@ Geolocation.prototype.watchPosition = function(successCallback, errorCallback, o
       this.listeners = [];
   }
  
-  var key = this.listeners.push( {"success" : successCallback, "fail" : failCallback }) - 1;
+  var key = this.listeners.push( {"success" : successCallback, "fail" : errorCallback }) - 1;
  
   // TO-DO: Get the names of the method and pass them as strings to the Java.
   return Geolocation.start(frequency, key);
