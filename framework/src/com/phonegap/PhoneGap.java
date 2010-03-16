@@ -42,7 +42,7 @@ public class PhoneGap{
 	 * UUID, version and availability	
 	 */
 	public boolean droid = true;
-	public static String version = "0.8.0";
+	public static String version = "0.9.99999";
 	public static String platform = "Android";
 	public static String uuid;
 	private Context mCtx;

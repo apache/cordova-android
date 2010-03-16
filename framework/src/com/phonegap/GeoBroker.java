@@ -21,6 +21,7 @@ public class GeoBroker {
 	{
 		mCtx = ctx;
 		mAppView = view;
+		geoListeners = new HashMap<String, GeoListener>();
 	}
 	
 	public void getCurrentLocation()
