@@ -193,7 +193,7 @@ FileReader.prototype.readAsText = function(file)
 	this.fileName = file;
 	navigator.fileMgr.addFileReader(this.fileName,this);
 
-  	return FileUtil.read(fileName);
+  	return FileUtil.read(this.fileName);
 }
 
 // File Writer
