@@ -43,8 +43,9 @@ class Build
   # TODO validate Android SDK
   # TODO fix 'android' shell call so that it works on Windows. Can't prepend android command with path to it.
   def create_android
-	target_id = 5 # `android list targets` =~ /id:\s*(\d+).*android-5/ ? $1 : 5    
-    puts "Creating Android project for SDK target level #{ target_id }"
+    android_exec = File.join(@android_sdk_path, "tools", "android");
+    target_id = 5 
+    puts "Creating Android project for target level #{ target_id }"
     `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
   
