@@ -70,11 +70,9 @@ public class WebViewReflect {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	    	   //setting.setDatabaseEnabled(enable);
-	           //setting.setDatabasePath(path);
 	       } else {
 	           /* feature not supported, do something else */
-	           System.out.println("dump not supported");
+	           System.out.println("Database not supported");
 	       }
 	   }
 	   
@@ -95,11 +93,9 @@ public class WebViewReflect {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	    	   //setting.setDatabaseEnabled(enable);
-	           //setting.setDatabasePath(path);
 	       } else {
 	           /* feature not supported, do something else */
-	           System.out.println("dump not supported");
+	           System.out.println("DOM Storage not supported");
 	       }
 			   
 	   }

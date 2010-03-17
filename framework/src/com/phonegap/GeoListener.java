@@ -47,7 +47,7 @@ public class GeoListener {
 		params += "," + loc.getSpeed() + "," + loc.getTime();
 		if(id != "global")
 		{
-			mAppView.loadUrl("javascript:navigator.geolocation.success(" + id + "," +  params + ")");
+			mAppView.loadUrl("javascript:navigator._geo.success(" + id + "," +  params + ")");
 		}		
 	}
 	
@@ -55,11 +55,11 @@ public class GeoListener {
 	{
 		// Do we need to know why?  How would we handle this?
 		if (id != "global") {
-			mAppView.loadUrl("javascript:navigator.geolocation.fail(" + id + ")");
+			mAppView.loadUrl("javascript:navigator._geo.fail(" + id + ")");
 		}
 		else
 		{
-			mAppView.loadUrl("javascript:navigator.geolocation.fail()");
+			mAppView.loadUrl("javascript:navigator._geo.fail()");
 		}
 	}
 	
