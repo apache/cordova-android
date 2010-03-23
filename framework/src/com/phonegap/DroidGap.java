@@ -101,7 +101,6 @@ public class DroidGap extends Activity {
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
-        
 
     	Package pack = this.getClass().getPackage();
     	String appPackage = pack.getName();
@@ -110,6 +109,9 @@ public class DroidGap extends Activity {
         
         // Turn on DOM storage!
         WebViewReflect.setDomStorage(settings);
+        
+        // Turn off native geolocation object in browser - we use our own :)
+        WebViewReflect.setGeolocationEnabled(settings, false);
         
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
