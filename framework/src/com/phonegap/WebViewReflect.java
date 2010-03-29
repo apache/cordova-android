@@ -10,6 +10,7 @@ public class WebViewReflect {
 	   private static Method mWebSettings_setDatabaseEnabled;
 	   private static Method mWebSettings_setDatabasePath;
 	   private static Method mWebSettings_setDomStorageEnabled;
+	   private static Method mWebSettings_setGeolocationEnabled;
 	   
 	   static 
 	   {
@@ -48,6 +49,8 @@ public class WebViewReflect {
 	        		   "setDatabasePath", new Class[] { String.class });
 	           mWebSettings_setDomStorageEnabled = WebSettings.class.getMethod(
 	        		   "setDomStorageEnabled", new Class[] { boolean.class });
+	           mWebSettings_setGeolocationEnabled = WebSettings.class.getMethod(
+	        		   "setGeolocationEnabled", new Class[] { boolean.class });
 	           /* success, this is a newer device */
 	       } catch (NoSuchMethodException nsme) {
 	           /* failure, must be older device */
@@ -72,7 +75,6 @@ public class WebViewReflect {
 			}
 	       } else {
 	           /* feature not supported, do something else */
-	           System.out.println("Database not supported");
 	       }
 	   }
 	   
@@ -95,9 +97,32 @@ public class WebViewReflect {
 			}
 	       } else {
 	           /* feature not supported, do something else */
-	           System.out.println("DOM Storage not supported");
 	       }
 			   
+	   }
+	   
+	   public static void setGeolocation(WebSettings setting)
+	   {
+		   if(mWebSettings_setGeolocationEnabled != null)
+		   {
+			     /* feature is supported */
+	    	   try {
+	    		   mWebSettings_setGeolocationEnabled.invoke(setting, false);
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	       } else {
+	           /* feature not supported, do something else */
+	           
+	       }
+	   
 	   }
 	   
 }
