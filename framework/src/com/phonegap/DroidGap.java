@@ -109,10 +109,8 @@ public class DroidGap extends Activity {
         
         // Turn on DOM storage!
         WebViewReflect.setDomStorage(settings);
-        
         // Turn off native geolocation object in browser - we use our own :)
         WebViewReflect.setGeolocationEnabled(settings, false);
-        
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         if(cupcakeStorage != null)

@@ -75,7 +75,6 @@ public class WebViewReflect {
 			}
 	       } else {
 	           /* feature not supported, do something else */
-	           System.out.println("Database not supported");
 	       }
 	   }
 	   public static void setGeolocationEnabled(WebSettings setting, boolean enable) {
@@ -117,9 +116,7 @@ public class WebViewReflect {
 			}
 	       } else {
 	           /* feature not supported, do something else */
-	           System.out.println("DOM Storage not supported");
 	       }
 			   
 	   }
-	   
 }
