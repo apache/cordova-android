@@ -116,7 +116,8 @@ public class DroidGap extends Activity {
         if(cupcakeStorage != null)
         	cupcakeStorage.setStorage(appPackage);
                 
-        root.addView(appView);                   
+        root.addView(appView);   
+        
         setContentView(root);                        
     }
 	
@@ -174,6 +175,12 @@ public class DroidGap extends Activity {
 		{
 			mCtx = ctx;
 		}
+		
+	    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+	        view.loadUrl(url);
+	        return true;
+	    }
+
 		
 		@Override
 	    public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
