@@ -275,7 +275,7 @@ public class DroidGap extends Activity {
 	public final class EclairClient extends GapClient
 	{		
 		private String TAG = "PhoneGapLog";
-		private long MAX_QUOTA = 2000000;
+		private long MAX_QUOTA = 100 * 1024 * 1024;
 		
 		public EclairClient(Context ctx) {
 			super(ctx);
@@ -285,10 +285,13 @@ public class DroidGap extends Activity {
 		public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
 		    	     long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
 		{
-		    	
+		  Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));  	
+		  
 			if( estimatedSize < MAX_QUOTA)
-		    	{	
-		    		long newQuota = estimatedSize;
+		    	{	                                        
+		    	  //increase for 1Mb        		    	  		    	  
+		    		long newQuota = currentQuota + 1024*1024;		    		
+		    		Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );  	
 		    		quotaUpdater.updateQuota(newQuota);
 		    	}
 		    else
@@ -296,7 +299,7 @@ public class DroidGap extends Activity {
 		    		// Set the quota to whatever it is and force an error
 		    		// TODO: get docs on how to handle this properly
 		    		quotaUpdater.updateQuota(currentQuota);
-		    	}
+		    	}		    	
 		}		
 		
 		// This is a test of console.log, because we don't have this in Android 2.01
