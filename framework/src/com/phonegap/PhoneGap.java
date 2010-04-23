@@ -86,7 +86,23 @@ public class PhoneGap{
 		String uuid = Settings.Secure.getString(mCtx.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		return uuid;
 	}
-	
+
+  public String getLine1Number(){
+	  TelephonyManager operator = (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+	  return operator.getLine1Number();
+  }
+	public String getDeviceId(){
+	  TelephonyManager operator = (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+	  return operator.getDeviceId();
+  }
+	public String getSimSerialNumber(){
+	  TelephonyManager operator = (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+	  return operator.getSimSerialNumber();
+  }
+  public String getSubscriberId(){
+	  TelephonyManager operator = (TelephonyManager)mCtx.getSystemService(Context.TELEPHONY_SERVICE);
+	  return operator.getSubscriberId();
+  }
 	
 	public String getModel()
 	{
