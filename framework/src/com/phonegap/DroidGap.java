@@ -304,6 +304,12 @@ public class DroidGap extends Activity {
 		{
 			Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);
 		}
+		                    
+		// console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
+    public void onConsoleMessage(String message, int lineNumber, String sourceID)
+    {                  
+      Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
+    }
 		
 	}
 	
