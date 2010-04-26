@@ -182,14 +182,13 @@ public class DroidGap extends Activity {
 		 * @see android.webkit.WebViewClient#shouldOverrideUrlLoading(android.webkit.WebView, java.lang.String)
 		 * 
 		 * Note: Since we override it to make sure that we are using PhoneGap and not some other bullshit
-		 * viewer that may or may not exist, we need to make sure that http:// and tel:// still work.  We
-		 * plan to add sms:// and gap:// to make this more compatible with the iPhone, but for right now
-		 * we're fixing what we're breaking.
+		 * viewer that may or may not exist, we need to make sure that http:// and tel:// still work.
 		 * 
 		 */
 		
 	    @Override
 	    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+	    	// TODO: See about using a switch statement
 	    	if (url.startsWith("http://"))
 	    	{
 	    		Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -200,6 +199,14 @@ public class DroidGap extends Activity {
 	    	{
 	    		Intent dial = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
 	    		startActivity(dial);
+	    		return true;
+	    	}
+	    	else if(url.startsWith("sms:"))
+	    	{  
+	    		Uri smsUri = Uri.parse(url);
+	    		Intent intent = new Intent(Intent.ACTION_VIEW, smsUri);
+	    		intent.setType("vnd.android-dir/mms-sms");
+	    		startActivity(intent);
 	    		return true;
 	    	}
 	    	else
