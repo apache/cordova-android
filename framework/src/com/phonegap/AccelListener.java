@@ -15,7 +15,7 @@ public class AccelListener implements SensorEventListener{
 	WebView mAppView;
 	Context mCtx;
 	String mKey;
-	Sensor mSensor;	
+	Sensor mSensor;
 	int mTime = 10000;
 	boolean started = false;
 	
@@ -23,10 +23,12 @@ public class AccelListener implements SensorEventListener{
 	
 	private long lastUpdate = -1;
 	
-	public AccelListener(Context ctx, WebView appView)
+	public AccelListener(String key, int freq, Context ctx, WebView appView)
 	{
 		mCtx = ctx;
 		mAppView = appView;		
+		mKey = key;
+		mTime = freq;
 		sensorManager = (SensorManager) mCtx.getSystemService(Context.SENSOR_SERVICE);
 		
 	}
@@ -42,7 +44,7 @@ public class AccelListener implements SensorEventListener{
 		}
 		else
 		{
-			// Call fail
+			mAppView.loadUrl("javascript:navigator.accelerometer.epicFail(" + mKey + ", 'Failed to start')");
 		}
 	}
 	
@@ -68,8 +70,9 @@ public class AccelListener implements SensorEventListener{
 				
 			float x = event.values[0];
 			float y = event.values[1];
-			float z = event.values[2];
-			mAppView.loadUrl("javascript:gotAccel(" + x +  ", " + y + "," + z + " )");
+			float z = event.values[2];			
+			//mAppView.loadUrl("javascript:gotAccel(" + x +  ", " + y + "," + z + " )");
+			mAppView.loadUrl("javascript:navigator.accelerometer.gotAccel(" +  mKey + "," + x + "," + y + "," + z + ")");
 		}		
 	}
 	
