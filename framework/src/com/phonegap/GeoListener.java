@@ -78,7 +78,7 @@ public class GeoListener {
 			loc = mGps.getLocation();
 		if (loc == null && mNetwork != null)
 			loc = mNetwork.getLocation();
-		else
+		if(loc == null)
 			loc = new Location(LocationManager.NETWORK_PROVIDER);
 		return loc;
 	}
