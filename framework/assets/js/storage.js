@@ -80,10 +80,10 @@ var dbSetup = function(name, version, display_name, size)
 }
 
 PhoneGap.addConstructor(function() {
-  if (typeof navigator.openDatabase == "undefined") 
+  if (typeof window.openDatabase == "undefined") 
   {
     navigator.openDatabase = window.openDatabase = dbSetup;
-  window.droiddb = new DroidDB();
+    window.droiddb = new DroidDB();
   }
 });
 
