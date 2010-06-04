@@ -38,21 +38,26 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
 	if (typeof successCallback == "function") {
 		if(this.lastAcceleration)
 		  successCallback(accel);
+		else
+		{
+			watchAcceleration(this.gotCurrentAcceleration, this.fail);
+		}
 	}
 }
 
 
 Accelerometer.prototype.gotAccel = function(key, x, y, z)
 {
-    var a = Acceleration(x,y,z);
+	console.log('we won');
+    var a = new Acceleration(x,y,z);
     a.x = x;
     a.y = y;
     a.x = z;
-    a.win = accelListener[key].win;
-    a.fail = accelListener[key].fail;
+    a.win = accelListeners[key].win;
+    a.fail = accelListeners[key].fail;
     this.timestamp = new Date().getTime();
     this.lastAcceleration = a;
-    accelListener[key] = a;
+    accelListeners[key] = a;
     if (typeof a.win == "function") {
       a.win(a);
     }

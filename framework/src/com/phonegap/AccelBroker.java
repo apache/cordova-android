@@ -20,6 +20,7 @@ public class AccelBroker {
 	public String start(int freq, String key)
 	{
 		AccelListener listener = new AccelListener(key, freq, mCtx, mAppView);
+		listener.start(freq);
 		accelListeners.put(key, listener);
 		return key;
 	}

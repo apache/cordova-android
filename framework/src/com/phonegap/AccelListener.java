@@ -40,7 +40,7 @@ public class AccelListener implements SensorEventListener{
 		if (list.size() > 0)
 		{
 			this.mSensor = list.get(0);
-			this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+			this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_FASTEST);
 		}
 		else
 		{
