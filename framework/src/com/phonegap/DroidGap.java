@@ -23,15 +23,20 @@ package com.phonegap;
  */
 
 
+import java.io.File;
+
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
@@ -46,6 +51,7 @@ import android.webkit.WebViewClient;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.LinearLayout;
 import android.os.Build.*;
+import android.provider.MediaStore;
 
 public class DroidGap extends Activity {
 		
@@ -63,6 +69,8 @@ public class DroidGap extends Activity {
 	private CompassListener mCompass;
 	private Storage	cupcakeStorage;
 	private CryptoHandler crypto;
+	
+	private Uri imageUri;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -344,26 +352,34 @@ public class DroidGap extends Activity {
     // This is required to start the camera activity!  It has to come from the previous activity
     public void startCamera(int quality)
     {
-    Intent i = new Intent(this, CameraPreview.class);
-    	i.setAction("android.intent.action.PICK");
-    	i.putExtra("quality", quality);
-    	startActivityForResult(i, 0);
+    	Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,
+                Uri.fromFile(photo));
+        imageUri = Uri.fromFile(photo);
+        startActivityForResult(intent, 0);
     }
     
     protected void onActivityResult(int requestCode, int resultCode, Intent intent)
     {
-    	String data;
-    	super.onActivityResult(requestCode, resultCode, intent);
-    	if (resultCode == RESULT_OK)
-    	{
-    		data = intent.getStringExtra("picture");    	     
-    		// Send the graphic back to the class that needs it
-    		launcher.processPicture(data);
-    	}
-    	else
-    	{
-    		launcher.failPicture("Did not complete!");
-    	}
+    	   super.onActivityResult(requestCode, resultCode, intent);
+    	   
+    	   if (resultCode == Activity.RESULT_OK) {
+    		   Uri selectedImage = imageUri;
+    	       getContentResolver().notifyChange(selectedImage, null);
+    	       ContentResolver cr = getContentResolver();
+    	       Bitmap bitmap;
+    	       try {
+    	            bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
+    	            launcher.processPicture(bitmap);
+    	       } catch (Exception e) {
+    	    	   launcher.failPicture("Did not complete!");
+    	       }
+    	    }
+    	   else
+    	   {
+    		   launcher.failPicture("Did not complete!");
+    	   }
     }
 
     public WebView getView()

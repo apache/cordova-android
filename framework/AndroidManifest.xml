@@ -32,11 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.phonegap.CameraPreview"
-        		android:label="@string/app_name" android:screenOrientation="landscape"
-                  android:configChanges="orientation|keyboardHidden">
-        		<action android:name="android.intent.action.PICK" />        		
-        </activity>
     </application>
 	<uses-sdk android:minSdkVersion="2" />
 
