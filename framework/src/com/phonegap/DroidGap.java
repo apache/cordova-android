@@ -350,7 +350,7 @@ public class DroidGap extends Activity {
     }
 	
     // This is required to start the camera activity!  It has to come from the previous activity
-    public void startCamera(int quality)
+    public void startCamera()
     {
     	Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");

@@ -13,7 +13,7 @@ public class CameraLauncher {
 		
 	private WebView mAppView;
 	private DroidGap mGap;
-	int quality;	
+	int mQuality;	
 	
 	CameraLauncher(WebView view, DroidGap gap)
 	{
@@ -23,7 +23,8 @@ public class CameraLauncher {
 	
 	public void takePicture(int quality)
 	{
-		mGap.startCamera(quality);
+		mQuality = quality;
+		mGap.startCamera();
 	}
 	
 	/* Return Base64 Encoded String to Javascript */
@@ -31,7 +32,7 @@ public class CameraLauncher {
 	{		
 		ByteArrayOutputStream jpeg_data = new ByteArrayOutputStream();
 		try {
-			if (bitmap.compress(CompressFormat.JPEG, quality, jpeg_data))
+			if (bitmap.compress(CompressFormat.JPEG, mQuality, jpeg_data))
 			{
 				byte[] code  = jpeg_data.toByteArray();
 				byte[] output = Base64.encodeBase64(code);
