@@ -27,12 +27,12 @@ public class ContactManager {
 	Uri mPhone = android.provider.Contacts.Phones.CONTENT_URI;	
 	Uri mEmail = android.provider.Contacts.ContactMethods.CONTENT_URI;
 	
-	ContactManager(Activity app, WebView view)
+	ContactManager(WebView view, Activity app)
 	{
 		mApp = app;
 		mView = view;
 	}
-			
+	
 	// This is to add backwards compatibility to the OLD Contacts API\
 	public void getContactsAndSendBack()
 	{

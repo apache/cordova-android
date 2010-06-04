@@ -49,7 +49,7 @@ public class PhoneGap{
     private WebView mAppView;
     AudioHandler audio; 
     
-	public PhoneGap(Context ctx, WebView appView) {
+	public PhoneGap(WebView appView, Context ctx) {
         this.mCtx = ctx;
         this.mAppView = appView;
         audio = new AudioHandler("/sdcard/tmprecording.mp3", ctx);

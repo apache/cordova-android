@@ -16,7 +16,7 @@ public class CompassListener implements SensorEventListener{
 	
 	private SensorManager sensorManager;
 	
-	CompassListener(Context ctx, WebView appView)
+	CompassListener(WebView appView, Context ctx)
 	{
 		mCtx = ctx;
 		mAppView = appView;		

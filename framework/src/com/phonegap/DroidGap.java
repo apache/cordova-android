@@ -133,14 +133,14 @@ public class DroidGap extends Activity {
     
     private void bindBrowser(WebView appView)
     {
-    	gap = new PhoneGap(this, appView);
+    	gap = new PhoneGap(appView, this);
     	geo = new GeoBroker(appView, this);
     	accel = new AccelBroker(appView, this);
     	launcher = new CameraLauncher(appView, this);
-    	mContacts = new ContactManager(this, appView);
+    	mContacts = new ContactManager(appView, this);
     	fs = new FileUtils(appView);
-    	netMan = new NetworkManager(this, appView);
-    	mCompass = new CompassListener(this, appView);  
+    	netMan = new NetworkManager(appView, this);
+    	mCompass = new CompassListener(appView, this);  
     	crypto = new CryptoHandler(appView);
     	
     	// This creates the new javascript interfaces for PhoneGap
