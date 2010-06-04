@@ -76,7 +76,7 @@ Accelerometer.prototype.gotAccel = function(key, x, y, z)
 
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
 	// TODO: add the interval id to a list so we can clear all watches
- 	var frequency = (options != undefined)? options.frequency : 10000;
+  var frequency = (options != undefined)? options.frequency : 10000;
   var accel = Acceleration(0,0,0);
   accel.win = successCallback;
   accel.fail = errorCallback;
