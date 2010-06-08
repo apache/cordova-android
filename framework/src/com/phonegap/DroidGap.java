@@ -53,7 +53,7 @@ public class DroidGap extends Activity {
 	protected WebView appView;
 	private LinearLayout root;	
 	
-	private PhoneGap gap;
+	private Device gap;
 	private GeoBroker geo;
 	private AccelBroker accel;
 	private CameraLauncher launcher;
@@ -64,6 +64,7 @@ public class DroidGap extends Activity {
 	private Storage	cupcakeStorage;
 	private CryptoHandler crypto;
 	private BrowserKey mKey;
+	private AudioHandler audio;
 	
     /** Called when the activity is first created. */
 	@Override
@@ -134,7 +135,7 @@ public class DroidGap extends Activity {
     
     private void bindBrowser(WebView appView)
     {
-    	gap = new PhoneGap(appView, this);
+    	gap = new Device(appView, this);
     	geo = new GeoBroker(appView, this);
     	accel = new AccelBroker(appView, this);
     	launcher = new CameraLauncher(appView, this);
@@ -144,6 +145,7 @@ public class DroidGap extends Activity {
     	mCompass = new CompassListener(appView, this);  
     	crypto = new CryptoHandler(appView);
     	mKey = new BrowserKey(appView, this);
+    	audio = new AudioHandler(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
@@ -156,6 +158,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(mCompass, "CompassHook");
     	appView.addJavascriptInterface(crypto, "GapCrypto");
     	appView.addJavascriptInterface(mKey, "BackButton");
+    	appView.addJavascriptInterface(audio, "GapAudio");
     	
     	
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
