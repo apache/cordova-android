@@ -44,19 +44,19 @@ MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
  */
 
 Media.prototype.play = function() {
-  DroidGap.startPlayingAudio(this.src);  
+  GapAudio.startPlayingAudio(this.src);  
 }
 
 Media.prototype.stop = function() {
-  DroidGap.stopPlayingAudio();
+  GapAudio.stopPlayingAudio();
 }
 
 Media.prototype.startRecord = function() {
-  DroidGap.startRecordingAudio(this.src);
+  GapAudio.startRecordingAudio(this.src);
 }
 
 Media.prototype.stopRecordingAudio = function() {
-  DroidGap.stopRecordingAudio();
+  GapAudio.stopRecordingAudio();
 }
 
 
