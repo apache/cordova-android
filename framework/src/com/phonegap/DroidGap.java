@@ -69,6 +69,7 @@ public class DroidGap extends Activity {
 	private CompassListener mCompass;
 	private Storage	cupcakeStorage;
 	private CryptoHandler crypto;
+	private BrowserKey mKey;
 	
 	private Uri imageUri;
 	
@@ -150,6 +151,7 @@ public class DroidGap extends Activity {
     	netMan = new NetworkManager(appView, this);
     	mCompass = new CompassListener(appView, this);  
     	crypto = new CryptoHandler(appView);
+    	mKey = new BrowserKey(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
@@ -161,6 +163,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(netMan, "NetworkManager");
     	appView.addJavascriptInterface(mCompass, "CompassHook");
     	appView.addJavascriptInterface(crypto, "GapCrypto");
+    	appView.addJavascriptInterface(mKey, "BackButton");
     	
     	
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
@@ -219,6 +222,8 @@ public class DroidGap extends Activity {
 	    	}
 	    	else
 	    	{
+	    		//We clear the back button state
+	    		mKey.reset();
 	    		view.loadUrl(url);
 	    		return false;
 	    	}
@@ -309,43 +314,43 @@ public class DroidGap extends Activity {
 		    		quotaUpdater.updateQuota(currentQuota);
 		    	}		    	
 		}		
-		
-		// This is a test of console.log, because we don't have this in Android 2.01
-		public void addMessageToConsole(String message, int lineNumber, String sourceID)
-		{
-			Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);
-		}
 		                    
 		// console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
-    public void onConsoleMessage(String message, int lineNumber, String sourceID)
-    {                  
-      Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
-    }
+		public void onConsoleMessage(String message, int lineNumber, String sourceID)
+		{       
+			// This is a kludgy hack!!!!
+			Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
+		}
 		
 	}
 	
   
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {       
-        	String testUrl = appView.getUrl();
-            appView.goBack();
-            if(appView.getUrl() == testUrl)
-            {
-            	return super.onKeyDown(keyCode, event);
-            }
+    	
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+        	if (mKey.isBound())
+        	{
+        		//We fire an event here!
+        		appView.loadUrl("javascript:document.keyEvent.backTrigger()");
+        	}
+        	else
+        	{
+        		String testUrl = appView.getUrl();
+        		appView.goBack();
+        		if(appView.getUrl() == testUrl)
+        		{
+        			return super.onKeyDown(keyCode, event);
+        		}
+        	}
         }
         
         if (keyCode == KeyEvent.KEYCODE_MENU) 
         {
+        	// This is where we launch the menu
         	appView.loadUrl("javascript:keyEvent.menuTrigger()");
         }
-        
-        if (keyCode == KeyEvent.KEYCODE_SEARCH) 
-        {
-        	appView.loadUrl("javascript:keyEvent.searchTrigger()");
-        }
-        
+                
         return false;
     }
 	

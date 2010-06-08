@@ -28,6 +28,32 @@ function Device() {
     }
 }
 
+/*
+ * You must explicitly override the back button. 
+ */
+
+Device.prototype.overrideBackButton = function()
+{
+  BackButton.override();
+}
+
+/*
+ * This resets the back button to the default behaviour
+ */
+
+Device.prototype.resetBackButton = function()
+{
+  BackButton.reset();
+}
+
+/*
+ * This terminates the activity!
+ */
+Device.prototype.exitApp = function()
+{
+  BackButton.exitApp();
+}
+
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
 });
