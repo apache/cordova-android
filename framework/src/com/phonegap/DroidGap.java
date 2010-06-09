@@ -71,7 +71,7 @@ public class DroidGap extends Activity {
 	private CryptoHandler crypto;
 	private BrowserKey mKey;
 	private AudioHandler audio;
-	
+
 	private Uri imageUri;
 	
     /** Called when the activity is first created. */
