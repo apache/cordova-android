@@ -25,7 +25,7 @@ function Compass() {
  */
 Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, options) {
 	if (this.lastHeading == null) {
-		this.start(options);
+		CompassHook.start();
 	}
 	else 
 	if (typeof successCallback == "function") {
