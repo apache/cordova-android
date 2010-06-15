@@ -341,7 +341,7 @@ public class DroidGap extends Activity {
         	{
         		String testUrl = appView.getUrl();
         		appView.goBack();
-        		if(appView.getUrl() == testUrl)
+        		if(appView.getUrl().equals(testUrl))
         		{
         			return super.onKeyDown(keyCode, event);
         		}
