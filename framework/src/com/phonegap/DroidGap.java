@@ -223,6 +223,12 @@ public class DroidGap extends Activity {
 	    		startActivity(intent);
 	    		return true;
 	    	}
+	    	else if(url.startsWith("mailto:"))
+	    	{
+	    		Intent mail = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
+	    		startActivity(mail);
+	    		return true;
+	    	}
 	    	else
 	    	{
 	    		//We clear the back button state
