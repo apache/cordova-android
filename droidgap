@@ -3,10 +3,10 @@ require 'fileutils'
 
 # ./droidgap /Users/brianleroux/Code/android-sdk-mac MyApp com.westcoastlogic example /Users/brianleroux/Desktop/MyApp
 class Build
-  attr_reader :android_sdk_path, :name, :pkg, :www, :path
+  attr_reader :android_sdk_path, :name, :pkg, :www, :path, :target_id
   
   def initialize(*a)
-    @android_sdk_path, @name, @pkg, @www, @path = a
+    @android_sdk_path, @target, @name, @pkg, @www, @path = a
     @android_dir = File.expand_path(File.dirname(__FILE__))
     @framework_dir = File.join(@android_dir, "framework")
   end
@@ -44,9 +44,8 @@ class Build
   # TODO fix 'android' shell call so that it works on Windows. Can't prepend android command with path to it.
   def create_android
     android_exec = File.join(@android_sdk_path, "tools", "android");
-    target_id = 5 
     puts "Creating Android project for target level #{ target_id }"
-    `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+    `android create project -t #{ @target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
   
   def include_www
