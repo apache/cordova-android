@@ -41,9 +41,7 @@ public class GpsListener implements LocationListener {
 	{
 		owner = m;
 		mCtx = ctx;
-		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
-		mLocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 0, this);
-		cLoc = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		this.start(interval);
 	}
 	
 	public Location getLocation()
@@ -91,6 +89,13 @@ public class GpsListener implements LocationListener {
 
 	public boolean hasLocation() {
 		return hasData;
+	}
+	
+	public void start(int interval)
+	{
+		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
+		mLocMan.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 0, this);
+		cLoc = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 	}
 
 	public void stop()

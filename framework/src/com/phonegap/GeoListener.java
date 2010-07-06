@@ -48,7 +48,12 @@ public class GeoListener {
 		if(id != "global")
 		{
 			mAppView.loadUrl("javascript:navigator._geo.success(" + id + "," +  params + ")");
-		}		
+		}
+		else
+		{
+			mAppView.loadUrl("javascript:navigator.geolocation.gotCurrentPosition(" + params + ")");
+			this.stop();
+		}
 	}
 	
 	void fail()
@@ -63,6 +68,19 @@ public class GeoListener {
 		}
 	}
 	
+	void start(int interval)
+	{
+		if(mGps != null)
+			mGps.start(interval);
+		if(mNetwork != null)
+			mNetwork.start(interval);
+		if(mNetwork == null && mGps == null)
+		{
+			// Really, how the hell were you going to get the location???
+			mAppView.loadUrl("javascript:navigator._geo.fail()");
+		}
+	}
+	
 	// This stops the listener
 	void stop()
 	{
@@ -72,14 +90,4 @@ public class GeoListener {
 			mNetwork.stop();
 	}
 
-	public Location getCurrentLocation() {
-		Location loc = null;
-		if (mGps != null)
-			loc = mGps.getLocation();
-		if (loc == null && mNetwork != null)
-			loc = mNetwork.getLocation();
-		if(loc == null)
-			loc = new Location(LocationManager.NETWORK_PROVIDER);
-		return loc;
-	}
 }
