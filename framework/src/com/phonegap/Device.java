@@ -57,9 +57,11 @@ public class Device{
 	{
 		Uri ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		Ringtone notification = RingtoneManager.getRingtone(mCtx, ringtone);
-		for (long i = 0; i < pattern; ++i)
-		{
-			notification.play();
+		if (notification != null) { // This will be the case when the phone is set to silent for example
+			for (long i = 0; i < pattern; ++i)
+			{
+				notification.play();
+			}
 		}
 	}
 	
