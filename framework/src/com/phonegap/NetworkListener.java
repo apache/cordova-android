@@ -40,9 +40,7 @@ public class NetworkListener implements LocationListener {
 	{
 		owner = m;
 		mCtx = ctx;
-		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
-		mLocMan.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, interval, 0, this);
-		cLoc = mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		this.start(interval);
 	}
 	
 	public Location getLocation()
@@ -92,6 +90,13 @@ public class NetworkListener implements LocationListener {
 			owner.success(location);
 		}
 		cLoc = location;
+	}
+	
+	public void start(int interval)
+	{
+		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
+		mLocMan.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, interval, 0, this);
+		cLoc = mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 	}
 	
 	public void stop()

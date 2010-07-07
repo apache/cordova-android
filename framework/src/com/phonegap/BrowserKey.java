@@ -21,6 +21,7 @@ public class BrowserKey {
 	BrowserKey(WebView view, DroidGap action)
 	{
 		bound = false;
+		mAction = action;
 	}
 	
 	public void override()
