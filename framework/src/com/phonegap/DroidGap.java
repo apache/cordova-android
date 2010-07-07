@@ -48,6 +48,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.LinearLayout;
 import android.os.Build.*;
@@ -122,7 +123,7 @@ public class DroidGap extends Activity {
         // Turn on DOM storage!
         WebViewReflect.setDomStorage(settings);
         // Turn off native geolocation object in browser - we use our own :)
-        WebViewReflect.setGeolocationEnabled(settings, false);
+        WebViewReflect.setGeolocationEnabled(settings, true);
         /* Bind the appView object to the gap class methods */
         bindBrowser(appView);
         if(cupcakeStorage != null)
@@ -132,6 +133,10 @@ public class DroidGap extends Activity {
         
         setContentView(root);                        
     }
+	
+	public void invoke(String origin, boolean allow, boolean remember) {
+
+	}
 	
 	@Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -270,6 +275,13 @@ public class DroidGap extends Activity {
 		{       
 			// This is a kludgy hack!!!!
 			Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
+		}
+		
+		@Override
+		public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
+			// TODO Auto-generated method stub
+			super.onGeolocationPermissionsShowPrompt(origin, callback);
+			callback.invoke(origin, true, false);
 		}
 		
 	}
