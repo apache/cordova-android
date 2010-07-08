@@ -128,7 +128,7 @@ FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCall
 {
 	this.successCallback = successCallback;
 	this.errorCallback = errorCallback;
-	var test = FileUtils.createDirectory(dirName);
+	var test = FileUtil.createDirectory(dirName);
 	test ? successCallback() : errorCallback();
 }
 
@@ -136,7 +136,7 @@ FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCall
 {
 	this.successCallback = successCallback;
 	this.errorCallback = errorCallback;
-	var test = FileUtils.deleteDirectory(dirName);
+	var test = FileUtil.deleteDirectory(dirName);
 	test ? successCallback() : errorCallback();
 }
 
@@ -144,7 +144,7 @@ FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback
 {
 	this.successCallback = successCallback;
 	this.errorCallback = errorCallback;
-	FileUtils.deleteFile(fileName);
+	FileUtil.deleteFile(fileName);
 	test ? successCallback() : errorCallback();
 }
 
@@ -158,7 +158,7 @@ FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback)
 	{
 		this.successCallback = successCallback;
 		this.errorCallback = errorCallback;
-		this.freeDiskSpace = FileUtils.getFreeDiskSpace();
+		this.freeDiskSpace = FileUtil.getFreeDiskSpace();
   		(this.freeDiskSpace > 0) ? successCallback() : errorCallback();
 	}
 }

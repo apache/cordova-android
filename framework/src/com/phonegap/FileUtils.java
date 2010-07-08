@@ -8,7 +8,6 @@ public class FileUtils {
 
 
 	WebView mView;
-	DirectoryManager fileManager;
 	FileReader f_in;
 	FileWriter f_out;
 	
@@ -18,26 +17,26 @@ public class FileUtils {
 	}
 	
     public int testSaveLocationExists(){
-        if (fileManager.testSaveLocationExists())
+        if (DirectoryManager.testSaveLocationExists())
             return 0;
         else
             return 1;
     }
     
     public long getFreeDiskSpace(){
-        long freeDiskSpace=fileManager.getFreeDiskSpace();
+        long freeDiskSpace=DirectoryManager.getFreeDiskSpace();
         return freeDiskSpace;
     }
 
     public int testFileExists(String file){
-        if (fileManager.testFileExists(file))
+        if (DirectoryManager.testFileExists(file))
             return 0;
         else
             return 1;
     }
     
     public int testDirectoryExists(String file){
-        if (fileManager.testFileExists(file))
+        if (DirectoryManager.testFileExists(file))
             return 0;
         else
             return 1;
@@ -49,7 +48,7 @@ public class FileUtils {
 	 * TODO: JavaScript Call backs for success and error handling 
 	 */
     public int deleteDirectory (String dir){
-        if (fileManager.deleteDirectory(dir))
+        if (DirectoryManager.deleteDirectory(dir))
             return 0;
         else
             return 1;
@@ -61,7 +60,7 @@ public class FileUtils {
 	 * TODO: JavaScript Call backs for success and error handling 
 	 */
     public int deleteFile (String file){
-        if (fileManager.deleteFile(file))
+        if (DirectoryManager.deleteFile(file))
             return 0;
         else
             return 1;
@@ -73,7 +72,7 @@ public class FileUtils {
 	 * TODO: JavaScript Call backs for success and error handling 
 	 */
     public int createDirectory(String dir){
-    	if (fileManager.createDirectory(dir))
+    	if (DirectoryManager.createDirectory(dir))
             return 0;
         else
             return 1;
