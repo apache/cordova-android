@@ -8,7 +8,7 @@ import android.util.Log;
 
 public class DirectoryManager {
 	
-	protected boolean testFileExists (String name){
+	protected static boolean testFileExists (String name){
 		boolean status;
 		if ((testSaveLocationExists())&&(!name.equals(""))){
     		File path = Environment.getExternalStorageDirectory();
@@ -20,7 +20,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected long getFreeDiskSpace(){
+	protected static long getFreeDiskSpace(){
 		/*
 		 * gets the available SD card free space or returns -1 if the SD card is not mounted.
 		 */
@@ -38,7 +38,7 @@ public class DirectoryManager {
 		return (freeSpace);
 	}	
 	
-	protected boolean createDirectory(String directoryName){
+	protected static boolean createDirectory(String directoryName){
 		boolean status;
 		if ((testSaveLocationExists())&&(!directoryName.equals(""))){
 			File path = Environment.getExternalStorageDirectory();
@@ -50,7 +50,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected boolean testSaveLocationExists(){
+	protected static boolean testSaveLocationExists(){
 		String sDCardStatus = Environment.getExternalStorageState();
 		boolean status;
 		if (sDCardStatus.equals(Environment.MEDIA_MOUNTED)){
@@ -60,7 +60,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected boolean deleteDirectory(String fileName){
+	protected static boolean deleteDirectory(String fileName){
 		boolean status;
 		SecurityManager checker = new SecurityManager();
 			
@@ -92,7 +92,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	protected boolean deleteFile(String fileName){
+	protected static boolean deleteFile(String fileName){
 		boolean status;
 		SecurityManager checker = new SecurityManager();
 			
@@ -117,7 +117,7 @@ public class DirectoryManager {
 		return status;
 	}
 	
-	private File constructFilePaths (String file1, String file2){
+	private static File constructFilePaths (String file1, String file2){
 		File newPath;
 		newPath = new File(file1+"/"+file2);
 		return newPath;
