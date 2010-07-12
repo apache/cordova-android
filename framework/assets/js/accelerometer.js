@@ -46,7 +46,7 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
 }
 
 
-Accelerometer.prototype.gotAccel = function(key, x, y, z)
+Accelerometer.prototype.gotCurrentAcceleration = function(key, x, y, z)
 {
     var a = new Acceleration(x,y,z);
     a.x = x;
