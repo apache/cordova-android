@@ -80,11 +80,8 @@ PhoneGap.addConstructor(function() {
 			origObj[funkList[v]] = proxyObj[funkList[v]];
 		}
 	}
-	// In case a native geolocation object exists, proxy the native one over to a diff object so that we can overwrite the native implementation.
-	if (typeof navigator.geolocation != 'undefined') {
-		navigator._geo = new Geolocation();
-		__proxyObj(navigator.geolocation, navigator._geo, ["setLocation", "getCurrentPosition", "watchPosition", "clearWatch", "setError", "start", "stop", "gotCurrentPosition"]);
-	} else {
+	// In the case of Android, we can use the Native Geolocation Object if it exists, so only load this on 1.x devices
+  if (typeof navigator.geolocation == 'undefined') {
 		navigator.geolocation = new Geolocation();
 	}
 });
