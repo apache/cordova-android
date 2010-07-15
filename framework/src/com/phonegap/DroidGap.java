@@ -147,7 +147,6 @@ public class DroidGap extends Activity {
     private void bindBrowser(WebView appView)
     {
     	gap = new Device(appView, this);
-    	geo = new GeoBroker(appView, this);
     	accel = new AccelBroker(appView, this);
     	launcher = new CameraLauncher(appView, this);
     	mContacts = new ContactManager(appView, this);
@@ -160,7 +159,6 @@ public class DroidGap extends Activity {
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(gap, "DroidGap");
-    	appView.addJavascriptInterface(geo, "Geo");
     	appView.addJavascriptInterface(accel, "Accel");
     	appView.addJavascriptInterface(launcher, "GapCam");
     	appView.addJavascriptInterface(mContacts, "ContactHook");
@@ -175,7 +173,9 @@ public class DroidGap extends Activity {
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
     	{
     		cupcakeStorage = new Storage(appView);
+        	geo = new GeoBroker(appView, this);
     		appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
+        	appView.addJavascriptInterface(geo, "Geo");
     	}
     }
            
