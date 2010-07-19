@@ -46,12 +46,12 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
 }
 
 
-Accelerometer.prototype.gotAccel = function(key, x, y, z)
+Accelerometer.prototype.gotCurrentAcceleration = function(key, x, y, z)
 {
     var a = new Acceleration(x,y,z);
     a.x = x;
     a.y = y;
-    a.x = z;
+    a.z = z;
     a.win = accelListeners[key].win;
     a.fail = accelListeners[key].fail;
     this.timestamp = new Date().getTime();
