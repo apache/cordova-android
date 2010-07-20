@@ -7,6 +7,7 @@ class Build
   
   def initialize(*a)
     @android_sdk_path, @name, @pkg, @www, @path = a
+    @android_sdk_path = "/Users/davejohnson/Sdk/android-sdk-mac_86"
     @android_dir = File.expand_path(File.dirname(__FILE__))
     @framework_dir = File.join(@android_dir, "framework")
   end

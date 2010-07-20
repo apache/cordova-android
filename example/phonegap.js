@@ -186,8 +186,6 @@ document.addEventListener = function(evt, handler, capture) {
     }
 };
 
-
-
 /**
  * Execute a PhoneGap command in a queued fashion, to ensure commands do not
  * execute with any race conditions, and only run when PhoneGap is ready to
@@ -331,6 +329,8 @@ PhoneGap.close = function(context, func, params) {
   this.y = y;
   this.z = z;
   this.timestamp = new Date().getTime();
+  this.win = null;
+  this.fail = null;
 }
 
 /**
@@ -364,7 +364,6 @@ Accelerometer.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
  * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout.
  */
 Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
-
     // successCallback required
     if (typeof successCallback != "function") {
         console.log("Accelerometer Error: successCallback is not a function");
@@ -427,6 +426,24 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
     }
 }
 
+
+Accelerometer.prototype.gotCurrentAcceleration = function(key, x, y, z)
+{
+    var a = new Acceleration(x,y,z);
+    a.x = x;
+    a.y = y;
+    a.z = z;
+    a.win = accelListeners[key].win;
+    a.fail = accelListeners[key].fail;
+    this.timestamp = new Date().getTime();
+    this.lastAcceleration = a;
+    accelListeners[key] = a;
+    if (typeof a.win == "function") {
+      a.win(a);
+    }
+}
+
+
 /**
  * Asynchronously aquires the acceleration repeatedly at a given interval.
  *
@@ -436,7 +453,6 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
  * @return String                       The watch id that must be passed to #clearWatch to stop watching.
  */
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
-
     // Default interval (10 sec)
     var frequency = (options != undefined)? options.frequency : 10000;
 
@@ -550,7 +566,87 @@ Camera.prototype.fail = function(err)
 PhoneGap.addConstructor(function() {
     if (typeof navigator.camera == "undefined") navigator.camera = new Camera();
 });
-/**
+PhoneGap.Channel = function(type)
+{
+    this.type = type;
+    this.handlers = {};
+    this.guid = 0;
+    this.fired = false;
+    this.enabled = true;
+};
+
+PhoneGap.Channel.prototype.sub = function(f, c, g)
+{
+    // need a function to call
+    if (f == null)
+        return;
+
+    var func = f;
+    if (typeof c == "object" && f instanceof Function)
+        func = PhoneGap.close(c, f);
+
+    g = g || func.observer_guid || f.observer_guid || this.guid++;
+    func.observer_guid = g;
+    f.observer_guid = g;
+    this.handlers[g] = func;
+    return g;
+};
+
+PhoneGap.Channel.prototype.sob = function(f, c)
+{
+    var g = null;
+    var _this = this;
+    var m = function() {
+        f.apply(c || null, arguments);
+        _this.dub(g);
+    }
+    if (this.fired) {
+	    if (typeof c == "object" && f instanceof Function)
+	        f = PhoneGap.close(c, f);
+        f.apply(this, this.fireArgs);
+    } else {
+        g = this.sub(m);
+    }
+    return g;
+};
+
+PhoneGap.Channel.prototype.dub = function(g)
+{
+    if (g instanceof Function)
+        g = g.observer_guid;
+    this.handlers[g] = null;
+    delete this.handlers[g];
+};
+
+PhoneGap.Channel.prototype.fire = function(e)
+{
+    if (this.enabled)
+    {
+        var fail = false;
+        for (var item in this.handlers) {
+            var handler = this.handlers[item];
+            if (handler instanceof Function) {
+                var rv = (handler.apply(this, arguments)==false);
+                fail = fail || rv;
+            }
+        }
+        this.fired = true;
+        this.fireArgs = arguments;
+        return !fail;
+    }
+    return true;
+};
+
+PhoneGap.Channel.merge = function(h, e) {
+       var i = e.length;
+       var f = function() {
+           if (!(--i)) h();
+       }
+       for (var j=0; j<i; j++) {
+           (!e[j].fired?e[j].sob(f):i--);
+       }
+       if (!i) h();
+}/**
  * This class provides access to device Compass data.
  * @constructor
  */
@@ -580,7 +676,6 @@ Compass.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
  * @param {PositionOptions} options The options for getting the heading data such as timeout.
  */
 Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, options) {
-
     // successCallback required
     if (typeof successCallback != "function") {
         console.log("Compass Error: successCallback is not a function");
@@ -900,6 +995,23 @@ PhoneGap.addConstructor(function() {
 });
 
 
+PhoneGap.onDeviceReady = new PhoneGap.Channel();
+
+PhoneGap.__document_addEventListener = document.addEventListener;
+
+document.addEventListener = function(evt, handler, capture) {
+    if (evt.toLowerCase() == 'deviceready') {
+        PhoneGap.onDeviceReady.sob(handler);
+    } else {
+        PhoneGap.__document_addEventListener.call(document, evt, handler);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    PhoneGap.onDeviceReady.fire();
+})
+
+
 PhoneGap.addConstructor(function() { if (typeof navigator.fileMgr == "undefined") navigator.fileMgr = new FileMgr();});
 
 
@@ -1190,7 +1302,7 @@ Geolocation.prototype.success = function(key, lat, lng, alt, altacc, head, vel, 
 
 Geolocation.prototype.fail = function(key)
 {
-  geoListeners[key].fail();
+  geoListeners[key].fail(); 
 }
  
 Geolocation.prototype.clearWatch = function(watchId)

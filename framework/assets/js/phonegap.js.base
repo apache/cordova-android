@@ -193,8 +193,6 @@ document.addEventListener = function(evt, handler, capture) {
     }
 };
 
-
-
 /**
  * Execute a PhoneGap command in a queued fashion, to ensure commands do not
  * execute with any race conditions, and only run when PhoneGap is ready to
