@@ -57,3 +57,20 @@ Device.prototype.exitApp = function()
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
 });
+
+
+PhoneGap.onDeviceReady = new PhoneGap.Channel();
+
+PhoneGap.__document_addEventListener = document.addEventListener;
+
+document.addEventListener = function(evt, handler, capture) {
+    if (evt.toLowerCase() == 'deviceready') {
+        PhoneGap.onDeviceReady.sob(handler);
+    } else {
+        PhoneGap.__document_addEventListener.call(document, evt, handler);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    PhoneGap.onDeviceReady.fire();
+})

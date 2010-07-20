@@ -12,8 +12,6 @@
       document.getElementById("platform").innerHTML = device.platform;
       document.getElementById("version").innerHTML = device.version;
       document.getElementById("uuid").innerHTML = device.uuid;
-      console.log("Height:" + window.innerHeight);
-	  console.log("Width:" + window.innerWidth);
     }
     
     var getLocation = function() {
@@ -114,9 +112,7 @@
 	function init(){
 		document.addEventListener("touchmove", preventBehavior, false);
 		document.addEventListener("deviceready", deviceInfo, true);		
-	}
-
-	
+	}	
 	
   </script>
   </head>

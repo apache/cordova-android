@@ -37,52 +37,21 @@ PhoneGap.addConstructor = function(func) {
 	  }
 };
 
-(function() 
- {
-    var timer = setInterval(function()
-	{
-							
-		var state = document.readyState;
-							
-    if ( state == 'loaded' || state == 'complete' )
-		{
-			clearInterval(timer); // stop looking
-			// run our constructors list
-			while (PhoneGap._constructors.length > 0) 
-			{
-				var constructor = PhoneGap._constructors.shift();
-				try 
-				{
-					constructor();
-				} 
-				catch(e) 
-				{
-					if (typeof(debug['log']) == 'function')
-					{
-						debug.log("Failed to run constructor: " + debug.processMessage(e));
-					}
-					else
-					{
-						alert("Failed to run constructor: " + e.message);
-					}
-				}
+document.addEventListener('DOMContentLoaded', function() {
+    // run our constructors list
+    while (PhoneGap._constructors.length > 0) {
+        var constructor = PhoneGap._constructors.shift();
+        try {
+            constructor();
+        } catch(e) {
+            if (typeof(debug['log']) == 'function') {
+                debug.log("Failed to run constructor: " + debug.processMessage(e));
+            } else {
+                alert("Failed to run constructor: " + e.message);
             }
-            // Start listening for callbacks from Java
-            PhoneGap.JSCallback();
-
-			// all constructors run, now fire the deviceready event
-			var e = document.createEvent('Events'); 
-			e.initEvent('deviceready');
-			document.dispatchEvent(e);
-
-            // Fire the onresume event, since first one happens before we are inited
-            var e = document.createEvent('Events'); 
-            e.initEvent('onresume');
-            document.dispatchEvent(e);
-		}
-    }, 5);
-})();
-
+        }
+    }
+});
 
 /**
  * Execute a PhoneGap command in a queued fashion, to ensure commands do not
