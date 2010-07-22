@@ -11,9 +11,97 @@ PhoneGap = {
         ready: true,
         commands: [],
         timer: null
-    },
-    _constructors: []
+    }
 };
+
+
+
+
+
+PhoneGap.Channel = function(type)
+{
+    this.type = type;
+    this.handlers = {};
+    this.guid = 0;
+    this.fired = false;
+    this.enabled = true;
+};
+
+PhoneGap.Channel.prototype.sub = function(f, c, g)
+{
+    // need a function to call
+    if (f == null)
+        return;
+
+    var func = f;
+    if (typeof c == "object" && f instanceof Function)
+        func = PhoneGap.close(c, f);
+
+    g = g || func.observer_guid || f.observer_guid || this.guid++;
+    func.observer_guid = g;
+    f.observer_guid = g;
+    this.handlers[g] = func;
+    return g;
+};
+
+PhoneGap.Channel.prototype.sob = function(f, c)
+{
+    var g = null;
+    var _this = this;
+    var m = function() {
+        f.apply(c || null, arguments);
+        _this.dub(g);
+    }
+    if (this.fired) {
+	    if (typeof c == "object" && f instanceof Function)
+	        f = PhoneGap.close(c, f);
+        f.apply(this, this.fireArgs);
+    } else {
+        g = this.sub(m);
+    }
+    return g;
+};
+
+PhoneGap.Channel.prototype.dub = function(g)
+{
+    if (g instanceof Function)
+        g = g.observer_guid;
+    this.handlers[g] = null;
+    delete this.handlers[g];
+};
+
+PhoneGap.Channel.prototype.fire = function(e)
+{
+    if (this.enabled)
+    {
+        var fail = false;
+        for (var item in this.handlers) {
+            var handler = this.handlers[item];
+            if (handler instanceof Function) {
+                var rv = (handler.apply(this, arguments)==false);
+                fail = fail || rv;
+            }
+        }
+        this.fired = true;
+        this.fireArgs = arguments;
+        return !fail;
+    }
+    return true;
+};
+
+PhoneGap.Channel.merge = function(h, e) {
+    var i = e.length;
+    var f = function() {
+        if (!(--i)) h();
+    }
+    for (var j=0; j<i; j++) {
+        (!e[j].fired?e[j].sob(f):i--);
+    }
+    if (!i) h();
+}
+
+
+
 
 /**
  * Boolean flag indicating if the PhoneGap API is available and initialized.
@@ -26,23 +114,9 @@ PhoneGap.available = DeviceInfo.uuid != undefined;
  * @param {Function} func The function callback you want run once PhoneGap is initialized
  */
 PhoneGap.addConstructor = function(func) {
-    var state = document.readyState;
-    if ( state == 'loaded' || state == 'complete' )
-	  {
-		  func();
-	  }
-    else
-	  {
-        PhoneGap._constructors.push(func);
-	  }
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-    // run our constructors list
-    while (PhoneGap._constructors.length > 0) {
-        var constructor = PhoneGap._constructors.shift();
+    PhoneGap.onDeviceReady.sob(function() {
         try {
-            constructor();
+            func();
         } catch(e) {
             if (typeof(debug['log']) == 'function') {
                 debug.log("Failed to run constructor: " + debug.processMessage(e));
@@ -50,12 +124,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert("Failed to run constructor: " + e.message);
             }
         }
-    }
-    // all constructors run, now fire the deviceready event
-    var e = document.createEvent('Events'); 
-    e.initEvent('deviceready');
-    document.dispatchEvent(e);
+    });
+};
+
+PhoneGap.onDOMContentLoaded = new PhoneGap.Channel();
+PhoneGap.onNativeReady = new PhoneGap.Channel();
+
+if (_nativeReady) PhoneGap.onNativeReady.fire();
+
+PhoneGap.onDeviceReady = new PhoneGap.Channel();
+
+PhoneGap.Channel.merge(function() {
+    PhoneGap.onDeviceReady.fire();
+}, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
+
+
+// Listen for DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    PhoneGap.onDOMContentLoaded.fire();
 });
+
+
+// Intercept calls to document.addEventListener and watch for deviceready
+PhoneGap._document_addEventListener = document.addEventListener;
+
+document.addEventListener = function(evt, handler, capture) {
+    if (evt.toLowerCase() == 'deviceready') {
+        PhoneGap.onDeviceReady.sob(handler);
+    } else {
+        PhoneGap._document_addEventListener.call(document, evt, handler);
+    }
+};
+
+
+
 
 /**
  * Execute a PhoneGap command in a queued fashion, to ensure commands do not
@@ -114,6 +216,18 @@ PhoneGap.run_command = function() {
     document.location = url;
 
 };
+
+PhoneGap.close = function(context, func, params) {
+    if (null == params) {
+        return function() {
+            return func.apply(context, arguments);
+        }
+    } else {
+        return function() {
+            return func.apply(context, params);
+        }
+    }
+}
 function Acceleration(x, y, z)
 {
   this.x = x;
@@ -192,7 +306,7 @@ Accelerometer.prototype.gotCurrentAcceleration = function(key, x, y, z)
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
 	// TODO: add the interval id to a list so we can clear all watches
   var frequency = (options != undefined)? options.frequency : 10000;
-  var accel = Acceleration(0,0,0);
+  var accel = new Acceleration(0,0,0);
   accel.win = successCallback;
   accel.fail = errorCallback;
   accel.opts = options;
@@ -256,87 +370,7 @@ Camera.prototype.fail = function(err)
 PhoneGap.addConstructor(function() {
     if (typeof navigator.camera == "undefined") navigator.camera = new Camera();
 });
-PhoneGap.Channel = function(type)
-{
-    this.type = type;
-    this.handlers = {};
-    this.guid = 0;
-    this.fired = false;
-    this.enabled = true;
-};
-
-PhoneGap.Channel.prototype.sub = function(f, c, g)
-{
-    // need a function to call
-    if (f == null)
-        return;
-
-    var func = f;
-    if (typeof c == "object" && f instanceof Function)
-        func = PhoneGap.close(c, f);
-
-    g = g || func.observer_guid || f.observer_guid || this.guid++;
-    func.observer_guid = g;
-    f.observer_guid = g;
-    this.handlers[g] = func;
-    return g;
-};
-
-PhoneGap.Channel.prototype.sob = function(f, c)
-{
-    var g = null;
-    var _this = this;
-    var m = function() {
-        f.apply(c || null, arguments);
-        _this.dub(g);
-    }
-    if (this.fired) {
-	    if (typeof c == "object" && f instanceof Function)
-	        f = PhoneGap.close(c, f);
-        f.apply(this, this.fireArgs);
-    } else {
-        g = this.sub(m);
-    }
-    return g;
-};
-
-PhoneGap.Channel.prototype.dub = function(g)
-{
-    if (g instanceof Function)
-        g = g.observer_guid;
-    this.handlers[g] = null;
-    delete this.handlers[g];
-};
-
-PhoneGap.Channel.prototype.fire = function(e)
-{
-    if (this.enabled)
-    {
-        var fail = false;
-        for (var item in this.handlers) {
-            var handler = this.handlers[item];
-            if (handler instanceof Function) {
-                var rv = (handler.apply(this, arguments)==false);
-                fail = fail || rv;
-            }
-        }
-        this.fired = true;
-        this.fireArgs = arguments;
-        return !fail;
-    }
-    return true;
-};
-
-PhoneGap.Channel.merge = function(h, e) {
-       var i = e.length;
-       var f = function() {
-           if (!(--i)) h();
-       }
-       for (var j=0; j<i; j++) {
-           (!e[j].fired?e[j].sob(f):i--);
-       }
-       if (!i) h();
-}/**
+/**
  * This class provides access to device Compass data.
  * @constructor
  */
@@ -605,23 +639,6 @@ Device.prototype.exitApp = function()
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
 });
-
-
-PhoneGap.onDeviceReady = new PhoneGap.Channel();
-
-PhoneGap.__document_addEventListener = document.addEventListener;
-
-document.addEventListener = function(evt, handler, capture) {
-    if (evt.toLowerCase() == 'deviceready') {
-        PhoneGap.onDeviceReady.sob(handler);
-    } else {
-        PhoneGap.__document_addEventListener.call(document, evt, handler);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    PhoneGap.onDeviceReady.fire();
-})
 
 
 PhoneGap.addConstructor(function() { if (typeof navigator.fileMgr == "undefined") navigator.fileMgr = new FileMgr();});
@@ -929,14 +946,12 @@ PhoneGap.addConstructor(function() {
 			origObj[funkList[v]] = proxyObj[funkList[v]];
 		}
 	}
-	// In case a native geolocation object exists, proxy the native one over to a diff object so that we can overwrite the native implementation.
-	if (typeof navigator.geolocation != 'undefined') {
-		navigator._geo = new Geolocation();
-		__proxyObj(navigator.geolocation, navigator._geo, ["setLocation", "getCurrentPosition", "watchPosition", "clearWatch", "setError", "start", "stop", "gotCurrentPosition"]);
-	} else {
+	// In the case of Android, we can use the Native Geolocation Object if it exists, so only load this on 1.x devices
+  if (typeof navigator.geolocation == 'undefined') {
 		navigator.geolocation = new Geolocation();
 	}
-});function KeyEvent() 
+});
+function KeyEvent() 
 {
 }
 
