@@ -112,7 +112,6 @@ PhoneGap.Channel.join = function(h, c) {
     if (!i) h();
 };
 
-
 /**
  * Boolean flag indicating if the PhoneGap API is available and initialized.
  */ // TODO: Remove this, it is unused here ... -jm
@@ -192,6 +191,20 @@ document.addEventListener = function(evt, handler, capture) {
         PhoneGap._document_addEventListener.call(document, evt, handler);
     }
 };
+
+// Intercept calls to document.addEventListener and watch for deviceready
+PhoneGap._document_addEventListener = document.addEventListener;
+
+document.addEventListener = function(evt, handler, capture) {
+    if (evt.toLowerCase() == 'deviceready') {
+        PhoneGap.onDeviceReady.sob(handler);
+    } else {
+        PhoneGap._document_addEventListener.call(document, evt, handler);
+    }
+};
+
+
+
 
 /**
  * Execute a PhoneGap command in a queued fashion, to ensure commands do not
@@ -332,4 +345,3 @@ PhoneGap.close = function(context, func, params) {
         }
     }
 };
-

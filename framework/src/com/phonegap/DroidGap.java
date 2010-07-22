@@ -134,6 +134,11 @@ public class DroidGap extends Activity {
                 
         root.addView(appView);   
         
+        // Try firing the onNativeReady event in JS. If it fails because the JS is
+        // not loaded yet then just set a flag so that the onNativeReady can be fired
+        // from the JS side when the JS gets to that code.
+		appView.loadUrl("javascript:try{PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
+
         setContentView(root);                        
     }
 	
