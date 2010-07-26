@@ -142,19 +142,9 @@ PhoneGap.Channel.merge(function() {
 // Listen for DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     PhoneGap.onDOMContentLoaded.fire();
-});
+}, false);
 
 
-// Intercept calls to document.addEventListener and watch for deviceready
-PhoneGap._document_addEventListener = document.addEventListener;
-
-document.addEventListener = function(evt, handler, capture) {
-    if (evt.toLowerCase() == 'deviceready') {
-        PhoneGap.onDeviceReady.sob(handler);
-    } else {
-        PhoneGap._document_addEventListener.call(document, evt, handler);
-    }
-};
 
 
 
@@ -638,7 +628,17 @@ Device.prototype.exitApp = function()
 
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
-});
+});// Intercept calls to document.addEventListener and watch for deviceready
+PhoneGap._document_addEventListener = document.addEventListener;
+
+document.addEventListener = function(evt, handler, capture) {
+    if (evt.toLowerCase() == 'deviceready') {
+        PhoneGap.onDeviceReady.sob(handler);
+    } else {
+        PhoneGap._document_addEventListener.call(document, evt, handler);
+    }
+};
+
 
 
 PhoneGap.addConstructor(function() { if (typeof navigator.fileMgr == "undefined") navigator.fileMgr = new FileMgr();});
