@@ -44,8 +44,7 @@ public final class Cache implements Command {
 			String filePath = fileDir + "/" + fileName;
 			
 			File f = new File(filePath);
-			// f.exists()
-			if (false) {
+			if (f.exists()) {
 				result = "{ file: '"+filePath+"', status: 0 }";
 			} else {
 
