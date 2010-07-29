@@ -25,6 +25,9 @@ package com.phonegap;
 
 import java.io.File;
 
+import com.phonegap.api.Command;
+import com.phonegap.api.CommandManager;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -73,6 +76,7 @@ public class DroidGap extends Activity {
 	private BrowserKey mKey;
 	private AudioHandler audio;
     private CallbackServer callbackServer;
+	private CommandManager commandManager;
 
 	private Uri imageUri;
 	
@@ -231,6 +235,7 @@ public class DroidGap extends Activity {
     private void bindBrowser(WebView appView)
     {
         callbackServer = new CallbackServer();
+    	commandManager = new CommandManager(appView, this);
     	gap = new Device(appView, this);
         accel = new AccelListener(appView, this);
     	launcher = new CameraLauncher(appView, this);
@@ -243,6 +248,7 @@ public class DroidGap extends Activity {
     	audio = new AudioHandler(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
+    	appView.addJavascriptInterface(commandManager, "CommandManager");
     	appView.addJavascriptInterface(gap, "DroidGap");
     	appView.addJavascriptInterface(accel, "Accel");
     	appView.addJavascriptInterface(launcher, "GapCam");
@@ -263,7 +269,6 @@ public class DroidGap extends Activity {
         	appView.addJavascriptInterface(geo, "Geo");
     	}
     }
-           
  
 	public void loadUrl(String url)
 	{
@@ -287,7 +292,6 @@ public class DroidGap extends Activity {
     public int getPort() {
     	return this.callbackServer.getPort();
     }
-	
 	
   /**
     * Provides a hook for calling "alert" from javascript. Useful for

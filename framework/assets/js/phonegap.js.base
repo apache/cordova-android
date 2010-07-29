@@ -6,7 +6,7 @@ if (typeof(DeviceInfo) != 'object')
  * information about the state of PhoneGap.
  * @class
  */
-PhoneGap = {
+var PhoneGap = {
     queue: {
         ready: true,
         commands: [],
@@ -205,6 +205,8 @@ document.addEventListener = function(evt, handler, capture) {
 
 
 
+PhoneGap.callbackId = 0;
+PhoneGap.callbacks = {};
 
 /**
  * Execute a PhoneGap command in a queued fashion, to ensure commands do not
@@ -213,11 +215,27 @@ document.addEventListener = function(evt, handler, capture) {
  * @param {String} command Command to be run in PhoneGap, e.g. "ClassName.method"
  * @param {String[]} [args] Zero or more arguments to pass to the method
  */
-PhoneGap.exec = function() {
-    PhoneGap.queue.commands.push(arguments);
-    if (PhoneGap.queue.timer == null)
-        PhoneGap.queue.timer = setInterval(PhoneGap.run_command, 10);
+PhoneGap.exec = function(clazz, action, args) {
+	CommandManager.exec(clazz, action, callbackId, args.join('__PHONEGAP__'), false);
 };
+
+PhoneGap.execAsync = function(success, fail, clazz, action, args) {
+	var callbackId = clazz + PhoneGap.callbackId++;
+	PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
+	CommandManager.exec(clazz, action, callbackId, args.join('__PHONEGAP__'), true);
+	return callbackId;
+};
+
+PhoneGap.callbackSuccess = function(callbackId, args) {
+	PhoneGap.callbacks[callbackId].success.apply(this, JSON.parse(args));
+	delete PhoneGap.callbacks[callbackId];
+};
+
+PhoneGap.callbackFailure = function(callbackId, args) {
+	PhoneGap.callbacks[callbackId].fail.apply(this, JSON.parse(args));
+	delete PhoneGap.callbacks[callbackId];
+};
+
 
 /**
  * Internal function used to dispatch the request to PhoneGap.  It processes the
