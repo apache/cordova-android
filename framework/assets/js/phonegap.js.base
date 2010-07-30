@@ -137,6 +137,19 @@ PhoneGap.addConstructor = function(func) {
 };
 
 /**
+ * Adds a plugin object to window.plugins
+ */
+PhoneGap.addPlugin = function(name, obj) {
+	if ( !window.plugins ) {
+		window.plugins = {};
+	}
+
+	if ( !window.plugins[name] ) {
+		window.plugins[name] = obj;
+	}
+}
+
+/**
  * onDOMContentLoaded channel is fired when the DOM content 
  * of the page has been parsed.
  */
@@ -216,23 +229,22 @@ PhoneGap.callbacks = {};
  * @param {String[]} [args] Zero or more arguments to pass to the method
  */
 PhoneGap.exec = function(clazz, action, args) {
-	CommandManager.exec(clazz, action, callbackId, args.join('__PHONEGAP__'), false);
+	CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
 };
 
 PhoneGap.execAsync = function(success, fail, clazz, action, args) {
 	var callbackId = clazz + PhoneGap.callbackId++;
 	PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
-	CommandManager.exec(clazz, action, callbackId, args.join('__PHONEGAP__'), true);
-	return callbackId;
+	return CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
 };
 
 PhoneGap.callbackSuccess = function(callbackId, args) {
-	PhoneGap.callbacks[callbackId].success.apply(this, JSON.parse(args));
+	PhoneGap.callbacks[callbackId].success(args);
 	delete PhoneGap.callbacks[callbackId];
 };
 
-PhoneGap.callbackFailure = function(callbackId, args) {
-	PhoneGap.callbacks[callbackId].fail.apply(this, JSON.parse(args));
+PhoneGap.callbackError = function(callbackId, args) {
+	PhoneGap.callbacks[callbackId].fail(args);
 	delete PhoneGap.callbacks[callbackId];
 };
 
@@ -353,7 +365,7 @@ PhoneGap.UUIDcreatePart = function(length) {
 };
 
 PhoneGap.close = function(context, func, params) {
-    if (null == params) {
+    if (typeof params === 'undefined') {
         return function() {
             return func.apply(context, arguments);
         }

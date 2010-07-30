@@ -1,24 +1,41 @@
 package com.phonegap.api;
 
-import android.content.Context;
+import org.json.JSONArray;
 
+import android.content.Context;
+import android.webkit.WebView;
+
+/**
+ * Command interface must be implemented by any plugin classes.
+ *
+ * The execute method is called by the CommandManager.
+ *
+ * @author davejohnson
+ *
+ */
 public interface Command {
 	/**
-	 * Executes the request and returns JS code to change client state.
-	 *
-	 * @param action the command to execute
-	 * @return a string with JavaScript code or null
+	 * Executes the request and returns CommandResult.
+	 * 
+	 * @param action The command to execute.
+	 * @param args JSONArry of arguments for the command.
+	 * @return A CommandResult object with a status and message.
 	 */
-	CommandResult execute(String action, String[] args);
+	CommandResult execute(String action, JSONArray args);
 
 	/**
-	 * Determines if this command can process a request.
-	 *
-	 * @param action the command to execute
-	 *
-	 * @return true if this command understands the petition
+	 * Sets the context of the Command. This can then be used to do things like
+	 * get file paths associated with the Activity.
+	 * 
+	 * @param ctx The context of the main Activity.
 	 */
-	boolean accept(String action);
-
 	void setContext(Context ctx);
+
+	/**
+	 * Sets the main View of the application, this is the WebView within which 
+	 * a PhoneGap app runs.
+	 * 
+	 * @param webView The PhoneGap WebView
+	 */
+	void setView(WebView webView);
 }

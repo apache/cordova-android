@@ -17,6 +17,14 @@ public class CommandResult {
 		return result;
 	}
 	
+	public String toSuccessCallbackString(String callbackId) {
+		return "javascript:PhoneGap.callbackSuccess('"+callbackId+"', " + this.getResult()+ ");";
+	}
+	
+	public String toErrorCallbackString(String callbackId) {
+		return "javascript:PhoneGap.callbackError('"+callbackId+"', " + this.getResult()+ ");";
+	}
+	
 	public enum Status {
 		OK,
 		CLASSNOTFOUNDEXCEPTION,
@@ -24,6 +32,7 @@ public class CommandResult {
 		INSTANTIATIONEXCEPTION,
 		MALFORMEDURLEXCEPTION,
 		IOEXCEPTION,
-		INVALIDACTION
+		INVALIDACTION,
+		JSONEXCEPTION
 	}
 }
