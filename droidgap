@@ -86,7 +86,7 @@ class Build
     FileUtils.cp File.join(framework_res_dir, "values","strings.xml"), File.join(app_res_dir, "values", "strings.xml")
 
     FileUtils.mkdir_p File.join(app_res_dir, "layout")
-    %w(main.xml preview.xml).each do |f|
+    %w(main.xml).each do |f|
       FileUtils.cp File.join(framework_res_dir, "layout", f), File.join(app_res_dir, "layout", f)
     end
 
