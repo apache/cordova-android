@@ -164,9 +164,7 @@ PhoneGap.onNativeReady = new PhoneGap.Channel();
 // _nativeReady is global variable that the native side can set
 // to signify that the native code is ready. It is a global since 
 // it may be called before any PhoneGap JS is ready.
-try {
-    if (_nativeReady) { PhoneGap.onNativeReady.fire(); }
-} catch (e) { }
+if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
 
 /**
  * onDeviceReady is fired only after both onDOMContentLoaded and 
