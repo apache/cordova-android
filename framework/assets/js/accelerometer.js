@@ -4,8 +4,6 @@ function Acceleration(x, y, z)
   this.y = y;
   this.z = z;
   this.timestamp = new Date().getTime();
-  this.win = null;
-  this.fail = null;
 }
 
 var accelListeners = [];
@@ -76,7 +74,7 @@ Accelerometer.prototype.gotCurrentAcceleration = function(key, x, y, z)
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
 	// TODO: add the interval id to a list so we can clear all watches
   var frequency = (options != undefined)? options.frequency : 10000;
-  var accel = Acceleration(0,0,0);
+  var accel = new Acceleration(0,0,0);
   accel.win = successCallback;
   accel.fail = errorCallback;
   accel.opts = options;
