@@ -72,7 +72,7 @@ public class AccelListener implements SensorEventListener{
 			float y = event.values[1];
 			float z = event.values[2];			
 			//mAppView.loadUrl("javascript:gotAccel(" + x +  ", " + y + "," + z + " )");
-			mAppView.loadUrl("javascript:navigator.accelerometer.gotAccel(" +  mKey + "," + x + "," + y + "," + z + ")");
+			mAppView.loadUrl("javascript:navigator.accelerometer.gotCurrentAcceleration(" +  mKey + "," + x + "," + y + "," + z + ")");
 		}		
 	}
 	
