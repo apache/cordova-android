@@ -254,11 +254,11 @@ public class DroidGap extends Activity {
 		    	     long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
 		{
 		  Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));  	
-		  
+		  		  
 			if( estimatedSize < MAX_QUOTA)
 		    	{	                                        
 		    	  //increase for 1Mb        		    	  		    	  
-		    		long newQuota = currentQuota + 1024*1024;		    		
+		    		long newQuota = estimatedSize;		    		
 		    		Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );  	
 		    		quotaUpdater.updateQuota(newQuota);
 		    	}
