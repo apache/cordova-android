@@ -280,9 +280,13 @@ public class DroidGap extends Activity {
     	}
     }
  
-	public void loadUrl(String url)
+	public void loadUrl(final String url)
 	{
-		this.appView.loadUrl(url);
+	    this.runOnUiThread(new Runnable() {
+			public void run() {
+		        DroidGap.this.appView.loadUrl(url);
+	        }
+        });
 	}
     
     /**

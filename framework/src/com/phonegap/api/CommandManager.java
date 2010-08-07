@@ -65,12 +65,12 @@ public final class CommandManager {
 				plugin.setView(this.app);
 
 				if (async) {
-					// Run this async on the UI thread so that JavaScript can continue on
-					app.post(new Runnable() {
+					// Run this on a different thread so that this one can return back to JS
+					Thread thread = new Thread(new Runnable() {
 						public void run() {
 							// Call execute on the plugin so that it can do it's thing
 							CommandResult cr = plugin.execute(action, args);
-							// Check if the 
+							// Check the status for 0 (success) or otherwise
 							if (cr.getStatus() == 0) {
 								app.loadUrl(cr.toSuccessCallbackString(callbackId));
 							} else {
@@ -78,7 +78,7 @@ public final class CommandManager {
 							}
 						}
 					});
-					// Return "" 
+					thread.start();
 					return "";
 				} else {
 					// Call execute on the plugin so that it can do it's thing
