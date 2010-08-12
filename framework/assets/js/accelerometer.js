@@ -10,22 +10,41 @@ function Acceleration(x, y, z) {
  * @constructor
  */
 function Accelerometer() {
+
     /**
      * The last known acceleration.  type=Acceleration()
      */
     this.lastAcceleration = null;
+
     /**
      * List of accelerometer watch listeners
      */
     this.accelListeners = {};
+
     /**
      * List of accelerometer watch timers
      */
     this.accelTimers = {};
+
     /**
      * Next id to use
      */
     this.listenerId = 0;
+
+    /**
+     * Timer that turns off accelerometer when it reaches maximum time.
+     * This timer is only used for getCurrentAcceleration.
+     */
+    this.turnOffTimer = 0;
+
+    // Turn off accelerometer if not accessed for certain amount of time
+    setInterval(function() {
+        navigator.accelerometer.turnOffTimer += 10;
+        if (navigator.accelerometer.turnOffTimer > Accelerometer.MAX_TIMER) {
+            Accel.stop("timer");
+            navigator.accelerometer.turnOffTimer = 0;
+        }
+    }, 10000);
 }
 
 Accelerometer.STOPPED = 0;
@@ -36,13 +55,16 @@ Accelerometer.ERROR_NOT_FOUND = 4;
 Accelerometer.ERROR_MSG = ["Not running", "Starting", "", "Failed to start", "Listener not found"];
 
 /**
+ * Time (in seconds) to turn off accelerometer if getCurrentAcceleration() hasn't been called.
+ */
+Accelerometer.MAX_TIMER = 30;
+
+/**
  * Asynchronously aquires the current acceleration.
- * @param {Function} successCallback The function to call when the acceleration
- * data is available
- * @param {Function} errorCallback The function to call when there is an error
- * getting the acceleration data.
- * @param {AccelerationOptions} options The options for getting the accelerometer data
- * such as timeout.
+ *
+ * @param {Function} successCallback    The function to call when the acceleration data is available
+ * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data.
+ * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout.
  */
 Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
 
@@ -58,13 +80,13 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
         return;
     }
 
-    // Get current acceleration from native
+    // Get current acceleration status
     var status = Accel.getStatus();
-    //console.log("getCurrentAcceleration: status="+status);
 
     // If running, then call successCallback
     if (status == Accelerometer.RUNNING) {
         try {
+            navigator.accelerometer.turnOffTimer = 0;
             var accel = new Acceleration(Accel.getX(), Accel.getY(), Accel.getZ());
             successCallback(accel);
         } catch (e) {
@@ -74,29 +96,27 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
 
     // If not running, then start it
     else {
+        Accel.start("timer");
+        navigator.accelerometer.turnOffTimer = 0;
+        var obj = this;
 
-        Accel.start();
+        // Wait until started
+        var timer = setInterval(function() {
+            var status = Accel.getStatus();
+            if (status != Accelerometer.STARTING) {
+                clearInterval(timer);
 
-        var status = Accel.getStatus();
-        //console.log("getAcceleration: status="+status);
+                // If accelerometer is running
+                if (status == Accelerometer.RUNNING) {
+                    try {
+                        var accel = new Acceleration(Accel.getX(), Accel.getY(), Accel.getZ());
+                        successCallback(accel);
+                    } catch (e) {
+                        console.log("Accelerometer Error in successCallback: " + e);
+                    }
+                }
 
-        // Wait until sensor has 1 reading
-        if (status == Accelerometer.STARTING) {
-            Accel.getX();
-            status = Accel.getStatus(); // get status again to see if started or error
-        }
-
-        // If sensor is running
-        if (status == Accelerometer.RUNNING) {
-            try {
-                var accel = new Acceleration(Accel.getX(), Accel.getY(), Accel.getZ());
-                successCallback(accel);
-            } catch (e) {
-                console.log("Accelerometer Error in successCallback: " + e);
-            }
-        }
-
-        // If sensor error
+                // If accelerometer error
         else {
             console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
             try {
@@ -107,24 +127,21 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
                 console.log("Accelerometer Error in errorCallback: " + e);
             }
         }
-
-        //@todo: don't clear now, wait until x seconds since last request
-        this.clearWatch("");
+            }
+        }, 10);
     }
 }
 
 /**
  * Asynchronously aquires the acceleration repeatedly at a given interval.
  *
- * @param {Function} successCallback The function to call each time the acceleration
- * data is available
- * @param {Function} errorCallback The function to call when there is an error
- * getting the acceleration data.
- * @param {AccelerationOptions} options The options for getting the accelerometer data
- * such as timeout.
+ * @param {Function} successCallback    The function to call each time the acceleration data is available
+ * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data.
+ * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout.
+ * @return String                       The watch id that must be passed to #clearWatch to stop watching.
  */
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
-
+    // Default interval (10 sec)
     var frequency = (options != undefined)? options.frequency : 10000;
 
     // successCallback required
@@ -139,33 +156,29 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
         return;
     }
 
-    var key = this.listenerId++;
-    this.accelListeners[key] = key;
-    var obj = this;
-    Accel.start();
+    var id = ""+(navigator.accelerometer.listenerId++);
+    navigator.accelerometer.accelListeners[id] = id;
+    Accel.start(id);
 
     // Start watch timer
-    this.accelTimers[key] = setInterval(function() {
-        //console.log("Interval timer: key="+key+"  timer="+obj.accelTimers[key]+" freq="+frequency);
+    navigator.accelerometer.accelTimers[id] = setInterval(function() {
         var status = Accel.getStatus();
-        //console.log("watchAcceleration: status="+status);
 
+        // If accelerometer is running
         if (status == Accelerometer.RUNNING) {
             try {
-                // If getCurrentAcceleration(), then clear this watch
-                if (frequency == 0) {
-                    obj.clearWatch(key);
-                }
                 var accel = new Acceleration(Accel.getX(), Accel.getY(), Accel.getZ());
                 successCallback(accel);
             } catch (e) {
                 console.log("Accelerometer Error in successCallback: " + e);
             }
         }
-        else {
+
+        // If accelerometer had error
+        else if (status != Accelerometer.STARTING) {
             console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
             try {
-                obj.clearWatch(key);
+                navigator.accelerometer.clearWatch(id);
                 if (errorCallback) {
                     errorCallback(status);
                 }
@@ -175,35 +188,33 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
         }
     }, (frequency ? frequency : 1));
 
-    return key;
+    return id;
 }
 
 /**
  * Clears the specified accelerometer watch.
  *
- * @param {String} watchId The ID of the watch returned from #watchAcceleration.
+ * @param {String} id       The id of the watch returned from #watchAcceleration.
  */
-Accelerometer.prototype.clearWatch = function(watchId) {
+Accelerometer.prototype.clearWatch = function(id) {
 
     // Stop javascript timer & remove from timer list
-    if (watchId && this.accelTimers[watchId]) {
-        clearInterval(this.accelListeners[watchId]);
-        delete this.accelTimers[watchId];
+    if (id && navigator.accelerometer.accelTimers[id]) {
+        clearInterval(navigator.accelerometer.accelTimers[id]);
+        delete navigator.accelerometer.accelTimers[id];
     }
 
     // Remove from watch list
-    if (watchId && this.accelListeners[watchId]) {
-        delete this.accelListeners[watchId];
+    if (id && navigator.accelerometer.accelListeners[id]) {
+        delete navigator.accelerometer.accelListeners[id];
     }
 
-    // Stop native sensor if no more listeners
-    var size = 0;
-    var key;
-    for (key in this.accelListeners) {
-        if (this.accelListeners.hasOwnProperty(key)) size++;
-    }
-    if (size == 0) {
-        Accel.stop();
+    // Stop accelerometer for this watch listener
+    if (id) {
+        try {
+            Accel.stop(id);
+        } catch (e) {
+        }
     }
 }
 

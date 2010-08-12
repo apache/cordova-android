@@ -139,11 +139,54 @@ public class DroidGap extends Activity {
 	}
 	
 	@Override
+    /**
+     * Called by the system when the device configuration changes while your activity is running. 
+     * 
+     * @param Configuration newConfig
+     */
     public void onConfigurationChanged(Configuration newConfig) {
       //don't reload the current page when the orientation is changed
       super.onConfigurationChanged(newConfig);
     } 
+
+    @Override
+    /**
+     * Called when the system is about to start resuming a previous activity. 
+     */
+    protected void onPause(){
+        super.onPause();
+        
+        // Pause JavaScript timers (including setInterval)
+        appView.pauseTimers();
+    }
+
+    @Override
+    /**
+     * Called when the activity will start interacting with the user. 
+     */
+    protected void onResume(){
+        super.onResume();
+        
+        // Resume JavaScript timers (including setInterval)
+        appView.resumeTimers();
+    }
     
+    @Override
+    /**
+     * The final call you receive before your activity is destroyed. 
+     */
+    public void onDestroy() {
+    	super.onDestroy();
+    	
+    	// Load blank page so that JavaScript onunload is called
+    	appView.loadUrl("about:blank");
+    	    	
+    	// Clean up objects
+    	if (accel != null) {
+    		accel.destroy();
+    	}
+    }
+
     private void bindBrowser(WebView appView)
     {
     	gap = new Device(appView, this);

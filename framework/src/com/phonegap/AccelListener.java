@@ -1,6 +1,5 @@
 package com.phonegap;
 
-
 import java.util.List;
 
 import android.hardware.Sensor;
@@ -10,6 +9,10 @@ import android.hardware.SensorManager;
 import android.content.Context;
 import android.webkit.WebView;
 
+/**
+ * This class listens to the accelerometer sensor and stores the latest 
+ * acceleration values x,y,z.
+ */
 public class AccelListener implements SensorEventListener{
 
     WebView mAppView;					// WebView object
@@ -53,7 +56,7 @@ public class AccelListener implements SensorEventListener{
         // If found, then register as listener
         if ((list != null) && (list.size() > 0)) {
             this.mSensor = list.get(0);
-            this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_UI); //SENSOR_DELAY_FASTEST);
+            this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_FASTEST);
             this.status = AccelBroker.STARTING;
         }
         
@@ -70,9 +73,17 @@ public class AccelListener implements SensorEventListener{
      */
     public void stop() {
         if (this.status == AccelBroker.RUNNING) {
-        	this.sensorManager.unregisterListener(this);	// unregister listener
+        	this.sensorManager.unregisterListener(this);
         }
         this.status = AccelBroker.STOPPED;
+    }
+    
+    /**
+     * Called by AccelBroker when listener is to be shut down.
+     * Stop listener.
+     */
+    public void destroy() {
+    	this.sensorManager.unregisterListener(this);    	
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -85,17 +96,19 @@ public class AccelListener implements SensorEventListener{
      * @param SensorEvent event
      */
     public void onSensorChanged(SensorEvent event) {
+    	
     	// Only look at accelerometer events
         if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER) {
             return;
         }
-        this.status = AccelBroker.RUNNING;
         
         // Save time that event was received
         this.timeStamp = System.currentTimeMillis();
         this.x = event.values[0];
         this.y = event.values[1];
         this.z = event.values[2];            
+
+        this.status = AccelBroker.RUNNING;
     }
 
 }

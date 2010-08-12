@@ -1,20 +1,16 @@
 package com.phonegap;
 
+import java.util.HashMap;
+
 import android.content.Context;
 import android.webkit.WebView;
 
 /**
  * This class manages access to the accelerometer from JavaScript.
  * One, free running accelerometer listener is created.  
- * It's state is controlled by start() and stop().
+ * It's state is controlled by start(id) and stop(id).
  * JavaScript is responsible for starting, stopping, and retrieving status and values.
- * 
- * Since there may be some delay between starting and the first available value, when
- * retrieving values from JavaScript, the thread sleeps until the first value is 
- * received or until 1 sec elapses.
- * 
- * @author bcurtis
- *
+ * When all listener ids that were started are stopped, the accelerometer listener is stopped.
  */
 public class AccelBroker {
 
@@ -27,6 +23,7 @@ public class AccelBroker {
     private WebView mAppView;								// WebView object
     private Context mCtx;									// Activity (DroidGap) object
     private AccelListener listener;							// Accelerator listener
+    private HashMap<String,Integer> listenerIds;			// List of listener ids
 
     /**
      * Constructor
@@ -41,15 +38,21 @@ public class AccelBroker {
 
         // Create listener
        	listener = new AccelListener(mCtx, mAppView);
+       	
+       	listenerIds = new HashMap<String,Integer>();
     }
 
     /**
      * Start listening to acceleration sensor.
      * 
-     * @return		true if started, false if not
+     * @param String id		The id of the listener
+     * @return				true if started, false if not
      */
-    public boolean start()
-    {        
+    public boolean start(String id)
+    {     
+    	// Track start for listener
+    	listenerIds.put(id, 1);
+    	
         // Start listener if necessary
         if ((listener.status != AccelBroker.RUNNING) && (listener.status != AccelBroker.STARTING)) {
         	listener.start();
@@ -61,33 +64,31 @@ public class AccelBroker {
     /**
      * Stop listening for acceleration sensor.
      * 
-     * @return 		true if stopped, false if not
+     * @param String id		The id of the listener
+     * @return 				true if stopped, false if not
      */
-    public boolean stop()
-    {
-        listener.stop();
-        return (listener.status == AccelBroker.STOPPED);
+    public boolean stop(String id)
+    {   	
+    	// Stop tracking listener
+    	if (listenerIds.containsKey(id)) {
+    		listenerIds.remove(id);
+    	}
+    	
+    	// If no more listeners, then stop accelerometer
+    	if (listenerIds.isEmpty()) {
+    		listener.stop();
+    	}
+    	
+    	return (listener.status == AccelBroker.STOPPED);
     }
     
     /**
-     * Wait until sensor is done starting up.
-     * If a request for values is made while sensor is still starting, then delay thread until first reading is made.
+     * Destroy listener
      */
-    void waitToStart() {
-       	if (listener.status == AccelBroker.STARTING) {
-       		System.out.println("AccelBroker.waitToStart...");
-    		long timeout = 1000; // wait at most 1 sec
-    		while ((listener.status == AccelBroker.STARTING) && (timeout > 0)) {
-    			try {
-    				Thread.sleep(10);
-    				timeout = timeout - 10;
-    			}
-    			catch (InterruptedException e) {
-    			}
-    		}
-    	}
+    public void destroy() {
+    	listener.destroy();
     }
-    
+        
     /**
      * Get result of the last request or update if watching.
      * If sensor is still starting, wait until 1st value is acquired before returning.
@@ -98,10 +99,7 @@ public class AccelBroker {
      * @return 			String representation of JSON object 
      */
     public String getResult() {
-    	
-    	// Wait for startup
-       	this.waitToStart();
-        	
+    	        	
        	// If acceleration values
        	if (listener.status == AccelBroker.RUNNING) {
        		return "{status:" + listener.status + ",value:{x:" + listener.x + ", y:" + listener.y + ", z:" + listener.z + "}}";
@@ -122,34 +120,28 @@ public class AccelBroker {
         
     /**
      * Get X value of last accelerometer value.
-     * If sensor is still starting, wait until 1st value is acquired before returning.
      * 
      * @return			x value
      */
     public float getX() {
-       	this.waitToStart();
    		return listener.x;
     }
     
     /**
      * Get Y value of last accelerometer value.
-     * If sensor is still starting, wait until 1st value is acquired before returning.
      * 
      * @return			y value
      */
     public float getY() {
-       	this.waitToStart();
    		return listener.y;
 	}
 
     /**
      * Get Z value of last accelerometer value.
-     * If sensor is still starting, wait until 1st value is acquired before returning.
      * 
      * @return			z value
      */
     public float getZ() {
-       	this.waitToStart();
    		return listener.x;
 	}
 
