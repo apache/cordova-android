@@ -106,9 +106,11 @@ public class DroidGap extends Activity {
         		1.0F));
         splashScreen.setImageResource(R.drawable.splash);
       
-        root.addView(splashScreen);
+        // root.addView(splashScreen);
  
         initWebView();
+        
+        root.addView(appView);
 
         setContentView(root);        
 	}
@@ -133,7 +135,8 @@ public class DroidGap extends Activity {
 
         appView.setInitialScale(100);
         appView.setVerticalScrollBarEnabled(false);
-        
+        appView.requestFocusFromTouch();
+
         WebSettings settings = appView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);

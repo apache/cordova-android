@@ -227,7 +227,7 @@ PhoneGap.callbacks = {};
  * @param {String[]} [args] Zero or more arguments to pass to the method
  */
 PhoneGap.exec = function(clazz, action, args) {
-	CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
+	return CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
 };
 
 PhoneGap.execAsync = function(success, fail, clazz, action, args) {
