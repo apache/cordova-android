@@ -72,6 +72,7 @@ public class DroidGap extends Activity {
 	private CryptoHandler crypto;
 	private BrowserKey mKey;
 	private AudioHandler audio;
+    private CallbackServer callbackServer;
 
 	private Uri imageUri;
 	
@@ -185,10 +186,38 @@ public class DroidGap extends Activity {
     	if (accel != null) {
     		accel.destroy();
     	}
+    	if (launcher != null) {
+    		
+    	}
+    	if (mContacts != null) {
+    		
+    	}
+    	if (fs != null) {
+    		
+    	}
+    	if (netMan != null) {
+    		
+    	}
+    	if (mCompass != null) {
+    		mCompass.destroy();
+    	}
+    	if (crypto != null) {
+    		
+    	}
+    	if (mKey != null) {
+    		
+    	}
+    	if (audio != null) {
+    		
+    	}
+    	if (callbackServer != null) {
+    		callbackServer.destroy();
+    	}
     }
 
     private void bindBrowser(WebView appView)
     {
+        callbackServer = new CallbackServer();
     	gap = new Device(appView, this);
     	accel = new AccelBroker(appView, this);
     	launcher = new CameraLauncher(appView, this);
@@ -211,7 +240,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(crypto, "GapCrypto");
     	appView.addJavascriptInterface(mKey, "BackButton");
     	appView.addJavascriptInterface(audio, "GapAudio");
-    	
+        appView.addJavascriptInterface(callbackServer, "CallbackServer");
     	
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
     	{
@@ -227,6 +256,25 @@ public class DroidGap extends Activity {
 	{
 		appView.loadUrl(url);
 	}
+    
+    /**
+     * Send JavaScript statement back to JavaScript.
+     * 
+     * @param message
+     */
+    public void sendJavascript(String statement) {
+    	System.out.println("DroidGap.sendResponse("+statement+")");
+    	this.callbackServer.sendJavascript(statement);
+    }
+    
+    /**
+     * Get the port that the callback server is listening on.
+     * 
+     * @return
+     */
+    public int getPort() {
+    	return this.callbackServer.getPort();
+    }
 	
 	
   /**

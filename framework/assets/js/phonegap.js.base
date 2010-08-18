@@ -67,6 +67,9 @@ PhoneGap.addConstructor = function(func) {
 					}
 				}
             }
+            // Start listening for callbacks from Java
+            PhoneGap.JSCallback();
+
 			// all constructors run, now fire the deviceready event
 			var e = document.createEvent('Events'); 
 			e.initEvent('deviceready');
@@ -133,3 +136,48 @@ PhoneGap.run_command = function() {
     document.location = url;
 
 };
+
+/**
+ * Internal function that uses XHR to call into PhoneGap Java code and retrieve 
+ * any JavaScript code that needs to be run.  This is used for callbacks from
+ * Java to JavaScript.
+ */
+PhoneGap.JSCallback = function() {
+    var xmlhttp = new XMLHttpRequest();
+
+    // Callback function when XMLHttpRequest is ready
+    xmlhttp.onreadystatechange=function(){
+        if(xmlhttp.readyState == 4){
+
+            // If callback has JavaScript statement to execute
+            if (xmlhttp.status == 200) {
+
+                var msg = xmlhttp.responseText;
+                setTimeout(function() {
+                    try {
+                        var t = eval(msg);
+                    }
+                    catch (e) {
+                        console.log("JSCallback Error: "+e);
+                    }
+                }, 1);
+                setTimeout(PhoneGap.JSCallback, 1);
+            }
+
+            // If callback ping (used to keep XHR request from timing out)
+            else if (xmlhttp.status == 404) {
+                setTimeout(PhoneGap.JSCallback, 10);
+            }
+
+            // If error, restart callback server
+            else {
+                console.log("JSCallback Error: Request failed.");
+                CallbackServer.restartServer();
+                setTimeout(PhoneGap.JSCallback, 100);
+            }
+        }
+    }
+
+    xmlhttp.open("GET", "http://127.0.0.1:"+CallbackServer.getPort()+"/" , true);
+    xmlhttp.send();
+}
