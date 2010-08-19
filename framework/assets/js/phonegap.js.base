@@ -74,6 +74,11 @@ PhoneGap.addConstructor = function(func) {
 			var e = document.createEvent('Events'); 
 			e.initEvent('deviceready');
 			document.dispatchEvent(e);
+
+            // Fire the onresume event, since first one happens before we are inited
+            var e = document.createEvent('Events'); 
+            e.initEvent('onresume');
+            document.dispatchEvent(e);
 		}
     }, 5);
 })();

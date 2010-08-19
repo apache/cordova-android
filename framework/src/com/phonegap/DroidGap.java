@@ -146,8 +146,8 @@ public class DroidGap extends Activity {
      * @param Configuration newConfig
      */
     public void onConfigurationChanged(Configuration newConfig) {
-      //don't reload the current page when the orientation is changed
-      super.onConfigurationChanged(newConfig);
+        //don't reload the current page when the orientation is changed
+        super.onConfigurationChanged(newConfig);
     } 
 
     @Override
@@ -156,6 +156,9 @@ public class DroidGap extends Activity {
      */
     protected void onPause(){
         super.onPause();
+
+        // Send pause event to JavaScript
+    	appView.loadUrl("javascript:var e = document.createEvent('Events'); e.initEvent('onpause'); document.dispatchEvent(e);");
         
         // Pause JavaScript timers (including setInterval)
         appView.pauseTimers();
@@ -167,6 +170,9 @@ public class DroidGap extends Activity {
      */
     protected void onResume(){
         super.onResume();
+
+        // Send resume event to JavaScript
+    	appView.loadUrl("javascript:var e = document.createEvent('Events'); e.initEvent('onresume'); document.dispatchEvent(e);");
         
         // Resume JavaScript timers (including setInterval)
         appView.resumeTimers();
@@ -263,7 +269,6 @@ public class DroidGap extends Activity {
      * @param message
      */
     public void sendJavascript(String statement) {
-    	System.out.println("DroidGap.sendResponse("+statement+")");
     	this.callbackServer.sendJavascript(statement);
     }
     
