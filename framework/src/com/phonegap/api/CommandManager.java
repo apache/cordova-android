@@ -17,10 +17,7 @@ import com.phonegap.DroidGap;
  * @author davejohnson
  *
  */
-public final class CommandManager {
-	private static final String EXCEPTION_PREFIX = "[PhoneGap] *ERROR* Exception executing command [";
-	private static final String EXCEPTION_SUFFIX = "]: ";
-	
+public final class CommandManager {	
 	private Command[] commands;
 	
 	private final Context ctx;
@@ -86,23 +83,19 @@ public final class CommandManager {
 				}
 			}
 		} catch (ClassNotFoundException e) {
-			cr = new CommandResult(CommandResult.Status.CLASSNOTFOUNDEXCEPTION, 
-					"{ message: 'ClassNotFoundException', status: "+CommandResult.Status.CLASSNOTFOUNDEXCEPTION.ordinal()+" }");
+			cr = new CommandResult(CommandResult.Status.CLASS_NOT_FOUND_EXCEPTION);
 		} catch (IllegalAccessException e) {
-			cr = new CommandResult(CommandResult.Status.ILLEGALACCESSEXCEPTION, 
-					"{ message: 'IllegalAccessException', status: "+CommandResult.Status.ILLEGALACCESSEXCEPTION.ordinal()+" }");
+			cr = new CommandResult(CommandResult.Status.ILLEGAL_ACCESS_EXCEPTION);
 		} catch (InstantiationException e) {
-			cr = new CommandResult(CommandResult.Status.INSTANTIATIONEXCEPTION, 
-					"{ message: 'InstantiationException', status: "+CommandResult.Status.INSTANTIATIONEXCEPTION.ordinal()+" }");
+			cr = new CommandResult(CommandResult.Status.INSTANTIATION_EXCEPTION);
 		} catch (JSONException e) {
-			cr = new CommandResult(CommandResult.Status.JSONEXCEPTION, 
-					"{ message: 'JSONException', status: "+CommandResult.Status.JSONEXCEPTION.ordinal()+" }");
+			cr = new CommandResult(CommandResult.Status.JSON_EXCEPTION);
 		}
 		// if async we have already returned at this point unless there was an error...
 		if (async) {
 			app.loadUrl(cr.toErrorCallbackString(callbackId));
 		}
-		return ( cr != null ? cr.getResult() : "{ status: 0, message: 'all good' }" );
+		return ( cr != null ? cr.getJSONString() : "{ status: 0, message: 'all good' }" );
 	}
 	
 	/**
