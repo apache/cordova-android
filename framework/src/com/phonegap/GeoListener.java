@@ -12,29 +12,29 @@ public class GeoListener {
     GpsListener mGps; 
     NetworkListener mNetwork;
     LocationManager mLocMan;
-    Context mCtx;
+    private DroidGap mCtx;
     private WebView mAppView;
 	
 	int interval;
 	
-	GeoListener(String i, Context ctx, int time, WebView appView)
-	{
+	GeoListener(String i, DroidGap ctx, int time, WebView appView) {
 		id = i;
 		interval = time;
 		mCtx = ctx;
 		mGps = null;
 		mNetwork = null;
 		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
-	
-		if (mLocMan.getProvider(LocationManager.GPS_PROVIDER) != null)
+
+		if (mLocMan.getProvider(LocationManager.GPS_PROVIDER) != null) {
 			mGps = new GpsListener(mCtx, interval, this);
-		if (mLocMan.getProvider(LocationManager.NETWORK_PROVIDER) != null)
+		}
+		if (mLocMan.getProvider(LocationManager.NETWORK_PROVIDER) != null) {
 			mNetwork = new NetworkListener(mCtx, interval, this);
-        mAppView = appView;
+		}
+		mAppView = appView;
 	}
 	
-	void success(Location loc)
-	{
+	void success(Location loc) {
 		/*
 		 * We only need to figure out what we do when we succeed!
 		 */
@@ -45,49 +45,45 @@ public class GeoListener {
 		 */
 		params = loc.getLatitude() + "," + loc.getLongitude() + ", " + loc.getAltitude() + "," + loc.getAccuracy() + "," + loc.getBearing();
 		params += "," + loc.getSpeed() + "," + loc.getTime();
-		if(id != "global")
-		{
-			mAppView.loadUrl("javascript:navigator._geo.success(" + id + "," +  params + ")");
+		if (id != "global") {
+			mCtx.sendJavascript("navigator._geo.success(" + id + "," +  params + ");");
 		}
-		else
-		{
-			mAppView.loadUrl("javascript:navigator.geolocation.gotCurrentPosition(" + params + ")");
+		else {
+			mCtx.sendJavascript("navigator.geolocation.gotCurrentPosition(" + params + ");");
 			this.stop();
 		}
 	}
 	
-	void fail()
-	{
-		// Do we need to know why?  How would we handle this?
+	void fail() {
+		// Do we need to know why? How would we handle this?
 		if (id != "global") {
-			mAppView.loadUrl("javascript:navigator._geo.fail(" + id + ")");
-		}
-		else
-		{
-			mAppView.loadUrl("javascript:navigator._geo.fail()");
+			mCtx.sendJavascript("navigator._geo.fail(" + id + ");");
+		} else {
+			mCtx.sendJavascript("navigator._geo.fail();");
 		}
 	}
 	
-	void start(int interval)
-	{
-		if(mGps != null)
+	void start(int interval) {
+		if (mGps != null) {
 			mGps.start(interval);
-		if(mNetwork != null)
+		}
+		if (mNetwork != null) {
 			mNetwork.start(interval);
-		if(mNetwork == null && mGps == null)
-		{
-			// Really, how the hell were you going to get the location???
-			mAppView.loadUrl("javascript:navigator._geo.fail()");
+		}
+		if (mNetwork == null && mGps == null) {
+			// Really, how were you going to get the location???
+			mCtx.sendJavascript("navigator._geo.fail();");
 		}
 	}
 	
 	// This stops the listener
-	void stop()
-	{
-		if(mGps != null)
+	void stop() {
+		if (mGps != null) {
 			mGps.stop();
-		if(mNetwork != null)
+		}
+		if (mNetwork != null) {
 			mNetwork.stop();
+		}
 	}
 
 }

@@ -37,7 +37,7 @@ public class CameraLauncher {
 				byte[] code  = jpeg_data.toByteArray();
 				byte[] output = Base64.encodeBase64(code);
 				String js_out = new String(output);
-				mAppView.loadUrl("javascript:navigator.camera.win('" + js_out + "');");	
+				mGap.sendJavascript("navigator.camera.win('" + js_out + "');");
 			}	
 		}
 		catch(Exception e)
@@ -49,7 +49,7 @@ public class CameraLauncher {
 	
 	public void failPicture(String err)
 	{
-		mAppView.loadUrl("javascript:navigator.camera.fail('" + err + "');");
+		mGap.sendJavascript("navigator.camera.fail('" + err + "');");
 	}
 	
 }

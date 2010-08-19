@@ -16,7 +16,7 @@ import android.webkit.WebView;
 public class AccelListener implements SensorEventListener{
 
     WebView mAppView;					// WebView object
-    Context mCtx;						// Activity (DroidGap) object
+    DroidGap mCtx;						// DroidGap object
     
     float x,y,z;						// most recent acceleration values
     long timeStamp;						// time of most recent value
@@ -31,7 +31,7 @@ public class AccelListener implements SensorEventListener{
      * @param ctx		The Activity (DroidGap) object
      * @param appView
      */
-    public AccelListener(Context ctx, WebView appView) {
+    public AccelListener(DroidGap ctx, WebView appView) {
         this.mCtx = ctx;
         this.mAppView = appView;
         this.sensorManager = (SensorManager) mCtx.getSystemService(Context.SENSOR_SERVICE);

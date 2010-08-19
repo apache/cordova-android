@@ -244,7 +244,7 @@ public class DroidGap extends Activity {
     	
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
     	{
-    		cupcakeStorage = new Storage(appView);
+            cupcakeStorage = new Storage(appView, this);
         	geo = new GeoBroker(appView, this);
     		appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
         	appView.addJavascriptInterface(geo, "Geo");

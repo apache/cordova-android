@@ -2,7 +2,6 @@ package com.phonegap;
 
 import java.util.HashMap;
 
-import android.content.Context;
 import android.webkit.WebView;
 
 /**
@@ -21,7 +20,7 @@ public class AccelBroker {
     public static int ERROR_NOT_FOUND = 4;
 	
     private WebView mAppView;								// WebView object
-    private Context mCtx;									// Activity (DroidGap) object
+    private DroidGap mCtx;									// DroidGap object
     private AccelListener listener;							// Accelerator listener
     private HashMap<String,Integer> listenerIds;			// List of listener ids
 
@@ -31,7 +30,7 @@ public class AccelBroker {
      * @param view
      * @param ctx
      */
-    public AccelBroker(WebView view, Context ctx)
+    public AccelBroker(WebView view, DroidGap ctx)
     {
         mCtx = ctx;
         mAppView = view;

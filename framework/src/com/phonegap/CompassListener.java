@@ -11,7 +11,7 @@ import android.webkit.WebView;
 
 /**
  * This class listens to the compass sensor and calls navigator.compass.setHeading(heading)
- * method in Javascript every sensor change event it receives.
+ * method in JavaScript every sensor change event it receives.
  */
 public class CompassListener implements SensorEventListener{
 
@@ -34,9 +34,9 @@ public class CompassListener implements SensorEventListener{
 	 * @param appView
 	 * @param ctx			The Activity (DroidGap) object
 	 */
-	CompassListener(WebView appView, Context ctx)
+	CompassListener(WebView appView, DroidGap ctx)
 	{
-		this.mCtx = (DroidGap)ctx;
+		this.mCtx = ctx;
 		this.mAppView = appView;
 		this.sensorManager = (SensorManager) mCtx.getSystemService(Context.SENSOR_SERVICE);
 	}

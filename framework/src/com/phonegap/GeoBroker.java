@@ -14,11 +14,11 @@ import android.webkit.WebView;
 
 public class GeoBroker {
     private WebView mAppView;
-	private Context mCtx;
+	private DroidGap mCtx;
 	private HashMap<String, GeoListener> geoListeners;
 	private GeoListener global;
 	
-	public GeoBroker(WebView view, Context ctx)
+	public GeoBroker(WebView view, DroidGap ctx)
 	{
 		mCtx = ctx;
 		mAppView = view;

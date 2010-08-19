@@ -21,13 +21,13 @@ public class ContactManager {
 	}
 	
 	private static final String LOG_TAG = "Contact Query";
-	Activity mApp;
+	DroidGap mApp;
 	WebView mView;
 	Uri mPeople = android.provider.Contacts.People.CONTENT_URI;
 	Uri mPhone = android.provider.Contacts.Phones.CONTENT_URI;	
 	Uri mEmail = android.provider.Contacts.ContactMethods.CONTENT_URI;
 	
-	ContactManager(WebView view, Activity app)
+	ContactManager(WebView view, DroidGap app)
 	{
 		mApp = app;
 		mView = view;
@@ -160,23 +160,28 @@ public class ContactManager {
 	            	email = "";
 	            
 	            // Code for backwards compatibility with the OLD Contacts API
-	            if (all)
-	            	mView.loadUrl("javascript:navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"')");	            	
-	            else
-	            	mView.loadUrl("javascript:navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
-	            	            
+	            if (all) {
+	            	mApp.sendJavascript("navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"');");	            	
+	            }
+	            else {
+	            	mApp.sendJavascript("navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"');");
+	            }           
 	        } while (cur.moveToNext());
-	        if (all)
-	        	mView.loadUrl("javascript:navigator.ContactManager.droidDone()");
-	        else
-	        	mView.loadUrl("javascript:navigator.contacts.droidDone();");
+	        if (all) {
+	        	mApp.sendJavascript("navigator.ContactManager.droidDone();");
+	        }
+	        else {
+	        	mApp.sendJavascript("navigator.contacts.droidDone();");
+	        }
 	    }
 	    else
 	    {
-	    	if(all)
-	    		mView.loadUrl("javascript:navigator.ContactManager.fail()");
-	    	else
-	    		mView.loadUrl("javascript:navigator.contacts.fail('None found!')");
+	    	if (all) {
+	    		mApp.sendJavascript("navigator.ContactManager.fail();");
+	    	}
+	    	else {
+	    		mApp.sendJavascript("navigator.contacts.fail('None found!');");
+	    	}
 	    }
 	}	
 	
@@ -199,10 +204,10 @@ public class ContactManager {
 	            if(data != null)
 	            {
 	            	data.email = email;	            
-	            	mView.loadUrl("javascript:navigator.Contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"')");
+	            	mApp.sendJavascript("navigator.Contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"');");
 	            }	           
 	        } while (cur.moveToNext());
-	        mView.loadUrl("javascript:navigator.contacts.droidDoneContacts();");	        
+	        mApp.sendJavascript("navigator.contacts.droidDoneContacts();");	        
 	    }	 
 	}		
 	
