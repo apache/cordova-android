@@ -185,4 +185,30 @@ PhoneGap.JSCallback = function() {
 
     xmlhttp.open("GET", "http://127.0.0.1:"+CallbackServer.getPort()+"/" , true);
     xmlhttp.send();
-}
+};
+
+/**
+ * Create a UUID
+ *
+ * @return
+ */
+PhoneGap.createUUID = function() {
+    return PhoneGap.UUIDcreatePart(4) + '-' +
+        PhoneGap.UUIDcreatePart(2) + '-' +
+        PhoneGap.UUIDcreatePart(2) + '-' +
+        PhoneGap.UUIDcreatePart(2) + '-' +
+        PhoneGap.UUIDcreatePart(6);
+};
+
+PhoneGap.UUIDcreatePart = function(length) {
+    var uuidpart = "";
+    for (var i=0; i<length; i++) {
+        var uuidchar = parseInt((Math.random() * 256)).toString(16);
+        if (uuidchar.length == 1) {
+            uuidchar = "0" + uuidchar;
+        }
+        uuidpart += uuidchar;
+    }
+    return uuidpart;
+};
+

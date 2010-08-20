@@ -17,47 +17,16 @@ function Accelerometer() {
     this.lastAcceleration = null;
 
     /**
-     * List of accelerometer watch listeners
-     */
-    this.accelListeners = {};
-
-    /**
      * List of accelerometer watch timers
      */
-    this.accelTimers = {};
-
-    /**
-     * Next id to use
-     */
-    this.listenerId = 0;
-
-    /**
-     * Timer that turns off accelerometer when it reaches maximum time.
-     * This timer is only used for getCurrentAcceleration.
-     */
-    this.turnOffTimer = 0;
-
-    // Turn off accelerometer if not accessed for certain amount of time
-    setInterval(function() {
-        navigator.accelerometer.turnOffTimer += 10;
-        if (navigator.accelerometer.turnOffTimer > Accelerometer.MAX_TIMER) {
-            Accel.stop("timer");
-            navigator.accelerometer.turnOffTimer = 0;
-        }
-    }, 10000);
+    this.timers = {};
 }
 
 Accelerometer.STOPPED = 0;
 Accelerometer.STARTING = 1;
 Accelerometer.RUNNING = 2;
 Accelerometer.ERROR_FAILED_TO_START = 3;
-Accelerometer.ERROR_NOT_FOUND = 4;
-Accelerometer.ERROR_MSG = ["Not running", "Starting", "", "Failed to start", "Listener not found"];
-
-/**
- * Time (in seconds) to turn off accelerometer if getCurrentAcceleration() hasn't been called.
- */
-Accelerometer.MAX_TIMER = 30;
+Accelerometer.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
 
 /**
  * Asynchronously aquires the current acceleration.
@@ -96,9 +65,7 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
 
     // If not running, then start it
     else {
-        Accel.start("timer");
-        navigator.accelerometer.turnOffTimer = 0;
-        var obj = this;
+        Accel.start();
 
         // Wait until started
         var timer = setInterval(function() {
@@ -117,16 +84,16 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
                 }
 
                 // If accelerometer error
-        else {
-            console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
-            try {
-                if (errorCallback) {
-                    errorCallback(status);
+                else {
+                    console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
+                    try {
+                        if (errorCallback) {
+                            errorCallback(status);
+                        }
+                    } catch (e) {
+                        console.log("Accelerometer Error in errorCallback: " + e);
+                    }
                 }
-            } catch (e) {
-                console.log("Accelerometer Error in errorCallback: " + e);
-            }
-        }
             }
         }, 10);
     }
@@ -141,6 +108,7 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
  * @return String                       The watch id that must be passed to #clearWatch to stop watching.
  */
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
+
     // Default interval (10 sec)
     var frequency = (options != undefined)? options.frequency : 10000;
 
@@ -156,12 +124,17 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
         return;
     }
 
-    var id = ""+(navigator.accelerometer.listenerId++);
-    navigator.accelerometer.accelListeners[id] = id;
-    Accel.start(id);
+    // Make sure accelerometer timeout > frequency + 10 sec
+    var timeout = Accel.getTimeout();
+    if (timeout < (frequency + 10000)) {
+        Accel.setTimeout(frequency + 10000); // set to frequency + 10 sec
+    }
+
+    var id = PhoneGap.createUUID();
+    Accel.start();
 
     // Start watch timer
-    navigator.accelerometer.accelTimers[id] = setInterval(function() {
+    navigator.accelerometer.timers[id] = setInterval(function() {
         var status = Accel.getStatus();
 
         // If accelerometer is running
@@ -199,22 +172,9 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
 Accelerometer.prototype.clearWatch = function(id) {
 
     // Stop javascript timer & remove from timer list
-    if (id && navigator.accelerometer.accelTimers[id]) {
-        clearInterval(navigator.accelerometer.accelTimers[id]);
-        delete navigator.accelerometer.accelTimers[id];
-    }
-
-    // Remove from watch list
-    if (id && navigator.accelerometer.accelListeners[id]) {
-        delete navigator.accelerometer.accelListeners[id];
-    }
-
-    // Stop accelerometer for this watch listener
-    if (id) {
-        try {
-            Accel.stop(id);
-        } catch (e) {
-        }
+    if (id && navigator.accelerometer.timers[id]) {
+        clearInterval(navigator.accelerometer.timers[id]);
+        delete navigator.accelerometer.timers[id];
     }
 }
 

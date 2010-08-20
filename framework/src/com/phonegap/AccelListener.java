@@ -15,12 +15,20 @@ import android.webkit.WebView;
  */
 public class AccelListener implements SensorEventListener{
 
+	public static int STOPPED = 0;
+	public static int STARTING = 1;
+    public static int RUNNING = 2;
+    public static int ERROR_FAILED_TO_START = 3;
+    
+    public float TIMEOUT = 30000;		// Timeout in msec to shut off listener
+
     WebView mAppView;					// WebView object
     DroidGap mCtx;						// DroidGap object
     
     float x,y,z;						// most recent acceleration values
     long timeStamp;						// time of most recent value
     int status;							// status of listener
+    long lastAccessTime;				// time the value was last retrieved
 
     private SensorManager sensorManager;// Sensor manager
     Sensor mSensor;						// Acceleration sensor returned by sensor manager
@@ -31,7 +39,7 @@ public class AccelListener implements SensorEventListener{
      * @param ctx		The Activity (DroidGap) object
      * @param appView
      */
-    public AccelListener(DroidGap ctx, WebView appView) {
+    public AccelListener(WebView appView, DroidGap ctx) {
         this.mCtx = ctx;
         this.mAppView = appView;
         this.sensorManager = (SensorManager) mCtx.getSystemService(Context.SENSOR_SERVICE);
@@ -39,7 +47,7 @@ public class AccelListener implements SensorEventListener{
         this.y = 0;
         this.z = 0;
         this.timeStamp = 0;
-        this.status = AccelBroker.STOPPED;
+        this.status = AccelListener.STOPPED;
     }
 
     /**
@@ -48,21 +56,26 @@ public class AccelListener implements SensorEventListener{
      * @return 			status of listener
      */
     public int start() {
-        
+
+		// If already starting or running, then just return
+        if ((this.status == AccelListener.RUNNING) || (this.status == AccelListener.STARTING)) {
+        	return this.status;
+        }
+
         // Get accelerometer from sensor manager
         List<Sensor> list = this.sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
-        //list = null; // @test failure AccelBroker.ERROR_FAILED_TO_START
         
         // If found, then register as listener
         if ((list != null) && (list.size() > 0)) {
             this.mSensor = list.get(0);
             this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-            this.status = AccelBroker.STARTING;
+            this.status = AccelListener.STARTING;
+            this.lastAccessTime = System.currentTimeMillis();
         }
         
         // If error, then set status to error
         else {
-            this.status = AccelBroker.ERROR_FAILED_TO_START;
+            this.status = AccelListener.ERROR_FAILED_TO_START;
         }
         
         return this.status;
@@ -72,10 +85,10 @@ public class AccelListener implements SensorEventListener{
      * Stop listening to acceleration sensor.
      */
     public void stop() {
-        if (this.status == AccelBroker.RUNNING) {
+        if (this.status != AccelListener.STOPPED) {
         	this.sensorManager.unregisterListener(this);
         }
-        this.status = AccelBroker.STOPPED;
+        this.status = AccelListener.STOPPED;
     }
     
     /**
@@ -83,7 +96,7 @@ public class AccelListener implements SensorEventListener{
      * Stop listener.
      */
     public void destroy() {
-    	this.sensorManager.unregisterListener(this);    	
+    	this.stop();    	
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -108,7 +121,69 @@ public class AccelListener implements SensorEventListener{
         this.y = event.values[1];
         this.z = event.values[2];            
 
-        this.status = AccelBroker.RUNNING;
+        this.status = AccelListener.RUNNING;
+
+        // If values haven't been read for TIMEOUT time, then turn off accelerometer sensor to save power
+		if ((this.timeStamp - this.lastAccessTime) > this.TIMEOUT) {
+			this.stop();
+		}		
     }
 
+    /**
+     * Get status of accelerometer sensor.
+     * 
+     * @return			status
+     */
+	public int getStatus() {
+		return this.status;
+	}
+	
+    /**
+     * Get X value of last accelerometer value.
+     * 
+     * @return			x value
+     */
+    public float getX() {
+        this.lastAccessTime = System.currentTimeMillis();
+   		return this.x;
+    }
+    
+    /**
+     * Get Y value of last accelerometer value.
+     * 
+     * @return			y value
+     */
+    public float getY() {
+        this.lastAccessTime = System.currentTimeMillis();
+   		return this.y;
+	}
+
+    /**
+     * Get Z value of last accelerometer value.
+     * 
+     * @return			z value
+     */
+    public float getZ() {
+        this.lastAccessTime = System.currentTimeMillis();
+   		return this.x;
+	}
+	
+	/**
+	 * Set the timeout to turn off accelerometer sensor if getX() hasn't been called.
+	 * 
+	 * @param timeout		Timeout in msec.
+	 */
+	public void setTimeout(float timeout) {
+		this.TIMEOUT = timeout;
+	}
+	
+	/**
+	 * Get the timeout to turn off accelerometer sensor if getX() hasn't been called.
+	 * 
+	 * @return timeout in msec
+	 */
+	public float getTimeout() {
+		return this.TIMEOUT;
+	}
+    
 }

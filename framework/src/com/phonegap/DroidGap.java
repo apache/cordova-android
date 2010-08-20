@@ -62,7 +62,7 @@ public class DroidGap extends Activity {
 	
 	private Device gap;
 	private GeoBroker geo;
-	private AccelBroker accel;
+    private AccelListener accel;
 	private CameraLauncher launcher;
 	private ContactManager mContacts;
 	private FileUtils fs;
@@ -225,7 +225,7 @@ public class DroidGap extends Activity {
     {
         callbackServer = new CallbackServer();
     	gap = new Device(appView, this);
-    	accel = new AccelBroker(appView, this);
+        accel = new AccelListener(appView, this);
     	launcher = new CameraLauncher(appView, this);
     	mContacts = new ContactManager(appView, this);
     	fs = new FileUtils(appView);
