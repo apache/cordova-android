@@ -160,6 +160,10 @@ if (_nativeReady) { PhoneGap.onNativeReady.fire(); }
  */
 PhoneGap.onDeviceReady = new PhoneGap.Channel();
 
+PhoneGap.onDeviceReady.subscribeOnce(function() {
+	PhoneGap.JSCallback();
+});
+
 PhoneGap.Channel.join(function() {
     PhoneGap.onDeviceReady.fire();
 }, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
