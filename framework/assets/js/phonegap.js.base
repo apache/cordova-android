@@ -326,4 +326,4 @@ PhoneGap.close = function(context, func, params) {
             return func.apply(context, params);
         }
     }
-}
+};
