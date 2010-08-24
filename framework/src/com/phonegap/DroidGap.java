@@ -399,9 +399,12 @@ public class DroidGap extends Activity {
         	}
         	else
         	{
-        		String testUrl = appView.getUrl();
-        		appView.goBack();
-        		if(appView.getUrl().equals(testUrl))
+        		// only go back if the webview tells you that it is possible to go back
+        		if(appView.canGoBack())
+        		{
+        			appView.goBack();
+        		}
+        		else // if you can't go back, invoke behavior of super class
         		{
         			return super.onKeyDown(keyCode, event);
         		}
