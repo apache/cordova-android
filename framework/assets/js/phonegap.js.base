@@ -110,7 +110,7 @@ PhoneGap.Channel.join = function(h, c) {
         (!c[j].fired?c[j].subscribeOnce(f):i--);
     }
     if (!i) h();
-}
+};
 
 
 /**
@@ -152,7 +152,9 @@ PhoneGap.onNativeReady = new PhoneGap.Channel();
 // _nativeReady is global variable that the native side can set
 // to signify that the native code is ready. It is a global since 
 // it may be called before any PhoneGap JS is ready.
-if (typeof _nativeReady != "undefined") { PhoneGap.onNativeReady.fire(); }
+try {
+    if (_nativeReady) { PhoneGap.onNativeReady.fire(); }
+} catch (e) { }
 
 /**
  * onDeviceReady is fired only after both onDOMContentLoaded and 
@@ -166,6 +168,11 @@ PhoneGap.onDeviceReady.subscribeOnce(function() {
 
 PhoneGap.Channel.join(function() {
     PhoneGap.onDeviceReady.fire();
+
+    // Fire the onresume event, since first one happens before JavaScript is loaded
+    var e = document.createEvent('Events'); 
+    e.initEvent('onresume');
+    document.dispatchEvent(e);
 }, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
 
 

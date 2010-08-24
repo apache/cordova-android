@@ -108,6 +108,8 @@ public class DroidGap extends Activity {
         	appView.setWebChromeClient(new GapClient(this));
         }
            
+        appView.setWebViewClient(new GapViewClient(this));
+
         appView.setInitialScale(100);
         appView.setVerticalScrollBarEnabled(false);
         
@@ -132,11 +134,6 @@ public class DroidGap extends Activity {
                 
         root.addView(appView);   
         
-        // Try firing the onNativeReady event in JS. If it fails because the JS is
-        // not loaded yet then just set a flag so that the onNativeReady can be fired
-        // from the JS side when the JS gets to that code.
-		appView.loadUrl("javascript:try{PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
-
         setContentView(root);                        
     }
 	
@@ -387,7 +384,22 @@ public class DroidGap extends Activity {
 		
 	}
 	
-  
+    public class GapViewClient extends WebViewClient {
+
+        Context mCtx;
+
+        public GapViewClient(Context ctx) {
+            mCtx = ctx;
+        }
+        
+        public void onPageFinished  (WebView view, String url) {
+            // Try firing the onNativeReady event in JS. If it fails because the JS is
+            // not loaded yet then just set a flag so that the onNativeReady can be fired
+            // from the JS side when the JS gets to that code.
+    		appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire(); console.log('FIRE!');}catch(e){_nativeReady = true; console.log('native=TRUE');}");
+        }
+    }
+
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
     	
