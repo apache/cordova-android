@@ -7,7 +7,6 @@ class Build
   
   def initialize(*a)
     @android_sdk_path, @path = a
-    @android_sdk_path = "/Users/davejohnson/Sdk/android-sdk-mac_86"
     @android_dir = File.expand_path(File.dirname(__FILE__))
     @framework_dir = File.join(@android_dir, "framework")
   end
@@ -76,9 +75,6 @@ else
   Params:
   
   android_sdk_path ... The path to your Android SDK install.
-  name ............... The name of your application.
-  package_name ....... The name of your package (For example: com.nitobi.demo)
-  www ................ The path to your www folder. (Wherein your HTML, CSS and JS app is.)
   path ............... The path to generate the Android application.
   
   EOF
