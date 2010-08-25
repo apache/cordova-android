@@ -208,7 +208,7 @@ PhoneGap._document_addEventListener = document.addEventListener;
 
 document.addEventListener = function(evt, handler, capture) {
     if (evt.toLowerCase() == 'deviceready') {
-        PhoneGap.onDeviceReady.sob(handler);
+        PhoneGap.onDeviceReady.subscribeOnce(handler);
     } else {
         PhoneGap._document_addEventListener.call(document, evt, handler);
     }
