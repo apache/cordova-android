@@ -1,4 +1,4 @@
-package com.phonegap;
+	package com.phonegap;
 /* License (MIT)
  * Copyright (c) 2008 Nitobi
  * website: http://phonegap.com
@@ -160,11 +160,6 @@ public class DroidGap extends Activity {
         bindBrowser(appView);
         if(cupcakeStorage != null)
         	cupcakeStorage.setStorage(appPackage);
-        
-        // Try firing the onNativeReady event in JS. If it fails because the JS is
-        // not loaded yet then just set a flag so that the onNativeReady can be fired
-        // from the JS side when the JS gets to that code.
-		appView.loadUrl("javascript:try{PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
 	}
 	
 	@Override
@@ -442,7 +437,9 @@ public class DroidGap extends Activity {
 	
     public class GapViewClient extends WebViewClient {
 
-        DroidGap mCtx;
+    	// TODO: hide splash screen here
+
+    	DroidGap mCtx;
 
         /**
          * Constructor.

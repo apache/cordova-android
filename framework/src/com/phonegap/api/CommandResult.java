@@ -1,6 +1,6 @@
 package com.phonegap.api;
 
-import java.net.URLEncoder;
+import org.json.JSONObject;
 
 public class CommandResult {
 	private final int status;
@@ -13,9 +13,14 @@ public class CommandResult {
 	
 	public CommandResult(Status status, String message) {
 		this.status = status.ordinal();
-		this.message = message;
+		this.message = "'" + message + "'";
 	}
 
+	public CommandResult(Status status, JSONObject message) {
+		this.status = status.ordinal();
+		this.message = message.toString();
+	}
+	
 	public int getStatus() {
 		return status;
 	}
@@ -25,7 +30,7 @@ public class CommandResult {
 	}
 	
 	public String getJSONString() {
-		return "{ status: " + this.getStatus() + ", message: '" + URLEncoder.encode(this.getMessage()) + "' }";
+		return "{ status: " + this.getStatus() + ", message: " + this.getMessage() + " }";
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
