@@ -52,7 +52,7 @@ class Build
       phonegapjs << "\n\n"
     end
 
-    File.open(File.join(@path, "assets", "www", "js", "phonegap.js"), 'w') {|f| f.write(phonegapjs) }
+    File.open(File.join(@path, "assets", "www", "phonegap.js"), 'w') {|f| f.write(phonegapjs) }
   end
   #
 end

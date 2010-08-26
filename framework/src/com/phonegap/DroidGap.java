@@ -272,7 +272,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(mKey, "BackButton");
     	appView.addJavascriptInterface(audio, "GapAudio");
         appView.addJavascriptInterface(callbackServer, "CallbackServer");
-    	//appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
+    	appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
     	
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
     	{
