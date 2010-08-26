@@ -82,6 +82,9 @@ public class DroidGap extends Activity {
 	private CommandManager commandManager;
 	
 	private Uri imageUri;
+    private String url;							// The initial URL for our app
+    private String baseUrl;						// The base of the initial URL for our app
+    private boolean resumeState = false;		// Track if onResume() has been called
 	
     /** Called when the activity is first created. */
 	@Override
@@ -181,7 +184,10 @@ public class DroidGap extends Activity {
         super.onPause();
 
         // Send pause event to JavaScript
-    	appView.loadUrl("javascript:var e = document.createEvent('Events'); e.initEvent('onpause'); document.dispatchEvent(e);");
+        if (this.resumeState) {
+        	appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
+        	this.resumeState = false;
+        }
         
         // Pause JavaScript timers (including setInterval)
         appView.pauseTimers();
@@ -195,7 +201,10 @@ public class DroidGap extends Activity {
         super.onResume();
 
         // Send resume event to JavaScript
-    	appView.loadUrl("javascript:var e = document.createEvent('Events'); e.initEvent('onresume'); document.dispatchEvent(e);");
+        if (!this.resumeState) {
+        	appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
+        	this.resumeState = true;
+        }
         
         // Resume JavaScript timers (including setInterval)
         appView.resumeTimers();
@@ -207,6 +216,12 @@ public class DroidGap extends Activity {
      */
     public void onDestroy() {
     	super.onDestroy();
+    	
+    	// Make sure pause event is sent if onPause hasn't been called before onDestroy
+    	if (this.resumeState) {
+    		appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
+    		this.resumeState = false;
+    	}
     	
     	// Load blank page so that JavaScript onunload is called
     	appView.loadUrl("about:blank");
@@ -283,8 +298,21 @@ public class DroidGap extends Activity {
     	}
     }
  
-	public void loadUrl(final String url)
-	{
+    /**
+     * Load the url into the webview.
+     * 
+     * @param url
+     */
+    public void loadUrl(final String url) {
+        this.url = url;
+        int i = url.lastIndexOf('/');
+        if (i > 0) {
+        	this.baseUrl = url.substring(0, i);
+        }
+        else {
+        	this.baseUrl = this.url;
+        }
+	    
 	    this.runOnUiThread(new Runnable() {
 			public void run() {
 		        DroidGap.this.appView.loadUrl(url);
@@ -412,17 +440,127 @@ public class DroidGap extends Activity {
 	
     public class GapViewClient extends WebViewClient {
 
-        Context mCtx;
+        DroidGap mCtx;
 
-        public GapViewClient(Context ctx) {
+        /**
+         * Constructor.
+         * 
+         * @param ctx
+         */
+        public GapViewClient(DroidGap ctx) {
             mCtx = ctx;
         }
         
+        /**
+         * Give the host application a chance to take over the control when a new url 
+         * is about to be loaded in the current WebView.
+         * 
+         * @param view			The WebView that is initiating the callback.
+         * @param url			The url to be loaded.
+         * @return				true to override, false for default behavior
+         */
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        	
+        	// Make sure pause event is sent if loading a new url
+        	if (mCtx.resumeState) {
+        		appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
+        		mCtx.resumeState = false;
+        	}        	
+
+        	// If dialing phone (tel:5551212)
+        	if (url.startsWith(WebView.SCHEME_TEL)) {
+        		try {
+        			Intent intent = new Intent(Intent.ACTION_DIAL);
+        			intent.setData(Uri.parse(url));
+        			startActivity(intent);
+        		} catch (android.content.ActivityNotFoundException e) {
+        			System.out.println("Error dialing "+url+": "+ e.toString());
+        		}
+        		return true;
+        	}
+        	
+        	// If displaying map (geo:0,0?q=address)
+        	else if (url.startsWith(WebView.SCHEME_GEO)) {
+           		try {
+        			Intent intent = new Intent(Intent.ACTION_VIEW);
+        			intent.setData(Uri.parse(url));
+        			startActivity(intent);
+        		} catch (android.content.ActivityNotFoundException e) {
+        			System.out.println("Error showing map "+url+": "+ e.toString());
+        		}
+        		return true;        		
+        	}
+			
+        	// If sending email (mailto:abc@corp.com)
+        	else if (url.startsWith(WebView.SCHEME_MAILTO)) {
+           		try {
+        			Intent intent = new Intent(Intent.ACTION_VIEW);
+        			intent.setData(Uri.parse(url));
+        			startActivity(intent);
+        		} catch (android.content.ActivityNotFoundException e) {
+        			System.out.println("Error sending email "+url+": "+ e.toString());
+        		}
+        		return true;        		
+        	}
+        	
+        	// If sms:5551212
+            else if (url.startsWith("sms:")) {
+            	try {
+            		Intent intent = new Intent(Intent.ACTION_VIEW);
+            		intent.setData(Uri.parse(url));
+            		intent.putExtra("address", url.substring(4));
+            		intent.setType("vnd.android-dir/mms-sms");
+            		startActivity(intent);
+            	} catch (android.content.ActivityNotFoundException e) {
+            		System.out.println("Error sending sms "+url+":"+ e.toString());
+            	}
+            	return true;
+            }  	
+
+        	// If http, https or file
+        	else if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://")) {
+
+        		int i = url.lastIndexOf('/');
+        		String newBaseUrl = url;
+        		if (i > 0) {
+        			newBaseUrl = url.substring(0, i);
+        		}
+
+        		// If our app or file:, then load into our webview
+        		if (url.startsWith("file://") || mCtx.baseUrl.equals(newBaseUrl)) {
+        			appView.loadUrl(url);
+        		}
+  		
+        		// If not our application, let default viewer handle
+        		else {
+        			try {
+        				Intent intent = new Intent(Intent.ACTION_VIEW);
+        				intent.setData(Uri.parse(url));
+        				startActivity(intent);
+                	} catch (android.content.ActivityNotFoundException e) {
+                		System.out.println("Error loading url "+url+":"+ e.toString());
+                	}
+        		}
+        		return true;
+        	}
+        	
+        	return false;
+        }
+    	
+        /**
+         * Notify the host application that a page has finished loading.
+         * 
+         * @param view			The webview initiating the callback.
+         * @param url			The url of the page.
+         */
+        @Override
         public void onPageFinished  (WebView view, String url) {
+        	super.onPageFinished(view, url);
             // Try firing the onNativeReady event in JS. If it fails because the JS is
             // not loaded yet then just set a flag so that the onNativeReady can be fired
             // from the JS side when the JS gets to that code.
-    		appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire(); console.log('FIRE!');}catch(e){_nativeReady = true; console.log('native=TRUE');}");
+    		appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
         }
     }
 

@@ -161,6 +161,18 @@ PhoneGap.onDOMContentLoaded = new PhoneGap.Channel();
  */
 PhoneGap.onNativeReady = new PhoneGap.Channel();
 
+/**
+ * onResume channel is fired when the PhoneGap native code
+ * resumes.
+ */
+PhoneGap.onResume = new PhoneGap.Channel();
+
+/**
+ * onPause channel is fired when the PhoneGap native code
+ * pauses.
+ */
+PhoneGap.onPause = new PhoneGap.Channel();
+
 // _nativeReady is global variable that the native side can set
 // to signify that the native code is ready. It is a global since 
 // it may be called before any PhoneGap JS is ready.
@@ -180,9 +192,7 @@ PhoneGap.Channel.join(function() {
     PhoneGap.onDeviceReady.fire();
 
     // Fire the onresume event, since first one happens before JavaScript is loaded
-    var e = document.createEvent('Events'); 
-    e.initEvent('onresume');
-    document.dispatchEvent(e);
+    PhoneGap.onResume.fire();
 }, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
 
 
@@ -198,7 +208,14 @@ PhoneGap._document_addEventListener = document.addEventListener;
 document.addEventListener = function(evt, handler, capture) {
     if (evt.toLowerCase() == 'deviceready') {
         PhoneGap.onDeviceReady.subscribeOnce(handler);
-    } else {
+    }
+    else if (evt.toLowerCase() == 'onresume') {
+        PhoneGap.onResume.subscribe(handler);
+    }
+    else if (evt.toLowerCase() == 'onpause') {
+        PhoneGap.onPause.subscribe(handler);
+    } 
+    else {
         PhoneGap._document_addEventListener.call(document, evt, handler);
     }
 };
@@ -360,3 +377,4 @@ PhoneGap.close = function(context, func, params) {
         }
     }
 };
+
