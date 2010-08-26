@@ -25,6 +25,9 @@ package com.phonegap;
 
 import java.io.File;
 
+import com.phonegap.api.Command;
+import com.phonegap.api.CommandManager;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -35,6 +38,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -50,6 +54,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.WebSettings.LayoutAlgorithm;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.os.Build.*;
 import android.provider.MediaStore;
@@ -58,6 +63,7 @@ public class DroidGap extends Activity {
 		
 	private static final String LOG_TAG = "DroidGap";
 	protected WebView appView;
+	protected ImageView splashScreen;
 	private LinearLayout root;	
 	
 	private Device gap;
@@ -73,46 +79,64 @@ public class DroidGap extends Activity {
 	private BrowserKey mKey;
 	private AudioHandler audio;
     private CallbackServer callbackServer;
-
+	private CommandManager commandManager;
+	
 	private Uri imageUri;
 	
     /** Called when the activity is first created. */
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         getWindow().requestFeature(Window.FEATURE_NO_TITLE); 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN); 
         // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
-        
-        LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
-        		ViewGroup.LayoutParams.FILL_PARENT, 0.0F);
-         
-        LinearLayout.LayoutParams webviewParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-        		ViewGroup.LayoutParams.FILL_PARENT, 1.0F);
-        
+
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.BLACK);
-        root.setLayoutParams(containerParams);
-                
-        appView = new WebView(this);
-        appView.setLayoutParams(webviewParams);
+        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+        		ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+
+        splashScreen = new ImageView(this);
+        splashScreen.setLayoutParams(new LinearLayout.LayoutParams(
+        		ViewGroup.LayoutParams.FILL_PARENT,
+        		ViewGroup.LayoutParams.FILL_PARENT, 
+        		1.0F));
+        splashScreen.setImageResource(R.drawable.splash);
+      
+        // root.addView(splashScreen);
+ 
+        initWebView();
         
+        root.addView(appView);
+
+        setContentView(root);        
+	}
+	
+	private void initWebView() {
+		appView = new WebView(DroidGap.this);
+		
+        appView.setLayoutParams(new LinearLayout.LayoutParams(
+        		ViewGroup.LayoutParams.FILL_PARENT,
+        		ViewGroup.LayoutParams.FILL_PARENT, 
+        		1.0F));
+
         WebViewReflect.checkCompatibility();
-                
-        if (android.os.Build.VERSION.RELEASE.startsWith("2."))
-        	appView.setWebChromeClient(new EclairClient(this));        	
-        else
-        {        
-        	appView.setWebChromeClient(new GapClient(this));
+
+        if (android.os.Build.VERSION.RELEASE.startsWith("2.")) {
+        	appView.setWebChromeClient(new EclairClient(DroidGap.this));        	
+        } else {
+        	appView.setWebChromeClient(new GapClient(DroidGap.this));
         }
            
         appView.setWebViewClient(new GapViewClient(this));
 
         appView.setInitialScale(100);
         appView.setVerticalScrollBarEnabled(false);
-        
+        appView.requestFocusFromTouch();
+
         WebSettings settings = appView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
@@ -127,18 +151,15 @@ public class DroidGap extends Activity {
         WebViewReflect.setDomStorage(settings);
         // Turn off native geolocation object in browser - we use our own :)
         WebViewReflect.setGeolocationEnabled(settings, true);
-        /* Bind the appView object to the gap class methods */
+        // Bind the appView object to the gap class methods
         bindBrowser(appView);
         if(cupcakeStorage != null)
         	cupcakeStorage.setStorage(appPackage);
-                
-        root.addView(appView);   
         
-        setContentView(root);                        
-    }
-	
-	public void invoke(String origin, boolean allow, boolean remember) {
-
+        // Try firing the onNativeReady event in JS. If it fails because the JS is
+        // not loaded yet then just set a flag so that the onNativeReady can be fired
+        // from the JS side when the JS gets to that code.
+		appView.loadUrl("javascript:try{PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
 	}
 	
 	@Override
@@ -226,6 +247,7 @@ public class DroidGap extends Activity {
     private void bindBrowser(WebView appView)
     {
         callbackServer = new CallbackServer();
+    	commandManager = new CommandManager(appView, this);
     	gap = new Device(appView, this);
         accel = new AccelListener(appView, this);
     	launcher = new CameraLauncher(appView, this);
@@ -238,6 +260,7 @@ public class DroidGap extends Activity {
     	audio = new AudioHandler(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
+    	appView.addJavascriptInterface(commandManager, "CommandManager");
     	appView.addJavascriptInterface(gap, "DroidGap");
     	appView.addJavascriptInterface(accel, "Accel");
     	appView.addJavascriptInterface(launcher, "GapCam");
@@ -249,6 +272,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(mKey, "BackButton");
     	appView.addJavascriptInterface(audio, "GapAudio");
         appView.addJavascriptInterface(callbackServer, "CallbackServer");
+    	appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
     	
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
     	{
@@ -258,11 +282,14 @@ public class DroidGap extends Activity {
         	appView.addJavascriptInterface(geo, "Geo");
     	}
     }
-           
  
-	public void loadUrl(String url)
+	public void loadUrl(final String url)
 	{
-		appView.loadUrl(url);
+	    this.runOnUiThread(new Runnable() {
+			public void run() {
+		        DroidGap.this.appView.loadUrl(url);
+	        }
+        });
 	}
     
     /**
@@ -282,7 +309,6 @@ public class DroidGap extends Activity {
     public int getPort() {
     	return this.callbackServer.getPort();
     }
-	
 	
   /**
     * Provides a hook for calling "alert" from javascript. Useful for
@@ -401,8 +427,7 @@ public class DroidGap extends Activity {
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-    	
+    {	
         if (keyCode == KeyEvent.KEYCODE_BACK) {
         	if (mKey.isBound())
         	{
@@ -428,10 +453,17 @@ public class DroidGap extends Activity {
         	// This is where we launch the menu
         	appView.loadUrl("javascript:keyEvent.menuTrigger()");
         }
-                
         return false;
     }
 	
+    /**
+     * Removes the splash screen from root view and adds the WebView
+     */
+    public void hideSplashScreen() {
+    	root.removeView(splashScreen);
+    	root.addView(appView);
+    }
+    
     // This is required to start the camera activity!  It has to come from the previous activity
     public void startCamera()
     {
@@ -463,11 +495,5 @@ public class DroidGap extends Activity {
     	   {
     		   launcher.failPicture("Did not complete!");
     	   }
-    }
-
-    public WebView getView()
-    {
-      return this.appView;
-    }
-      
+    }      
 }

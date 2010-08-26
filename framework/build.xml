@@ -64,21 +64,53 @@
     -->
     <setup />
 
-    <target name="move_files">
-      <concat destfile="../example/phonegap.js">
+	<target name="check-javascript" depends="build-javascript">
+		<delete dir="assets/lib"/>
+		<mkdir dir="assets/lib"/>
+		<echo file="assets/lib/lint.js">var alert=function(){},device={},Element={},debug={};</echo>
+		<concat destfile="assets/lib/phonegap-lint.js" append="true">
+			<fileset dir="assets/lib">
+				<include name="lint.js" />
+			</fileset>
+			<fileset dir="assets/www">
+				<include name="phonegap.js" />
+			</fileset>
+		</concat>
+
+		<exec executable="cmd" os="Windows 7">
+			<arg value="/c"/>
+			<arg value="java"/>
+			<arg value="-cp"/>
+			<arg value="${basedir}/util/js.jar"/>
+			<arg value="org.mozilla.javascript.tools.shell.Main"/>
+			<arg value="${basedir}/util/jslint.js"/>
+			<arg value="${basedir}/js/lib/phonegap-lint.js"/>
+		</exec>
+		<exec executable="java" os="Mac OS X">
+			<arg value="-cp"/>
+			<arg value="../util/js.jar"/>
+			<arg value="org.mozilla.javascript.tools.shell.Main"/>
+			<arg value="../util/jslint.js"/>
+			<arg value="assets/lib/phonegap-lint.js"/>
+		</exec>
+	</target>
+
+    <target name="build-javascript">
+	  <delete file="assets/www/phonegap.js"/>
+      <concat destfile="assets/www/phonegap.js">
         <fileset dir="assets/js" includes="phonegap.js.base" />
         <fileset dir="assets/js" includes="*.js" />
       </concat>
     </target>
 
-    <target name="jar" depends="move_files, compile">
+    <target name="jar" depends="build-javascript, compile">
       <jar jarfile="phonegap.jar" basedir="bin/classes" excludes="**/R*.class" />
     </target>
 
-    <target name="phonegap_debug" depends="move_files, debug">
+    <target name="phonegap_debug" depends="build-javascript, debug">
     </target>
 
-    <target name="phonegap_release" depends="move_files, release">
+    <target name="phonegap_release" depends="build-javascript, release">
     </target>
 
 

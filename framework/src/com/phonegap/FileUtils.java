@@ -11,7 +11,7 @@ public class FileUtils {
 	FileReader f_in;
 	FileWriter f_out;
 	
-	FileUtils(WebView view)
+	public FileUtils(WebView view)
 	{
 		mView = view;
 	}
