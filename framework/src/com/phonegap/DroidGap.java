@@ -102,6 +102,7 @@ public class DroidGap extends Activity {
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
         		ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
 
+        /*
         splashScreen = new ImageView(this);
         splashScreen.setLayoutParams(new LinearLayout.LayoutParams(
         		ViewGroup.LayoutParams.FILL_PARENT,
@@ -109,8 +110,9 @@ public class DroidGap extends Activity {
         		1.0F));
         splashScreen.setImageResource(R.drawable.splash);
       
-        // root.addView(splashScreen);
- 
+        root.addView(splashScreen);
+ 		*/
+
         initWebView();
         
         root.addView(appView);

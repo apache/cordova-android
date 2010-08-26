@@ -203,20 +203,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // Intercept calls to document.addEventListener and watch for deviceready
-PhoneGap._document_addEventListener = document.addEventListener;
+PhoneGap.m_document_addEventListener = document.addEventListener;
 
 document.addEventListener = function(evt, handler, capture) {
-    if (evt.toLowerCase() == 'deviceready') {
+	var e = evt.toLowerCase();
+    if (e == 'deviceready') {
         PhoneGap.onDeviceReady.subscribeOnce(handler);
-    }
-    else if (evt.toLowerCase() == 'onresume') {
+    } else if (e == 'resume') {
         PhoneGap.onResume.subscribe(handler);
-    }
-    else if (evt.toLowerCase() == 'onpause') {
+    } else if (e == 'pause') {
         PhoneGap.onPause.subscribe(handler);
-    } 
-    else {
-        PhoneGap._document_addEventListener.call(document, evt, handler);
+    } else {
+        PhoneGap.m_document_addEventListener.call(document, evt, handler);
     }
 };
 
