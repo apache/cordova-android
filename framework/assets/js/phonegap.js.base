@@ -203,19 +203,6 @@ document.addEventListener = function(evt, handler, capture) {
     }
 };
 
-// Intercept calls to document.addEventListener and watch for deviceready
-PhoneGap._document_addEventListener = document.addEventListener;
-
-document.addEventListener = function(evt, handler, capture) {
-    if (evt.toLowerCase() == 'deviceready') {
-        PhoneGap.onDeviceReady.subscribeOnce(handler);
-    } else {
-        PhoneGap._document_addEventListener.call(document, evt, handler);
-    }
-};
-
-
-
 PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
 
