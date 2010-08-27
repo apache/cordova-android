@@ -42,7 +42,7 @@ function Coordinates(lat, lng, alt, acc, head, vel, altacc) {
 	/**
 	 * The altitude accuracy of the position.
 	 */
-	this.altitudeAccuracy = (altacc == "undefined") ? altacc : null; 
+	this.altitudeAccuracy = (altacc != 'undefined') ? altacc : null; 
 }
 
 /**
