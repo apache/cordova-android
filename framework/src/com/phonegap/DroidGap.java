@@ -59,6 +59,26 @@ import android.widget.LinearLayout;
 import android.os.Build.*;
 import android.provider.MediaStore;
 
+/**
+ * This class is the main Android activity that represents the PhoneGap
+ * application.  It should be extended by the user to load the specific
+ * html file that contains the application.
+ * 
+ * As an example:
+ * 
+ *     package com.phonegap.examples;
+ *     import android.app.Activity;
+ *     import android.os.Bundle;
+ *     import com.phonegap.*;
+ *     
+ *     public class Examples extends DroidGap {
+ *       @Override
+ *       public void onCreate(Bundle savedInstanceState) {
+ *         super.onCreate(savedInstanceState);
+ *         super.loadUrl("file:///android_asset/www/index.html");
+ *       }
+ *     }
+ */
 public class DroidGap extends Activity {
 		
 	private static final String LOG_TAG = "DroidGap";
@@ -84,7 +104,6 @@ public class DroidGap extends Activity {
 	private Uri imageUri;
     private String url;							// The initial URL for our app
     private String baseUrl;						// The base of the initial URL for our app
-    private boolean resumeState = false;		// Track if onResume() has been called
 	
     /** Called when the activity is first created. */
 	@Override
@@ -132,7 +151,8 @@ public class DroidGap extends Activity {
 
         if (android.os.Build.VERSION.RELEASE.startsWith("2.")) {
         	appView.setWebChromeClient(new EclairClient(DroidGap.this));        	
-        } else {
+        }
+        else {
         	appView.setWebChromeClient(new GapClient(DroidGap.this));
         }
            
@@ -158,8 +178,9 @@ public class DroidGap extends Activity {
         WebViewReflect.setGeolocationEnabled(settings, true);
         // Bind the appView object to the gap class methods
         bindBrowser(appView);
-        if(cupcakeStorage != null)
+        if (cupcakeStorage != null) {
         	cupcakeStorage.setStorage(appPackage);
+        }
 	}
 	
 	@Override
@@ -181,10 +202,7 @@ public class DroidGap extends Activity {
         super.onPause();
 
         // Send pause event to JavaScript
-        if (this.resumeState) {
-        	appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
-        	this.resumeState = false;
-        }
+        appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
         
         // Pause JavaScript timers (including setInterval)
         appView.pauseTimers();
@@ -198,10 +216,7 @@ public class DroidGap extends Activity {
         super.onResume();
 
         // Send resume event to JavaScript
-        if (!this.resumeState) {
-        	appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
-        	this.resumeState = true;
-        }
+        appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
         
         // Resume JavaScript timers (including setInterval)
         appView.resumeTimers();
@@ -215,10 +230,7 @@ public class DroidGap extends Activity {
     	super.onDestroy();
     	
     	// Make sure pause event is sent if onPause hasn't been called before onDestroy
-    	if (this.resumeState) {
-    		appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
-    		this.resumeState = false;
-    	}
+    	appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
     	
     	// Load blank page so that JavaScript onunload is called
     	appView.loadUrl("about:blank");
@@ -435,6 +447,9 @@ public class DroidGap extends Activity {
 		
 	}
 	
+    /**
+     * The webview client receives notifications about appView
+     */
     public class GapViewClient extends WebViewClient {
 
     	// TODO: hide splash screen here
@@ -460,12 +475,6 @@ public class DroidGap extends Activity {
          */
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        	
-        	// Make sure pause event is sent if loading a new url
-        	if (mCtx.resumeState) {
-        		appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
-        		mCtx.resumeState = false;
-        	}        	
 
         	// If dialing phone (tel:5551212)
         	if (url.startsWith(WebView.SCHEME_TEL)) {
