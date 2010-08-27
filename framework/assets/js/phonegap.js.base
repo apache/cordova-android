@@ -153,25 +153,25 @@ PhoneGap.addPlugin = function(name, obj) {
  * onDOMContentLoaded channel is fired when the DOM content 
  * of the page has been parsed.
  */
-PhoneGap.onDOMContentLoaded = new PhoneGap.Channel();
+PhoneGap.onDOMContentLoaded = new PhoneGap.Channel('onDOMContentLoaded');
 
 /**
  * onNativeReady channel is fired when the PhoneGap native code
  * has been initialized.
  */
-PhoneGap.onNativeReady = new PhoneGap.Channel();
+PhoneGap.onNativeReady = new PhoneGap.Channel('onNativeReady');
 
 /**
  * onResume channel is fired when the PhoneGap native code
  * resumes.
  */
-PhoneGap.onResume = new PhoneGap.Channel();
+PhoneGap.onResume = new PhoneGap.Channel('onResume');
 
 /**
  * onPause channel is fired when the PhoneGap native code
  * pauses.
  */
-PhoneGap.onPause = new PhoneGap.Channel();
+PhoneGap.onPause = new PhoneGap.Channel('onPause');
 
 // _nativeReady is global variable that the native side can set
 // to signify that the native code is ready. It is a global since 
@@ -182,7 +182,7 @@ if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
  * onDeviceReady is fired only after both onDOMContentLoaded and 
  * onNativeReady have fired.
  */
-PhoneGap.onDeviceReady = new PhoneGap.Channel();
+PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
 PhoneGap.onDeviceReady.subscribeOnce(function() {
 	PhoneGap.JSCallback();
