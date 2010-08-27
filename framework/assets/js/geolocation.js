@@ -29,7 +29,7 @@ Geolocation.prototype.gotCurrentPosition = function(lat, lng, alt, altacc, head,
   }
   else
   {
-    coords = new Coordinates(lat, lng, alt, altacc, head, vel);
+    coords = new Coordinates(lat, lng, alt, acc, head, vel);
     loc = new Position(coords, stamp);
 	this.lastPosition = loc;
     this.global_success(loc);
@@ -58,7 +58,7 @@ Geolocation.prototype.watchPosition = function(successCallback, errorCallback, o
  */
 Geolocation.prototype.success = function(key, lat, lng, alt, altacc, head, vel, stamp)
 {
-  var coords = new Coordinates(lat, lng, alt, altacc, head, vel);
+  var coords = new Coordinates(lat, lng, alt, acc, head, vel);
   var loc = new Position(coords, stamp);
   geoListeners[key].success(loc);
 }
