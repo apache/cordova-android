@@ -1,0 +1,150 @@
+#!/usr/bin/env ruby
+ROOT = File.expand_path(File.dirname(__FILE__).gsub('bin',''))
+require 'fileutils'
+require File.join(ROOT, "lib", "generate.rb")
+require File.join(ROOT, "lib", "package.rb")
+require File.join(ROOT, "lib", "run.rb")
+require File.join(ROOT, "lib", "update.rb")
+
+# ---------------------------------------------------------- #
+#                                                            #
+#                   command line interface                   #
+#                                                            #
+# ---------------------------------------------------------- #
+
+# droidgap gen [app name]
+Generate.new(ARGV[1]) if ARGV.first == 'gen'
+
+# droidgap pkg [path to phonegap project]
+Package.new(ARGV[1]) if ARGV.first == 'pkg'
+
+# droidgap run [optional directory]
+Run.new(ARGV[1]) if ARGV.first == 'run'
+
+# droidgap update [params]
+Update.new if ARGV.first == 'update'
+
+# droidgap log
+if ARGV.first == 'log'
+  $stdout.sync = true
+  IO.popen('adb logcat') do |f|
+    until f.eof?
+      puts f.gets
+    end
+  end
+end
+
+
+puts "droidgap ship not implemented" if ARGV.first == 'ship'
+
+
+if ARGV.first.nil? || ARGV.first == 'help'
+  help = <<-EOF
+  
+  DroidGap: PhoneGap/Android Dev Script
+  -------------------------------------
+  
+  Useful utilities for devlopers building mobile apps using PhoneGap for Android.
+  
+  Usage:
+  
+  droidgap <command> <parameters>
+  
+  Commands:
+  
+  help ..... See this message. Type help <command name> to see specific help topics.
+  gen ...... Generate an example PhoneGap application to current directory.
+  pkg ...... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
+  run ...... Installs a valid PhoneGap Project to first device found.
+  log ...... Attach a logger that listens for console.log statements.
+  update ... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
+  ship ..... Build and sign an APK suitable for submission to an Android Marketplace.
+    
+  Quickstart:
+  
+  $ droidgap gen example 
+  $ cd example
+  $ droidgap run 
+
+  Now you can launch your app and optionally start a logger with:
+  
+  $ droidgap log
+  
+  EOF
+  
+  gen = <<-EOF
+  
+  DroidGap Generate
+  -----------------
+  
+  Generate an example PhoneGap application to path supplied or current working directory if none is supplied.
+  
+  Usage:
+  
+    droidgap gen [path]
+  
+  EOF
+  
+  run = <<-EOF
+  
+  DroidGap Run
+  ------------
+  
+  Launches PhoneGap project to first device found and attaches a logger that listens for console.log statements.
+  
+  Usage:
+
+    droidgap run <path>
+    
+  EOF
+  
+  ship = <<-EOF
+  
+  DroidGap Ship
+  -------------
+  
+  Build and sign an APK suitable for submission to an Android Marketplace.
+  
+  Usage:
+  
+    droidgap ship <path>
+  
+  EOF
+  
+  log = <<-EOF
+  
+  DroidGap Log
+  -------------
+  
+  Launches LogCat
+  
+  Usage:
+  
+    droidgap log
+  
+  EOF
+  
+  pkg = <<-EOF
+  
+  DroidGap Package
+  ----------------
+  
+  Creates an Android compatable project from a PhoneGap project. For example, if you have MyProject with index.html this comamdn will create MyProject-android.
+  
+  Usage:
+  
+    droidgap pkg <path>
+  
+  EOF
+  
+  update = <<-EOF
+
+  Update: Builds the JS and PhoneGap Android jar file and copies them to your project.
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  path ............... The path to generate the Android application.
+  
+  EOF
+  
+  puts ARGV[1].nil? ? help : eval(ARGV[1])
+end
