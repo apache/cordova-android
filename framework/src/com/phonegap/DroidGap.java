@@ -261,7 +261,7 @@ public class DroidGap extends Activity {
     		
     	}
     	if (audio != null) {
-    		
+    		audio.destroy();
     	}
     	if (callbackServer != null) {
     		callbackServer.destroy();
