@@ -4,34 +4,27 @@
 #
 # A handy machine that does the following:
 #
-# - packages www to a valid android project in tmp/android
-# - builds tmp/android project into an apk
-# - installs apk onto first device found
+# - runs ant_debug
 # - if there is no device attached it will start an emulator with the first avd found
-# - TODO install apk into now running emulator... need to find way to wait for it to have started
-# - TODO if no avds present it will attempt to create one
+# - runs ant_install
 #
 class Run
   # if no path is supplied uses current directory for project
-  def initialize(path)
-    puts 'packaging www as phonegap/android project in ./tmp/android...'
-    path = FileUtils.pwd if path.nil? || path == ""
-    @pkg = Package.new(path)
-    @apk = File.join(@pkg.path, "bin", "#{ @pkg.name.gsub(' ','') }-debug.apk")
-    build_apk
-    first_device.nil? ? start_emulator : install_to_device
+  def initialize
+    @path = FileUtils.pwd
+    build
+    start_emulator if first_device.nil?
+    install
   end
   
-  def build_apk
-    puts 'building apk...'
-    Dir.chdir(@pkg.path)
-    `ant debug;`
+  def build
+    Dir.chdir(@path)
+    `ant debug`
   end
   
-  def install_to_device
-    puts 'installing to device...'
-    Dir.chdir(@pkg.path)
-    `ant install;`
+  def install
+    Dir.chdir(@path)
+    `ant install`
   end 
   
   def start_emulator

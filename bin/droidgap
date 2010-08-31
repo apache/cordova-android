@@ -19,7 +19,7 @@ Generate.new(ARGV[1]) if ARGV.first == 'gen'
 Create.new(ARGV[1]) if ARGV.first == 'create'
 
 # droidgap run [optional directory]
-Run.new(ARGV[1]) if ARGV.first == 'run'
+Run.new if ARGV.first == 'run'
 
 # droidgap update [params]
 Update.new if ARGV.first == 'update'
