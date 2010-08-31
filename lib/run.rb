@@ -15,7 +15,8 @@ class Run
   # if no path is supplied uses current directory for project
   def initialize(path)
     puts 'packaging www as phonegap/android project in ./tmp/android...'
-    @pkg = Package.new(path)    
+    path = FileUtils.pwd if path.nil? || path == ""
+    @pkg = Package.new(path)
     @apk = File.join(@pkg.path, "bin", "#{ @pkg.name.gsub(' ','') }-debug.apk")
     build_apk
     first_device.nil? ? start_emulator : install_to_device
@@ -23,18 +24,25 @@ class Run
   
   def build_apk
     puts 'building apk...'
-    `cd #{ @pkg.path }; ant debug;`
+    Dir.chdir(@pkg.path)
+    `ant debug;`
   end
   
   def install_to_device
     puts 'installing to device...'
-    `cd #{ @pkg.path }; ant install;`
+    Dir.chdir(@pkg.path)
+    `ant install;`
   end 
   
   def start_emulator
     puts "No devices attached. Starting emulator w/ first avd...\n"
     $stdout.sync = true
-    IO.popen("emulator -avd #{ first_avd } -logcat all") do |f|
+    avd = first_avd
+    if (avd.nil? || avd == "")
+      puts "No Android Virtual Device (AVD) could be found. Please create one with the Android SDK."
+      return
+    end
+    IO.popen("emulator -avd #{ avd } -logcat all") do |f|
       until f.eof?
         puts f.gets
         if f.gets.include? 'Boot is finished'

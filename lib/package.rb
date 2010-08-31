@@ -36,7 +36,7 @@ class Package
     @pkg  = "com.phonegap.tmp#{ Time.now.usec }" # ensure a unique pkg
     
     # android sdk discovery ... could be better
-    @android_sdk_path = `which android`.gsub('/tools/android','')
+    @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub('/tools/android','')
     @android_dir      = File.expand_path(File.dirname(__FILE__).gsub('lib',''))
     @framework_dir    = File.join(@android_dir, "framework")
     

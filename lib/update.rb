@@ -6,7 +6,7 @@ class Update
   
   def initialize
     @path             = FileUtils.pwd
-    @android_sdk_path = `which android`.gsub('/tools/android','')
+    @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub('/tools/android','')
     @android_dir      = File.expand_path(File.dirname(__FILE__))
     @framework_dir    = File.join(@android_dir, "..", "framework")
     # puts "updating #{ @path } with phonegap from #{ @android_dir }"
