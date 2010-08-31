@@ -17,6 +17,7 @@ class Package
     copy_libs
     add_name_to_strings
     write_java
+    msg
   end
 
   
@@ -30,10 +31,10 @@ class Package
     
     # setup default vars
     @name = path.split("/").last
-    @path = File.join(path, '..', "#{ name }-android") # File.join(path, "tmp", "android")
-    @www  = path # File.join(path, 'www')
+    @path = File.join(path, '..', "#{ name }-android")
+    @www  = path 
     @name = path.split('/').last
-    @pkg  = "com.phonegap.tmp#{ Time.now.usec }" # ensure a unique pkg
+    @pkg  = "com.phonegap.#{ name }" 
     
     # android sdk discovery ... could be better
     @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub('/tools/android','')
@@ -201,6 +202,11 @@ class Package
     code_dir = File.join(@path, "src", @pkg.gsub('.', File::SEPARATOR))
     FileUtils.mkdir_p(code_dir)
     open(File.join(code_dir, "#{ @name.gsub(' ','') }.java"),'w') { |f| f.puts j.gsub('    ','') }
+  end
+  
+  # friendly output for now
+  def msg
+    puts "Created #{ @path }"
   end
   #
 end
