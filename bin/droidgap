@@ -129,7 +129,7 @@ if ARGV.first.nil? || ARGV.first == 'help'
   DroidGap Package
   ----------------
   
-  Creates an Android compatable project from a PhoneGap project. For example, if you have MyProject with index.html this comamdn will create MyProject-android.
+  Creates an Android compatable project from a PhoneGap project. For example, if you have MyProject with index.html this command will create MyProject-android.
   
   Usage:
   
