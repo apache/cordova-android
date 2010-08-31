@@ -2,7 +2,7 @@
 ROOT = File.expand_path(File.dirname(__FILE__).gsub('bin',''))
 require 'fileutils'
 require File.join(ROOT, "lib", "generate.rb")
-require File.join(ROOT, "lib", "package.rb")
+require File.join(ROOT, "lib", "create.rb")
 require File.join(ROOT, "lib", "run.rb")
 require File.join(ROOT, "lib", "update.rb")
 
@@ -15,8 +15,8 @@ require File.join(ROOT, "lib", "update.rb")
 # droidgap gen [app name]
 Generate.new(ARGV[1]) if ARGV.first == 'gen'
 
-# droidgap pkg [path to phonegap project]
-Package.new(ARGV[1]) if ARGV.first == 'pkg'
+# droidgap create [path to phonegap project]
+Create.new(ARGV[1]) if ARGV.first == 'create'
 
 # droidgap run [optional directory]
 Run.new(ARGV[1]) if ARGV.first == 'run'
@@ -34,8 +34,9 @@ if ARGV.first == 'log'
   end
 end
 
-
+# TODO implement these!
 puts "droidgap ship not implemented" if ARGV.first == 'ship'
+puts "droidgap test not implemented" if ARGV.first == 'test'
 
 
 if ARGV.first.nil? || ARGV.first == 'help'
@@ -54,10 +55,11 @@ if ARGV.first.nil? || ARGV.first == 'help'
   
   help ..... See this message. Type help <command name> to see specific help topics.
   gen ...... Generate an example PhoneGap application to current directory.
-  pkg ...... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
+  create ... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
   run ...... Installs a valid PhoneGap Project to first device found.
   log ...... Attach a logger that listens for console.log statements.
   update ... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
+  test ..... Gets a copy of mobile-spec and runs in first device or emulator attached.
   ship ..... Build and sign an APK suitable for submission to an Android Marketplace.
     
   Quickstart:
@@ -124,25 +126,25 @@ if ARGV.first.nil? || ARGV.first == 'help'
   
   EOF
   
-  pkg = <<-EOF
+  create = <<-EOF
   
-  DroidGap Package
+  DroidGap Create
   ----------------
   
   Creates an Android compatable project from a PhoneGap project. For example, if you have MyProject with index.html this command will create MyProject-android.
   
   Usage:
   
-    droidgap pkg <path>
+    droidgap create <path>
   
   EOF
   
   update = <<-EOF
 
-  Update: Builds the JS and PhoneGap Android jar file and copies them to your project.
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  DroidGap Update
+  ~~~~~~~~~~~~~~~
   
-  path ............... The path to generate the Android application.
+  Builds the JS and PhoneGap Android jar file and copies them to your project.
   
   EOF
   

@@ -4,7 +4,7 @@
 #
 # TODO ensure the phonegap.js file is overwritten every single time into the correct tmp dir
 #
-class Package
+class Create
   attr_reader :name, :pkg, :www, :path
   
   def initialize(path)
