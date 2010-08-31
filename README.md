@@ -12,9 +12,11 @@ Pre Requisites
 Install
 -------
 
-Add PhoneGap/Android to your PATH variable like so:
+On OS X add PhoneGap/Android to your PATH variable like so:
 
     export PATH=$PATH:~/phonegap-android/bin
+
+On Windows add the phonegap-android/bin to your PATH as normal.
 
 DroidGap: PhoneGap/Android Dev Script
 -------------------------------------
