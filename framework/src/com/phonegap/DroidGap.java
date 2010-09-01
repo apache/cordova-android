@@ -84,6 +84,7 @@ public class DroidGap extends Activity {
 	private static final String LOG_TAG = "DroidGap";
 	protected WebView appView;
 	protected ImageView splashScreen;
+	protected Boolean backdoor;
 	private LinearLayout root;	
 	
 	private Device gap;
@@ -536,7 +537,7 @@ public class DroidGap extends Activity {
         		}
 
         		// If our app or file:, then load into our webview
-        		if (url.startsWith("file://") || mCtx.baseUrl.equals(newBaseUrl)) {
+        		if (backdoor || url.startsWith("file://") || mCtx.baseUrl.equals(newBaseUrl)) {
         			appView.loadUrl(url);
         		}
   		
