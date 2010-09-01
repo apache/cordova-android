@@ -84,7 +84,7 @@ public class DroidGap extends Activity {
 	private static final String LOG_TAG = "DroidGap";
 	protected WebView appView;
 	protected ImageView splashScreen;
-	protected Boolean backdoor;
+	protected Boolean backdoor = false;
 	private LinearLayout root;	
 	
 	private Device gap;
