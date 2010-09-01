@@ -34,7 +34,7 @@ class Create
     @path = File.join(path, '..', "#{ name }-android")
     @www  = path 
     @name = path.split('/').last
-    @pkg  = "com.phonegap.#{ name }" 
+    @pkg  = "com.phonegap.#{ name.gsub('-','') }" 
     
     # android sdk discovery ... could be better
     @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub('/tools/android','')
