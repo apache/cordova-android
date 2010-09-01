@@ -2,192 +2,395 @@ package com.phonegap;
 
 import java.io.File;
 import java.io.IOException;
-
-import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaRecorder;
-import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
-import android.util.Log;
 
+/**
+ * This class implements the audio playback and recording capabilities used by PhoneGap.
+ * It is called by the AudioHandler PhoneGap class.
+ * Only one file can be played or recorded per class instance.
+ * 
+ * Local audio files must reside on sdcard
+ * 		android_asset: 		file name must start with /android_asset/sound.mp3
+ * 		sdcard:				file name is just sound.mp3
+ */
 public class AudioPlayer implements OnCompletionListener, OnPreparedListener, OnErrorListener {
-	private MediaRecorder recorder;
-	private boolean isRecording = false;
-	MediaPlayer mPlayer;
-	private boolean isPlaying = false;
-	private String recording;
-	private String saveFile;
-	private Context mCtx;
+
+	// AudioPlayer states
+	private static int MEDIA_NONE = 0;
+	private static int MEDIA_STARTING = 1;
+	private static int MEDIA_RUNNING = 2;
+	private static int MEDIA_PAUSED = 3;
+	private static int MEDIA_STOPPED = 4;
 	
-	public AudioPlayer(String file, Context ctx) {
-		this.recording = file;
-		this.mCtx = ctx;
+	// AudioPlayer message ids
+	private static int MEDIA_STATE = 1;
+	private static int MEDIA_DURATION = 2;
+	private static int MEDIA_ERROR = 3;
+	
+	// AudioPlayer error codes
+	private static int MEDIA_ERROR_PLAY_MODE_SET = 1;
+	private static int MEDIA_ERROR_ALREADY_RECORDING = 2;
+	private static int MEDIA_ERROR_STARTING_RECORDING = 3;
+	private static int MEDIA_ERROR_RECORD_MODE_SET = 4;
+	private static int MEDIA_ERROR_STARTING_PLAYBACK = 5;
+	private static int MEDIA_ERROR_RESUME_STATE = 6;
+	private static int MEDIA_ERROR_PAUSE_STATE = 7;
+	private static int MEDIA_ERROR_STOP_STATE = 8;
+
+	private AudioHandler handler;					// The AudioHandler object
+	private String id;								// The id of this player (used to identify Media object in JavaScript)
+	private int state = MEDIA_NONE;					// State of recording or playback
+	private String audioFile = null;				// File name to play or record to
+	private long duration = -1;						// Duration of audio
+
+	private MediaRecorder recorder = null;			// Audio recording object
+	private String tempFile = null;					// Temporary recording file name
+	
+	private MediaPlayer mPlayer = null;				// Audio player object
+	private boolean prepareOnly = false;
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param handler			The audio handler object
+	 * @param id				The id of this audio player
+	 */
+	public AudioPlayer(AudioHandler handler, String id) {
+		this.handler = handler;
+		this.id = id;
+		
+		// YES, I know this is bad, but I can't do it the right way because Google didn't have the
+		// foresight to add android.os.environment.getExternalDataDirectory until Android 2.2
+        this.tempFile = "/sdcard/tmprecording.mp3";
 	}	
-	
-	protected void startRecording(String file){
-		if (!isRecording){
-			saveFile=file;
-			recorder = new MediaRecorder();
-			recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-			recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-			recorder.setOutputFile(this.recording);
+
+	/**
+	 * Destroy player and stop audio playing or recording.
+	 */
+	public void destroy() {
+		
+		// Stop any play or record
+		if (this.mPlayer != null) {
+			this.stopPlaying();
+			this.mPlayer.release();
+			this.mPlayer = null;
+		}
+		if (this.recorder != null) {
+			this.stopRecording();
+			this.recorder.release();
+			this.recorder = null;
+		}
+	}
+
+	/**
+	 * Start recording the specified file.
+	 * 
+	 * @param file				The name of the file
+	 */
+	public void startRecording(String file) {
+		if (this.mPlayer != null) {
+			System.out.println("AudioPlayer Error: Can't record in play mode.");
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_PLAY_MODE_SET+");");
+		}
+		
+		// Make sure we're not already recording
+		else if (this.recorder == null) {
+			this.audioFile = file;
+			this.recorder = new MediaRecorder();
+			this.recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+			this.recorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT); // THREE_GPP);
+			this.recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT); //AMR_NB);
+			this.recorder.setOutputFile(this.tempFile);
 			try {
-				recorder.prepare();
+				this.recorder.prepare();
+				this.recorder.start();
+				this.state = MEDIA_RUNNING;
+				this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+				return;
 			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			isRecording = true;
-			recorder.start();
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_STARTING_RECORDING+");");			
+		}
+		else {
+			System.out.println("AudioPlayer Error: Already recording.");
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_ALREADY_RECORDING+");");			
 		}
 	}
 	
-	private void moveFile(String file) {
+	/**
+	 * Save temporary recorded file to specified name
+	 * 
+	 * @param file
+	 */
+	public void moveFile(String file) {
+		
 		/* this is a hack to save the file as the specified name */
-		File f = new File (this.recording);
-		f.renameTo(new File("/sdcard" + file));
+		File f = new File(this.tempFile);
+		f.renameTo(new File("/sdcard/" + file));
 	}
 	
-	protected void stopRecording(){
-		try{
-			if((recorder != null)&&(isRecording))
-			{
-				isRecording = false;
-				recorder.stop();
-		        recorder.release(); 
+    /**
+     * Stop recording and save to the file specified when recording started.
+     */
+	public void stopRecording() {
+		if (this.recorder != null) {
+			try{
+				if (this.state == MEDIA_RUNNING) {
+					this.state = MEDIA_STOPPED;
+					this.recorder.stop();
+
+					// Send status notification to JavaScript
+					this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+				}
+				this.moveFile(this.audioFile);
 			}
-			moveFile(saveFile);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}	
 	
-	protected void startPlaying(String file) {
-		if (isPlaying==false) {
+    /**
+     * Start or resume playing audio file.
+     * 
+     * @param file				The name of the audio file.
+     */
+	public void startPlaying(String file) {
+		if (this.recorder != null) {
+			System.out.println("AudioPlayer Error: Can't play in record mode.");
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_RECORD_MODE_SET+");");
+		}
+		
+		// If this is a new request to play audio
+		else if ((this.mPlayer == null) || (this.state == MEDIA_STOPPED)) {
 			try {
-				mPlayer = new MediaPlayer();
-				isPlaying=true;
-				Log.d("Audio startPlaying", "audio: " + file);
-				if (isStreaming(file))
-				{
-					Log.d("AudioStartPlaying", "Streaming");
-					// Streaming prepare async
-					mPlayer.setDataSource(file);
-					mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  
-					mPlayer.prepareAsync();
-				} else {
-					Log.d("AudioStartPlaying", "File");
-					// Not streaming prepare synchronous, abstract base directory
-					mPlayer.setDataSource("/sdcard/" + file);
-					mPlayer.prepare();
+				// If stopped, then reset player
+				if (this.mPlayer != null) {
+					this.mPlayer.reset();
 				}
-				mPlayer.setOnPreparedListener(this);
-			} catch (Exception e) 
-			{ 
+				// Otherwise, create a new one
+				else {
+					this.mPlayer = new MediaPlayer();
+				}
+				this.audioFile = file;
+				
+				// If streaming file
+				if (this.isStreaming(file)) {
+					this.mPlayer.setDataSource(file);
+					this.mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  
+					this.mPlayer.prepareAsync();
+				}
+				
+				// If local file
+				else {
+					if (file.startsWith("/android_asset/")) {
+						String f = file.substring(15);
+						android.content.res.AssetFileDescriptor fd = this.handler.mCtx.getBaseContext().getAssets().openFd(f);
+						this.mPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+					}
+					else {
+						this.mPlayer.setDataSource("/sdcard/" + file);
+					}
+					this.mPlayer.prepare();
+
+					// Get duration
+					this.duration = this.mPlayer.getDuration();
+				}
+				this.mPlayer.setOnPreparedListener(this);		
+				this.state = MEDIA_STARTING;
+
+				// Send status notification to JavaScript
+				this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+			} 
+			catch (Exception e) { 
 				e.printStackTrace(); 
+				this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_STARTING_PLAYBACK+");");			
+			}
+		}
+
+		// If we have already have created an audio player
+		else {
+			
+			// If player has been paused, then resume playback
+			if ((this.state == MEDIA_PAUSED) || (this.state == MEDIA_STARTING)) {
+				this.mPlayer.start();
+				this.state = MEDIA_RUNNING;
+
+				// Send status notification to JavaScript
+				this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+			}
+			else {
+				System.out.println("AudioPlayer Error: startPlaying() called during invalid state: "+this.state);
+				this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_RESUME_STATE+");");			
 			}
 		}
 	} 
 
+	/**
+	 * Pause playing.
+	 */
+	public void pausePlaying() {
+		
+		// If playing, then pause
+		if (this.state == MEDIA_RUNNING) {
+			this.mPlayer.pause();
+			this.state = MEDIA_PAUSED;
+
+			// Send status notification to JavaScript
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+		}
+		else {
+			System.out.println("AudioPlayer Error: pausePlaying() called during invalid state: "+this.state);			
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_PAUSE_STATE+");");			
+		}
+	}
+
+    /**
+     * Stop playing the audio file.
+     */
 	public void stopPlaying() {
-		if (isPlaying) {
-			mPlayer.stop();
-			mPlayer.release();
-			isPlaying=false;
+		if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
+			this.state = MEDIA_STOPPED;
+			this.mPlayer.stop();
+
+			// Send status notification to JavaScript
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+		}
+		else {
+			System.out.println("AudioPlayer Error: stopPlaying() called during invalid state: "+this.state);			
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_STOP_STATE+");");			
 		}
 	}
 	
+	/**
+	 * Callback to be invoked when playback of a media source has completed.
+	 * 
+	 * @param mPlayer			The MediaPlayer that reached the end of the file 
+	 */
 	public void onCompletion(MediaPlayer mPlayer) {
-		mPlayer.stop();
-		mPlayer.release();
-		isPlaying=false;
+		this.state = MEDIA_STOPPED;
+		
+		// Send status notification to JavaScript
+		this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
     } 
 	
-	protected long getCurrentPosition() {
-		if (isPlaying) 
-		{
-			return(mPlayer.getCurrentPosition());
-		} else { return(-1); }
+    /**
+     * Get current position of playback.
+     * 
+     * @return 					position in msec or -1 if not playing
+     */
+	public long getCurrentPosition() {
+		if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
+			return this.mPlayer.getCurrentPosition();
+		} 
+		else { 
+			return -1; 
+		}
 	}
 	
-	private boolean isStreaming(String file) 
-	{
+	/**
+	 * Determine if playback file is streaming or local.
+	 * It is streaming if file name starts with "http://"
+	 * 
+	 * @param file				The file name
+	 * @return					T=streaming, F=local
+	 */
+	public boolean isStreaming(String file) {
 		if (file.contains("http://")) {
 			return true;
-		} else {
+		} 
+		else {
 			return false;
 		}
 	}
 	
-	protected long getDuration(String file) {
-		long duration = -2;
-		if (!isPlaying & !isStreaming(file)) {
-			try {
-				mPlayer = new MediaPlayer();
-				mPlayer.setDataSource("/sdcard/" + file);
-				mPlayer.prepare();
-				duration = mPlayer.getDuration();
-				mPlayer.release();
-			} catch (Exception e) { e.printStackTrace(); return(-3); }
-		} else
-		if (isPlaying & !isStreaming(file)) {
-			duration = mPlayer.getDuration();
-		} else 
-		if (isPlaying & isStreaming(file)) {
-			try {
-				duration = mPlayer.getDuration();
-			} catch (Exception e) { e.printStackTrace(); return(-4); }
-		}else { return -1; }
-		return duration;
-	}
-
-	public void onPrepared(MediaPlayer mPlayer) {
-		if (isPlaying) {
-			mPlayer.setOnCompletionListener(this);
-			mPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener()
-			{
-				public void onBufferingUpdate(MediaPlayer mPlayer, int percent)
-				{
-					/* TODO: call back, e.g. update outer progress bar */
-					Log.d("AudioOnBufferingUpdate", "percent: " + percent); 
-				}
-			});
-			mPlayer.start();
+   /**
+     * Get the duration of the audio file.
+     * 
+     * @param file				The name of the audio file.
+     * @return					The duration in msec.
+     * 							-1=can't be determined
+     * 							-2=not allowed
+     */
+	public long getDuration(String file) {
+		
+		// Can't get duration of recording
+		if (this.recorder != null) {
+			return(-2); // not allowed
+		}
+		
+		// If audio file already loaded and started, then return duration
+		if (this.mPlayer != null) {
+			return this.duration;
+		}
+		
+		// If no player yet, then create one
+		else {
+			this.prepareOnly = true;
+			this.startPlaying(file);
+			
+			// This will only return value for local, since streaming
+			// file hasn't been read yet.
+			return this.duration;
 		}
 	}
 
+	/**
+	 * Callback to be invoked when the media source is ready for playback. 
+	 * 
+	 * @param mPlayer			The MediaPlayer that is ready for playback 
+	 */
+	public void onPrepared(MediaPlayer mPlayer) {
+		// Listen for playback completion
+		this.mPlayer.setOnCompletionListener(this);
+
+		// If start playing after prepared
+		if (!this.prepareOnly) {
+			
+			// Start playing
+			this.mPlayer.start();
+
+			// Set player init flag
+			this.state = MEDIA_RUNNING;
+
+			// Send status notification to JavaScript
+			this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+		}
+		
+		// Save off duration
+		this.duration = this.mPlayer.getDuration();	
+		this.prepareOnly = false;
+
+		// Send status notification to JavaScript
+		this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_DURATION+","+this.duration+");");
+		
+	}
+
+	/**
+	 * Callback to be invoked when there has been an error during an asynchronous operation
+	 *  (other errors will throw exceptions at method call time).
+	 *  
+	 * @param mPlayer			the MediaPlayer the error pertains to
+	 * @param arg1				the type of error that has occurred: (MEDIA_ERROR_UNKNOWN, MEDIA_ERROR_SERVER_DIED)
+	 * @param arg2				an extra code, specific to the error.
+	 */
 	public boolean onError(MediaPlayer mPlayer, int arg1, int arg2) {
-		Log.e("AUDIO onError", "error " + arg1 + " " + arg2);
+		System.out.println("AudioPlayer.onError(" + arg1 + ", " + arg2+")");
+
+		// TODO: Not sure if this needs to be sent?
+		this.mPlayer.stop();
+		this.mPlayer.release();
+		
+		// Send error notification to JavaScript
+		this.handler.mCtx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+arg1+");");
 		return false;
-	}
-	
-	protected void setAudioOutputDevice(int output){
-		// Changes the default audio output device to speaker or earpiece 
-		AudioManager audiMgr = (AudioManager) mCtx.getSystemService(Context.AUDIO_SERVICE);
-		if (output == (2))
-			audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_SPEAKER, AudioManager.ROUTE_ALL);
-		else if (output == (1)){
-			audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_EARPIECE, AudioManager.ROUTE_ALL);
-		}else
-			Log.e("AudioHandler setAudioOutputDevice", " unknown output device");	
-	}
-	
-	protected int getAudioOutputDevice(){
-		AudioManager audiMgr = (AudioManager) mCtx.getSystemService(Context.AUDIO_SERVICE);
-		if (audiMgr.getRouting(AudioManager.MODE_NORMAL) == AudioManager.ROUTE_EARPIECE)
-			return 1;
-		else if (audiMgr.getRouting(AudioManager.MODE_NORMAL) == AudioManager.ROUTE_SPEAKER)
-			return 2;
-		else
-			return -1;
-	}
+	}	
 }
