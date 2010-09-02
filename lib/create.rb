@@ -30,11 +30,10 @@ class Create
     raise 'No index.html found!' unless File.exists? File.join(path, 'index.html')    
     
     # setup default vars
-    @name = path.split("/").last.gsub('-','')
-    @path = File.join(path, '..', "#{ name }-android")
+    @name = path.split("/").last.gsub('-','').gsub(' ','') # no dashses nor spaces
+    @path = File.join(path, '..', "#{ @name }_android")
     @www  = path 
-    @name = path.split('/').last
-    @pkg  = "com.phonegap.#{ name }" 
+    @pkg  = "com.phonegap.#{ @name }" 
     
     # android sdk discovery ... could be better
     @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub('/tools/android','')
@@ -111,7 +110,8 @@ class Create
   # TODO need to allow more flexible SDK targetting via config.xml
   def create_android
     target_id = `android list targets | grep id:`.split("\n").last.match(/\d/).to_a.first
-    `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name.gsub(' ','') } -p #{ @path }`
+    puts "NAME #{@name}"
+    `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
   
   # copies the project/www folder into tmp/android/www
