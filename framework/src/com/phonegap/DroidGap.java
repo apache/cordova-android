@@ -23,7 +23,6 @@
  */
 
 
-import java.io.File;
 
 import com.phonegap.api.Command;
 import com.phonegap.api.CommandManager;
@@ -57,7 +56,6 @@ import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.os.Build.*;
-import android.provider.MediaStore;
 
 /**
  * This class is the main Android activity that represents the PhoneGap
@@ -82,7 +80,9 @@ import android.provider.MediaStore;
 public class DroidGap extends Activity {
 		
 	private static final String LOG_TAG = "DroidGap";
-	protected WebView appView;
+    public static final int CAMERA_ACTIVIY_RESULT = 1;
+
+    protected WebView appView;					// The webview for our app
 	protected ImageView splashScreen;
 	private LinearLayout root;	
 	
@@ -101,7 +101,6 @@ public class DroidGap extends Activity {
     private CallbackServer callbackServer;
 	private CommandManager commandManager;
 	
-	private Uri imageUri;
     private String url;							// The initial URL for our app
     private String baseUrl;						// The base of the initial URL for our app
 	
@@ -240,7 +239,6 @@ public class DroidGap extends Activity {
     		accel.destroy();
     	}
     	if (launcher != null) {
-    		
     	}
     	if (mContacts != null) {
     		
@@ -610,36 +608,22 @@ public class DroidGap extends Activity {
     	root.addView(appView);
     }
     
-    // This is required to start the camera activity!  It has to come from the previous activity
-    public void startCamera()
-    {
-    	Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-        File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT,
-                Uri.fromFile(photo));
-        imageUri = Uri.fromFile(photo);
-        startActivityForResult(intent, 0);
-    }
-    
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent)
-    {
-    	   super.onActivityResult(requestCode, resultCode, intent);
-    	   
-    	   if (resultCode == Activity.RESULT_OK) {
-    		   Uri selectedImage = imageUri;
-    	       getContentResolver().notifyChange(selectedImage, null);
-    	       ContentResolver cr = getContentResolver();
-    	       Bitmap bitmap;
-    	       try {
-    	            bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
-    	            launcher.processPicture(bitmap);
-    	       } catch (Exception e) {
-    	    	   launcher.failPicture("Did not complete!");
-    	       }
-    	    }
-    	   else
-    	   {
-    		   launcher.failPicture("Did not complete!");
+    @Override
+    /**
+     * Called when an activity you launched exits, giving you the requestCode you started it with,
+     * the resultCode it returned, and any additional data from it. 
+     * 
+     * @param requestCode		The request code originally supplied to startActivityForResult(), 
+     * 							allowing you to identify who this result came from.
+     * @param resultCode		The integer result code returned by the child activity through its setResult().
+     * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     */
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        
+        // If camera result
+        if (requestCode == DroidGap.CAMERA_ACTIVIY_RESULT) {
+        	launcher.onActivityResult(requestCode, resultCode, intent);
     	   }
     }      
 }
