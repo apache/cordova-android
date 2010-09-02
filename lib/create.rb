@@ -201,7 +201,7 @@ class Create
     "
     code_dir = File.join(@path, "src", @pkg.gsub('.', File::SEPARATOR))
     FileUtils.mkdir_p(code_dir)
-    open(File.join(code_dir, "#{ @name.gsub(' ','') }.java"),'w') { |f| f.puts j.gsub('    ','') }
+    open(File.join(code_dir, "#{ @name.gsub(' ','') }.java"),'w') { |f| f.puts j }
   end
   
   # friendly output for now

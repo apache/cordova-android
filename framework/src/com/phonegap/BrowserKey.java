@@ -10,12 +10,10 @@ import android.webkit.WebView;
  * 
  */
 
-
 public class BrowserKey {
 
 	DroidGap mAction;
 	boolean bound;
-	
 	WebView mView;
 	
 	BrowserKey(WebView view, DroidGap action)
