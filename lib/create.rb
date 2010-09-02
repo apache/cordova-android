@@ -30,11 +30,11 @@ class Create
     raise 'No index.html found!' unless File.exists? File.join(path, 'index.html')    
     
     # setup default vars
-    @name = path.split("/").last
+    @name = path.split("/").last.gsub('-','')
     @path = File.join(path, '..', "#{ name }-android")
     @www  = path 
     @name = path.split('/').last
-    @pkg  = "com.phonegap.#{ name.gsub('-','') }" 
+    @pkg  = "com.phonegap.#{ name }" 
     
     # android sdk discovery ... could be better
     @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub('/tools/android','')
