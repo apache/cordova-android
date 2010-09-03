@@ -11,7 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 
 @SuppressWarnings("deprecation")
-public class ContactManager {
+public class ContactManager extends Module {
 	
 	public class ContactTriplet
 	{
@@ -27,8 +27,9 @@ public class ContactManager {
 	Uri mPhone = android.provider.Contacts.Phones.CONTENT_URI;	
 	Uri mEmail = android.provider.Contacts.ContactMethods.CONTENT_URI;
 	
-	ContactManager(WebView view, DroidGap app)
+	public ContactManager(WebView view, DroidGap app)
 	{
+		super(view, app);
 		mApp = app;
 		mView = view;
 	}

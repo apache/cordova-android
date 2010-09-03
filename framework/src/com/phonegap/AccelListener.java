@@ -13,7 +13,7 @@ import android.webkit.WebView;
  * This class listens to the accelerometer sensor and stores the latest 
  * acceleration values x,y,z.
  */
-public class AccelListener implements SensorEventListener{
+public class AccelListener extends Module implements SensorEventListener{
 
 	public static int STOPPED = 0;
 	public static int STARTING = 1;
@@ -40,6 +40,7 @@ public class AccelListener implements SensorEventListener{
      * @param appView
      */
     public AccelListener(WebView appView, DroidGap ctx) {
+    	super(appView, ctx);
         this.mCtx = ctx;
         this.mAppView = appView;
         this.sensorManager = (SensorManager) mCtx.getSystemService(Context.SENSOR_SERVICE);
@@ -95,7 +96,9 @@ public class AccelListener implements SensorEventListener{
      * Called by AccelBroker when listener is to be shut down.
      * Stop listener.
      */
-    public void destroy() {
+    @Override
+    public void onDestroy() {
+    	super.onDestroy();
     	this.stop();    	
     }
 

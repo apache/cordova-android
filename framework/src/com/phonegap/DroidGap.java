@@ -86,16 +86,7 @@ public class DroidGap extends Activity {
 	private LinearLayout root;	
 	
 	private Device gap;
-	private GeoBroker geo;
-    private AccelListener accel;
-	private ContactManager mContacts;
-	private FileUtils fs;
-	private NetworkManager netMan;
-	private CompassListener mCompass;
-	private Storage	cupcakeStorage;
-	private CryptoHandler crypto;
 	private BrowserKey mKey;
-	private AudioHandler audio;
     public CallbackServer callbackServer;
 	private CommandManager commandManager;
 	
@@ -186,8 +177,9 @@ public class DroidGap extends Activity {
         WebViewReflect.setGeolocationEnabled(settings, true);
         // Bind the appView object to the gap class methods
         bindBrowser(appView);
-        if (cupcakeStorage != null) {
-        	cupcakeStorage.setStorage(appPackage);
+        if (this.getModule("com.phonegap.Storage") != null) {
+        	Storage cupcakeStorage = (Storage)this.getModule("com.phonegap.Storage");
+            cupcakeStorage.setStorage(appPackage);
         }
 	}
 	
@@ -262,29 +254,8 @@ public class DroidGap extends Activity {
     	appView.loadUrl("about:blank");
     	    	
     	// Clean up objects
-    	if (accel != null) {
-    		accel.destroy();
-    	}
-    	if (mContacts != null) {
-    		
-    	}
-    	if (fs != null) {
-    		
-    	}
-    	if (netMan != null) {
-    		
-    	}
-    	if (mCompass != null) {
-    		mCompass.destroy();
-    	}
-    	if (crypto != null) {
-    		
-    	}
     	if (mKey != null) {
     		
-    	}
-    	if (audio != null) {
-    		audio.destroy();
     	}
     	
     	// Clean up modules
@@ -305,36 +276,27 @@ public class DroidGap extends Activity {
         callbackServer = new CallbackServer();
     	commandManager = new CommandManager(appView, this);
     	gap = new Device(appView, this);
-        accel = new AccelListener(appView, this);
-    	mContacts = new ContactManager(appView, this);
-    	fs = new FileUtils(appView);
-    	netMan = new NetworkManager(appView, this);
-    	mCompass = new CompassListener(appView, this);  
-    	crypto = new CryptoHandler(appView);
     	mKey = new BrowserKey(appView, this);
-    	audio = new AudioHandler(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(commandManager, "CommandManager");
     	appView.addJavascriptInterface(gap, "DroidGap");
-    	appView.addJavascriptInterface(accel, "Accel");
+        this.addModule("com.phonegap.AccelListener", "Accel");
         this.addModule("com.phonegap.CameraLauncher", "GapCam");
-    	appView.addJavascriptInterface(mContacts, "ContactHook");
-    	appView.addJavascriptInterface(fs, "FileUtil");
-    	appView.addJavascriptInterface(netMan, "NetworkManager");
-    	appView.addJavascriptInterface(mCompass, "CompassHook");
-    	appView.addJavascriptInterface(crypto, "GapCrypto");
+        this.addModule("com.phonegap.ContactManager", "ContactHook");
+        this.addModule("com.phonegap.FileUtils", "FileUtil");
+        this.addModule("com.phonegap.NetworkManager", "NetworkManager");
+        this.addModule("com.phonegap.CompassListener", "CompassHook");
+        this.addModule("com.phonegap.CryptoHandler", "GapCrypto");
     	appView.addJavascriptInterface(mKey, "BackButton");
-    	appView.addJavascriptInterface(audio, "GapAudio");
+        this.addModule("com.phonegap.AudioHandler", "GapAudio");
         appView.addJavascriptInterface(callbackServer, "CallbackServer");
     	appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
     	
     	if (android.os.Build.VERSION.RELEASE.startsWith("1."))
     	{
-            cupcakeStorage = new Storage(appView, this);
-        	geo = new GeoBroker(appView, this);
-    		appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
-        	appView.addJavascriptInterface(geo, "Geo");
+            this.addModule("com.phonegap.Storage", "droidStorage");
+            this.addModule("com.phonegap.GeoBroker", "Geo");
         }
     }
     
@@ -346,7 +308,7 @@ public class DroidGap extends Activity {
      * @param javascriptInterface	Bind the object to Javascript so that the methods can be 
      * 								accessed from Javascript using this variable name.
      */
-	public void addModule(String className, String javascriptInterface) {
+	public Object addModule(String className, String javascriptInterface) {
     	System.out.println("DroidGap.addModule("+className+", "+javascriptInterface+")");
     	try {
     		  Class cl = Class.forName(className);
@@ -362,11 +324,24 @@ public class DroidGap extends Activity {
               if (javascriptInterface != null) {
             	  this.appView.addJavascriptInterface(module, javascriptInterface);
               }
+              return module;
     	}
     	catch (Exception e) {
     		  e.printStackTrace();
     		  System.out.println("Error adding module "+className+".");
     	}
+    	return null;
+    }
+    
+    /**
+     * Get the loaded module.
+     * 
+     * @param className				The class of the loaded module.
+     * @return
+     */
+    public Object getModule(String className) {
+    	Object module = this.modules.get(className);
+    	return module;
     }
  
     /**

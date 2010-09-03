@@ -9,14 +9,15 @@ import android.hardware.SensorManager;
 import android.content.Context;
 import android.webkit.WebView;
 
-public class TempListener implements SensorEventListener {
+public class TempListener extends Module implements SensorEventListener {
 	WebView mAppView;
 	DroidGap mCtx;
 	Sensor mSensor;	
 	
 	private SensorManager sensorManager;
 	
-	TempListener(DroidGap ctx, WebView appView) {
+	public TempListener(WebView appView, DroidGap ctx) {
+		super(appView, ctx);
 		mCtx = ctx;
 		mAppView = appView;
 		sensorManager = (SensorManager) mCtx.getSystemService(Context.SENSOR_SERVICE);

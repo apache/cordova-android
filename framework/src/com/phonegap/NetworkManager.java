@@ -7,14 +7,15 @@ import android.content.Context;
 import android.net.*;
 import android.webkit.WebView;
 
-public class NetworkManager {
+public class NetworkManager extends Module {
 
-	Context mCtx;
+	DroidGap mCtx;
 	WebView mView;
 	ConnectivityManager sockMan;
 	
-	NetworkManager(WebView view, Context ctx)
+	public NetworkManager(WebView view, DroidGap ctx)
 	{
+		super(view, ctx);
 		mCtx = ctx;
 		mView = view;
 		sockMan = (ConnectivityManager) mCtx.getSystemService(Context.CONNECTIVITY_SERVICE);

@@ -12,7 +12,7 @@ import android.webkit.WebView;
  * This class only starts and stops various GeoListeners, which consist of a GPS and a Network Listener
  */
 
-public class GeoBroker {
+public class GeoBroker extends Module {
     private WebView mAppView;
 	private DroidGap mCtx;
 	private HashMap<String, GeoListener> geoListeners;
@@ -20,6 +20,7 @@ public class GeoBroker {
 	
 	public GeoBroker(WebView view, DroidGap ctx)
 	{
+		super(view, ctx);
 		mCtx = ctx;
 		mAppView = view;
 		geoListeners = new HashMap<String, GeoListener>();

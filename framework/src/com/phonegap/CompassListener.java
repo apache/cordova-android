@@ -12,7 +12,7 @@ import android.webkit.WebView;
 /**
  * This class listens to the compass sensor and stores the latest heading value.
  */
-public class CompassListener implements SensorEventListener{
+public class CompassListener extends Module implements SensorEventListener{
 
 	public static int STOPPED = 0;
 	public static int STARTING = 1;
@@ -38,8 +38,8 @@ public class CompassListener implements SensorEventListener{
 	 * @param appView
 	 * @param ctx			The Activity (DroidGap) object
 	 */
-	CompassListener(WebView appView, DroidGap ctx)
-	{
+	public CompassListener(WebView appView, DroidGap ctx) {
+		super(appView, ctx);
 		this.mCtx = ctx;
 		this.mAppView = appView;
 		this.sensorManager = (SensorManager) mCtx.getSystemService(Context.SENSOR_SERVICE);
@@ -91,7 +91,8 @@ public class CompassListener implements SensorEventListener{
     /**
      * Called when listener is to be shut down and object is being destroyed.
      */
-	public void destroy() {
+	@Override
+	public void onDestroy() {
 		this.stop();
 	}
 	

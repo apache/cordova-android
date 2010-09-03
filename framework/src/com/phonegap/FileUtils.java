@@ -4,15 +4,16 @@ import java.io.*;
 
 import android.webkit.WebView;
 
-public class FileUtils {
+public class FileUtils extends Module {
 
 
 	WebView mView;
 	FileReader f_in;
 	FileWriter f_out;
 	
-	public FileUtils(WebView view)
+	public FileUtils(WebView view, DroidGap gap)
 	{
+		super(view, gap);
 		mView = view;
 	}
 	

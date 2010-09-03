@@ -18,7 +18,7 @@ import android.webkit.WebView;
  * 		android_asset: 		file name must start with /android_asset/sound.mp3
  * 		sdcard:				file name is just sound.mp3
  */
-public class AudioHandler {
+public class AudioHandler extends Module {
 	
 	HashMap<String,AudioPlayer> players;	// Audio player object
 	WebView mAppView;						// Webview object
@@ -30,7 +30,8 @@ public class AudioHandler {
 	 * @param view
 	 * @param ctx
 	 */
-	AudioHandler(WebView view, DroidGap ctx) {
+	public AudioHandler(WebView view, DroidGap ctx) {
+		super(view, ctx);
 		this.mAppView = view;
 		this.mCtx = ctx;
 		this.players = new HashMap<String,AudioPlayer>();
@@ -39,7 +40,9 @@ public class AudioHandler {
 	/**
 	 * Stop all audio players and recorders.
 	 */
-	public void destroy() {
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
 		java.util.Set<Entry<String,AudioPlayer>> s = this.players.entrySet();
         java.util.Iterator<Entry<String,AudioPlayer>> it = s.iterator();
         while(it.hasNext()) {

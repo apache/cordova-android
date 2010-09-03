@@ -2,12 +2,13 @@ package com.phonegap;
 
 import android.webkit.WebView;
 
-public class CryptoHandler {
+public class CryptoHandler extends Module {
 	
 	WebView mView;
 	
-	CryptoHandler(WebView view)
+	public CryptoHandler(WebView view, DroidGap gap)
 	{
+		super(view, gap);
 		mView = view;
 	}
 	

@@ -5,7 +5,7 @@ import android.database.sqlite.*;
 import android.util.Log;
 import android.webkit.WebView;
 
-public class Storage {
+public class Storage extends Module {
 	
 	private static final String LOG_TAG = "SQLite Storage:";
 	SQLiteDatabase myDb;
@@ -14,7 +14,8 @@ public class Storage {
 	WebView appView;
 	DroidGap mCtx;
 	
-	Storage(WebView view, DroidGap ctx) {
+	public Storage(WebView view, DroidGap ctx) {
+		super(view, ctx);
 		appView = view;
 		mCtx = ctx;
 	}
