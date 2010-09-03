@@ -2,17 +2,18 @@ package com.phonegap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.commons.codec.binary.Base64;
 
 import android.app.Activity;
-import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.webkit.WebView;
 
 /**
@@ -20,12 +21,11 @@ import android.webkit.WebView;
  * and returns the captured image.  When the camera view is closed, the screen displayed before 
  * the camera view was shown is redisplayed.
  */
-public class CameraLauncher {
+public class CameraLauncher extends ActivityResultModule {
 		
-	private WebView mAppView;			// Webview object
-	private DroidGap mGap;				// DroidGap object
 	private int mQuality;				// Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
 	private Uri imageUri;				// Uri of captured image 
+	private boolean base64 = false;
 	
     /**
      * Constructor.
@@ -33,9 +33,8 @@ public class CameraLauncher {
      * @param view
      * @param gap
      */
-	CameraLauncher(WebView view, DroidGap gap) {
-		mAppView = view;
-		mGap = gap;
+	public CameraLauncher(WebView view, DroidGap gap) {
+		super(view, gap);
 	}
 		
 	/**
@@ -50,10 +49,14 @@ public class CameraLauncher {
 		
 		// Display camera
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        
+        // Specify file so that large image is captured and returned
+        // TODO: What if there isn't any external storage?
         File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
+        intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
-        mGap.startActivityForResult(intent, DroidGap.CAMERA_ACTIVIY_RESULT);
+
+        this.startActivityForResult(intent);
 	}
 
     /**
@@ -64,20 +67,53 @@ public class CameraLauncher {
      * @param resultCode		The integer result code returned by the child activity through its setResult().
      * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
+	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		super.onActivityResult(requestCode, resultCode, intent);
 
 		// If image available
 		if (resultCode == Activity.RESULT_OK) {
-			Uri selectedImage = this.imageUri;
-			mGap.getContentResolver().notifyChange(selectedImage, null);
-	        ContentResolver cr = mGap.getContentResolver();
-	        Bitmap bitmap;
-	        try {
-	        	bitmap = android.provider.MediaStore.Images.Media.getBitmap(cr, selectedImage);
-	            this.processPicture(bitmap);
-	        } catch (Exception e) {
+			try {
+				// Read in bitmap of captured image
+				Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.gap.getContentResolver(), imageUri);
+				
+				// If sending base64 image back
+				if (this.base64) {
+					this.processPicture(bitmap);
+				}
+				
+				// If sending filename back
+				else {
+					// Create entry in media store for image
+					// (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
+					ContentValues values = new ContentValues();
+					values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+					Uri uri = null;
+					try {
+						uri = this.gap.getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+					} catch (UnsupportedOperationException e) {
+						System.out.println("Can't write to external media storage.");
+						try {
+							uri = this.gap.getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
+						} catch (UnsupportedOperationException ex) {
+							System.out.println("Can't write to internal media storage.");							
+				        	this.failPicture("Error capturing image - no media storage found.");
+				        	return;
+						}
+					}
+	            
+					// Add compressed version of captured image to returned media store Uri
+					OutputStream os = this.gap.getContentResolver().openOutputStream(uri);
+					bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
+					os.close();
+            	
+					// Send Uri back to JavaScript for viewing image
+					this.sendJavascript("navigator.camera.success('" + uri.toString() + "');");
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
 	        	this.failPicture("Error capturing image.");
-	        }
+			}		
 		}
 		
 		// If cancelled
@@ -103,7 +139,7 @@ public class CameraLauncher {
 				byte[] code  = jpeg_data.toByteArray();
 				byte[] output = Base64.encodeBase64(code);
 				String js_out = new String(output);
-				mGap.sendJavascript("navigator.camera.success('" + js_out + "');");
+				this.sendJavascript("navigator.camera.success('" + js_out + "');");
 			}	
 		}
 		catch(Exception e) {
@@ -117,6 +153,6 @@ public class CameraLauncher {
 	 * @param err
 	 */
 	public void failPicture(String err) {
-		mGap.sendJavascript("navigator.camera.error('" + err + "');");
+		this.sendJavascript("navigator.camera.error('" + err + "');");
 	}
 }

@@ -80,7 +80,6 @@ import android.os.Build.*;
 public class DroidGap extends Activity {
 		
 	private static final String LOG_TAG = "DroidGap";
-    public static final int CAMERA_ACTIVIY_RESULT = 1;
 
     protected WebView appView;					// The webview for our app
 	protected ImageView splashScreen;
@@ -99,12 +98,16 @@ public class DroidGap extends Activity {
 	private CryptoHandler crypto;
 	private BrowserKey mKey;
 	private AudioHandler audio;
-    private CallbackServer callbackServer;
+    public CallbackServer callbackServer;
 	private CommandManager commandManager;
 	
     private String url;							// The initial URL for our app
     private String baseUrl;						// The base of the initial URL for our app
-	
+
+    // Variables to manage ActivityResultCallbacks
+    private int activityResultCallbackCounter = 1000;
+    private HashMap<Integer,ActivityResultModule> activityResultCallbacks = new HashMap<Integer,ActivityResultModule>();
+    
     /** Called when the activity is first created. */
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -609,6 +612,39 @@ public class DroidGap extends Activity {
     	root.addView(appView);
     }
     
+    /**
+     * Any calls to Activity.startActivityForResult must go through ActivityResultCallback, so 
+     * the result can be routed to them correctly.  
+     * 
+     * This is done to eliminate the need to modify DroidGap.java to receive activity results.
+     * 
+     * @param intent			The intent to start
+     * @param requestCode		Identifies who to send the result to
+     * 
+     * @throws RuntimeException
+     */
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) throws RuntimeException {
+    	if (this.activityResultCallbacks.containsKey(requestCode)) {
+       		super.startActivityForResult(intent, requestCode);   		
+    	}
+    	else {
+    		throw new RuntimeException("PhoneGap Exception: Do not call startActivityForResult() directly. Implement ActivityResultCallback instead.");
+    	}
+    }
+    
+    /**
+     * Add activity result callback to receive onActivityResult() callbacks.
+     * 
+     * @param callback		The callback class
+     * @return				The request code to use for the callback
+     */
+    public int addActivityResult(ActivityResultModule callback) {
+    	int requestCode = this.activityResultCallbackCounter++;
+    	this.activityResultCallbacks.put(requestCode, callback);
+    	return requestCode;
+    }
+
     @Override
     /**
      * Called when an activity you launched exits, giving you the requestCode you started it with,
@@ -622,9 +658,9 @@ public class DroidGap extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         
-        // If camera result
-        if (requestCode == DroidGap.CAMERA_ACTIVIY_RESULT) {
-        	launcher.onActivityResult(requestCode, resultCode, intent);
-    	   }
+        ActivityResultModule callback = this.activityResultCallbacks.get(requestCode);
+        if (callback != null) {
+        	callback.onActivityResult(requestCode, resultCode, intent);        	
+        }        
     }      
 }
