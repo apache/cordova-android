@@ -26,11 +26,11 @@
 
 import com.phonegap.api.Command;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import com.phonegap.api.CommandManager;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -38,9 +38,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
@@ -56,7 +54,6 @@ import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.os.Build.*;
 
 /**
  * This class is the main Android activity that represents the PhoneGap
@@ -90,7 +87,6 @@ public class DroidGap extends Activity {
 	private Device gap;
 	private GeoBroker geo;
     private AccelListener accel;
-	private CameraLauncher launcher;
 	private ContactManager mContacts;
 	private FileUtils fs;
 	private NetworkManager netMan;
@@ -268,8 +264,6 @@ public class DroidGap extends Activity {
     	if (accel != null) {
     		accel.destroy();
     	}
-    	if (launcher != null) {
-    	}
     	if (mContacts != null) {
     		
     	}
@@ -311,7 +305,6 @@ public class DroidGap extends Activity {
     	commandManager = new CommandManager(appView, this);
     	gap = new Device(appView, this);
         accel = new AccelListener(appView, this);
-    	launcher = new CameraLauncher(appView, this);
     	mContacts = new ContactManager(appView, this);
     	fs = new FileUtils(appView);
     	netMan = new NetworkManager(appView, this);
@@ -324,7 +317,7 @@ public class DroidGap extends Activity {
     	appView.addJavascriptInterface(commandManager, "CommandManager");
     	appView.addJavascriptInterface(gap, "DroidGap");
     	appView.addJavascriptInterface(accel, "Accel");
-    	appView.addJavascriptInterface(launcher, "GapCam");
+        this.addModule("com.phonegap.CameraLauncher", "GapCam");
     	appView.addJavascriptInterface(mContacts, "ContactHook");
     	appView.addJavascriptInterface(fs, "FileUtil");
     	appView.addJavascriptInterface(netMan, "NetworkManager");
@@ -691,7 +684,7 @@ public class DroidGap extends Activity {
      */
     @Override
     public void startActivityForResult(Intent intent, int requestCode) throws RuntimeException {
-    	if (this.activityResultCallbacks.containsKey(requestCode)) {
+    	if ((requestCode < 0) || this.activityResultCallbacks.containsKey(requestCode)) {
        		super.startActivityForResult(intent, requestCode);   		
     	}
     	else {
