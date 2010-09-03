@@ -25,6 +25,7 @@
 
 
 import com.phonegap.api.Command;
+import java.util.HashMap;
 import com.phonegap.api.CommandManager;
 
 import android.app.Activity;
@@ -108,7 +109,14 @@ public class DroidGap extends Activity {
     private int activityResultCallbackCounter = 1000;
     private HashMap<Integer,ActivityResultModule> activityResultCallbacks = new HashMap<Integer,ActivityResultModule>();
     
-    /** Called when the activity is first created. */
+    // List of modules started and managed
+    private HashMap<String,Module>modules = new HashMap<String,Module>();
+     
+    /** 
+     * Called when the activity is first created. 
+     * 
+     * @param savedInstanceState
+     */
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -204,6 +212,15 @@ public class DroidGap extends Activity {
     protected void onPause(){
         super.onPause();
 
+        // Forward to modules
+		java.util.Set<Entry<String,Module>> s = this.modules.entrySet();
+        java.util.Iterator<Entry<String,Module>> it = s.iterator();
+        while(it.hasNext()) {
+            Entry<String,Module> entry = it.next();
+            Module module = entry.getValue();
+            module.onPause();
+		}
+
         // Send pause event to JavaScript
         appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
         
@@ -218,6 +235,15 @@ public class DroidGap extends Activity {
     protected void onResume(){
         super.onResume();
 
+        // Forward to modules
+		java.util.Set<Entry<String,Module>> s = this.modules.entrySet();
+        java.util.Iterator<Entry<String,Module>> it = s.iterator();
+        while(it.hasNext()) {
+            Entry<String,Module> entry = it.next();
+            Module module = entry.getValue();
+            module.onResume();
+		}
+        
         // Send resume event to JavaScript
         appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
         
@@ -265,13 +291,22 @@ public class DroidGap extends Activity {
     	if (audio != null) {
     		audio.destroy();
     	}
+    	
+    	// Clean up modules
+		java.util.Set<Entry<String,Module>> s = this.modules.entrySet();
+        java.util.Iterator<Entry<String,Module>> it = s.iterator();
+        while(it.hasNext()) {
+            Entry<String,Module> entry = it.next();
+            Module module = entry.getValue();
+            module.onDestroy();
+		}
+    	
     	if (callbackServer != null) {
     		callbackServer.destroy();
     	}
     }
 
-    private void bindBrowser(WebView appView)
-    {
+    private void bindBrowser(WebView appView) {
         callbackServer = new CallbackServer();
     	commandManager = new CommandManager(appView, this);
     	gap = new Device(appView, this);
@@ -306,6 +341,37 @@ public class DroidGap extends Activity {
         	geo = new GeoBroker(appView, this);
     		appView.addJavascriptInterface(cupcakeStorage, "droidStorage");
         	appView.addJavascriptInterface(geo, "Geo");
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    /**
+     * Add module to be loaded and made available from JavaScript.
+     * 
+     * @param className				The class to load
+     * @param javascriptInterface	Bind the object to Javascript so that the methods can be 
+     * 								accessed from Javascript using this variable name.
+     */
+	public void addModule(String className, String javascriptInterface) {
+    	System.out.println("DroidGap.addModule("+className+", "+javascriptInterface+")");
+    	try {
+    		  Class cl = Class.forName(className);
+     		  Class partypes[] = new Class[2];
+              partypes[0] = android.webkit.WebView.class;
+              partypes[1] = com.phonegap.DroidGap.class;
+              java.lang.reflect.Constructor<Module> ct = cl.getConstructor(partypes);
+              Object arglist[] = new Object[2];
+              arglist[0] = this.appView;
+              arglist[1] = this;
+              Module module = ct.newInstance(arglist);
+              this.modules.put(className, module);
+              if (javascriptInterface != null) {
+            	  this.appView.addJavascriptInterface(module, javascriptInterface);
+              }
+    	}
+    	catch (Exception e) {
+    		  e.printStackTrace();
+    		  System.out.println("Error adding module "+className+".");
     	}
     }
  
