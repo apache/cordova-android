@@ -25,7 +25,7 @@ public class CameraLauncher extends ActivityResultModule {
 		
 	private int mQuality;				// Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
 	private Uri imageUri;				// Uri of captured image 
-	private boolean base64 = false;
+	private boolean base64 = true;
 	
     /**
      * Constructor.
@@ -35,6 +35,20 @@ public class CameraLauncher extends ActivityResultModule {
      */
 	public CameraLauncher(WebView view, DroidGap gap) {
 		super(view, gap);
+	}
+	
+	/**
+	 * Set the type of data to return.  The data can either be returned
+	 * as a base64 string or a URI that points to the file.
+	 * To display base64 string in an img tag, set the source to:
+	 * 		img.src="data:image/jpeg;base64,"+result;
+	 * or to display URI in an img tag
+	 * 		img.src=result;
+	 * 
+	 * @param b			T=return base64 string (default), F=return URI
+	 */
+	public void setBase64(boolean b) {
+		this.base64 = b;
 	}
 		
 	/**

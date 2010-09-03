@@ -71,6 +71,7 @@ import android.widget.LinearLayout;
  *       @Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
+ *         super.addModule("com.phonegap.examples.MyModule", "MyModule");
  *         super.loadUrl("file:///android_asset/www/index.html");
  *       }
  *     }

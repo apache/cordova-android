@@ -48,7 +48,6 @@ public abstract class Module {
      * @param message
      */
     public void sendJavascript(String statement) {
-    	System.out.println("Module.sendResponse("+statement+")");
     	this.gap.callbackServer.sendJavascript(statement);
     }
 
