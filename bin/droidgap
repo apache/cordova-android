@@ -2,9 +2,11 @@
 ROOT = File.expand_path(File.dirname(__FILE__).gsub('bin',''))
 require 'fileutils'
 require File.join(ROOT, "lib", "generate.rb")
+require File.join(ROOT, "lib", "classic.rb")
 require File.join(ROOT, "lib", "create.rb")
 require File.join(ROOT, "lib", "run.rb")
 require File.join(ROOT, "lib", "update.rb")
+require File.join(ROOT, "lib", "test.rb")
 
 # ---------------------------------------------------------- #
 #                                                            #
@@ -14,6 +16,9 @@ require File.join(ROOT, "lib", "update.rb")
 
 # droidgap gen [app name]
 Generate.new(ARGV[1]) if ARGV.first == 'gen'
+
+# droidgap classic (for windows users mostly)
+Classic.new(ARGV[1..-1]) if ARGV.first == 'classic'
 
 # droidgap create [path to phonegap project]
 Create.new(ARGV[1]) if ARGV.first == 'create'
@@ -34,10 +39,11 @@ if ARGV.first == 'log'
   end
 end
 
+# droidgap test
+Test.new if ARGV.first == 'test'
+
 # TODO implement these!
 puts "droidgap ship not implemented" if ARGV.first == 'ship'
-puts "droidgap test not implemented" if ARGV.first == 'test'
-
 
 if ARGV.first.nil? || ARGV.first == 'help'
   help = <<-EOF
@@ -53,19 +59,22 @@ if ARGV.first.nil? || ARGV.first == 'help'
   
   Commands:
   
-  help ..... See this message. Type help <command name> to see specific help topics.
-  gen ...... Generate an example PhoneGap application to current directory.
-  create ... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
-  run ...... Installs a valid PhoneGap Project to first device found.
-  log ...... Attach a logger that listens for console.log statements.
-  update ... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
-  test ..... Gets a copy of mobile-spec and runs in first device or emulator attached.
-  ship ..... Build and sign an APK suitable for submission to an Android Marketplace.
+  help ...... See this message. Type help [command name] to see specific help topics.
+  gen ....... Generate an example PhoneGap application to current directory.
+  create .... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
+  classic ... Backwards support for droidgap script. Run "droidgap help classic" for more info.
+  run ....... Installs a valid PhoneGap Project to first device found.
+  log ....... Attach a logger that listens for console.log statements.
+  update .... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
+  test ...... Gets edge copy of mobile-spec and runs in first device or emulator attached.
+  ship ...... Build and sign an APK suitable for submission to an Android Marketplace.
     
   Quickstart:
   
   $ droidgap gen example 
   $ cd example
+  $ droidgap create
+  $ cd ../example_android
   $ droidgap run 
 
   Now you can launch your app and optionally start a logger with:
@@ -145,6 +154,25 @@ if ARGV.first.nil? || ARGV.first == 'help'
   ~~~~~~~~~~~~~~~
   
   Builds the JS and PhoneGap Android jar file and copies them to your project.
+  
+  EOF
+  
+  classic = <<-EOF
+
+  DroidGap Classic
+  ~~~~~~~~~~~~-~~~
+  
+  Compatability for older droidgap scripts. 
+  
+  Usage:
+  
+  droidgap classic [android_sdk_path] [name] [package_name] [www] [path]
+
+  android_sdk_path ... The path to your Android SDK install.
+  name ............... The name of your application.
+  package_name ....... The name of your package (For example: com.nitobi.demo)
+  www ................ The path to your www folder. (Wherein your HTML, CSS and JS app is.)
+  path ............... The path to generate the application.
   
   EOF
   
