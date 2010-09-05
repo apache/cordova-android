@@ -30,21 +30,25 @@ Usage:
 Commands:    
 
 <pre>
-  help ..... See this message. Type help [command name] to see specific help topics.
-  gen ...... Generate an example PhoneGap application to current directory.
-  pkg ...... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
-  run ...... Installs a valid PhoneGap Project to first device found.
-  log ...... Attach a logger that listens for console.log statements.
-  update ... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
-  ship ..... Build and sign an APK suitable for submission to an Android Marketplace.
+	help ...... See this message. Type help [command name] to see specific help topics.
+	gen ....... Generate an example PhoneGap application to current directory.
+	create .... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
+	classic ... Backwards support for droidgap script. Run "droidgap help classic" for more info.
+	run ....... Installs a valid PhoneGap Project to first device found.
+	log ....... Attach a logger that listens for console.log statements.
+	update .... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
+	test ...... Gets edge copy of mobile-spec and runs in first device or emulator attached.
+	ship ...... Build and sign an APK suitable for submission to an Android Marketplace.
 </pre>
 
 Quickstart:
 
 <pre>
-    $ droidgap gen example 
-    $ cd example
-    $ droidgap run
+  	$ droidgap gen example 
+  	$ cd example
+  	$ droidgap create
+  	$ cd ../example_android
+	$ droidgap run
 </pre>
 
 Launch your app and start a logger with:
@@ -79,34 +83,46 @@ Common Command Line Tasks
 Running Mobile Spec
 ---
 
-TODO need content here
+droidgap test
     
 Compile an APK
 ---
 
+Make sure you have a device plugged in (with debugging enabled) or a running emulator. Then:
+
+	ant debug install
+	
+or
+
+	droidgap run
+
 Converting a W3C Widget into a an APK
 ---
 
-    $ ./droidgap
+Given a Widget called FooBar with an index.html file in it. You navigate to its folder and run:
+
+	droidgap create
+	cd ../FooBar_android
+	ant debug install
 
 List devices attached
 ---
 
-    $ adb devices 
+	adb devices 
     List of devices attached 
     0123456789012	device
 
 Install APK onto device
 ---
 
-    $ apk -s 0123456789012 install phonegap.apk
+	apk -s 0123456789012 install phonegap.apk
     
 Logging 
 ---
 
 Via console.log calls from your apps javascript.
 
-    $ adb logcat
+	adb logcat
     
 Debugging
 ---
