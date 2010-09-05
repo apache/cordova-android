@@ -8,7 +8,8 @@ class Create
   attr_reader :name, :pkg, :www, :path
   
   def initialize(path)
-    read_config(path)
+    set_paths(path)
+    read_config
     clobber
     build_jar
     create_android
@@ -19,37 +20,40 @@ class Create
     write_java
     msg
   end
-
   
-  def read_config(path)
+  def set_paths(path)
     # if no path is supplied uses current directory for project
     path = FileUtils.pwd if path.nil?
     # if a www is found use it for the project
     path = File.join(path, 'www') if File.exists? File.join(path, 'www')
-    # ensure an index.html 
-    raise 'No index.html found!' unless File.exists? File.join(path, 'index.html')    
     
-    # setup default vars
-    @name = path.split("/").last.gsub('-','').gsub(' ','') # no dashses nor spaces
-    @path = File.join(path, '..', "#{ @name }_android")
-    @www  = path 
-    @pkg  = "com.phonegap.#{ @name }" 
-    
-    # android sdk discovery ... could be better
+    # defaults
+    @name             = path.split("/").last.gsub('-','').gsub(' ','') # no dashses nor spaces
+    @path             = File.join(path, '..', "#{ @name }_android")
+    @www              = path 
+    @pkg              = "com.phonegap.#{ @name }" 
     @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub('/tools/android','')
     @android_dir      = File.expand_path(File.dirname(__FILE__).gsub('lib',''))
     @framework_dir    = File.join(@android_dir, "framework")
+    @icon             = File.join(@www, 'icon.png')
+    @app_js_dir       = ''
+    @content          = 'index.html'
     
-    # read in www/config.xml and kick off package
-    @config = {}
+    # stop executation on errors
+    raise 'No index.html found!' unless File.exists? File.join(path, 'index.html')    
+    raise 'Could not find android in your path!' if @android_sdk_path.empty?
+  end
+
+  # reads in a config.xml file
+  def read_config
     config_file = File.join(@www, 'config.xml')
     
     if File.exists?(config_file)
       require 'rexml/document'
-      f = File.new config_file
-      doc = REXML::Document.new(f)  
-        
-      @config[:id] = doc.root.attributes["id"]
+      f                 = File.new config_file
+      doc               = REXML::Document.new(f)  
+      @config           = {}  
+      @config[:id]      = doc.root.attributes["id"]
       @config[:version] = doc.root.attributes["version"]
       
       doc.root.elements.each do |n|
@@ -66,23 +70,14 @@ class Create
       # extract android specific stuff
       @config[:versionCode] = doc.elements["//android:versionCode"] ? doc.elements["//android:versionCode"].text : 3
       @config[:minSdkVersion] = doc.elements["//android:minSdkVersion"] ? doc.elements["//android:minSdkVersion"].text : 1
-
       # will change the name from the directory to the name element text
       @name = @config[:name] if @config[:name]
-      
       # set the icon from the config
       @icon = File.join(@www, @config[:icon])
-      
       # sets the app js dir where phonegap.js gets copied
       @app_js_dir = @config[:js_dir] ? @config[:js_dir] : ''
-      
       # sets the start page
       @content = @config[:content] ? @config[:content] : 'index.html'
-    else
-      # set to the default icon location if not in config
-      @icon = File.join(@www, 'icon.png')
-      @app_js_dir = ''
-      @content = 'index.html'
     end     
   end 
   
@@ -110,7 +105,6 @@ class Create
   # TODO need to allow more flexible SDK targetting via config.xml
   def create_android
     target_id = `android list targets | grep id:`.split("\n").last.match(/\d/).to_a.first
-    puts "NAME #{@name}"
     `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
   
@@ -201,7 +195,7 @@ class Create
     "
     code_dir = File.join(@path, "src", @pkg.gsub('.', File::SEPARATOR))
     FileUtils.mkdir_p(code_dir)
-    open(File.join(code_dir, "#{ @name.gsub(' ','') }.java"),'w') { |f| f.puts j }
+    open(File.join(code_dir, "#{ @name }.java"),'w') { |f| f.puts j }
   end
   
   # friendly output for now
