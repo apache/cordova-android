@@ -1,6 +1,10 @@
 if (typeof(DeviceInfo) != 'object')
     DeviceInfo = {};
 
+var com = {};
+
+com.phonegap = {};
+
 /**
  * This represents the PhoneGap API itself, and provides a global namespace for accessing
  * information about the state of PhoneGap.
@@ -229,13 +233,46 @@ PhoneGap.callbacks = {};
  * @param {String[]} [args] Zero or more arguments to pass to the method
  */
 PhoneGap.exec = function(clazz, action, args) {
-	return CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
+    try {
+        var callbackId = 0;
+        var r = CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
+        eval("var v="+r+";");
+        
+        // If status is OK, then return value back to caller
+        if (v.status == 0) {
+            return v.message;
+        }
+
+        // If error, then display error
+        else {
+            console.log("Error: Status="+r.status+" Message="+v.message);
+            return null;
+        }
+    } catch (e) {
+        console.log("Error: "+e);
+    }
 };
 
 PhoneGap.execAsync = function(success, fail, clazz, action, args) {
-	var callbackId = clazz + PhoneGap.callbackId++;
-	PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
-	return CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
+    try {
+        var callbackId = clazz + PhoneGap.callbackId++;
+        PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
+        var r = CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
+        eval("var v="+r+";");
+        
+        // If status is OK, then return value back to caller
+        if (v.status == 0) {
+            return v.message;
+        }
+
+        // If error, then display error
+        else {
+            console.log("Error: Status="+r.status+" Message="+v.message);
+            return null;
+        }
+    } catch (e) {
+        console.log("Error: "+e);
+    }
 };
 
 PhoneGap.callbackSuccess = function(callbackId, args) {

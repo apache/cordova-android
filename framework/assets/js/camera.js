@@ -1,3 +1,14 @@
+com.phonegap.CameraLauncherProxy = function() {
+    this.className = "com.phonegap.CameraLauncher";
+};
+com.phonegap.CameraLauncherProxy.prototype.setBase64 = function(b) {
+    return PhoneGap.exec(this.className, "setBase64", [b]);
+};
+com.phonegap.CameraLauncherProxy.prototype.takePicture = function(quality) {
+    return PhoneGap.exec(this.className, "takePicture", [quality]);
+};
+com.phonegap.CameraLauncher = new com.phonegap.CameraLauncherProxy();
+
 /**
  * This class provides access to the device camera.
  *
@@ -34,10 +45,10 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     this.errorCallback = errorCallback;
     this.options = options;
     if (options.quality) {
-        GapCam.takePicture(options.quality);
+        com.phonegap.CameraLauncher.takePicture(options.quality);
     }
     else {
-        GapCam.takePicture(80);
+        com.phonegap.CameraLauncher.takePicture(80);
     }
 };
 
@@ -51,7 +62,6 @@ Camera.prototype.success = function(picture) {
         this.successCallback(picture);
     }
 };
-
 
 /**
  * Callback function from native code that is called when there is an error

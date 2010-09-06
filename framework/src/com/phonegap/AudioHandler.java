@@ -3,7 +3,15 @@ package com.phonegap;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import com.phonegap.api.Command;
+import com.phonegap.api.CommandManager;
+import com.phonegap.api.CommandResult;
+
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.webkit.WebView;
 
@@ -18,31 +26,98 @@ import android.webkit.WebView;
  * 		android_asset: 		file name must start with /android_asset/sound.mp3
  * 		sdcard:				file name is just sound.mp3
  */
-public class AudioHandler extends Module {
-	
+public class AudioHandler implements Command {
+
+    WebView webView;					// WebView object
+    DroidGap ctx;						// DroidGap object
+
 	HashMap<String,AudioPlayer> players;	// Audio player object
-	WebView mAppView;						// Webview object
-	DroidGap mCtx;							// DroidGap object
 	
 	/**
 	 * Constructor.
-	 * 
-	 * @param view
-	 * @param ctx
 	 */
-	public AudioHandler(WebView view, DroidGap ctx) {
-		super(view, ctx);
-		this.mAppView = view;
-		this.mCtx = ctx;
+	public AudioHandler() {
 		this.players = new HashMap<String,AudioPlayer>();
 	}
 
 	/**
+	 * Sets the context of the Command. This can then be used to do things like
+	 * get file paths associated with the Activity.
+	 * 
+	 * @param ctx The context of the main Activity.
+	 */
+	public void setContext(DroidGap ctx) {
+		this.ctx = ctx;
+	}
+
+	/**
+	 * Sets the main View of the application, this is the WebView within which 
+	 * a PhoneGap app runs.
+	 * 
+	 * @param webView The PhoneGap WebView
+	 */
+	public void setView(WebView webView) {
+		this.webView = webView;
+	}
+
+	/**
+	 * Executes the request and returns CommandResult.
+	 * 
+	 * @param action The command to execute.
+	 * @param args JSONArry of arguments for the command.
+	 * @return A CommandResult object with a status and message.
+	 */
+	public CommandResult execute(String action, JSONArray args) {
+		CommandResult.Status status = CommandResult.Status.OK;
+		String result = "";		
+		
+		try {
+			if (action.equals("startRecordingAudio")) {
+				this.startRecordingAudio(args.getString(0), args.getString(1));
+			}
+			else if (action.equals("stopRecordingAudio")) {
+				this.stopRecordingAudio(args.getString(0));
+			}
+			else if (action.equals("startPlayingAudio")) {
+				this.startPlayingAudio(args.getString(0), args.getString(1));
+			}
+			else if (action.equals("pausePlayingAudio")) {
+				this.pausePlayingAudio(args.getString(0));
+			}
+			else if (action.equals("stopPlayingAudio")) {
+				this.stopPlayingAudio(args.getString(0));
+			}
+			else if (action.equals("getCurrentPositionAudio")) {
+				long l = this.getCurrentPositionAudio(args.getString(0));
+				return new CommandResult(status, l);
+			}
+			else if (action.equals("getDurationAudio")) {
+				long l = this.getDurationAudio(args.getString(0), args.getString(1));
+				return new CommandResult(status, l);
+			}
+			return new CommandResult(status, result);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+		}
+	}
+
+	/**
+     * Called when the system is about to start resuming a previous activity. 
+     */
+    public void onPause() {
+    }
+
+    /**
+     * Called when the activity will start interacting with the user. 
+     */
+    public void onResume() {
+    }
+
+	/**
 	 * Stop all audio players and recorders.
 	 */
-	@Override
 	public void onDestroy() {
-		super.onDestroy();
 		java.util.Set<Entry<String,AudioPlayer>> s = this.players.entrySet();
         java.util.Iterator<Entry<String,AudioPlayer>> it = s.iterator();
         while(it.hasNext()) {
@@ -52,7 +127,23 @@ public class AudioHandler extends Module {
 		}
         this.players.clear();
 	}
-	
+
+    /**
+     * Called when an activity you launched exits, giving you the requestCode you started it with,
+     * the resultCode it returned, and any additional data from it. 
+     * 
+     * @param requestCode		The request code originally supplied to startActivityForResult(), 
+     * 							allowing you to identify who this result came from.
+     * @param resultCode		The integer result code returned by the child activity through its setResult().
+     * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     */
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    }
+
+    //--------------------------------------------------------------------------
+    // LOCAL METHODS
+    //--------------------------------------------------------------------------
+
 	/**
 	 * Start recording and save the specified file.
 	 * 
@@ -166,7 +257,7 @@ public class AudioHandler extends Module {
      * @param output			1=earpiece, 2=speaker
      */
     public void setAudioOutputDevice(int output) {
-		AudioManager audiMgr = (AudioManager) mCtx.getSystemService(Context.AUDIO_SERVICE);
+		AudioManager audiMgr = (AudioManager) this.ctx.getSystemService(Context.AUDIO_SERVICE);
 		if (output == 2) {
 			audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_SPEAKER, AudioManager.ROUTE_ALL);
 		}
@@ -184,7 +275,7 @@ public class AudioHandler extends Module {
      * @return					1=earpiece, 2=speaker
      */
     public int getAudioOutputDevice() {
-		AudioManager audiMgr = (AudioManager) mCtx.getSystemService(Context.AUDIO_SERVICE);
+		AudioManager audiMgr = (AudioManager) this.ctx.getSystemService(Context.AUDIO_SERVICE);
 		if (audiMgr.getRouting(AudioManager.MODE_NORMAL) == AudioManager.ROUTE_EARPIECE) {
 			return 1;
 		}

@@ -1,9 +1,13 @@
 package com.phonegap.api;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.content.Context;
+import android.content.Intent;
 import android.webkit.WebView;
 
 import com.phonegap.DroidGap;
@@ -18,12 +22,13 @@ import com.phonegap.DroidGap;
  *
  */
 public final class CommandManager {	
-	private Command[] commands;
 	
-	private final Context ctx;
+	private HashMap<String, Command> commands = new HashMap<String,Command>();
+	
+	private final DroidGap ctx;
 	private final WebView app;
 	
-	public CommandManager(WebView app, Context ctx) {
+	public CommandManager(WebView app, DroidGap ctx) {
 		this.ctx = ctx;
 		this.app = app;
 	}
@@ -49,18 +54,15 @@ public final class CommandManager {
 	 * is called once the plugin code has executed.
 	 * @return JSON encoded string with a response message and status.
 	 */
-	public String exec(final String clazz, final String action, final String callbackId, 
-			final String jsonArgs, final boolean async) {
+	public String exec(final String clazz, final String action, final String callbackId, final String jsonArgs, final boolean async) {
 		CommandResult cr = null;
 		try {
 			final JSONArray args = new JSONArray(jsonArgs);
 			Class c = getClassByName(clazz);
 			if (isPhoneGapCommand(c)) {
 				// Create a new instance of the plugin and set the context and webview
-				final Command plugin = (Command)c.newInstance();
-				plugin.setContext(this.ctx);
-				plugin.setView(this.app);
-
+				final Command plugin = this.addCommand(clazz); 
+				final DroidGap ctx = this.ctx;
 				if (async) {
 					// Run this on a different thread so that this one can return back to JS
 					Thread thread = new Thread(new Runnable() {
@@ -69,9 +71,9 @@ public final class CommandManager {
 							CommandResult cr = plugin.execute(action, args);
 							// Check the status for 0 (success) or otherwise
 							if (cr.getStatus() == 0) {
-								app.loadUrl(cr.toSuccessCallbackString(callbackId));
+								ctx.sendJavascript(cr.toSuccessCallbackString(callbackId));
 							} else {
-								app.loadUrl(cr.toErrorCallbackString(callbackId));
+								ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 							}
 						}
 					});
@@ -84,16 +86,13 @@ public final class CommandManager {
 			}
 		} catch (ClassNotFoundException e) {
 			cr = new CommandResult(CommandResult.Status.CLASS_NOT_FOUND_EXCEPTION);
-		} catch (IllegalAccessException e) {
-			cr = new CommandResult(CommandResult.Status.ILLEGAL_ACCESS_EXCEPTION);
-		} catch (InstantiationException e) {
-			cr = new CommandResult(CommandResult.Status.INSTANTIATION_EXCEPTION);
 		} catch (JSONException e) {
+			System.out.println("ERROR: "+e.toString());
 			cr = new CommandResult(CommandResult.Status.JSON_EXCEPTION);
 		}
 		// if async we have already returned at this point unless there was an error...
 		if (async) {
-			app.loadUrl(cr.toErrorCallbackString(callbackId));
+			ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 		}
 		return ( cr != null ? cr.getJSONString() : "{ status: 0, message: 'all good' }" );
 	}
@@ -127,4 +126,80 @@ public final class CommandManager {
 		}
 		return isCommand;
 	}
+	
+    /**
+     * Add command to be loaded and cached.
+     * If command is already created, then just return it.
+     * 
+     * @param className				The class to load
+     * @return						The command
+     */
+	public Command addCommand(String className) {
+    	if (this.commands.containsKey(className)) {
+    		return this.getCommand(className);
+    	}
+    	try {
+              Command command = (Command)Class.forName(className).newInstance();
+              this.commands.put(className, command);
+              command.setContext((DroidGap)this.ctx);
+              command.setView(this.app);
+              return command;
+    	}
+    	catch (Exception e) {
+    		  e.printStackTrace();
+    		  System.out.println("Error adding command "+className+".");
+    	}
+    	return null;
+    }
+    
+    /**
+     * Get the loaded command.
+     * 
+     * @param className				The class of the loaded command.
+     * @return
+     */
+    public Command getCommand(String className) {
+    	Command command = this.commands.get(className);
+    	return command;
+    }
+
+    /**
+     * Called when the system is about to start resuming a previous activity. 
+     */
+    public void onPause() {
+    	java.util.Set<Entry<String,Command>> s = this.commands.entrySet();
+    	java.util.Iterator<Entry<String,Command>> it = s.iterator();
+    	while(it.hasNext()) {
+    		Entry<String,Command> entry = it.next();
+    		Command command = entry.getValue();
+    		command.onPause();
+    	}
+    }
+    
+    /**
+     * Called when the activity will start interacting with the user. 
+     */
+    public void onResume() {
+    	java.util.Set<Entry<String,Command>> s = this.commands.entrySet();
+    	java.util.Iterator<Entry<String,Command>> it = s.iterator();
+    	while(it.hasNext()) {
+    		Entry<String,Command> entry = it.next();
+    		Command command = entry.getValue();
+    		command.onResume();
+    	}    	
+    }
+
+    /**
+     * The final call you receive before your activity is destroyed. 
+     */
+    public void onDestroy() {
+    	java.util.Set<Entry<String,Command>> s = this.commands.entrySet();
+    	java.util.Iterator<Entry<String,Command>> it = s.iterator();
+    	while(it.hasNext()) {
+    		Entry<String,Command> entry = it.next();
+    		Command command = entry.getValue();
+    		command.onDestroy();
+    	}
+    }
+    
 }

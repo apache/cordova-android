@@ -1,3 +1,26 @@
+com.phonegap.CompassListenerProxy = function() {
+    this.className = "com.phonegap.CompassListener";
+};
+com.phonegap.CompassListenerProxy.prototype.start = function() {
+    return PhoneGap.exec(this.className, "start", []);
+};
+com.phonegap.CompassListenerProxy.prototype.stop = function() {
+    return PhoneGap.exec(this.className, "stop", []);
+};
+com.phonegap.CompassListenerProxy.prototype.getStatus = function() {
+    return PhoneGap.exec(this.className, "getStatus", []);
+};
+com.phonegap.CompassListenerProxy.prototype.getHeading = function() {
+    return PhoneGap.exec(this.className, "getHeading", []);
+};
+com.phonegap.CompassListenerProxy.prototype.setTimeout = function(timeout) {
+    return PhoneGap.exec(this.className, "setTimeout", [timeout]);
+};
+com.phonegap.CompassListenerProxy.prototype.getTimeout = function() {
+    return PhoneGap.exec(this.className, "getTimeout", []);
+};
+com.phonegap.CompassListener = new com.phonegap.CompassListenerProxy();
+
 /**
  * This class provides access to device Compass data.
  * @constructor
@@ -42,12 +65,12 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
     }
 
     // Get current compass status
-    var status = CompassHook.getStatus();
+    var status = com.phonegap.CompassListener.getStatus();
 
     // If running, then call successCallback
     if (status == Compass.RUNNING) {
         try {
-            var heading = CompassHook.getHeading();
+            var heading = com.phonegap.CompassListener.getHeading();
             successCallback(heading);
         } catch (e) {
             console.log("Compass Error in successCallback: " + e);
@@ -56,18 +79,18 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
 
     // If not running, then start it
     else {
-        CompassHook.start();
+        com.phonegap.CompassListener.start();
 
         // Wait until started
         var timer = setInterval(function() {
-            var status = CompassHook.getStatus();
+            var status = com.phonegap.CompassListener.getStatus();
             if (status != Compass.STARTING) {
                 clearInterval(timer);
 
                 // If compass is running
                 if (status == Compass.RUNNING) {
                     try {
-                        var heading = CompassHook.getHeading();
+                        var heading = com.phonegap.CompassListener.getHeading();
                         successCallback(heading);
                     } catch (e) {
                         console.log("Compass Error in successCallback: " + e);
@@ -88,7 +111,7 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
             }
         }, 10);
     }
-}
+};
 
 /**
  * Asynchronously aquires the heading repeatedly at a given interval.
@@ -116,22 +139,22 @@ Compass.prototype.watchHeading= function(successCallback, errorCallback, options
     }
 
     // Make sure compass timeout > frequency + 10 sec
-    var timeout = CompassHook.getTimeout();
+    var timeout = com.phonegap.CompassListener.getTimeout();
     if (timeout < (frequency + 10000)) {
-        CompassHook.setTimeout(frequency + 10000); // set to frequency + 10 sec
+        com.phonegap.CompassListener.setTimeout(frequency + 10000); // set to frequency + 10 sec
     }
 
     var id = PhoneGap.createUUID();
-    CompassHook.start();
+    com.phonegap.CompassListener.start();
 
     // Start watch timer
     navigator.compass.timers[id] = setInterval(function() {
-        var status = CompassHook.getStatus();
+        var status = com.phonegap.CompassListener.getStatus();
 
         // If compass is running
         if (status == Compass.RUNNING) {
             try {
-                var heading = CompassHook.getHeading();
+                var heading = com.phonegap.CompassListener.getHeading();
                 successCallback(heading);
             } catch (e) {
                 console.log("Compass Error in successCallback: " + e);
@@ -153,7 +176,7 @@ Compass.prototype.watchHeading= function(successCallback, errorCallback, options
     }, (frequency ? frequency : 1));
 
     return id;
-}
+};
 
 
 /**
@@ -168,7 +191,7 @@ Compass.prototype.clearWatch = function(id) {
         clearInterval(navigator.compass.timers[id]);
         delete navigator.compass.timers[id];
     }
-}
+};
 
 PhoneGap.addConstructor(function() {
     if (typeof navigator.compass == "undefined") navigator.compass = new Compass();

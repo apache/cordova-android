@@ -21,6 +21,19 @@ public class CommandResult {
 		this.message = message.toString();
 	}
 	
+	public CommandResult(Status status, int i) {
+		this.status = status.ordinal();
+		this.message = ""+i;
+	}
+	public CommandResult(Status status, float f) {
+		this.status = status.ordinal();
+		this.message = ""+f;
+	}
+	public CommandResult(Status status, boolean b) {
+		this.status = status.ordinal();
+		this.message = ""+b;
+	}
+	
 	public int getStatus() {
 		return status;
 	}

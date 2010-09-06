@@ -6,9 +6,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.commons.codec.binary.Base64;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import com.phonegap.api.Command;
+import com.phonegap.api.CommandManager;
+import com.phonegap.api.CommandResult;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
@@ -21,22 +28,89 @@ import android.webkit.WebView;
  * and returns the captured image.  When the camera view is closed, the screen displayed before 
  * the camera view was shown is redisplayed.
  */
-public class CameraLauncher extends ActivityResultModule {
-		
+public class CameraLauncher implements Command {
+
+    WebView webView;					// WebView object
+    DroidGap ctx;						// DroidGap object
+
 	private int mQuality;				// Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
 	private Uri imageUri;				// Uri of captured image 
 	private boolean base64 = true;
 	
     /**
      * Constructor.
-     * 
-     * @param view
-     * @param gap
      */
-	public CameraLauncher(WebView view, DroidGap gap) {
-		super(view, gap);
+	public CameraLauncher() {
 	}
+
+	/**
+	 * Sets the context of the Command. This can then be used to do things like
+	 * get file paths associated with the Activity.
+	 * 
+	 * @param ctx The context of the main Activity.
+	 */
+	public void setContext(DroidGap ctx) {
+		this.ctx = ctx;
+	}
+
+	/**
+	 * Sets the main View of the application, this is the WebView within which 
+	 * a PhoneGap app runs.
+	 * 
+	 * @param webView The PhoneGap WebView
+	 */
+	public void setView(WebView webView) {
+		this.webView = webView;
+	}
+
+	/**
+	 * Executes the request and returns CommandResult.
+	 * 
+	 * @param action The command to execute.
+	 * @param args JSONArry of arguments for the command.
+	 * @return A CommandResult object with a status and message.
+	 */
+	public CommandResult execute(String action, JSONArray args) {
+		CommandResult.Status status = CommandResult.Status.OK;
+		String result = "";		
+		
+		try {
+			if (action.equals("setBase64")) {
+				this.setBase64(args.getBoolean(0));
+			}
+			else if (action.equals("takePicture")) {
+				this.takePicture(args.getInt(0));
+			}
+			return new CommandResult(status, result);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+		}
+	}
+
+	/**
+     * Called when the system is about to start resuming a previous activity. 
+     */
+    public void onPause() {
+    }
+
+    /**
+     * Called when the activity will start interacting with the user. 
+     */
+    public void onResume() {
+    }
+    
+    /**
+     * Called by AccelBroker when listener is to be shut down.
+     * Stop listener.
+     */
+    public void onDestroy() {  	
+    }
 	
+    //--------------------------------------------------------------------------
+    // LOCAL METHODS
+    //--------------------------------------------------------------------------
+    
 	/**
 	 * Set the type of data to return.  The data can either be returned
 	 * as a base64 string or a URI that points to the file.
@@ -70,7 +144,7 @@ public class CameraLauncher extends ActivityResultModule {
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
 
-        this.startActivityForResult(intent);
+        this.ctx.startActivityForResult((Command) this, intent);
 	}
 
     /**
@@ -81,15 +155,13 @@ public class CameraLauncher extends ActivityResultModule {
      * @param resultCode		The integer result code returned by the child activity through its setResult().
      * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
-	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		super.onActivityResult(requestCode, resultCode, intent);
 
 		// If image available
 		if (resultCode == Activity.RESULT_OK) {
 			try {
 				// Read in bitmap of captured image
-				Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.gap.getContentResolver(), imageUri);
+				Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getContentResolver(), imageUri);
 				
 				// If sending base64 image back
 				if (this.base64) {
@@ -104,11 +176,11 @@ public class CameraLauncher extends ActivityResultModule {
 					values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
 					Uri uri = null;
 					try {
-						uri = this.gap.getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+						uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 					} catch (UnsupportedOperationException e) {
 						System.out.println("Can't write to external media storage.");
 						try {
-							uri = this.gap.getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
+							uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
 						} catch (UnsupportedOperationException ex) {
 							System.out.println("Can't write to internal media storage.");							
 				        	this.failPicture("Error capturing image - no media storage found.");
@@ -117,12 +189,12 @@ public class CameraLauncher extends ActivityResultModule {
 					}
 	            
 					// Add compressed version of captured image to returned media store Uri
-					OutputStream os = this.gap.getContentResolver().openOutputStream(uri);
+					OutputStream os = this.ctx.getContentResolver().openOutputStream(uri);
 					bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
 					os.close();
             	
 					// Send Uri back to JavaScript for viewing image
-					this.sendJavascript("navigator.camera.success('" + uri.toString() + "');");
+					this.ctx.sendJavascript("navigator.camera.success('" + uri.toString() + "');");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -153,7 +225,7 @@ public class CameraLauncher extends ActivityResultModule {
 				byte[] code  = jpeg_data.toByteArray();
 				byte[] output = Base64.encodeBase64(code);
 				String js_out = new String(output);
-				this.sendJavascript("navigator.camera.success('" + js_out + "');");
+				this.ctx.sendJavascript("navigator.camera.success('" + js_out + "');");
 			}	
 		}
 		catch(Exception e) {
@@ -167,6 +239,6 @@ public class CameraLauncher extends ActivityResultModule {
 	 * @param err
 	 */
 	public void failPicture(String err) {
-		this.sendJavascript("navigator.camera.error('" + err + "');");
+		this.ctx.sendJavascript("navigator.camera.error('" + err + "');");
 	}
 }

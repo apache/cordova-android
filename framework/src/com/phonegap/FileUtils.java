@@ -4,7 +4,7 @@ import java.io.*;
 
 import android.webkit.WebView;
 
-public class FileUtils extends Module {
+public class FileUtils {
 
 
 	WebView mView;
@@ -13,7 +13,6 @@ public class FileUtils extends Module {
 	
 	public FileUtils(WebView view, DroidGap gap)
 	{
-		super(view, gap);
 		mView = view;
 	}
 	
