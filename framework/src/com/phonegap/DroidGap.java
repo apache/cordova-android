@@ -384,59 +384,75 @@ public class DroidGap extends Activity {
     	return this.callbackServer.getPort();
     }
 	
-  /**
-    * Provides a hook for calling "alert" from javascript. Useful for
-    * debugging your javascript.
-  */
-	public class GapClient extends WebChromeClient {				
+    /**
+     * Provides a hook for calling "alert" from javascript. Useful for
+     * debugging your javascript.
+     */
+    public class GapClient extends WebChromeClient {
 		
-		Context mCtx;
-		public GapClient(Context ctx)
-		{
-			mCtx = ctx;
-		}
+        Context mCtx;
+        public GapClient(Context ctx) {
+            mCtx = ctx;
+        }
 		
-		@Override
-	    public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-	        Log.d(LOG_TAG, message);
-	        // This shows the dialog box.  This can be commented out for dev
-	        AlertDialog.Builder alertBldr = new AlertDialog.Builder(mCtx);
-	        GapOKDialog okHook = new GapOKDialog();
-	        GapCancelDialog cancelHook = new GapCancelDialog();
-	        alertBldr.setMessage(message);
-	        alertBldr.setTitle("Alert");
-	        alertBldr.setCancelable(true);
-	        alertBldr.setPositiveButton("OK", okHook);
-	        alertBldr.setNegativeButton("Cancel", cancelHook);
-	        alertBldr.show();
-	        result.confirm();
-	        return true;
-	    }
-		
-		/*
-		 * This is the Code for the OK Button
-		 */
-		
-		public class GapOKDialog implements DialogInterface.OnClickListener {
+        /**
+         * Tell the client to display a javascript alert dialog.
+         * 
+         * @param view
+         * @param url
+         * @param message
+         * @param result
+         */
+        @Override
+        public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
+            Log.d(LOG_TAG, message);
+            AlertDialog.Builder dlg = new AlertDialog.Builder(mCtx);
+            dlg.setMessage(message);
+            dlg.setTitle("Alert");
+            dlg.setCancelable(false);
+            dlg.setPositiveButton(android.R.string.ok,
+            	new AlertDialog.OnClickListener() {
+                	public void onClick(DialogInterface dialog, int which) {
+                		result.confirm();
+                	}
+            	});
+            dlg.create();
+            dlg.show();
+            return true;
+        }       
 
-			public void onClick(DialogInterface dialog, int which) {
-				// TODO Auto-generated method stub
-				dialog.dismiss();
-			}			
-		
-		}
-		
-		public class GapCancelDialog implements DialogInterface.OnClickListener {
+        /**
+         * Tell the client to display a confirm dialog to the user.
+         * 
+         * @param view
+         * @param url
+         * @param message
+         * @param result
+         */
+        @Override
+        public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
+            AlertDialog.Builder dlg = new AlertDialog.Builder(mCtx);
+            dlg.setMessage(message);
+            dlg.setTitle("Confirm");
+            dlg.setCancelable(false);
+            dlg.setPositiveButton(android.R.string.ok, 
+            	new DialogInterface.OnClickListener() {
+                	public void onClick(DialogInterface dialog, int which) {
+                		result.confirm();
+                    }
+                });
+            dlg.setNegativeButton(android.R.string.cancel, 
+            	new DialogInterface.OnClickListener() {
+                	public void onClick(DialogInterface dialog, int which) {
+                		result.cancel();
+                    }
+                });
+            dlg.create();
+            dlg.show();
+            return true;
+        }
 
-			public void onClick(DialogInterface dialog, int which) {
-				// TODO Auto-generated method stub
-				dialog.dismiss();
-			}			
-		
-		}
-	  
-
-	}
+    }
 	
 	public final class EclairClient extends GapClient
 	{		
