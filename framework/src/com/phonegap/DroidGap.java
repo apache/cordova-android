@@ -1,4 +1,4 @@
-	package com.phonegap;
+package com.phonegap;
 /* License (MIT)
  * Copyright (c) 2008 Nitobi
  * website: http://phonegap.com
@@ -24,10 +24,9 @@
 
 
 
-import com.phonegap.api.Command;
+import com.phonegap.api.Plugin;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import com.phonegap.api.CommandManager;
+import com.phonegap.api.PluginManager;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -88,14 +87,14 @@ public class DroidGap extends Activity {
     private FileUtils fs;
     private BrowserKey mKey;
     public CallbackServer callbackServer;
-	private CommandManager commandManager;
+	private PluginManager pluginManager;
 
     private String url;							// The initial URL for our app
     private String baseUrl;						// The base of the initial URL for our app
 
     // Variables to manage ActivityResultCallbacks
     private int activityResultCallbackCounter = 1000;
-    private HashMap<Integer,Command> activityResultCallbacks = new HashMap<Integer,Command>();
+    private HashMap<Integer,Plugin> activityResultCallbacks = new HashMap<Integer,Plugin>();
      
     /** 
      * Called when the activity is first created. 
@@ -174,8 +173,8 @@ public class DroidGap extends Activity {
         WebViewReflect.setGeolocationEnabled(settings, true);
         // Bind the appView object to the gap class methods
         bindBrowser(appView);
-        if (this.commandManager.getCommand("com.phonegap.Storage") != null) {
-        	Storage cupcakeStorage = (Storage)this.commandManager.getCommand("com.phonegap.Storage");
+        if (this.pluginManager.getPlugin("com.phonegap.Storage") != null) {
+        	Storage cupcakeStorage = (Storage)this.pluginManager.getPlugin("com.phonegap.Storage");
         	cupcakeStorage.setStorage(appPackage);
         }
 	}
@@ -195,12 +194,12 @@ public class DroidGap extends Activity {
     /**
      * Called when the system is about to start resuming a previous activity. 
      */
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
 
-        // Forward to commands
-        this.commandManager.onPause();
-
+        // Forward to plugins
+        this.pluginManager.onPause();
+        
         // Send pause event to JavaScript
         appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
         
@@ -212,11 +211,11 @@ public class DroidGap extends Activity {
     /**
      * Called when the activity will start interacting with the user. 
      */
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
 
-        // Forward to commands
-        this.commandManager.onResume();
+        // Forward to plugins
+        this.pluginManager.onResume();
         
         // Send resume event to JavaScript
         appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
@@ -242,8 +241,8 @@ public class DroidGap extends Activity {
     	if (mKey != null) {
     	}
     	
-        // Forward to commands
-        this.commandManager.onDestroy();
+        // Forward to plugins
+        this.pluginManager.onDestroy();
 
     	if (callbackServer != null) {
     		callbackServer.destroy();
@@ -252,13 +251,13 @@ public class DroidGap extends Activity {
 
     private void bindBrowser(WebView appView) {
         callbackServer = new CallbackServer();
-    	commandManager = new CommandManager(appView, this);
+    	pluginManager = new PluginManager(appView, this);
     	gap = new Device(appView, this);
         fs = new FileUtils(appView, this);
     	mKey = new BrowserKey(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
-    	appView.addJavascriptInterface(commandManager, "CommandManager");
+    	appView.addJavascriptInterface(pluginManager, "PluginManager");
     	appView.addJavascriptInterface(gap, "DroidGap");
         
         appView.addJavascriptInterface(fs, "FileUtil");
@@ -270,8 +269,8 @@ public class DroidGap extends Activity {
         if (android.os.Build.VERSION.RELEASE.startsWith("1."))
         {
             Log.d(LOG_TAG, "bindBrowser: Adding droidStorage"); //@ibm
-            this.commandManager.addCommand("com.phonegap.Storage");
-            this.commandManager.addCommand("com.phonegap.GeoBroker");
+            this.pluginManager.addPlugin("com.phonegap.Storage");
+            this.pluginManager.addPlugin("com.phonegap.GeoBroker");
 
               }
     }
@@ -625,7 +624,7 @@ public class DroidGap extends Activity {
      * @param intent			The intent to start
      * @return					The request code to use for the callback
      */
-    public int startActivityForResult(Command command, Intent intent) {
+    public int startActivityForResult(Plugin command, Intent intent) {
     	int requestCode = this.activityResultCallbackCounter++;
     	this.activityResultCallbacks.put(requestCode, command);
     	super.startActivityForResult(intent, requestCode);
@@ -645,9 +644,9 @@ public class DroidGap extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
         
-        Command callback = this.activityResultCallbacks.remove(requestCode);
+        Plugin callback = this.activityResultCallbacks.remove(requestCode);
         if (callback != null) {
         	callback.onActivityResult(requestCode, resultCode, intent); 
         }        
-    }      
+    }
 }

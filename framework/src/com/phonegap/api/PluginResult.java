@@ -2,34 +2,35 @@ package com.phonegap.api;
 
 import org.json.JSONObject;
 
-public class CommandResult {
+public class PluginResult {
 	private final int status;
 	private final String message;
 	
-	public CommandResult(Status status) {
+	public PluginResult(Status status) {
 		this.status = status.ordinal();
-		this.message = CommandResult.StatusMessages[this.status];
+		this.message = PluginResult.StatusMessages[this.status];
 	}
 	
-	public CommandResult(Status status, String message) {
+	public PluginResult(Status status, String message) {
 		this.status = status.ordinal();
 		this.message = "'" + message + "'";
 	}
 
-	public CommandResult(Status status, JSONObject message) {
+	public PluginResult(Status status, JSONObject message) {
 		this.status = status.ordinal();
 		this.message = message.toString();
 	}
 	
-	public CommandResult(Status status, int i) {
+	// TODO: BC: Added
+	public PluginResult(Status status, int i) {
 		this.status = status.ordinal();
 		this.message = ""+i;
 	}
-	public CommandResult(Status status, float f) {
+	public PluginResult(Status status, float f) {
 		this.status = status.ordinal();
 		this.message = ""+f;
 	}
-	public CommandResult(Status status, boolean b) {
+	public PluginResult(Status status, boolean b) {
 		this.status = status.ordinal();
 		this.message = ""+b;
 	}

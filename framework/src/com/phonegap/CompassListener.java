@@ -5,8 +5,8 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.phonegap.api.Command;
-import com.phonegap.api.CommandResult;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginResult;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -19,7 +19,7 @@ import android.webkit.WebView;
 /**
  * This class listens to the compass sensor and stores the latest heading value.
  */
-public class CompassListener implements SensorEventListener, Command{
+public class CompassListener implements SensorEventListener, Plugin{
 
 	public static int STOPPED = 0;
 	public static int STARTING = 1;
@@ -75,8 +75,8 @@ public class CompassListener implements SensorEventListener, Command{
 	 * @param args JSONArry of arguments for the command.
 	 * @return A CommandResult object with a status and message.
 	 */
-	public CommandResult execute(String action, JSONArray args) {
-		CommandResult.Status status = CommandResult.Status.OK;
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
 		try {
@@ -88,23 +88,23 @@ public class CompassListener implements SensorEventListener, Command{
 			}
 			else if (action.equals("getStatus")) {
 				int i = this.getStatus();
-				return new CommandResult(status, i);
+				return new PluginResult(status, i);
 			}
 			else if (action.equals("getHeading")) {
 				float f = this.getHeading();
-				return new CommandResult(status, f);
+				return new PluginResult(status, f);
 			}
 			else if (action.equals("setTimeout")) {
 				this.setTimeout(args.getLong(0));
 			}
 			else if (action.equals("getTimeout")) {
 				long l = this.getTimeout();
-				return new CommandResult(status, l);
+				return new PluginResult(status, l);
 			}
-			return new CommandResult(status, result);
+			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
 

@@ -3,8 +3,8 @@ package com.phonegap;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.phonegap.api.Command;
-import com.phonegap.api.CommandResult;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginResult;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -12,7 +12,7 @@ import android.database.sqlite.*;
 import android.util.Log;
 import android.webkit.WebView;
 
-public class Storage implements Command {
+public class Storage implements Plugin {
 	
 	private static final String LOG_TAG = "SQLite Storage:";
 
@@ -56,8 +56,8 @@ public class Storage implements Command {
 	 * @param args JSONArry of arguments for the command.
 	 * @return A CommandResult object with a status and message.
 	 */
-	public CommandResult execute(String action, JSONArray args) {
-		CommandResult.Status status = CommandResult.Status.OK;
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
 		try {
@@ -76,9 +76,9 @@ public class Storage implements Command {
 				}
 				this.executeSql(args.getString(0), s, args.getString(2));
 			}
-			return new CommandResult(status, result);
+			return new PluginResult(status, result);
 		} catch (JSONException e) {
-			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
 

@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.json.JSONArray;
 
-import com.phonegap.api.Command;
-import com.phonegap.api.CommandResult;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginResult;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -15,7 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.webkit.WebView;
 
-public class TempListener implements SensorEventListener, Command {
+public class TempListener implements SensorEventListener, Plugin {
 
 	WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
@@ -57,8 +57,8 @@ public class TempListener implements SensorEventListener, Command {
 	 * @param args JSONArry of arguments for the command.
 	 * @return A CommandResult object with a status and message.
 	 */
-	public CommandResult execute(String action, JSONArray args) {
-		CommandResult.Status status = CommandResult.Status.OK;
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
 		if (action.equals("start")) {
@@ -67,7 +67,7 @@ public class TempListener implements SensorEventListener, Command {
 		else if (action.equals("stop")) {
 			this.stop();
 		}
-		return new CommandResult(status, result);
+		return new PluginResult(status, result);
 	}
 
 	/**

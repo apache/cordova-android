@@ -3,13 +3,13 @@ package com.phonegap;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.phonegap.api.Command;
-import com.phonegap.api.CommandResult;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginResult;
 
 import android.content.Intent;
 import android.webkit.WebView;
 
-public class CryptoHandler implements Command {
+public class CryptoHandler implements Plugin {
 	
     WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
@@ -47,8 +47,8 @@ public class CryptoHandler implements Command {
 	 * @param args JSONArry of arguments for the command.
 	 * @return A CommandResult object with a status and message.
 	 */
-	public CommandResult execute(String action, JSONArray args) {
-		CommandResult.Status status = CommandResult.Status.OK;
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
 		try {
@@ -58,9 +58,9 @@ public class CryptoHandler implements Command {
 			else if (action.equals("decrypt")) {
 				this.decrypt(args.getString(0), args.getString(1));
 			}
-			return new CommandResult(status, result);
+			return new PluginResult(status, result);
 		} catch (JSONException e) {
-			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
 

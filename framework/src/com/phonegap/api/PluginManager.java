@@ -13,22 +13,26 @@ import android.webkit.WebView;
 import com.phonegap.DroidGap;
 
 /**
- * CommandManager is exposed to JavaScript in the PhoneGap WebView.
+ * PluginManager is exposed to JavaScript in the PhoneGap WebView.
  * 
- * Calling native plugin code can be done by calling CommandManager.exec(...)
+ * Calling native plugin code can be done by calling PluginManager.exec(...)
  * from JavaScript.
- * 
- * @author davejohnson
- *
  */
-public final class CommandManager {	
-	
-	private HashMap<String, Command> commands = new HashMap<String,Command>();
+public final class PluginManager {	
+
+	private HashMap<String, Plugin> plugins = new HashMap<String,Plugin>();
 	
 	private final DroidGap ctx;
 	private final WebView app;
 	
-	public CommandManager(WebView app, DroidGap ctx) {
+	/**
+	 * Constructor.
+	 * 
+	 * @param app
+	 * @param ctx
+	 */
+	public PluginManager(WebView app, DroidGap ctx) {
+		System.out.println("PluginManager()");
 		this.ctx = ctx;
 		this.app = app;
 	}
@@ -37,7 +41,7 @@ public final class CommandManager {
 	 * Receives a request for execution and fulfills it by finding the appropriate
 	 * Java class and calling it's execute method.
 	 * 
-	 * CommandManager.exec can be used either synchronously or async. In either case, a JSON encoded 
+	 * PluginManager.exec can be used either synchronously or async. In either case, a JSON encoded 
 	 * string is returned that will indicate if any errors have occurred when trying to find
 	 * or execute the class denoted by the clazz argument.
 	 * 
@@ -55,25 +59,27 @@ public final class CommandManager {
 	 * @return JSON encoded string with a response message and status.
 	 */
 	public String exec(final String clazz, final String action, final String callbackId, final String jsonArgs, final boolean async) {
-		CommandResult cr = null;
+		System.out.println("PluginManager.exec("+clazz+", "+action+", "+callbackId+", "+jsonArgs+", "+async+")");
+		PluginResult cr = null;
 		try {
 			final JSONArray args = new JSONArray(jsonArgs);
 			Class c = getClassByName(clazz);
-			if (isPhoneGapCommand(c)) {
-				// Create a new instance of the plugin and set the context and webview
-				final Command plugin = this.addCommand(clazz); 
+			if (isPhoneGapPlugin(c)) {
+				final Plugin plugin = this.addPlugin(clazz); //cmd; 
 				final DroidGap ctx = this.ctx;
 				if (async) {
 					// Run this on a different thread so that this one can return back to JS
 					Thread thread = new Thread(new Runnable() {
 						public void run() {
 							// Call execute on the plugin so that it can do it's thing
-							CommandResult cr = plugin.execute(action, args);
+							PluginResult cr = plugin.execute(action, args);
 							// Check the status for 0 (success) or otherwise
 							if (cr.getStatus() == 0) {
 								ctx.sendJavascript(cr.toSuccessCallbackString(callbackId));
+								//app.loadUrl(cr.toSuccessCallbackString(callbackId));
 							} else {
 								ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
+								//app.loadUrl(cr.toErrorCallbackString(callbackId));
 							}
 						}
 					});
@@ -85,14 +91,18 @@ public final class CommandManager {
 				}
 			}
 		} catch (ClassNotFoundException e) {
-			cr = new CommandResult(CommandResult.Status.CLASS_NOT_FOUND_EXCEPTION);
+			cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
 		} catch (JSONException e) {
 			System.out.println("ERROR: "+e.toString());
-			cr = new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+			cr = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 		// if async we have already returned at this point unless there was an error...
 		if (async) {
 			ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
+			//app.loadUrl(cr.toErrorCallbackString(callbackId));
+		}
+		if (cr != null) {
+			System.out.println(" -- returning result: "+cr.getJSONString());
 		}
 		return ( cr != null ? cr.getJSONString() : "{ status: 0, message: 'all good' }" );
 	}
@@ -110,69 +120,70 @@ public final class CommandManager {
 
 	/**
 	 * Get the interfaces that a class implements and see if it implements the
-	 * com.phonegap.api.Command interface.
+	 * com.phonegap.api.Plugin interface.
 	 * 
 	 * @param c The class to check the interfaces of.
-	 * @return Boolean indicating if the class implements com.phonegap.api.Command
+	 * @return Boolean indicating if the class implements com.phonegap.api.Plugin
 	 */
-	private boolean isPhoneGapCommand(Class c) {
-		boolean isCommand = false;
+	private boolean isPhoneGapPlugin(Class c) {
+		boolean isPlugin = false;
 		Class[] interfaces = c.getInterfaces();
 		for (int j=0; j<interfaces.length; j++) {
-			if (interfaces[j].getName().equals("com.phonegap.api.Command")) {
-				isCommand = true;
+			if (interfaces[j].getName().equals("com.phonegap.api.Plugin")) {
+				isPlugin = true;
 				break;
 			}
 		}
-		return isCommand;
+		return isPlugin;
 	}
 	
     /**
-     * Add command to be loaded and cached.
-     * If command is already created, then just return it.
+     * Add plugin to be loaded and cached.
+     * If plugin is already created, then just return it.
      * 
      * @param className				The class to load
-     * @return						The command
+     * @return						The plugin
      */
-	public Command addCommand(String className) {
-    	if (this.commands.containsKey(className)) {
-    		return this.getCommand(className);
+	public Plugin addPlugin(String className) {
+    	System.out.println("PluginManager.addPlugin("+className+")");
+    	if (this.plugins.containsKey(className)) {
+    		return this.getPlugin(className);
     	}
     	try {
-              Command command = (Command)Class.forName(className).newInstance();
-              this.commands.put(className, command);
-              command.setContext((DroidGap)this.ctx);
-              command.setView(this.app);
-              return command;
+              Plugin plugin = (Plugin)Class.forName(className).newInstance();
+              this.plugins.put(className, plugin);
+              plugin.setContext((DroidGap)this.ctx);
+              plugin.setView(this.app);
+              return plugin;
     	}
     	catch (Exception e) {
     		  e.printStackTrace();
-    		  System.out.println("Error adding command "+className+".");
+    		  System.out.println("Error adding plugin "+className+".");
     	}
     	return null;
     }
     
     /**
-     * Get the loaded command.
+     * Get the loaded plugin.
      * 
-     * @param className				The class of the loaded command.
+     * @param className				The class of the loaded plugin.
      * @return
      */
-    public Command getCommand(String className) {
-    	Command command = this.commands.get(className);
-    	return command;
+    public Plugin getPlugin(String className) {
+    	Plugin plugin = this.plugins.get(className);
+    	return plugin;
     }
 
     /**
      * Called when the system is about to start resuming a previous activity. 
      */
     public void onPause() {
-    	java.util.Set<Entry<String,Command>> s = this.commands.entrySet();
-    	java.util.Iterator<Entry<String,Command>> it = s.iterator();
+    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Command> entry = it.next();
-    		Command command = entry.getValue();
-    		command.onPause();
+    		Entry<String,Plugin> entry = it.next();
+    		Plugin plugin = entry.getValue();
+    		plugin.onPause();
     	}
     }
     
@@ -180,12 +191,12 @@ public final class CommandManager {
      * Called when the activity will start interacting with the user. 
      */
     public void onResume() {
-    	java.util.Set<Entry<String,Command>> s = this.commands.entrySet();
-    	java.util.Iterator<Entry<String,Command>> it = s.iterator();
+    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Command> entry = it.next();
-    		Command command = entry.getValue();
-    		command.onResume();
+    		Entry<String,Plugin> entry = it.next();
+    		Plugin plugin = entry.getValue();
+    		plugin.onResume();
     	}    	
     }
 
@@ -193,13 +204,26 @@ public final class CommandManager {
      * The final call you receive before your activity is destroyed. 
      */
     public void onDestroy() {
-    	java.util.Set<Entry<String,Command>> s = this.commands.entrySet();
-    	java.util.Iterator<Entry<String,Command>> it = s.iterator();
+    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Command> entry = it.next();
-    		Command command = entry.getValue();
-    		command.onDestroy();
+    		Entry<String,Plugin> entry = it.next();
+    		Plugin plugin = entry.getValue();
+    		plugin.onDestroy();
     	}
     }
     
+
+    /**
+     * Send JavaScript statement back to JavaScript.
+     * 
+     * @param message
+     */
+    /*
+    public void sendJavascript(String statement) {
+    	//System.out.println("Module.sendResponse("+statement+")");
+    	this.ctx.callbackServer.sendJavascript(statement);
+    }
+    */
+
 }

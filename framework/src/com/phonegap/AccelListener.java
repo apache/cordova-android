@@ -6,9 +6,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.phonegap.api.Command;
-import com.phonegap.api.CommandManager;
-import com.phonegap.api.CommandResult;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginManager;
+import com.phonegap.api.PluginResult;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -22,7 +22,7 @@ import android.webkit.WebView;
  * This class listens to the accelerometer sensor and stores the latest 
  * acceleration values x,y,z.
  */
-public class AccelListener implements SensorEventListener, Command{
+public class AccelListener implements SensorEventListener, Plugin{
 
 	public static int STOPPED = 0;
 	public static int STARTING = 1;
@@ -81,62 +81,62 @@ public class AccelListener implements SensorEventListener, Command{
 	 * @param args JSONArry of arguments for the command.
 	 * @return A CommandResult object with a status and message.
 	 */
-	public CommandResult execute(String action, JSONArray args) {
-		CommandResult.Status status = CommandResult.Status.OK;
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
 		try {
 			if (action.equals("getStatus")) {
 				int i = this.getStatus();
-				return new CommandResult(status, i);
+				return new PluginResult(status, i);
 			}
 			else if (action.equals("start")) {
 				int i = this.start();
-				return new CommandResult(status, i);
+				return new PluginResult(status, i);
 			}
 			else if (action.equals("stop")) {
 				this.stop();
-				return new CommandResult(status, 0);
+				return new PluginResult(status, 0);
 			}
 			else if (action.equals("getAcceleration")) {
 				JSONObject r = new JSONObject();
 				r.put("x", this.x);
 				r.put("y", this.y);
 				r.put("z", this.z);
-				return new CommandResult(status, r);
+				return new PluginResult(status, r);
 			}
 			else if (action.equals("getX")) {
 				float f = this.getX();
-				return new CommandResult(status, f);
+				return new PluginResult(status, f);
 			}
 			else if (action.equals("getY")) {
 				float f = this.getY();
-				return new CommandResult(status, f);
+				return new PluginResult(status, f);
 			}
 			else if (action.equals("getZ")) {
 				float f = this.getZ();
-				return new CommandResult(status, f);
+				return new PluginResult(status, f);
 			}
 			else if (action.equals("setTimeout")) {
 				try {
 					float timeout = Float.parseFloat(args.getString(0));
 					this.setTimeout(timeout);
-					return new CommandResult(status, 0);
+					return new PluginResult(status, 0);
 				} catch (NumberFormatException e) {
-					status = CommandResult.Status.INVALID_ACTION;
+					status = PluginResult.Status.INVALID_ACTION;
 					e.printStackTrace();
 				} catch (JSONException e) {
-					status = CommandResult.Status.JSON_EXCEPTION;
+					status = PluginResult.Status.JSON_EXCEPTION;
 					e.printStackTrace();
 				}
 			}
 			else if (action.equals("getTimeout")) {
 				float f = this.getTimeout();
-				return new CommandResult(status, f);
+				return new PluginResult(status, f);
 			}
-			return new CommandResult(status, result);
+			return new PluginResult(status, result);
 		} catch (JSONException e) {
-			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
 

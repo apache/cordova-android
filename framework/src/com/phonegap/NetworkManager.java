@@ -5,15 +5,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.phonegap.api.Command;
-import com.phonegap.api.CommandResult;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginResult;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.*;
 import android.webkit.WebView;
 
-public class NetworkManager implements Command {
+public class NetworkManager implements Plugin {
 
     WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
@@ -54,25 +54,25 @@ public class NetworkManager implements Command {
 	 * @param args JSONArry of arguments for the command.
 	 * @return A CommandResult object with a status and message.
 	 */
-	public CommandResult execute(String action, JSONArray args) {
-		CommandResult.Status status = CommandResult.Status.OK;
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		try {
 			if (action.equals("isAvailable")) {
 				boolean b = this.isAvailable();
-				return new CommandResult(status, b);
+				return new PluginResult(status, b);
 			}
 			else if (action.equals("isWifiActive")) {
 				boolean b = this.isWifiActive();
-				return new CommandResult(status, b);
+				return new PluginResult(status, b);
 			}
 			else if (action.equals("isReachable")) {
 				boolean b = this.isReachable(args.getString(0));
-				return new CommandResult(status, b);
+				return new PluginResult(status, b);
 			}
-			return new CommandResult(status, result);
+			return new PluginResult(status, result);
 		} catch (JSONException e) {
-			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
 

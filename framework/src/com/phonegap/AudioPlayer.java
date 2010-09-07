@@ -14,7 +14,7 @@ import android.media.MediaPlayer.OnPreparedListener;
  * It is called by the AudioHandler PhoneGap class.
  * Only one file can be played or recorded per class instance.
  * 
- * Local audio files must reside on sdcard
+ * Local audio files must reside in one of two places:
  * 		android_asset: 		file name must start with /android_asset/sound.mp3
  * 		sdcard:				file name is just sound.mp3
  */
@@ -169,7 +169,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_RECORD_MODE_SET+");");
 		}
 		
-		// If this is a new request to play audio
+		// If this is a new request to play audio, or stopped
 		else if ((this.mPlayer == null) || (this.state == MEDIA_STOPPED)) {
 			try {
 				// If stopped, then reset player

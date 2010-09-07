@@ -235,7 +235,7 @@ PhoneGap.callbacks = {};
 PhoneGap.exec = function(clazz, action, args) {
     try {
         var callbackId = 0;
-        var r = CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
+        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
         eval("var v="+r+";");
         
         // If status is OK, then return value back to caller
@@ -257,7 +257,7 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
     try {
         var callbackId = clazz + PhoneGap.callbackId++;
         PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
-        var r = CommandManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
+        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
         eval("var v="+r+";");
         
         // If status is OK, then return value back to caller

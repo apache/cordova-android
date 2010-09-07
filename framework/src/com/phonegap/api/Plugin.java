@@ -9,25 +9,22 @@ import android.content.Intent;
 import android.webkit.WebView;
 
 /**
- * Command interface must be implemented by any plugin classes.
+ * Plugin interface must be implemented by any plugin classes.
  *
- * The execute method is called by the CommandManager.
- *
- * @author davejohnson
- *
+ * The execute method is called by the PluginManager.
  */
-public interface Command {
+public interface Plugin {
 	/**
-	 * Executes the request and returns CommandResult.
+	 * Executes the request and returns PluginResult.
 	 * 
-	 * @param action The command to execute.
-	 * @param args JSONArry of arguments for the command.
-	 * @return A CommandResult object with a status and message.
+	 * @param action The plugin to execute.
+	 * @param args JSONArry of arguments for the plugin.
+	 * @return A PluginResult object with a status and message.
 	 */
-	CommandResult execute(String action, JSONArray args);
+	PluginResult execute(String action, JSONArray args);
 
 	/**
-	 * Sets the context of the Command. This can then be used to do things like
+	 * Sets the context of the Plugin. This can then be used to do things like
 	 * get file paths associated with the Activity.
 	 * 
 	 * @param ctx The context of the main Activity.

@@ -6,9 +6,9 @@ import java.util.Map.Entry;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.phonegap.api.Command;
-import com.phonegap.api.CommandManager;
-import com.phonegap.api.CommandResult;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginManager;
+import com.phonegap.api.PluginResult;
 
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +26,7 @@ import android.webkit.WebView;
  * 		android_asset: 		file name must start with /android_asset/sound.mp3
  * 		sdcard:				file name is just sound.mp3
  */
-public class AudioHandler implements Command {
+public class AudioHandler implements Plugin {
 
     WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
@@ -67,8 +67,8 @@ public class AudioHandler implements Command {
 	 * @param args JSONArry of arguments for the command.
 	 * @return A CommandResult object with a status and message.
 	 */
-	public CommandResult execute(String action, JSONArray args) {
-		CommandResult.Status status = CommandResult.Status.OK;
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
 		try {
@@ -89,16 +89,16 @@ public class AudioHandler implements Command {
 			}
 			else if (action.equals("getCurrentPositionAudio")) {
 				long l = this.getCurrentPositionAudio(args.getString(0));
-				return new CommandResult(status, l);
+				return new PluginResult(status, l);
 			}
 			else if (action.equals("getDurationAudio")) {
 				long l = this.getDurationAudio(args.getString(0), args.getString(1));
-				return new CommandResult(status, l);
+				return new PluginResult(status, l);
 			}
-			return new CommandResult(status, result);
+			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			e.printStackTrace();
-			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
 

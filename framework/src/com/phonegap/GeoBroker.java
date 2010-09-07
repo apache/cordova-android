@@ -5,8 +5,8 @@ import java.util.HashMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.phonegap.api.Command;
-import com.phonegap.api.CommandResult;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginResult;
 
 import android.content.Intent;
 import android.webkit.WebView;
@@ -17,7 +17,7 @@ import android.webkit.WebView;
  * This class only starts and stops various GeoListeners, which consist of a GPS and a Network Listener
  */
 
-public class GeoBroker implements Command {
+public class GeoBroker implements Plugin {
     
 	WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
@@ -59,8 +59,8 @@ public class GeoBroker implements Command {
 	 * @param args JSONArry of arguments for the command.
 	 * @return A CommandResult object with a status and message.
 	 */
-	public CommandResult execute(String action, JSONArray args) {
-		CommandResult.Status status = CommandResult.Status.OK;
+	public PluginResult execute(String action, JSONArray args) {
+		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
 		try {
@@ -69,14 +69,14 @@ public class GeoBroker implements Command {
 			}
 			else if (action.equals("start")) {
 				String s = this.start(args.getInt(0), args.getString(1));
-				return new CommandResult(status, s);
+				return new PluginResult(status, s);
 			}
 			else if (action.equals("stop")) {
 				this.stop(args.getString(0));
 			}
-			return new CommandResult(status, result);
+			return new PluginResult(status, result);
 		} catch (JSONException e) {
-			return new CommandResult(CommandResult.Status.JSON_EXCEPTION);
+			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
 
