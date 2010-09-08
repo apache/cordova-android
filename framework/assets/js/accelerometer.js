@@ -1,22 +1,21 @@
 com.phonegap.AccelListenerProxy = function() {
     this.className = "com.phonegap.AccelListener";
+    this.status = -1;   // not set yet
 };
 com.phonegap.AccelListenerProxy.prototype.getStatus = function() {
-    return PhoneGap.exec(this.className, "getStatus", []);
+    if (this.status == -1) {    // if not set, then request status
+        this.status = PhoneGap.exec(this.className, "getStatus", []);
+    }
+    return this.status;
+};
+com.phonegap.AccelListenerProxy.prototype.onStatus = function(status) {
+    console.log("AccelListener.onStatus("+status+")");
+    this.status = status;
 };
 com.phonegap.AccelListenerProxy.prototype.getAcceleration = function() {
     var r = PhoneGap.exec(this.className, "getAcceleration", []);
     var a = new Acceleration(r.x,r.y,r.z);
     return a;
-};
-com.phonegap.AccelListenerProxy.prototype.getX = function() {
-    return PhoneGap.exec(this.className, "getX", []);
-};
-com.phonegap.AccelListenerProxy.prototype.getY = function() {
-    return PhoneGap.exec(this.className, "getY", []);
-};
-com.phonegap.AccelListenerProxy.prototype.getZ = function() {
-    return PhoneGap.exec(this.className, "getZ", []);
 };
 com.phonegap.AccelListenerProxy.prototype.start = function() {
     return PhoneGap.exec(this.className, "start", []);
@@ -97,35 +96,34 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
     }
 
     // If not running, then start it
-    else {
+    else if (status >= 0) {
         com.phonegap.AccelListener.start();
 
         // Wait until started
         var timer = setInterval(function() {
             var status = com.phonegap.AccelListener.getStatus();
-            if (status != Accelerometer.STARTING) {
+
+            // If accelerometer is running
+            if (status == Accelerometer.RUNNING) {
                 clearInterval(timer);
-
-                // If accelerometer is running
-                if (status == Accelerometer.RUNNING) {
-                    try {
-                        var accel = com.phonegap.AccelListener.getAcceleration();
-                        successCallback(accel);
-                    } catch (e) {
-                        console.log("Accelerometer Error in successCallback: " + e);
-                    }
+                try {
+                    var accel = com.phonegap.AccelListener.getAcceleration();
+                    successCallback(accel);
+                } catch (e) {
+                    console.log("Accelerometer Error in successCallback: " + e);
                 }
+            }
 
-                // If accelerometer error
-                else {
-                    console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
-                    try {
-                        if (errorCallback) {
-                            errorCallback(status);
-                        }
-                    } catch (e) {
-                        console.log("Accelerometer Error in errorCallback: " + e);
+            // If accelerometer error
+            else if (status == Accelerometer.ERROR_FAILED_TO_START) {
+                clearInterval(timer);
+                console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
+                try {
+                    if (errorCallback) {
+                        errorCallback(status);
                     }
+                } catch (e) {
+                    console.log("Accelerometer Error in errorCallback: " + e);
                 }
             }
         }, 10);
@@ -181,7 +179,7 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
         }
 
         // If accelerometer had error
-        else if (status != Accelerometer.STARTING) {
+        else if (status == Accelerometer.ERROR_FAILED_TO_START) {
             console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
             try {
                 navigator.accelerometer.clearWatch(id);

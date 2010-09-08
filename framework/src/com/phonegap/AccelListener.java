@@ -7,7 +7,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.phonegap.api.Plugin;
-import com.phonegap.api.PluginManager;
 import com.phonegap.api.PluginResult;
 
 import android.hardware.Sensor;
@@ -50,7 +49,7 @@ public class AccelListener implements SensorEventListener, Plugin{
         this.y = 0;
         this.z = 0;
         this.timeStamp = 0;
-        this.status = AccelListener.STOPPED;
+        this.setStatus(AccelListener.STOPPED);
      }
     
 	/**
@@ -99,23 +98,14 @@ public class AccelListener implements SensorEventListener, Plugin{
 				return new PluginResult(status, 0);
 			}
 			else if (action.equals("getAcceleration")) {
+				if (this.status == AccelListener.STOPPED) {
+					this.start(); // Start if not already running
+				}
 				JSONObject r = new JSONObject();
 				r.put("x", this.x);
 				r.put("y", this.y);
 				r.put("z", this.z);
 				return new PluginResult(status, r);
-			}
-			else if (action.equals("getX")) {
-				float f = this.getX();
-				return new PluginResult(status, f);
-			}
-			else if (action.equals("getY")) {
-				float f = this.getY();
-				return new PluginResult(status, f);
-			}
-			else if (action.equals("getZ")) {
-				float f = this.getZ();
-				return new PluginResult(status, f);
 			}
 			else if (action.equals("setTimeout")) {
 				try {
@@ -195,13 +185,13 @@ public class AccelListener implements SensorEventListener, Plugin{
         if ((list != null) && (list.size() > 0)) {
             this.mSensor = list.get(0);
             this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_FASTEST);
-            this.status = AccelListener.STARTING;
+            this.setStatus(AccelListener.STARTING);
             this.lastAccessTime = System.currentTimeMillis();
         }
         
         // If error, then set status to error
         else {
-            this.status = AccelListener.ERROR_FAILED_TO_START;
+            this.setStatus(AccelListener.ERROR_FAILED_TO_START);
         }
         
         return this.status;
@@ -214,7 +204,7 @@ public class AccelListener implements SensorEventListener, Plugin{
         if (this.status != AccelListener.STOPPED) {
         	this.sensorManager.unregisterListener(this);
         }
-        this.status = AccelListener.STOPPED;
+        this.setStatus(AccelListener.STOPPED);
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -232,6 +222,9 @@ public class AccelListener implements SensorEventListener, Plugin{
         if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER) {
             return;
         }
+        if (this.status == AccelListener.STOPPED) {
+        	return;
+        }
         
         // Save time that event was received
         this.timeStamp = System.currentTimeMillis();
@@ -239,7 +232,7 @@ public class AccelListener implements SensorEventListener, Plugin{
         this.y = event.values[1];
         this.z = event.values[2];            
 
-        this.status = AccelListener.RUNNING;
+        this.setStatus(AccelListener.RUNNING);
 
         // If values haven't been read for TIMEOUT time, then turn off accelerometer sensor to save power
 		if ((this.timeStamp - this.lastAccessTime) > this.TIMEOUT) {
@@ -254,36 +247,6 @@ public class AccelListener implements SensorEventListener, Plugin{
      */
 	public int getStatus() {
 		return this.status;
-	}
-	
-    /**
-     * Get X value of last accelerometer value.
-     * 
-     * @return			x value
-     */
-    public float getX() {
-        this.lastAccessTime = System.currentTimeMillis();
-   		return this.x;
-    }
-    
-    /**
-     * Get Y value of last accelerometer value.
-     * 
-     * @return			y value
-     */
-    public float getY() {
-        this.lastAccessTime = System.currentTimeMillis();
-   		return this.y;
-	}
-
-    /**
-     * Get Z value of last accelerometer value.
-     * 
-     * @return			z value
-     */
-    public float getZ() {
-        this.lastAccessTime = System.currentTimeMillis();
-   		return this.x;
 	}
 	
 	/**
@@ -302,6 +265,17 @@ public class AccelListener implements SensorEventListener, Plugin{
 	 */
 	public float getTimeout() {
 		return this.TIMEOUT;
+	}
+	
+	/**
+	 * Set the status and send it to JavaScript.
+	 * @param status
+	 */
+	private void setStatus(int status) {
+		if (this.status != status) {
+			ctx.sendJavascript("com.phonegap.AccelListener.onStatus("+status+")");
+		}
+		this.status = status;
 	}
     
 }
