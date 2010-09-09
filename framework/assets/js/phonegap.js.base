@@ -189,7 +189,7 @@ if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
 PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
 PhoneGap.onDeviceReady.subscribeOnce(function() {
-	PhoneGap.JSCallback();
+    PhoneGap.JSCallback();
 });
 
 PhoneGap.Channel.join(function() {
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
 PhoneGap.m_document_addEventListener = document.addEventListener;
 
 document.addEventListener = function(evt, handler, capture) {
-	var e = evt.toLowerCase();
+    var e = evt.toLowerCase();
     if (e == 'deviceready') {
         PhoneGap.onDeviceReady.subscribeOnce(handler);
     } else if (e == 'resume') {
@@ -258,17 +258,19 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
         var callbackId = clazz + PhoneGap.callbackId++;
         PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
         var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
-        eval("var v="+r+";");
+        if (r) {
+            eval("var v="+r+";");
         
-        // If status is OK, then return value back to caller
-        if (v.status == 0) {
-            return v.message;
-        }
+            // If status is OK, then return value back to caller
+            if (v.status == 0) {
+                return v.message;
+            }
 
-        // If error, then display error
-        else {
-            console.log("Error: Status="+r.status+" Message="+v.message);
-            return null;
+            // If error, then display error
+            else {
+                console.log("Error: Status="+r.status+" Message="+v.message);
+                return null;
+            }
         }
     } catch (e) {
         console.log("Error: "+e);
@@ -276,13 +278,23 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
 };
 
 PhoneGap.callbackSuccess = function(callbackId, args) {
-	PhoneGap.callbacks[callbackId].success(args);
-	delete PhoneGap.callbacks[callbackId];
+    try {
+        PhoneGap.callbacks[callbackId].success(args.message);
+    }
+    catch (e) {
+        console.log("Error in success callback: "+callbackId+" = "+e);
+    }
+    delete PhoneGap.callbacks[callbackId];
 };
 
 PhoneGap.callbackError = function(callbackId, args) {
-	PhoneGap.callbacks[callbackId].fail(args);
-	delete PhoneGap.callbacks[callbackId];
+    try {
+        PhoneGap.callbacks[callbackId].fail(args.message);
+    }
+    catch (e) {
+        console.log("Error in error callback: "+callbackId+" = "+e);
+    }
+    delete PhoneGap.callbacks[callbackId];
 };
 
 
