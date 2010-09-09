@@ -34,7 +34,7 @@ public class AccelListener implements SensorEventListener, Plugin{
     DroidGap ctx;						// DroidGap object
     
     float x,y,z;						// most recent acceleration values
-    long timeStamp;						// time of most recent value
+    long timestamp;						// time of most recent value
     int status;							// status of listener
     long lastAccessTime;				// time the value was last retrieved
 
@@ -48,7 +48,7 @@ public class AccelListener implements SensorEventListener, Plugin{
         this.x = 0;
         this.y = 0;
         this.z = 0;
-        this.timeStamp = 0;
+        this.timestamp = 0;
         this.setStatus(AccelListener.STOPPED);
      }
     
@@ -98,13 +98,16 @@ public class AccelListener implements SensorEventListener, Plugin{
 				return new PluginResult(status, 0);
 			}
 			else if (action.equals("getAcceleration")) {
+				// Start if not already running
 				if (this.status == AccelListener.STOPPED) {
-					this.start(); // Start if not already running
+					this.start();
 				}
 				JSONObject r = new JSONObject();
 				r.put("x", this.x);
 				r.put("y", this.y);
 				r.put("z", this.z);
+				// TODO: Should timestamp be sent?
+				r.put("timestamp", this.timestamp);
 				return new PluginResult(status, r);
 			}
 			else if (action.equals("setTimeout")) {
@@ -207,8 +210,13 @@ public class AccelListener implements SensorEventListener, Plugin{
         this.setStatus(AccelListener.STOPPED);
     }
 
+    /**
+     * Called when the accuracy of the sensor has changed.
+     * 
+     * @param sensor
+     * @param accuracy
+     */
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // TODO Auto-generated method stub
     }
 
     /**
@@ -222,12 +230,14 @@ public class AccelListener implements SensorEventListener, Plugin{
         if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER) {
             return;
         }
+        
+        // If not running, then just return
         if (this.status == AccelListener.STOPPED) {
         	return;
         }
         
         // Save time that event was received
-        this.timeStamp = System.currentTimeMillis();
+        this.timestamp = System.currentTimeMillis();
         this.x = event.values[0];
         this.y = event.values[1];
         this.z = event.values[2];            
@@ -235,7 +245,7 @@ public class AccelListener implements SensorEventListener, Plugin{
         this.setStatus(AccelListener.RUNNING);
 
         // If values haven't been read for TIMEOUT time, then turn off accelerometer sensor to save power
-		if ((this.timeStamp - this.lastAccessTime) > this.TIMEOUT) {
+		if ((this.timestamp - this.lastAccessTime) > this.TIMEOUT) {
 			this.stop();
 		}		
     }
@@ -248,7 +258,7 @@ public class AccelListener implements SensorEventListener, Plugin{
 	public int getStatus() {
 		return this.status;
 	}
-	
+		
 	/**
 	 * Set the timeout to turn off accelerometer sensor if getX() hasn't been called.
 	 * 
