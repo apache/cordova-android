@@ -49,7 +49,7 @@ class Classic
   # runs android create project
   # TODO need to allow more flexible SDK targetting via config.xml
   def create_android
-    target_id = `android list targets | grep id:`.split("\n").last.match(/\d/).to_a.first
+    target_id = `android list targets | grep id:`.split("\n").last.match(/\d+/).to_a.first
     `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
   end
   
