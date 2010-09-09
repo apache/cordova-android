@@ -48,11 +48,11 @@ public class PluginResult {
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
-		return "javascript:PhoneGap.callbackSuccess('"+callbackId+"', " + this.getJSONString() + " );";
+		return "PhoneGap.callbackSuccess('"+callbackId+"', " + this.getJSONString() + " );";
 	}
 	
 	public String toErrorCallbackString(String callbackId) {
-		return "javascript:PhoneGap.callbackError('"+callbackId+"', " + this.getJSONString()+ ");";
+		return "PhoneGap.callbackError('"+callbackId+"', " + this.getJSONString()+ ");";
 	}
 	
 	public static String[] StatusMessages = new String[] {

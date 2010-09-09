@@ -6,10 +6,7 @@ import java.util.Map.Entry;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.content.Context;
-import android.content.Intent;
 import android.webkit.WebView;
-
 import com.phonegap.DroidGap;
 
 /**
@@ -65,7 +62,7 @@ public final class PluginManager {
 			final JSONArray args = new JSONArray(jsonArgs);
 			Class c = getClassByName(clazz);
 			if (isPhoneGapPlugin(c)) {
-				final Plugin plugin = this.addPlugin(clazz); //cmd; 
+				final Plugin plugin = this.addPlugin(clazz); 
 				final DroidGap ctx = this.ctx;
 				if (async) {
 					// Run this on a different thread so that this one can return back to JS
@@ -76,10 +73,8 @@ public final class PluginManager {
 							// Check the status for 0 (success) or otherwise
 							if (cr.getStatus() == 0) {
 								ctx.sendJavascript(cr.toSuccessCallbackString(callbackId));
-								//app.loadUrl(cr.toSuccessCallbackString(callbackId));
 							} else {
 								ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
-								//app.loadUrl(cr.toErrorCallbackString(callbackId));
 							}
 						}
 					});
@@ -145,10 +140,10 @@ public final class PluginManager {
      * @return						The plugin
      */
 	public Plugin addPlugin(String className) {
-    	System.out.println("PluginManager.addPlugin("+className+")");
     	if (this.plugins.containsKey(className)) {
     		return this.getPlugin(className);
     	}
+    	System.out.println("PluginManager.addPlugin("+className+")");
     	try {
               Plugin plugin = (Plugin)Class.forName(className).newInstance();
               this.plugins.put(className, plugin);
@@ -212,18 +207,4 @@ public final class PluginManager {
     		plugin.onDestroy();
     	}
     }
-    
-
-    /**
-     * Send JavaScript statement back to JavaScript.
-     * 
-     * @param message
-     */
-    /*
-    public void sendJavascript(String statement) {
-    	//System.out.println("Module.sendResponse("+statement+")");
-    	this.ctx.callbackServer.sendJavascript(statement);
-    }
-    */
-
 }
