@@ -98,9 +98,20 @@ public class AccelListener implements SensorEventListener, Plugin{
 				return new PluginResult(status, 0);
 			}
 			else if (action.equals("getAcceleration")) {
-				// Start if not already running
-				if (this.status == AccelListener.STOPPED) {
-					this.start();
+				// If not running, then this is an async call, so don't worry about waiting
+				if (this.status != AccelListener.RUNNING) {
+					int r = this.start();
+					if (r == AccelListener.ERROR_FAILED_TO_START) {
+						return new PluginResult(PluginResult.Status.IO_EXCEPTION, AccelListener.ERROR_FAILED_TO_START);
+					}
+					// Wait until running
+					while (this.status == STARTING) {
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
 				}
 				JSONObject r = new JSONObject();
 				r.put("x", this.x);
@@ -140,7 +151,18 @@ public class AccelListener implements SensorEventListener, Plugin{
 	 * @return			T=returns value
 	 */
 	public boolean hasReturnValue(String action) {
-		// TODO
+		if (action.equals("getStatus")) {
+			return true;
+		}
+		else if (action.equals("getAcceleration")) {
+			// Can only return value if RUNNING
+			if (this.status == RUNNING) {
+				return true;
+			}
+		}
+		else if (action.equals("getTimeout")) {
+			return true;
+		}
 		return false;
 	}
 
@@ -293,9 +315,6 @@ public class AccelListener implements SensorEventListener, Plugin{
 	 * @param status
 	 */
 	private void setStatus(int status) {
-		if (this.status != status) {
-			ctx.sendJavascript("com.phonegap.AccelListener.onStatus("+status+")");
-		}
 		this.status = status;
 	}
     

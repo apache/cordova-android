@@ -1,35 +1,3 @@
-com.phonegap.AccelListenerProxy = function() {
-    this.className = "com.phonegap.AccelListener";
-    this.status = -1;   // not set yet
-};
-com.phonegap.AccelListenerProxy.prototype.getStatus = function() {
-    if (this.status == -1) {    // if not set, then request status
-        this.status = PhoneGap.exec(this.className, "getStatus", []);
-    }
-    return this.status;
-};
-com.phonegap.AccelListenerProxy.prototype.onStatus = function(status) {
-    console.log("AccelListener.onStatus("+status+")");
-    this.status = status;
-};
-com.phonegap.AccelListenerProxy.prototype.getAcceleration = function() {
-    var r = PhoneGap.exec(this.className, "getAcceleration", []);
-    var a = new Acceleration(r.x,r.y,r.z);
-    return a;
-};
-com.phonegap.AccelListenerProxy.prototype.start = function() {
-    return PhoneGap.exec(this.className, "start", []);
-};
-com.phonegap.AccelListenerProxy.prototype.stop = function() {
-    return PhoneGap.exec(this.className, "stop", []);
-};
-com.phonegap.AccelListenerProxy.prototype.setTimeout = function(timeout) {
-    return PhoneGap.exec(this.className, "setTimeout", [timeout]);
-};
-com.phonegap.AccelListenerProxy.prototype.getTimeout = function() {
-    return PhoneGap.exec(this.className, "getTimeout", []);
-};
-com.phonegap.AccelListener = new com.phonegap.AccelListenerProxy();
 
 function Acceleration(x, y, z) {
   this.x = x;
@@ -55,20 +23,17 @@ function Accelerometer() {
     this.timers = {};
 };
 
-Accelerometer.STOPPED = 0;
-Accelerometer.STARTING = 1;
-Accelerometer.RUNNING = 2;
-Accelerometer.ERROR_FAILED_TO_START = 3;
 Accelerometer.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
 
 /**
  * Asynchronously aquires the current acceleration.
  *
  * @param {Function} successCallback    The function to call when the acceleration data is available
- * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data.
- * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout.
+ * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
+ * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
  */
 Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
+    console.log("Accelerometer.getCurrentAcceleration()");
 
     // successCallback required
     if (typeof successCallback != "function") {
@@ -82,60 +47,16 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
         return;
     }
 
-    // Get current acceleration status
-    var status = com.phonegap.AccelListener.getStatus();
-
-    // If running, then call successCallback
-    if (status == Accelerometer.RUNNING) {
-        try {
-            var accel = com.phonegap.AccelListener.getAcceleration();
-            successCallback(accel);
-        } catch (e) {
-            console.log("Accelerometer Error in successCallback: " + e);
-        }
-    }
-
-    // If not running, then start it
-    else if (status >= 0) {
-        com.phonegap.AccelListener.start();
-
-        // Wait until started
-        var timer = setInterval(function() {
-            var status = com.phonegap.AccelListener.getStatus();
-
-            // If accelerometer is running
-            if (status == Accelerometer.RUNNING) {
-                clearInterval(timer);
-                try {
-                    var accel = com.phonegap.AccelListener.getAcceleration();
-                    successCallback(accel);
-                } catch (e) {
-                    console.log("Accelerometer Error in successCallback: " + e);
-                }
-            }
-
-            // If accelerometer error
-            else if (status == Accelerometer.ERROR_FAILED_TO_START) {
-                clearInterval(timer);
-                console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
-                try {
-                    if (errorCallback) {
-                        errorCallback(status);
-                    }
-                } catch (e) {
-                    console.log("Accelerometer Error in errorCallback: " + e);
-                }
-            }
-        }, 10);
-    }
+    // Get acceleration
+    PhoneGap.execAsync(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
 };
 
 /**
  * Asynchronously aquires the acceleration repeatedly at a given interval.
  *
  * @param {Function} successCallback    The function to call each time the acceleration data is available
- * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data.
- * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout.
+ * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
+ * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
  * @return String                       The watch id that must be passed to #clearWatch to stop watching.
  */
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
@@ -156,40 +77,18 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
     }
 
     // Make sure accelerometer timeout > frequency + 10 sec
-    var timeout = com.phonegap.AccelListener.getTimeout();
-    if (timeout < (frequency + 10000)) {
-        com.phonegap.AccelListener.setTimeout(frequency + 10000); // set to frequency + 10 sec
-    }
-
-    var id = PhoneGap.createUUID();
-    com.phonegap.AccelListener.start();
+    PhoneGap.execAsync(
+        function(timeout) {
+            if (timeout < (frequency + 10000)) {
+                PhoneGap.execAsync(null, null, "Accelerometer", "setTimeout", [frequency + 10000]);
+            }
+        },
+        function(e) { }, "Accelerometer", "getTimeout", []);
 
     // Start watch timer
+    var id = PhoneGap.createUUID();
     navigator.accelerometer.timers[id] = setInterval(function() {
-        var status = com.phonegap.AccelListener.getStatus();
-
-        // If accelerometer is running
-        if (status == Accelerometer.RUNNING) {
-            try {
-                var accel = com.phonegap.AccelListener.getAcceleration();
-                successCallback(accel);
-            } catch (e) {
-                console.log("Accelerometer Error in successCallback: " + e);
-            }
-        }
-
-        // If accelerometer had error
-        else if (status == Accelerometer.ERROR_FAILED_TO_START) {
-            console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
-            try {
-                navigator.accelerometer.clearWatch(id);
-                if (errorCallback) {
-                    errorCallback(status);
-                }
-            } catch (e) {
-                console.log("Accelerometer Error in errorCallback: " + e);
-            }
-        }
+        PhoneGap.execAsync(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
     }, (frequency ? frequency : 1));
 
     return id;
