@@ -253,6 +253,16 @@ public class DroidGap extends Activity {
     }
 
     /**
+     * Add a class that implements a service.
+     * 
+     * @param serviceType
+     * @param className
+     */
+    public void addService(String serviceType, String className) {
+    	this.pluginManager.addService(serviceType, className);
+    }
+
+    /**
      * Bind PhoneGap objects to JavaScript.
      * 
      * @param appView
@@ -284,6 +294,17 @@ public class DroidGap extends Activity {
             this.pluginManager.addPlugin("com.phonegap.GeoBroker");
 
         }
+        
+        this.addService("Accelerometer", "com.phonegap.AccelListener");
+        this.addService("Compass", "com.phonegap.CompassListener");
+        this.addService("Media", "com.phonegap.AudioHandler");
+        this.addService("Camera", "com.phonegap.CameraLauncher");
+        this.addService("Contacts", "com.phonegap.ContactManager");
+        this.addService("Crypto", "com.phonegap.CryptoHandler");
+        this.addService("Location", "com.phonegap.GeoBroker");
+        this.addService("Network Status", "com.phonegap.NetworkManager");
+        this.addService("Storage", "com.phonegap.Storage");
+        this.addService("Temperature", "com.phonegap.TempListener");
     }
  
     /**
