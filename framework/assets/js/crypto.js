@@ -1,25 +1,15 @@
-com.phonegap.CryptoHandlerProxy = function() {
-    this.className = "com.phonegap.CryptoHandler";
-};
-com.phonegap.CryptoHandlerProxy.prototype.encrypt = function(pass, text) {
-    return PhoneGap.exec(this.className, "encrypt", [pass, text]);
-};
-com.phonegap.CryptoHandlerProxy.prototype.decrypt = function(pass, text) {
-    return PhoneGap.exec(this.className, "decrypt", [pass, text]);
-};
-com.phonegap.CryptoHandler = new com.phonegap.CryptoHandlerProxy();
 
 var Crypto = function() {
 };
 
 Crypto.prototype.encrypt = function(seed, string, callback) {
-    com.phonegap.CryptoHandler.encrypt(seed, string);
     this.encryptWin = callback;
+    PhoneGap.execAsync(null, null, "Crypto", "encrypt", [seed, string]);
 };
 
 Crypto.prototype.decrypt = function(seed, string, callback) {
-    com.phonegap.CryptoHandler.decrypt(seed, string);
     this.decryptWin = callback;
+    PhoneGap.execAsync(null, null, "Crypto", "decrypt", [seed, string]);
 };
 
 Crypto.prototype.gotCryptedString = function(string) {

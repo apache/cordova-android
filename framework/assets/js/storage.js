@@ -1,13 +1,3 @@
-com.phonegap.StorageProxy = function() {
-    this.className = "com.phonegap.Storage";
-};
-com.phonegap.StorageProxy.prototype.executeSql = function(query, params, id) {
-    return PhoneGap.exec(this.className, "executeSql", [query, params, id]);
-};
-com.phonegap.StorageProxy.prototype.openDatabase = function(name, version, display_name, size) {
-    return PhoneGap.exec(this.className, "openDatabase", [name, version, display_name, size]);
-};
-com.phonegap.Storage = new com.phonegap.StorageProxy();
 
 /*
  * This is purely for the Android 1.5/1.6 HTML 5 Storage
@@ -53,7 +43,7 @@ var Tx = function() {
 };
 
 Tx.prototype.executeSql = function(query, params, win, fail) {
-    com.phonegap.Storage.executeSql(query, params, this.id);
+    PhoneGap.execAsync(null, null, "Storage", "executeSql", [query, params, this.id]);
     tx.win = win;
     tx.fail = fail;
 };
@@ -72,7 +62,7 @@ Rows.prototype.item = function(row_id) {
 };
 
 var dbSetup = function(name, version, display_name, size) {
-    com.phonegap.Storage.openDatabase(name, version, display_name, size)
+    PhoneGap.execAsync(null, null, "Storage", "openDatabase", [name, version, display_name, size]);
     db_object = new DatabaseShell();
     return db_object;
 };
