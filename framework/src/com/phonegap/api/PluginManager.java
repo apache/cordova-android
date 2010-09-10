@@ -18,6 +18,7 @@ import com.phonegap.DroidGap;
 public final class PluginManager {	
 
 	private HashMap<String, Plugin> plugins = new HashMap<String,Plugin>();
+	private HashMap<String, String> services = new HashMap<String,String>();
 	
 	private final DroidGap ctx;
 	private final WebView app;
@@ -42,29 +43,36 @@ public final class PluginManager {
 	 * string is returned that will indicate if any errors have occurred when trying to find
 	 * or execute the class denoted by the clazz argument.
 	 * 
-	 * @param clazz String containing the fully qualified class name. e.g. com.phonegap.FooBar
-	 * @param action String containt the action that the class is supposed to perform. This is
-	 * passed to the plugin execute method and it is up to the plugin developer 
-	 * how to deal with it.
-	 * @param callbackId String containing the id of the callback that is execute in JavaScript if
-	 * this is an async plugin call.
-	 * @param args An Array literal string containing any arguments needed in the
-	 * plugin execute method.
-	 * @param async Boolean indicating whether the calling JavaScript code is expecting an
-	 * immediate return value. If true, either PhoneGap.callbackSuccess(...) or PhoneGap.callbackError(...)
-	 * is called once the plugin code has executed.
-	 * @return JSON encoded string with a response message and status.
+	 * @param service 		String containing the service to run
+	 * @param action 		String containt the action that the class is supposed to perform. This is
+	 * 						passed to the plugin execute method and it is up to the plugin developer 
+	 * 						how to deal with it.
+	 * @param callbackId 	String containing the id of the callback that is execute in JavaScript if
+	 * 						this is an async plugin call.
+	 * @param args 			An Array literal string containing any arguments needed in the
+	 * 						plugin execute method.
+	 * @param async 		Boolean indicating whether the calling JavaScript code is expecting an
+	 * 						immediate return value. If true, either PhoneGap.callbackSuccess(...) or 
+	 * 						PhoneGap.callbackError(...) is called once the plugin code has executed.
+	 * 
+	 * @return 				JSON encoded string with a response message and status.
 	 */
-	public String exec(final String clazz, final String action, final String callbackId, final String jsonArgs, final boolean async) {
-		System.out.println("PluginManager.exec("+clazz+", "+action+", "+callbackId+", "+jsonArgs+", "+async+")");
+	public String exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
+		System.out.println("PluginManager.exec("+service+", "+action+", "+callbackId+", "+jsonArgs+", "+async+")");
 		PluginResult cr = null;
+		boolean noReturnValue = async;
 		try {
 			final JSONArray args = new JSONArray(jsonArgs);
-			Class c = getClassByName(clazz);
-			if (isPhoneGapPlugin(c)) {
+			String clazz = this.services.get(service);
+			Class c = null;
+			if (clazz != null) {
+				c = getClassByName(clazz);
+			}
+			if ((c == null) || isPhoneGapPlugin(c)) {
 				final Plugin plugin = this.addPlugin(clazz); 
 				final DroidGap ctx = this.ctx;
-				if (async) {
+				noReturnValue = async && !plugin.hasReturnValue(action);
+				if (async && !plugin.hasReturnValue(action)) {
 					// Run this on a different thread so that this one can return back to JS
 					Thread thread = new Thread(new Runnable() {
 						public void run() {
@@ -92,9 +100,8 @@ public final class PluginManager {
 			cr = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 		// if async we have already returned at this point unless there was an error...
-		if (async) {
+		if (noReturnValue) {
 			ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
-			//app.loadUrl(cr.toErrorCallbackString(callbackId));
 		}
 		if (cr != null) {
 			System.out.println(" -- returning result: "+cr.getJSONString());
@@ -103,7 +110,7 @@ public final class PluginManager {
 	}
 	
 	/**
-	 * 
+	 * Get the class.
 	 * 
 	 * @param clazz
 	 * @return
@@ -167,6 +174,26 @@ public final class PluginManager {
     public Plugin getPlugin(String className) {
     	Plugin plugin = this.plugins.get(className);
     	return plugin;
+    }
+    
+    /**
+     * Add a class that implements a service.
+     * 
+     * @param serviceType
+     * @param className
+     */
+    public void addService(String serviceType, String className) {
+    	this.services.put(serviceType, className);
+    }
+    
+    /**
+     * Get the class that implements a service.
+     * 
+     * @param serviceType
+     * @return
+     */
+    public String getClassForService(String serviceType) {
+    	return this.services.get(serviceType);
     }
 
     /**
