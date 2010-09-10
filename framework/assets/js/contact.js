@@ -132,11 +132,11 @@ Contacts.prototype.m_foundContacts = function(win, contacts) {
     win(contacts);
 };
 
-var ContactFindOptions = function() {
-    this.filter = '';
-    this.multiple = true;
-    this.limit = 0;
-    this.updatedSince = 0;
+var ContactFindOptions = function(filter, multiple, limit, updatedSince) {
+    this.filter = filter || '';
+    this.multiple = multiple || true;
+    this.limit = limit || 0;
+    this.updatedSince = updatedSince || '';
 };
 
 var ContactError = function() {
