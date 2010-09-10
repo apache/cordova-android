@@ -76,7 +76,14 @@ public class NetworkManager implements Plugin {
 		}
 	}
 
+	/**
+	 * Identifies if action to be executed returns a value.
+	 * 
+	 * @param action	The action to execute
+	 * @return			T=returns value
+	 */
 	public boolean hasReturnValue(String action) {
+		// All methods take a while, so always use async
 		return false;
 	}
 
