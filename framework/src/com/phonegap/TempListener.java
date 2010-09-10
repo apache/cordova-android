@@ -71,6 +71,16 @@ public class TempListener implements SensorEventListener, Plugin {
 	}
 
 	/**
+	 * Identifies if action to be executed returns a value.
+	 * 
+	 * @param action	The action to execute
+	 * @return			T=returns value
+	 */
+	public boolean hasReturnValue(String action) {
+		return false;
+	}
+
+	/**
      * Called when the system is about to start resuming a previous activity. 
      */
     public void onPause() {

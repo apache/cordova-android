@@ -76,6 +76,10 @@ public class NetworkManager implements Plugin {
 		}
 	}
 
+	public boolean hasReturnValue(String action) {
+		return false;
+	}
+
 	/**
      * Called when the system is about to start resuming a previous activity. 
      */
