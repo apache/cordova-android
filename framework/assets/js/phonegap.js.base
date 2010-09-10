@@ -1,9 +1,6 @@
+
 if (typeof(DeviceInfo) != 'object')
     DeviceInfo = {};
-
-var com = {};
-
-com.phonegap = {};
 
 /**
  * This represents the PhoneGap API itself, and provides a global namespace for accessing
