@@ -30,7 +30,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	// AudioPlayer message ids
 	private static int MEDIA_STATE = 1;
 	private static int MEDIA_DURATION = 2;
-	private static int MEDIA_ERROR = 3;
+	private static int MEDIA_ERROR = 9;
 	
 	// AudioPlayer error codes
 	private static int MEDIA_ERROR_PLAY_MODE_SET = 1;
@@ -109,8 +109,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			try {
 				this.recorder.prepare();
 				this.recorder.start();
-				this.state = MEDIA_RUNNING;
-				this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+				this.setState(MEDIA_RUNNING);
 				return;
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
@@ -144,11 +143,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		if (this.recorder != null) {
 			try{
 				if (this.state == MEDIA_RUNNING) {
-					this.state = MEDIA_STOPPED;
 					this.recorder.stop();
-
-					// Send status notification to JavaScript
-					this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+					this.setState(MEDIA_STOPPED);
 				}
 				this.moveFile(this.audioFile);
 			}
@@ -205,10 +201,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 					this.duration = this.mPlayer.getDuration();
 				}
 				this.mPlayer.setOnPreparedListener(this);		
-				this.state = MEDIA_STARTING;
-
-				// Send status notification to JavaScript
-				this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+				this.setState(MEDIA_STARTING);
 			} 
 			catch (Exception e) { 
 				e.printStackTrace(); 
@@ -222,10 +215,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			// If player has been paused, then resume playback
 			if ((this.state == MEDIA_PAUSED) || (this.state == MEDIA_STARTING)) {
 				this.mPlayer.start();
-				this.state = MEDIA_RUNNING;
-
-				// Send status notification to JavaScript
-				this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+				this.setState(MEDIA_RUNNING);
 			}
 			else {
 				System.out.println("AudioPlayer Error: startPlaying() called during invalid state: "+this.state);
@@ -242,10 +232,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		// If playing, then pause
 		if (this.state == MEDIA_RUNNING) {
 			this.mPlayer.pause();
-			this.state = MEDIA_PAUSED;
-
-			// Send status notification to JavaScript
-			this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+			this.setState(MEDIA_PAUSED);
 		}
 		else {
 			System.out.println("AudioPlayer Error: pausePlaying() called during invalid state: "+this.state);			
@@ -258,11 +245,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      */
 	public void stopPlaying() {
 		if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
-			this.state = MEDIA_STOPPED;
 			this.mPlayer.stop();
-
-			// Send status notification to JavaScript
-			this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+			this.setState(MEDIA_STOPPED);
 		}
 		else {
 			System.out.println("AudioPlayer Error: stopPlaying() called during invalid state: "+this.state);			
@@ -276,10 +260,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	 * @param mPlayer			The MediaPlayer that reached the end of the file 
 	 */
 	public void onCompletion(MediaPlayer mPlayer) {
-		this.state = MEDIA_STOPPED;
-		
-		// Send status notification to JavaScript
-		this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+		this.setState(MEDIA_STOPPED);
     } 
 	
     /**
@@ -359,10 +340,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			this.mPlayer.start();
 
 			// Set player init flag
-			this.state = MEDIA_RUNNING;
-
-			// Send status notification to JavaScript
-			this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+			this.setState(MEDIA_RUNNING);
 		}
 		
 		// Save off duration
@@ -392,5 +370,19 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		// Send error notification to JavaScript
 		this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+arg1+");");
 		return false;
-	}	
+	}
+	
+	/**
+	 * Set the state and send it to JavaScript.
+	 * 
+	 * @param state
+	 */
+	private void setState(int state) {
+		if (this.state != state) {
+			this.handler.ctx.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_STATE+", "+this.state+");");
+		}
+		
+		this.state = state;
+	}
+
 }

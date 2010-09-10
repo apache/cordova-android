@@ -1,28 +1,3 @@
-com.phonegap.AudioHandlerProxy = function() {
-    this.className = "com.phonegap.AudioHandler";
-};
-com.phonegap.AudioHandlerProxy.prototype.startRecordingAudio = function(id, file) {
-    return PhoneGap.exec(this.className, "startRecordingAudio", [id, file]);
-};
-com.phonegap.AudioHandlerProxy.prototype.stopRecordingAudio = function(id) {
-    return PhoneGap.exec(this.className, "stopRecordingAudio", [id]);
-};
-com.phonegap.AudioHandlerProxy.prototype.startPlayingAudio = function(id, file) {
-    return PhoneGap.exec(this.className, "startPlayingAudio", [id, file]);
-};
-com.phonegap.AudioHandlerProxy.prototype.pausePlayingAudio = function(id) {
-    return PhoneGap.exec(this.className, "pausePlayingAudio", [id]);
-};
-com.phonegap.AudioHandlerProxy.prototype.stopPlayingAudio = function(id) {
-    return PhoneGap.exec(this.className, "stopPlayingAudio", [id]);
-};
-com.phonegap.AudioHandlerProxy.prototype.getCurrentPositionAudio = function(id) {
-    return PhoneGap.exec(this.className, "getCurrentPositionAudio", [id]);
-};
-com.phonegap.AudioHandlerProxy.prototype.getDurationAudio = function(id, file) {
-    return PhoneGap.exec(this.className, "getDurationAudio", [id, file]);
-};
-com.phonegap.AudioHandler = new com.phonegap.AudioHandlerProxy();
 
 /**
  * List of media objects.
@@ -88,8 +63,10 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
  *                                  errorCallback(int errorCode) - OPTIONAL
  * @param statusCallback        The callback to be called when media status has changed.
  *                                  statusCallback(int statusCode) - OPTIONAL
+ * @param positionCallback      The callback to be called when media position has changed.
+ *                                  positionCallback(long position) - OPTIONAL
  */
-Media = function(src, successCallback, errorCallback, statusCallback) {
+Media = function(src, successCallback, errorCallback, statusCallback, positionCallback) {
 
     // successCallback optional
     if (successCallback && (typeof successCallback != "function")) {
@@ -109,19 +86,27 @@ Media = function(src, successCallback, errorCallback, statusCallback) {
         return;
     }
 
+    // statusCallback optional
+    if (positionCallback && (typeof positionCallback != "function")) {
+        console.log("Media Error: positionCallback is not a function");
+        return;
+    }
+
     this.id = PhoneGap.createUUID();
     PhoneGap.mediaObjects[this.id] = this;
     this.src = src;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.statusCallback = statusCallback;
+    this.positionCallback = positionCallback;
     this._duration = -1;
+    this._position = -1;
 };
 
 // Media messages
 Media.MEDIA_STATE = 1;
 Media.MEDIA_DURATION = 2;
-Media.MEDIA_ERROR = 3;
+Media.MEDIA_ERROR = 9;
 
 // Media states
 Media.MEDIA_NONE = 0;
@@ -150,21 +135,21 @@ MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
  * Start or resume playing audio file.
  */
 Media.prototype.play = function() {
-    com.phonegap.AudioHandler.startPlayingAudio(this.id, this.src);
+    PhoneGap.execAsync(null, null, "com.phonegap.AudioHandler", "startPlayingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop playing audio file.
  */
 Media.prototype.stop = function() {
-    com.phonegap.AudioHandler.stopPlayingAudio(this.id);
+    return PhoneGap.execAsync(null, null, "com.phonegap.AudioHandler", "stopPlayingAudio", [this.id]);
 };
 
 /**
  * Pause playing audio file.
  */
 Media.prototype.pause = function() {
-    com.phonegap.AudioHandler.pausePlayingAudio(this.id);
+    PhoneGap.execAsync(null, null, "com.phonegap.AudioHandler", "pausePlayingAudio", [this.id]);
 };
 
 /**
@@ -182,21 +167,21 @@ Media.prototype.getDuration = function() {
  *
  * @return
  */
-Media.prototype.getCurrentPosition = function() {
-    return com.phonegap.AudioHandler.getCurrentPositionAudio(this.id);
+Media.prototype.getCurrentPosition = function(success, fail) {
+    PhoneGap.execAsync(success, fail, "com.phonegap.AudioHandler", "getCurrentPositionAudio", [this.id]);
 };
 
 /**
  * Start recording audio file.
  */
 Media.prototype.startRecord = function() {
-    com.phonegap.AudioHandler.startRecordingAudio(this.id, this.src);
+    PhoneGap.execAsync(null, null, "com.phonegap.AudioHandler", "startRecordingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop recording audio file.
  */
 Media.prototype.stopRecord = function() {
-    com.phonegap.AudioHandler.stopRecordingAudio(this.id);
+    PhoneGap.execAsync(null, null, "com.phonegap.AudioHandler", "stopRecordingAudio", [this.id]);
 };
 
