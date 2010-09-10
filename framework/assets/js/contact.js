@@ -1,13 +1,3 @@
-com.phonegap.ContactManagerProxy = function() {
-    this.className = "com.phonegap.ContactManager";
-};
-com.phonegap.ContactManagerProxy.prototype.getContactsAndSendBack = function() {
-    return PhoneGap.exec(this.className, "getContactsAndSendBack", []);
-};
-com.phonegap.ContactManagerProxy.prototype.search = function(name, npa, mail) {
-    return PhoneGap.exec(this.className, "search", [name, npa, mail]);
-};
-com.phonegap.ContactManager = new com.phonegap.ContactManagerProxy();
 
 var Contact = function() {
     this.name = new ContactName();
@@ -39,6 +29,8 @@ var Contacts = function() {
 };
 
 Contacts.prototype.find = function(obj, win, fail) {
+    this.win = win;
+    this.fail = fail;
     if(obj.name != null) {
         // Build up the search term that we'll use in SQL, based on the structure/contents of the contact object passed into find.
         var searchTerm = '';
@@ -51,10 +43,8 @@ Contacts.prototype.find = function(obj, win, fail) {
         if (!obj.name.familyName && !obj.name.givenName && obj.name.formatted) {
             searchTerm = obj.name.formatted;
         }
-        com.phonegap.ContactManager.search(searchTerm, "", "");
+        PhoneGap.execAsync(null, null, "Contacts", "search", [searchTerm, "", ""]);
     }
-    this.win = win;
-    this.fail = fail;
 };
 
 Contacts.prototype.droidFoundContact = function(name, npa, email) {
