@@ -1,13 +1,3 @@
-com.phonegap.CameraLauncherProxy = function() {
-    this.className = "com.phonegap.CameraLauncher";
-};
-com.phonegap.CameraLauncherProxy.prototype.setBase64 = function(b) {
-    return PhoneGap.exec(this.className, "setBase64", [b]);
-};
-com.phonegap.CameraLauncherProxy.prototype.takePicture = function(quality) {
-    return PhoneGap.exec(this.className, "takePicture", [quality]);
-};
-com.phonegap.CameraLauncher = new com.phonegap.CameraLauncherProxy();
 
 /**
  * This class provides access to the device camera.
@@ -44,12 +34,15 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.options = options;
+    var capturetype = "base64";
+    var quality = 80;
+    if (this.options.capturetype) {
+        capturetype = this.options.capturetype;
+    }
     if (options.quality) {
-        com.phonegap.CameraLauncher.takePicture(options.quality);
+        quality = this.options.quality;
     }
-    else {
-        com.phonegap.CameraLauncher.takePicture(80);
-    }
+    PhoneGap.execAsync(null, null, "Camera", "takePicture", [quality, capturetype]);
 };
 
 /**

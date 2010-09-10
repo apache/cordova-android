@@ -10,12 +10,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import com.phonegap.api.Plugin;
-import com.phonegap.api.PluginManager;
 import com.phonegap.api.PluginResult;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
@@ -75,11 +73,8 @@ public class CameraLauncher implements Plugin {
 		String result = "";		
 		
 		try {
-			if (action.equals("setBase64")) {
-				this.setBase64(args.getBoolean(0));
-			}
-			else if (action.equals("takePicture")) {
-				this.takePicture(args.getInt(0));
+			if (action.equals("takePicture")) {
+				this.takePicture(args.getInt(0), args.getString(1));
 			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
@@ -122,28 +117,25 @@ public class CameraLauncher implements Plugin {
     //--------------------------------------------------------------------------
     
 	/**
-	 * Set the type of data to return.  The data can either be returned
-	 * as a base64 string or a URI that points to the file.
+	 * Take a picture with the camera.
+	 * When an image is captured or the camera view is cancelled, the result is returned
+	 * in DroidGap.onActivityResult, which forwards the result to this.onActivityResult.
+	 * 
+	 * The image can either be returned as a base64 string or a URI that points to the file.
 	 * To display base64 string in an img tag, set the source to:
 	 * 		img.src="data:image/jpeg;base64,"+result;
 	 * or to display URI in an img tag
 	 * 		img.src=result;
 	 * 
-	 * @param b			T=return base64 string (default), F=return URI
-	 */
-	public void setBase64(boolean b) {
-		this.base64 = b;
-	}
-		
-	/**
-	 * Take a picture with the camera.
-	 * When an image is captured or the camera view is cancelled, the result is returned
-	 * in DroidGap.onActivityResult, which forwards the result to this.onActivityResult.
-	 * 
 	 * @param quality			Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
+	 * @param returnType		Set the type of image to return. 
 	 */
-	public void takePicture(int quality) {
+	public void takePicture(int quality, String returnType) {
 		this.mQuality = quality;
+		this.base64 = false;
+		if (returnType.equals("base64")) {
+			this.base64 = true;
+		}
 		
 		// Display camera
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
