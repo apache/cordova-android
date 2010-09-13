@@ -98,11 +98,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				emailAddress = "'" + emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)).replace('\'', '`') + "'"; 
 			} 
 			emails.close();
-			String contactAddJS = "javascript:navigator.contacts.droidFoundContact('" + contactName.replace('\'', '`') + "'," + phoneNumber + "," + emailAddress +")";
+			String contactAddJS = "javascript:navigator.service.contacts.droidFoundContact('" + contactName.replace('\'', '`') + "'," + phoneNumber + "," + emailAddress +")";
 			mView.loadUrl(contactAddJS);
 		} 
 		cursor.close();
-		mView.loadUrl("javascript:navigator.contacts.droidDone();");
+		mView.loadUrl("javascript:navigator.service.contacts.droidDone();");
 	}
 	
 }

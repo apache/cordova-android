@@ -159,22 +159,22 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	            
 	            // Code for backwards compatibility with the OLD Contacts API
 	            if (all)
-	            	mView.loadUrl("javascript:navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"')");	            	
+	            	mView.loadUrl("javascript:navigator.service.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"')");	            	
 	            else
-	            	mView.loadUrl("javascript:navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
+	            	mView.loadUrl("javascript:navigator.service.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"')");
 	            	            
 	        } while (cur.moveToNext());
 	        if (all)
-	        	mView.loadUrl("javascript:navigator.ContactManager.droidDone()");
+	        	mView.loadUrl("javascript:navigator.service.ContactManager.droidDone()");
 	        else
-	        	mView.loadUrl("javascript:navigator.contacts.droidDone();");
+	        	mView.loadUrl("javascript:navigator.service.contacts.droidDone();");
 	    }
 	    else
 	    {
 	    	if(all)
-	    		mView.loadUrl("javascript:navigator.ContactManager.fail()");
+	    		mView.loadUrl("javascript:navigator.service.ContactManager.fail()");
 	    	else
-	    		mView.loadUrl("javascript:navigator.contacts.fail('None found!')");
+	    		mView.loadUrl("javascript:navigator.service.contacts.fail('None found!')");
 	    }
 	}	
 	
@@ -197,10 +197,10 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	            if(data != null)
 	            {
 	            	data.email = email;	            
-	            	mView.loadUrl("javascript:navigator.Contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"')");
+	            	mView.loadUrl("javascript:navigator.service.Contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"')");
 	            }	           
 	        } while (cur.moveToNext());
-	        mView.loadUrl("javascript:navigator.contacts.droidDoneContacts();");	        
+	        mView.loadUrl("javascript:navigator.service.contacts.droidDoneContacts();");	        
 	    }	 
 	}		
 	

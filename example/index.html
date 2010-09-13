@@ -105,7 +105,7 @@
 		var name = new ContactName();
 		name.givenName = '';
 		obj.name = name;
-		navigator.contacts.find(obj, count_contacts, fail);
+		navigator.service.contacts.find(obj, count_contacts, fail);
 	}
 
 	function count_contacts(contacts)

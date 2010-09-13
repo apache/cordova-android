@@ -1081,7 +1081,8 @@ ContactError.TIMEOUT_ERROR = 6;
 ContactError.UNKNOWN_ERROR = 7;
 
 PhoneGap.addConstructor(function() {
-    if(typeof navigator.contacts == "undefined") navigator.contacts = new Contacts();
+	if(typeof navigator.service == "undefined") navigator.service = new Object();
+    if(typeof navigator.service.contacts == "undefined") navigator.service.contacts = new Contacts();
 });
 com.phonegap.CryptoHandlerProxy = function() {
     this.className = "com.phonegap.CryptoHandler";
