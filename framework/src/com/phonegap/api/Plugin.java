@@ -24,12 +24,12 @@ public interface Plugin {
 	PluginResult execute(String action, JSONArray args);
 
 	/**
-	 * Identifies if action to be executed returns a value.
+	 * Identifies if action to be executed returns a value and should be run synchronously.
 	 * 
 	 * @param action	The action to execute
 	 * @return			T=returns value
 	 */
-	public boolean hasReturnValue(String action);
+	public boolean isSynch(String action);
 
 	/**
 	 * Sets the context of the Plugin. This can then be used to do things like

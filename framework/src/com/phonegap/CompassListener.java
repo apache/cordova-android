@@ -124,12 +124,12 @@ public class CompassListener implements SensorEventListener, Plugin{
 	}
 
 	/**
-	 * Identifies if action to be executed returns a value.
+	 * Identifies if action to be executed returns a value and should be run synchronously.
 	 * 
 	 * @param action	The action to execute
 	 * @return			T=returns value
 	 */
-	public boolean hasReturnValue(String action) {
+	public boolean isSynch(String action) {
 		if (action.equals("getStatus")) {
 			return true;
 		}

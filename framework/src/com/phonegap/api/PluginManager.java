@@ -60,7 +60,7 @@ public final class PluginManager {
 	public String exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
 		System.out.println("PluginManager.exec("+service+", "+action+", "+callbackId+", "+jsonArgs+", "+async+")");
 		PluginResult cr = null;
-		boolean noReturnValue = async;
+		boolean runAsync = async;
 		try {
 			final JSONArray args = new JSONArray(jsonArgs);
 			String clazz = this.services.get(service);
@@ -71,8 +71,8 @@ public final class PluginManager {
 			if ((c == null) || isPhoneGapPlugin(c)) {
 				final Plugin plugin = this.addPlugin(clazz); 
 				final DroidGap ctx = this.ctx;
-				noReturnValue = async && !plugin.hasReturnValue(action);
-				if (async && !plugin.hasReturnValue(action)) {
+				runAsync = async && !plugin.isSynch(action);
+				if (async && !plugin.isSynch(action)) {
 					// Run this on a different thread so that this one can return back to JS
 					Thread thread = new Thread(new Runnable() {
 						public void run() {
@@ -100,7 +100,7 @@ public final class PluginManager {
 			cr = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 		// if async we have already returned at this point unless there was an error...
-		if (noReturnValue) {
+		if (runAsync) {
 			ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 		}
 		if (cr != null) {
