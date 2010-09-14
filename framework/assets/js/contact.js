@@ -62,9 +62,9 @@ var ContactOrganization = function(name, dept, title, startDate, endDate, locati
 };
 
 var ContactAccount = function(domain, username, userid) {
-	this.domain = domain || '';
-	this.username = username || '';
-	this.userid = userid || '';
+    this.domain = domain || '';
+    this.username = username || '';
+    this.userid = userid || '';
 }
 
 var Contacts = function() {
@@ -92,18 +92,18 @@ Contacts.prototype.find = function(obj, win, fail) {
 };
 
 Contacts.prototype.droidFoundContact = function(name, npa, email) {
-	this.records = new Array();
+    this.records = new Array();
     var contact = new Contact();
     contact.name = new ContactName();
     contact.name.formatted = name;
     contact.name.givenName = name;
-	contact.emails = new Array();
+    contact.emails = new Array();
     var mail = new ContactField();
     mail.type = "home";
     mail.value = email;
-	mail.primary = true;
+    mail.primary = true;
     contact.emails.push(mail);
-	contact.phones = new Array();
+    contact.phones = new Array();
     phone = new ContactField();
     phone.type = "home";
     phone.value = npa;
@@ -152,6 +152,6 @@ ContactError.TIMEOUT_ERROR = 6;
 ContactError.UNKNOWN_ERROR = 7;
 
 PhoneGap.addConstructor(function() {
-	if(typeof navigator.service == "undefined") navigator.service = new Object();
+    if(typeof navigator.service == "undefined") navigator.service = new Object();
     if(typeof navigator.service.contacts == "undefined") navigator.service.contacts = new Contacts();
 });
