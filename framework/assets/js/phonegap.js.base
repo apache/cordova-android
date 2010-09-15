@@ -219,6 +219,36 @@ document.addEventListener = function(evt, handler, capture) {
     }
 };
 
+/**
+ * If JSON not included, use our own stringify. (Android 1.6)
+ * The restriction on ours is that it must be an array of simple types.
+ *
+ * @param args
+ * @return
+ */
+PhoneGap.stringify = function(args) {
+    if (typeof JSON == "undefined") {
+        var s = "[";
+        for (var i=0; i<args.length; i++) {
+            if (i > 0) {
+                s = s + ",";
+            }
+            var type = typeof args[i];
+            if ((type == "number") || (type == "boolean")) {
+                s = s + args[i];
+            }
+            else {
+                s = s + '"' + args[i] + '"';
+            }
+        }
+        s = s + "]";
+        return s;
+    }
+    else {
+        return JSON.stringify(args);
+    }
+};
+
 PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
 
@@ -232,7 +262,7 @@ PhoneGap.callbacks = {};
 PhoneGap.exec = function(clazz, action, args) {
     try {
         var callbackId = 0;
-        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
+        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), false);
         eval("var v="+r+";");
         
         // If status is OK, then return value back to caller
@@ -256,10 +286,10 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
         if (success || fail) {
             PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
         }
-        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
+        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), true);
         
         // If a result was returned
-        if (r) {
+        if (typeof r == "string") {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
