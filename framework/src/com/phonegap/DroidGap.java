@@ -83,7 +83,6 @@ public class DroidGap extends Activity {
 	protected Boolean loadInWebView = false;
     private LinearLayout root;
 
-    private Device gap;
     private FileUtils fs;
     private BrowserKey mKey;
     public CallbackServer callbackServer;
@@ -270,13 +269,11 @@ public class DroidGap extends Activity {
     private void bindBrowser(WebView appView) {
         this.callbackServer = new CallbackServer();
     	this.pluginManager = new PluginManager(appView, this);
-        this.gap = new Device(appView, this);
         this.fs = new FileUtils(appView, this);
         this.mKey = new BrowserKey(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(this.pluginManager, "PluginManager");
-        appView.addJavascriptInterface(this.gap, "DroidGap");
         
         appView.addJavascriptInterface(this.fs, "FileUtil");
         appView.addJavascriptInterface(this.mKey, "BackButton");
@@ -295,6 +292,7 @@ public class DroidGap extends Activity {
 
         }
         
+        this.addService("Device", "com.phonegap.Device");
         this.addService("Accelerometer", "com.phonegap.AccelListener");
         this.addService("Compass", "com.phonegap.CompassListener");
         this.addService("Media", "com.phonegap.AudioHandler");
