@@ -25,7 +25,6 @@ package com.phonegap;
 
 
 import com.phonegap.api.Plugin;
-import java.util.HashMap;
 import com.phonegap.api.PluginManager;
 
 import android.app.Activity;
@@ -91,10 +90,8 @@ public class DroidGap extends Activity {
     private String url;							// The initial URL for our app
     private String baseUrl;						// The base of the initial URL for our app
 
-    // Variables to manage ActivityResultCallbacks
-    private int activityResultCallbackCounter = 1000;
-    private HashMap<Integer,Plugin> activityResultCallbacks = new HashMap<Integer,Plugin>();
-     
+    private Plugin activityResultCallback = null;	// Plugin to call when activity result is received
+         
     /** 
      * Called when the activity is first created. 
      * 
@@ -677,13 +674,11 @@ public class DroidGap extends Activity {
      *  
      * @param command			The command object
      * @param intent			The intent to start
-     * @return					The request code to use for the callback
+     * @param requestCode		The request code that is passed to callback to identify the activity
      */
-    public int startActivityForResult(Plugin command, Intent intent) {
-    	int requestCode = this.activityResultCallbackCounter++;
-    	this.activityResultCallbacks.put(requestCode, command);
+    public void startActivityForResult(Plugin command, Intent intent, int requestCode) {
+    	this.activityResultCallback = command;
     	super.startActivityForResult(intent, requestCode);
-    	return requestCode;
     }
 
      @Override
@@ -698,8 +693,7 @@ public class DroidGap extends Activity {
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        
-        Plugin callback = this.activityResultCallbacks.remove(requestCode);
+        Plugin callback = this.activityResultCallback;
         if (callback != null) {
         	callback.onActivityResult(requestCode, resultCode, intent); 
         }        
