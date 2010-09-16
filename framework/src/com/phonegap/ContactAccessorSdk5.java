@@ -17,6 +17,10 @@
 
 package com.phonegap;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -57,8 +61,15 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 	
 	@Override
-	public void search(String name, String npa, String email) {
-		if (name.length()==0) name = "%";
+	public void search(JSONArray filter, JSONObject options) {
+		String searchTerm = "";
+		try {
+			searchTerm = options.getString("filter");
+			if (searchTerm.length()==0) searchTerm = "%";
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// Get a cursor by creating the query.
 		// TODO: parse name/number/email and dispatch to different query types.
 		// Right now assumption is only name search. Lame but I'm on time constraints.
@@ -67,7 +78,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				ContactsContract.Contacts.CONTENT_URI, 
 				new String[] {ContactsContract.Contacts._ID, ContactsContract.Contacts.HAS_PHONE_NUMBER, ContactsContract.Contacts.DISPLAY_NAME},
 				ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?",
-				new String[] {name},
+				new String[] {searchTerm},
 				ContactsContract.Contacts.DISPLAY_NAME + " ASC");		
 		while (cursor.moveToNext()) {
 			String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));

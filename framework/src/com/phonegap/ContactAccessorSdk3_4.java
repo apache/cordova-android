@@ -17,6 +17,9 @@
 
 package com.phonegap;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.AsyncQueryHandler;
 import android.database.Cursor;
@@ -54,11 +57,12 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	}
 	
 	@Override
-	public void search(String name, String npa, String email) {
-		if (email.length() > 0)
-			searchByEmail(email);		
-		else
-			searchPeople(name, npa);
+	public void search(JSONArray filter, JSONObject options) {
+		//if (email.length() > 0)
+		//	searchByEmail(email);		
+		//else
+		//	searchPeople(name, npa);
+		searchPeople("", "");
 	}
 	
 	private void searchByEmail(String email)

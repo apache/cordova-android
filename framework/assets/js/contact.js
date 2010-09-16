@@ -72,23 +72,12 @@ var Contacts = function() {
     this.records = [];
 }
 
-Contacts.prototype.find = function(obj, win, fail) {
+// Contacts.prototype.find = function(obj, win, fail) {
+Contacts.prototype.find = function(fields, win, fail, options) {
     this.win = win;
     this.fail = fail;
-    if(obj.name != null) {
-        // Build up the search term that we'll use in SQL, based on the structure/contents of the contact object passed into find.
-        var searchTerm = '';
-        if (obj.name.givenName && obj.name.givenName.length > 0) {
-            searchTerm = obj.name.givenName.split(' ').join('%');
-        }
-        if (obj.name.familyName && obj.name.familyName.length > 0) {
-            searchTerm += obj.name.familyName.split(' ').join('%');
-        }
-        if (!obj.name.familyName && !obj.name.givenName && obj.name.formatted) {
-            searchTerm = obj.name.formatted;
-        }
-        PhoneGap.execAsync(null, null, "Contacts", "search", [searchTerm, "", ""]);
-    }
+    
+    PhoneGap.execAsync(null, null, "Contacts", "search", [fields, options]);
 };
 
 Contacts.prototype.droidFoundContact = function(name, npa, email) {
