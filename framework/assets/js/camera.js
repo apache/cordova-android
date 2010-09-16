@@ -16,12 +16,13 @@ Camera = function() {
  * Example: navigator.camera.getPicture(success, fail,
  *              { quality: 80,
  *                destinationType: Camera.DestinationType.DATA_URL,
- *                pictureSourceType: Camera.PictureSourceType.PHOTOLIBRARY})
+ *                sourceType: Camera.PictureSourceType.PHOTOLIBRARY})
  */
 Camera.DestinationType = {
     DATA_URL: 0,                // Return base64 encoded string
     FILE_URI: 1                 // Return file uri (content://media/external/images/media/2 for Android)
 };
+Camera.prototype.DestinationType = Camera.DestinationType;
 
 /**
  * Source to getPicture from.
@@ -29,19 +30,20 @@ Camera.DestinationType = {
  * Example: navigator.camera.getPicture(success, fail,
  *              { quality: 80,
  *                destinationType: Camera.DestinationType.DATA_URL,
- *                pictureSourceType: Camera.PictureSourceType.PHOTOLIBRARY})
+ *                sourceType: Camera.PictureSourceType.PHOTOLIBRARY})
  */
 Camera.PictureSourceType = {
     PHOTOLIBRARY : 0,           // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
     CAMERA : 1,                 // Take picture from camera
     SAVEDPHOTOALBUM : 2         // Choose image from picture library (same as PHOTOLIBRARY for Android)
 };
+Camera.prototype.PictureSourceType = Camera.PictureSourceType;
 
 /**
- * Gets a picture from source defined by "options.pictureSourceType", and returns the
+ * Gets a picture from source defined by "options.sourceType", and returns the
  * image as defined by the "options.destinationType" option.
 
- * The defaults are pictureSourceType=CAMERA and destinationType=DATA_URL.
+ * The defaults are sourceType=CAMERA and destinationType=DATA_URL.
  *
  * @param {Function} successCallback
  * @param {Function} errorCallback
@@ -72,11 +74,11 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     if (this.options.destinationType) {
         destinationType = this.options.destinationType;
     }
-    var pictureSourceType = Camera.PictureSourceType.CAMERA;
-    if (typeof this.options.pictureSourceType == "number") {
-        pictureSourceType = this.options.pictureSourceType;
+    var sourceType = Camera.PictureSourceType.CAMERA;
+    if (typeof this.options.sourceType == "number") {
+        sourceType = this.options.sourceType;
     }
-    PhoneGap.execAsync(null, null, "Camera", "takePicture", [quality, destinationType, pictureSourceType]);
+    PhoneGap.execAsync(null, null, "Camera", "takePicture", [quality, destinationType, sourceType]);
 };
 
 /**
