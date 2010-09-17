@@ -286,10 +286,12 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
         if (success || fail) {
             PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
         }
-        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), true);
+        
+        // Note: Device returns string, but for some reason emulator returs object - so convert to string.
+        var r = ""+PluginManager.exec(clazz, action, callbackId, this.stringify(args), true);
         
         // If a result was returned
-        if ((typeof r == "string") && (r.length > 0)) {
+        if (r.length > 0) {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
