@@ -349,6 +349,11 @@ function FileWriter() {
     this.oncomplete = null;
 };
 
+// States
+FileWriter.EMPTY = 0;
+FileWriter.LOADING = 1;
+FileWriter.DONE = 2;
+
 FileWriter.prototype.writeAsText = function(file, text, bAppend) {
     if (bAppend != true) {
         bAppend = false; // for null values
@@ -357,7 +362,7 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
     this.fileName = file;
 
     // LOADING state
-    this.readyState = FileReader.LOADING;
+    this.readyState = FileWriter.LOADING;
 
     var me = this;
 
@@ -368,7 +373,7 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
         function(r) {
 
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileReader.DONE) {
+            if (me.readyState == FileWriter.DONE) {
                 return;
             }
 
@@ -376,7 +381,7 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             me.result = r;
 
             // DONE state
-            me.readyState = FileReader.DONE;
+            me.readyState = FileWriter.DONE;
 
             // If oncomplete callback
             if (typeof me.oncomplete == "function") {
@@ -389,7 +394,7 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
         function(e) {
 
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileReader.DONE) {
+            if (me.readyState == FileWriter.DONE) {
                 return;
             }
 
@@ -397,7 +402,7 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             me.error = e;
 
             // DONE state
-            me.readyState = FileReader.DONE;
+            me.readyState = FileWriter.DONE;
 
             // If onerror callback
             if (typeof me.onerror == "function") {
