@@ -69,7 +69,7 @@ var ContactAccount = function(domain, username, userid) {
 
 var Contacts = function() {
     this.inProgress = false;
-    this.records = [];
+    this.records = new Array();
 }
 
 // Contacts.prototype.find = function(obj, win, fail) {
@@ -80,28 +80,8 @@ Contacts.prototype.find = function(fields, win, fail, options) {
     PhoneGap.execAsync(null, null, "Contacts", "search", [fields, options]);
 };
 
-Contacts.prototype.droidFoundContact = function(name, npa, email) {
-    this.records = new Array();
-    var contact = new Contact();
-    contact.name = new ContactName();
-    contact.name.formatted = name;
-    contact.name.givenName = name;
-    contact.emails = new Array();
-    var mail = new ContactField();
-    mail.type = "home";
-    mail.value = email;
-    mail.primary = true;
-    contact.emails.push(mail);
-    contact.phones = new Array();
-    phone = new ContactField();
-    phone.type = "home";
-    phone.value = npa;
-    contact.phones.push(phone);
-    this.records.push(contact);
-};
-
-Contacts.prototype.droidDone = function() {
-    this.win(this.records);
+Contacts.prototype.droidDone = function(contacts) {
+    this.win(eval('(' + contacts + ')'));
 };
 
 Contacts.prototype.remove = function(contact) {

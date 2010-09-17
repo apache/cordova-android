@@ -219,6 +219,36 @@ document.addEventListener = function(evt, handler, capture) {
     }
 };
 
+/**
+ * If JSON not included, use our own stringify. (Android 1.6)
+ * The restriction on ours is that it must be an array of simple types.
+ *
+ * @param args
+ * @return
+ */
+PhoneGap.stringify = function(args) {
+    if (typeof JSON == "undefined") {
+        var s = "[";
+        for (var i=0; i<args.length; i++) {
+            if (i > 0) {
+                s = s + ",";
+            }
+            var type = typeof args[i];
+            if ((type == "number") || (type == "boolean")) {
+                s = s + args[i];
+            }
+            else {
+                s = s + '"' + args[i] + '"';
+            }
+        }
+        s = s + "]";
+        return s;
+    }
+    else {
+        return JSON.stringify(args);
+    }
+};
+
 PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
 
@@ -232,7 +262,7 @@ PhoneGap.callbacks = {};
 PhoneGap.exec = function(clazz, action, args) {
     try {
         var callbackId = 0;
-        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
+        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), false);
         eval("var v="+r+";");
         
         // If status is OK, then return value back to caller
@@ -256,10 +286,10 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
         if (success || fail) {
             PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
         }
-        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
+        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), true);
         
         // If a result was returned
-        if (r) {
+        if ((typeof r == "string") && (r.length > 0)) {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
@@ -809,7 +839,7 @@ var ContactAccount = function(domain, username, userid) {
 
 var Contacts = function() {
     this.inProgress = false;
-    this.records = [];
+    this.records = new Array();
 }
 
 // Contacts.prototype.find = function(obj, win, fail) {
@@ -820,28 +850,16 @@ Contacts.prototype.find = function(fields, win, fail, options) {
     PhoneGap.execAsync(null, null, "Contacts", "search", [fields, options]);
 };
 
-Contacts.prototype.droidFoundContact = function(name, npa, email) {
-    this.records = new Array();
-    var contact = new Contact();
-    contact.name = new ContactName();
-    contact.name.formatted = name;
-    contact.name.givenName = name;
-    contact.emails = new Array();
-    var mail = new ContactField();
-    mail.type = "home";
-    mail.value = email;
-    mail.primary = true;
-    contact.emails.push(mail);
-    contact.phones = new Array();
-    phone = new ContactField();
-    phone.type = "home";
-    phone.value = npa;
-    contact.phones.push(phone);
-    this.records.push(contact);
+Contacts.prototype.droidFoundContact = function(contact) {
+    //console.log("this is what a contact looks like");
+	//console.log(contact);
+	
+    //this.records.push(eval('(' + contact + ')'));
+	console.log("we should be called anymore.");
 };
 
-Contacts.prototype.droidDone = function() {
-    this.win(this.records);
+Contacts.prototype.droidDone = function(contacts) {
+    this.win(eval('(' + contacts + ')'));
 };
 
 Contacts.prototype.remove = function(contact) {
@@ -911,64 +929,66 @@ PhoneGap.addConstructor(function() {
 });
 
 /**
- * this represents the mobile device, and provides properties for inspecting the model, version, UUID of the
+ * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
  * phone, etc.
  * @constructor
  */
 function Device() {
     this.available = PhoneGap.available;
     this.platform = null;
-    this.version  = null;
-    this.name     = null;
-    this.gap      = null;
-    this.uuid     = null;
-    try {
-        if (window.DroidGap) {
-            this.available = true;
-            this.uuid = window.DroidGap.getUuid();
-            this.version = window.DroidGap.getOSVersion();
-            this.gapVersion = window.DroidGap.getVersion();
-            this.platform = window.DroidGap.getPlatform();
-            this.name = window.DroidGap.getProductName();
-            this.line1Number = window.DroidGap.getLine1Number();
-            this.deviceId = window.DroidGap.getDeviceId();
-            this.simSerialNumber = window.DroidGap.getSimSerialNumber();
-            this.subscriberId = window.DroidGap.getSubscriberId();
-        } 
-    } catch(e) {
-        this.available = false;
-    }
+    this.version = null;
+    this.name = null;
+    this.uuid = null;
+    this.phonegap = null;
+
+    var me = this;
+    PhoneGap.execAsync(
+        function(info) {
+            me.available = true;
+            me.platform = info.platform;
+            me.version = info.version;
+            me.uuid = info.uuid;
+            me.phonegap = info.phonegap;
+        },
+        function(e) {
+            me.available = false;
+            console.log("Error initializing PhoneGap: " + e);
+            alert("Error initializing PhoneGap: "+e);
+        },
+        "Device", "getDeviceInfo", []);
 }
 
 /*
- * You must explicitly override the back button. 
+ * This is only for Android.
+ *
+ * You must explicitly override the back button.
  */
-
-Device.prototype.overrideBackButton = function()
-{
-  BackButton.override();
+Device.prototype.overrideBackButton = function() {
+    BackButton.override();
 }
 
 /*
+ * This is only for Android.
+ *
  * This resets the back button to the default behaviour
  */
-
-Device.prototype.resetBackButton = function()
-{
-  BackButton.reset();
+Device.prototype.resetBackButton = function() {
+    BackButton.reset();
 }
 
 /*
+ * This is only for Android.
+ *
  * This terminates the activity!
  */
-Device.prototype.exitApp = function()
-{
-  BackButton.exitApp();
+Device.prototype.exitApp = function() {
+    BackButton.exitApp();
 }
 
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
 });
+
 
 
 PhoneGap.addConstructor(function() { if (typeof navigator.fileMgr == "undefined") navigator.fileMgr = new FileMgr();});
@@ -1569,7 +1589,6 @@ PhoneGap.addConstructor(function() {
  * This class provides access to notifications on the device.
  */
 function Notification() {
-	
 }
 
 /**
@@ -1601,7 +1620,7 @@ Notification.prototype.activityStop = function() {
  * @param {String} colour The colour of the light.
  */
 Notification.prototype.blink = function(count, colour) {
-	
+
 };
 
 /**
@@ -1609,16 +1628,17 @@ Notification.prototype.blink = function(count, colour) {
  * @param {Integer} mills The number of milliseconds to vibrate for.
  */
 Notification.prototype.vibrate = function(mills) {
-	
+    PhoneGap.execAsync(null, null, "Device", "vibrate", [mills]);
 };
 
 /**
  * Causes the device to beep.
+ * On Android, the default notification ringtone is played.
+ *
  * @param {Integer} count The number of beeps.
- * @param {Integer} volume The volume of the beep.
  */
-Notification.prototype.beep = function(count, volume) {
-	
+Notification.prototype.beep = function(count) {
+    PhoneGap.execAsync(null, null, "Device", "beep", [count]);
 };
 
 // TODO: of course on Blackberry and Android there notifications in the UI as well
@@ -1627,21 +1647,6 @@ PhoneGap.addConstructor(function() {
     if (typeof navigator.notification == "undefined") navigator.notification = new Notification();
 });
 
-Notification.prototype.vibrate = function(mills)
-{
-  DroidGap.vibrate(mills);
-}
-
-/*
- * On the Android, we don't beep, we notify you with your 
- * notification!  We shouldn't keep hammering on this, and should
- * review what we want beep to do.
- */
-
-Notification.prototype.beep = function(count, volume)
-{
-  DroidGap.beep(count);
-}
 /**
  * This class contains position information.
  * @param {Object} lat

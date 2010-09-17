@@ -79,41 +79,69 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				new String[] {ContactsContract.Contacts._ID, ContactsContract.Contacts.HAS_PHONE_NUMBER, ContactsContract.Contacts.DISPLAY_NAME},
 				ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?",
 				new String[] {searchTerm},
-				ContactsContract.Contacts.DISPLAY_NAME + " ASC");		
+				ContactsContract.Contacts.DISPLAY_NAME + " ASC");
+		JSONArray contacts = new JSONArray();
 		while (cursor.moveToNext()) {
+			JSONObject contact = new JSONObject();
+			
 			String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 			if (contactName.trim().length() == 0) continue;
-			String phoneNumber = "null";
-			String emailAddress = "null";
 			
+			try {
+				contact.put("displayName", contactName);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+						
 			String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID)); 
-			String hasPhone = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)); 
-			if (Boolean.parseBoolean(hasPhone)) { 
+			//String hasPhone = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)); 
+			//if (Boolean.parseBoolean(hasPhone)) { 
 				Cursor phones = cr.query( 
 					ContactsContract.CommonDataKinds.Phone.CONTENT_URI, 
 					null, 
 					ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId, 
 					null, null); 
-				if (phones.moveToFirst()) { 
-					phoneNumber = "'" + phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace('\'', '`') + "'";                 
+				if (phones.moveToFirst()) {
+					Log.d(LOG_TAG, "We found a phone!");
+					JSONArray phoneNumbers = new JSONArray();
+					JSONObject phoneNumber = new JSONObject();
+					try {
+						phoneNumber.put("primary", true);
+						phoneNumber.put("value", phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace('\'', '`'));
+						phoneNumbers.put(phoneNumber);
+						contact.put("phoneNumbers", phoneNumbers);
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				} 
 				phones.close(); 
-			}
+			//}
 			Cursor emails = cr.query( 
 				ContactsContract.CommonDataKinds.Email.CONTENT_URI, 
 				null, 
 				ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = " + contactId, 
 				null, null); 
 			if (emails.moveToFirst()) { 
-				// This would allow you get several email addresses 
-				emailAddress = "'" + emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)).replace('\'', '`') + "'"; 
+				Log.d(LOG_TAG, "We found an email!");
+				JSONArray emailAddresses = new JSONArray();
+				JSONObject email = new JSONObject();
+				try {
+					email.put("primary", true);
+					email.put("value", emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)).replace('\'', '`'));
+					emailAddresses.put(email);
+					contact.put("emails", emailAddresses);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			} 
 			emails.close();
-			String contactAddJS = "javascript:navigator.service.contacts.droidFoundContact('" + contactName.replace('\'', '`') + "'," + phoneNumber + "," + emailAddress +")";
-			mView.loadUrl(contactAddJS);
+			contacts.put(contact);
 		} 
 		cursor.close();
-		mView.loadUrl("javascript:navigator.service.contacts.droidDone();");
+		mView.loadUrl("javascript:navigator.service.contacts.droidDone('" + contacts.toString() + "');");
 	}
 	
 }

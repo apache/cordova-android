@@ -70,13 +70,7 @@ public class ContactManager implements Plugin {
 			//}
 			//else if (action.equals("search")) {
 			if (action.equals("search")) {
-				Log.d(LOG_TAG, "Executing search using accessor");
-				JSONArray fields = args.getJSONArray(0);
-				for (int i=0; i<fields.length(); i++) {
-					Log.d(LOG_TAG, "Field = " + fields.getString(i));
-				}
-				JSONObject options = args.getJSONObject(1);
-				contactAccessor.search(fields, options);
+				contactAccessor.search(args.getJSONArray(0), args.getJSONObject(1));
 			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
