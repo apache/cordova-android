@@ -149,10 +149,13 @@ public class FileUtils implements Plugin {
 	 * @return			T=returns value
 	 */
 	public boolean isSynch(String action) {
-		if (action.equals("read")) {
+		if (action.equals("readAsText")) {
 			return false;
 		}
-		else if (action.equals("write")) {
+		else if (action.equals("readAsDataURL")) {
+			return false;
+		}
+		else if (action.equals("writeAsText")) {
 			return false;
 		}
 		return true;
