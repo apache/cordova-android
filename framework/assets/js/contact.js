@@ -104,11 +104,12 @@ Contacts.prototype.m_foundContacts = function(win, contacts) {
 var ContactFindOptions = function(filter, multiple, limit, updatedSince) {
     this.filter = filter || '';
     this.multiple = multiple || true;
-    this.limit = limit || 0;
+    this.limit = limit || Number.MAX_VALUE;
     this.updatedSince = updatedSince || '';
 };
 
 var ContactError = function() {
+    this.code=null;
 };
 
 ContactError.INVALID_ARGUMENT_ERROR = 0;
