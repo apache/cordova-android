@@ -223,17 +223,14 @@ if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
  */
 PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
-/**
- * Start listening for XHR callbacks onDeviceReady
- */
-PhoneGap.onDeviceReady.subscribeOnce(function() {
-    PhoneGap.JSCallback();
-});
 
 /**
  * Create all PhoneGap objects once page has fully loaded and native side is ready.
  */
 PhoneGap.Channel.join(function() {
+
+    // Start listening for XHR callbacks
+    PhoneGap.JSCallback();
 
     // Run PhoneGap constructors
     PhoneGap.onPhoneGapInit.fire();
