@@ -70,8 +70,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			System.out.println("Limit = " + limit);
 			System.out.println("Multiple = " + multiple);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e(LOG_TAG, e.getMessage(), e);
 		}
 		// Get a cursor by creating the query.
 		ContentResolver cr = mApp.getContentResolver();
@@ -82,25 +81,20 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				new String[] {searchTerm},
 				ContactsContract.Contacts.DISPLAY_NAME + " ASC");
 		JSONArray contacts = new JSONArray();
+		JSONObject contact;
 		int pos = 0;
 		while (cursor.moveToNext() && (pos < limit)) {
-			JSONObject contact = new JSONObject();
+			contact = new JSONObject();
 			
 			String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 			if (contactName.trim().length() == 0) continue;
-			
-			try {
-				contact.put("displayName", contactName);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 						
 			String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID)); 
 			//String hasPhone = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)); 
 			//if (Boolean.parseBoolean(hasPhone)) { 
 			//}
 			try {
+				contact.put("displayName", contactName);
 				contact.put("name", nameQuery(cr, contactId));
 				contact.put("phoneNumbers", phoneQuery(cr, contactId));
 				contact.put("emails", emailQuery(cr, contactId));
@@ -114,8 +108,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				contact.put("birthday",birthdayQuery(cr, contactId));
 				contact.put("anniversary",anniversaryQuery(cr, contactId));
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 
 			contacts.put(contact);
@@ -147,8 +140,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				organization.put("title", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE)));
 				organizations.put(organization);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 		} 
 		cursor.close();
@@ -174,8 +166,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				address.put("country", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY)));
 				addresses.put(address);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 		} 
 		cursor.close();
@@ -213,8 +204,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				contactName.put("honorificSuffix", honorificSuffix);
 				contactName.put("formatted", formatted);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 		} 
 		name.close();
@@ -237,8 +227,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				phoneNumber.put("type", phones.getInt(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
 				phoneNumbers.put(phoneNumber);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 		} 
 		phones.close();
@@ -261,8 +250,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				email.put("type", emails.getInt(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE)));
 				emailAddresses.put(email);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 		} 
 		emails.close();
@@ -285,8 +273,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				im.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.TYPE)));
 				ims.put(im);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 		} 
 		cursor.close();
@@ -339,8 +326,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				website.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.TYPE)));
 				websites.put(website);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 		} 
 		cursor.close();
@@ -363,8 +349,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				relationship.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Relation.TYPE)));
 				relationships.put(relationship);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(LOG_TAG, e.getMessage(), e);
 			}
 		} 
 		cursor.close();
@@ -372,38 +357,34 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}	
 
 	private String birthdayQuery(ContentResolver cr, String contactId) {
-		String birthdayWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
-		String[] birthdayWhereParams = new String[]{contactId, 
-			ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE}; 
-		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, birthdayWhere, birthdayWhereParams, null); 
-		String birthday = new String("");
-		while (cursor.moveToNext()) { 
-			Log.d(LOG_TAG, "We found a birthday!");
-			if (ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY == 
-					cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE))) {
-				birthday = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE));
-			}
-		} 
-		cursor.close();
+		String birthday = conditionalStringQuery(cr, contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, 
+				ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY, ContactsContract.CommonDataKinds.Event.TYPE, 
+				ContactsContract.CommonDataKinds.Event.START_DATE);
+		Log.d(LOG_TAG, birthday);
 		return birthday;
 	}	
 
 	private String anniversaryQuery(ContentResolver cr, String contactId) {
-		String anniversaryWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
-		String[] anniversaryWhereParams = new String[]{contactId, 
-			ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE}; 
+		String anniversary = conditionalStringQuery(cr, contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, 
+				ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY, ContactsContract.CommonDataKinds.Event.TYPE, 
+				ContactsContract.CommonDataKinds.Event.START_DATE);
+		Log.d(LOG_TAG, anniversary);
+		return anniversary;
+	}	
+
+	private String conditionalStringQuery(ContentResolver cr, String contactId, String dataType, int type, String label, String data) {
+		String where = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] whereParams = new String[]{contactId, dataType}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, anniversaryWhere, anniversaryWhereParams, null); 
-		String anniversary = new String("");
+	                null, where, whereParams, null); 
+		String retVal = new String("");
 		while (cursor.moveToNext()) { 
-			Log.d(LOG_TAG, "We found a anniversary!");
-			if (ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY == 
-					cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE))) {
-				anniversary = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE));
+			Log.d(LOG_TAG, "We found an event!");
+			if (type == cursor.getInt(cursor.getColumnIndex(label))) {
+				retVal = cursor.getString(cursor.getColumnIndex(data));
 			}
 		} 
 		cursor.close();
-		return anniversary;
+		return retVal;
 	}	
 }
