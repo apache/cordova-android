@@ -23,14 +23,8 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
-import android.net.Uri;
 import android.provider.ContactsContract;
-import android.provider.Contacts.People;
-import android.provider.ContactsContract.Contacts;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 import android.webkit.WebView;
 
@@ -80,8 +74,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			e.printStackTrace();
 		}
 		// Get a cursor by creating the query.
-		// TODO: parse name/number/email and dispatch to different query types.
-		// Right now assumption is only name search. Lame but I'm on time constraints.
 		ContentResolver cr = mApp.getContentResolver();
 		Cursor cursor = cr.query(
 				ContactsContract.Contacts.CONTENT_URI, 
@@ -114,6 +106,13 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				contact.put("emails", emailQuery(cr, contactId));
 				contact.put("addresses", addressQuery(cr, contactId));
 				contact.put("organizations", organizationQuery(cr, contactId));
+				contact.put("ims",imQuery(cr, contactId));
+				contact.put("note",noteQuery(cr, contactId));
+				contact.put("nickname",nicknameQuery(cr, contactId));
+				contact.put("urls",websiteQuery(cr, contactId));
+				contact.put("relationships",relationshipQuery(cr, contactId));
+				contact.put("birthday",birthdayQuery(cr, contactId));
+				contact.put("anniversary",anniversaryQuery(cr, contactId));
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -127,16 +126,15 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	private JSONArray organizationQuery(ContentResolver cr, String contactId) {
-		// TODO Fix the query URI
-		Cursor cursor = cr.query( 
-				ContactsContract.CommonDataKinds.Phone.CONTENT_URI, 
-				null, 
-				ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId, 
-				null, null); 
+	 	String orgWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+	 	String[] orgWhereParams = new String[]{contactId, 
+	 		ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE}; 
+	 	Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, orgWhere, orgWhereParams, null);
 		JSONArray organizations = new JSONArray();
 		JSONObject organization = new JSONObject();
 		while (cursor.moveToNext()) {
-			Log.d(LOG_TAG, "We found a phone!");
+			Log.d(LOG_TAG, "We found a organization!");
 			try {
 				organization.put("department", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.DEPARTMENT)));
 				organization.put("description", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.JOB_DESCRIPTION)));
@@ -158,16 +156,15 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	private JSONArray addressQuery(ContentResolver cr, String contactId) {
-		// TODO Fix the query URI
-		Cursor cursor = cr.query( 
-				ContactsContract.CommonDataKinds.Phone.CONTENT_URI, 
-				null, 
-				ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId, 
-				null, null); 
+		String addrWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] addrWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE}; 
+		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, addrWhere, addrWhereParams, null); 
 		JSONArray addresses = new JSONArray();
 		JSONObject address = new JSONObject();
 		while (cursor.moveToNext()) {
-			Log.d(LOG_TAG, "We found a phone!");
+			Log.d(LOG_TAG, "We found a address!");
 			try {
 				address.put("formatted", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS)));
 				address.put("streetAddress", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET)));
@@ -186,26 +183,35 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	private JSONObject nameQuery(ContentResolver cr, String contactId) {
-		// TODO Fix the query URI
-		Cursor name = cr.query( 
-			ContactsContract.CommonDataKinds.Phone.CONTENT_URI, 
-			null, 
-			ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId, 
-			null, null); 
+		String addrWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] addrWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE}; 
+		Cursor name = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, addrWhere, addrWhereParams, null); 
 		JSONObject contactName = new JSONObject();
 		if (name.moveToFirst()) {
 			Log.d(LOG_TAG, "We found a name!");
 			try {
-				contactName.put("familyName", name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)));
-				contactName.put("givenName", name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)));
-				contactName.put("middleName", name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME)));
-				contactName.put("honorificPrefix", name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.PREFIX)));
-				contactName.put("honorificSuffix", name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.SUFFIX)));
-				contactName.put("formatted", name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.PREFIX))
-						+ " " + name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME))
-						+ " " + name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME))
-						+ " " + name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME))
-						+ " " + name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.SUFFIX)));
+				String familyName = name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME));
+				String givenName = name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME));
+				String middleName = name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME));
+				String honorificPrefix = name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.PREFIX));
+				String honorificSuffix = name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.SUFFIX));
+
+				// Create the formatted name
+				StringBuffer formatted = new StringBuffer("");
+				if (honorificPrefix != null) { formatted.append(honorificPrefix + " "); }
+				if (givenName != null) { formatted.append(givenName + " "); }
+				if (middleName != null) { formatted.append(middleName + " "); }
+				if (familyName != null) { formatted.append(familyName + " "); }
+				if (honorificSuffix != null) { formatted.append(honorificSuffix + " "); }
+				
+				contactName.put("familyName", familyName);
+				contactName.put("givenName", givenName);
+				contactName.put("middleName", middleName);
+				contactName.put("honorificPrefix", honorificPrefix);
+				contactName.put("honorificSuffix", honorificSuffix);
+				contactName.put("formatted", formatted);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -227,7 +233,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			Log.d(LOG_TAG, "We found a phone!");
 			try {
 				phoneNumber.put("primary", false); // Android does not store primary attribute
-				phoneNumber.put("value", phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replace('\'', '`'));
+				phoneNumber.put("value", phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
 				phoneNumber.put("type", phones.getInt(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)));
 				phoneNumbers.put(phoneNumber);
 			} catch (JSONException e) {
@@ -251,7 +257,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			Log.d(LOG_TAG, "We found an email!");
 			try {
 				email.put("primary", false);
-				email.put("value", emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)).replace('\'', '`'));
+				email.put("value", emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
 				email.put("type", emails.getInt(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE)));
 				emailAddresses.put(email);
 			} catch (JSONException e) {
@@ -262,5 +268,142 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		emails.close();
 		return emailAddresses;
 	}
-	
+
+	private JSONArray imQuery(ContentResolver cr, String contactId) {
+		String addrWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] addrWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE}; 
+		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, addrWhere, addrWhereParams, null); 
+		JSONArray ims = new JSONArray();
+		JSONObject im = new JSONObject();
+		while (cursor.moveToNext()) { 
+			Log.d(LOG_TAG, "We found IM's!");
+			try {
+				im.put("primary", false);
+				im.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.DATA)));
+				im.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.TYPE)));
+				ims.put(im);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} 
+		cursor.close();
+		return ims;
+	}	
+
+	private String noteQuery(ContentResolver cr, String contactId) {
+		String noteWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] noteWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE}; 
+		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, noteWhere, noteWhereParams, null); 
+		String note = new String("");
+		if (cursor.moveToFirst()) { 
+			Log.d(LOG_TAG, "We found a note!");
+			note = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE));
+		} 
+		cursor.close();
+		return note;
+	}	
+
+	private String nicknameQuery(ContentResolver cr, String contactId) {
+		String nicknameWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] nicknameWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE}; 
+		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, nicknameWhere, nicknameWhereParams, null); 
+		String nickname = new String("");
+		if (cursor.moveToFirst()) { 
+			Log.d(LOG_TAG, "We found a nickname!");
+			nickname = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME));
+		} 
+		cursor.close();
+		return nickname;
+	}	
+
+	private JSONArray websiteQuery(ContentResolver cr, String contactId) {
+		String websiteWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] websiteWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE}; 
+		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, websiteWhere, websiteWhereParams, null); 
+		JSONArray websites = new JSONArray();
+		JSONObject website = new JSONObject();
+		while (cursor.moveToNext()) { 
+			Log.d(LOG_TAG, "We found websites!");
+			try {
+				website.put("primary", false);
+				website.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL)));
+				website.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.TYPE)));
+				websites.put(website);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} 
+		cursor.close();
+		return websites;
+	}	
+
+	private JSONArray relationshipQuery(ContentResolver cr, String contactId) {
+		String relationshipWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] relationshipWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE}; 
+		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, relationshipWhere, relationshipWhereParams, null); 
+		JSONArray relationships = new JSONArray();
+		JSONObject relationship = new JSONObject();
+		while (cursor.moveToNext()) { 
+			Log.d(LOG_TAG, "We found a relationship!");
+			try {
+				relationship.put("primary", false);
+				relationship.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Relation.NAME)));
+				relationship.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Relation.TYPE)));
+				relationships.put(relationship);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} 
+		cursor.close();
+		return relationships;
+	}	
+
+	private String birthdayQuery(ContentResolver cr, String contactId) {
+		String birthdayWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] birthdayWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE}; 
+		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, birthdayWhere, birthdayWhereParams, null); 
+		String birthday = new String("");
+		while (cursor.moveToNext()) { 
+			Log.d(LOG_TAG, "We found a birthday!");
+			if (ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY == 
+					cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE))) {
+				birthday = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE));
+			}
+		} 
+		cursor.close();
+		return birthday;
+	}	
+
+	private String anniversaryQuery(ContentResolver cr, String contactId) {
+		String anniversaryWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+		String[] anniversaryWhereParams = new String[]{contactId, 
+			ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE}; 
+		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
+	                null, anniversaryWhere, anniversaryWhereParams, null); 
+		String anniversary = new String("");
+		while (cursor.moveToNext()) { 
+			Log.d(LOG_TAG, "We found a anniversary!");
+			if (ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY == 
+					cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE))) {
+				anniversary = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE));
+			}
+		} 
+		cursor.close();
+		return anniversary;
+	}	
 }
