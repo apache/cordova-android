@@ -12,21 +12,45 @@ function Device() {
     this.phonegap = null;
 
     var me = this;
-    PhoneGap.execAsync(
+    this.getInfo(
         function(info) {
             me.available = true;
             me.platform = info.platform;
             me.version = info.version;
             me.uuid = info.uuid;
             me.phonegap = info.phonegap;
+            PhoneGap.onPhoneGapInfoReady.fire();
         },
         function(e) {
             me.available = false;
             console.log("Error initializing PhoneGap: " + e);
             alert("Error initializing PhoneGap: "+e);
-        },
-        "Device", "getDeviceInfo", []);
+        });
 }
+
+/**
+ * Get device info
+ *
+ * @param {Function} successCallback The function to call when the heading data is available
+ * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
+ */
+Device.prototype.getInfo = function(successCallback, errorCallback) {
+
+    // successCallback required
+    if (typeof successCallback != "function") {
+        console.log("Device Error: successCallback is not a function");
+        return;
+    }
+
+    // errorCallback optional
+    if (errorCallback && (typeof errorCallback != "function")) {
+        console.log("Device Error: errorCallback is not a function");
+        return;
+    }
+
+    // Get info
+    PhoneGap.execAsync(successCallback, errorCallback, "Device", "getDeviceInfo", []);
+};
 
 /*
  * This is only for Android.

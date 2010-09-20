@@ -1,4 +1,25 @@
 
+/**
+ * The order of events during page load and PhoneGap startup is as follows:
+ *
+ * onDOMContentLoaded         Internal event that is received when the web page is loaded and parsed.
+ * window.onload              Browser's body onload event.
+ * onNativeReady              Internal event that indicates the PhoneGap native side is ready.
+ * onPhoneGapInit             Internal event that kicks off creatation all PhoneGap JavaScript objects (runs constructors)
+ * onPhoneGapReady            Internal event fired when all PhoneGap JavaScript ojbects have been created
+ * onPhoneGapInfoReady        Internal event fired when device properties are available
+ * onDeviceReady              User event fired to indicate that PhoneGap is ready
+ * onResume                   User event fired to indicate a start/resume lifecycle event
+ *
+ * The only PhoneGap events that user code should register for are:
+ *      onDeviceReady
+ *      onResume
+ *
+ * Listeners can be registered as:
+ *      document.addEventListener("deviceready", myDeviceReadyListener, false);
+ *      document.addEventListener("resume", myResumeListener, false);
+ */
+
 if (typeof(DeviceInfo) != 'object')
     DeviceInfo = {};
 
@@ -124,7 +145,7 @@ PhoneGap.available = DeviceInfo.uuid != undefined;
  * @param {Function} func The function callback you want run once PhoneGap is initialized
  */
 PhoneGap.addConstructor = function(func) {
-    PhoneGap.onDeviceReady.subscribeOnce(function() {
+    PhoneGap.onPhoneGapInit.subscribeOnce(function() {
         try {
             func();
         } catch(e) {
@@ -163,6 +184,23 @@ PhoneGap.onDOMContentLoaded = new PhoneGap.Channel('onDOMContentLoaded');
 PhoneGap.onNativeReady = new PhoneGap.Channel('onNativeReady');
 
 /**
+ * onPhoneGapInit channel is fired when the web page is fully loaded and
+ * PhoneGap native code has been initialized.
+ */
+PhoneGap.onPhoneGapInit = new PhoneGap.Channel('onPhoneGapInit');
+
+/**
+ * onPhoneGapReady channel is fired when the JS PhoneGap objects have been created.
+ */
+PhoneGap.onPhoneGapReady = new PhoneGap.Channel('onPhoneGapReady');
+
+/**
+ * onPhoneGapInfoReady channel is fired when the PhoneGap device properties
+ * has been set.
+ */
+PhoneGap.onPhoneGapInfoReady = new PhoneGap.Channel('onPhoneGapInfoReady');
+
+/**
  * onResume channel is fired when the PhoneGap native code
  * resumes.
  */
@@ -180,22 +218,41 @@ PhoneGap.onPause = new PhoneGap.Channel('onPause');
 if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
 
 /**
- * onDeviceReady is fired only after both onDOMContentLoaded and 
- * onNativeReady have fired.
+ * onDeviceReady is fired only after all PhoneGap objects are created and
+ * the device properties are set.
  */
 PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
+/**
+ * Start listening for XHR callbacks onDeviceReady
+ */
 PhoneGap.onDeviceReady.subscribeOnce(function() {
     PhoneGap.JSCallback();
 });
 
+/**
+ * Create all PhoneGap objects once page has fully loaded and native side is ready.
+ */
+PhoneGap.Channel.join(function() {
+
+    // Run PhoneGap constructors
+    PhoneGap.onPhoneGapInit.fire();
+
+    // Fire event to notify that all objects are created
+    PhoneGap.onPhoneGapReady.fire();
+
+}, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
+
+/**
+ * Fire onDeviceReady event once all constructors have run and PhoneGap info has been
+ * received from native side.
+ */
 PhoneGap.Channel.join(function() {
     PhoneGap.onDeviceReady.fire();
 
     // Fire the onresume event, since first one happens before JavaScript is loaded
     PhoneGap.onResume.fire();
-}, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
-
+}, [ PhoneGap.onPhoneGapReady, PhoneGap.onPhoneGapInfoReady]);
 
 // Listen for DOMContentLoaded and notify our channel subscribers
 document.addEventListener('DOMContentLoaded', function() {
