@@ -127,7 +127,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONArray organizations = new JSONArray();
 		JSONObject organization = new JSONObject();
 		while (cursor.moveToNext()) {
-			Log.d(LOG_TAG, "We found a organization!");
 			try {
 				organization.put("department", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.DEPARTMENT)));
 				organization.put("description", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.JOB_DESCRIPTION)));
@@ -156,7 +155,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONArray addresses = new JSONArray();
 		JSONObject address = new JSONObject();
 		while (cursor.moveToNext()) {
-			Log.d(LOG_TAG, "We found a address!");
 			try {
 				address.put("formatted", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS)));
 				address.put("streetAddress", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET)));
@@ -181,7 +179,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	                null, addrWhere, addrWhereParams, null); 
 		JSONObject contactName = new JSONObject();
 		if (name.moveToFirst()) {
-			Log.d(LOG_TAG, "We found a name!");
 			try {
 				String familyName = name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME));
 				String givenName = name.getString(name.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME));
@@ -220,7 +217,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONArray phoneNumbers = new JSONArray();
 		JSONObject phoneNumber = new JSONObject();
 		while (phones.moveToNext()) {
-			Log.d(LOG_TAG, "We found a phone!");
 			try {
 				phoneNumber.put("primary", false); // Android does not store primary attribute
 				phoneNumber.put("value", phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
@@ -243,7 +239,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONArray emailAddresses = new JSONArray();
 		JSONObject email = new JSONObject();
 		while (emails.moveToNext()) { 
-			Log.d(LOG_TAG, "We found an email!");
 			try {
 				email.put("primary", false);
 				email.put("value", emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
@@ -266,7 +261,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONArray ims = new JSONArray();
 		JSONObject im = new JSONObject();
 		while (cursor.moveToNext()) { 
-			Log.d(LOG_TAG, "We found IM's!");
 			try {
 				im.put("primary", false);
 				im.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.DATA)));
@@ -288,7 +282,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	                null, noteWhere, noteWhereParams, null); 
 		String note = new String("");
 		if (cursor.moveToFirst()) { 
-			Log.d(LOG_TAG, "We found a note!");
 			note = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE));
 		} 
 		cursor.close();
@@ -303,7 +296,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	                null, nicknameWhere, nicknameWhereParams, null); 
 		String nickname = new String("");
 		if (cursor.moveToFirst()) { 
-			Log.d(LOG_TAG, "We found a nickname!");
 			nickname = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME));
 		} 
 		cursor.close();
@@ -319,7 +311,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONArray websites = new JSONArray();
 		JSONObject website = new JSONObject();
 		while (cursor.moveToNext()) { 
-			Log.d(LOG_TAG, "We found websites!");
 			try {
 				website.put("primary", false);
 				website.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL)));
@@ -342,7 +333,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONArray relationships = new JSONArray();
 		JSONObject relationship = new JSONObject();
 		while (cursor.moveToNext()) { 
-			Log.d(LOG_TAG, "We found a relationship!");
 			try {
 				relationship.put("primary", false);
 				relationship.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Relation.NAME)));
@@ -360,7 +350,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String birthday = conditionalStringQuery(cr, contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, 
 				ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY, ContactsContract.CommonDataKinds.Event.TYPE, 
 				ContactsContract.CommonDataKinds.Event.START_DATE);
-		Log.d(LOG_TAG, birthday);
 		return birthday;
 	}	
 
@@ -368,7 +357,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String anniversary = conditionalStringQuery(cr, contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, 
 				ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY, ContactsContract.CommonDataKinds.Event.TYPE, 
 				ContactsContract.CommonDataKinds.Event.START_DATE);
-		Log.d(LOG_TAG, anniversary);
 		return anniversary;
 	}	
 
@@ -379,7 +367,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	                null, where, whereParams, null); 
 		String retVal = new String("");
 		while (cursor.moveToNext()) { 
-			Log.d(LOG_TAG, "We found an event!");
 			if (type == cursor.getInt(cursor.getColumnIndex(label))) {
 				retVal = cursor.getString(cursor.getColumnIndex(data));
 			}
