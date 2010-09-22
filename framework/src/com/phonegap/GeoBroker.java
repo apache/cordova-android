@@ -1,6 +1,7 @@
 package com.phonegap;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,6 +23,7 @@ public class GeoBroker implements Plugin {
 	WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
 
+    // List of gGeolocation listeners
     private HashMap<String, GeoListener> geoListeners;
 	private GeoListener global;
 	
@@ -87,7 +89,8 @@ public class GeoBroker implements Plugin {
 	 * @return			T=returns value
 	 */
 	public boolean isSynch(String action) {
-		return false;
+		// Starting listeners is easier to run on main thread, so don't run async.
+		return true;
 	}
 
 	/**
@@ -103,10 +106,22 @@ public class GeoBroker implements Plugin {
     }
     
     /**
-     * Called by AccelBroker when listener is to be shut down.
+     * Called when the activity is to be shut down.
      * Stop listener.
      */
-    public void onDestroy() {   	
+    public void onDestroy() {
+		java.util.Set<Entry<String,GeoListener>> s = this.geoListeners.entrySet();
+        java.util.Iterator<Entry<String,GeoListener>> it = s.iterator();
+        while (it.hasNext()) {
+            Entry<String,GeoListener> entry = it.next();
+            GeoListener listener = entry.getValue();
+            listener.destroy();
+		}
+        this.geoListeners.clear();
+        if (this.global != null) {
+        	this.global.destroy();
+        }
+        this.global = null;
     }
 
     /**
@@ -125,23 +140,51 @@ public class GeoBroker implements Plugin {
     // LOCAL METHODS
     //--------------------------------------------------------------------------
 
-	public void getCurrentLocation() {	
-		//It's supposed to run async!
-		if (global == null) {
-			global = new GeoListener("global", this.ctx, 10000, this.webView);
+    /**
+     * Get current location.
+     * The result is returned to JavaScript via a callback.
+     */
+	public void getCurrentLocation() {
+		
+		// Create a geolocation listener just for getCurrentLocation and call it "global"
+		if (this.global == null) {
+			this.global = new GeoListener("global", this.ctx, 10000, this.webView);
 		}
 		else {
-			global.start(10000);
+			this.global.start(10000);
 		}
 	}
 	
+	/**
+	 * Start geolocation listener and add to listener list.
+	 * 
+	 * @param freq			Period to retrieve geolocation
+	 * @param key			The listener id
+	 * @return
+	 */
 	public String start(int freq, String key) {
-		GeoListener listener = new GeoListener(key, this.ctx, freq, this.webView);
-		geoListeners.put(key, listener);
+		
+		// Make sure this listener doesn't already exist
+		GeoListener listener = geoListeners.get(key);
+		if (listener == null) {
+			listener = new GeoListener(key, this.ctx, freq, this.webView);
+			geoListeners.put(key, listener);
+		}
+		
+		// Start it
+		listener.start(freq);
 		return key;
 	}
 	
+	/**
+	 * Stop geolocation listener and remove from listener list.
+	 * 
+	 * @param key			The listener id
+	 */
 	public void stop(String key) {
-		GeoListener geo = geoListeners.get(key);
+		GeoListener listener = geoListeners.remove(key);
+		if (listener != null) {
+			listener.stop();
+		}
 	}
 }

@@ -282,10 +282,10 @@ public class DroidGap extends Activity {
             Storage cupcakeStorage = (Storage)this.pluginManager.addPlugin("com.phonegap.Storage");
         	cupcakeStorage.setStorage(appPackage);
 
-            this.pluginManager.addPlugin("com.phonegap.GeoBroker");
 
         }
         
+        this.addService("Geolocation", "com.phonegap.GeoBroker");
         this.addService("Device", "com.phonegap.Device");
         this.addService("Accelerometer", "com.phonegap.AccelListener");
         this.addService("Compass", "com.phonegap.CompassListener");
