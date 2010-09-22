@@ -62,6 +62,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	
 	@Override
 	public void search(JSONArray filter, JSONObject options) {
+		Log.d(LOG_TAG, "in 1.5+ search");
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
 		boolean multiple = true;
@@ -98,7 +99,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		    		contact.put("phoneNumbers", phoneQuery(cr, contactId));
 		    	}
 				// email
-		    	contact.put("emails", emailQuery(cr, contactId));
+		    	//contact.put("emails", emailQuery(cr, contactId));
 				// addresses
 		    	contact.put("addresses", addressQuery(cr, contactId));
 				// organizations
@@ -119,6 +120,9 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	    	}
 	    	contacts.put(contact);
         }
+		cur.close();
+		Log.d(LOG_TAG, "returning contacts string to javascript");
+		mView.loadUrl("javascript:navigator.service.contacts.droidDone('" + contacts.toString() + "');");
 	}
 	
 	private JSONArray imQuery(ContentResolver cr, String contactId) {

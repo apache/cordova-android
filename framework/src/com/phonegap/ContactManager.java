@@ -2,7 +2,6 @@ package com.phonegap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
@@ -10,9 +9,7 @@ import com.phonegap.api.PluginResult;
 import android.util.Log;
 import android.webkit.WebView;
 import android.content.Intent;
-import android.net.Uri;
 
-@SuppressWarnings("deprecation")
 public class ContactManager implements Plugin {
 	
     private static ContactAccessor contactAccessor;
@@ -20,9 +17,6 @@ public class ContactManager implements Plugin {
     DroidGap ctx;						// DroidGap object
 
 	private static final String LOG_TAG = "Contact Query";
-	Uri mPeople = android.provider.Contacts.People.CONTENT_URI;
-	Uri mPhone = android.provider.Contacts.Phones.CONTENT_URI;	
-	Uri mEmail = android.provider.Contacts.ContactMethods.CONTENT_URI;
 
 	/**
 	 * Constructor.
@@ -70,10 +64,18 @@ public class ContactManager implements Plugin {
 			//}
 			//else if (action.equals("search")) {
 			if (action.equals("search")) {
+				Log.d(LOG_TAG, "*** Calling search of " + contactAccessor.getClass().getName());
+				Log.d(LOG_TAG, "what is 0 " + args.get(0).getClass().toString());
+				Log.d(LOG_TAG, "what is 0 " + args.get(0).toString());
+				Log.d(LOG_TAG, "what is 1 " + args.get(1).getClass().toString());
+				Log.d(LOG_TAG, "what is 1 " + args.get(1).toString());
+				Log.d(LOG_TAG, "Fields = " + args.getJSONArray(0).toString());
+				Log.d(LOG_TAG, "Options = " + args.getJSONObject(1).toString());
 				contactAccessor.search(args.getJSONArray(0), args.getJSONObject(1));
 			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
