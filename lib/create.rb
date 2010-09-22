@@ -46,7 +46,7 @@ class Create < Classic
       @config[:version] = doc.root.attributes["version"]
       
       doc.root.elements.each do |n|
-        @config[:name]        = n.text if n.name == 'name'
+        @config[:name]        = n.text.gsub('-','').gsub(' ','') if n.name == 'name'
         @config[:description] = n.text if n.name == 'description'
         @config[:icon]        = n.attributes["src"] if n.name == 'icon'
         @config[:content]     = n.attributes["src"] if n.name == 'content'  
