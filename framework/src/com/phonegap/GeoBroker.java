@@ -67,10 +67,10 @@ public class GeoBroker implements Plugin {
 		
 		try {
 			if (action.equals("getCurrentLocation")) {
-				this.getCurrentLocation();
+				this.getCurrentLocation(args.getBoolean(0), args.getInt(1), args.getInt(2));
 			}
 			else if (action.equals("start")) {
-				String s = this.start(args.getInt(0), args.getString(1));
+				String s = this.start(args.getString(0), args.getBoolean(1), args.getInt(2), args.getInt(3));
 				return new PluginResult(status, s);
 			}
 			else if (action.equals("stop")) {
@@ -143,36 +143,42 @@ public class GeoBroker implements Plugin {
     /**
      * Get current location.
      * The result is returned to JavaScript via a callback.
+     * 
+	 * @param enableHighAccuracy
+	 * @param timeout
+	 * @param maximumAge
      */
-	public void getCurrentLocation() {
+	public void getCurrentLocation(boolean enableHighAccuracy, int timeout, int maximumAge) {
 		
 		// Create a geolocation listener just for getCurrentLocation and call it "global"
 		if (this.global == null) {
-			this.global = new GeoListener("global", this.ctx, 10000, this.webView);
+			this.global = new GeoListener("global", this.ctx, maximumAge, this.webView);
 		}
 		else {
-			this.global.start(10000);
+			this.global.start(maximumAge);
 		}
 	}
 	
 	/**
 	 * Start geolocation listener and add to listener list.
 	 * 
-	 * @param freq			Period to retrieve geolocation
-	 * @param key			The listener id
+	 * @param key					The listener id
+	 * @param enableHighAccuracy
+	 * @param timeout
+	 * @param maximumAge
 	 * @return
 	 */
-	public String start(int freq, String key) {
+	public String start(String key, boolean enableHighAccuracy, int timeout, int maximumAge) {
 		
 		// Make sure this listener doesn't already exist
 		GeoListener listener = geoListeners.get(key);
 		if (listener == null) {
-			listener = new GeoListener(key, this.ctx, freq, this.webView);
+			listener = new GeoListener(key, this.ctx, maximumAge, this.webView);
 			geoListeners.put(key, listener);
 		}
 		
 		// Start it
-		listener.start(freq);
+		listener.start(maximumAge);
 		return key;
 	}
 	

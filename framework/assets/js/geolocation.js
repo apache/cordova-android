@@ -42,8 +42,22 @@ Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallba
         }
         return;
     }
+    var maximumAge = 10000;
+    var enableHighAccuracy = false;
+    var timeout = 10000;
+    if (typeof options != "undefined") {
+        if (typeof options.maximumAge != "undefined") {
+            maximumAge = options.maximumAge;
+        }
+        if (typeof options.enableHighAccuracy != "undefined") {
+            enableHighAccuracy = options.enableHighAccuracy;
+        }
+        if (typeof options.timeout != "undefined") {
+            timeout = options.timeout;
+        }
+    }
     navigator._geo.listeners["global"] = {"success" : successCallback, "fail" : errorCallback };
-    PhoneGap.execAsync(null, null, "Geolocation", "getCurrentLocation", []);
+    PhoneGap.execAsync(null, null, "Geolocation", "getCurrentLocation", [enableHighAccuracy, timeout, maximumAge]);
 }
 
 /**
@@ -56,15 +70,32 @@ Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallba
  * @return String                       The watch id that must be passed to #clearWatch to stop watching.
  */
 Geolocation.prototype.watchPosition = function(successCallback, errorCallback, options) {
-    var frequency = (options != undefined)? options.frequency : 10000;
+    var maximumAge = 10000;
+    var enableHighAccuracy = false;
+    var timeout = 10000;
+    if (typeof options != "undefined") {
+        if (typeof options.frequency  != "undefined") {
+            maximumAge = options.frequency;
+        }
+        if (typeof options.maximumAge != "undefined") {
+            maximumAge = options.maximumAge;
+        }
+        if (typeof options.enableHighAccuracy != "undefined") {
+            enableHighAccuracy = options.enableHighAccuracy;
+        }
+        if (typeof options.timeout != "undefined") {
+            timeout = options.timeout;
+        }
+    }
     var id = PhoneGap.createUUID();
     navigator._geo.listeners[id] = {"success" : successCallback, "fail" : errorCallback };
-    PhoneGap.execAsync(null, null, "Geolocation", "start", [frequency, id]);
+    PhoneGap.execAsync(null, null, "Geolocation", "start", [id, enableHighAccuracy, timeout, maximumAge]);
     return id;
 };
 
 /*
  * Native callback when watch position has a new position.
+ * PRIVATE METHOD
  *
  * @param {String} id
  * @param {Number} lat
@@ -98,6 +129,7 @@ Geolocation.prototype.success = function(id, lat, lng, alt, altacc, head, vel, s
 
 /**
  * Native callback when watch position has an error.
+ * PRIVATE METHOD
  *
  * @param {String} id       The ID of the watch
  * @param {Number} code     The error code
