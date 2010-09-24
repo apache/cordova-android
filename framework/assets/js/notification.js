@@ -2,7 +2,6 @@
  * This class provides access to notifications on the device.
  */
 function Notification() {
-	
 }
 
 /**
@@ -34,7 +33,7 @@ Notification.prototype.activityStop = function() {
  * @param {String} colour The colour of the light.
  */
 Notification.prototype.blink = function(count, colour) {
-	
+
 };
 
 /**
@@ -42,16 +41,17 @@ Notification.prototype.blink = function(count, colour) {
  * @param {Integer} mills The number of milliseconds to vibrate for.
  */
 Notification.prototype.vibrate = function(mills) {
-	
+    PhoneGap.execAsync(null, null, "Device", "vibrate", [mills]);
 };
 
 /**
  * Causes the device to beep.
+ * On Android, the default notification ringtone is played.
+ *
  * @param {Integer} count The number of beeps.
- * @param {Integer} volume The volume of the beep.
  */
-Notification.prototype.beep = function(count, volume) {
-	
+Notification.prototype.beep = function(count) {
+    PhoneGap.execAsync(null, null, "Device", "beep", [count]);
 };
 
 // TODO: of course on Blackberry and Android there notifications in the UI as well
@@ -60,18 +60,3 @@ PhoneGap.addConstructor(function() {
     if (typeof navigator.notification == "undefined") navigator.notification = new Notification();
 });
 
-Notification.prototype.vibrate = function(mills)
-{
-  DroidGap.vibrate(mills);
-}
-
-/*
- * On the Android, we don't beep, we notify you with your 
- * notification!  We shouldn't keep hammering on this, and should
- * review what we want beep to do.
- */
-
-Notification.prototype.beep = function(count, volume)
-{
-  DroidGap.beep(count);
-}

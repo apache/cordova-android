@@ -4,8 +4,8 @@
  * @constructor
  */
 function NetworkStatus() {
-    this.code = null;
-    this.message = "";
+    //this.code = null;
+    //this.message = "";
 };
 
 NetworkStatus.NOT_REACHABLE = 0;
@@ -42,38 +42,11 @@ Network.prototype.updateReachability = function(reachability) {
  * @param {Object} options  (isIpAddress:boolean)
  */
 Network.prototype.isReachable = function(uri, callback, options) {
-
-    // callback required
-    if (typeof callback != "function") {
-        console.log("Network Error: callback is not a function");
-        return;
+    var isIpAddress = false;
+    if (options && options.isIpAddress) {
+        isIpAddress = options.isIpAddress;
     }
-
-    PhoneGap.execAsync(
-        function(status) {
-
-            // If reachable, the check for wifi vs carrier
-            if (status) {
-                PhoneGap.execAsync(
-                    function(wifi) {
-                        var s = new NetworkStatus();
-                        if (wifi) {
-                            s.code = NetworkStatus.REACHABLE_VIA_WIFI_NETWORK;
-                        }
-                        else {
-                            s.code = NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK;
-                        }
-                        callback(s);
-                    }, null, "Network Status", "isWifiActive", []);
-            }
-
-            // If not
-            else {
-                var s = new NetworkStatus();
-                s.code = NetworkStatus.NOT_REACHABLE;
-                callback(s);
-            }
-        }, null, "Network Status", "isReachable", [uri]);
+    PhoneGap.execAsync(callback, null, "Network Status", "isReachable", [uri, isIpAddress]);
 };
 
 PhoneGap.addConstructor(function() {

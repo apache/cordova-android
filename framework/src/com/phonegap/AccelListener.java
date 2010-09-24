@@ -105,12 +105,17 @@ public class AccelListener implements SensorEventListener, Plugin{
 						return new PluginResult(PluginResult.Status.IO_EXCEPTION, AccelListener.ERROR_FAILED_TO_START);
 					}
 					// Wait until running
-					while (this.status == STARTING) {
+					long timeout = 2000;
+					while ((this.status == STARTING) && (timeout > 0)) {
+						timeout = timeout - 100;
 						try {
 							Thread.sleep(100);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
+					}
+					if (timeout == 0) {
+						return new PluginResult(PluginResult.Status.IO_EXCEPTION, AccelListener.ERROR_FAILED_TO_START);						
 					}
 				}
 				JSONObject r = new JSONObject();

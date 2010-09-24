@@ -63,7 +63,8 @@ public class PluginResult {
 		"Malformed url",
 		"IO error",
 		"Invalid action",
-		"JSON error"
+		"JSON error",
+		"Error"
 	};
 	
 	public enum Status {
@@ -74,6 +75,7 @@ public class PluginResult {
 		MALFORMED_URL_EXCEPTION,
 		IO_EXCEPTION,
 		INVALID_ACTION,
-		JSON_EXCEPTION
+		JSON_EXCEPTION,
+		ERROR
 	}
 }
