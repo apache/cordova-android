@@ -48,6 +48,8 @@ import android.webkit.WebView;
  */
 public class ContactAccessorSdk5 extends ContactAccessor {
 	
+	private static final String WHERE_STRING = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
+
 	public ContactAccessorSdk5(WebView view, Activity app)
 	{
 		mApp = app;
@@ -90,10 +92,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			if (contactName.trim().length() == 0) continue;
 						
 			String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID)); 
-			//String hasPhone = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)); 
-			//if (Boolean.parseBoolean(hasPhone)) { 
-			//}
 			try {
+				contact.put("id", contactId);
 				contact.put("displayName", contactName);
 				contact.put("name", nameQuery(cr, contactId));
 				contact.put("phoneNumbers", phoneQuery(cr, contactId));
@@ -119,11 +119,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	private JSONArray organizationQuery(ContentResolver cr, String contactId) {
-	 	String orgWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 	 	String[] orgWhereParams = new String[]{contactId, 
 	 		ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE}; 
 	 	Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, orgWhere, orgWhereParams, null);
+	                null, WHERE_STRING, orgWhereParams, null);
 		JSONArray organizations = new JSONArray();
 		JSONObject organization = new JSONObject();
 		while (cursor.moveToNext()) {
@@ -147,11 +146,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	private JSONArray addressQuery(ContentResolver cr, String contactId) {
-		String addrWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 		String[] addrWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, addrWhere, addrWhereParams, null); 
+	                null, WHERE_STRING, addrWhereParams, null); 
 		JSONArray addresses = new JSONArray();
 		JSONObject address = new JSONObject();
 		while (cursor.moveToNext()) {
@@ -172,11 +170,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	private JSONObject nameQuery(ContentResolver cr, String contactId) {
-		String addrWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 		String[] addrWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE}; 
 		Cursor name = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, addrWhere, addrWhereParams, null); 
+	                null, WHERE_STRING, addrWhereParams, null); 
 		JSONObject contactName = new JSONObject();
 		if (name.moveToFirst()) {
 			try {
@@ -240,7 +237,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONObject email = new JSONObject();
 		while (emails.moveToNext()) { 
 			try {
-				email.put("primary", false);
+				email.put("primary", false); // Android does not store primary attribute
 				email.put("value", emails.getString(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
 				email.put("type", emails.getInt(emails.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE)));
 				emailAddresses.put(email);
@@ -253,16 +250,15 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	private JSONArray imQuery(ContentResolver cr, String contactId) {
-		String addrWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 		String[] addrWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, addrWhere, addrWhereParams, null); 
+	                null, WHERE_STRING, addrWhereParams, null); 
 		JSONArray ims = new JSONArray();
 		JSONObject im = new JSONObject();
 		while (cursor.moveToNext()) { 
 			try {
-				im.put("primary", false);
+				im.put("primary", false); // Android does not store primary attribute
 				im.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.DATA)));
 				im.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.TYPE)));
 				ims.put(im);
@@ -275,11 +271,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}	
 
 	private String noteQuery(ContentResolver cr, String contactId) {
-		String noteWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 		String[] noteWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, noteWhere, noteWhereParams, null); 
+	                null, WHERE_STRING, noteWhereParams, null); 
 		String note = new String("");
 		if (cursor.moveToFirst()) { 
 			note = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE));
@@ -289,11 +284,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}	
 
 	private String nicknameQuery(ContentResolver cr, String contactId) {
-		String nicknameWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 		String[] nicknameWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, nicknameWhere, nicknameWhereParams, null); 
+	                null, WHERE_STRING, nicknameWhereParams, null); 
 		String nickname = new String("");
 		if (cursor.moveToFirst()) { 
 			nickname = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME));
@@ -303,16 +297,15 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}	
 
 	private JSONArray websiteQuery(ContentResolver cr, String contactId) {
-		String websiteWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 		String[] websiteWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, websiteWhere, websiteWhereParams, null); 
+	                null, WHERE_STRING, websiteWhereParams, null); 
 		JSONArray websites = new JSONArray();
 		JSONObject website = new JSONObject();
 		while (cursor.moveToNext()) { 
 			try {
-				website.put("primary", false);
+				website.put("primary", false); // Android does not store primary attribute
 				website.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL)));
 				website.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Website.TYPE)));
 				websites.put(website);
@@ -325,16 +318,15 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}	
 
 	private JSONArray relationshipQuery(ContentResolver cr, String contactId) {
-		String relationshipWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 		String[] relationshipWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, relationshipWhere, relationshipWhereParams, null); 
+	                null, WHERE_STRING, relationshipWhereParams, null); 
 		JSONArray relationships = new JSONArray();
 		JSONObject relationship = new JSONObject();
 		while (cursor.moveToNext()) { 
 			try {
-				relationship.put("primary", false);
+				relationship.put("primary", false); // Android does not store primary attribute
 				relationship.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Relation.NAME)));
 				relationship.put("type", cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Relation.TYPE)));
 				relationships.put(relationship);
@@ -361,10 +353,9 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}	
 
 	private String conditionalStringQuery(ContentResolver cr, String contactId, String dataType, int type, String label, String data) {
-		String where = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
 		String[] whereParams = new String[]{contactId, dataType}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, where, whereParams, null); 
+	                null, WHERE_STRING, whereParams, null); 
 		String retVal = new String("");
 		while (cursor.moveToNext()) { 
 			if (type == cursor.getInt(cursor.getColumnIndex(label))) {

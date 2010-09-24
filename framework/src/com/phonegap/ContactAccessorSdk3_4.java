@@ -100,7 +100,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 				// ims
 		    	contact.put("ims", imQuery(cr, contactId));
 				// note
-		    	cur.getString(cur.getColumnIndex(People.NOTES));
+		    	contact.put("note", cur.getString(cur.getColumnIndex(People.NOTES)));
 				// nickname
 				// urls
 				// relationship
@@ -128,6 +128,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			im = new JSONObject();
 			try{
+			im.put("primary", false);
 			im.put("value", cursor.getString(
 					cursor.getColumnIndex(ContactMethodsColumns.DATA)));
 			im.put("type", cursor.getString(
@@ -198,6 +199,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			phone = new JSONObject();
 			try{
+				phone.put("primary", false);
 				phone.put("value", cursor.getString(cursor.getColumnIndex(Phones.NUMBER)));
 				phone.put("type", cursor.getString(cursor.getColumnIndex(Phones.TYPE)));
 				phones.put(phone);
@@ -219,7 +221,9 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			email = new JSONObject();
 			try{
+				email.put("primary", false);
 				email.put("value", cursor.getString(cursor.getColumnIndex(ContactMethods.DATA)));
+				// TODO Find out why adding an email type throws and exception
 				//email.put("type", cursor.getString(cursor.getColumnIndex(ContactMethods.TYPE)));
 				emails.put(email);
 			} catch (JSONException e) {

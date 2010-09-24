@@ -2,69 +2,69 @@
 var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, addresses,
     ims, organizations, published, updated, birthday, anniversary, gender, note,
     preferredUsername, photos, tags, relationships, urls, accounts, utcOffset, connected) {
-    this.id = id || '';
-    this.displayName = displayName || '';
+    this.id = id || null;
+    this.displayName = displayName || null;
     this.name = name || null; // ContactName
-    this.nickname = nickname || '';
+    this.nickname = nickname || null;
     this.phoneNumbers = phoneNumbers || null; // ContactField[]
     this.emails = emails || null; // ContactField[]
     this.addresses = addresses || null; // ContactAddress[]
     this.ims = ims || null; // ContactField[]
     this.organizations = organizations || null; // ContactOrganization[]
-    this.published = published || '';
-    this.updated = updated || '';
-    this.birthday = birthday || '';
-    this.anniversary = anniversary || '';
-    this.gender = gender || '';
-    this.note = note || '';
-    this.preferredUsername = preferredUsername || '';
+    this.published = published || null;
+    this.updated = updated || null;
+    this.birthday = birthday || null;
+    this.anniversary = anniversary || null;
+    this.gender = gender || null;
+    this.note = note || null;
+    this.preferredUsername = preferredUsername || null;
     this.photos = photos || null; // ContactField[]
     this.tags = tags || null; // ContactField[]
     this.relationships = relationships || null; // ContactField[]
     this.urls = urls || null; // ContactField[]
     this.accounts = accounts || null; // ContactAccount[]
-    this.utcOffset = utcOffset || '';
-    this.connected = connected || '';
+    this.utcOffset = utcOffset || null;
+    this.connected = connected || null;
 };
 
 var ContactName = function(formatted, familyName, givenName, middle, prefix, suffix) {
-    this.formatted = formatted || '';
-    this.familyName = familyName || '';
-    this.givenName = givenName || '';
-    this.middleName = middle || '';
-    this.honorificPrefix = prefix || '';
-    this.honorificSuffix = suffix || '';
+    this.formatted = formatted || null;
+    this.familyName = familyName || null;
+    this.givenName = givenName || null;
+    this.middleName = middle || null;
+    this.honorificPrefix = prefix || null;
+    this.honorificSuffix = suffix || null;
 };
 
 var ContactField = function(type, value, primary) {
-    this.type = type || '';
-    this.value = value || '';
-    this.primary = primary || '';
+    this.type = type || null;
+    this.value = value || null;
+    this.primary = primary || null;
 };
 
 var ContactAddress = function(formatted, streetAddress, locality, region, postalCode, country) {
-    this.formatted = formatted || '';
-    this.streetAddress = streetAddress || '';
-    this.locality = locality || '';
-    this.region = region || '';
-    this.postalCode = postalCode || '';
-    this.country = country || '';
+    this.formatted = formatted || null;
+    this.streetAddress = streetAddress || null;
+    this.locality = locality || null;
+    this.region = region || null;
+    this.postalCode = postalCode || null;
+    this.country = country || null;
 };
 
 var ContactOrganization = function(name, dept, title, startDate, endDate, location, desc) {
-    this.name = name || '';
-    this.department = dept || '';
-    this.title = title || '';
-    this.startDate = startDate || '';
-    this.endDate = endDate || '';
-    this.location = location || '';
-    this.description = desc || '';
+    this.name = name || null;
+    this.department = dept || null;
+    this.title = title || null;
+    this.startDate = startDate || null;
+    this.endDate = endDate || null;
+    this.location = location || null;
+    this.description = desc || null;
 };
 
 var ContactAccount = function(domain, username, userid) {
-    this.domain = domain || '';
-    this.username = username || '';
-    this.userid = userid || '';
+    this.domain = domain || null;
+    this.username = username || null;
+    this.userid = userid || null;
 }
 
 var Contacts = function() {

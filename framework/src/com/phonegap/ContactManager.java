@@ -59,19 +59,17 @@ public class ContactManager implements Plugin {
 		String result = "";		
 		
 		try {
-			//if (action.equals("getContactsAndSendBack")) {
-			//	contactAccessor.getContactsAndSendBack();
-			//}
-			//else if (action.equals("search")) {
 			if (action.equals("search")) {
-				Log.d(LOG_TAG, "*** Calling search of " + contactAccessor.getClass().getName());
-				Log.d(LOG_TAG, "what is 0 " + args.get(0).getClass().toString());
-				Log.d(LOG_TAG, "what is 0 " + args.get(0).toString());
-				Log.d(LOG_TAG, "what is 1 " + args.get(1).getClass().toString());
-				Log.d(LOG_TAG, "what is 1 " + args.get(1).toString());
-				Log.d(LOG_TAG, "Fields = " + args.getJSONArray(0).toString());
-				Log.d(LOG_TAG, "Options = " + args.getJSONObject(1).toString());
 				contactAccessor.search(args.getJSONArray(0), args.getJSONObject(1));
+			}
+			else if (action.equals("create")) {
+				// TODO Coming soon!
+			}
+			else if (action.equals("save")) {
+				// TODO Coming soon!			
+			}
+			else if (action.equals("remove")) {
+				// TODO Coming soon!
 			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {

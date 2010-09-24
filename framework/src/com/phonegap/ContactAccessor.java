@@ -35,13 +35,6 @@ import org.json.JSONObject;
  */
 public abstract class ContactAccessor {
 	
-	public class ContactTriplet
-	{
-		public String name = "";
-		public String email = "";
-		public String phone = "";
-	}
-	
     /**
      * Static singleton instance of {@link ContactAccessor} holding the
      * SDK-specific implementation of the class.
