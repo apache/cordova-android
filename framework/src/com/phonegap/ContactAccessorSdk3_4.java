@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.provider.ContactsContract;
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.ContactMethodsColumns;
 import android.provider.Contacts.Organizations;
@@ -61,7 +62,12 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		boolean multiple = true;
 		try {
 			searchTerm = options.getString("filter");
-			if (searchTerm.length()==0) searchTerm = "%";
+			if (searchTerm.length()==0) {
+				searchTerm = "%";
+			}
+			else {
+				searchTerm = "%" + searchTerm + "%";
+			}
 			multiple = options.getBoolean("multiple");
 			if (multiple) {
 				limit = options.getInt("limit");
@@ -75,9 +81,15 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		JSONObject contact;
 
         ContentResolver cr = mApp.getContentResolver();
-        Cursor cur = cr.query(People.CONTENT_URI, 
-			null, null, null, null);
 
+        // Right now we are just querying the displayName
+        Cursor cur = cr.query(People.CONTENT_URI, 
+			null,
+			People.DISPLAY_NAME + " LIKE ?",
+			new String[] {searchTerm},
+			People.DISPLAY_NAME + " ASC");
+
+		
         int pos = 0;
         while (cur.moveToNext() && pos < limit) {
 	    	contact = new JSONObject();

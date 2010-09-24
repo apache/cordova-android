@@ -63,19 +63,23 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		boolean multiple = true;
 		try {
 			searchTerm = options.getString("filter");
-			if (searchTerm.length()==0) searchTerm = "%";
+			if (searchTerm.length()==0) {
+				searchTerm = "%";
+			}
+			else {
+				searchTerm = "%" + searchTerm + "%";
+			}
 			multiple = options.getBoolean("multiple");
 			if (multiple) {
 				limit = options.getInt("limit");
 			}
-			
-			System.out.println("Limit = " + limit);
-			System.out.println("Multiple = " + multiple);
 		} catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
 		// Get a cursor by creating the query.
 		ContentResolver cr = mApp.getContentResolver();
+		
+		// Right now we are just querying the displayName
 		Cursor cursor = cr.query(
 				ContactsContract.Contacts.CONTENT_URI, 
 				new String[] {ContactsContract.Contacts._ID, ContactsContract.Contacts.HAS_PHONE_NUMBER, ContactsContract.Contacts.DISPLAY_NAME},
