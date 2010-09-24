@@ -101,6 +101,22 @@ public class AudioHandler implements Plugin {
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
+	
+	/**
+	 * Identifies if action to be executed returns a value and should be run synchronously.
+	 * 
+	 * @param action	The action to execute
+	 * @return			T=returns value
+	 */
+	public boolean isSynch(String action) {
+		if (action.equals("getCurrentPositionAudio")) {
+			return true;
+		}
+		else if (action.equals("getDurationAudio")) {
+			return true;
+		}
+		return false;
+	}
 
 	/**
      * Called when the system is about to start resuming a previous activity. 

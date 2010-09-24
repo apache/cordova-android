@@ -1,24 +1,11 @@
-com.phonegap.NetworkManagerProxy = function() {
-    this.className = "com.phonegap.NetworkManager";
-};
-com.phonegap.NetworkManagerProxy.prototype.isAvailable = function() {
-    return PhoneGap.exec(this.className, "isAvailable", []);
-};
-com.phonegap.NetworkManagerProxy.prototype.isWifiActive = function() {
-    return PhoneGap.exec(this.className, "isWifiActive", []);
-};
-com.phonegap.NetworkManagerProxy.prototype.isReachable = function(uri) {
-    return PhoneGap.exec(this.className, "isReachable", [uri]);
-};
-com.phonegap.NetworkManager = new com.phonegap.NetworkManagerProxy();
 
 /**
  * This class contains information about any NetworkStatus.
  * @constructor
  */
 function NetworkStatus() {
-    this.code = null;
-    this.message = "";
+    //this.code = null;
+    //this.message = "";
 };
 
 NetworkStatus.NOT_REACHABLE = 0;
@@ -42,32 +29,27 @@ function Network() {
  * Called by the geolocation framework when the reachability status has changed.
  * @param {Reachibility} reachability The current reachability status.
  */
+// TODO: Callback from native code not implemented for Android
 Network.prototype.updateReachability = function(reachability) {
     this.lastReachability = reachability;
 };
 
 /**
- * 
+ * Determine if a URI is reachable over the network.
+
  * @param {Object} uri
- * @param {Function} win
+ * @param {Function} callback
  * @param {Object} options  (isIpAddress:boolean)
  */
-Network.prototype.isReachable = function(uri, win, options) {
-    var status = new NetworkStatus();
-    if(com.phonegap.NetworkManager.isReachable(uri)) {
-        if (com.phonegap.NetworkManager.isWifiActive()) {
-            status.code = NetworkStatus.REACHABLE_VIA_WIFI_NETWORK;
-        }
-        else {
-            status.code = NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK;
-        }
+Network.prototype.isReachable = function(uri, callback, options) {
+    var isIpAddress = false;
+    if (options && options.isIpAddress) {
+        isIpAddress = options.isIpAddress;
     }
-    else {
-        status.code = NetworkStatus.NOT_REACHABLE;
-    }
-  win(status);
+    PhoneGap.execAsync(callback, null, "Network Status", "isReachable", [uri, isIpAddress]);
 };
 
 PhoneGap.addConstructor(function() {
     if (typeof navigator.network == "undefined") navigator.network = new Network();
 });
+

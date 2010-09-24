@@ -14,6 +14,11 @@ import android.net.*;
 import android.webkit.WebView;
 
 public class NetworkManager implements Plugin {
+	
+	public static int NOT_REACHABLE = 0;
+	public static int REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
+	public static int REACHABLE_VIA_WIFI_NETWORK = 2;
+
 
     WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
@@ -67,13 +72,24 @@ public class NetworkManager implements Plugin {
 				return new PluginResult(status, b);
 			}
 			else if (action.equals("isReachable")) {
-				boolean b = this.isReachable(args.getString(0));
-				return new PluginResult(status, b);
+				int i = this.isReachable(args.getString(0), args.getBoolean(1));
+				return new PluginResult(status, i);
 			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
+	}
+
+	/**
+	 * Identifies if action to be executed returns a value and should be run synchronously.
+	 * 
+	 * @param action	The action to execute
+	 * @return			T=returns value
+	 */
+	public boolean isSynch(String action) {
+		// All methods take a while, so always use async
+		return false;
 	}
 
 	/**
@@ -111,6 +127,11 @@ public class NetworkManager implements Plugin {
     // LOCAL METHODS
     //--------------------------------------------------------------------------
 
+    /**
+     * Determine if a network connection exists.
+     * 
+     * @return
+     */
 	public boolean isAvailable() {
 		NetworkInfo info = sockMan.getActiveNetworkInfo();
 		boolean conn = false;
@@ -120,6 +141,11 @@ public class NetworkManager implements Plugin {
 		return conn;
 	}
 	
+	/**
+	 * Determine if a WIFI connection exists.
+	 * 
+	 * @return
+	 */
 	public boolean isWifiActive() {
 		NetworkInfo info = sockMan.getActiveNetworkInfo();
 		if (info != null) {
@@ -129,18 +155,37 @@ public class NetworkManager implements Plugin {
 		return false;
 	}
 	
-	public boolean isReachable(String uri) {
+	/**
+	 * Determine if a URI is reachable over the network.
+	 * 
+	 * @param uri
+	 * @param isIpAddress
+	 * @return
+	 */
+	public int isReachable(String uri, boolean isIpAddress) {
+		int reachable = NOT_REACHABLE;
+		
 		if (uri.indexOf("http://") == -1) {
 			uri = "http://" + uri;
 		}
-		boolean reached = isAvailable();
-		try {
-			DefaultHttpClient httpclient = new DefaultHttpClient();
-			HttpGet httpget = new HttpGet(uri);
-			httpclient.execute(httpget);			
-		} catch (Exception e) { 
-			reached = false;
+
+		if (isAvailable()) {
+			try {
+				DefaultHttpClient httpclient = new DefaultHttpClient();
+				HttpGet httpget = new HttpGet(uri);
+				httpclient.execute(httpget);			
+
+				if (isWifiActive()) {
+					reachable = REACHABLE_VIA_WIFI_NETWORK;
+				}
+				else {
+					reachable = REACHABLE_VIA_CARRIER_DATA_NETWORK;
+				}
+			} catch (Exception e) { 
+				reachable = NOT_REACHABLE;
+			}
 		}
-		return reached;
+				
+		return reachable;
 	}
 }

@@ -1,9 +1,27 @@
+
+/**
+ * The order of events during page load and PhoneGap startup is as follows:
+ *
+ * onDOMContentLoaded         Internal event that is received when the web page is loaded and parsed.
+ * window.onload              Body onload event.
+ * onNativeReady              Internal event that indicates the PhoneGap native side is ready.
+ * onPhoneGapInit             Internal event that kicks off creation of all PhoneGap JavaScript objects (runs constructors).
+ * onPhoneGapReady            Internal event fired when all PhoneGap JavaScript objects have been created
+ * onPhoneGapInfoReady        Internal event fired when device properties are available
+ * onDeviceReady              User event fired to indicate that PhoneGap is ready
+ * onResume                   User event fired to indicate a start/resume lifecycle event
+ *
+ * The only PhoneGap events that user code should register for are:
+ *      onDeviceReady
+ *      onResume
+ *
+ * Listeners can be registered as:
+ *      document.addEventListener("deviceready", myDeviceReadyListener, false);
+ *      document.addEventListener("resume", myResumeListener, false);
+ */
+
 if (typeof(DeviceInfo) != 'object')
     DeviceInfo = {};
-
-var com = {};
-
-com.phonegap = {};
 
 /**
  * This represents the PhoneGap API itself, and provides a global namespace for accessing
@@ -127,7 +145,7 @@ PhoneGap.available = DeviceInfo.uuid != undefined;
  * @param {Function} func The function callback you want run once PhoneGap is initialized
  */
 PhoneGap.addConstructor = function(func) {
-    PhoneGap.onDeviceReady.subscribeOnce(function() {
+    PhoneGap.onPhoneGapInit.subscribeOnce(function() {
         try {
             func();
         } catch(e) {
@@ -166,6 +184,23 @@ PhoneGap.onDOMContentLoaded = new PhoneGap.Channel('onDOMContentLoaded');
 PhoneGap.onNativeReady = new PhoneGap.Channel('onNativeReady');
 
 /**
+ * onPhoneGapInit channel is fired when the web page is fully loaded and
+ * PhoneGap native code has been initialized.
+ */
+PhoneGap.onPhoneGapInit = new PhoneGap.Channel('onPhoneGapInit');
+
+/**
+ * onPhoneGapReady channel is fired when the JS PhoneGap objects have been created.
+ */
+PhoneGap.onPhoneGapReady = new PhoneGap.Channel('onPhoneGapReady');
+
+/**
+ * onPhoneGapInfoReady channel is fired when the PhoneGap device properties
+ * has been set.
+ */
+PhoneGap.onPhoneGapInfoReady = new PhoneGap.Channel('onPhoneGapInfoReady');
+
+/**
  * onResume channel is fired when the PhoneGap native code
  * resumes.
  */
@@ -183,28 +218,43 @@ PhoneGap.onPause = new PhoneGap.Channel('onPause');
 if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
 
 /**
- * onDeviceReady is fired only after both onDOMContentLoaded and 
- * onNativeReady have fired.
+ * onDeviceReady is fired only after all PhoneGap objects are created and
+ * the device properties are set.
  */
 PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
-PhoneGap.onDeviceReady.subscribeOnce(function() {
-    PhoneGap.JSCallback();
-});
 
+/**
+ * Create all PhoneGap objects once page has fully loaded and native side is ready.
+ */
+PhoneGap.Channel.join(function() {
+
+    // Start listening for XHR callbacks
+    PhoneGap.JSCallback();
+
+    // Run PhoneGap constructors
+    PhoneGap.onPhoneGapInit.fire();
+
+    // Fire event to notify that all objects are created
+    PhoneGap.onPhoneGapReady.fire();
+
+}, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
+
+/**
+ * Fire onDeviceReady event once all constructors have run and PhoneGap info has been
+ * received from native side.
+ */
 PhoneGap.Channel.join(function() {
     PhoneGap.onDeviceReady.fire();
 
     // Fire the onresume event, since first one happens before JavaScript is loaded
     PhoneGap.onResume.fire();
-}, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
-
+}, [ PhoneGap.onPhoneGapReady, PhoneGap.onPhoneGapInfoReady]);
 
 // Listen for DOMContentLoaded and notify our channel subscribers
 document.addEventListener('DOMContentLoaded', function() {
     PhoneGap.onDOMContentLoaded.fire();
 }, false);
-
 
 // Intercept calls to document.addEventListener and watch for deviceready
 PhoneGap.m_document_addEventListener = document.addEventListener;
@@ -222,6 +272,36 @@ document.addEventListener = function(evt, handler, capture) {
     }
 };
 
+/**
+ * If JSON not included, use our own stringify. (Android 1.6)
+ * The restriction on ours is that it must be an array of simple types.
+ *
+ * @param args
+ * @return
+ */
+PhoneGap.stringify = function(args) {
+    if (typeof JSON == "undefined") {
+        var s = "[";
+        for (var i=0; i<args.length; i++) {
+            if (i > 0) {
+                s = s + ",";
+            }
+            var type = typeof args[i];
+            if ((type == "number") || (type == "boolean")) {
+                s = s + args[i];
+            }
+            else {
+                s = s + '"' + args[i] + '"';
+            }
+        }
+        s = s + "]";
+        return s;
+    }
+    else {
+        return JSON.stringify(args);
+    }
+};
+
 PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
 
@@ -232,10 +312,11 @@ PhoneGap.callbacks = {};
  * @param {String} command Command to be run in PhoneGap, e.g. "ClassName.method"
  * @param {String[]} [args] Zero or more arguments to pass to the method
  */
+// TODO: Not used anymore, should be removed.
 PhoneGap.exec = function(clazz, action, args) {
     try {
         var callbackId = 0;
-        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
+        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), false);
         eval("var v="+r+";");
         
         // If status is OK, then return value back to caller
@@ -253,22 +334,54 @@ PhoneGap.exec = function(clazz, action, args) {
     }
 };
 
-PhoneGap.execAsync = function(success, fail, clazz, action, args) {
+/**
+ * Execute a PhoneGap command.  It is up to the native side whether this action is synch or async.  
+ * The native side can return:
+ *      Synchronous: PluginResult object as a JSON string
+ *      Asynchrounous: Empty string ""
+ * If async, the native side will PhoneGap.callbackSuccess or PhoneGap.callbackError,
+ * depending upon the result of the action.
+ *
+ * @param {Function} success    The success callback
+ * @param {Function} fail       The fail callback
+ * @param {String} service      The name of the service to use
+ * @param {String} action       Action to be run in PhoneGap
+ * @param {String[]} [args]     Zero or more arguments to pass to the method
+ */
+PhoneGap.execAsync = function(success, fail, service, action, args) {
     try {
-        var callbackId = clazz + PhoneGap.callbackId++;
-        PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
-        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
-        if (r) {
+        var callbackId = service + PhoneGap.callbackId++;
+        if (success || fail) {
+            PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
+        }
+        
+        // Note: Device returns string, but for some reason emulator returns object - so convert to string.
+        var r = ""+PluginManager.exec(service, action, callbackId, this.stringify(args), true);
+        
+        // If a result was returned
+        if (r.length > 0) {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
             if (v.status == 0) {
+
+                // If there is a success callback, then call it now with returned value
+                if (success) {
+                    success(v.message);
+                    delete PhoneGap.callbacks[callbackId];
+                }
                 return v.message;
             }
 
             // If error, then display error
             else {
                 console.log("Error: Status="+r.status+" Message="+v.message);
+
+                // If there is a fail callback, then call it now with returned value
+                if (fail) {
+                    fail(v.message);
+                    delete PhoneGap.callbacks[callbackId];
+                }
                 return null;
             }
         }
@@ -277,24 +390,44 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
     }
 };
 
+/**
+ * Called by native code when returning successful result from an action.
+ *
+ * @param callbackId
+ * @param args
+ */
 PhoneGap.callbackSuccess = function(callbackId, args) {
-    try {
-        PhoneGap.callbacks[callbackId].success(args.message);
+    if (PhoneGap.callbacks[callbackId]) {
+        try {
+            if (PhoneGap.callbacks[callbackId].success) {
+                PhoneGap.callbacks[callbackId].success(args.message);
+            }
+        }
+        catch (e) {
+            console.log("Error in success callback: "+callbackId+" = "+e);
+        }
+        delete PhoneGap.callbacks[callbackId];
     }
-    catch (e) {
-        console.log("Error in success callback: "+callbackId+" = "+e);
-    }
-    delete PhoneGap.callbacks[callbackId];
 };
 
+/**
+ * Called by native code when returning error result from an action.
+ *
+ * @param callbackId
+ * @param args
+ */
 PhoneGap.callbackError = function(callbackId, args) {
-    try {
-        PhoneGap.callbacks[callbackId].fail(args.message);
+    if (PhoneGap.callbacks[callbackId]) {
+        try {
+            if (PhoneGap.callbacks[callbackId].fail) {
+                PhoneGap.callbacks[callbackId].fail(args.message);
+            }
+        }
+        catch (e) {
+            console.log("Error in error callback: "+callbackId+" = "+e);
+        }
+        delete PhoneGap.callbacks[callbackId];
     }
-    catch (e) {
-        console.log("Error in error callback: "+callbackId+" = "+e);
-    }
-    delete PhoneGap.callbacks[callbackId];
 };
 
 
@@ -305,6 +438,7 @@ PhoneGap.callbackError = function(callbackId, args) {
  * url, which will be turned into a dictionary on the other end.
  * @private
  */
+// TODO: Is this used?
 PhoneGap.run_command = function() {
     if (!PhoneGap.available || !PhoneGap.queue.ready)
         return;
@@ -344,6 +478,8 @@ PhoneGap.run_command = function() {
 };
 
 /**
+ * This is only for Android.
+ *
  * Internal function that uses XHR to call into PhoneGap Java code and retrieve 
  * any JavaScript code that needs to be run.  This is used for callbacks from
  * Java to JavaScript.

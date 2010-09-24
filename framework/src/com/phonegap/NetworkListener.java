@@ -26,82 +26,129 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationListener;
 import android.os.Bundle;
-import android.util.Log;
 
 public class NetworkListener implements LocationListener {
-
-	private Context mCtx;
-	private Location cLoc;
-	private LocationManager mLocMan;
-	private static final String LOG_TAG = "PhoneGap";
-	GeoListener owner;
 	
-	public NetworkListener(Context ctx, int interval, GeoListener m)
-	{
-		owner = m;
-		mCtx = ctx;
+	private DroidGap mCtx;						// DroidGap object
+	
+	private LocationManager mLocMan;			// Location manager object
+	private GeoListener owner;					// Geolistener object (parent)
+	private boolean hasData = false;			// Flag indicates if location data is available in cLoc
+	private Location cLoc;						// Last recieved location
+	private boolean running = false;			// Flag indicates if listener is running
+
+	/**
+	 * Constructor.  
+	 * Automatically starts listening.
+	 * 
+	 * @param ctx
+	 * @param interval
+	 * @param m
+	 */
+	public NetworkListener(DroidGap ctx, int interval, GeoListener m) {
+		this.owner = m;
+		this.mCtx = ctx;
+		this.mLocMan = (LocationManager) this.mCtx.getSystemService(Context.LOCATION_SERVICE);
+		this.running = false;
 		this.start(interval);
 	}
 	
-	public Location getLocation()
-	{
-		cLoc = mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);		
-		return cLoc;
+	/**
+	 * Get last location.
+	 * 
+	 * @return 				Location object
+	 */
+	public Location getLocation() {
+		this.cLoc = this.mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		if (this.cLoc != null) {
+			this.hasData = true;
+		}
+		return this.cLoc;
 	}
 
+	/**
+	 * Called when the provider is disabled by the user.
+	 * 
+	 * @param provider
+	 */
 	public void onProviderDisabled(String provider) {
-		// TODO Auto-generated method stub
-		Log.d(LOG_TAG, "The provider " + provider + " is disabled");
+		System.out.println("NetworkListener: The provider " + provider + " is disabled");
 	}
 
-
+	/**
+	 * Called when the provider is enabled by the user.
+	 * 
+	 * @param provider
+	 */
 	public void onProviderEnabled(String provider) {
-		// TODO Auto-generated method stub
-		Log.d(LOG_TAG, "The provider "+ provider + " is enabled");
+		System.out.println("NetworkListener: The provider "+ provider + " is enabled");
 	}
 
-
+	/**
+	 * Called when the provider status changes. This method is called when a 
+	 * provider is unable to fetch a location or if the provider has recently 
+	 * become available after a period of unavailability.
+	 * 
+	 * @param provider
+	 * @param status
+	 * @param extras
+	 */
 	public void onStatusChanged(String provider, int status, Bundle extras) {
-		// TODO Auto-generated method stub
-		Log.d(LOG_TAG, "The status of the provider " + provider + " has changed");
-		if(status == 0)
-		{
-			Log.d(LOG_TAG, provider + " is OUT OF SERVICE");
+		System.out.println("NetworkListener: The status of the provider " + provider + " has changed");
+		if (status == 0) {
+			System.out.println("NetworkListener: " + provider + " is OUT OF SERVICE");
 		}
-		else if(status == 1)
-		{
-			Log.d(LOG_TAG, provider + " is TEMPORARILY_UNAVAILABLE");
+		else if (status == 1) {
+			System.out.println("NetworkListener: " + provider + " is TEMPORARILY_UNAVAILABLE");
 		}
-		else
-		{
-			Log.d(LOG_TAG, provider + " is Available");
+		else {
+			System.out.println("NetworkListener: " + provider + " is Available");
 		}
 	}
 
-
-	/*
-	 * The GPS is the primary form of Geolocation in PhoneGap.  Only fire the success variables if the GPS is down
-	 * for some reason
+	/**
+	 * Called when the location has changed.
+	 * 
+	 * @param location
 	 */
 	public void onLocationChanged(Location location) {
-		Log.d(LOG_TAG, "The location has been updated!");
-		if (!owner.mGps.hasLocation())
-		{
-			owner.success(location);
+		System.out.println("NetworkListener: The location has been updated!");
+		this.hasData = true;
+		this.cLoc = location;
+		
+		// The GPS is the primary form of Geolocation in PhoneGap.  
+		// Only fire the success variables if the GPS is down for some reason.
+		if (!this.owner.mGps.hasLocation()) {
+			this.owner.success(location);
 		}
-		cLoc = location;
 	}
 	
-	public void start(int interval)
-	{
-		mLocMan = (LocationManager) mCtx.getSystemService(Context.LOCATION_SERVICE);
-		mLocMan.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, interval, 0, this);
-		cLoc = mLocMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+	/**
+	 * Start requesting location updates.
+	 * 
+	 * @param interval
+	 */
+	public void start(int interval)	{
+		if (!this.running) {
+			this.running = true;
+			this.mLocMan.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, interval, 0, this);
+			this.getLocation();
+			
+			// If Network provider has data but GPS provider doesn't, then send ours
+			if (this.hasData && !this.owner.mGps.hasLocation()) {
+				this.owner.success(this.cLoc);
+			}
+		}
 	}
 	
-	public void stop()
-	{
-		mLocMan.removeUpdates(this);
+	/**
+	 * Stop receiving location updates.
+	 */
+	public void stop() {
+		if (this.running) {
+			this.mLocMan.removeUpdates(this);
+		}
+		this.running = false;
 	}
 	
 }

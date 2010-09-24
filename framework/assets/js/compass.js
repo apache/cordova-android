@@ -1,25 +1,3 @@
-com.phonegap.CompassListenerProxy = function() {
-    this.className = "com.phonegap.CompassListener";
-};
-com.phonegap.CompassListenerProxy.prototype.start = function() {
-    return PhoneGap.exec(this.className, "start", []);
-};
-com.phonegap.CompassListenerProxy.prototype.stop = function() {
-    return PhoneGap.exec(this.className, "stop", []);
-};
-com.phonegap.CompassListenerProxy.prototype.getStatus = function() {
-    return PhoneGap.exec(this.className, "getStatus", []);
-};
-com.phonegap.CompassListenerProxy.prototype.getHeading = function() {
-    return PhoneGap.exec(this.className, "getHeading", []);
-};
-com.phonegap.CompassListenerProxy.prototype.setTimeout = function(timeout) {
-    return PhoneGap.exec(this.className, "setTimeout", [timeout]);
-};
-com.phonegap.CompassListenerProxy.prototype.getTimeout = function() {
-    return PhoneGap.exec(this.className, "getTimeout", []);
-};
-com.phonegap.CompassListener = new com.phonegap.CompassListenerProxy();
 
 /**
  * This class provides access to device Compass data.
@@ -37,18 +15,14 @@ function Compass() {
     this.timers = {};
 };
 
-Compass.STOPPED = 0;
-Compass.STARTING = 1;
-Compass.RUNNING = 2;
-Compass.ERROR_FAILED_TO_START = 3;
 Compass.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
 
 /**
  * Asynchronously aquires the current heading.
  *
  * @param {Function} successCallback The function to call when the heading data is available
- * @param {Function} errorCallback The function to call when there is an error getting the heading data.
- * @param {PositionOptions} options The options for getting the heading data such as timeout.
+ * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
+ * @param {PositionOptions} options The options for getting the heading data such as timeout. (OPTIONAL)
  */
 Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, options) {
 
@@ -64,61 +38,16 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
         return;
     }
 
-    // Get current compass status
-    var status = com.phonegap.CompassListener.getStatus();
-
-    // If running, then call successCallback
-    if (status == Compass.RUNNING) {
-        try {
-            var heading = com.phonegap.CompassListener.getHeading();
-            successCallback(heading);
-        } catch (e) {
-            console.log("Compass Error in successCallback: " + e);
-        }
-    }
-
-    // If not running, then start it
-    else {
-        com.phonegap.CompassListener.start();
-
-        // Wait until started
-        var timer = setInterval(function() {
-            var status = com.phonegap.CompassListener.getStatus();
-            if (status != Compass.STARTING) {
-                clearInterval(timer);
-
-                // If compass is running
-                if (status == Compass.RUNNING) {
-                    try {
-                        var heading = com.phonegap.CompassListener.getHeading();
-                        successCallback(heading);
-                    } catch (e) {
-                        console.log("Compass Error in successCallback: " + e);
-                    }
-                }
-
-                // If compass error
-                else {
-                    console.log("Compass Error: "+ Compass.ERROR_MSG[status]);
-                    try {
-                        if (errorCallback) {
-                            errorCallback(status);
-                        }
-                    } catch (e) {
-                        console.log("Compass Error in errorCallback: " + e);
-                    }
-                }
-            }
-        }, 10);
-    }
+    // Get heading
+    PhoneGap.execAsync(successCallback, errorCallback, "Compass", "getHeading", []);
 };
 
 /**
  * Asynchronously aquires the heading repeatedly at a given interval.
  *
  * @param {Function} successCallback    The function to call each time the heading data is available
- * @param {Function} errorCallback      The function to call when there is an error getting the heading data.
- * @param {HeadingOptions} options      The options for getting the heading data such as timeout and the frequency of the watch.
+ * @param {Function} errorCallback      The function to call when there is an error getting the heading data. (OPTIONAL)
+ * @param {HeadingOptions} options      The options for getting the heading data such as timeout and the frequency of the watch. (OPTIONAL)
  * @return String                       The watch id that must be passed to #clearWatch to stop watching.
  */
 Compass.prototype.watchHeading= function(successCallback, errorCallback, options) {
@@ -139,41 +68,20 @@ Compass.prototype.watchHeading= function(successCallback, errorCallback, options
     }
 
     // Make sure compass timeout > frequency + 10 sec
-    var timeout = com.phonegap.CompassListener.getTimeout();
-    if (timeout < (frequency + 10000)) {
-        com.phonegap.CompassListener.setTimeout(frequency + 10000); // set to frequency + 10 sec
-    }
+    PhoneGap.execAsync(
+        function(timeout) {
+            if (timeout < (frequency + 10000)) {
+                PhoneGap.execAsync(null, null, "Compass", "setTimeout", [frequency + 10000]);
+            }
+        },
+        function(e) { }, "Compass", "getTimeout", []);
 
+    // Start watch timer to get headings
     var id = PhoneGap.createUUID();
-    com.phonegap.CompassListener.start();
-
-    // Start watch timer
-    navigator.compass.timers[id] = setInterval(function() {
-        var status = com.phonegap.CompassListener.getStatus();
-
-        // If compass is running
-        if (status == Compass.RUNNING) {
-            try {
-                var heading = com.phonegap.CompassListener.getHeading();
-                successCallback(heading);
-            } catch (e) {
-                console.log("Compass Error in successCallback: " + e);
-            }
-        }
-
-        // If compass had error
-        else if (status != Compass.STARTING) {
-            console.log("Compass Error: "+ Compass.ERROR_MSG[status]);
-            try {
-                navigator.compass.clearWatch(id);
-                if (errorCallback) {
-                    errorCallback(status);
-                }
-            } catch (e) {
-                console.log("Compass Error in errorCallback: " + e);
-            }
-        }
-    }, (frequency ? frequency : 1));
+    navigator.compass.timers[id] = setInterval(
+        function() {
+            PhoneGap.execAsync(successCallback, errorCallback, "Compass", "getHeading", []);
+        }, (frequency ? frequency : 1));
 
     return id;
 };

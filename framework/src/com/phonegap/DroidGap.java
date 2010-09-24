@@ -25,7 +25,6 @@ package com.phonegap;
 
 
 import com.phonegap.api.Plugin;
-import java.util.HashMap;
 import com.phonegap.api.PluginManager;
 
 import android.app.Activity;
@@ -83,8 +82,6 @@ public class DroidGap extends Activity {
 	protected Boolean loadInWebView = false;
     private LinearLayout root;
 
-    private Device gap;
-    private FileUtils fs;
     private BrowserKey mKey;
     public CallbackServer callbackServer;
 	private PluginManager pluginManager;
@@ -92,10 +89,8 @@ public class DroidGap extends Activity {
     private String url;							// The initial URL for our app
     private String baseUrl;						// The base of the initial URL for our app
 
-    // Variables to manage ActivityResultCallbacks
-    private int activityResultCallbackCounter = 1000;
-    private HashMap<Integer,Plugin> activityResultCallbacks = new HashMap<Integer,Plugin>();
-     
+    private Plugin activityResultCallback = null;	// Plugin to call when activity result is received
+         
     /** 
      * Called when the activity is first created. 
      * 
@@ -253,6 +248,16 @@ public class DroidGap extends Activity {
     }
 
     /**
+     * Add a class that implements a service.
+     * 
+     * @param serviceType
+     * @param className
+     */
+    public void addService(String serviceType, String className) {
+    	this.pluginManager.addService(serviceType, className);
+    }
+
+    /**
      * Bind PhoneGap objects to JavaScript.
      * 
      * @param appView
@@ -260,15 +265,11 @@ public class DroidGap extends Activity {
     private void bindBrowser(WebView appView) {
         this.callbackServer = new CallbackServer();
     	this.pluginManager = new PluginManager(appView, this);
-        this.gap = new Device(appView, this);
-        this.fs = new FileUtils(appView, this);
         this.mKey = new BrowserKey(appView, this);
     	
     	// This creates the new javascript interfaces for PhoneGap
     	appView.addJavascriptInterface(this.pluginManager, "PluginManager");
-        appView.addJavascriptInterface(this.gap, "DroidGap");
         
-        appView.addJavascriptInterface(this.fs, "FileUtil");
         appView.addJavascriptInterface(this.mKey, "BackButton");
         
         appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
@@ -281,9 +282,22 @@ public class DroidGap extends Activity {
             Storage cupcakeStorage = (Storage)this.pluginManager.addPlugin("com.phonegap.Storage");
         	cupcakeStorage.setStorage(appPackage);
 
-            this.pluginManager.addPlugin("com.phonegap.GeoBroker");
 
         }
+        
+        this.addService("Geolocation", "com.phonegap.GeoBroker");
+        this.addService("Device", "com.phonegap.Device");
+        this.addService("Accelerometer", "com.phonegap.AccelListener");
+        this.addService("Compass", "com.phonegap.CompassListener");
+        this.addService("Media", "com.phonegap.AudioHandler");
+        this.addService("Camera", "com.phonegap.CameraLauncher");
+        this.addService("Contacts", "com.phonegap.ContactManager");
+        this.addService("Crypto", "com.phonegap.CryptoHandler");
+        this.addService("File", "com.phonegap.FileUtils");
+        this.addService("Location", "com.phonegap.GeoBroker");
+        this.addService("Network Status", "com.phonegap.NetworkManager");
+        this.addService("Storage", "com.phonegap.Storage");
+        this.addService("Temperature", "com.phonegap.TempListener");
     }
  
     /**
@@ -658,13 +672,11 @@ public class DroidGap extends Activity {
      *  
      * @param command			The command object
      * @param intent			The intent to start
-     * @return					The request code to use for the callback
+     * @param requestCode		The request code that is passed to callback to identify the activity
      */
-    public int startActivityForResult(Plugin command, Intent intent) {
-    	int requestCode = this.activityResultCallbackCounter++;
-    	this.activityResultCallbacks.put(requestCode, command);
+    public void startActivityForResult(Plugin command, Intent intent, int requestCode) {
+    	this.activityResultCallback = command;
     	super.startActivityForResult(intent, requestCode);
-    	return requestCode;
     }
 
      @Override
@@ -679,8 +691,7 @@ public class DroidGap extends Activity {
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        
-        Plugin callback = this.activityResultCallbacks.remove(requestCode);
+        Plugin callback = this.activityResultCallback;
         if (callback != null) {
         	callback.onActivityResult(requestCode, resultCode, intent); 
         }        

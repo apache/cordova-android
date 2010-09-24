@@ -1,57 +1,82 @@
 /**
- * this represents the mobile device, and provides properties for inspecting the model, version, UUID of the
+ * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
  * phone, etc.
  * @constructor
  */
 function Device() {
     this.available = PhoneGap.available;
     this.platform = null;
-    this.version  = null;
-    this.name     = null;
-    this.gap      = null;
-    this.uuid     = null;
-    try {
-        if (window.DroidGap) {
-            this.available = true;
-            this.uuid = window.DroidGap.getUuid();
-            this.version = window.DroidGap.getOSVersion();
-            this.gapVersion = window.DroidGap.getVersion();
-            this.platform = window.DroidGap.getPlatform();
-            this.name = window.DroidGap.getProductName();
-            this.line1Number = window.DroidGap.getLine1Number();
-            this.deviceId = window.DroidGap.getDeviceId();
-            this.simSerialNumber = window.DroidGap.getSimSerialNumber();
-            this.subscriberId = window.DroidGap.getSubscriberId();
-        } 
-    } catch(e) {
-        this.available = false;
-    }
+    this.version = null;
+    this.name = null;
+    this.uuid = null;
+    this.phonegap = null;
+
+    var me = this;
+    this.getInfo(
+        function(info) {
+            me.available = true;
+            me.platform = info.platform;
+            me.version = info.version;
+            me.uuid = info.uuid;
+            me.phonegap = info.phonegap;
+            PhoneGap.onPhoneGapInfoReady.fire();
+        },
+        function(e) {
+            me.available = false;
+            console.log("Error initializing PhoneGap: " + e);
+            alert("Error initializing PhoneGap: "+e);
+        });
 }
 
-/*
- * You must explicitly override the back button. 
+/**
+ * Get device info
+ *
+ * @param {Function} successCallback The function to call when the heading data is available
+ * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
  */
+Device.prototype.getInfo = function(successCallback, errorCallback) {
 
-Device.prototype.overrideBackButton = function()
-{
-  BackButton.override();
+    // successCallback required
+    if (typeof successCallback != "function") {
+        console.log("Device Error: successCallback is not a function");
+        return;
+    }
+
+    // errorCallback optional
+    if (errorCallback && (typeof errorCallback != "function")) {
+        console.log("Device Error: errorCallback is not a function");
+        return;
+    }
+
+    // Get info
+    PhoneGap.execAsync(successCallback, errorCallback, "Device", "getDeviceInfo", []);
+};
+
+/*
+ * This is only for Android.
+ *
+ * You must explicitly override the back button.
+ */
+Device.prototype.overrideBackButton = function() {
+    BackButton.override();
 }
 
 /*
+ * This is only for Android.
+ *
  * This resets the back button to the default behaviour
  */
-
-Device.prototype.resetBackButton = function()
-{
-  BackButton.reset();
+Device.prototype.resetBackButton = function() {
+    BackButton.reset();
 }
 
 /*
+ * This is only for Android.
+ *
  * This terminates the activity!
  */
-Device.prototype.exitApp = function()
-{
-  BackButton.exitApp();
+Device.prototype.exitApp = function() {
+    BackButton.exitApp();
 }
 
 PhoneGap.addConstructor(function() {

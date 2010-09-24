@@ -1,27 +1,49 @@
-com.phonegap.CameraLauncherProxy = function() {
-    this.className = "com.phonegap.CameraLauncher";
-};
-com.phonegap.CameraLauncherProxy.prototype.setBase64 = function(b) {
-    return PhoneGap.exec(this.className, "setBase64", [b]);
-};
-com.phonegap.CameraLauncherProxy.prototype.takePicture = function(quality) {
-    return PhoneGap.exec(this.className, "takePicture", [quality]);
-};
-com.phonegap.CameraLauncher = new com.phonegap.CameraLauncherProxy();
 
 /**
  * This class provides access to the device camera.
  *
  * @constructor
  */
-function Camera() {
+Camera = function() {
     this.successCallback = null;
     this.errorCallback = null;
     this.options = null;
 };
 
 /**
- * Takes a photo and returns the image as a base64 encoded `String`.
+ * Format of image that returned from getPicture.
+ *
+ * Example: navigator.camera.getPicture(success, fail,
+ *              { quality: 80,
+ *                destinationType: Camera.DestinationType.DATA_URL,
+ *                sourceType: Camera.PictureSourceType.PHOTOLIBRARY})
+ */
+Camera.DestinationType = {
+    DATA_URL: 0,                // Return base64 encoded string
+    FILE_URI: 1                 // Return file uri (content://media/external/images/media/2 for Android)
+};
+Camera.prototype.DestinationType = Camera.DestinationType;
+
+/**
+ * Source to getPicture from.
+ *
+ * Example: navigator.camera.getPicture(success, fail,
+ *              { quality: 80,
+ *                destinationType: Camera.DestinationType.DATA_URL,
+ *                sourceType: Camera.PictureSourceType.PHOTOLIBRARY})
+ */
+Camera.PictureSourceType = {
+    PHOTOLIBRARY : 0,           // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
+    CAMERA : 1,                 // Take picture from camera
+    SAVEDPHOTOALBUM : 2         // Choose image from picture library (same as PHOTOLIBRARY for Android)
+};
+Camera.prototype.PictureSourceType = Camera.PictureSourceType;
+
+/**
+ * Gets a picture from source defined by "options.sourceType", and returns the
+ * image as defined by the "options.destinationType" option.
+
+ * The defaults are sourceType=CAMERA and destinationType=DATA_URL.
  *
  * @param {Function} successCallback
  * @param {Function} errorCallback
@@ -44,12 +66,19 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.options = options;
+    var quality = 80;
     if (options.quality) {
-        com.phonegap.CameraLauncher.takePicture(options.quality);
+        quality = this.options.quality;
     }
-    else {
-        com.phonegap.CameraLauncher.takePicture(80);
+    var destinationType = Camera.DestinationType.DATA_URL;
+    if (this.options.destinationType) {
+        destinationType = this.options.destinationType;
     }
+    var sourceType = Camera.PictureSourceType.CAMERA;
+    if (typeof this.options.sourceType == "number") {
+        sourceType = this.options.sourceType;
+    }
+    PhoneGap.execAsync(null, null, "Camera", "takePicture", [quality, destinationType, sourceType]);
 };
 
 /**

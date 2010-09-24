@@ -84,6 +84,16 @@ public class ContactManager implements Plugin {
 	}
 
 	/**
+	 * Identifies if action to be executed returns a value and should be run synchronously.
+	 * 
+	 * @param action	The action to execute
+	 * @return			T=returns value
+	 */
+	public boolean isSynch(String action) {
+		return false;
+	}
+
+	/**
      * Called when the system is about to start resuming a previous activity. 
      */
     public void onPause() {
@@ -246,14 +256,14 @@ public class ContactManager implements Plugin {
 	            
 	            // Code for backwards compatibility with the OLD Contacts API
 	            if (all) {
-	            	this.ctx.sendJavascript("navigator.ContactManager.droidAddContact('" + name + "','" + phoneNumber + "','" + email +"');");	            	
+	            	this.ctx.sendJavascript("navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"');");	            	
 	            }
 	            else {
 	            	this.ctx.sendJavascript("navigator.contacts.droidFoundContact('" + name + "','" + phoneNumber + "','" + email +"');");
 	            }           
 	        } while (cur.moveToNext());
 	        if (all) {
-	        	this.ctx.sendJavascript("navigator.ContactManager.droidDone();");
+	        	this.ctx.sendJavascript("navigator.contacts.droidDone();");
 	        }
 	        else {
 	        	this.ctx.sendJavascript("navigator.contacts.droidDone();");
@@ -262,7 +272,7 @@ public class ContactManager implements Plugin {
 	    else
 	    {
 	    	if (all) {
-	    		this.ctx.sendJavascript("navigator.ContactManager.fail();");
+	    		this.ctx.sendJavascript("navigator.contacts.fail('Error');");
 	    	}
 	    	else {
 	    		this.ctx.sendJavascript("navigator.contacts.fail('None found!');");
@@ -289,7 +299,7 @@ public class ContactManager implements Plugin {
 	            if(data != null)
 	            {
 	            	data.email = email;	            
-	            	this.ctx.sendJavascript("navigator.Contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"');");
+	            	this.ctx.sendJavascript("navigator.contacts.droidFoundContact('" + data.name + "','" + data.phone + "','" + data.email +"');");
 	            }	           
 	        } while (cur.moveToNext());
 	        this.ctx.sendJavascript("navigator.contacts.droidDoneContacts();");	        

@@ -71,6 +71,16 @@ public class TempListener implements SensorEventListener, Plugin {
 	}
 
 	/**
+	 * Identifies if action to be executed returns a value and should be run synchronously.
+	 * 
+	 * @param action	The action to execute
+	 * @return			T=returns value
+	 */
+	public boolean isSynch(String action) {
+		return false;
+	}
+
+	/**
      * Called when the system is about to start resuming a previous activity. 
      */
     public void onPause() {

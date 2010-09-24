@@ -3,85 +3,184 @@
  * @constructor
  */
 function Geolocation() {
-    /**
-     * The last known GPS position.
-     */
+
+    // The last known GPS position.
     this.lastPosition = null;
-    this.lastError = null;
-    this.listeners = null;
+
+    // Geolocation listeners
+    this.listeners = {};
 };
 
-var geoListeners = [];
-
-Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options)
-{
-  var position = Geo.getCurrentLocation();
-  this.global_success = successCallback;
-  this.fail = errorCallback;
-}
-
-// Run the global callback
-Geolocation.prototype.gotCurrentPosition = function(lat, lng, alt, altacc, head, vel, stamp)
-{
-  if (lat == "undefined" || lng == "undefined")
-  {
-    this.fail();
-  }
-  else
-  {
-    coords = new Coordinates(lat, lng, alt, acc, head, vel);
-    loc = new Position(coords, stamp);
-	this.lastPosition = loc;
-    this.global_success(loc);
-  }
-}
-
-/*
-* This turns on the GeoLocator class, which has two listeners.
-* The listeners have their own timeouts, and run independently of this process
-* In this case, we return the key to the watch hash
-*/
- 
-Geolocation.prototype.watchPosition = function(successCallback, errorCallback, options)
-{
-  var frequency = (options != undefined)? options.frequency : 10000;
-   
-  var key = geoListeners.push( {"success" : successCallback, "fail" : errorCallback }) - 1;
- 
-  // TO-DO: Get the names of the method and pass them as strings to the Java.
-  return Geo.start(frequency, key);
-}
- 
-/*
- * Retrieve and stop this listener from listening to the GPS
+/**
+ * Position error object
  *
+ * @param code
+ * @param message
  */
-Geolocation.prototype.success = function(key, lat, lng, alt, altacc, head, vel, stamp)
-{
-  var coords = new Coordinates(lat, lng, alt, acc, head, vel);
-  var loc = new Position(coords, stamp);
-  geoListeners[key].success(loc);
+function PositionError(code, message) {
+    this.code = code;
+    this.message = message;
+};
+
+PositionError.PERMISSION_DENIED = 1;
+PositionError.POSITION_UNAVAILABLE = 2;
+PositionError.TIMEOUT = 3;
+
+/**
+ * Asynchronously aquires the current position.
+ *
+ * @param {Function} successCallback    The function to call when the position data is available
+ * @param {Function} errorCallback      The function to call when there is an error getting the heading position. (OPTIONAL)
+ * @param {PositionOptions} options     The options for getting the position data. (OPTIONAL)
+ */
+Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options) {
+    if (navigator._geo.listeners["global"]) {
+        console.log("Geolocation Error: Still waiting for previous getCurrentPosition() request.");
+        try {
+            errorCallback(new PositionError(PositionError.TIMEOUT, "Geolocation Error: Still waiting for previous getCurrentPosition() request."));
+        } catch (e) {
+        }
+        return;
+    }
+    var maximumAge = 10000;
+    var enableHighAccuracy = false;
+    var timeout = 10000;
+    if (typeof options != "undefined") {
+        if (typeof options.maximumAge != "undefined") {
+            maximumAge = options.maximumAge;
+        }
+        if (typeof options.enableHighAccuracy != "undefined") {
+            enableHighAccuracy = options.enableHighAccuracy;
+        }
+        if (typeof options.timeout != "undefined") {
+            timeout = options.timeout;
+        }
+    }
+    navigator._geo.listeners["global"] = {"success" : successCallback, "fail" : errorCallback };
+    PhoneGap.execAsync(null, null, "Geolocation", "getCurrentLocation", [enableHighAccuracy, timeout, maximumAge]);
 }
 
-Geolocation.prototype.fail = function(key)
-{
-  geoListeners[key].fail();
-}
- 
-Geolocation.prototype.clearWatch = function(watchId)
-{
-  Geo.stop(watchId);
-}
+/**
+ * Asynchronously watches the geolocation for changes to geolocation.  When a change occurs,
+ * the successCallback is called with the new location.
+ *
+ * @param {Function} successCallback    The function to call each time the location data is available
+ * @param {Function} errorCallback      The function to call when there is an error getting the location data. (OPTIONAL)
+ * @param {PositionOptions} options     The options for getting the location data such as frequency. (OPTIONAL)
+ * @return String                       The watch id that must be passed to #clearWatch to stop watching.
+ */
+Geolocation.prototype.watchPosition = function(successCallback, errorCallback, options) {
+    var maximumAge = 10000;
+    var enableHighAccuracy = false;
+    var timeout = 10000;
+    if (typeof options != "undefined") {
+        if (typeof options.frequency  != "undefined") {
+            maximumAge = options.frequency;
+        }
+        if (typeof options.maximumAge != "undefined") {
+            maximumAge = options.maximumAge;
+        }
+        if (typeof options.enableHighAccuracy != "undefined") {
+            enableHighAccuracy = options.enableHighAccuracy;
+        }
+        if (typeof options.timeout != "undefined") {
+            timeout = options.timeout;
+        }
+    }
+    var id = PhoneGap.createUUID();
+    navigator._geo.listeners[id] = {"success" : successCallback, "fail" : errorCallback };
+    PhoneGap.execAsync(null, null, "Geolocation", "start", [id, enableHighAccuracy, timeout, maximumAge]);
+    return id;
+};
+
+/*
+ * Native callback when watch position has a new position.
+ * PRIVATE METHOD
+ *
+ * @param {String} id
+ * @param {Number} lat
+ * @param {Number} lng
+ * @param {Number} alt
+ * @param {Number} altacc
+ * @param {Number} head
+ * @param {Number} vel
+ * @param {Number} stamp
+ */
+Geolocation.prototype.success = function(id, lat, lng, alt, altacc, head, vel, stamp) {
+    var coords = new Coordinates(lat, lng, alt, altacc, head, vel);
+    var loc = new Position(coords, stamp);
+    try {
+        if (lat == "undefined" || lng == "undefined") {
+            navigator._geo.listeners[id].fail(new PositionError(PositionError.POSITION_UNAVAILABLE, "Lat/Lng are undefined."));
+        }
+        else {
+            navigator._geo.lastPosition = loc;
+            navigator._geo.listeners[id].success(loc);
+        }
+    }
+    catch (e) {
+        console.log("Geolocation Error: Error calling success callback function.");
+    }
+
+    if (id == "global") {
+        delete navigator._geo.listeners["global"];
+    }
+};
+
+/**
+ * Native callback when watch position has an error.
+ * PRIVATE METHOD
+ *
+ * @param {String} id       The ID of the watch
+ * @param {Number} code     The error code
+ * @param {String} msg      The error message
+ */
+Geolocation.prototype.fail = function(id, code, msg) {
+    try {
+        navigator._geo.listeners[id].fail(new PositionError(code, msg));
+    }
+    catch (e) {
+        console.log("Geolocation Error: Error calling error callback function.");
+    }
+};
+
+/**
+ * Clears the specified heading watch.
+ *
+ * @param {String} id       The ID of the watch returned from #watchPosition
+ */
+Geolocation.prototype.clearWatch = function(id) {
+    PhoneGap.execAsync(null, null, "Geolocation", "stop", [id]);
+    delete navigator._geo.listeners[id];
+};
+
+/**
+ * Force the PhoneGap geolocation to be used instead of built-in.
+ */
+Geolocation.usingPhoneGap = false;
+Geolocation.usePhoneGap = function() {
+    if (Geolocation.usingPhoneGap) {
+        return;
+    }
+    Geolocation.usingPhoneGap = true;
+
+    // Set built-in geolocation methods to our own implementations
+    // (Cannot replace entire geolocation, but can replace individual methods)
+    navigator.geolocation.setLocation = navigator._geo.setLocation;
+    navigator.geolocation.getCurrentPosition = navigator._geo.getCurrentPosition;
+    navigator.geolocation.watchPosition = navigator._geo.watchPosition;
+    navigator.geolocation.clearWatch = navigator._geo.clearWatch;
+    navigator.geolocation.start = navigator._geo.start;
+    navigator.geolocation.stop = navigator._geo.stop;
+};
 
 PhoneGap.addConstructor(function() {
-	// Taken from Jesse's geo fix (similar problem) in PhoneGap iPhone. Go figure, same browser!
-	function __proxyObj(origObj, proxyObj, funkList) {
-		for (var v in funkList) {
-			origObj[funkList[v]] = proxyObj[funkList[v]];
-		}
-	}
-	// In the case of Android, we can use the Native Geolocation Object if it exists, so only load this on 1.x devices
-  if (typeof navigator.geolocation == 'undefined') {
-		navigator.geolocation = new Geolocation();
-	}
+    navigator._geo = new Geolocation();
+
+    // No native geolocation object for Android 1.x, so use PhoneGap geolocation
+    if (typeof navigator.geolocation == 'undefined') {
+        navigator.geolocation = navigator._geo;
+        Geolocation.usingPhoneGap = true;
+    }
 });
+

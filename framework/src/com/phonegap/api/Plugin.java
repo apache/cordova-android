@@ -17,11 +17,19 @@ public interface Plugin {
 	/**
 	 * Executes the request and returns PluginResult.
 	 * 
-	 * @param action The plugin to execute.
-	 * @param args JSONArry of arguments for the plugin.
-	 * @return A PluginResult object with a status and message.
+	 * @param action 	The action to execute.
+	 * @param args 		JSONArry of arguments for the plugin.
+	 * @return 			A PluginResult object with a status and message.
 	 */
 	PluginResult execute(String action, JSONArray args);
+
+	/**
+	 * Identifies if action to be executed returns a value and should be run synchronously.
+	 * 
+	 * @param action	The action to execute
+	 * @return			T=returns value
+	 */
+	public boolean isSynch(String action);
 
 	/**
 	 * Sets the context of the Plugin. This can then be used to do things like
