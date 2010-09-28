@@ -17,6 +17,12 @@
 
 package com.phonegap;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,6 +30,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.ContactMethodsColumns;
@@ -48,6 +55,23 @@ import android.webkit.WebView;
  */
 @SuppressWarnings("deprecation")
 public class ContactAccessorSdk3_4 extends ContactAccessor {
+    private static final Map<String, String> dbMap = new HashMap<String, String>();
+    static {
+    	dbMap.put("id", People._ID);
+    	dbMap.put("displayName", People.DISPLAY_NAME);
+    	dbMap.put("phoneNumbers", Phones.NUMBER);
+    	dbMap.put("phoneNumbers.value", Phones.NUMBER);
+    	dbMap.put("emails", ContactMethods.DATA);
+    	dbMap.put("emails.value", ContactMethods.DATA);
+    	dbMap.put("addresses", ContactMethodsColumns.DATA);
+    	dbMap.put("addresses.formatted", ContactMethodsColumns.DATA);
+    	dbMap.put("ims", ContactMethodsColumns.DATA);
+    	dbMap.put("ims.value", ContactMethodsColumns.DATA);
+    	dbMap.put("organizations", Organizations.COMPANY);
+    	dbMap.put("organizations.name", Organizations.COMPANY);
+    	dbMap.put("organizations.title", Organizations.TITLE);
+    	dbMap.put("note", People.NOTES);
+    }
 	
 	public ContactAccessorSdk3_4(WebView view, Activity app)
 	{
@@ -77,32 +101,51 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		}
 		
 		
-		JSONArray contacts = new JSONArray();
-		JSONObject contact;
-
-        ContentResolver cr = mApp.getContentResolver();
-
-        // Right now we are just querying the displayName
-        Cursor cur = cr.query(People.CONTENT_URI, 
-			null,
-			People.DISPLAY_NAME + " LIKE ?",
-			new String[] {searchTerm},
-			People.DISPLAY_NAME + " ASC");
-
-		
-        int pos = 0;
-        while (cur.moveToNext() && pos < limit) {
-	    	contact = new JSONObject();
-	    	try {
-	    		String contactId = cur.getString(cur.getColumnIndex(People._ID));
-	    		// name
+//		JSONArray contacts = new JSONArray();
+//		JSONObject contact;
+//
+//        ContentResolver cr = mApp.getContentResolver();
+//
+//        // Right now we are just querying the displayName
+//        Cursor cur = cr.query(People.CONTENT_URI, 
+//			null,
+//			People.DISPLAY_NAME + " LIKE ?",
+//			new String[] {searchTerm},
+//			People.DISPLAY_NAME + " ASC");
+//
+//		
+//        int pos = 0;
+//        while (cur.moveToNext() && pos < limit) {
+    	// Get a cursor by creating the query.
+    	ContentResolver cr = mApp.getContentResolver();
+    	
+    	Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
+    		
+    	Iterator<String> it = contactIds.iterator();
+    		
+    	JSONArray contacts = new JSONArray();
+    	JSONObject contact;
+    	String contactId;
+    	int pos = 0;
+    	while (it.hasNext() && (pos < limit)) {
+    		contact = new JSONObject();
+	    	try {	    		
+	    		contactId = it.next();
 		    	contact.put("id", contactId);
-		    	contact.put("displayName", cur.getString(cur.getColumnIndex(People.DISPLAY_NAME)));
 		    	
+		    	// Do query for name and note
+		        // Right now we are just querying the displayName
+		        Cursor cur = cr.query(People.CONTENT_URI, 
+					null,
+					"people._id = ?",
+					new String[] {contactId},
+					null);
+		        cur.moveToFirst();
+		    	
+	    		// name
+		    	contact.put("displayName", cur.getString(cur.getColumnIndex(People.DISPLAY_NAME)));		    	
 				// phone number
-		    	if (Integer.parseInt(cur.getString(cur.getColumnIndex(People.PRIMARY_PHONE_ID))) > 0) {
-		    		contact.put("phoneNumbers", phoneQuery(cr, contactId));
-		    	}
+		    	contact.put("phoneNumbers", phoneQuery(cr, contactId));
 				// email
 		    	contact.put("emails", emailQuery(cr, contactId));
 				// addresses
@@ -120,13 +163,111 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 				// anniversary
 		    	
 		    	pos++;
+				cur.close();
 	    	} catch (JSONException e) {
 	    		Log.e(LOG_TAG, e.getMessage(), e);
 	    	}
 	    	contacts.put(contact);
         }
-		cur.close();
 		mView.loadUrl("javascript:navigator.service.contacts.droidDone('" + contacts.toString() + "');");
+	}
+	
+	private Set<String> buildSetOfContactIds(JSONArray filter, String searchTerm) {
+		Set<String> contactIds = new HashSet<String>();	
+		
+		String key;
+		try {
+			for (int i=0; i<filter.length(); i++) {
+				key = filter.getString(i);
+				if (key.startsWith("displayName")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							People.CONTENT_URI,
+							People._ID,
+							dbMap.get(key) + " LIKE ?",
+							new String[] {searchTerm});
+				}
+//				else if (key.startsWith("name")) {
+//					Log.d(LOG_TAG, "Doing " + key + " query");
+//					doQuery(searchTerm, contactIds,
+//							ContactsContract.Data.CONTENT_URI,
+//							ContactsContract.Data.CONTACT_ID,
+//							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+//							new String[] {searchTerm, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE});
+//				}
+				else if (key.startsWith("phoneNumbers")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							Phones.CONTENT_URI,
+							Phones.PERSON_ID,
+							dbMap.get(key) + " LIKE ?",
+							new String[] {searchTerm});
+				}
+				else if (key.startsWith("emails")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactMethods.CONTENT_EMAIL_URI,
+							ContactMethods.PERSON_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactMethods.KIND + " = ?", 
+							new String[] {searchTerm, ContactMethods.CONTENT_EMAIL_ITEM_TYPE});
+				}
+				else if (key.startsWith("addresses")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactMethods.CONTENT_URI,
+							ContactMethods.PERSON_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactMethods.KIND + " = ?",
+							new String[] {searchTerm, ContactMethods.CONTENT_POSTAL_ITEM_TYPE});					
+				}
+				else if (key.startsWith("ims")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactMethods.CONTENT_URI,
+							ContactMethods.PERSON_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactMethods.KIND + " = ?",
+							new String[] {searchTerm, ContactMethods.CONTENT_IM_ITEM_TYPE});					
+				}
+				else if (key.startsWith("organizations")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							Organizations.CONTENT_URI,
+							ContactMethods.PERSON_ID,
+							dbMap.get(key) + " LIKE ?",
+							new String[] {searchTerm});					
+				}
+				else if (key.startsWith("note")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							People.CONTENT_URI,
+							People._ID,
+							dbMap.get(key) + " LIKE ?",
+							new String[] {searchTerm});					
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		
+		return contactIds;
+	}
+
+	private void doQuery(String searchTerm, Set<String> contactIds, 
+			Uri uri, String projection, String selection, String[] selectionArgs) {
+		ContentResolver cr = mApp.getContentResolver();
+
+		Cursor cursor = cr.query(
+				uri, 
+				null,
+				selection,
+				selectionArgs,
+				null);
+		
+		while (cursor.moveToNext()) {
+			Log.d(LOG_TAG, "ID = " + cursor.getString(cursor.getColumnIndex(projection)));
+			contactIds.add(cursor.getString(cursor.getColumnIndex(projection)));
+		}
+		cursor.close();
 	}
 	
 	private JSONArray imQuery(ContentResolver cr, String contactId) {

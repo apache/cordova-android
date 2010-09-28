@@ -17,6 +17,12 @@
 
 package com.phonegap;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,6 +30,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.webkit.WebView;
@@ -49,8 +56,58 @@ import android.webkit.WebView;
 public class ContactAccessorSdk5 extends ContactAccessor {
 	
 	private static final String WHERE_STRING = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?";
+    private static final Map<String, String> dbMap = new HashMap<String, String>();
+    static {
+    	dbMap.put("id", ContactsContract.Contacts._ID);
+    	dbMap.put("displayName", ContactsContract.Contacts.DISPLAY_NAME);
+    	dbMap.put("name", ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME);
+    	dbMap.put("name.formatted", ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME);
+    	dbMap.put("name.familyName", ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME);
+    	dbMap.put("name.givenName", ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME);
+    	dbMap.put("name.middleName", ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME);
+    	dbMap.put("name.honorificPrefix", ContactsContract.CommonDataKinds.StructuredName.PREFIX);
+    	dbMap.put("name.honorificSuffix", ContactsContract.CommonDataKinds.StructuredName.SUFFIX);
+    	dbMap.put("nickname", ContactsContract.CommonDataKinds.Nickname.NAME);
+    	dbMap.put("phoneNumbers", ContactsContract.CommonDataKinds.Phone.NUMBER);
+    	dbMap.put("phoneNumbers.value", ContactsContract.CommonDataKinds.Phone.NUMBER);
+    	dbMap.put("emails", ContactsContract.CommonDataKinds.Email.DATA);
+    	dbMap.put("emails.value", ContactsContract.CommonDataKinds.Email.DATA);
+    	dbMap.put("addresses", ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS);
+    	dbMap.put("addresses.formatted", ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS);
+    	dbMap.put("addresses.streetAddress", ContactsContract.CommonDataKinds.StructuredPostal.STREET);
+    	dbMap.put("addresses.locality", ContactsContract.CommonDataKinds.StructuredPostal.CITY);
+    	dbMap.put("addresses.region", ContactsContract.CommonDataKinds.StructuredPostal.REGION);
+    	dbMap.put("addresses.postalCode", ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE);
+    	dbMap.put("addresses.country", ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY);
+    	dbMap.put("ims", ContactsContract.CommonDataKinds.Im.DATA);
+    	dbMap.put("ims.value", ContactsContract.CommonDataKinds.Im.DATA);
+    	dbMap.put("organizations", ContactsContract.CommonDataKinds.Organization.COMPANY);
+    	dbMap.put("organizations.name", ContactsContract.CommonDataKinds.Organization.COMPANY);
+    	dbMap.put("organizations.department", ContactsContract.CommonDataKinds.Organization.DEPARTMENT);
+    	dbMap.put("organizations.title", ContactsContract.CommonDataKinds.Organization.TITLE);
+    	dbMap.put("organizations.location", ContactsContract.CommonDataKinds.Organization.OFFICE_LOCATION);
+    	dbMap.put("organizations.description", ContactsContract.CommonDataKinds.Organization.JOB_DESCRIPTION);
+    	//dbMap.put("published", null);
+    	//dbMap.put("updated", null);
+    	dbMap.put("birthday", ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE);
+    	dbMap.put("anniversary", ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE);
+    	//dbMap.put("gender", null);
+    	dbMap.put("note", ContactsContract.CommonDataKinds.Note.NOTE);
+    	//dbMap.put("preferredUsername", null);
+    	//dbMap.put("photos.value", null);
+    	//dbMap.put("tags.value", null);
+    	dbMap.put("relationships", ContactsContract.CommonDataKinds.Relation.NAME);
+    	dbMap.put("relationships.value", ContactsContract.CommonDataKinds.Relation.NAME);
+    	dbMap.put("urls", ContactsContract.CommonDataKinds.Website.URL);
+    	dbMap.put("urls.value", ContactsContract.CommonDataKinds.Website.URL);
+    	//dbMap.put("accounts.domain", null);
+    	//dbMap.put("accounts.username", null);
+    	//dbMap.put("accounts.userid", null);
+    	//dbMap.put("utcOffset", null);
+    	//dbMap.put("connected", null);
+    }
 
-	public ContactAccessorSdk5(WebView view, Activity app)
+    public ContactAccessorSdk5(WebView view, Activity app)
 	{
 		mApp = app;
 		mView = view;
@@ -79,26 +136,22 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		// Get a cursor by creating the query.
 		ContentResolver cr = mApp.getContentResolver();
 		
-		// Right now we are just querying the displayName
-		Cursor cursor = cr.query(
-				ContactsContract.Contacts.CONTENT_URI, 
-				new String[] {ContactsContract.Contacts._ID, ContactsContract.Contacts.HAS_PHONE_NUMBER, ContactsContract.Contacts.DISPLAY_NAME},
-				ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?",
-				new String[] {searchTerm},
-				ContactsContract.Contacts.DISPLAY_NAME + " ASC");
+		Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
+		
+		Iterator<String> it = contactIds.iterator();
+		
 		JSONArray contacts = new JSONArray();
 		JSONObject contact;
+		String contactId;
 		int pos = 0;
-		while (cursor.moveToNext() && (pos < limit)) {
+		while (it.hasNext() && (pos < limit)) {
 			contact = new JSONObject();
+			contactId = it.next();
+			Log.d(LOG_TAG, "Contact ID = " + contactId);
 			
-			String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-			if (contactName.trim().length() == 0) continue;
-						
-			String contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID)); 
 			try {
 				contact.put("id", contactId);
-				contact.put("displayName", contactName);
+				contact.put("displayName", displayNameQuery(cr, contactId));
 				contact.put("name", nameQuery(cr, contactId));
 				contact.put("phoneNumbers", phoneQuery(cr, contactId));
 				contact.put("emails", emailQuery(cr, contactId));
@@ -118,8 +171,149 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			contacts.put(contact);
 			pos++;
 		} 
-		cursor.close();
 		mView.loadUrl("javascript:navigator.service.contacts.droidDone('" + contacts.toString() + "');");
+	}
+	
+	private Set<String> buildSetOfContactIds(JSONArray filter, String searchTerm) {
+		Set<String> contactIds = new HashSet<String>();	
+		
+		String key;
+		try {
+			for (int i=0; i<filter.length(); i++) {
+				key = filter.getString(i);
+				if (key.startsWith("displayName")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Contacts.CONTENT_URI,
+							ContactsContract.Contacts._ID,
+							dbMap.get(key) + " LIKE ?",
+							new String[] {searchTerm});
+				}
+				else if (key.startsWith("name")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Data.CONTENT_URI,
+							ContactsContract.Data.CONTACT_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+							new String[] {searchTerm, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE});
+				}
+				else if (key.startsWith("nickname")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Data.CONTENT_URI,
+							ContactsContract.Data.CONTACT_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+							new String[] {searchTerm, ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE});					
+				}
+				else if (key.startsWith("phoneNumbers")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+							ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+							dbMap.get(key) + " LIKE ?",
+							new String[] {searchTerm});
+				}
+				else if (key.startsWith("emails")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+							ContactsContract.CommonDataKinds.Email.CONTACT_ID,
+							dbMap.get(key) + " LIKE ?", 
+							new String[] {searchTerm});
+				}
+				else if (key.startsWith("addresses")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Data.CONTENT_URI,
+							ContactsContract.Data.CONTACT_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+							new String[] {searchTerm, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE});					
+				}
+				else if (key.startsWith("ims")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Data.CONTENT_URI,
+							ContactsContract.Data.CONTACT_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+							new String[] {searchTerm, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE});					
+				}
+				else if (key.startsWith("organizations")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Data.CONTENT_URI,
+							ContactsContract.Data.CONTACT_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+							new String[] {searchTerm, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE});					
+				}
+				else if (key.startsWith("birthday")) {
+					
+				}
+				else if (key.startsWith("anniversary")) {
+					
+				}
+				else if (key.startsWith("note")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Data.CONTENT_URI,
+							ContactsContract.Data.CONTACT_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+							new String[] {searchTerm, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE});					
+				}
+				else if (key.startsWith("relationships")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Data.CONTENT_URI,
+							ContactsContract.Data.CONTACT_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+							new String[] {searchTerm, ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE});					
+				}
+				else if (key.startsWith("urls")) {
+					Log.d(LOG_TAG, "Doing " + key + " query");
+					doQuery(searchTerm, contactIds,
+							ContactsContract.Data.CONTENT_URI,
+							ContactsContract.Data.CONTACT_ID,
+							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
+							new String[] {searchTerm, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE});					
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		
+		return contactIds;
+	}
+
+	private void doQuery(String searchTerm, Set<String> contactIds, 
+			Uri uri, String projection, String selection, String[] selectionArgs) {
+		// Get a cursor by creating the query.
+		ContentResolver cr = mApp.getContentResolver();
+
+		Cursor cursor = cr.query(
+				uri, 
+				new String[] {projection},
+				selection,
+				selectionArgs,
+				null);
+		
+		while (cursor.moveToNext()) {
+			Log.d(LOG_TAG, "ID = " + cursor.getString(cursor.getColumnIndex(projection)));
+			contactIds.add(cursor.getString(cursor.getColumnIndex(projection)));
+		}
+		cursor.close();
+	}
+
+	private String displayNameQuery(ContentResolver cr, String contactId) {
+		Cursor cursor = cr.query(
+				ContactsContract.Contacts.CONTENT_URI, 
+				new String[] {ContactsContract.Contacts.DISPLAY_NAME},
+				ContactsContract.Contacts._ID + " = ?",
+				new String[] {contactId},
+				null);
+		cursor.moveToFirst();
+		String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+		cursor.close();
+		return displayName;
 	}
 
 	private JSONArray organizationQuery(ContentResolver cr, String contactId) {
