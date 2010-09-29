@@ -1,9 +1,27 @@
+
+/**
+ * The order of events during page load and PhoneGap startup is as follows:
+ *
+ * onDOMContentLoaded         Internal event that is received when the web page is loaded and parsed.
+ * window.onload              Body onload event.
+ * onNativeReady              Internal event that indicates the PhoneGap native side is ready.
+ * onPhoneGapInit             Internal event that kicks off creation of all PhoneGap JavaScript objects (runs constructors).
+ * onPhoneGapReady            Internal event fired when all PhoneGap JavaScript objects have been created
+ * onPhoneGapInfoReady        Internal event fired when device properties are available
+ * onDeviceReady              User event fired to indicate that PhoneGap is ready
+ * onResume                   User event fired to indicate a start/resume lifecycle event
+ *
+ * The only PhoneGap events that user code should register for are:
+ *      onDeviceReady
+ *      onResume
+ *
+ * Listeners can be registered as:
+ *      document.addEventListener("deviceready", myDeviceReadyListener, false);
+ *      document.addEventListener("resume", myResumeListener, false);
+ */
+
 if (typeof(DeviceInfo) != 'object')
     DeviceInfo = {};
-
-var com = {};
-
-com.phonegap = {};
 
 /**
  * This represents the PhoneGap API itself, and provides a global namespace for accessing
@@ -127,7 +145,7 @@ PhoneGap.available = DeviceInfo.uuid != undefined;
  * @param {Function} func The function callback you want run once PhoneGap is initialized
  */
 PhoneGap.addConstructor = function(func) {
-    PhoneGap.onDeviceReady.subscribeOnce(function() {
+    PhoneGap.onPhoneGapInit.subscribeOnce(function() {
         try {
             func();
         } catch(e) {
@@ -166,6 +184,23 @@ PhoneGap.onDOMContentLoaded = new PhoneGap.Channel('onDOMContentLoaded');
 PhoneGap.onNativeReady = new PhoneGap.Channel('onNativeReady');
 
 /**
+ * onPhoneGapInit channel is fired when the web page is fully loaded and
+ * PhoneGap native code has been initialized.
+ */
+PhoneGap.onPhoneGapInit = new PhoneGap.Channel('onPhoneGapInit');
+
+/**
+ * onPhoneGapReady channel is fired when the JS PhoneGap objects have been created.
+ */
+PhoneGap.onPhoneGapReady = new PhoneGap.Channel('onPhoneGapReady');
+
+/**
+ * onPhoneGapInfoReady channel is fired when the PhoneGap device properties
+ * has been set.
+ */
+PhoneGap.onPhoneGapInfoReady = new PhoneGap.Channel('onPhoneGapInfoReady');
+
+/**
  * onResume channel is fired when the PhoneGap native code
  * resumes.
  */
@@ -183,28 +218,43 @@ PhoneGap.onPause = new PhoneGap.Channel('onPause');
 if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
 
 /**
- * onDeviceReady is fired only after both onDOMContentLoaded and 
- * onNativeReady have fired.
+ * onDeviceReady is fired only after all PhoneGap objects are created and
+ * the device properties are set.
  */
 PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
-PhoneGap.onDeviceReady.subscribeOnce(function() {
-    PhoneGap.JSCallback();
-});
 
+/**
+ * Create all PhoneGap objects once page has fully loaded and native side is ready.
+ */
+PhoneGap.Channel.join(function() {
+
+    // Start listening for XHR callbacks
+    PhoneGap.JSCallback();
+
+    // Run PhoneGap constructors
+    PhoneGap.onPhoneGapInit.fire();
+
+    // Fire event to notify that all objects are created
+    PhoneGap.onPhoneGapReady.fire();
+
+}, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
+
+/**
+ * Fire onDeviceReady event once all constructors have run and PhoneGap info has been
+ * received from native side.
+ */
 PhoneGap.Channel.join(function() {
     PhoneGap.onDeviceReady.fire();
 
     // Fire the onresume event, since first one happens before JavaScript is loaded
     PhoneGap.onResume.fire();
-}, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
-
+}, [ PhoneGap.onPhoneGapReady, PhoneGap.onPhoneGapInfoReady]);
 
 // Listen for DOMContentLoaded and notify our channel subscribers
 document.addEventListener('DOMContentLoaded', function() {
     PhoneGap.onDOMContentLoaded.fire();
 }, false);
-
 
 // Intercept calls to document.addEventListener and watch for deviceready
 PhoneGap.m_document_addEventListener = document.addEventListener;
@@ -222,6 +272,58 @@ document.addEventListener = function(evt, handler, capture) {
     }
 };
 
+/**
+ * If JSON not included, use our own stringify. (Android 1.6)
+ * The restriction on ours is that it must be an array of simple types.
+ *
+ * @param args
+ * @return
+ */
+PhoneGap.stringify = function(args) {
+    if (typeof JSON == "undefined") {
+        var s = "[";
+        for (var i=0; i<args.length; i++) {
+            if (i > 0) {
+                s = s + ",";
+            }
+            var type = typeof args[i];
+            if ((type == "number") || (type == "boolean")) {
+                s = s + args[i];
+            }
+            else if (args[i] instanceof Array) {
+            	s = s + "[" + args[i] + "]";
+            }
+            else if (args[i] instanceof Object) {
+            	var start = true;
+            	s = s + '{';
+            	for (var name in args[i]) {
+            		if (!start) {
+            			s = s + ',';
+            		}
+            		s = s + '"' + name + '":';
+            		var nameType = typeof args[i][name];
+            		if ((nameType == "number") || (nameType == "boolean")) {
+            			s = s + args[i][name];
+            		}
+            		else {
+                        s = s + '"' + args[i][name] + '"';            			
+            		}
+                    start=false;
+            	} 
+            	s = s + '}';
+            }
+            else {
+                s = s + '"' + args[i] + '"';
+            }
+        }
+        s = s + "]";
+        return s;
+    }
+    else {
+        return JSON.stringify(args);
+    }
+};
+
 PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
 
@@ -232,10 +334,11 @@ PhoneGap.callbacks = {};
  * @param {String} command Command to be run in PhoneGap, e.g. "ClassName.method"
  * @param {String[]} [args] Zero or more arguments to pass to the method
  */
+// TODO: Not used anymore, should be removed.
 PhoneGap.exec = function(clazz, action, args) {
     try {
         var callbackId = 0;
-        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), false);
+        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), false);
         eval("var v="+r+";");
         
         // If status is OK, then return value back to caller
@@ -253,22 +356,54 @@ PhoneGap.exec = function(clazz, action, args) {
     }
 };
 
-PhoneGap.execAsync = function(success, fail, clazz, action, args) {
+/**
+ * Execute a PhoneGap command.  It is up to the native side whether this action is synch or async.  
+ * The native side can return:
+ *      Synchronous: PluginResult object as a JSON string
+ *      Asynchrounous: Empty string ""
+ * If async, the native side will PhoneGap.callbackSuccess or PhoneGap.callbackError,
+ * depending upon the result of the action.
+ *
+ * @param {Function} success    The success callback
+ * @param {Function} fail       The fail callback
+ * @param {String} service      The name of the service to use
+ * @param {String} action       Action to be run in PhoneGap
+ * @param {String[]} [args]     Zero or more arguments to pass to the method
+ */
+PhoneGap.execAsync = function(success, fail, service, action, args) {
     try {
-        var callbackId = clazz + PhoneGap.callbackId++;
-        PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
-        var r = PluginManager.exec(clazz, action, callbackId, JSON.stringify(args), true);
-        if (r) {
+        var callbackId = service + PhoneGap.callbackId++;
+        if (success || fail) {
+            PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
+        }
+        
+        // Note: Device returns string, but for some reason emulator returns object - so convert to string.
+        var r = ""+PluginManager.exec(service, action, callbackId, this.stringify(args), true);
+        
+        // If a result was returned
+        if (r.length > 0) {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
             if (v.status == 0) {
+
+                // If there is a success callback, then call it now with returned value
+                if (success) {
+                    success(v.message);
+                    delete PhoneGap.callbacks[callbackId];
+                }
                 return v.message;
             }
 
             // If error, then display error
             else {
                 console.log("Error: Status="+r.status+" Message="+v.message);
+
+                // If there is a fail callback, then call it now with returned value
+                if (fail) {
+                    fail(v.message);
+                    delete PhoneGap.callbacks[callbackId];
+                }
                 return null;
             }
         }
@@ -277,24 +412,44 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
     }
 };
 
+/**
+ * Called by native code when returning successful result from an action.
+ *
+ * @param callbackId
+ * @param args
+ */
 PhoneGap.callbackSuccess = function(callbackId, args) {
-    try {
-        PhoneGap.callbacks[callbackId].success(args.message);
+    if (PhoneGap.callbacks[callbackId]) {
+        try {
+            if (PhoneGap.callbacks[callbackId].success) {
+                PhoneGap.callbacks[callbackId].success(args.message);
+            }
+        }
+        catch (e) {
+            console.log("Error in success callback: "+callbackId+" = "+e);
+        }
+        delete PhoneGap.callbacks[callbackId];
     }
-    catch (e) {
-        console.log("Error in success callback: "+callbackId+" = "+e);
-    }
-    delete PhoneGap.callbacks[callbackId];
 };
 
+/**
+ * Called by native code when returning error result from an action.
+ *
+ * @param callbackId
+ * @param args
+ */
 PhoneGap.callbackError = function(callbackId, args) {
-    try {
-        PhoneGap.callbacks[callbackId].fail(args.message);
+    if (PhoneGap.callbacks[callbackId]) {
+        try {
+            if (PhoneGap.callbacks[callbackId].fail) {
+                PhoneGap.callbacks[callbackId].fail(args.message);
+            }
+        }
+        catch (e) {
+            console.log("Error in error callback: "+callbackId+" = "+e);
+        }
+        delete PhoneGap.callbacks[callbackId];
     }
-    catch (e) {
-        console.log("Error in error callback: "+callbackId+" = "+e);
-    }
-    delete PhoneGap.callbacks[callbackId];
 };
 
 
@@ -305,6 +460,7 @@ PhoneGap.callbackError = function(callbackId, args) {
  * url, which will be turned into a dictionary on the other end.
  * @private
  */
+// TODO: Is this used?
 PhoneGap.run_command = function() {
     if (!PhoneGap.available || !PhoneGap.queue.ready)
         return;
@@ -344,6 +500,8 @@ PhoneGap.run_command = function() {
 };
 
 /**
+ * This is only for Android.
+ *
  * Internal function that uses XHR to call into PhoneGap Java code and retrieve 
  * any JavaScript code that needs to be run.  This is used for callbacks from
  * Java to JavaScript.
@@ -425,38 +583,6 @@ PhoneGap.close = function(context, func, params) {
     }
 };
 
-com.phonegap.AccelListenerProxy = function() {
-    this.className = "com.phonegap.AccelListener";
-    this.status = -1;   // not set yet
-};
-com.phonegap.AccelListenerProxy.prototype.getStatus = function() {
-    if (this.status == -1) {    // if not set, then request status
-        this.status = PhoneGap.exec(this.className, "getStatus", []);
-    }
-    return this.status;
-};
-com.phonegap.AccelListenerProxy.prototype.onStatus = function(status) {
-    console.log("AccelListener.onStatus("+status+")");
-    this.status = status;
-};
-com.phonegap.AccelListenerProxy.prototype.getAcceleration = function() {
-    var r = PhoneGap.exec(this.className, "getAcceleration", []);
-    var a = new Acceleration(r.x,r.y,r.z);
-    return a;
-};
-com.phonegap.AccelListenerProxy.prototype.start = function() {
-    return PhoneGap.exec(this.className, "start", []);
-};
-com.phonegap.AccelListenerProxy.prototype.stop = function() {
-    return PhoneGap.exec(this.className, "stop", []);
-};
-com.phonegap.AccelListenerProxy.prototype.setTimeout = function(timeout) {
-    return PhoneGap.exec(this.className, "setTimeout", [timeout]);
-};
-com.phonegap.AccelListenerProxy.prototype.getTimeout = function() {
-    return PhoneGap.exec(this.className, "getTimeout", []);
-};
-com.phonegap.AccelListener = new com.phonegap.AccelListenerProxy();
 
 function Acceleration(x, y, z) {
   this.x = x;
@@ -482,20 +608,17 @@ function Accelerometer() {
     this.timers = {};
 };
 
-Accelerometer.STOPPED = 0;
-Accelerometer.STARTING = 1;
-Accelerometer.RUNNING = 2;
-Accelerometer.ERROR_FAILED_TO_START = 3;
 Accelerometer.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
 
 /**
  * Asynchronously aquires the current acceleration.
  *
  * @param {Function} successCallback    The function to call when the acceleration data is available
- * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data.
- * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout.
+ * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
+ * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
  */
 Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
+    console.log("Accelerometer.getCurrentAcceleration()");
 
     // successCallback required
     if (typeof successCallback != "function") {
@@ -509,60 +632,16 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
         return;
     }
 
-    // Get current acceleration status
-    var status = com.phonegap.AccelListener.getStatus();
-
-    // If running, then call successCallback
-    if (status == Accelerometer.RUNNING) {
-        try {
-            var accel = com.phonegap.AccelListener.getAcceleration();
-            successCallback(accel);
-        } catch (e) {
-            console.log("Accelerometer Error in successCallback: " + e);
-        }
-    }
-
-    // If not running, then start it
-    else if (status >= 0) {
-        com.phonegap.AccelListener.start();
-
-        // Wait until started
-        var timer = setInterval(function() {
-            var status = com.phonegap.AccelListener.getStatus();
-
-            // If accelerometer is running
-            if (status == Accelerometer.RUNNING) {
-                clearInterval(timer);
-                try {
-                    var accel = com.phonegap.AccelListener.getAcceleration();
-                    successCallback(accel);
-                } catch (e) {
-                    console.log("Accelerometer Error in successCallback: " + e);
-                }
-            }
-
-            // If accelerometer error
-            else if (status == Accelerometer.ERROR_FAILED_TO_START) {
-                clearInterval(timer);
-                console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
-                try {
-                    if (errorCallback) {
-                        errorCallback(status);
-                    }
-                } catch (e) {
-                    console.log("Accelerometer Error in errorCallback: " + e);
-                }
-            }
-        }, 10);
-    }
+    // Get acceleration
+    PhoneGap.execAsync(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
 };
 
 /**
  * Asynchronously aquires the acceleration repeatedly at a given interval.
  *
  * @param {Function} successCallback    The function to call each time the acceleration data is available
- * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data.
- * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout.
+ * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
+ * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
  * @return String                       The watch id that must be passed to #clearWatch to stop watching.
  */
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
@@ -583,40 +662,18 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
     }
 
     // Make sure accelerometer timeout > frequency + 10 sec
-    var timeout = com.phonegap.AccelListener.getTimeout();
-    if (timeout < (frequency + 10000)) {
-        com.phonegap.AccelListener.setTimeout(frequency + 10000); // set to frequency + 10 sec
-    }
-
-    var id = PhoneGap.createUUID();
-    com.phonegap.AccelListener.start();
+    PhoneGap.execAsync(
+        function(timeout) {
+            if (timeout < (frequency + 10000)) {
+                PhoneGap.execAsync(null, null, "Accelerometer", "setTimeout", [frequency + 10000]);
+            }
+        },
+        function(e) { }, "Accelerometer", "getTimeout", []);
 
     // Start watch timer
+    var id = PhoneGap.createUUID();
     navigator.accelerometer.timers[id] = setInterval(function() {
-        var status = com.phonegap.AccelListener.getStatus();
-
-        // If accelerometer is running
-        if (status == Accelerometer.RUNNING) {
-            try {
-                var accel = com.phonegap.AccelListener.getAcceleration();
-                successCallback(accel);
-            } catch (e) {
-                console.log("Accelerometer Error in successCallback: " + e);
-            }
-        }
-
-        // If accelerometer had error
-        else if (status == Accelerometer.ERROR_FAILED_TO_START) {
-            console.log("Accelerometer Error: "+ Accelerometer.ERROR_MSG[status]);
-            try {
-                navigator.accelerometer.clearWatch(id);
-                if (errorCallback) {
-                    errorCallback(status);
-                }
-            } catch (e) {
-                console.log("Accelerometer Error in errorCallback: " + e);
-            }
-        }
+        PhoneGap.execAsync(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
     }, (frequency ? frequency : 1));
 
     return id;
@@ -639,30 +696,52 @@ Accelerometer.prototype.clearWatch = function(id) {
 PhoneGap.addConstructor(function() {
     if (typeof navigator.accelerometer == "undefined") navigator.accelerometer = new Accelerometer();
 });
-com.phonegap.CameraLauncherProxy = function() {
-    this.className = "com.phonegap.CameraLauncher";
-};
-com.phonegap.CameraLauncherProxy.prototype.setBase64 = function(b) {
-    return PhoneGap.exec(this.className, "setBase64", [b]);
-};
-com.phonegap.CameraLauncherProxy.prototype.takePicture = function(quality) {
-    return PhoneGap.exec(this.className, "takePicture", [quality]);
-};
-com.phonegap.CameraLauncher = new com.phonegap.CameraLauncherProxy();
 
 /**
  * This class provides access to the device camera.
  *
  * @constructor
  */
-function Camera() {
+Camera = function() {
     this.successCallback = null;
     this.errorCallback = null;
     this.options = null;
 };
 
 /**
- * Takes a photo and returns the image as a base64 encoded `String`.
+ * Format of image that returned from getPicture.
+ *
+ * Example: navigator.camera.getPicture(success, fail,
+ *              { quality: 80,
+ *                destinationType: Camera.DestinationType.DATA_URL,
+ *                sourceType: Camera.PictureSourceType.PHOTOLIBRARY})
+ */
+Camera.DestinationType = {
+    DATA_URL: 0,                // Return base64 encoded string
+    FILE_URI: 1                 // Return file uri (content://media/external/images/media/2 for Android)
+};
+Camera.prototype.DestinationType = Camera.DestinationType;
+
+/**
+ * Source to getPicture from.
+ *
+ * Example: navigator.camera.getPicture(success, fail,
+ *              { quality: 80,
+ *                destinationType: Camera.DestinationType.DATA_URL,
+ *                sourceType: Camera.PictureSourceType.PHOTOLIBRARY})
+ */
+Camera.PictureSourceType = {
+    PHOTOLIBRARY : 0,           // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
+    CAMERA : 1,                 // Take picture from camera
+    SAVEDPHOTOALBUM : 2         // Choose image from picture library (same as PHOTOLIBRARY for Android)
+};
+Camera.prototype.PictureSourceType = Camera.PictureSourceType;
+
+/**
+ * Gets a picture from source defined by "options.sourceType", and returns the
+ * image as defined by the "options.destinationType" option.
+
+ * The defaults are sourceType=CAMERA and destinationType=DATA_URL.
  *
  * @param {Function} successCallback
  * @param {Function} errorCallback
@@ -685,12 +764,19 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.options = options;
+    var quality = 80;
     if (options.quality) {
-        com.phonegap.CameraLauncher.takePicture(options.quality);
+        quality = this.options.quality;
     }
-    else {
-        com.phonegap.CameraLauncher.takePicture(80);
+    var destinationType = Camera.DestinationType.DATA_URL;
+    if (this.options.destinationType) {
+        destinationType = this.options.destinationType;
     }
+    var sourceType = Camera.PictureSourceType.CAMERA;
+    if (typeof this.options.sourceType == "number") {
+        sourceType = this.options.sourceType;
+    }
+    PhoneGap.execAsync(null, null, "Camera", "takePicture", [quality, destinationType, sourceType]);
 };
 
 /**
@@ -719,28 +805,6 @@ Camera.prototype.error = function(err) {
 PhoneGap.addConstructor(function() {
     if (typeof navigator.camera == "undefined") navigator.camera = new Camera();
 });
-com.phonegap.CompassListenerProxy = function() {
-    this.className = "com.phonegap.CompassListener";
-};
-com.phonegap.CompassListenerProxy.prototype.start = function() {
-    return PhoneGap.exec(this.className, "start", []);
-};
-com.phonegap.CompassListenerProxy.prototype.stop = function() {
-    return PhoneGap.exec(this.className, "stop", []);
-};
-com.phonegap.CompassListenerProxy.prototype.getStatus = function() {
-    return PhoneGap.exec(this.className, "getStatus", []);
-};
-com.phonegap.CompassListenerProxy.prototype.getHeading = function() {
-    return PhoneGap.exec(this.className, "getHeading", []);
-};
-com.phonegap.CompassListenerProxy.prototype.setTimeout = function(timeout) {
-    return PhoneGap.exec(this.className, "setTimeout", [timeout]);
-};
-com.phonegap.CompassListenerProxy.prototype.getTimeout = function() {
-    return PhoneGap.exec(this.className, "getTimeout", []);
-};
-com.phonegap.CompassListener = new com.phonegap.CompassListenerProxy();
 
 /**
  * This class provides access to device Compass data.
@@ -758,18 +822,14 @@ function Compass() {
     this.timers = {};
 };
 
-Compass.STOPPED = 0;
-Compass.STARTING = 1;
-Compass.RUNNING = 2;
-Compass.ERROR_FAILED_TO_START = 3;
 Compass.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
 
 /**
  * Asynchronously aquires the current heading.
  *
  * @param {Function} successCallback The function to call when the heading data is available
- * @param {Function} errorCallback The function to call when there is an error getting the heading data.
- * @param {PositionOptions} options The options for getting the heading data such as timeout.
+ * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
+ * @param {PositionOptions} options The options for getting the heading data such as timeout. (OPTIONAL)
  */
 Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, options) {
 
@@ -785,61 +845,16 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
         return;
     }
 
-    // Get current compass status
-    var status = com.phonegap.CompassListener.getStatus();
-
-    // If running, then call successCallback
-    if (status == Compass.RUNNING) {
-        try {
-            var heading = com.phonegap.CompassListener.getHeading();
-            successCallback(heading);
-        } catch (e) {
-            console.log("Compass Error in successCallback: " + e);
-        }
-    }
-
-    // If not running, then start it
-    else {
-        com.phonegap.CompassListener.start();
-
-        // Wait until started
-        var timer = setInterval(function() {
-            var status = com.phonegap.CompassListener.getStatus();
-            if (status != Compass.STARTING) {
-                clearInterval(timer);
-
-                // If compass is running
-                if (status == Compass.RUNNING) {
-                    try {
-                        var heading = com.phonegap.CompassListener.getHeading();
-                        successCallback(heading);
-                    } catch (e) {
-                        console.log("Compass Error in successCallback: " + e);
-                    }
-                }
-
-                // If compass error
-                else {
-                    console.log("Compass Error: "+ Compass.ERROR_MSG[status]);
-                    try {
-                        if (errorCallback) {
-                            errorCallback(status);
-                        }
-                    } catch (e) {
-                        console.log("Compass Error in errorCallback: " + e);
-                    }
-                }
-            }
-        }, 10);
-    }
+    // Get heading
+    PhoneGap.execAsync(successCallback, errorCallback, "Compass", "getHeading", []);
 };
 
 /**
  * Asynchronously aquires the heading repeatedly at a given interval.
  *
  * @param {Function} successCallback    The function to call each time the heading data is available
- * @param {Function} errorCallback      The function to call when there is an error getting the heading data.
- * @param {HeadingOptions} options      The options for getting the heading data such as timeout and the frequency of the watch.
+ * @param {Function} errorCallback      The function to call when there is an error getting the heading data. (OPTIONAL)
+ * @param {HeadingOptions} options      The options for getting the heading data such as timeout and the frequency of the watch. (OPTIONAL)
  * @return String                       The watch id that must be passed to #clearWatch to stop watching.
  */
 Compass.prototype.watchHeading= function(successCallback, errorCallback, options) {
@@ -860,41 +875,20 @@ Compass.prototype.watchHeading= function(successCallback, errorCallback, options
     }
 
     // Make sure compass timeout > frequency + 10 sec
-    var timeout = com.phonegap.CompassListener.getTimeout();
-    if (timeout < (frequency + 10000)) {
-        com.phonegap.CompassListener.setTimeout(frequency + 10000); // set to frequency + 10 sec
-    }
+    PhoneGap.execAsync(
+        function(timeout) {
+            if (timeout < (frequency + 10000)) {
+                PhoneGap.execAsync(null, null, "Compass", "setTimeout", [frequency + 10000]);
+            }
+        },
+        function(e) { }, "Compass", "getTimeout", []);
 
+    // Start watch timer to get headings
     var id = PhoneGap.createUUID();
-    com.phonegap.CompassListener.start();
-
-    // Start watch timer
-    navigator.compass.timers[id] = setInterval(function() {
-        var status = com.phonegap.CompassListener.getStatus();
-
-        // If compass is running
-        if (status == Compass.RUNNING) {
-            try {
-                var heading = com.phonegap.CompassListener.getHeading();
-                successCallback(heading);
-            } catch (e) {
-                console.log("Compass Error in successCallback: " + e);
-            }
-        }
-
-        // If compass had error
-        else if (status != Compass.STARTING) {
-            console.log("Compass Error: "+ Compass.ERROR_MSG[status]);
-            try {
-                navigator.compass.clearWatch(id);
-                if (errorCallback) {
-                    errorCallback(status);
-                }
-            } catch (e) {
-                console.log("Compass Error in errorCallback: " + e);
-            }
-        }
-    }, (frequency ? frequency : 1));
+    navigator.compass.timers[id] = setInterval(
+        function() {
+            PhoneGap.execAsync(successCallback, errorCallback, "Compass", "getHeading", []);
+        }, (frequency ? frequency : 1));
 
     return id;
 };
@@ -917,131 +911,90 @@ Compass.prototype.clearWatch = function(id) {
 PhoneGap.addConstructor(function() {
     if (typeof navigator.compass == "undefined") navigator.compass = new Compass();
 });
-com.phonegap.ContactManagerProxy = function() {
-    this.className = "com.phonegap.ContactManager";
-};
-com.phonegap.ContactManagerProxy.prototype.getContactsAndSendBack = function() {
-    return PhoneGap.exec(this.className, "getContactsAndSendBack", []);
-};
-com.phonegap.ContactManagerProxy.prototype.search = function(name, npa, mail) {
-    return PhoneGap.exec(this.className, "search", [name, npa, mail]);
-};
-com.phonegap.ContactManager = new com.phonegap.ContactManagerProxy();
 
 var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, addresses,
     ims, organizations, published, updated, birthday, anniversary, gender, note,
     preferredUsername, photos, tags, relationships, urls, accounts, utcOffset, connected) {
-    this.id = id || '';
-    this.displayName = displayName || '';
+    this.id = id || null;
+    this.displayName = displayName || null;
     this.name = name || null; // ContactName
-    this.nickname = nickname || '';
+    this.nickname = nickname || null;
     this.phoneNumbers = phoneNumbers || null; // ContactField[]
     this.emails = emails || null; // ContactField[]
     this.addresses = addresses || null; // ContactAddress[]
     this.ims = ims || null; // ContactField[]
     this.organizations = organizations || null; // ContactOrganization[]
-    this.published = published || '';
-    this.updated = updated || '';
-    this.birthday = birthday || '';
-    this.anniversary = anniversary || '';
-    this.gender = gender || '';
-    this.note = note || '';
-    this.preferredUsername = preferredUsername || '';
+    this.published = published || null;
+    this.updated = updated || null;
+    this.birthday = birthday || null;
+    this.anniversary = anniversary || null;
+    this.gender = gender || null;
+    this.note = note || null;
+    this.preferredUsername = preferredUsername || null;
     this.photos = photos || null; // ContactField[]
     this.tags = tags || null; // ContactField[]
     this.relationships = relationships || null; // ContactField[]
     this.urls = urls || null; // ContactField[]
     this.accounts = accounts || null; // ContactAccount[]
-    this.utcOffset = utcOffset || '';
-    this.connected = connected || '';
+    this.utcOffset = utcOffset || null;
+    this.connected = connected || null;
 };
 
 var ContactName = function(formatted, familyName, givenName, middle, prefix, suffix) {
-    this.formatted = formatted || '';
-    this.familyName = familyName || '';
-    this.givenName = givenName || '';
-    this.middleName = middle || '';
-    this.honorificPrefix = prefix || '';
-    this.honorificSuffix = suffix || '';
+    this.formatted = formatted || null;
+    this.familyName = familyName || null;
+    this.givenName = givenName || null;
+    this.middleName = middle || null;
+    this.honorificPrefix = prefix || null;
+    this.honorificSuffix = suffix || null;
 };
 
 var ContactField = function(type, value, primary) {
-    this.type = type || '';
-    this.value = value || '';
-    this.primary = primary || '';
+    this.type = type || null;
+    this.value = value || null;
+    this.primary = primary || null;
 };
 
 var ContactAddress = function(formatted, streetAddress, locality, region, postalCode, country) {
-    this.formatted = formatted || '';
-    this.streetAddress = streetAddress || '';
-    this.locality = locality || '';
-    this.region = region || '';
-    this.postalCode = postalCode || '';
-    this.country = country || '';
+    this.formatted = formatted || null;
+    this.streetAddress = streetAddress || null;
+    this.locality = locality || null;
+    this.region = region || null;
+    this.postalCode = postalCode || null;
+    this.country = country || null;
 };
 
 var ContactOrganization = function(name, dept, title, startDate, endDate, location, desc) {
-    this.name = name || '';
-    this.department = dept || '';
-    this.title = title || '';
-    this.startDate = startDate || '';
-    this.endDate = endDate || '';
-    this.location = location || '';
-    this.description = desc || '';
+    this.name = name || null;
+    this.department = dept || null;
+    this.title = title || null;
+    this.startDate = startDate || null;
+    this.endDate = endDate || null;
+    this.location = location || null;
+    this.description = desc || null;
 };
 
 var ContactAccount = function(domain, username, userid) {
-	this.domain = domain || '';
-	this.username = username || '';
-	this.userid = userid || '';
+    this.domain = domain || null;
+    this.username = username || null;
+    this.userid = userid || null;
 }
 
 var Contacts = function() {
     this.inProgress = false;
-    this.records = [];
+    this.records = new Array();
 }
 
-Contacts.prototype.find = function(obj, win, fail) {
-    if(obj.name != null) {
-        // Build up the search term that we'll use in SQL, based on the structure/contents of the contact object passed into find.
-        var searchTerm = '';
-        if (obj.name.givenName && obj.name.givenName.length > 0) {
-            searchTerm = obj.name.givenName.split(' ').join('%');
-        }
-        if (obj.name.familyName && obj.name.familyName.length > 0) {
-            searchTerm += obj.name.familyName.split(' ').join('%');
-        }
-        if (!obj.name.familyName && !obj.name.givenName && obj.name.formatted) {
-            searchTerm = obj.name.formatted;
-        }
-        com.phonegap.ContactManager.search(searchTerm, "", "");
-    }
+// Contacts.prototype.find = function(obj, win, fail) {
+Contacts.prototype.find = function(fields, win, fail, options) {
     this.win = win;
     this.fail = fail;
+    
+    PhoneGap.execAsync(null, null, "Contacts", "search", [fields, options]);
 };
 
-Contacts.prototype.droidFoundContact = function(name, npa, email) {
-	this.records = new Array();
-    var contact = new Contact();
-    contact.name = new ContactName();
-    contact.name.formatted = name;
-    contact.name.givenName = name;
-	contact.emails = new Array();
-    var mail = new ContactField();
-    mail.type = "home";
-    mail.value = email;
-	mail.primary = true;
-    contact.emails.push(mail);
-	contact.phones = new Array();
-    phone = new ContactField();
-    phone.type = "home";
-    phone.value = npa;
-    contact.phones.push(phone);
-    this.records.push(contact);
-};
-
-Contacts.prototype.droidDone = function() {
-    this.win(this.records);
+Contacts.prototype.droidDone = function(contacts) {
+    this.win(eval('(' + contacts + ')'));
 };
 
 Contacts.prototype.remove = function(contact) {
@@ -1064,11 +1017,12 @@ Contacts.prototype.m_foundContacts = function(win, contacts) {
 var ContactFindOptions = function(filter, multiple, limit, updatedSince) {
     this.filter = filter || '';
     this.multiple = multiple || true;
-    this.limit = limit || 0;
+    this.limit = limit || Number.MAX_VALUE;
     this.updatedSince = updatedSince || '';
 };
 
 var ContactError = function() {
+    this.code=null;
 };
 
 ContactError.INVALID_ARGUMENT_ERROR = 0;
@@ -1081,31 +1035,21 @@ ContactError.TIMEOUT_ERROR = 6;
 ContactError.UNKNOWN_ERROR = 7;
 
 PhoneGap.addConstructor(function() {
-	if(typeof navigator.service == "undefined") navigator.service = new Object();
+    if(typeof navigator.service == "undefined") navigator.service = new Object();
     if(typeof navigator.service.contacts == "undefined") navigator.service.contacts = new Contacts();
 });
-com.phonegap.CryptoHandlerProxy = function() {
-    this.className = "com.phonegap.CryptoHandler";
-};
-com.phonegap.CryptoHandlerProxy.prototype.encrypt = function(pass, text) {
-    return PhoneGap.exec(this.className, "encrypt", [pass, text]);
-};
-com.phonegap.CryptoHandlerProxy.prototype.decrypt = function(pass, text) {
-    return PhoneGap.exec(this.className, "decrypt", [pass, text]);
-};
-com.phonegap.CryptoHandler = new com.phonegap.CryptoHandlerProxy();
 
 var Crypto = function() {
 };
 
 Crypto.prototype.encrypt = function(seed, string, callback) {
-    com.phonegap.CryptoHandler.encrypt(seed, string);
     this.encryptWin = callback;
+    PhoneGap.execAsync(null, null, "Crypto", "encrypt", [seed, string]);
 };
 
 Crypto.prototype.decrypt = function(seed, string, callback) {
-    com.phonegap.CryptoHandler.decrypt(seed, string);
     this.decryptWin = callback;
+    PhoneGap.execAsync(null, null, "Crypto", "decrypt", [seed, string]);
 };
 
 Crypto.prototype.gotCryptedString = function(string) {
@@ -1121,376 +1065,691 @@ PhoneGap.addConstructor(function() {
 });
 
 /**
- * this represents the mobile device, and provides properties for inspecting the model, version, UUID of the
+ * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
  * phone, etc.
  * @constructor
  */
 function Device() {
     this.available = PhoneGap.available;
     this.platform = null;
-    this.version  = null;
-    this.name     = null;
-    this.gap      = null;
-    this.uuid     = null;
-    try {
-        if (window.DroidGap) {
-            this.available = true;
-            this.uuid = window.DroidGap.getUuid();
-            this.version = window.DroidGap.getOSVersion();
-            this.gapVersion = window.DroidGap.getVersion();
-            this.platform = window.DroidGap.getPlatform();
-            this.name = window.DroidGap.getProductName();
-            this.line1Number = window.DroidGap.getLine1Number();
-            this.deviceId = window.DroidGap.getDeviceId();
-            this.simSerialNumber = window.DroidGap.getSimSerialNumber();
-            this.subscriberId = window.DroidGap.getSubscriberId();
-        } 
-    } catch(e) {
-        this.available = false;
-    }
+    this.version = null;
+    this.name = null;
+    this.uuid = null;
+    this.phonegap = null;
+
+    var me = this;
+    this.getInfo(
+        function(info) {
+            me.available = true;
+            me.platform = info.platform;
+            me.version = info.version;
+            me.uuid = info.uuid;
+            me.phonegap = info.phonegap;
+            PhoneGap.onPhoneGapInfoReady.fire();
+        },
+        function(e) {
+            me.available = false;
+            console.log("Error initializing PhoneGap: " + e);
+            alert("Error initializing PhoneGap: "+e);
+        });
 }
 
-/*
- * You must explicitly override the back button. 
+/**
+ * Get device info
+ *
+ * @param {Function} successCallback The function to call when the heading data is available
+ * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
  */
+Device.prototype.getInfo = function(successCallback, errorCallback) {
 
-Device.prototype.overrideBackButton = function()
-{
-  BackButton.override();
+    // successCallback required
+    if (typeof successCallback != "function") {
+        console.log("Device Error: successCallback is not a function");
+        return;
+    }
+
+    // errorCallback optional
+    if (errorCallback && (typeof errorCallback != "function")) {
+        console.log("Device Error: errorCallback is not a function");
+        return;
+    }
+
+    // Get info
+    PhoneGap.execAsync(successCallback, errorCallback, "Device", "getDeviceInfo", []);
+};
+
+/*
+ * This is only for Android.
+ *
+ * You must explicitly override the back button.
+ */
+Device.prototype.overrideBackButton = function() {
+    BackButton.override();
 }
 
 /*
+ * This is only for Android.
+ *
  * This resets the back button to the default behaviour
  */
-
-Device.prototype.resetBackButton = function()
-{
-  BackButton.reset();
+Device.prototype.resetBackButton = function() {
+    BackButton.reset();
 }
 
 /*
+ * This is only for Android.
+ *
  * This terminates the activity!
  */
-Device.prototype.exitApp = function()
-{
-  BackButton.exitApp();
+Device.prototype.exitApp = function() {
+    BackButton.exitApp();
 }
 
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
 });
+/**
+ * This class provides generic read and write access to the mobile device file system.
+ * They are not used to read files from a server.
+ */
 
+/**
+ * List of files
+ */
+function FileList() {
+    this.files = {};
+};
 
-PhoneGap.addConstructor(function() { if (typeof navigator.fileMgr == "undefined") navigator.fileMgr = new FileMgr();});
+/**
+ * Describes a single file in a FileList
+ */
+function File() {
+    this.name = null;
+    this.type = null;
+    this.urn = null;
+};
+
+/**
+ * Create an event object since we can't set target on DOM event.
+ *
+ * @param type
+ * @param target
+ *
+ */
+File._createEvent = function(type, target) {
+    // Can't create event object, since we can't set target (its readonly)
+    //var evt = document.createEvent('Events');
+    //evt.initEvent("onload", false, false);
+    var evt = {"type": type};
+    evt.target = target;
+    return evt;
+};
+
+function FileError() {
+   // File error codes
+   // Found in DOMException
+   this.NOT_FOUND_ERR = 8;
+   this.SECURITY_ERR = 18;
+   this.ABORT_ERR = 20;
+
+   // Added by this specification
+   this.NOT_READABLE_ERR = 24;
+   this.ENCODING_ERR = 26;
+
+   this.code = null;
+};
+
+//-----------------------------------------------------------------------------
+// File manager
+//-----------------------------------------------------------------------------
+
+function FileMgr() {
+};
+
+FileMgr.prototype.getFileBasePaths = function() {
+};
+
+FileMgr.prototype.testSaveLocationExists = function(successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "testSaveLocationExists", []);
+};
+
+FileMgr.prototype.testFileExists = function(fileName, successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "testFileExists", [fileName]);
+};
+
+FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "testDirectoryExists", [dirName]);
+};
+
+FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "createDirectory", [dirName]);
+};
+
+FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "deleteDirectory", [dirName]);
+};
+
+FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "deleteFile", [fileName]);
+};
+
+FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "getFreeDiskSpace", []);
+};
+
+FileMgr.prototype.writeAsText = function(fileName, data, append, successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "writeAsText", [fileName, data, append]);
+};
+
+FileMgr.prototype.readAsText = function(fileName, encoding, successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "readAsText", [fileName, encoding]);
+};
+
+FileMgr.prototype.readAsDataURL = function(fileName, successCallback, errorCallback) {
+    PhoneGap.execAsync(successCallback, errorCallback, "File", "readAsDataURL", [fileName]);
+};
+
+PhoneGap.addConstructor(function() {
+    if (typeof navigator.fileMgr == "undefined") navigator.fileMgr = new FileMgr();
+});
+
+//-----------------------------------------------------------------------------
+// File Reader
+//-----------------------------------------------------------------------------
+// TODO: All other FileMgr function operate on the SD card as root.  However,
+//       for FileReader & FileWriter the root is not SD card.  Should this be changed?
+
+/**
+ * This class reads the mobile device file system.
+ *
+ * For Android:
+ *      The root directory is the root of the file system.
+ *      To read from the SD card, the file name is "sdcard/my_file.txt"
+ */
+function FileReader() {
+    this.fileName = "";
+
+    this.readyState = 0;
+
+    // File data
+    this.result = null;
+
+    // Error
+    this.error = null;
+
+    // Event handlers
+    this.onloadstart = null;    // When the read starts.
+    this.onprogress = null;     // While reading (and decoding) file or fileBlob data, and reporting partial file data (progess.loaded/progress.total)
+    this.onload = null;         // When the read has successfully completed.
+    this.onerror = null;        // When the read has failed (see errors).
+    this.onloadend = null;      // When the request has completed (either in success or failure).
+    this.onabort = null;        // When the read has been aborted. For instance, by invoking the abort() method.
+};
+
+// States
+FileReader.EMPTY = 0;
+FileReader.LOADING = 1;
+FileReader.DONE = 2;
+
+/**
+ * Abort reading file.
+ */
+FileReader.prototype.abort = function() {
+    this.readyState = FileReader.DONE;
+
+    // If abort callback
+    if (typeof this.onabort == "function") {
+        var evt = File._createEvent("abort", this);
+        this.onabort(evt);
+    }
+
+    // TODO: Anything else to do?  Maybe sent to native?
+};
+
+/**
+ * Read text file.
+ *
+ * @param file          The name of the file
+ * @param encoding      [Optional] (see http://www.iana.org/assignments/character-sets)
+ */
+FileReader.prototype.readAsText = function(file, encoding) {
+    this.fileName = file;
+
+    // LOADING state
+    this.readyState = FileReader.LOADING;
+
+    // If loadstart callback
+    if (typeof this.onloadstart == "function") {
+        var evt = File._createEvent("loadstart", this);
+        this.onloadstart(evt);
+    }
+
+    // Default encoding is UTF-8
+    var enc = encoding ? encoding : "UTF-8";
+
+    var me = this;
+
+    // Read file
+    navigator.fileMgr.readAsText(file, enc,
+
+        // Success callback
+        function(r) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileReader.DONE) {
+                return;
+            }
+
+            // Save result
+            me.result = r;
+
+            // DONE state
+            me.readyState = FileReader.DONE;
+
+            // If onload callback
+            if (typeof me.onload == "function") {
+                var evt = File._createEvent("load", me);
+                me.onload(evt);
+            }
+
+            // If onloadend callback
+            if (typeof me.onloadend == "function") {
+                var evt = File._createEvent("loadend", me);
+                me.onloadend(evt);
+            }
+        },
+
+        // Error callback
+        function(e) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileReader.DONE) {
+                return;
+            }
+
+            // Save error
+            me.error = e;
+
+            // DONE state
+            me.readyState = FileReader.DONE;
+
+            // If onerror callback
+            if (typeof me.onerror == "function") {
+                var evt = File._createEvent("error", me);
+                me.onerror(evt);
+            }
+
+            // If onloadend callback
+            if (typeof me.onloadend == "function") {
+                var evt = File._createEvent("loadend", me);
+                me.onloadend(evt);
+            }
+        }
+        );
+};
 
 
 /**
- * This class provides iPhone read and write access to the mobile device file system.
- * Based loosely on http://www.w3.org/TR/2009/WD-FileAPI-20091117/#dfn-empty
- */
-function FileMgr() 
-{
-	this.fileWriters = {}; // empty maps
-	this.fileReaders = {};
-
-	this.docsFolderPath = "../../Documents";
-	this.tempFolderPath = "../../tmp";
-	this.freeDiskSpace = -1;
-	this.getFileBasePaths();
-}
-
-// private, called from Native Code
-FileMgr.prototype._setPaths = function(docs,temp)
-{
-	this.docsFolderPath = docs;
-	this.tempFolderPath = temp;
-}
-
-// private, called from Native Code
-FileMgr.prototype._setFreeDiskSpace = function(val)
-{
-	this.freeDiskSpace = val;
-}
-
-
-// FileWriters add/remove
-// called internally by writers
-FileMgr.prototype.addFileWriter = function(filePath,fileWriter)
-{
-	this.fileWriters[filePath] = fileWriter;
-}
-
-FileMgr.prototype.removeFileWriter = function(filePath)
-{
-	this.fileWriters[filePath] = null;
-}
-
-// File readers add/remove
-// called internally by readers
-FileMgr.prototype.addFileReader = function(filePath,fileReader)
-{
-	this.fileReaders[filePath] = fileReader;
-}
-
-FileMgr.prototype.removeFileReader = function(filePath)
-{
-	this.fileReaders[filePath] = null;
-}
-
-/*******************************************
+ * Read file and return data as a base64 encoded data url.
+ * A data url is of the form:
+ *      data:[<mediatype>][;base64],<data>
  *
- *	private reader callback delegation
- *	called from native code
+ * @param file          The name of the file
  */
-FileMgr.prototype.reader_onloadstart = function(filePath,result)
-{
-	this.fileReaders[filePath].onloadstart(result);
-}
+FileReader.prototype.readAsDataURL = function(file) {
+    this.fileName = file;
 
-FileMgr.prototype.reader_onprogress = function(filePath,result)
-{
-	this.fileReaders[filePath].onprogress(result);
-}
+    // LOADING state
+    this.readyState = FileReader.LOADING;
 
-FileMgr.prototype.reader_onload = function(filePath,result)
-{
-	this.fileReaders[filePath].result = unescape(result);
-	this.fileReaders[filePath].onload(this.fileReaders[filePath].result);
-}
+    // If loadstart callback
+    if (typeof this.onloadstart == "function") {
+        var evt = File._createEvent("loadstart", this);
+        this.onloadstart(evt);
+    }
 
-FileMgr.prototype.reader_onerror = function(filePath,err)
-{
-	this.fileReaders[filePath].result = err;
-	this.fileReaders[filePath].onerror(err);
-}
+    var me = this;
 
-FileMgr.prototype.reader_onloadend = function(filePath,result)
-{
-	this.fileReaders[filePath].onloadend(result);
-}
+    // Read file
+    navigator.fileMgr.readAsDataURL(file,
 
-/*******************************************
+        // Success callback
+        function(r) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileReader.DONE) {
+                return;
+            }
+
+            // Save result
+            me.result = r;
+
+            // DONE state
+            me.readyState = FileReader.DONE;
+
+            // If onload callback
+            if (typeof me.onload == "function") {
+                var evt = File._createEvent("load", me);
+                me.onload(evt);
+            }
+
+            // If onloadend callback
+            if (typeof me.onloadend == "function") {
+                var evt = File._createEvent("loadend", me);
+                me.onloadend(evt);
+            }
+        },
+
+        // Error callback
+        function(e) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileReader.DONE) {
+                return;
+            }
+
+            // Save error
+            me.error = e;
+
+            // DONE state
+            me.readyState = FileReader.DONE;
+
+            // If onerror callback
+            if (typeof me.onerror == "function") {
+                var evt = File._createEvent("error", me);
+                me.onerror(evt);
+            }
+
+            // If onloadend callback
+            if (typeof me.onloadend == "function") {
+                var evt = File._createEvent("loadend", me);
+                me.onloadend(evt);
+            }
+        }
+        );
+};
+
+/**
+ * Read file and return data as a binary data.
  *
- *	private writer callback delegation
- *	called from native code
-*/
-FileMgr.prototype.writer_onerror = function(filePath,err)
-{
-	this.fileWriters[filePath].onerror(err);
-}
+ * @param file          The name of the file
+ */
+FileReader.prototype.readAsBinaryString = function(file) {
+    // TODO - Can't return binary data to browser.
+    this.fileName = file;
+};
 
-FileMgr.prototype.writer_oncomplete = function(filePath,result)
-{
-	this.fileWriters[filePath].oncomplete(result); // result contains bytes written
-}
-
-
-FileMgr.prototype.getFileBasePaths = function()
-{
-	//PhoneGap.exec("File.getFileBasePaths");
-}
-
-FileMgr.prototype.testFileExists = function(fileName, successCallback, errorCallback)
-{
-	var test = FileUtil.testFileExists(fileName);
-	test ? successCallback() : errorCallback();
-}
-
-FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, errorCallback)
-{
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;
-	var test = FileUtil.testDirectoryExists(dirName);
-	test ? successCallback() : errorCallback();
-}
-
-FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback)
-{
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;
-	var test = FileUtil.createDirectory(dirName);
-	test ? successCallback() : errorCallback();
-}
-
-FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback)
-{
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;
-	var test = FileUtil.deleteDirectory(dirName);
-	test ? successCallback() : errorCallback();
-}
-
-FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback)
-{
-	this.successCallback = successCallback;
-	this.errorCallback = errorCallback;
-	FileUtil.deleteFile(fileName);
-	test ? successCallback() : errorCallback();
-}
-
-FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback)
-{
-	if(this.freeDiskSpace > 0)
-	{
-		return this.freeDiskSpace;
-	}
-	else
-	{
-		this.successCallback = successCallback;
-		this.errorCallback = errorCallback;
-		this.freeDiskSpace = FileUtil.getFreeDiskSpace();
-  		(this.freeDiskSpace > 0) ? successCallback() : errorCallback();
-	}
-}
-
-
-// File Reader
-
-
-function FileReader()
-{
-	this.fileName = "";
-	this.result = null;
-	this.onloadstart = null;
-	this.onprogress = null;
-	this.onload = null;
-	this.onerror = null;
-	this.onloadend = null;
-}
-
-
-FileReader.prototype.abort = function()
-{
-	// Not Implemented
-}
-
-FileReader.prototype.readAsText = function(file)
-{
-	if(this.fileName && this.fileName.length > 0)
-	{
-		navigator.fileMgr.removeFileReader(this.fileName,this);
-	}
-	this.fileName = file;
-	navigator.fileMgr.addFileReader(this.fileName,this);
-
-  	return FileUtil.read(this.fileName);
-}
-
+//-----------------------------------------------------------------------------
 // File Writer
+//-----------------------------------------------------------------------------
 
-function FileWriter()
-{
-	this.fileName = "";
-	this.result = null;
-	this.readyState = 0; // EMPTY
-	this.result = null;
-	this.onerror = null;
-	this.oncomplete = null;
-}
+/**
+ * This class writes to the mobile device file system.
+ *
+ * For Android:
+ *      The root directory is the root of the file system.
+ *      To write to the SD card, the file name is "sdcard/my_file.txt"
+ */
+function FileWriter() {
+    this.fileName = "";
+    this.result = null;
+    this.readyState = 0; // EMPTY
+    this.result = null;
+    this.onerror = null;
+    this.oncomplete = null;
+};
 
-FileWriter.prototype.writeAsText = function(file,text,bAppend)
-{
-	if(this.fileName && this.fileName.length > 0)
-	{
-		navigator.fileMgr.removeFileWriter(this.fileName,this);
-	}
-	this.fileName = file;
-	if(bAppend != true)
-	{
-		bAppend = false; // for null values
-	}
-	navigator.fileMgr.addFileWriter(file,this);
-	this.readyState = 0; // EMPTY
-  	var call = FileUtil.write(file, text, bAppend);
-	this.result = null;
-}
+// States
+FileWriter.EMPTY = 0;
+FileWriter.LOADING = 1;
+FileWriter.DONE = 2;
+
+FileWriter.prototype.writeAsText = function(file, text, bAppend) {
+    if (bAppend != true) {
+        bAppend = false; // for null values
+    }
+
+    this.fileName = file;
+
+    // LOADING state
+    this.readyState = FileWriter.LOADING;
+
+    var me = this;
+
+    // Read file
+    navigator.fileMgr.writeAsText(file, text, bAppend,
+
+        // Success callback
+        function(r) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileWriter.DONE) {
+                return;
+            }
+
+            // Save result
+            me.result = r;
+
+            // DONE state
+            me.readyState = FileWriter.DONE;
+
+            // If oncomplete callback
+            if (typeof me.oncomplete == "function") {
+                var evt = File._createEvent("complete", me);
+                me.oncomplete(evt);
+            }
+        },
+
+        // Error callback
+        function(e) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileWriter.DONE) {
+                return;
+            }
+
+            // Save error
+            me.error = e;
+
+            // DONE state
+            me.readyState = FileWriter.DONE;
+
+            // If onerror callback
+            if (typeof me.onerror == "function") {
+                var evt = File._createEvent("error", me);
+                me.onerror(evt);
+            }
+        }
+        );
+
+};
+
 /**
  * This class provides access to device GPS data.
  * @constructor
  */
 function Geolocation() {
-    /**
-     * The last known GPS position.
-     */
+
+    // The last known GPS position.
     this.lastPosition = null;
-    this.lastError = null;
-    this.listeners = null;
+
+    // Geolocation listeners
+    this.listeners = {};
 };
 
-var geoListeners = [];
-
-Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options)
-{
-  var position = Geo.getCurrentLocation();
-  this.global_success = successCallback;
-  this.fail = errorCallback;
-}
-
-// Run the global callback
-Geolocation.prototype.gotCurrentPosition = function(lat, lng, alt, altacc, head, vel, stamp)
-{
-  if (lat == "undefined" || lng == "undefined")
-  {
-    this.fail();
-  }
-  else
-  {
-    coords = new Coordinates(lat, lng, alt, acc, head, vel);
-    loc = new Position(coords, stamp);
-	this.lastPosition = loc;
-    this.global_success(loc);
-  }
-}
-
-/*
-* This turns on the GeoLocator class, which has two listeners.
-* The listeners have their own timeouts, and run independently of this process
-* In this case, we return the key to the watch hash
-*/
- 
-Geolocation.prototype.watchPosition = function(successCallback, errorCallback, options)
-{
-  var frequency = (options != undefined)? options.frequency : 10000;
-   
-  var key = geoListeners.push( {"success" : successCallback, "fail" : errorCallback }) - 1;
- 
-  // TO-DO: Get the names of the method and pass them as strings to the Java.
-  return Geo.start(frequency, key);
-}
- 
-/*
- * Retrieve and stop this listener from listening to the GPS
+/**
+ * Position error object
  *
+ * @param code
+ * @param message
  */
-Geolocation.prototype.success = function(key, lat, lng, alt, altacc, head, vel, stamp)
-{
-  var coords = new Coordinates(lat, lng, alt, acc, head, vel);
-  var loc = new Position(coords, stamp);
-  geoListeners[key].success(loc);
+function PositionError(code, message) {
+    this.code = code;
+    this.message = message;
+};
+
+PositionError.PERMISSION_DENIED = 1;
+PositionError.POSITION_UNAVAILABLE = 2;
+PositionError.TIMEOUT = 3;
+
+/**
+ * Asynchronously aquires the current position.
+ *
+ * @param {Function} successCallback    The function to call when the position data is available
+ * @param {Function} errorCallback      The function to call when there is an error getting the heading position. (OPTIONAL)
+ * @param {PositionOptions} options     The options for getting the position data. (OPTIONAL)
+ */
+Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options) {
+    if (navigator._geo.listeners["global"]) {
+        console.log("Geolocation Error: Still waiting for previous getCurrentPosition() request.");
+        try {
+            errorCallback(new PositionError(PositionError.TIMEOUT, "Geolocation Error: Still waiting for previous getCurrentPosition() request."));
+        } catch (e) {
+        }
+        return;
+    }
+    var maximumAge = 10000;
+    var enableHighAccuracy = false;
+    var timeout = 10000;
+    if (typeof options != "undefined") {
+        if (typeof options.maximumAge != "undefined") {
+            maximumAge = options.maximumAge;
+        }
+        if (typeof options.enableHighAccuracy != "undefined") {
+            enableHighAccuracy = options.enableHighAccuracy;
+        }
+        if (typeof options.timeout != "undefined") {
+            timeout = options.timeout;
+        }
+    }
+    navigator._geo.listeners["global"] = {"success" : successCallback, "fail" : errorCallback };
+    PhoneGap.execAsync(null, null, "Geolocation", "getCurrentLocation", [enableHighAccuracy, timeout, maximumAge]);
 }
 
-Geolocation.prototype.fail = function(key)
-{
-  geoListeners[key].fail();
-}
- 
-Geolocation.prototype.clearWatch = function(watchId)
-{
-  Geo.stop(watchId);
-}
+/**
+ * Asynchronously watches the geolocation for changes to geolocation.  When a change occurs,
+ * the successCallback is called with the new location.
+ *
+ * @param {Function} successCallback    The function to call each time the location data is available
+ * @param {Function} errorCallback      The function to call when there is an error getting the location data. (OPTIONAL)
+ * @param {PositionOptions} options     The options for getting the location data such as frequency. (OPTIONAL)
+ * @return String                       The watch id that must be passed to #clearWatch to stop watching.
+ */
+Geolocation.prototype.watchPosition = function(successCallback, errorCallback, options) {
+    var maximumAge = 10000;
+    var enableHighAccuracy = false;
+    var timeout = 10000;
+    if (typeof options != "undefined") {
+        if (typeof options.frequency  != "undefined") {
+            maximumAge = options.frequency;
+        }
+        if (typeof options.maximumAge != "undefined") {
+            maximumAge = options.maximumAge;
+        }
+        if (typeof options.enableHighAccuracy != "undefined") {
+            enableHighAccuracy = options.enableHighAccuracy;
+        }
+        if (typeof options.timeout != "undefined") {
+            timeout = options.timeout;
+        }
+    }
+    var id = PhoneGap.createUUID();
+    navigator._geo.listeners[id] = {"success" : successCallback, "fail" : errorCallback };
+    PhoneGap.execAsync(null, null, "Geolocation", "start", [id, enableHighAccuracy, timeout, maximumAge]);
+    return id;
+};
+
+/*
+ * Native callback when watch position has a new position.
+ * PRIVATE METHOD
+ *
+ * @param {String} id
+ * @param {Number} lat
+ * @param {Number} lng
+ * @param {Number} alt
+ * @param {Number} altacc
+ * @param {Number} head
+ * @param {Number} vel
+ * @param {Number} stamp
+ */
+Geolocation.prototype.success = function(id, lat, lng, alt, altacc, head, vel, stamp) {
+    var coords = new Coordinates(lat, lng, alt, altacc, head, vel);
+    var loc = new Position(coords, stamp);
+    try {
+        if (lat == "undefined" || lng == "undefined") {
+            navigator._geo.listeners[id].fail(new PositionError(PositionError.POSITION_UNAVAILABLE, "Lat/Lng are undefined."));
+        }
+        else {
+            navigator._geo.lastPosition = loc;
+            navigator._geo.listeners[id].success(loc);
+        }
+    }
+    catch (e) {
+        console.log("Geolocation Error: Error calling success callback function.");
+    }
+
+    if (id == "global") {
+        delete navigator._geo.listeners["global"];
+    }
+};
+
+/**
+ * Native callback when watch position has an error.
+ * PRIVATE METHOD
+ *
+ * @param {String} id       The ID of the watch
+ * @param {Number} code     The error code
+ * @param {String} msg      The error message
+ */
+Geolocation.prototype.fail = function(id, code, msg) {
+    try {
+        navigator._geo.listeners[id].fail(new PositionError(code, msg));
+    }
+    catch (e) {
+        console.log("Geolocation Error: Error calling error callback function.");
+    }
+};
+
+/**
+ * Clears the specified heading watch.
+ *
+ * @param {String} id       The ID of the watch returned from #watchPosition
+ */
+Geolocation.prototype.clearWatch = function(id) {
+    PhoneGap.execAsync(null, null, "Geolocation", "stop", [id]);
+    delete navigator._geo.listeners[id];
+};
+
+/**
+ * Force the PhoneGap geolocation to be used instead of built-in.
+ */
+Geolocation.usingPhoneGap = false;
+Geolocation.usePhoneGap = function() {
+    if (Geolocation.usingPhoneGap) {
+        return;
+    }
+    Geolocation.usingPhoneGap = true;
+
+    // Set built-in geolocation methods to our own implementations
+    // (Cannot replace entire geolocation, but can replace individual methods)
+    navigator.geolocation.setLocation = navigator._geo.setLocation;
+    navigator.geolocation.getCurrentPosition = navigator._geo.getCurrentPosition;
+    navigator.geolocation.watchPosition = navigator._geo.watchPosition;
+    navigator.geolocation.clearWatch = navigator._geo.clearWatch;
+    navigator.geolocation.start = navigator._geo.start;
+    navigator.geolocation.stop = navigator._geo.stop;
+};
 
 PhoneGap.addConstructor(function() {
-	// Taken from Jesse's geo fix (similar problem) in PhoneGap iPhone. Go figure, same browser!
-	function __proxyObj(origObj, proxyObj, funkList) {
-		for (var v in funkList) {
-			origObj[funkList[v]] = proxyObj[funkList[v]];
-		}
-	}
-	// In the case of Android, we can use the Native Geolocation Object if it exists, so only load this on 1.x devices
-  if (typeof navigator.geolocation == 'undefined') {
-		navigator.geolocation = new Geolocation();
-	}
+    navigator._geo = new Geolocation();
+
+    // No native geolocation object for Android 1.x, so use PhoneGap geolocation
+    if (typeof navigator.geolocation == 'undefined') {
+        navigator.geolocation = navigator._geo;
+        Geolocation.usingPhoneGap = true;
+    }
 });
+
 function KeyEvent() 
 {
 }
@@ -1506,31 +1765,6 @@ if (document.keyEvent == null || typeof document.keyEvent == 'undefined')
 {
   window.keyEvent = document.keyEvent = new KeyEvent();
 }
-com.phonegap.AudioHandlerProxy = function() {
-    this.className = "com.phonegap.AudioHandler";
-};
-com.phonegap.AudioHandlerProxy.prototype.startRecordingAudio = function(id, file) {
-    return PhoneGap.exec(this.className, "startRecordingAudio", [id, file]);
-};
-com.phonegap.AudioHandlerProxy.prototype.stopRecordingAudio = function(id) {
-    return PhoneGap.exec(this.className, "stopRecordingAudio", [id]);
-};
-com.phonegap.AudioHandlerProxy.prototype.startPlayingAudio = function(id, file) {
-    return PhoneGap.exec(this.className, "startPlayingAudio", [id, file]);
-};
-com.phonegap.AudioHandlerProxy.prototype.pausePlayingAudio = function(id) {
-    return PhoneGap.exec(this.className, "pausePlayingAudio", [id]);
-};
-com.phonegap.AudioHandlerProxy.prototype.stopPlayingAudio = function(id) {
-    return PhoneGap.exec(this.className, "stopPlayingAudio", [id]);
-};
-com.phonegap.AudioHandlerProxy.prototype.getCurrentPositionAudio = function(id) {
-    return PhoneGap.exec(this.className, "getCurrentPositionAudio", [id]);
-};
-com.phonegap.AudioHandlerProxy.prototype.getDurationAudio = function(id, file) {
-    return PhoneGap.exec(this.className, "getDurationAudio", [id, file]);
-};
-com.phonegap.AudioHandler = new com.phonegap.AudioHandlerProxy();
 
 /**
  * List of media objects.
@@ -1596,8 +1830,10 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
  *                                  errorCallback(int errorCode) - OPTIONAL
  * @param statusCallback        The callback to be called when media status has changed.
  *                                  statusCallback(int statusCode) - OPTIONAL
+ * @param positionCallback      The callback to be called when media position has changed.
+ *                                  positionCallback(long position) - OPTIONAL
  */
-Media = function(src, successCallback, errorCallback, statusCallback) {
+Media = function(src, successCallback, errorCallback, statusCallback, positionCallback) {
 
     // successCallback optional
     if (successCallback && (typeof successCallback != "function")) {
@@ -1617,19 +1853,27 @@ Media = function(src, successCallback, errorCallback, statusCallback) {
         return;
     }
 
+    // statusCallback optional
+    if (positionCallback && (typeof positionCallback != "function")) {
+        console.log("Media Error: positionCallback is not a function");
+        return;
+    }
+
     this.id = PhoneGap.createUUID();
     PhoneGap.mediaObjects[this.id] = this;
     this.src = src;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.statusCallback = statusCallback;
+    this.positionCallback = positionCallback;
     this._duration = -1;
+    this._position = -1;
 };
 
 // Media messages
 Media.MEDIA_STATE = 1;
 Media.MEDIA_DURATION = 2;
-Media.MEDIA_ERROR = 3;
+Media.MEDIA_ERROR = 9;
 
 // Media states
 Media.MEDIA_NONE = 0;
@@ -1658,21 +1902,21 @@ MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
  * Start or resume playing audio file.
  */
 Media.prototype.play = function() {
-    com.phonegap.AudioHandler.startPlayingAudio(this.id, this.src);
+    PhoneGap.execAsync(null, null, "Media", "startPlayingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop playing audio file.
  */
 Media.prototype.stop = function() {
-    com.phonegap.AudioHandler.stopPlayingAudio(this.id);
+    return PhoneGap.execAsync(null, null, "Media", "stopPlayingAudio", [this.id]);
 };
 
 /**
  * Pause playing audio file.
  */
 Media.prototype.pause = function() {
-    com.phonegap.AudioHandler.pausePlayingAudio(this.id);
+    PhoneGap.execAsync(null, null, "Media", "pausePlayingAudio", [this.id]);
 };
 
 /**
@@ -1690,45 +1934,32 @@ Media.prototype.getDuration = function() {
  *
  * @return
  */
-Media.prototype.getCurrentPosition = function() {
-    return com.phonegap.AudioHandler.getCurrentPositionAudio(this.id);
+Media.prototype.getCurrentPosition = function(success, fail) {
+    PhoneGap.execAsync(success, fail, "Media", "getCurrentPositionAudio", [this.id]);
 };
 
 /**
  * Start recording audio file.
  */
 Media.prototype.startRecord = function() {
-    com.phonegap.AudioHandler.startRecordingAudio(this.id, this.src);
+    PhoneGap.execAsync(null, null, "Media", "startRecordingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop recording audio file.
  */
 Media.prototype.stopRecord = function() {
-    com.phonegap.AudioHandler.stopRecordingAudio(this.id);
+    PhoneGap.execAsync(null, null, "Media", "stopRecordingAudio", [this.id]);
 };
 
-com.phonegap.NetworkManagerProxy = function() {
-    this.className = "com.phonegap.NetworkManager";
-};
-com.phonegap.NetworkManagerProxy.prototype.isAvailable = function() {
-    return PhoneGap.exec(this.className, "isAvailable", []);
-};
-com.phonegap.NetworkManagerProxy.prototype.isWifiActive = function() {
-    return PhoneGap.exec(this.className, "isWifiActive", []);
-};
-com.phonegap.NetworkManagerProxy.prototype.isReachable = function(uri) {
-    return PhoneGap.exec(this.className, "isReachable", [uri]);
-};
-com.phonegap.NetworkManager = new com.phonegap.NetworkManagerProxy();
 
 /**
  * This class contains information about any NetworkStatus.
  * @constructor
  */
 function NetworkStatus() {
-    this.code = null;
-    this.message = "";
+    //this.code = null;
+    //this.message = "";
 };
 
 NetworkStatus.NOT_REACHABLE = 0;
@@ -1752,39 +1983,34 @@ function Network() {
  * Called by the geolocation framework when the reachability status has changed.
  * @param {Reachibility} reachability The current reachability status.
  */
+// TODO: Callback from native code not implemented for Android
 Network.prototype.updateReachability = function(reachability) {
     this.lastReachability = reachability;
 };
 
 /**
- * 
+ * Determine if a URI is reachable over the network.
+
  * @param {Object} uri
- * @param {Function} win
+ * @param {Function} callback
  * @param {Object} options  (isIpAddress:boolean)
  */
-Network.prototype.isReachable = function(uri, win, options) {
-    var status = new NetworkStatus();
-    if(com.phonegap.NetworkManager.isReachable(uri)) {
-        if (com.phonegap.NetworkManager.isWifiActive()) {
-            status.code = NetworkStatus.REACHABLE_VIA_WIFI_NETWORK;
-        }
-        else {
-            status.code = NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK;
-        }
+Network.prototype.isReachable = function(uri, callback, options) {
+    var isIpAddress = false;
+    if (options && options.isIpAddress) {
+        isIpAddress = options.isIpAddress;
     }
-    else {
-        status.code = NetworkStatus.NOT_REACHABLE;
-    }
-  win(status);
+    PhoneGap.execAsync(callback, null, "Network Status", "isReachable", [uri, isIpAddress]);
 };
 
 PhoneGap.addConstructor(function() {
     if (typeof navigator.network == "undefined") navigator.network = new Network();
-});/**
+});
+
+/**
  * This class provides access to notifications on the device.
  */
 function Notification() {
-	
 }
 
 /**
@@ -1816,7 +2042,7 @@ Notification.prototype.activityStop = function() {
  * @param {String} colour The colour of the light.
  */
 Notification.prototype.blink = function(count, colour) {
-	
+
 };
 
 /**
@@ -1824,16 +2050,17 @@ Notification.prototype.blink = function(count, colour) {
  * @param {Integer} mills The number of milliseconds to vibrate for.
  */
 Notification.prototype.vibrate = function(mills) {
-	
+    PhoneGap.execAsync(null, null, "Device", "vibrate", [mills]);
 };
 
 /**
  * Causes the device to beep.
+ * On Android, the default notification ringtone is played.
+ *
  * @param {Integer} count The number of beeps.
- * @param {Integer} volume The volume of the beep.
  */
-Notification.prototype.beep = function(count, volume) {
-	
+Notification.prototype.beep = function(count) {
+    PhoneGap.execAsync(null, null, "Device", "beep", [count]);
 };
 
 // TODO: of course on Blackberry and Android there notifications in the UI as well
@@ -1842,21 +2069,6 @@ PhoneGap.addConstructor(function() {
     if (typeof navigator.notification == "undefined") navigator.notification = new Notification();
 });
 
-Notification.prototype.vibrate = function(mills)
-{
-  DroidGap.vibrate(mills);
-}
-
-/*
- * On the Android, we don't beep, we notify you with your 
- * notification!  We shouldn't keep hammering on this, and should
- * review what we want beep to do.
- */
-
-Notification.prototype.beep = function(count, volume)
-{
-  DroidGap.beep(count);
-}
 /**
  * This class contains position information.
  * @param {Object} lat
@@ -1937,17 +2149,7 @@ PhoneGap.addConstructor(function() {
     if (typeof navigator.splashScreen == "undefined") {
     	navigator.splashScreen = SplashScreen;  // SplashScreen object come from native side through addJavaScriptInterface
     }
-});com.phonegap.StorageProxy = function() {
-    this.className = "com.phonegap.Storage";
-};
-com.phonegap.StorageProxy.prototype.executeSql = function(query, params, id) {
-    return PhoneGap.exec(this.className, "executeSql", [query, params, id]);
-};
-com.phonegap.StorageProxy.prototype.openDatabase = function(name, version, display_name, size) {
-    return PhoneGap.exec(this.className, "openDatabase", [name, version, display_name, size]);
-};
-com.phonegap.Storage = new com.phonegap.StorageProxy();
-
+});
 /*
  * This is purely for the Android 1.5/1.6 HTML 5 Storage
  * I was hoping that Android 2.0 would deprecate this, but given the fact that
@@ -1992,7 +2194,7 @@ var Tx = function() {
 };
 
 Tx.prototype.executeSql = function(query, params, win, fail) {
-    com.phonegap.Storage.executeSql(query, params, this.id);
+    PhoneGap.execAsync(null, null, "Storage", "executeSql", [query, params, this.id]);
     tx.win = win;
     tx.fail = fail;
 };
@@ -2011,7 +2213,7 @@ Rows.prototype.item = function(row_id) {
 };
 
 var dbSetup = function(name, version, display_name, size) {
-    com.phonegap.Storage.openDatabase(name, version, display_name, size)
+    PhoneGap.execAsync(null, null, "Storage", "openDatabase", [name, version, display_name, size]);
     db_object = new DatabaseShell();
     return db_object;
 };

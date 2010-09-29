@@ -21,11 +21,10 @@ package com.phonegap;
 import java.lang.reflect.Constructor;
 
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
 import android.webkit.WebView;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * This abstract class defines SDK-independent API for communication with
@@ -35,13 +34,6 @@ import android.webkit.WebView;
  * Eclair or higher, we want to use {@link ContactAccessorSdk5}.
  */
 public abstract class ContactAccessor {
-	
-	public class ContactTriplet
-	{
-		public String name = "";
-		public String email = "";
-		public String phone = "";
-	}
 	
     /**
      * Static singleton instance of {@link ContactAccessor} holding the
@@ -94,5 +86,5 @@ public abstract class ContactAccessor {
     /**
      * Handles searching through SDK-specific contacts API.
      */
-    public abstract void search(String name, String npa, String email);
+    public abstract void search(JSONArray filter, JSONObject options);
 }
