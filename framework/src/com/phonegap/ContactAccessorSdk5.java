@@ -147,7 +147,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		while (it.hasNext() && (pos < limit)) {
 			contact = new JSONObject();
 			contactId = it.next();
-			Log.d(LOG_TAG, "Contact ID = " + contactId);
 			
 			try {
 				contact.put("id", contactId);
@@ -182,7 +181,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			for (int i=0; i<filter.length(); i++) {
 				key = filter.getString(i);
 				if (key.startsWith("displayName")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Contacts.CONTENT_URI,
 							ContactsContract.Contacts._ID,
@@ -190,7 +188,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm});
 				}
 				else if (key.startsWith("name")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Data.CONTENT_URI,
 							ContactsContract.Data.CONTACT_ID,
@@ -198,7 +195,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE});
 				}
 				else if (key.startsWith("nickname")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Data.CONTENT_URI,
 							ContactsContract.Data.CONTACT_ID,
@@ -206,7 +202,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm, ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE});					
 				}
 				else if (key.startsWith("phoneNumbers")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
 							ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
@@ -214,7 +209,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm});
 				}
 				else if (key.startsWith("emails")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.CommonDataKinds.Email.CONTENT_URI,
 							ContactsContract.CommonDataKinds.Email.CONTACT_ID,
@@ -222,7 +216,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm});
 				}
 				else if (key.startsWith("addresses")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Data.CONTENT_URI,
 							ContactsContract.Data.CONTACT_ID,
@@ -230,7 +223,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE});					
 				}
 				else if (key.startsWith("ims")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Data.CONTENT_URI,
 							ContactsContract.Data.CONTACT_ID,
@@ -238,7 +230,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE});					
 				}
 				else if (key.startsWith("organizations")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Data.CONTENT_URI,
 							ContactsContract.Data.CONTACT_ID,
@@ -252,7 +243,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 					
 				}
 				else if (key.startsWith("note")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Data.CONTENT_URI,
 							ContactsContract.Data.CONTACT_ID,
@@ -260,7 +250,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE});					
 				}
 				else if (key.startsWith("relationships")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Data.CONTENT_URI,
 							ContactsContract.Data.CONTACT_ID,
@@ -268,7 +257,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							new String[] {searchTerm, ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE});					
 				}
 				else if (key.startsWith("urls")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactsContract.Data.CONTENT_URI,
 							ContactsContract.Data.CONTACT_ID,
@@ -297,7 +285,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				null);
 		
 		while (cursor.moveToNext()) {
-			Log.d(LOG_TAG, "ID = " + cursor.getString(cursor.getColumnIndex(projection)));
 			contactIds.add(cursor.getString(cursor.getColumnIndex(projection)));
 		}
 		cursor.close();

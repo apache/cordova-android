@@ -162,7 +162,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 			for (int i=0; i<filter.length(); i++) {
 				key = filter.getString(i);
 				if (key.startsWith("displayName")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							People.CONTENT_URI,
 							People._ID,
@@ -178,7 +177,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 //							new String[] {searchTerm, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE});
 //				}
 				else if (key.startsWith("phoneNumbers")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							Phones.CONTENT_URI,
 							Phones.PERSON_ID,
@@ -186,7 +184,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 							new String[] {searchTerm});
 				}
 				else if (key.startsWith("emails")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactMethods.CONTENT_EMAIL_URI,
 							ContactMethods.PERSON_ID,
@@ -194,7 +191,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 							new String[] {searchTerm, ContactMethods.CONTENT_EMAIL_ITEM_TYPE});
 				}
 				else if (key.startsWith("addresses")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactMethods.CONTENT_URI,
 							ContactMethods.PERSON_ID,
@@ -202,7 +198,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 							new String[] {searchTerm, ContactMethods.CONTENT_POSTAL_ITEM_TYPE});					
 				}
 				else if (key.startsWith("ims")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							ContactMethods.CONTENT_URI,
 							ContactMethods.PERSON_ID,
@@ -210,7 +205,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 							new String[] {searchTerm, ContactMethods.CONTENT_IM_ITEM_TYPE});					
 				}
 				else if (key.startsWith("organizations")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							Organizations.CONTENT_URI,
 							ContactMethods.PERSON_ID,
@@ -218,7 +212,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 							new String[] {searchTerm});					
 				}
 				else if (key.startsWith("note")) {
-					Log.d(LOG_TAG, "Doing " + key + " query");
 					doQuery(searchTerm, contactIds,
 							People.CONTENT_URI,
 							People._ID,
@@ -246,7 +239,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 				null);
 		
 		while (cursor.moveToNext()) {
-			Log.d(LOG_TAG, "ID = " + cursor.getString(cursor.getColumnIndex(projection)));
 			contactIds.add(cursor.getString(cursor.getColumnIndex(projection)));
 		}
 		cursor.close();

@@ -104,7 +104,7 @@
 		var obj = new ContactFindOptions();
 		obj.filter="";
 		obj.multiple=true;
-		navigator.service.contacts.find(["name", "phone", "email"], count_contacts, fail, obj);
+		navigator.service.contacts.find(["displayName", "phoneNumbers", "emails"], count_contacts, fail, obj);
 	}
 
 	function count_contacts(contacts)
