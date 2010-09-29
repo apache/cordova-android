@@ -31,7 +31,6 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.ContactMethodsColumns;
 import android.provider.Contacts.Organizations;
@@ -100,23 +99,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
 		
-		
-//		JSONArray contacts = new JSONArray();
-//		JSONObject contact;
-//
-//        ContentResolver cr = mApp.getContentResolver();
-//
-//        // Right now we are just querying the displayName
-//        Cursor cur = cr.query(People.CONTENT_URI, 
-//			null,
-//			People.DISPLAY_NAME + " LIKE ?",
-//			new String[] {searchTerm},
-//			People.DISPLAY_NAME + " ASC");
-//
-//		
-//        int pos = 0;
-//        while (cur.moveToNext() && pos < limit) {
-    	// Get a cursor by creating the query.
     	ContentResolver cr = mApp.getContentResolver();
     	
     	Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
