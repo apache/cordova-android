@@ -41,7 +41,7 @@ Notification.prototype.blink = function(count, colour) {
  * @param {Integer} mills The number of milliseconds to vibrate for.
  */
 Notification.prototype.vibrate = function(mills) {
-    PhoneGap.execAsync(null, null, "Device", "vibrate", [mills]);
+    PhoneGap.execAsync(null, null, "Notification", "vibrate", [mills]);
 };
 
 /**
@@ -51,7 +51,7 @@ Notification.prototype.vibrate = function(mills) {
  * @param {Integer} count The number of beeps.
  */
 Notification.prototype.beep = function(count) {
-    PhoneGap.execAsync(null, null, "Device", "beep", [count]);
+    PhoneGap.execAsync(null, null, "Notification", "beep", [count]);
 };
 
 // TODO: of course on Blackberry and Android there notifications in the UI as well

@@ -23,23 +23,16 @@ package com.phonegap;
  */
 
 import java.util.TimeZone;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
-
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Vibrator;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.webkit.WebView;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 
 public class Device implements Plugin {
 	
@@ -101,12 +94,6 @@ public class Device implements Plugin {
 				//r.put("phonegap", pg);
 				return new PluginResult(status, r);
 			}
-			else if (action.equals("beep")) {
-				this.beep(args.getLong(0));
-			}
-			else if (action.equals("vibrate")) {
-				this.vibrate(args.getLong(0));
-			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
@@ -160,46 +147,7 @@ public class Device implements Plugin {
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
-	
-	/**
-	 * Beep plays the default notification ringtone.
-	 * 
-	 * @param count			Number of times to play notification
-	 */
-	public void beep(long count) {
-		Uri ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone notification = RingtoneManager.getRingtone(this.ctx, ringtone);
 		
-		// If phone is not set to silent mode
-		if (notification != null) {
-			for (long i = 0; i < count; ++i) {
-				notification.play();
-				long timeout = 5000;
-				while (notification.isPlaying() && (timeout > 0)) {
-					timeout = timeout - 100;
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-					}
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Vibrates the device for the specified amount of time.
-	 * 
-	 * @param time			Time to vibrate in ms.
-	 */
-	public void vibrate(long time){
-        // Start the vibration, 0 defaults to half a second.
-		if (time == 0) {
-			time = 500;
-		}
-        Vibrator vibrator = (Vibrator) this.ctx.getSystemService(Context.VIBRATOR_SERVICE);
-        vibrator.vibrate(time);
-	}
-	
 	/**
 	 * Get the OS name.
 	 * 
