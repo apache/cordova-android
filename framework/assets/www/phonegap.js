@@ -324,6 +324,42 @@ PhoneGap.stringify = function(args) {
     }
 };
 
+/**
+ * Does a deep clone of the object.
+ *
+ * @param obj
+ * @return
+ */
+PhoneGap.clone = function(obj) {
+	if(!obj) { 
+		return obj;
+	}
+	
+	if(obj instanceof Array){
+		var retVal = new Array();
+		for(var i = 0; i < obj.length; ++i){
+			retVal.push(PhoneGap.clone(obj[i]));
+		}
+		return retVal;
+	}
+	
+	if (obj instanceof Function) {
+		return obj;
+	}
+	
+	if(!(obj instanceof Object)){
+		return obj;
+	}
+
+	retVal = new Object();
+	for(i in obj){
+		if(!(i in retVal) || retVal[i] != obj[i]) {
+			retVal[i] = PhoneGap.clone(obj[i]);
+		}
+	}
+	return retVal;
+};
+
 PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
 
@@ -940,6 +976,21 @@ var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, ad
     this.connected = connected || null;
 };
 
+
+Contact.prototype.remove = function(contact) {
+};
+
+Contact.prototype.clone = function() {
+	console.log("PhoneGap clone version 2");
+	var clonedContact = PhoneGap.clone(this);
+	clonedContact.id = null;
+    return clonedContact;
+};
+
+Contact.prototype.save = function(contact) {
+};
+
+
 var ContactName = function(formatted, familyName, givenName, middle, prefix, suffix) {
     this.formatted = formatted || null;
     this.familyName = familyName || null;
@@ -985,7 +1036,6 @@ var Contacts = function() {
     this.records = new Array();
 }
 
-// Contacts.prototype.find = function(obj, win, fail) {
 Contacts.prototype.find = function(fields, win, fail, options) {
     this.win = win;
     this.fail = fail;
@@ -997,16 +1047,9 @@ Contacts.prototype.droidDone = function(contacts) {
     this.win(eval('(' + contacts + ')'));
 };
 
-Contacts.prototype.remove = function(contact) {
-    
-};
-
-Contacts.prototype.save = function(contact) {
-    
-};
-
+// This function does not create a new contact in the db.  
+// Must call contact.save() for it to be persisted in the db.
 Contacts.prototype.create = function(contact) {
-    
 };
 
 Contacts.prototype.m_foundContacts = function(win, contacts) {
@@ -2050,7 +2093,7 @@ Notification.prototype.blink = function(count, colour) {
  * @param {Integer} mills The number of milliseconds to vibrate for.
  */
 Notification.prototype.vibrate = function(mills) {
-    PhoneGap.execAsync(null, null, "Device", "vibrate", [mills]);
+    PhoneGap.execAsync(null, null, "Notification", "vibrate", [mills]);
 };
 
 /**
@@ -2060,7 +2103,7 @@ Notification.prototype.vibrate = function(mills) {
  * @param {Integer} count The number of beeps.
  */
 Notification.prototype.beep = function(count) {
-    PhoneGap.execAsync(null, null, "Device", "beep", [count]);
+    PhoneGap.execAsync(null, null, "Notification", "beep", [count]);
 };
 
 // TODO: of course on Blackberry and Android there notifications in the UI as well
