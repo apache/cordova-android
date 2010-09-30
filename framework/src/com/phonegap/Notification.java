@@ -2,28 +2,30 @@ package com.phonegap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
-
-import android.util.Log;
-import android.webkit.WebView;
+import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Vibrator;
+import android.webkit.WebView;
 
-public class ContactManager implements Plugin {
+/**
+ * This class provides access to notifications on the device.
+ */
+public class Notification implements Plugin {
 	
-    private static ContactAccessor contactAccessor;
     WebView webView;					// WebView object
     DroidGap ctx;						// DroidGap object
-
-	private static final String LOG_TAG = "Contact Query";
-
+	
 	/**
 	 * Constructor.
 	 */
-	public ContactManager()	{
+	public Notification() {
 	}
-	
+
 	/**
 	 * Sets the context of the Command. This can then be used to do things like
 	 * get file paths associated with the Activity.
@@ -52,28 +54,18 @@ public class ContactManager implements Plugin {
 	 * @return A CommandResult object with a status and message.
 	 */
 	public PluginResult execute(String action, JSONArray args) {
-		if (contactAccessor == null) {
-			contactAccessor = ContactAccessor.getInstance(webView, ctx);
-		}
 		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
 		try {
-			if (action.equals("search")) {
-				contactAccessor.search(args.getJSONArray(0), args.getJSONObject(1));
+			if (action.equals("beep")) {
+				this.beep(args.getLong(0));
 			}
-			else if (action.equals("create")) {
-				// TODO Coming soon!
-			}
-			else if (action.equals("save")) {
-				// TODO Coming soon!			
-			}
-			else if (action.equals("remove")) {
-				// TODO Coming soon!
+			else if (action.equals("vibrate")) {
+				this.vibrate(args.getLong(0));
 			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
-			Log.e(LOG_TAG, e.getMessage(), e);
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
@@ -104,7 +96,7 @@ public class ContactManager implements Plugin {
      * Called by AccelBroker when listener is to be shut down.
      * Stop listener.
      */
-    public void onDestroy() {   	
+    public void onDestroy() { 	
     }
 
     /**
@@ -118,4 +110,48 @@ public class ContactManager implements Plugin {
      */
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
     }
+
+    //--------------------------------------------------------------------------
+    // LOCAL METHODS
+    //--------------------------------------------------------------------------
+
+	/**
+	 * Beep plays the default notification ringtone.
+	 * 
+	 * @param count			Number of times to play notification
+	 */
+	public void beep(long count) {
+		Uri ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		Ringtone notification = RingtoneManager.getRingtone(this.ctx, ringtone);
+		
+		// If phone is not set to silent mode
+		if (notification != null) {
+			for (long i = 0; i < count; ++i) {
+				notification.play();
+				long timeout = 5000;
+				while (notification.isPlaying() && (timeout > 0)) {
+					timeout = timeout - 100;
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Vibrates the device for the specified amount of time.
+	 * 
+	 * @param time			Time to vibrate in ms.
+	 */
+	public void vibrate(long time){
+        // Start the vibration, 0 defaults to half a second.
+		if (time == 0) {
+			time = 500;
+		}
+        Vibrator vibrator = (Vibrator) this.ctx.getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator.vibrate(time);
+	}
+
 }

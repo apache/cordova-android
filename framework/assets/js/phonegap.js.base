@@ -290,6 +290,28 @@ PhoneGap.stringify = function(args) {
             if ((type == "number") || (type == "boolean")) {
                 s = s + args[i];
             }
+            else if (args[i] instanceof Array) {
+            	s = s + "[" + args[i] + "]";
+            }
+            else if (args[i] instanceof Object) {
+            	var start = true;
+            	s = s + '{';
+            	for (var name in args[i]) {
+            		if (!start) {
+            			s = s + ',';
+            		}
+            		s = s + '"' + name + '":';
+            		var nameType = typeof args[i][name];
+            		if ((nameType == "number") || (nameType == "boolean")) {
+            			s = s + args[i][name];
+            		}
+            		else {
+                        s = s + '"' + args[i][name] + '"';            			
+            		}
+                    start=false;
+            	} 
+            	s = s + '}';
+            }
             else {
                 s = s + '"' + args[i] + '"';
             }

@@ -101,7 +101,10 @@
 
 	function get_contacts()
 	{
-		navigator.ContactManager.getAllContacts(count_contacts, fail, null);		
+		var obj = new ContactFindOptions();
+		obj.filter="";
+		obj.multiple=true;
+		navigator.service.contacts.find(["displayName", "phoneNumbers", "emails"], count_contacts, fail, obj);
 	}
 
 	function count_contacts(contacts)
