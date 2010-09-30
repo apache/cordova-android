@@ -21,7 +21,7 @@ import android.webkit.WebView;
  * This class listens to the accelerometer sensor and stores the latest 
  * acceleration values x,y,z.
  */
-public class AccelListener implements SensorEventListener, Plugin{
+public class AccelListener implements SensorEventListener, Plugin {
 
 	public static int STOPPED = 0;
 	public static int STARTING = 1;
@@ -118,6 +118,7 @@ public class AccelListener implements SensorEventListener, Plugin{
 						return new PluginResult(PluginResult.Status.IO_EXCEPTION, AccelListener.ERROR_FAILED_TO_START);						
 					}
 				}
+	            this.lastAccessTime = System.currentTimeMillis();
 				JSONObject r = new JSONObject();
 				r.put("x", this.x);
 				r.put("y", this.y);
