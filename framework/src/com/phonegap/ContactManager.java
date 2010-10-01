@@ -2,6 +2,7 @@ package com.phonegap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
@@ -69,7 +70,14 @@ public class ContactManager implements Plugin {
 				// TODO Coming soon!			
 			}
 			else if (action.equals("remove")) {
-				// TODO Coming soon!
+				if (contactAccessor.remove(args.getString(0))) {
+					return new PluginResult(status, result);					
+				}
+				else {
+					JSONObject r = new JSONObject();
+					r.put("code", 2);
+					return new PluginResult(PluginResult.Status.ERROR, r);
+				}
 			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {

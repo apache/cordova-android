@@ -977,17 +977,23 @@ var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, ad
 };
 
 
-Contact.prototype.remove = function(contact) {
+Contact.prototype.remove = function(successCB, errorCB) {
+	if (this.id == null) {
+		var errorObj = new ContactError();
+		errorObj.code = ContactError.NOT_FOUND_ERROR;
+		errorCB(errorObj);
+	}
+	
+    PhoneGap.execAsync(successCB, errorCB, "Contacts", "remove", [this.id]);	
 };
 
 Contact.prototype.clone = function() {
-	console.log("PhoneGap clone version 2");
 	var clonedContact = PhoneGap.clone(this);
 	clonedContact.id = null;
     return clonedContact;
 };
 
-Contact.prototype.save = function(contact) {
+Contact.prototype.save = function(win, fail) {
 };
 
 
@@ -1068,14 +1074,14 @@ var ContactError = function() {
     this.code=null;
 };
 
-ContactError.INVALID_ARGUMENT_ERROR = 0;
-ContactError.IO_ERROR = 1;
+ContactError.UNKNOWN_ERROR = 0;
+ContactError.INVALID_ARGUMENT_ERROR = 1;
 ContactError.NOT_FOUND_ERROR = 2;
-ContactError.NOT_SUPPORTED_ERROR = 3;
+ContactError.TIMEOUT_ERROR = 3;
 ContactError.PENDING_OPERATION_ERROR = 4;
-ContactError.PERMISSION_DENIED_ERROR = 5;
-ContactError.TIMEOUT_ERROR = 6;
-ContactError.UNKNOWN_ERROR = 7;
+ContactError.IO_ERROR = 5;
+ContactError.NOT_SUPPORTED_ERROR = 6;
+ContactError.PERMISSION_DENIED_ERROR = 20;
 
 PhoneGap.addConstructor(function() {
     if(typeof navigator.service == "undefined") navigator.service = new Object();

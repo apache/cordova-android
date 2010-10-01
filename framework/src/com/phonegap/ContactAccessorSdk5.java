@@ -549,5 +549,23 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		} 
 		cursor.close();
 		return retVal;
+	}
+
+	@Override
+	public void save() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public boolean remove(String id) {
+		ContentResolver cr = mApp.getContentResolver();
+    	int result = cr.delete(ContactsContract.Data.CONTENT_URI, 
+    			ContactsContract.Data.CONTACT_ID + " = ?", 
+    			new String[] {id});
+    	Log.d(LOG_TAG, "Content URI = " + ContactsContract.Data.CONTENT_URI);
+    	Log.d(LOG_TAG, "Where = " + ContactsContract.Data.CONTACT_ID + " = ?");
+    	Log.d(LOG_TAG, "Number of rows deleted = " + result);
+    	
+    	return (result > 0) ? true : false;
 	}	
 }

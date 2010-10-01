@@ -84,7 +84,17 @@ public abstract class ContactAccessor {
     }
 
     /**
+     * Handles adding a JSON Contact object into the database.
+     */
+	public abstract void save();
+
+    /**
      * Handles searching through SDK-specific contacts API.
      */
     public abstract void search(JSONArray filter, JSONObject options);
+
+    /**
+     * Handles removing a contact from the database.
+     */
+	public abstract boolean remove(String id);
 }

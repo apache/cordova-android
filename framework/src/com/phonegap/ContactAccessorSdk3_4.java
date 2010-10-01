@@ -31,6 +31,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.ContactMethodsColumns;
 import android.provider.Contacts.Organizations;
@@ -358,5 +359,23 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 			}
 		} 
 		return emails;
+	}
+
+	@Override
+	public void save() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean remove(String id) {
+    	ContentResolver cr = mApp.getContentResolver();
+
+    	int result = cr.delete(People.CONTENT_URI, "people._id = ?", new String[] {id});
+    	Log.d(LOG_TAG, "Content URI = " + People.CONTENT_URI);
+    	Log.d(LOG_TAG, "Where = " + "people._id = ?");
+    	Log.d(LOG_TAG, "Number of rows deleted = " + result);
+    	
+    	return (result > 0) ? true : false;
 	}
 }
