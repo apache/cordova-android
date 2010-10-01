@@ -100,6 +100,16 @@ Contacts.prototype.find = function(fields, win, fail, options) {
     PhoneGap.execAsync(null, null, "Contacts", "search", [fields, options]);
 };
 
+Contacts.prototype.wacky = function(properties) {
+	var contact = new Contact();
+	for (i in properties) {
+		if (contact[i]!='undefined') {
+			contact[i]=properties[i];
+		}
+	}
+	return contact;
+};
+
 Contacts.prototype.droidDone = function(contacts) {
     this.win(eval('(' + contacts + ')'));
 };
