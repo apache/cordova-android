@@ -558,14 +558,9 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
 	@Override
 	public boolean remove(String id) {
-		ContentResolver cr = mApp.getContentResolver();
-    	int result = cr.delete(ContactsContract.Data.CONTENT_URI, 
+    	int result = mApp.getContentResolver().delete(ContactsContract.Data.CONTENT_URI, 
     			ContactsContract.Data.CONTACT_ID + " = ?", 
-    			new String[] {id});
-    	Log.d(LOG_TAG, "Content URI = " + ContactsContract.Data.CONTENT_URI);
-    	Log.d(LOG_TAG, "Where = " + ContactsContract.Data.CONTACT_ID + " = ?");
-    	Log.d(LOG_TAG, "Number of rows deleted = " + result);
-    	
+    			new String[] {id});    	
     	return (result > 0) ? true : false;
 	}	
 }

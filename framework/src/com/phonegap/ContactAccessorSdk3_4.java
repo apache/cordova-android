@@ -369,12 +369,9 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 
 	@Override
 	public boolean remove(String id) {
-    	ContentResolver cr = mApp.getContentResolver();
-
-    	int result = cr.delete(People.CONTENT_URI, "people._id = ?", new String[] {id});
-    	Log.d(LOG_TAG, "Content URI = " + People.CONTENT_URI);
-    	Log.d(LOG_TAG, "Where = " + "people._id = ?");
-    	Log.d(LOG_TAG, "Number of rows deleted = " + result);
+    	int result = mApp.getContentResolver().delete(People.CONTENT_URI, 
+    			"people._id = ?", 
+    			new String[] {id});
     	
     	return (result > 0) ? true : false;
 	}
