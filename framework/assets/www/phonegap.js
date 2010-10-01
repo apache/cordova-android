@@ -1049,7 +1049,9 @@ Contacts.prototype.find = function(fields, win, fail, options) {
     PhoneGap.execAsync(null, null, "Contacts", "search", [fields, options]);
 };
 
-Contacts.prototype.wacky = function(properties) {
+//This function does not create a new contact in the db.  
+//Must call contact.save() for it to be persisted in the db.
+Contacts.prototype.create = function(properties) {
 	var contact = new Contact();
 	for (i in properties) {
 		if (contact[i]!='undefined') {
@@ -1061,11 +1063,6 @@ Contacts.prototype.wacky = function(properties) {
 
 Contacts.prototype.droidDone = function(contacts) {
     this.win(eval('(' + contacts + ')'));
-};
-
-// This function does not create a new contact in the db.  
-// Must call contact.save() for it to be persisted in the db.
-Contacts.prototype.create = function(contact) {
 };
 
 Contacts.prototype.m_foundContacts = function(win, contacts) {
