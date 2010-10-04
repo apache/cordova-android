@@ -91,7 +91,7 @@ public abstract class ContactAccessor {
     /**
      * Handles searching through SDK-specific contacts API.
      */
-    public abstract void search(JSONArray filter, JSONObject options);
+    public abstract JSONArray search(JSONArray filter, JSONObject options);
 
     /**
      * Handles removing a contact from the database.

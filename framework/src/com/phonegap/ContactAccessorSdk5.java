@@ -114,7 +114,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 	
 	@Override
-	public void search(JSONArray filter, JSONObject options) {
+	public JSONArray search(JSONArray filter, JSONObject options) {
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
 		boolean multiple = true;
@@ -166,11 +166,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			} catch (JSONException e) {
 				Log.e(LOG_TAG, e.getMessage(), e);
 			}
+			Log.d(LOG_TAG, "putting in contact ID = " + contactId);
 
 			contacts.put(contact);
 			pos++;
-		} 
-		mView.loadUrl("javascript:navigator.service.contacts.droidDone('" + contacts.toString() + "');");
+		}
+		return contacts;
 	}
 	
 	private Set<String> buildSetOfContactIds(JSONArray filter, String searchTerm) {

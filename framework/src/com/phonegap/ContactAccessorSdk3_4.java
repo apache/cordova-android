@@ -31,7 +31,6 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.ContactMethodsColumns;
 import android.provider.Contacts.Organizations;
@@ -80,7 +79,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	}
 	
 	@Override
-	public void search(JSONArray filter, JSONObject options) {
+	public JSONArray search(JSONArray filter, JSONObject options) {
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
 		boolean multiple = true;
@@ -152,7 +151,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	    	}
 	    	contacts.put(contact);
         }
-		mView.loadUrl("javascript:navigator.service.contacts.droidDone('" + contacts.toString() + "');");
+    	return contacts;
 	}
 	
 	private Set<String> buildSetOfContactIds(JSONArray filter, String searchTerm) {

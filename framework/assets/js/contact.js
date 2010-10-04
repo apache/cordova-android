@@ -94,10 +94,7 @@ var Contacts = function() {
 }
 
 Contacts.prototype.find = function(fields, win, fail, options) {
-    this.win = win;
-    this.fail = fail;
-    
-    PhoneGap.execAsync(null, null, "Contacts", "search", [fields, options]);
+    PhoneGap.execAsync(win, fail, "Contacts", "search", [fields, options]);
 };
 
 //This function does not create a new contact in the db.  
