@@ -101,6 +101,9 @@ public final class PluginManager {
 		}
 		// if async we have already returned at this point unless there was an error...
 		if (runAsync) {
+			if (cr == null) {
+				cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);				
+			}
 			ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 		}
 		if (cr != null) {
@@ -128,15 +131,16 @@ public final class PluginManager {
 	 * @return Boolean indicating if the class implements com.phonegap.api.Plugin
 	 */
 	private boolean isPhoneGapPlugin(Class c) {
-		boolean isPlugin = false;
+		if (c.getSuperclass().getName().equals("com.phonegap.api.Plugin")) {
+			return true;
+		}		
 		Class[] interfaces = c.getInterfaces();
 		for (int j=0; j<interfaces.length; j++) {
-			if (interfaces[j].getName().equals("com.phonegap.api.Plugin")) {
-				isPlugin = true;
-				break;
+			if (interfaces[j].getName().equals("com.phonegap.api.IPlugin")) {
+				return true;
 			}
 		}
-		return isPlugin;
+		return false;
 	}
 	
     /**
