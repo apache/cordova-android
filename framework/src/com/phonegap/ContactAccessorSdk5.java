@@ -114,10 +114,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	
 	@Override
 	public JSONArray search(JSONArray filter, JSONObject options) {
-		long totalEnd;
-		long totalStart = System.currentTimeMillis();
-		long start = System.currentTimeMillis();
-		long stop;
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
 		boolean multiple = true;
@@ -136,18 +132,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		} catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
-		stop = System.currentTimeMillis();
-		Log.d(LOG_TAG, "Parsing parameters took = " + (stop-start));
-		start = System.currentTimeMillis();
 		
 		// Get a cursor by creating the query.
 		ContentResolver cr = mApp.getContentResolver();
 		
 		Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
-		
-		stop = System.currentTimeMillis();
-		Log.d(LOG_TAG, "Building contact ID's took = " + (stop-start));
-		start = System.currentTimeMillis();
 		
 		Iterator<String> it = contactIds.iterator();
 		
@@ -182,10 +171,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			contacts.put(contact);
 			pos++;
 		}
-		stop = System.currentTimeMillis();
-		totalEnd = System.currentTimeMillis();
-		Log.d(LOG_TAG, "Populating contact Array took = " + (stop - start));
-		Log.d(LOG_TAG, "Total search took = " + (totalEnd - totalStart));
 		return contacts;
 	}
 	
