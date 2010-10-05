@@ -57,6 +57,7 @@ public final class PluginManager {
 	 * 
 	 * @return 				JSON encoded string with a response message and status.
 	 */
+	@SuppressWarnings("unchecked")
 	public String exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
 		System.out.println("PluginManager.exec("+service+", "+action+", "+callbackId+", "+jsonArgs+", "+async+")");
 		PluginResult cr = null;
@@ -119,6 +120,7 @@ public final class PluginManager {
 	 * @return
 	 * @throws ClassNotFoundException
 	 */
+	@SuppressWarnings("unchecked")
 	private Class getClassByName(final String clazz) throws ClassNotFoundException {
 		return Class.forName(clazz);
 	}
@@ -130,6 +132,7 @@ public final class PluginManager {
 	 * @param c The class to check the interfaces of.
 	 * @return Boolean indicating if the class implements com.phonegap.api.Plugin
 	 */
+	@SuppressWarnings("unchecked")
 	private boolean isPhoneGapPlugin(Class c) {
 		if (c != null) {
 			if (c.getSuperclass().getName().equals("com.phonegap.api.Plugin")) {
@@ -145,11 +148,17 @@ public final class PluginManager {
 		return false;
 	}
 	
+    /**
+     * Add plugin to be loaded and cached.  This creates an instance of the plugin.
+     * If plugin is already created, then just return it.
+     * 
+     * @param className				The class to load
+     * @return						The plugin
+     */
 	public Plugin addPlugin(String className) {
 	    try {
             return this.addPlugin(className, this.getClassByName(className), "");
         } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             System.out.println("Error adding plugin "+className+".");
         }
@@ -157,13 +166,16 @@ public final class PluginManager {
 	}
 	
     /**
-     * Add plugin to be loaded and cached.
+     * Add plugin to be loaded and cached.  This creates an instance of the plugin.
      * If plugin is already created, then just return it.
      * 
      * @param className				The class to load
+     * @param clazz					The class object (must be a class object of the className)
+     * @param callbackId			The callback id to use when calling back into JavaScript
      * @return						The plugin
      */
-	public Plugin addPlugin(String className, Class clazz, String callbackId) {
+	@SuppressWarnings("unchecked")
+	private Plugin addPlugin(String className, Class clazz, String callbackId) {
     	if (this.plugins.containsKey(className)) {
     		return this.getPlugin(className);
     	}
@@ -196,6 +208,7 @@ public final class PluginManager {
     
     /**
      * Add a class that implements a service.
+     * This does not create the class instance.  It just maps service name to class name.
      * 
      * @param serviceType
      * @param className
@@ -210,9 +223,9 @@ public final class PluginManager {
      * @param serviceType
      * @return
      */
-    private String getClassForService(String serviceType) {
-    	return this.services.get(serviceType);
-    }
+    //private String getClassForService(String serviceType) {
+    //	return this.services.get(serviceType);
+    //}
 
     /**
      * Called when the system is about to start resuming a previous activity. 
