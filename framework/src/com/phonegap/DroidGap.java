@@ -279,8 +279,8 @@ public class DroidGap extends Activity {
         if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {
             Package pack = this.getClass().getPackage();
             String appPackage = pack.getName();
-            Storage cupcakeStorage = (Storage)this.pluginManager.addPlugin("com.phonegap.Storage");
-        	cupcakeStorage.setStorage(appPackage);
+ // TODO:           Storage cupcakeStorage = (Storage)this.pluginManager.addPlugin("com.phonegap.Storage");
+ // TODO:       	cupcakeStorage.setStorage(appPackage);
 
 
         }
