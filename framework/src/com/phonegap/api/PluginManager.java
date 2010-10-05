@@ -68,11 +68,11 @@ public final class PluginManager {
 			if (clazz != null) {
 				c = getClassByName(clazz);
 			}
-			if ((c == null) || isPhoneGapPlugin(c)) {
-				final Plugin plugin = this.addPlugin(clazz); 
+			if (isPhoneGapPlugin(c)) {
+				final Plugin plugin = this.addPlugin(clazz, c, callbackId); 
 				final DroidGap ctx = this.ctx;
 				runAsync = async && !plugin.isSynch(action);
-				if (async && !plugin.isSynch(action)) {
+				if (runAsync) {
 					// Run this on a different thread so that this one can return back to JS
 					Thread thread = new Thread(new Runnable() {
 						public void run() {
@@ -131,16 +131,29 @@ public final class PluginManager {
 	 * @return Boolean indicating if the class implements com.phonegap.api.Plugin
 	 */
 	private boolean isPhoneGapPlugin(Class c) {
-		if (c.getSuperclass().getName().equals("com.phonegap.api.Plugin")) {
-			return true;
-		}		
-		Class[] interfaces = c.getInterfaces();
-		for (int j=0; j<interfaces.length; j++) {
-			if (interfaces[j].getName().equals("com.phonegap.api.IPlugin")) {
+		if (c != null) {
+			if (c.getSuperclass().getName().equals("com.phonegap.api.Plugin")) {
 				return true;
+			}		
+			Class[] interfaces = c.getInterfaces();
+			for (int j=0; j<interfaces.length; j++) {
+				if (interfaces[j].getName().equals("com.phonegap.api.IPlugin")) {
+					return true;
+				}
 			}
 		}
 		return false;
+	}
+	
+	public Plugin addPlugin(String className) {
+	    try {
+            return this.addPlugin(className, this.getClassByName(className), "");
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.out.println("Error adding plugin "+className+".");
+        }
+        return null;
 	}
 	
     /**
@@ -150,16 +163,17 @@ public final class PluginManager {
      * @param className				The class to load
      * @return						The plugin
      */
-	public Plugin addPlugin(String className) {
+	public Plugin addPlugin(String className, Class clazz, String callbackId) {
     	if (this.plugins.containsKey(className)) {
     		return this.getPlugin(className);
     	}
     	System.out.println("PluginManager.addPlugin("+className+")");
     	try {
-              Plugin plugin = (Plugin)Class.forName(className).newInstance();
+              Plugin plugin = (Plugin)clazz.newInstance();
               this.plugins.put(className, plugin);
               plugin.setContext((DroidGap)this.ctx);
               plugin.setView(this.app);
+              //plugin.setCallbackId(callbackId);
               return plugin;
     	}
     	catch (Exception e) {
@@ -175,7 +189,7 @@ public final class PluginManager {
      * @param className				The class of the loaded plugin.
      * @return
      */
-    public Plugin getPlugin(String className) {
+    private Plugin getPlugin(String className) {
     	Plugin plugin = this.plugins.get(className);
     	return plugin;
     }
@@ -196,7 +210,7 @@ public final class PluginManager {
      * @param serviceType
      * @return
      */
-    public String getClassForService(String serviceType) {
+    private String getClassForService(String serviceType) {
     	return this.services.get(serviceType);
     }
 
