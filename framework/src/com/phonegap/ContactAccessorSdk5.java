@@ -114,6 +114,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	
 	@Override
 	public JSONArray search(JSONArray filter, JSONObject options) {
+		long totalEnd;
+		long totalStart = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
+		long stop;
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
 		boolean multiple = true;
@@ -132,11 +136,17 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		} catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
+		stop = System.currentTimeMillis();
+		Log.d(LOG_TAG, "Parsing parameters took = " + (stop-start));
+		start = System.currentTimeMillis();
 		
 		// Get a cursor by creating the query.
 		ContentResolver cr = mApp.getContentResolver();
 		
 		Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
+		
+		stop = System.currentTimeMillis();
+		Log.d(LOG_TAG, "Building contact ID's took = " + (stop-start));
 		
 		Iterator<String> it = contactIds.iterator();
 		
@@ -144,6 +154,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONObject contact;
 		String contactId;
 		int pos = 0;
+		String[] events = null;
 		while (it.hasNext() && (pos < limit)) {
 			contact = new JSONObject();
 			contactId = it.next();
@@ -161,8 +172,9 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				contact.put("nickname",nicknameQuery(cr, contactId));
 				contact.put("urls",websiteQuery(cr, contactId));
 				contact.put("relationships",relationshipQuery(cr, contactId));
-				contact.put("birthday",birthdayQuery(cr, contactId));
-				contact.put("anniversary",anniversaryQuery(cr, contactId));
+				events = eventQuery(cr, contactId);
+				contact.put("birthday",events[0]);
+				contact.put("anniversary",events[1]);
 			} catch (JSONException e) {
 				Log.e(LOG_TAG, e.getMessage(), e);
 			}
@@ -171,6 +183,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			contacts.put(contact);
 			pos++;
 		}
+		stop = System.currentTimeMillis();
+		totalEnd = System.currentTimeMillis();
+		Log.d(LOG_TAG, "Populating contact Array took = " + (stop - start));
+		Log.d(LOG_TAG, "Total search took = " + (totalEnd - totalStart));
 		return contacts;
 	}
 	
@@ -555,32 +571,22 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return relationships;
 	}	
 
-	private String birthdayQuery(ContentResolver cr, String contactId) {
-		String birthday = conditionalStringQuery(cr, contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, 
-				ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY, ContactsContract.CommonDataKinds.Event.TYPE, 
-				ContactsContract.CommonDataKinds.Event.START_DATE);
-		return birthday;
-	}	
-
-	private String anniversaryQuery(ContentResolver cr, String contactId) {
-		String anniversary = conditionalStringQuery(cr, contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, 
-				ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY, ContactsContract.CommonDataKinds.Event.TYPE, 
-				ContactsContract.CommonDataKinds.Event.START_DATE);
-		return anniversary;
-	}	
-
-	private String conditionalStringQuery(ContentResolver cr, String contactId, String dataType, int type, String label, String data) {
-		String[] whereParams = new String[]{contactId, dataType}; 
+	private String[] eventQuery(ContentResolver cr, String contactId) {
+		String[] whereParams = new String[]{contactId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
 	                null, WHERE_STRING, whereParams, null); 
-		String retVal = new String("");
+		String anniversary = null;
+		String birthday = null;
 		while (cursor.moveToNext()) { 
-			if (type == cursor.getInt(cursor.getColumnIndex(label))) {
-				retVal = cursor.getString(cursor.getColumnIndex(data));
+			if (ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY == cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE))) {
+				anniversary = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE));
+			}
+			else if (ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY == cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE))) {
+				birthday = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE));
 			}
 		} 
 		cursor.close();
-		return retVal;
+		return new String[] {anniversary, birthday};
 	}
 
 	@Override
