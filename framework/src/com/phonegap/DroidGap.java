@@ -275,15 +275,6 @@ public class DroidGap extends Activity {
         appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
     	appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
 
-    	// Add in support for storage and location for Android 1.X devices
-        if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {
-            Package pack = this.getClass().getPackage();
-            String appPackage = pack.getName();
- // TODO:           Storage cupcakeStorage = (Storage)this.pluginManager.addPlugin("com.phonegap.Storage");
- // TODO:       	cupcakeStorage.setStorage(appPackage);
-
-
-        }
         
         this.addService("Geolocation", "com.phonegap.GeoBroker");
         this.addService("Device", "com.phonegap.Device");
@@ -294,13 +285,23 @@ public class DroidGap extends Activity {
         this.addService("Contacts", "com.phonegap.ContactManager");
         this.addService("Crypto", "com.phonegap.CryptoHandler");
         this.addService("File", "com.phonegap.FileUtils");
-        this.addService("Location", "com.phonegap.GeoBroker");
+        this.addService("Location", "com.phonegap.GeoBroker");	// Always add Location, even though it is built-in on 2.x devices. Let JavaScript decide which one to use.
         this.addService("Network Status", "com.phonegap.NetworkManager");
         this.addService("Notification", "com.phonegap.Notification");
         this.addService("Storage", "com.phonegap.Storage");
         this.addService("Temperature", "com.phonegap.TempListener");
-    }
+
+    	// Add in support for storage for Android 1.X devices
+        if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {
+            System.out.println("Android 1.X device");
+
+            Package pack = this.getClass().getPackage();
+            String appPackage = pack.getName();
+            this.pluginManager.exec("Storage", "setStorage", null, "["+appPackage+"]", false);
+        }
  
+    }
+        
     /**
      * Load the url into the webview.
      * 
