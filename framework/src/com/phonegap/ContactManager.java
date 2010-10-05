@@ -64,9 +64,6 @@ public class ContactManager implements Plugin {
 				JSONArray res = contactAccessor.search(args.getJSONArray(0), args.getJSONObject(1));
 				return new PluginResult(status, res);
 			}
-			else if (action.equals("create")) {
-				// TODO Coming soon!
-			}
 			else if (action.equals("save")) {
 				// TODO Coming soon!			
 			}

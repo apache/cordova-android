@@ -361,7 +361,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	}
 
 	@Override
-	public void save() {
+	public void save(JSONObject contact) {
 		// TODO Auto-generated method stub
 		
 	}

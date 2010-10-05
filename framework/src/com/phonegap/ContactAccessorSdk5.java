@@ -107,14 +107,17 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     	//dbMap.put("connected", null);
     }
 
-    public ContactAccessorSdk5(WebView view, Activity app)
-	{
+    public ContactAccessorSdk5(WebView view, Activity app) {
 		mApp = app;
 		mView = view;
 	}
 	
 	@Override
 	public JSONArray search(JSONArray filter, JSONObject options) {
+		long totalEnd;
+		long totalStart = System.currentTimeMillis();
+		long start = System.currentTimeMillis();
+		long stop;
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
 		boolean multiple = true;
@@ -133,10 +136,18 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		} catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
+		stop = System.currentTimeMillis();
+		Log.d(LOG_TAG, "Parsing parameters took = " + (stop-start));
+		start = System.currentTimeMillis();
+		
 		// Get a cursor by creating the query.
 		ContentResolver cr = mApp.getContentResolver();
 		
 		Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
+		
+		stop = System.currentTimeMillis();
+		Log.d(LOG_TAG, "Building contact ID's took = " + (stop-start));
+		start = System.currentTimeMillis();
 		
 		Iterator<String> it = contactIds.iterator();
 		
@@ -171,11 +182,27 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			contacts.put(contact);
 			pos++;
 		}
+		stop = System.currentTimeMillis();
+		totalEnd = System.currentTimeMillis();
+		Log.d(LOG_TAG, "Populating contact Array took = " + (stop - start));
+		Log.d(LOG_TAG, "Total search took = " + (totalEnd - totalStart));
 		return contacts;
 	}
 	
 	private Set<String> buildSetOfContactIds(JSONArray filter, String searchTerm) {
 		Set<String> contactIds = new HashSet<String>();	
+		
+		/*
+		 * Special case for when the user wants all the contacts
+		 */
+		if ("%".equals(searchTerm)) {
+			doQuery(searchTerm, contactIds,
+					ContactsContract.Contacts.CONTENT_URI,
+					ContactsContract.Contacts._ID,
+					ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?",
+					new String[] {searchTerm});
+			return contactIds;
+		}
 		
 		String key;
 		try {
@@ -308,7 +335,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 	String[] orgWhereParams = new String[]{contactId, 
 	 		ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE}; 
 	 	Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, WHERE_STRING, orgWhereParams, null);
+	                new String[] {ContactsContract.CommonDataKinds.Organization.DEPARTMENT,
+	 					ContactsContract.CommonDataKinds.Organization.JOB_DESCRIPTION,
+	 					ContactsContract.CommonDataKinds.Organization.OFFICE_LOCATION,
+	 					ContactsContract.CommonDataKinds.Organization.COMPANY,
+	 					ContactsContract.CommonDataKinds.Organization.TITLE},
+	                WHERE_STRING, orgWhereParams, null);
 		JSONArray organizations = new JSONArray();
 		JSONObject organization = new JSONObject();
 		while (cursor.moveToNext()) {
@@ -335,7 +367,13 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String[] addrWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, WHERE_STRING, addrWhereParams, null); 
+	                new String[] {ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS,
+						ContactsContract.CommonDataKinds.StructuredPostal.STREET,
+						ContactsContract.CommonDataKinds.StructuredPostal.CITY,
+						ContactsContract.CommonDataKinds.StructuredPostal.REGION,
+						ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE,
+						ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY}, 
+	                WHERE_STRING, addrWhereParams, null); 
 		JSONArray addresses = new JSONArray();
 		JSONObject address = new JSONObject();
 		while (cursor.moveToNext()) {
@@ -359,7 +397,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String[] addrWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE}; 
 		Cursor name = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, WHERE_STRING, addrWhereParams, null); 
+	                new String[] {ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
+						ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,
+						ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME,
+						ContactsContract.CommonDataKinds.StructuredName.PREFIX,
+						ContactsContract.CommonDataKinds.StructuredName.SUFFIX}, 
+	                WHERE_STRING, addrWhereParams, null); 
 		JSONObject contactName = new JSONObject();
 		if (name.moveToFirst()) {
 			try {
@@ -394,7 +437,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	private JSONArray phoneQuery(ContentResolver cr, String contactId) {
 		Cursor phones = cr.query( 
 			ContactsContract.CommonDataKinds.Phone.CONTENT_URI, 
-			null, 
+			new String[] {ContactsContract.CommonDataKinds.Phone.NUMBER,ContactsContract.CommonDataKinds.Phone.TYPE}, 
 			ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId, 
 			null, null); 
 		JSONArray phoneNumbers = new JSONArray();
@@ -416,7 +459,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	private JSONArray emailQuery(ContentResolver cr, String contactId) {
 		Cursor emails = cr.query( 
 			ContactsContract.CommonDataKinds.Email.CONTENT_URI, 
-			null, 
+			new String[] {ContactsContract.CommonDataKinds.Email.DATA,ContactsContract.CommonDataKinds.Email.TYPE}, 
 			ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = " + contactId, 
 			null, null); 
 		JSONArray emailAddresses = new JSONArray();
@@ -439,7 +482,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String[] addrWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, WHERE_STRING, addrWhereParams, null); 
+					new String[] {ContactsContract.CommonDataKinds.Im.DATA,ContactsContract.CommonDataKinds.Im.TYPE}, 
+	                WHERE_STRING, addrWhereParams, null); 
 		JSONArray ims = new JSONArray();
 		JSONObject im = new JSONObject();
 		while (cursor.moveToNext()) { 
@@ -460,7 +504,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String[] noteWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, WHERE_STRING, noteWhereParams, null); 
+				new String[] {ContactsContract.CommonDataKinds.Note.NOTE}, WHERE_STRING, noteWhereParams, null); 
 		String note = new String("");
 		if (cursor.moveToFirst()) { 
 			note = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE));
@@ -473,7 +517,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String[] nicknameWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, WHERE_STRING, nicknameWhereParams, null); 
+				new String[] {ContactsContract.CommonDataKinds.Nickname.NAME}, WHERE_STRING, nicknameWhereParams, null); 
 		String nickname = new String("");
 		if (cursor.moveToFirst()) { 
 			nickname = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME));
@@ -486,7 +530,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String[] websiteWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, WHERE_STRING, websiteWhereParams, null); 
+				new String[] {ContactsContract.CommonDataKinds.Website.URL,ContactsContract.CommonDataKinds.Website.TYPE}, 
+				WHERE_STRING, websiteWhereParams, null); 
 		JSONArray websites = new JSONArray();
 		JSONObject website = new JSONObject();
 		while (cursor.moveToNext()) { 
@@ -507,7 +552,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		String[] relationshipWhereParams = new String[]{contactId, 
 			ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE}; 
 		Cursor cursor = cr.query(ContactsContract.Data.CONTENT_URI, 
-	                null, WHERE_STRING, relationshipWhereParams, null); 
+				new String[] {ContactsContract.CommonDataKinds.Relation.NAME,ContactsContract.CommonDataKinds.Relation.TYPE}, 
+				WHERE_STRING, relationshipWhereParams, null); 
 		JSONArray relationships = new JSONArray();
 		JSONObject relationship = new JSONObject();
 		while (cursor.moveToNext()) { 
@@ -553,7 +599,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	@Override
-	public void save() {
+	public void save(JSONObject contact) {
 		// TODO Auto-generated method stub
 	}
 
