@@ -13,7 +13,8 @@ import android.webkit.WebView;
 public abstract class Plugin implements IPlugin {
 
     public WebView webView;					// WebView object
-    public DroidGap ctx;						// DroidGap object
+    public DroidGap ctx;					// DroidGap object
+    public String callbackId;				// key for the JavaScript callback
 
 	/**
 	 * Executes the request and returns PluginResult.
@@ -53,7 +54,20 @@ public abstract class Plugin implements IPlugin {
 	public void setView(WebView webView) {
 		this.webView = webView;
 	}
-		
+	
+	/**
+	 * Sets the callback ID that is required to call a success or error 
+	 * JavaScript callback.
+	 * 
+	 * The JavaScript callback call looks like this:
+	 * PhoneGap.callbackSuccess(callbackId, { message: 'foo' });
+	 * 
+	 * @param callbackId
+	 */
+	public void setCallbackId(String callbackId) {
+		this.callbackId = callbackId;
+	}
+	
     /**
      * Called when the system is about to start resuming a previous activity. 
      */
@@ -85,7 +99,8 @@ public abstract class Plugin implements IPlugin {
     }
 
     /**
-     * Send JavaScript statement back to JavaScript.
+     * Send generic JavaScript statement back to JavaScript.
+     * success(...) and error(...) should be used instead where possible.
      * 
      * @param statement
      */
@@ -93,4 +108,25 @@ public abstract class Plugin implements IPlugin {
     	this.ctx.callbackServer.sendJavascript(statement);
     }
 
+    /**
+     * Call the JavaScript success callback for this plugin.
+     * 
+     * This can be used if the execute code for the plugin is asynchronous meaning
+     * that execute should return null and the callback from the async operation can
+     * call success(...) or error(...)
+     * 
+     * @param pluginResult
+     */
+    public void success(PluginResult pluginResult) {
+    	this.ctx.callbackServer.sendJavascript(pluginResult.toSuccessCallbackString(this.callbackId));
+    }
+
+    /**
+     * Call the JavaScript error callback for this plugin.
+     * 
+     * @param pluginResult
+     */
+    public void error(PluginResult pluginResult) {
+    	this.ctx.callbackServer.sendJavascript(pluginResult.toErrorCallbackString(this.callbackId));
+    }
 }

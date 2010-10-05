@@ -44,7 +44,18 @@ public interface IPlugin {
 	 * @param webView The PhoneGap WebView
 	 */
 	void setView(WebView webView);
-		
+
+	/**
+	 * Sets the callback ID that is required to call a success or error 
+	 * JavaScript callback.
+	 * 
+	 * The JavaScript callback call looks like this:
+	 * PhoneGap.callbackSuccess(callbackId, { message: 'foo' });
+	 * 
+	 * @param callbackId
+	 */
+	void setCallbackId(String callbackId);
+
     /**
      * Called when the system is about to start resuming a previous activity. 
      */
