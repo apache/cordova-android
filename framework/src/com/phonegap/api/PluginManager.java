@@ -173,7 +173,7 @@ public final class PluginManager {
               this.plugins.put(className, plugin);
               plugin.setContext((DroidGap)this.ctx);
               plugin.setView(this.app);
-              //plugin.setCallbackId(callbackId);
+              plugin.setCallbackId(callbackId);
               return plugin;
     	}
     	catch (Exception e) {
