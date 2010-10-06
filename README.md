@@ -46,15 +46,7 @@ Quickstart:
 <pre>
   	$ droidgap gen example 
   	$ cd example
-  	$ droidgap create
-  	$ cd ../example_android
-	$ droidgap run
-</pre>
-
-Launch your app and start a logger with:
-
-<pre>
-    $ droidgap log
+	$ ant debug install && adb logcat
 </pre>
 
 DroidGap with JRuby
