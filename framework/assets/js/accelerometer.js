@@ -102,7 +102,7 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
 Accelerometer.prototype.clearWatch = function(id) {
 
     // Stop javascript timer & remove from timer list
-    if (id && navigator.accelerometer.timers[id]) {
+    if (id && navigator.accelerometer.timers[id] != undefined) {
         clearInterval(navigator.accelerometer.timers[id]);
         delete navigator.accelerometer.timers[id];
     }

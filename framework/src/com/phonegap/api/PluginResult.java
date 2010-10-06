@@ -1,5 +1,6 @@
 package com.phonegap.api;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class PluginResult {
@@ -14,6 +15,11 @@ public class PluginResult {
 	public PluginResult(Status status, String message) {
 		this.status = status.ordinal();
 		this.message = "'" + message + "'";
+	}
+
+	public PluginResult(Status status, JSONArray message) {
+		this.status = status.ordinal();
+		this.message = message.toString();
 	}
 
 	public PluginResult(Status status, JSONObject message) {

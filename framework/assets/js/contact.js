@@ -27,6 +27,27 @@ var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, ad
     this.connected = connected || null;
 };
 
+
+Contact.prototype.remove = function(successCB, errorCB) {
+	if (this.id == null) {
+		var errorObj = new ContactError();
+		errorObj.code = ContactError.NOT_FOUND_ERROR;
+		errorCB(errorObj);
+	}
+	
+    PhoneGap.execAsync(successCB, errorCB, "Contacts", "remove", [this.id]);	
+};
+
+Contact.prototype.clone = function() {
+	var clonedContact = PhoneGap.clone(this);
+	clonedContact.id = null;
+    return clonedContact;
+};
+
+Contact.prototype.save = function(win, fail) {
+};
+
+
 var ContactName = function(formatted, familyName, givenName, middle, prefix, suffix) {
     this.formatted = formatted || null;
     this.familyName = familyName || null;
@@ -72,28 +93,24 @@ var Contacts = function() {
     this.records = new Array();
 }
 
-// Contacts.prototype.find = function(obj, win, fail) {
 Contacts.prototype.find = function(fields, win, fail, options) {
-    this.win = win;
-    this.fail = fail;
-    
-    PhoneGap.execAsync(null, null, "Contacts", "search", [fields, options]);
+    PhoneGap.execAsync(win, fail, "Contacts", "search", [fields, options]);
+};
+
+//This function does not create a new contact in the db.  
+//Must call contact.save() for it to be persisted in the db.
+Contacts.prototype.create = function(properties) {
+	var contact = new Contact();
+	for (i in properties) {
+		if (contact[i]!='undefined') {
+			contact[i]=properties[i];
+		}
+	}
+	return contact;
 };
 
 Contacts.prototype.droidDone = function(contacts) {
     this.win(eval('(' + contacts + ')'));
-};
-
-Contacts.prototype.remove = function(contact) {
-    
-};
-
-Contacts.prototype.save = function(contact) {
-    
-};
-
-Contacts.prototype.create = function(contact) {
-    
 };
 
 Contacts.prototype.m_foundContacts = function(win, contacts) {
@@ -112,14 +129,14 @@ var ContactError = function() {
     this.code=null;
 };
 
-ContactError.INVALID_ARGUMENT_ERROR = 0;
-ContactError.IO_ERROR = 1;
+ContactError.UNKNOWN_ERROR = 0;
+ContactError.INVALID_ARGUMENT_ERROR = 1;
 ContactError.NOT_FOUND_ERROR = 2;
-ContactError.NOT_SUPPORTED_ERROR = 3;
+ContactError.TIMEOUT_ERROR = 3;
 ContactError.PENDING_OPERATION_ERROR = 4;
-ContactError.PERMISSION_DENIED_ERROR = 5;
-ContactError.TIMEOUT_ERROR = 6;
-ContactError.UNKNOWN_ERROR = 7;
+ContactError.IO_ERROR = 5;
+ContactError.NOT_SUPPORTED_ERROR = 6;
+ContactError.PERMISSION_DENIED_ERROR = 20;
 
 PhoneGap.addConstructor(function() {
     if(typeof navigator.service == "undefined") navigator.service = new Object();
