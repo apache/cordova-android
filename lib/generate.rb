@@ -8,6 +8,8 @@ class Generate
     from = File.join ROOT, "example"
     to = File.join FileUtils.pwd, name
     FileUtils.cp_r from, to
-    puts "Generated #{ to }"
+    Create.new(to)
+    FileUtils.rm_rf to
+    FileUtils.mv "#{ to }_android", to
   end
 end
