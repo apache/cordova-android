@@ -4,7 +4,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -40,6 +42,9 @@ public class Notification extends Plugin {
 			else if (action.equals("vibrate")) {
 				this.vibrate(args.getLong(0));
 			}
+			else if (action.equals("alert")) {
+				this.alert(args.getString(0),args.getString(1),args.getString(2));
+			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
@@ -53,7 +58,10 @@ public class Notification extends Plugin {
 	 * @return			T=returns value
 	 */
 	public boolean isSynch(String action) {
-		return false;
+		if(action.equals("alert"))
+			return true;
+		else
+			return false;
 	}
 
     //--------------------------------------------------------------------------
@@ -97,6 +105,27 @@ public class Notification extends Plugin {
 		}
         Vibrator vibrator = (Vibrator) this.ctx.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(time);
+	}
+	
+	/**
+	 * Builds and shows a native Android alert with given Strings
+	 * @param message The message the alert should display
+	 * @param title The title of the alert
+	 * @param buttonLabel The label of the button 
+	 */
+	public synchronized void alert(String message,String title,String buttonLabel){
+		AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
+        dlg.setMessage(message);
+        dlg.setTitle(title);
+        dlg.setCancelable(false);
+        dlg.setPositiveButton(buttonLabel,
+        	new AlertDialog.OnClickListener() {
+            	public void onClick(DialogInterface dialog, int which) {
+            		dialog.dismiss();
+            	}
+        	});
+        dlg.create();
+        dlg.show();
 	}
 
 }
