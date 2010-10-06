@@ -15,11 +15,12 @@ public interface IPlugin {
 	/**
 	 * Executes the request and returns PluginResult.
 	 * 
-	 * @param action 	The action to execute.
-	 * @param args 		JSONArry of arguments for the plugin.
-	 * @return 			A PluginResult object with a status and message.
+	 * @param action 		The action to execute.
+	 * @param args 			JSONArry of arguments for the plugin.
+	 * @param callbackId	The callback id used when calling back into JavaScript.
+	 * @return 				A PluginResult object with a status and message.
 	 */
-	PluginResult execute(String action, JSONArray args);
+	PluginResult execute(String action, JSONArray args, String callbackId);
 
 	/**
 	 * Identifies if action to be executed returns a value and should be run synchronously.
@@ -44,17 +45,6 @@ public interface IPlugin {
 	 * @param webView The PhoneGap WebView
 	 */
 	void setView(WebView webView);
-
-	/**
-	 * Sets the callback ID that is required to call a success or error 
-	 * JavaScript callback.
-	 * 
-	 * The JavaScript callback call looks like this:
-	 * PhoneGap.callbackSuccess(callbackId, { message: 'foo' });
-	 * 
-	 * @param callbackId
-	 */
-	void setCallbackId(String callbackId);
 
     /**
      * Called when the system is about to start resuming a previous activity. 

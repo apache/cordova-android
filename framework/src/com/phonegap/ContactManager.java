@@ -19,13 +19,14 @@ public class ContactManager extends Plugin {
 	}
 	
 	/**
-	 * Executes the request and returns CommandResult.
+	 * Executes the request and returns PluginResult.
 	 * 
-	 * @param action The command to execute.
-	 * @param args JSONArry of arguments for the command.
-	 * @return A CommandResult object with a status and message.
+	 * @param action 		The action to execute.
+	 * @param args 			JSONArry of arguments for the plugin.
+	 * @param callbackId	The callback id used when calling back into JavaScript.
+	 * @return 				A PluginResult object with a status and message.
 	 */
-	public PluginResult execute(String action, JSONArray args) {
+	public PluginResult execute(String action, JSONArray args, String callbackId) {
 		if (contactAccessor == null) {
 			contactAccessor = ContactAccessor.getInstance(webView, ctx);
 		}

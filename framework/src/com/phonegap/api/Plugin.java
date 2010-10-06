@@ -14,16 +14,16 @@ public abstract class Plugin implements IPlugin {
 
     public WebView webView;					// WebView object
     public DroidGap ctx;					// DroidGap object
-    public String callbackId;				// key for the JavaScript callback
 
 	/**
 	 * Executes the request and returns PluginResult.
 	 * 
-	 * @param action 	The action to execute.
-	 * @param args 		JSONArry of arguments for the plugin.
-	 * @return 			A PluginResult object with a status and message.
+	 * @param action 		The action to execute.
+	 * @param args 			JSONArry of arguments for the plugin.
+	 * @param callbackId	The callback id used when calling back into JavaScript.
+	 * @return 				A PluginResult object with a status and message.
 	 */
-	public abstract PluginResult execute(String action, JSONArray args);
+	public abstract PluginResult execute(String action, JSONArray args, String callbackId);
 
 	/**
 	 * Identifies if action to be executed returns a value and should be run synchronously.
@@ -53,19 +53,6 @@ public abstract class Plugin implements IPlugin {
 	 */
 	public void setView(WebView webView) {
 		this.webView = webView;
-	}
-	
-	/**
-	 * Sets the callback ID that is required to call a success or error 
-	 * JavaScript callback.
-	 * 
-	 * The JavaScript callback call looks like this:
-	 * PhoneGap.callbackSuccess(callbackId, { message: 'foo' });
-	 * 
-	 * @param callbackId
-	 */
-	public void setCallbackId(String callbackId) {
-		this.callbackId = callbackId;
 	}
 	
     /**
@@ -115,18 +102,20 @@ public abstract class Plugin implements IPlugin {
      * that execute should return null and the callback from the async operation can
      * call success(...) or error(...)
      * 
-     * @param pluginResult
+     * @param pluginResult		The result to return.
+	 * @param callbackId		The callback id used when calling back into JavaScript.
      */
-    public void success(PluginResult pluginResult) {
-    	this.ctx.callbackServer.sendJavascript(pluginResult.toSuccessCallbackString(this.callbackId));
+    public void success(PluginResult pluginResult, String callbackId) {
+    	this.ctx.callbackServer.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
     }
 
     /**
      * Call the JavaScript error callback for this plugin.
      * 
-     * @param pluginResult
+     * @param pluginResult		The result to return.
+	 * @param callbackId		The callback id used when calling back into JavaScript.
      */
-    public void error(PluginResult pluginResult) {
-    	this.ctx.callbackServer.sendJavascript(pluginResult.toErrorCallbackString(this.callbackId));
+    public void error(PluginResult pluginResult, String callbackId) {
+    	this.ctx.callbackServer.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
     }
 }
