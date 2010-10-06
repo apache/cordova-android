@@ -109,15 +109,6 @@ Contacts.prototype.create = function(properties) {
 	return contact;
 };
 
-Contacts.prototype.droidDone = function(contacts) {
-    this.win(eval('(' + contacts + ')'));
-};
-
-Contacts.prototype.m_foundContacts = function(win, contacts) {
-    this.inProgress = false;
-    win(contacts);
-};
-
 var ContactFindOptions = function(filter, multiple, limit, updatedSince) {
     this.filter = filter || '';
     this.multiple = multiple || true;
