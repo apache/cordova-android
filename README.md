@@ -12,7 +12,7 @@ Pre Requisites
 Install
 -------
 
-On OS X add PhoneGap/Android to your PATH variable like so:
+On any POSIX machine add PhoneGap/Android to your PATH variable like so:
 
     export PATH=$PATH:~/phonegap-android/bin
 
@@ -21,7 +21,7 @@ On Windows add the phonegap-android/bin to your PATH as normal.
 DroidGap: PhoneGap/Android Dev Script
 -------------------------------------
 
-Useful utilities for developers building mobile apps using PhoneGap for Android.
+Tools for developers building mobile apps using PhoneGap for Android.
 
 Usage:
 
@@ -32,13 +32,10 @@ Commands:
 <pre>
 	help ...... See this message. Type help [command name] to see specific help topics.
 	gen ....... Generate an example PhoneGap application to current directory.
-	create .... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
+	create .... Creates an Android compatible project from a WWW folder. 
 	classic ... Backwards support for droidgap script. Run "droidgap help classic" for more info.
-	run ....... Installs a valid PhoneGap Project to first device found.
-	log ....... Attach a logger that listens for console.log statements.
 	update .... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
 	test ...... Gets edge copy of mobile-spec and runs in first device or emulator attached.
-	ship ...... Build and sign an APK suitable for submission to an Android Marketplace.
 </pre>
 
 Quickstart:

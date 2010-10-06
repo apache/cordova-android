@@ -61,25 +61,16 @@ if ARGV.first.nil? || ARGV.first == 'help'
   
   help ...... See this message. Type help [command name] to see specific help topics.
   gen ....... Generate an example PhoneGap application to current directory.
-  create .... Creates an Android compatible project from a www folder. Careful, this clobbers previous packaging.
+  create .... Creates an Android compatible project from a WWW folder. 
   classic ... Backwards support for droidgap script. Run "droidgap help classic" for more info.
-  run ....... Installs a valid PhoneGap Project to first device found.
-  log ....... Attach a logger that listens for console.log statements.
   update .... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
-  test ...... Gets edge copy of mobile-spec and runs in first device or emulator attached.
   ship ...... Build and sign an APK suitable for submission to an Android Marketplace.
     
   Quickstart:
   
   $ droidgap gen example 
   $ cd example
-  $ droidgap create
-  $ cd ../example_android
-  $ droidgap run 
-
-  Now you can launch your app and optionally start a logger with:
-  
-  $ droidgap log
+  $ ant debug install && adb logcat
   
   EOF
   
@@ -140,7 +131,7 @@ if ARGV.first.nil? || ARGV.first == 'help'
   DroidGap Create
   ----------------
   
-  Creates an Android compatable project from a PhoneGap project. For example, if you have MyProject with index.html this command will create MyProject-android.
+  Creates an Android compatable project from a PhoneGap project. For example, if you have MyProject with index.html this command will create MyProject_android.
   
   Usage:
   
