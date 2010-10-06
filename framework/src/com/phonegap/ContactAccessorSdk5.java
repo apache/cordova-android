@@ -114,10 +114,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	
 	@Override
 	public JSONArray search(JSONArray filter, JSONObject options) {
-		long totalEnd;
-		long totalStart = System.currentTimeMillis();
-		long start = System.currentTimeMillis();
-		long stop;
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
 		boolean multiple = true;
@@ -136,18 +132,13 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		} catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
-		stop = System.currentTimeMillis();
-		Log.d(LOG_TAG, "Parsing parameters took = " + (stop-start));
-		start = System.currentTimeMillis();
 		
 		// Get a cursor by creating the query.
 		ContentResolver cr = mApp.getContentResolver();
 		
 		Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
-		
-		stop = System.currentTimeMillis();
-		Log.d(LOG_TAG, "Building contact ID's took = " + (stop-start));
-		
+		HashMap<String,Boolean> populate = buildPopulationSet(filter);
+				
 		Iterator<String> it = contactIds.iterator();
 		
 		JSONArray contacts = new JSONArray();
@@ -161,20 +152,44 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			
 			try {
 				contact.put("id", contactId);
-				contact.put("displayName", displayNameQuery(cr, contactId));
-				contact.put("name", nameQuery(cr, contactId));
-				contact.put("phoneNumbers", phoneQuery(cr, contactId));
-				contact.put("emails", emailQuery(cr, contactId));
-				contact.put("addresses", addressQuery(cr, contactId));
-				contact.put("organizations", organizationQuery(cr, contactId));
-				contact.put("ims",imQuery(cr, contactId));
-				contact.put("note",noteQuery(cr, contactId));
-				contact.put("nickname",nicknameQuery(cr, contactId));
-				contact.put("urls",websiteQuery(cr, contactId));
-				contact.put("relationships",relationshipQuery(cr, contactId));
-				events = eventQuery(cr, contactId);
-				contact.put("birthday",events[0]);
-				contact.put("anniversary",events[1]);
+				if (isRequired("displayName",populate)) {
+					contact.put("displayName", displayNameQuery(cr, contactId));
+				}
+				if (isRequired("name",populate)) {
+					contact.put("name", nameQuery(cr, contactId));
+				}
+				if (isRequired("phoneNumbers",populate)) {
+					contact.put("phoneNumbers", phoneQuery(cr, contactId));
+				}
+				if (isRequired("emails",populate)) {
+					contact.put("emails", emailQuery(cr, contactId));
+				}
+				if (isRequired("addresses",populate)) {
+					contact.put("addresses", addressQuery(cr, contactId));
+				}
+				if (isRequired("organizations",populate)) {
+					contact.put("organizations", organizationQuery(cr, contactId));
+				}
+				if (isRequired("ims",populate)) {
+					contact.put("ims",imQuery(cr, contactId));
+				}
+				if (isRequired("note",populate)) {
+					contact.put("note",noteQuery(cr, contactId));
+				}
+				if (isRequired("nickname",populate)) {
+					contact.put("nickname",nicknameQuery(cr, contactId));
+				}
+				if (isRequired("urls",populate)) {
+					contact.put("urls",websiteQuery(cr, contactId));
+				}
+				if (isRequired("relationships",populate)) {
+					contact.put("relationships",relationshipQuery(cr, contactId));
+				}
+				if (isRequired("birthday",populate) || isRequired("anniversary",populate)) {
+					events = eventQuery(cr, contactId);
+					contact.put("birthday",events[0]);
+					contact.put("anniversary",events[1]);
+				}
 			} catch (JSONException e) {
 				Log.e(LOG_TAG, e.getMessage(), e);
 			}
@@ -183,13 +198,9 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			contacts.put(contact);
 			pos++;
 		}
-		stop = System.currentTimeMillis();
-		totalEnd = System.currentTimeMillis();
-		Log.d(LOG_TAG, "Populating contact Array took = " + (stop - start));
-		Log.d(LOG_TAG, "Total search took = " + (totalEnd - totalStart));
 		return contacts;
 	}
-	
+
 	private Set<String> buildSetOfContactIds(JSONArray filter, String searchTerm) {
 		Set<String> contactIds = new HashSet<String>();	
 		

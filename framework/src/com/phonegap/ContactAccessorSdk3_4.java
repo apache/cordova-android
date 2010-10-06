@@ -102,7 +102,8 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
     	ContentResolver cr = mApp.getContentResolver();
     	
     	Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
-    		
+		HashMap<String,Boolean> populate = buildPopulationSet(filter);
+
     	Iterator<String> it = contactIds.iterator();
     		
     	JSONArray contacts = new JSONArray();
@@ -124,20 +125,27 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 					null);
 		        cur.moveToFirst();
 		    	
-	    		// name
-		    	contact.put("displayName", cur.getString(cur.getColumnIndex(People.DISPLAY_NAME)));		    	
-				// phone number
-		    	contact.put("phoneNumbers", phoneQuery(cr, contactId));
-				// email
-		    	contact.put("emails", emailQuery(cr, contactId));
-				// addresses
-		    	contact.put("addresses", addressQuery(cr, contactId));
-				// organizations
-		    	contact.put("organizations", organizationQuery(cr, contactId));
-				// ims
-		    	contact.put("ims", imQuery(cr, contactId));
-				// note
-		    	contact.put("note", cur.getString(cur.getColumnIndex(People.NOTES)));
+				if (isRequired("displayName",populate)) {
+					contact.put("displayName", cur.getString(cur.getColumnIndex(People.DISPLAY_NAME)));		    	
+				}
+				if (isRequired("phoneNumbers",populate)) {
+					contact.put("phoneNumbers", phoneQuery(cr, contactId));
+				}
+				if (isRequired("emails",populate)) {
+					contact.put("emails", emailQuery(cr, contactId));
+				}
+				if (isRequired("addresses",populate)) {
+					contact.put("addresses", addressQuery(cr, contactId));
+				}
+				if (isRequired("organizations",populate)) {
+					contact.put("organizations", organizationQuery(cr, contactId));
+				}
+				if (isRequired("ims",populate)) {
+					contact.put("ims", imQuery(cr, contactId));
+				}
+				if (isRequired("note",populate)) {
+					contact.put("note", cur.getString(cur.getColumnIndex(People.NOTES)));
+				}
 				// nickname
 				// urls
 				// relationship

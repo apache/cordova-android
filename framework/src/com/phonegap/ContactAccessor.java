@@ -19,11 +19,14 @@
 package com.phonegap;
 
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 
 import android.app.Activity;
+import android.util.Log;
 import android.webkit.WebView;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -82,6 +85,65 @@ public abstract class ContactAccessor {
 
         return sInstance;
     }
+	
+    protected boolean isRequired(String key, HashMap<String,Boolean> map) {
+		Boolean retVal = map.get(key);
+		return (retVal == null) ? false : retVal.booleanValue();
+	}
+    
+	protected HashMap<String,Boolean> buildPopulationSet(JSONArray filter) {
+		HashMap<String,Boolean> map = new HashMap<String,Boolean>();
+		
+		String key;
+		try {
+			for (int i=0; i<filter.length(); i++) {
+				key = filter.getString(i);
+				if (key.startsWith("displayName")) {
+					map.put("displayName", true);
+				}
+				else if (key.startsWith("name")) {
+					map.put("name", true);
+				}
+				else if (key.startsWith("nickname")) {
+					map.put("nickname", true);
+				}
+				else if (key.startsWith("phoneNumbers")) {
+					map.put("phoneNumbers", true);
+				}
+				else if (key.startsWith("emails")) {
+					map.put("emails", true);
+				}
+				else if (key.startsWith("addresses")) {
+					map.put("addresses", true);
+				}
+				else if (key.startsWith("ims")) {
+					map.put("ims", true);
+				}
+				else if (key.startsWith("organizations")) {
+					map.put("organizations", true);
+				}
+				else if (key.startsWith("birthday")) {
+					map.put("birthday", true);
+				}
+				else if (key.startsWith("anniversary")) {
+					map.put("anniversary", true);
+				}
+				else if (key.startsWith("note")) {
+					map.put("note", true);
+				}
+				else if (key.startsWith("relationships")) {
+					map.put("relationships", true);
+				}
+				else if (key.startsWith("urls")) {
+					map.put("urls", true);
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		return map;
+	}
 
     /**
      * Handles adding a JSON Contact object into the database.
