@@ -57,6 +57,7 @@ public final class PluginManager {
 	 * 
 	 * @return 				JSON encoded string with a response message and status.
 	 */
+	@SuppressWarnings("unchecked")
 	public String exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
 		System.out.println("PluginManager.exec("+service+", "+action+", "+callbackId+", "+jsonArgs+", "+async+")");
 		PluginResult cr = null;
@@ -68,20 +69,25 @@ public final class PluginManager {
 			if (clazz != null) {
 				c = getClassByName(clazz);
 			}
-			if ((c == null) || isPhoneGapPlugin(c)) {
-				final Plugin plugin = this.addPlugin(clazz); 
+			if (isPhoneGapPlugin(c)) {
+				final Plugin plugin = this.addPlugin(clazz, c); 
 				final DroidGap ctx = this.ctx;
 				runAsync = async && !plugin.isSynch(action);
-				if (async && !plugin.isSynch(action)) {
+				if (runAsync) {
 					// Run this on a different thread so that this one can return back to JS
 					Thread thread = new Thread(new Runnable() {
 						public void run() {
-							// Call execute on the plugin so that it can do it's thing
-							PluginResult cr = plugin.execute(action, args);
-							// Check the status for 0 (success) or otherwise
-							if (cr.getStatus() == 0) {
-								ctx.sendJavascript(cr.toSuccessCallbackString(callbackId));
-							} else {
+							try {
+								// Call execute on the plugin so that it can do it's thing
+								PluginResult cr = plugin.execute(action, args, callbackId);
+								// Check the status for 0 (success) or otherwise
+								if (cr.getStatus() == 0) {
+									ctx.sendJavascript(cr.toSuccessCallbackString(callbackId));
+								} else {
+									ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
+								}
+							} catch (Exception e) {
+								PluginResult cr = new PluginResult(PluginResult.Status.ERROR);
 								ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 							}
 						}
@@ -90,7 +96,7 @@ public final class PluginManager {
 					return "";
 				} else {
 					// Call execute on the plugin so that it can do it's thing
-					cr = plugin.execute(action, args);
+					cr = plugin.execute(action, args, callbackId);
 				}
 			}
 		} catch (ClassNotFoundException e) {
@@ -101,6 +107,9 @@ public final class PluginManager {
 		}
 		// if async we have already returned at this point unless there was an error...
 		if (runAsync) {
+			if (cr == null) {
+				cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);				
+			}
 			ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 		}
 		if (cr != null) {
@@ -116,6 +125,7 @@ public final class PluginManager {
 	 * @return
 	 * @throws ClassNotFoundException
 	 */
+	@SuppressWarnings("unchecked")
 	private Class getClassByName(final String clazz) throws ClassNotFoundException {
 		return Class.forName(clazz);
 	}
@@ -127,32 +137,56 @@ public final class PluginManager {
 	 * @param c The class to check the interfaces of.
 	 * @return Boolean indicating if the class implements com.phonegap.api.Plugin
 	 */
+	@SuppressWarnings("unchecked")
 	private boolean isPhoneGapPlugin(Class c) {
-		boolean isPlugin = false;
-		Class[] interfaces = c.getInterfaces();
-		for (int j=0; j<interfaces.length; j++) {
-			if (interfaces[j].getName().equals("com.phonegap.api.Plugin")) {
-				isPlugin = true;
-				break;
+		if (c != null) {
+			if (c.getSuperclass().getName().equals("com.phonegap.api.Plugin")) {
+				return true;
+			}		
+			Class[] interfaces = c.getInterfaces();
+			for (int j=0; j<interfaces.length; j++) {
+				if (interfaces[j].getName().equals("com.phonegap.api.IPlugin")) {
+					return true;
+				}
 			}
 		}
-		return isPlugin;
+		return false;
 	}
 	
     /**
-     * Add plugin to be loaded and cached.
+     * Add plugin to be loaded and cached.  This creates an instance of the plugin.
      * If plugin is already created, then just return it.
      * 
      * @param className				The class to load
      * @return						The plugin
      */
 	public Plugin addPlugin(String className) {
+	    try {
+            return this.addPlugin(className, this.getClassByName(className)); 
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("Error adding plugin "+className+".");
+        }
+        return null;
+	}
+	
+    /**
+     * Add plugin to be loaded and cached.  This creates an instance of the plugin.
+     * If plugin is already created, then just return it.
+     * 
+     * @param className				The class to load
+     * @param clazz					The class object (must be a class object of the className)
+     * @param callbackId			The callback id to use when calling back into JavaScript
+     * @return						The plugin
+     */
+	@SuppressWarnings("unchecked")
+	private Plugin addPlugin(String className, Class clazz) { 
     	if (this.plugins.containsKey(className)) {
     		return this.getPlugin(className);
     	}
     	System.out.println("PluginManager.addPlugin("+className+")");
     	try {
-              Plugin plugin = (Plugin)Class.forName(className).newInstance();
+              Plugin plugin = (Plugin)clazz.newInstance();
               this.plugins.put(className, plugin);
               plugin.setContext((DroidGap)this.ctx);
               plugin.setView(this.app);
@@ -171,13 +205,14 @@ public final class PluginManager {
      * @param className				The class of the loaded plugin.
      * @return
      */
-    public Plugin getPlugin(String className) {
+    private Plugin getPlugin(String className) {
     	Plugin plugin = this.plugins.get(className);
     	return plugin;
     }
     
     /**
      * Add a class that implements a service.
+     * This does not create the class instance.  It just maps service name to class name.
      * 
      * @param serviceType
      * @param className
@@ -186,16 +221,6 @@ public final class PluginManager {
     	this.services.put(serviceType, className);
     }
     
-    /**
-     * Get the class that implements a service.
-     * 
-     * @param serviceType
-     * @return
-     */
-    public String getClassForService(String serviceType) {
-    	return this.services.get(serviceType);
-    }
-
     /**
      * Called when the system is about to start resuming a previous activity. 
      */

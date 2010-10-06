@@ -17,9 +17,7 @@ public class GeoListener {
     NetworkListener mNetwork;			// Network listener
     LocationManager mLocMan;			// Location manager
     
-    private DroidGap ctx;				// DroidGap object
-    @SuppressWarnings("unused")
-	private WebView mAppView;			// Webview object
+    private GeoBroker broker;			// GeoBroker object
 	
 	int interval;
 	
@@ -31,24 +29,23 @@ public class GeoListener {
 	 * @param time			Sampling period in msec
 	 * @param appView
 	 */
-	GeoListener(String id, DroidGap ctx, int time, WebView appView) {
+	GeoListener(GeoBroker broker, String id, int time) {
 		this.id = id;
 		this.interval = time;
-		this.ctx = ctx;
+		this.broker = broker;
 		this.mGps = null;
 		this.mNetwork = null;
-		this.mLocMan = (LocationManager) ctx.getSystemService(Context.LOCATION_SERVICE);
+		this.mLocMan = (LocationManager) broker.ctx.getSystemService(Context.LOCATION_SERVICE);
 
 		// If GPS provider, then create and start GPS listener
 		if (this.mLocMan.getProvider(LocationManager.GPS_PROVIDER) != null) {
-			this.mGps = new GpsListener(ctx, time, this);
+			this.mGps = new GpsListener(broker.ctx, time, this);
 		}
 		
 		// If network provider, then create and start network listener
 		if (this.mLocMan.getProvider(LocationManager.NETWORK_PROVIDER) != null) {
-			this.mNetwork = new NetworkListener(ctx, time, this);
+			this.mNetwork = new NetworkListener(broker.ctx, time, this);
 		}
-		this.mAppView = appView;
 	}
 	
 	/**
@@ -72,7 +69,7 @@ public class GeoListener {
 		if (id == "global") {
 			this.stop();
 		}
-		this.ctx.sendJavascript("navigator._geo.success('" + id + "'," +  params + ");");
+		this.broker.sendJavascript("navigator._geo.success('" + id + "'," +  params + ");");
 	}
 	
 	/**
@@ -82,7 +79,7 @@ public class GeoListener {
 	 * @param msg			The error message
 	 */
 	void fail(int code, String msg) {
-		this.ctx.sendJavascript("navigator._geo.fail('" + this.id + "', " + ", " + code + ", '" + msg + "');");
+		this.broker.sendJavascript("navigator._geo.fail('" + this.id + "', " + ", " + code + ", '" + msg + "');");
 		this.stop();
 	}
 	

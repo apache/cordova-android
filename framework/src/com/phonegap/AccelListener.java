@@ -14,14 +14,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.content.Context;
-import android.content.Intent;
-import android.webkit.WebView;
 
 /**
  * This class listens to the accelerometer sensor and stores the latest 
  * acceleration values x,y,z.
  */
-public class AccelListener implements SensorEventListener, Plugin {
+public class AccelListener extends Plugin implements SensorEventListener {
 
 	public static int STOPPED = 0;
 	public static int STARTING = 1;
@@ -29,9 +27,6 @@ public class AccelListener implements SensorEventListener, Plugin {
     public static int ERROR_FAILED_TO_START = 3;
     
     public float TIMEOUT = 30000;		// Timeout in msec to shut off listener
-
-    WebView webView;					// WebView object
-    DroidGap ctx;						// DroidGap object
     
     float x,y,z;						// most recent acceleration values
     long timestamp;						// time of most recent value
@@ -59,28 +54,19 @@ public class AccelListener implements SensorEventListener, Plugin {
 	 * @param ctx The context of the main Activity.
 	 */
 	public void setContext(DroidGap ctx) {
-		this.ctx = ctx;
+		super.setContext(ctx);
         this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
 	}
 
 	/**
-	 * Sets the main View of the application, this is the WebView within which 
-	 * a PhoneGap app runs.
+	 * Executes the request and returns PluginResult.
 	 * 
-	 * @param webView The PhoneGap WebView
+	 * @param action 		The action to execute.
+	 * @param args 			JSONArry of arguments for the plugin.
+	 * @param callbackId	The callback id used when calling back into JavaScript.
+	 * @return 				A PluginResult object with a status and message.
 	 */
-	public void setView(WebView webView) {
-		this.webView = webView;
-	}
-
-	/**
-	 * Executes the request and returns CommandResult.
-	 * 
-	 * @param action The command to execute.
-	 * @param args JSONArry of arguments for the command.
-	 * @return A CommandResult object with a status and message.
-	 */
-	public PluginResult execute(String action, JSONArray args) {
+	public PluginResult execute(String action, JSONArray args, String callbackId) {
 		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
@@ -171,18 +157,6 @@ public class AccelListener implements SensorEventListener, Plugin {
 		}
 		return false;
 	}
-
-	/**
-     * Called when the system is about to start resuming a previous activity. 
-     */
-    public void onPause() {
-    }
-
-    /**
-     * Called when the activity will start interacting with the user. 
-     */
-    public void onResume() {
-    }
     
     /**
      * Called by AccelBroker when listener is to be shut down.
@@ -190,18 +164,6 @@ public class AccelListener implements SensorEventListener, Plugin {
      */
     public void onDestroy() {
     	this.stop();    	
-    }
-
-    /**
-     * Called when an activity you launched exits, giving you the requestCode you started it with,
-     * the resultCode it returned, and any additional data from it. 
-     * 
-     * @param requestCode		The request code originally supplied to startActivityForResult(), 
-     * 							allowing you to identify who this result came from.
-     * @param resultCode		The integer result code returned by the child activity through its setResult().
-     * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
-     */
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
     }
 
     //--------------------------------------------------------------------------

@@ -29,19 +29,14 @@ import org.json.JSONObject;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 import android.content.Context;
-import android.content.Intent;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
-import android.webkit.WebView;
 
-public class Device implements Plugin {
+public class Device extends Plugin {
 	
 	public static String phonegapVersion = "pre-0.92 EDGE";		// PhoneGap version
 	public static String platform = "Android";					// Device OS
 	public static String uuid;									// Device UUID
-	private DroidGap ctx;										// DroidGap object
-    @SuppressWarnings("unused")
-	private WebView webView;									// Webview object
     
     /**
      * Constructor.
@@ -56,28 +51,19 @@ public class Device implements Plugin {
 	 * @param ctx The context of the main Activity.
 	 */
 	public void setContext(DroidGap ctx) {
-		this.ctx = ctx;
+		super.setContext(ctx);
         Device.uuid = getUuid();
 	}
 
 	/**
-	 * Sets the main View of the application, this is the WebView within which 
-	 * a PhoneGap app runs.
+	 * Executes the request and returns PluginResult.
 	 * 
-	 * @param webView The PhoneGap WebView
+	 * @param action 		The action to execute.
+	 * @param args 			JSONArry of arguments for the plugin.
+	 * @param callbackId	The callback id used when calling back into JavaScript.
+	 * @return 				A PluginResult object with a status and message.
 	 */
-	public void setView(WebView webView) {
-		this.webView = webView;
-	}
-
-	/**
-	 * Executes the request and returns CommandResult.
-	 * 
-	 * @param action The command to execute.
-	 * @param args JSONArry of arguments for the command.
-	 * @return A CommandResult object with a status and message.
-	 */
-	public PluginResult execute(String action, JSONArray args) {
+	public PluginResult execute(String action, JSONArray args, String callbackId) {
 		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 	
@@ -112,37 +98,6 @@ public class Device implements Plugin {
 		}
 		return false;
 	}
-
-	/**
-     * Called when the system is about to start resuming a previous activity. 
-     */
-    public void onPause() {
-    }
-
-    /**
-     * Called when the activity will start interacting with the user. 
-     */
-    public void onResume() {
-    }
-    
-    /**
-     * Called when the activity is to be shut down.
-     * Stop listener.
-     */
-    public void onDestroy() {   	
-    }
-
-    /**
-     * Called when an activity you launched exits, giving you the requestCode you started it with,
-     * the resultCode it returned, and any additional data from it. 
-     * 
-     * @param requestCode		The request code originally supplied to startActivityForResult(), 
-     * 							allowing you to identify who this result came from.
-     * @param resultCode		The integer result code returned by the child activity through its setResult().
-     * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
-     */
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    }
 
     //--------------------------------------------------------------------------
     // LOCAL METHODS

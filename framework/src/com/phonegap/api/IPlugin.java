@@ -10,11 +10,8 @@ import android.webkit.WebView;
  *
  * The execute method is called by the PluginManager.
  */
-public abstract class Plugin implements IPlugin {
-
-    public WebView webView;					// WebView object
-    public DroidGap ctx;					// DroidGap object
-
+public interface IPlugin {
+		
 	/**
 	 * Executes the request and returns PluginResult.
 	 * 
@@ -23,7 +20,7 @@ public abstract class Plugin implements IPlugin {
 	 * @param callbackId	The callback id used when calling back into JavaScript.
 	 * @return 				A PluginResult object with a status and message.
 	 */
-	public abstract PluginResult execute(String action, JSONArray args, String callbackId);
+	PluginResult execute(String action, JSONArray args, String callbackId);
 
 	/**
 	 * Identifies if action to be executed returns a value and should be run synchronously.
@@ -31,9 +28,7 @@ public abstract class Plugin implements IPlugin {
 	 * @param action	The action to execute
 	 * @return			T=returns value
 	 */
-	public boolean isSynch(String action) {
-		return false;
-	}
+	public boolean isSynch(String action);
 
 	/**
 	 * Sets the context of the Plugin. This can then be used to do things like
@@ -41,9 +36,7 @@ public abstract class Plugin implements IPlugin {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(DroidGap ctx) {
-		this.ctx = ctx;
-	}
+	void setContext(DroidGap ctx);
 
 	/**
 	 * Sets the main View of the application, this is the WebView within which 
@@ -51,27 +44,22 @@ public abstract class Plugin implements IPlugin {
 	 * 
 	 * @param webView The PhoneGap WebView
 	 */
-	public void setView(WebView webView) {
-		this.webView = webView;
-	}
-	
+	void setView(WebView webView);
+
     /**
      * Called when the system is about to start resuming a previous activity. 
      */
-    public void onPause() {
-    }
+    void onPause();
 
     /**
      * Called when the activity will start interacting with the user. 
      */
-    public void onResume() {
-    }
+    void onResume();
     
     /**
      * The final call you receive before your activity is destroyed. 
      */
-    public void onDestroy() {
-    }
+    void onDestroy();
 	
     /**
      * Called when an activity you launched exits, giving you the requestCode you started it with,
@@ -82,40 +70,6 @@ public abstract class Plugin implements IPlugin {
      * @param resultCode		The integer result code returned by the child activity through its setResult().
      * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    }
+    void onActivityResult(int requestCode, int resultCode, Intent intent);
 
-    /**
-     * Send generic JavaScript statement back to JavaScript.
-     * success(...) and error(...) should be used instead where possible.
-     * 
-     * @param statement
-     */
-    public void sendJavascript(String statement) {
-    	this.ctx.callbackServer.sendJavascript(statement);
-    }
-
-    /**
-     * Call the JavaScript success callback for this plugin.
-     * 
-     * This can be used if the execute code for the plugin is asynchronous meaning
-     * that execute should return null and the callback from the async operation can
-     * call success(...) or error(...)
-     * 
-     * @param pluginResult		The result to return.
-	 * @param callbackId		The callback id used when calling back into JavaScript.
-     */
-    public void success(PluginResult pluginResult, String callbackId) {
-    	this.ctx.callbackServer.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
-    }
-
-    /**
-     * Call the JavaScript error callback for this plugin.
-     * 
-     * @param pluginResult		The result to return.
-	 * @param callbackId		The callback id used when calling back into JavaScript.
-     */
-    public void error(PluginResult pluginResult, String callbackId) {
-    	this.ctx.callbackServer.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
-    }
 }

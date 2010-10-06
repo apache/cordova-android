@@ -20,7 +20,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.Environment;
-import android.webkit.WebView;
 import android.provider.MediaStore;
 
 /**
@@ -28,7 +27,7 @@ import android.provider.MediaStore;
  * and returns the captured image.  When the camera view is closed, the screen displayed before 
  * the camera view was shown is redisplayed.
  */
-public class CameraLauncher implements Plugin {
+public class CameraLauncher extends Plugin {
 
 	private static final int DATA_URL = 0;				// Return base64 encoded string
 	private static final int FILE_URI = 1;				// Return file uri (content://media/external/images/media/2 for Android)
@@ -37,9 +36,6 @@ public class CameraLauncher implements Plugin {
 	private static final int CAMERA = 1;				// Take picture from camera
 	private static final int SAVEDPHOTOALBUM = 2;		// Choose image from picture library (same as PHOTOLIBRARY for Android)
 	
-    WebView webView;						// WebView object
-    DroidGap ctx;							// DroidGap object
-
 	private int mQuality;					// Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
 	private Uri imageUri;					// Uri of captured image 
 	
@@ -50,33 +46,14 @@ public class CameraLauncher implements Plugin {
 	}
 
 	/**
-	 * Sets the context of the Command. This can then be used to do things like
-	 * get file paths associated with the Activity.
+	 * Executes the request and returns PluginResult.
 	 * 
-	 * @param ctx The context of the main Activity.
+	 * @param action 		The action to execute.
+	 * @param args 			JSONArry of arguments for the plugin.
+	 * @param callbackId	The callback id used when calling back into JavaScript.
+	 * @return 				A PluginResult object with a status and message.
 	 */
-	public void setContext(DroidGap ctx) {
-		this.ctx = ctx;
-	}
-
-	/**
-	 * Sets the main View of the application, this is the WebView within which 
-	 * a PhoneGap app runs.
-	 * 
-	 * @param webView The PhoneGap WebView
-	 */
-	public void setView(WebView webView) {
-		this.webView = webView;
-	}
-
-	/**
-	 * Executes the request and returns CommandResult.
-	 * 
-	 * @param action The command to execute.
-	 * @param args JSONArry of arguments for the command.
-	 * @return A CommandResult object with a status and message.
-	 */
-	public PluginResult execute(String action, JSONArray args) {
+	public PluginResult execute(String action, JSONArray args, String callbackId) {
 		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		
@@ -103,35 +80,6 @@ public class CameraLauncher implements Plugin {
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
 	}
-
-	/**
-	 * Identifies if action to be executed returns a value and should be run synchronously.
-	 * 
-	 * @param action	The action to execute
-	 * @return			T=returns value
-	 */
-	public boolean isSynch(String action) {
-		return false;
-	}
-
-	/**
-     * Called when the system is about to start resuming a previous activity. 
-     */
-    public void onPause() {
-    }
-
-    /**
-     * Called when the activity will start interacting with the user. 
-     */
-    public void onResume() {
-    }
-    
-    /**
-     * Called by AccelBroker when listener is to be shut down.
-     * Stop listener.
-     */
-    public void onDestroy() {  	
-    }
 	
     //--------------------------------------------------------------------------
     // LOCAL METHODS
@@ -235,7 +183,7 @@ public class CameraLauncher implements Plugin {
 						os.close();
 
 						// Send Uri back to JavaScript for viewing image
-						this.ctx.sendJavascript("navigator.camera.success('" + uri.toString() + "');");
+						this.sendJavascript("navigator.camera.success('" + uri.toString() + "');");
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -272,7 +220,7 @@ public class CameraLauncher implements Plugin {
 				
 				// If sending filename back
 				else if (destType == FILE_URI) {
-					this.ctx.sendJavascript("navigator.camera.success('" + uri + "');");
+					this.sendJavascript("navigator.camera.success('" + uri + "');");
 				}
 			}
 			else if (resultCode == Activity.RESULT_CANCELED) {
@@ -296,7 +244,7 @@ public class CameraLauncher implements Plugin {
 				byte[] code  = jpeg_data.toByteArray();
 				byte[] output = Base64.encodeBase64(code);
 				String js_out = new String(output);
-				this.ctx.sendJavascript("navigator.camera.success('" + js_out + "');");
+				this.sendJavascript("navigator.camera.success('" + js_out + "');");
 			}	
 		}
 		catch(Exception e) {
@@ -310,6 +258,6 @@ public class CameraLauncher implements Plugin {
 	 * @param err
 	 */
 	public void failPicture(String err) {
-		this.ctx.sendJavascript("navigator.camera.error('" + err + "');");
+		this.sendJavascript("navigator.camera.error('" + err + "');");
 	}
 }
