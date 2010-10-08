@@ -129,7 +129,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 					contact.put("displayName", cur.getString(cur.getColumnIndex(People.DISPLAY_NAME)));		    	
 				}
 				if (isRequired("phoneNumbers",populate)) {
-					Log.d(LOG_TAG, "Populating phone numbers");
 					contact.put("phoneNumbers", phoneQuery(cr, contactId));
 				}
 				if (isRequired("emails",populate)) {
@@ -335,8 +334,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			phone = new JSONObject();
 			try{
-				Log.d(LOG_TAG, "Found = " + cursor.getString(cursor.getColumnIndex(Phones.NUMBER)));
-
 				phone.put("primary", false);
 				phone.put("value", cursor.getString(cursor.getColumnIndex(Phones.NUMBER)));
 				phone.put("type", cursor.getString(cursor.getColumnIndex(Phones.TYPE)));
