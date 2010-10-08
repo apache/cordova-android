@@ -21,7 +21,7 @@ class Create < Classic
     @path             = File.join(path, '..', "#{ @name }_android")
     @www              = path 
     @pkg              = "com.phonegap.#{ @name }" 
-    @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub('/tools/android','')
+    @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub(/\/tools\/android$/,'').chomp
     @android_dir      = File.expand_path(File.dirname(__FILE__).gsub('lib',''))
     @framework_dir    = File.join(@android_dir, "framework")
     @icon             = File.join(@www, 'icon.png')
