@@ -5,6 +5,7 @@ import org.json.JSONException;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.media.Ringtone;
@@ -16,7 +17,11 @@ import android.os.Vibrator;
  * This class provides access to notifications on the device.
  */
 public class Notification extends Plugin {
-		
+	
+	public int confirmResult = -1;
+	public ProgressDialog spinnerDialog = null;
+	public ProgressDialog progressDialog = null;	
+	
 	/**
 	 * Constructor.
 	 */
@@ -45,6 +50,25 @@ public class Notification extends Plugin {
 			else if (action.equals("alert")) {
 				this.alert(args.getString(0),args.getString(1),args.getString(2));
 			}
+			else if (action.equals("confirm")) {
+				int i =	this.confirm(args.getString(0),args.getString(1),args.getString(2));
+				return new PluginResult(status, i);
+			}
+			else if (action.equals("activityStart")) {
+				this.activityStart(args.getString(0),args.getString(1));
+			}
+			else if (action.equals("activityStop")) {
+				this.activityStop();
+			}
+			else if (action.equals("progressStart")) {
+				this.progressStart(args.getString(0),args.getString(1));
+			}
+			else if (action.equals("progressValue")) {
+				this.progressValue(args.getInt(0));
+			}
+			else if (action.equals("progressStop")) {
+				this.progressStop();
+			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
@@ -58,10 +82,30 @@ public class Notification extends Plugin {
 	 * @return			T=returns value
 	 */
 	public boolean isSynch(String action) {
-		if(action.equals("alert"))
+		if (action.equals("alert")) {
 			return true;
-		else
+		}
+		else if (action.equals("confirm")) {
+			return true;
+		}
+		else if (action.equals("activityStart")) {
+			return true;
+		}
+		else if (action.equals("activityStop")) {
+			return true;
+		}
+		else if (action.equals("progressStart")) {
+			return true;
+		}
+		else if (action.equals("progressValue")) {
+			return true;
+		}
+		else if (action.equals("progressStop")) {
+			return true;
+		}
+		else {
 			return false;
+		}
 	}
 
     //--------------------------------------------------------------------------
@@ -126,6 +170,179 @@ public class Notification extends Plugin {
         	});
         dlg.create();
         dlg.show();
+	}
+
+	/**
+	 * Builds and shows a native Android confirm dialog with given title, message, buttons.
+	 * This dialog only shows up to 3 buttons.  Any labels after that will be ignored.
+	 * 
+	 * @param message 		The message the dialog should display
+	 * @param title 		The title of the dialog
+	 * @param buttonLabels 	A comma separated list of button labels (Up to 3 buttons)
+	 * @return  			The index of the button clicked (1,2 or 3)
+	 */
+	public synchronized int confirm(final String message, final String title, String buttonLabels) {
+			
+		// Create dialog on UI thread
+		final DroidGap ctx = this.ctx;
+		final Notification notification = this;
+		final String[] fButtons = buttonLabels.split(",");
+		Runnable runnable = new Runnable() {
+			public void run() {
+				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
+				dlg.setMessage(message);
+				dlg.setTitle(title);
+				dlg.setCancelable(false);
+				
+				// First button
+				if (fButtons.length > 0) {
+					dlg.setPositiveButton(fButtons[0],
+						new AlertDialog.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+								synchronized(notification) {
+									notification.confirmResult = 1;
+									notification.notifyAll();
+								}
+							}
+						});
+				}
+				
+				// Second button
+				if (fButtons.length > 1) {
+					dlg.setNeutralButton(fButtons[1], 
+						new AlertDialog.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+								synchronized(notification) {
+									notification.confirmResult = 2;
+									notification.notifyAll();
+								}
+							}
+						});
+				}
+				
+				// Third button
+				if (fButtons.length > 2) {
+					dlg.setNegativeButton(fButtons[2],
+						new AlertDialog.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+								synchronized(notification) {
+									notification.confirmResult = 3;
+									notification.notifyAll();
+								}
+							}
+						}
+					);
+				}
+
+				dlg.create();
+				dlg.show();
+			}
+		};
+		this.ctx.runOnUiThread(runnable);
+		
+		// Wait for dialog to close
+		synchronized(runnable) {
+			try {
+				this.wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+        return this.confirmResult;        
+	}
+
+	/**
+	 * Show the spinner.
+	 * 
+	 * @param title			Title of the dialog
+	 * @param message		The message of the dialog
+	 */
+	public synchronized void activityStart(final String title, final String message) {
+		if (this.spinnerDialog != null) {
+			this.spinnerDialog.dismiss();
+			this.spinnerDialog = null;
+		}
+		final Notification notification = this;
+		final DroidGap ctx = this.ctx;
+		Runnable runnable = new Runnable() {
+			public void run() {
+				notification.spinnerDialog = ProgressDialog.show(ctx, title , message, true, true, 
+					new DialogInterface.OnCancelListener() { 
+						public void onCancel(DialogInterface dialog) {
+							notification.spinnerDialog = null;
+						}
+					});
+				}
+			};
+		this.ctx.runOnUiThread(runnable);
+	}
+	
+	/**
+	 * Stop spinner.
+	 */
+	public synchronized void activityStop() {
+		if (this.spinnerDialog != null) {
+			this.spinnerDialog.dismiss();
+			this.spinnerDialog = null;
+		}
+	}
+
+	/**
+	 * Show the progress dialog.
+	 * 
+	 * @param title			Title of the dialog
+	 * @param message		The message of the dialog
+	 */
+	public synchronized void progressStart(final String title, final String message) {
+		if (this.progressDialog != null) {
+			this.progressDialog.dismiss();
+			this.progressDialog = null;
+		}
+		final Notification notification = this;
+		final DroidGap ctx = this.ctx;
+		Runnable runnable = new Runnable() {
+			public void run() {
+				notification.progressDialog = new ProgressDialog(ctx);
+				notification.progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+				notification.progressDialog.setTitle(title);
+				notification.progressDialog.setMessage(message);
+				notification.progressDialog.setCancelable(true);
+				notification.progressDialog.setMax(100);
+				notification.progressDialog.setProgress(0);
+				notification.progressDialog.setOnCancelListener(
+					new DialogInterface.OnCancelListener() { 
+						public void onCancel(DialogInterface dialog) {
+							notification.progressDialog = null;
+						}
+					});
+				notification.progressDialog.show();
+			}
+		};
+		this.ctx.runOnUiThread(runnable);
+	}
+	
+	/**
+	 * Set value of progress bar.
+	 * 
+	 * @param value			0-100
+	 */
+	public synchronized void progressValue(int value) {
+		if (this.progressDialog != null) {
+			this.progressDialog.setProgress(value);
+		}		
+	}
+	
+	/**
+	 * Stop progress dialog.
+	 */
+	public synchronized void progressStop() {
+		if (this.progressDialog != null) {
+			this.progressDialog.dismiss();
+			this.progressDialog = null;
+		}
 	}
 
 }

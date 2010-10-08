@@ -159,4 +159,21 @@ public abstract class ContactAccessor {
      * Handles removing a contact from the database.
      */
 	public abstract boolean remove(String id);
+	
+	class WhereOptions {
+		private String where;
+		private String[] whereArgs;
+		public void setWhere(String where) {
+			this.where = where;
+		}
+		public String getWhere() {
+			return where;
+		}
+		public void setWhereArgs(String[] whereArgs) {
+			this.whereArgs = whereArgs;
+		}
+		public String[] getWhereArgs() {
+			return whereArgs;
+		}
+	}
 }

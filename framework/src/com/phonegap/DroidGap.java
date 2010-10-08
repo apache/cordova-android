@@ -84,7 +84,7 @@ public class DroidGap extends Activity {
 
     private BrowserKey mKey;
     public CallbackServer callbackServer;
-	private PluginManager pluginManager;
+	protected PluginManager pluginManager;
 
     private String url;							// The initial URL for our app
     private String baseUrl;						// The base of the initial URL for our app
