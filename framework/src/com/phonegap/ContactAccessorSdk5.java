@@ -17,20 +17,16 @@
 
 package com.phonegap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.database.Cursor;
-import android.net.Uri;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.webkit.WebView;
@@ -112,7 +108,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 	
 	@Override
-	public JSONArray search(JSONArray filter, JSONObject options) {
+	public JSONArray search(JSONArray fields, JSONObject options) {
+		long totalEnd;
+		long totalStart = System.currentTimeMillis();
+
+		// Get the find options
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
 		boolean multiple = true;
@@ -131,252 +131,283 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		} catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
-		
-		// Get a cursor by creating the query.
-		ContentResolver cr = mApp.getContentResolver();
-		
-		Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
-		HashMap<String,Boolean> populate = buildPopulationSet(filter);
-				
-		Iterator<String> it = contactIds.iterator();
-		
-		JSONArray contacts = new JSONArray();
 
-		String contactId;
-		int pos = 0;
-		boolean firstRow = true;
-		while (it.hasNext() && (pos < limit)) {
-			JSONObject contact = new JSONObject();
-			JSONArray organizations = new JSONArray();
-			JSONArray addresses = new JSONArray();
-			JSONArray phones = new JSONArray();
-			JSONArray emails = new JSONArray();
-			JSONArray ims = new JSONArray();
-			JSONArray websites = new JSONArray();
-			JSONArray relationships = new JSONArray();			
+		// Loop through the fields the user provided to see what data should be returned.
+		HashMap<String,Boolean> populate = buildPopulationSet(fields);
+		
+		// Build the ugly where clause and where arguments for one big query.
+		WhereOptions whereOptions = buildWhereClause(fields, searchTerm);
 			
-			contactId = it.next();
-			
-			Cursor c = cr.query(ContactsContract.Data.CONTENT_URI,
-					null,             
-					ContactsContract.Data.CONTACT_ID + " = ?",
-					new String[] {contactId},
-					null);
-			
-			String mimetype = "";
-			while (c.moveToNext()) {
-				try {
-					if (firstRow) {
-						firstRow = false;
-						contact.put("id", contactId);
-						contact.put("displayName", c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)));
-					}
-					mimetype = c.getString(c.getColumnIndex(ContactsContract.Data.MIMETYPE));
-					if (mimetype.equals(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE) 
-							&& isRequired("name",populate)) {
-						contact.put("name", nameQuery(c));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE) 
-							&& isRequired("phoneNumbers",populate)) {
-						phones.put(phoneQuery(c));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE) 
-							&& isRequired("emails",populate)) {
-						emails.put(emailQuery(c));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE) 
-							&& isRequired("addresses",populate)) {
-						addresses.put(addressQuery(c));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE) 
-							&& isRequired("organizations",populate)) {
-						organizations.put(organizationQuery(c));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE) 
-							&& isRequired("ims",populate)) {
-						ims.put(imQuery(c));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE) 
-							&& isRequired("note",populate)) {
-						contact.put("note",c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE)));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE) 
-							&& isRequired("nickname",populate)) {
-						contact.put("nickname",c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME)));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE) 
-							&& isRequired("urls",populate)) {
-						websites.put(websiteQuery(c));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE) 
-							&& isRequired("relationships",populate)) {
-						relationships.put(relationshipQuery(c));
-					}
-					if (mimetype.equals(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)) {
-						if (ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY == c.getInt(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE)) 
-								&& isRequired("anniversary",populate)) {
-							contact.put("anniversary", c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)));
-						}
-						else if (ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY == c.getInt(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE)) 
-								&& isRequired("birthday",populate)) {
-							contact.put("birthday", c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)));
-						}
-					}
-				}
-				catch (JSONException e) {
-					Log.e(LOG_TAG, e.getMessage(),e);
-				}
-			}
-			c.close();
-			
-			firstRow = true;
-			
-			// Populate the Contact object with it's arrays
+		// Get all the rows where the search term matches the fields passed in.
+		Cursor c = mApp.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
+				null,
+				whereOptions.getWhere(),
+				whereOptions.getWhereArgs(),
+				ContactsContract.Data.CONTACT_ID + " ASC");				
+
+		String contactId = "";
+		String oldContactId = "";
+		boolean newContact = true;
+		String mimetype = "";
+
+		JSONArray contacts = new JSONArray();
+		JSONObject contact = new JSONObject();
+		JSONArray organizations = new JSONArray();
+		JSONArray addresses = new JSONArray();
+		JSONArray phones = new JSONArray();
+		JSONArray emails = new JSONArray();
+		JSONArray ims = new JSONArray();
+		JSONArray websites = new JSONArray();
+		JSONArray relationships = new JSONArray();			
+		
+		while (c.moveToNext() && (contacts.length() < (limit-1))) {					
 			try {
-				contact.put("organizations", organizations);
-				contact.put("addresses", addresses);
-				contact.put("phoneNumbers", phones);
-				contact.put("emails", emails);
-				contact.put("ims", ims);
-				contact.put("websites", websites);
-				contact.put("relationships", relationships);
+				contactId = c.getString(c.getColumnIndex(ContactsContract.Data.CONTACT_ID));
+				
+				// If we are in the first row set the oldContactId
+				if (c.getPosition() == 0) {
+					oldContactId = contactId;
+				}
+				
+				// When the contact ID changes we need to push the Contact object 
+				// to the array of contacts and create new objects.
+				if (!oldContactId.equals(contactId)) {
+					// Populate the Contact object with it's arrays
+					// and push the contact into the contacts array
+					contacts.put(populateContact(contact, organizations, addresses, phones,
+							emails, ims, websites, relationships));
+					
+					// Clean up the objects
+					contact = new JSONObject();
+					organizations = new JSONArray();
+					addresses = new JSONArray();
+					phones = new JSONArray();
+					emails = new JSONArray();
+					ims = new JSONArray();
+					websites = new JSONArray();
+					relationships = new JSONArray();
+					
+					// Set newContact to true as we are starting to populate a new contact
+					newContact = true;
+				}
+				
+				// When we detect a new contact set the ID and display name.
+				// These fields are available in every row in the result set returned.
+				if (newContact) {
+					newContact = false;
+					contact.put("id", contactId);
+					contact.put("displayName", c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)));
+				}
+				
+				// Grab the mimetype of the current row as it will be used in a lot of comparisons
+				mimetype = c.getString(c.getColumnIndex(ContactsContract.Data.MIMETYPE));
+				
+				if (mimetype.equals(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE) 
+						&& isRequired("name",populate)) {
+					contact.put("name", nameQuery(c));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE) 
+						&& isRequired("phoneNumbers",populate)) {
+					phones.put(phoneQuery(c));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE) 
+						&& isRequired("emails",populate)) {
+					emails.put(emailQuery(c));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE) 
+						&& isRequired("addresses",populate)) {
+					addresses.put(addressQuery(c));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE) 
+						&& isRequired("organizations",populate)) {
+					organizations.put(organizationQuery(c));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE) 
+						&& isRequired("ims",populate)) {
+					ims.put(imQuery(c));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE) 
+						&& isRequired("note",populate)) {
+					contact.put("note",c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Note.NOTE)));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE) 
+						&& isRequired("nickname",populate)) {
+					contact.put("nickname",c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Nickname.NAME)));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE) 
+						&& isRequired("urls",populate)) {
+					websites.put(websiteQuery(c));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE) 
+						&& isRequired("relationships",populate)) {
+					relationships.put(relationshipQuery(c));
+				}
+				else if (mimetype.equals(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE)) {
+					if (ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY == c.getInt(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE)) 
+							&& isRequired("anniversary",populate)) {
+						contact.put("anniversary", c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)));
+					}
+					else if (ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY == c.getInt(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.TYPE)) 
+							&& isRequired("birthday",populate)) {
+						contact.put("birthday", c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)));
+					}
+				}
 			}
 			catch (JSONException e) {
-				Log.e(LOG_TAG,e.getMessage(),e);
+				Log.e(LOG_TAG, e.getMessage(),e);
 			}
-			contacts.put(contact);
-			pos++;
+			
+			// Set the old contact ID 
+			oldContactId = contactId;			
 		}
+		c.close();
+		
+		// Push the last contact into the contacts array
+		contacts.put(populateContact(contact, organizations, addresses, phones,
+				emails, ims, websites, relationships));
+		
+		totalEnd = System.currentTimeMillis();
+		Log.d(LOG_TAG,"Total time = " + (totalEnd-totalStart));
 		return contacts;
 	}
 
-	private Set<String> buildSetOfContactIds(JSONArray filter, String searchTerm) {
-		Set<String> contactIds = new HashSet<String>();	
+	private JSONObject populateContact(JSONObject contact, JSONArray organizations,
+			JSONArray addresses, JSONArray phones, JSONArray emails,
+			JSONArray ims, JSONArray websites, JSONArray relationships) {
+		try {
+			contact.put("organizations", organizations);
+			contact.put("addresses", addresses);
+			contact.put("phoneNumbers", phones);
+			contact.put("emails", emails);
+			contact.put("ims", ims);
+			contact.put("websites", websites);
+			contact.put("relationships", relationships);
+		}
+		catch (JSONException e) {
+			Log.e(LOG_TAG,e.getMessage(),e);
+		}
+		return contact;
+	}
+
+	private WhereOptions buildWhereClause(JSONArray filter, String searchTerm) {
+
+		ArrayList<String> where = new ArrayList<String>();
+		ArrayList<String> whereArgs = new ArrayList<String>();
 		
+		WhereOptions options = new WhereOptions();
+
 		/*
 		 * Special case for when the user wants all the contacts
 		 */
 		if ("%".equals(searchTerm)) {
-			doQuery(searchTerm, contactIds,
-					ContactsContract.Contacts.CONTENT_URI,
-					ContactsContract.Contacts._ID,
-					ContactsContract.Contacts.DISPLAY_NAME + " LIKE ?",
-					new String[] {searchTerm});
-			return contactIds;
-		}
-				
+			options.setWhere("(" + ContactsContract.Contacts.DISPLAY_NAME + " LIKE ? )");
+			options.setWhereArgs(new String[] {searchTerm});
+			return options;
+		}		
+		
 		String key;
 		try {
 			for (int i=0; i<filter.length(); i++) {
 				key = filter.getString(i);
+
 				if (key.startsWith("displayName")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Contacts.CONTENT_URI,
-							ContactsContract.Contacts._ID,
-							dbMap.get(key) + " LIKE ?",
-							new String[] {searchTerm});
+					where.add("(" + dbMap.get(key) + " LIKE ? )");
+					whereArgs.add(searchTerm);
 				}
 				else if (key.startsWith("name")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Data.CONTENT_URI,
-							ContactsContract.Data.CONTACT_ID,
-							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-							new String[] {searchTerm, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE});
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
 				}
 				else if (key.startsWith("nickname")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Data.CONTENT_URI,
-							ContactsContract.Data.CONTACT_ID,
-							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-							new String[] {searchTerm, ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE});					
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE);
 				}
 				else if (key.startsWith("phoneNumbers")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-							ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
-							dbMap.get(key) + " LIKE ?",
-							new String[] {searchTerm});
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
 				}
 				else if (key.startsWith("emails")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-							ContactsContract.CommonDataKinds.Email.CONTACT_ID,
-							dbMap.get(key) + " LIKE ?", 
-							new String[] {searchTerm});
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
 				}
 				else if (key.startsWith("addresses")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Data.CONTENT_URI,
-							ContactsContract.Data.CONTACT_ID,
-							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-							new String[] {searchTerm, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE});					
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
 				}
 				else if (key.startsWith("ims")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Data.CONTENT_URI,
-							ContactsContract.Data.CONTACT_ID,
-							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-							new String[] {searchTerm, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE});					
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE);
 				}
 				else if (key.startsWith("organizations")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Data.CONTENT_URI,
-							ContactsContract.Data.CONTACT_ID,
-							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-							new String[] {searchTerm, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE});					
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
 				}
-				else if (key.startsWith("birthday")) {
-					
-				}
-				else if (key.startsWith("anniversary")) {
-					
-				}
+//				else if (key.startsWith("birthday")) {
+//					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+//							+ ContactsContract.Data.MIMETYPE + " = ? )");									
+//				}
+//				else if (key.startsWith("anniversary")) {
+//					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+//							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+//					whereArgs.add(searchTerm);
+//					whereArgs.add(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
+//				}
 				else if (key.startsWith("note")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Data.CONTENT_URI,
-							ContactsContract.Data.CONTACT_ID,
-							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-							new String[] {searchTerm, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE});					
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE);
 				}
 				else if (key.startsWith("relationships")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Data.CONTENT_URI,
-							ContactsContract.Data.CONTACT_ID,
-							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-							new String[] {searchTerm, ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE});					
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE);
 				}
 				else if (key.startsWith("urls")) {
-					doQuery(searchTerm, contactIds,
-							ContactsContract.Data.CONTENT_URI,
-							ContactsContract.Data.CONTACT_ID,
-							dbMap.get(key) + " LIKE ? AND " + ContactsContract.Data.MIMETYPE + " = ?",
-							new String[] {searchTerm, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE});					
+					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+							+ ContactsContract.Data.MIMETYPE + " = ? )");				
+					whereArgs.add(searchTerm);
+					whereArgs.add(ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
 				}
 			}
 		}
 		catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
-		
-		return contactIds;
-	}
 
-	private void doQuery(String searchTerm, Set<String> contactIds, 
-			Uri uri, String projection, String selection, String[] selectionArgs) {
-		// Get a cursor by creating the query.
-		ContentResolver cr = mApp.getContentResolver();
-
-		Cursor cursor = cr.query(
-				uri, 
-				new String[] {projection},
-				selection,
-				selectionArgs,
-				null);
-		
-		while (cursor.moveToNext()) {
-			contactIds.add(cursor.getString(cursor.getColumnIndex(projection)));
+		// Creating the where string
+		StringBuffer selection = new StringBuffer();
+		for (int i=0; i<where.size(); i++) {
+			selection.append(where.get(i));
+			if (i != (where.size()-1)) {
+				selection.append(" OR ");
+			}
 		}
-		cursor.close();
+		options.setWhere(selection.toString());
+
+		// Creating the where args array
+		String[] selectionArgs = new String[whereArgs.size()];
+		for (int i=0; i<whereArgs.size(); i++) {
+			selectionArgs[i] = whereArgs.get(i);
+		}
+		options.setWhereArgs(selectionArgs);
+		
+		return options;
 	}
 
 	private JSONObject organizationQuery(Cursor cursor) {
