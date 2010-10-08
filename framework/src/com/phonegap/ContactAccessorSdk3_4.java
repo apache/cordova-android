@@ -128,22 +128,23 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 				if (isRequired("displayName",populate)) {
 					contact.put("displayName", cur.getString(cur.getColumnIndex(People.DISPLAY_NAME)));		    	
 				}
-				else if (isRequired("phoneNumbers",populate)) {
+				if (isRequired("phoneNumbers",populate)) {
+					Log.d(LOG_TAG, "Populating phone numbers");
 					contact.put("phoneNumbers", phoneQuery(cr, contactId));
 				}
-				else if (isRequired("emails",populate)) {
+				if (isRequired("emails",populate)) {
 					contact.put("emails", emailQuery(cr, contactId));
 				}
-				else if (isRequired("addresses",populate)) {
+				if (isRequired("addresses",populate)) {
 					contact.put("addresses", addressQuery(cr, contactId));
 				}
-				else if (isRequired("organizations",populate)) {
+				if (isRequired("organizations",populate)) {
 					contact.put("organizations", organizationQuery(cr, contactId));
 				}
-				else if (isRequired("ims",populate)) {
+				if (isRequired("ims",populate)) {
 					contact.put("ims", imQuery(cr, contactId));
 				}
-				else if (isRequired("note",populate)) {
+				if (isRequired("note",populate)) {
 					contact.put("note", cur.getString(cur.getColumnIndex(People.NOTES)));
 				}
 				// nickname
@@ -334,6 +335,8 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			phone = new JSONObject();
 			try{
+				Log.d(LOG_TAG, "Found = " + cursor.getString(cursor.getColumnIndex(Phones.NUMBER)));
+
 				phone.put("primary", false);
 				phone.put("value", cursor.getString(cursor.getColumnIndex(Phones.NUMBER)));
 				phone.put("type", cursor.getString(cursor.getColumnIndex(Phones.TYPE)));
