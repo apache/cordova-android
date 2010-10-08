@@ -31,6 +31,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.Contacts;
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.ContactMethodsColumns;
 import android.provider.Contacts.Organizations;
@@ -117,9 +118,8 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		    	contact.put("id", contactId);
 		    	
 		    	// Do query for name and note
-		        // Right now we are just querying the displayName
 		        Cursor cur = cr.query(People.CONTENT_URI, 
-					null,
+					new String[] {People.DISPLAY_NAME, People.NOTES},
 					"people._id = ?",
 					new String[] {contactId},
 					null);
@@ -128,22 +128,22 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 				if (isRequired("displayName",populate)) {
 					contact.put("displayName", cur.getString(cur.getColumnIndex(People.DISPLAY_NAME)));		    	
 				}
-				if (isRequired("phoneNumbers",populate)) {
+				else if (isRequired("phoneNumbers",populate)) {
 					contact.put("phoneNumbers", phoneQuery(cr, contactId));
 				}
-				if (isRequired("emails",populate)) {
+				else if (isRequired("emails",populate)) {
 					contact.put("emails", emailQuery(cr, contactId));
 				}
-				if (isRequired("addresses",populate)) {
+				else if (isRequired("addresses",populate)) {
 					contact.put("addresses", addressQuery(cr, contactId));
 				}
-				if (isRequired("organizations",populate)) {
+				else if (isRequired("organizations",populate)) {
 					contact.put("organizations", organizationQuery(cr, contactId));
 				}
-				if (isRequired("ims",populate)) {
+				else if (isRequired("ims",populate)) {
 					contact.put("ims", imQuery(cr, contactId));
 				}
-				if (isRequired("note",populate)) {
+				else if (isRequired("note",populate)) {
 					contact.put("note", cur.getString(cur.getColumnIndex(People.NOTES)));
 				}
 				// nickname
