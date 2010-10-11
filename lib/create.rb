@@ -29,8 +29,8 @@ class Create < Classic
     @content          = 'index.html'
     
     # stop executation on errors
-    raise 'No index.html found!' unless File.exists? File.join(path, 'index.html')    
-    raise 'Could not find android in your path!' if @android_sdk_path.empty?
+    raise 'Expected index.html in the following folder #{ path }.\nThe path is expected to be the directory droidgap create is run from or specified as a command line arg like droidgap create my_path.' unless File.exists? File.join(path, 'index.html')    
+    raise 'Could not find android in your PATH!' if @android_sdk_path.empty?
   end
 
   # reads in a config.xml file
