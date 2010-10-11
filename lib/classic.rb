@@ -49,8 +49,16 @@ class Classic
   # runs android create project
   # TODO need to allow more flexible SDK targetting via config.xml
   def create_android
-    target_id = `android list targets | grep id:`.split("\n").last.match(/\d+/).to_a.first
-    `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+    IO.popen("android list targets") { |f| 
+      targets = f.readlines(nil)[0].scan(/id\:.*$/)
+      if (targets.length > 0) 
+        target_id = targets.last.match(/\d+/).to_a.first
+        `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
+      else
+        puts "No Android targets found. Please run 'android' and install at least one SDK package."
+        puts "If that makes no sense then you need to go read the Android SDK documentation."
+      end
+    }
   end
   
   # copies the project/www folder into tmp/android/www
