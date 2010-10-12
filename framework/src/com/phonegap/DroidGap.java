@@ -291,15 +291,6 @@ public class DroidGap extends Activity {
         this.addService("Storage", "com.phonegap.Storage");
         this.addService("Temperature", "com.phonegap.TempListener");
 
-    	// Add in support for storage for Android 1.X devices
-        if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {
-            System.out.println("Android 1.X device");
-
-            Package pack = this.getClass().getPackage();
-            String appPackage = pack.getName();
-            this.pluginManager.exec("Storage", "setStorage", null, "["+appPackage+"]", false);
-        }
- 
     }
         
     /**

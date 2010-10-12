@@ -316,7 +316,9 @@ PhoneGap.stringify = function(args) {
             	s = s + '}';
             }
             else {
-                s = s + '"' + args[i] + '"';
+                var a = args[i].replace(/\\/g, '\\\\');
+                a = a.replace(/"/g, '\\"');
+                s = s + '"' + a + '"';
             }
         }
         s = s + "]";
