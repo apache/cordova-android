@@ -140,7 +140,7 @@ public final class PluginManager {
 	@SuppressWarnings("unchecked")
 	private boolean isPhoneGapPlugin(Class c) {
 		if (c != null) {
-			return com.phonegap.api.Plugin.class.isAssignableFrom(c);
+			return com.phonegap.api.Plugin.class.isAssignableFrom(c) || com.phonegap.api.IPlugin.class.isAssignableFrom(c);
 		}
 		return false;
 	}
