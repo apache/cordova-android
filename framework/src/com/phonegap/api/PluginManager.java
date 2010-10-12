@@ -140,15 +140,7 @@ public final class PluginManager {
 	@SuppressWarnings("unchecked")
 	private boolean isPhoneGapPlugin(Class c) {
 		if (c != null) {
-			if (c.getSuperclass().getName().equals("com.phonegap.api.Plugin")) {
-				return true;
-			}		
-			Class[] interfaces = c.getInterfaces();
-			for (int j=0; j<interfaces.length; j++) {
-				if (interfaces[j].getName().equals("com.phonegap.api.IPlugin")) {
-					return true;
-				}
-			}
+			return com.phonegap.api.Plugin.class.isAssignableFrom(c);
 		}
 		return false;
 	}
