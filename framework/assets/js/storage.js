@@ -21,7 +21,6 @@ var DroidDB = function() {
  * @param id                Query id
  */
 DroidDB.prototype.addResult = function(rawdata, id) {
-    console.log("DroidDB.addResult("+rawdata+", "+id+")");
     try {
         eval("var data = " + rawdata + ";");
         var query = this.queryQueue[id];
@@ -38,7 +37,6 @@ DroidDB.prototype.addResult = function(rawdata, id) {
  * @param id                Query id
  */
 DroidDB.prototype.completeQuery = function(id) {
-    console.log("DroidDB.completeQuery("+id+")");
     var query = this.queryQueue[id];
     if (query) {
         try {
@@ -80,7 +78,6 @@ DroidDB.prototype.completeQuery = function(id) {
  * @param id                Query id
  */
 DroidDB.prototype.fail = function(reason, id) {
-    console.log("DroidDB.fail("+reason+", "+id+")");
     var query = this.queryQueue[id];
     if (query) {
         try {
