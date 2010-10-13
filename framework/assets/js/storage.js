@@ -10,7 +10,7 @@
  * PRIVATE METHOD
  */
 var DroidDB = function() {
-    this.txQueue = {};
+    this.queryQueue = {};
 };
 
 /**
@@ -18,13 +18,14 @@ var DroidDB = function() {
  * PRIVATE METHOD
  *
  * @param rawdata           JSON string of the row data
- * @param tx_id             Transaction id
+ * @param id                Query id
  */
-DroidDB.prototype.addResult = function(rawdata, tx_id) {
+DroidDB.prototype.addResult = function(rawdata, id) {
+    console.log("DroidDB.addResult("+rawdata+", "+id+")");
     try {
         eval("var data = " + rawdata + ";");
-        var tx = this.txQueue[tx_id];
-        tx.resultSet.push(data);
+        var query = this.queryQueue[id];
+        query.resultSet.push(data);
     } catch (e) {
         console.log("DroidDB.addResult(): Error="+e);
     }
@@ -34,23 +35,40 @@ DroidDB.prototype.addResult = function(rawdata, tx_id) {
  * Callback from native code when query is complete.
  * PRIVATE METHOD
  *
- * @param tx_id
+ * @param id                Query id
  */
-DroidDB.prototype.completeQuery = function(tx_id) {
-    var tx = null;
-    try {
-        tx = this.txQueue[tx_id];
-        var r = new DroidDB_Result();
-        r.rows.resultSet = tx.resultSet;
-        r.rows.length = tx.resultSet.length;
-        delete this.txQueue[tx_id];
-    } catch (e) {
-        console.log("DroidDB.completeQuery(): Error="+e);
-    }
-    try {
-        tx.successCallback(tx, r);
-    } catch (e) {
-        console.log("DroidDB.completeQuery(): Error calling user success callback="+e);
+DroidDB.prototype.completeQuery = function(id) {
+    console.log("DroidDB.completeQuery("+id+")");
+    var query = this.queryQueue[id];
+    if (query) {
+        try {
+            delete this.queryQueue[id];
+
+            // Get transaction
+            var tx = query.tx;
+
+            // If transaction hasn't failed
+            // Note: We ignore all query results if previous query
+            //       in the same transaction failed.
+            if (tx && tx.queryList[id]) {
+
+                // Save query results
+                var r = new DroidDB_Result();
+                r.rows.resultSet = query.resultSet;
+                r.rows.length = query.resultSet.length;
+                try {
+                    if (typeof query.successCallback == 'function') {
+                        query.successCallback(query.tx, r);
+                    }
+                } catch (ex) {
+                    console.log("executeSql error calling user success callback: "+ex);
+                }
+
+                tx.queryComplete(id);
+            }
+        } catch (e) {
+            console.log("executeSql error: "+e);
+        }
     }
 };
 
@@ -58,21 +76,39 @@ DroidDB.prototype.completeQuery = function(tx_id) {
  * Callback from native code when query fails
  * PRIVATE METHOD
  *
- * @param reason
- * @param tx_id
+ * @param reason            Error message
+ * @param id                Query id
  */
-DroidDB.prototype.fail = function(reason, tx_id) {
-    var tx = null;
-    try {
-        tx = this.txQueue[tx_id];
-        delete this.txQueue[tx_id];
-    } catch (e) {
-        console.log("DroidDB.fail(): Error="+e);
-    }
-    try {
-        tx.errorCallback(reason);
-    } catch (e) {
-        console.log("DroidDB.fail(): Error calling user error callback="+e);
+DroidDB.prototype.fail = function(reason, id) {
+    console.log("DroidDB.fail("+reason+", "+id+")");
+    var query = this.queryQueue[id];
+    if (query) {
+        try {
+            delete this.queryQueue[id];
+
+            // Get transaction
+            var tx = query.tx;
+
+            // If transaction hasn't failed
+            // Note: We ignore all query results if previous query
+            //       in the same transaction failed.
+            if (tx && tx.queryList[id]) {
+                tx.queryList = {};
+
+                try {
+                    if (typeof query.errorCallback == 'function') {
+                        query.errorCallback(query.tx, reason);
+                    }
+                } catch (ex) {
+                    console.log("executeSql error calling user error callback: "+ex);
+                }
+
+                tx.queryFailed(id, reason);
+            }
+
+        } catch (e) {
+            console.log("executeSql error: "+e);
+        }
     }
 };
 
@@ -81,12 +117,28 @@ var DatabaseShell = function() {
 
 /**
  * Start a transaction.
+ * Does not support rollback in event of failure.
  *
- * @param process {Function}        The transaction function
+ * @param process {Function}            The transaction function
+ * @param successCallback {Function}
+ * @param errorCallback {Function}
  */
-DatabaseShell.prototype.transaction = function(process) {
+DatabaseShell.prototype.transaction = function(process, successCallback, errorCallback) {
     var tx = new DroidDB_Tx();
-    process(tx);
+    tx.successCallback = successCallback;
+    tx.errorCallback = errorCallback;
+    try {
+        process(tx);
+    } catch (e) {
+        console.log("Transaction error: "+e);
+        if (tx.errorCallback) {
+            try {
+                tx.errorCallback(e);
+            } catch (ex) {
+                console.log("Transaction error calling user error callback: "+e);
+            }
+        }
+    }
 };
 
 /**
@@ -98,35 +150,116 @@ var DroidDB_Tx = function() {
     // Set the id of the transaction
     this.id = PhoneGap.createUUID();
 
-    // Add this transaction to the queue
-    droiddb.txQueue[this.id] = this;
+    // Callbacks
+    this.successCallback = null;
+    this.errorCallback = null;
+
+    // Query list
+    this.queryList = {};
+};
+
+/**
+ * Mark query in transaction as complete.
+ * If all queries are complete, call the user's transaction success callback.
+ *
+ * @param id                Query id
+ */
+DroidDB_Tx.prototype.queryComplete = function(id) {
+    delete this.queryList[id];
+
+    // If no more outstanding queries, then fire transaction success
+    if (this.successCallback) {
+        var count = 0;
+        for (var i in this.queryList) {
+            count++;
+        }
+        if (count == 0) {
+            try {
+                this.successCallback();
+            } catch(e) {
+                console.log("Transaction error calling user success callback: " + e);
+            }
+        }
+    }
+};
+
+/**
+ * Mark query in transaction as failed.
+ *
+ * @param id                Query id
+ * @param reason            Error message
+ */
+DroidDB_Tx.prototype.queryFailed = function(id, reason) {
+
+    // The sql queries in this transaction have already been run, since
+    // we really don't have a real transaction implemented in native code.
+    // However, the user callbacks for the remaining sql queries in transaction
+    // will not be called.
+    this.queryList = {};
+
+    if (this.errorCallback) {
+        try {
+            this.errorCallback(reason);
+        } catch(e) {
+            console.log("Transaction error calling user error callback: " + e);
+        }
+    }
+};
+
+/**
+ * SQL query object
+ * PRIVATE METHOD
+ *
+ * @param tx                The transaction object that this query belongs to
+ */
+var DroidDB_Query = function(tx) {
+
+    // Set the id of the query
+    this.id = PhoneGap.createUUID();
+
+    // Add this query to the queue
+    droiddb.queryQueue[this.id] = this;
 
     // Init result
     this.resultSet = [];
-};
+
+    // Set transaction that this query belongs to
+    this.tx = tx;
+
+    // Add this query to transaction list
+    this.tx.queryList[this.id] = this;
+
+    // Callbacks
+    this.successCallback = null;
+    this.errorCallback = null;
+
+}
 
 /**
  * Execute SQL statement
  *
- * @param query
- * @param params
- * @param successCallback
- * @param errorCallback
+ * @param sql                   SQL statement to execute
+ * @param params                Statement parameters
+ * @param successCallback       Success callback
+ * @param errorCallback         Error callback
  */
-DroidDB_Tx.prototype.executeSql = function(query, params, successCallback, errorCallback) {
+DroidDB_Tx.prototype.executeSql = function(sql, params, successCallback, errorCallback) {
 
     // Init params array
     if (typeof params == 'undefined') {
         params = [];
     }
 
+    // Create query and add to queue
+    var query = new DroidDB_Query(this);
+    droiddb.queryQueue[query.id] = query;
+
     // Save callbacks
-    var tx = droiddb.txQueue[this.id];
-    tx.successCallback = successCallback;
-    tx.errorCallback = errorCallback;
+    query.successCallback = successCallback;
+    query.errorCallback = errorCallback;
 
     // Call native code
-    PhoneGap.execAsync(null, null, "Storage", "executeSql", [query, params, this.id]);
+    PhoneGap.execAsync(null, null, "Storage", "executeSql", [sql, params, query.id]);
 };
 
 /**
