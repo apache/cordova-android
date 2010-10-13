@@ -178,9 +178,10 @@ public class Storage extends Plugin {
 				
 			} while (cur.moveToNext());
 			
-			// Let JavaScript know that there are no more rows
-			this.sendJavascript("droiddb.completeQuery('" + tx_id + "');");
 		}
+		// Let JavaScript know that there are no more rows
+		this.sendJavascript("droiddb.completeQuery('" + tx_id + "');");
+		
 	}
 		
 }
