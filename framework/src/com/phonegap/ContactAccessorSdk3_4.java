@@ -31,6 +31,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.Contacts;
 import android.provider.Contacts.ContactMethods;
 import android.provider.Contacts.ContactMethodsColumns;
 import android.provider.Contacts.Organizations;
@@ -117,9 +118,8 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		    	contact.put("id", contactId);
 		    	
 		    	// Do query for name and note
-		        // Right now we are just querying the displayName
 		        Cursor cur = cr.query(People.CONTENT_URI, 
-					null,
+					new String[] {People.DISPLAY_NAME, People.NOTES},
 					"people._id = ?",
 					new String[] {contactId},
 					null);

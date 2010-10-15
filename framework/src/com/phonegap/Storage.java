@@ -2,21 +2,21 @@ package com.phonegap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-
+import org.json.JSONObject;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
-
 import android.database.Cursor;
 import android.database.sqlite.*;
-import android.util.Log;
 
+/**
+ * This class implements the HTML5 database support for Android 1.X devices.  
+ * It is not used for Android 2.X, since HTML5 database is built in to the browser.
+ */
 public class Storage extends Plugin {
 	
-	private static final String LOG_TAG = "SQLite Storage:";
-	
-	SQLiteDatabase myDb;
-	String path;
-	String txid = "";
+	SQLiteDatabase myDb = null;		// Database object
+	String path = null;				// Database path
+	String dbName = null;			// Database name
 	
 	/**
 	 * Constructor.
@@ -37,6 +37,7 @@ public class Storage extends Plugin {
 		String result = "";		
 		
 		try {
+			// TODO: Do we want to allow a user to do this, since they could get to other app databases?
 			if (action.equals("setStorage")) {
 				this.setStorage(args.getString(0));
 			}
@@ -67,57 +68,120 @@ public class Storage extends Plugin {
 	public boolean isSynch(String action) {
 		return false;
 	}
+	
+	/**
+	 * Clean up and close database.
+	 */
+	@Override
+	public void onDestroy() {
+		if (this.myDb != null) {
+			this.myDb.close();
+			this.myDb = null;
+		}
+	}
 
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
 
+	/**
+	 * Set the application package for the database.  Each application saves its 
+	 * database files in a directory with the application package as part of the file name.
+	 * 
+	 * For example, application "com.phonegap.demo.Demo" would save its database
+	 * files in "/data/data/com.phonegap.demo/databases/" directory.
+	 * 
+	 * @param appPackage			The application package.
+	 */
 	public void setStorage(String appPackage) {
-		path = "/data/data/" + appPackage + "/databases/";
+		this.path = "/data/data/" + appPackage + "/databases/";
 	}
 	
+	/**
+	 * Open database.
+	 * 
+	 * @param db					The name of the database
+	 * @param version				The version
+	 * @param display_name			The display name
+	 * @param size					The size in bytes
+	 */
 	public void openDatabase(String db, String version, String display_name, long size)	{
-		if (path != null) {
-			path += db + ".db";
-			myDb = SQLiteDatabase.openOrCreateDatabase(path, null);
+		
+		// If database is open, then close it
+		if (this.myDb != null) {
+			this.myDb.close();
 		}
+
+		// If no database path, generate from application package
+		if (this.path == null) {
+	        Package pack = this.ctx.getClass().getPackage();
+	        String appPackage = pack.getName();
+	        this.setStorage(appPackage);
+		}
+	        
+		this.dbName = this.path + db + ".db";
+		this.myDb = SQLiteDatabase.openOrCreateDatabase(this.dbName, null);
 	}
 	
+	/**
+	 * Execute SQL statement.
+	 * 
+	 * @param query				The SQL query
+	 * @param params			Parameters for the query
+	 * @param tx_id				Transaction id
+	 */
 	public void executeSql(String query, String[] params, String tx_id) {
 		try {
-			txid = tx_id;
-			Cursor myCursor = myDb.rawQuery(query, params);
-			processResults(myCursor);
-		} catch (SQLiteException ex) {
-			Log.d(LOG_TAG, ex.getMessage());
-			txid = "";
-			this.sendJavascript("droiddb.fail(" + ex.getMessage() + "," + txid + ");");
+			Cursor myCursor = this.myDb.rawQuery(query, params);
+			this.processResults(myCursor, tx_id);
+			myCursor.close();
+		} 
+		catch (SQLiteException ex) {
+			ex.printStackTrace();
+			System.out.println("Storage.executeSql(): Error=" +  ex.getMessage());
+			
+			// Send error message back to JavaScript
+			this.sendJavascript("droiddb.fail('" + ex.getMessage() + "','" + tx_id + "');");
 		}
 	}
 	
-	public void processResults(Cursor cur) {
-		String key = "";
-		String value = "";
-		String resultString = "";
+	/**
+	 * Process query results.
+	 * 
+	 * @param cur				Cursor into query results
+	 * @param tx_id				Transaction id
+	 */
+	public void processResults(Cursor cur, String tx_id) {
+		
+		// If query result has rows
 		if (cur.moveToFirst()) {
+			String key = "";
+			String value = "";
 			int colCount = cur.getColumnCount();
+			
+			// Build up JSON result object for each row
 			do {
-				resultString = "{";
-				for (int i = 0; i < colCount; ++i) {
-					key = cur.getColumnName(i);
-					value = cur.getString(i);
-					resultString += " \"" + key + "\" : \"" + value + "\"";
-					if (i != (colCount - 1)) {
-						resultString += ",";
+				JSONObject result = new JSONObject();
+				try {
+					for (int i = 0; i < colCount; ++i) {
+						key = cur.getColumnName(i);
+						value = cur.getString(i).replace("\"", "\\\""); // must escape " with \" for JavaScript
+						result.put(key, value);
 					}
+
+					// Send row back to JavaScript
+					this.sendJavascript("droiddb.addResult('" + result.toString() + "','" + tx_id + "');");
+					
+				} catch (JSONException e) {
+					e.printStackTrace();
 				}
-				resultString += "}";
-				this.sendJavascript("droiddb.addResult('" + resultString + "', " + txid + ");");
-			 } while (cur.moveToNext());
-			 this.sendJavascript("droiddb.completeQuery(" + txid + ");");
-			 txid = "";
-			 myDb.close();
-		 }
+				
+			} while (cur.moveToNext());
+			
+		}
+		// Let JavaScript know that there are no more rows
+		this.sendJavascript("droiddb.completeQuery('" + tx_id + "');");
+		
 	}
 		
 }

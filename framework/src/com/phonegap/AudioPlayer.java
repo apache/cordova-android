@@ -182,6 +182,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 				if (this.isStreaming(file)) {
 					this.mPlayer.setDataSource(file);
 					this.mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  
+					this.setState(MEDIA_STARTING);
+					this.mPlayer.setOnPreparedListener(this);		
 					this.mPlayer.prepareAsync();
 				}
 				
@@ -195,13 +197,13 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 					else {
 						this.mPlayer.setDataSource("/sdcard/" + file);
 					}
+					this.setState(MEDIA_STARTING);
+					this.mPlayer.setOnPreparedListener(this);		
 					this.mPlayer.prepare();
 
 					// Get duration
 					this.duration = this.mPlayer.getDuration();
 				}
-				this.mPlayer.setOnPreparedListener(this);		
-				this.setState(MEDIA_STARTING);
 			} 
 			catch (Exception e) { 
 				e.printStackTrace(); 
