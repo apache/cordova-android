@@ -1,3 +1,10 @@
+/*
+ * PhoneGap is available under *either* the terms of the modified BSD license *or* the
+ * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
+ * 
+ * Copyright (c) 2005-2010, Nitobi Software Inc.
+ * Copyright (c) 2010, IBM Corporation
+ */
 package com.phonegap;
 
 import java.io.BufferedReader;
@@ -21,6 +28,8 @@ import java.util.LinkedList;
  * 5. The client receives this XHR response, processes it.
  * 6. The client sends a new async XHR request.
  *
+ * The CallbackServer class requires the following permission in Android manifest file
+ * 		<uses-permission android:name="android.permission.INTERNET" />
  */
 public class CallbackServer implements Runnable {
 	
