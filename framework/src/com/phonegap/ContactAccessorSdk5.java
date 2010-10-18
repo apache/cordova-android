@@ -51,6 +51,9 @@ import android.webkit.WebView;
  */
 public class ContactAccessorSdk5 extends ContactAccessor {
 	
+	/**
+	 * A static map that converts the JavaScript property name to Android database column name.
+	 */
     private static final Map<String, String> dbMap = new HashMap<String, String>();
     static {
     	dbMap.put("id", ContactsContract.Contacts._ID);
@@ -102,11 +105,21 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     	//dbMap.put("connected", null);
     }
 
+    /**
+     * Create an contact accessor.
+     */
     public ContactAccessorSdk5(WebView view, Activity app) {
 		mApp = app;
 		mView = view;
 	}
 	
+	/** 
+	 * This method takes the fields required and search options in order to produce an 
+	 * array of contacts that matches the criteria provided.
+	 * @param fields an array of items to be used as search criteria
+	 * @param options that can be applied to contact searching
+	 * @return an array of contacts 
+	 */
 	@Override
 	public JSONArray search(JSONArray fields, JSONObject options) {
 		long totalEnd;
@@ -271,6 +284,18 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return contacts;
 	}
 
+	/**
+	 * Create a new contact using a JSONObject to hold all the data. 
+	 * @param contact 
+	 * @param organizations array of organizations
+	 * @param addresses array of addresses
+	 * @param phones array of phones
+	 * @param emails array of emails
+	 * @param ims array of instant messenger addresses
+	 * @param websites array of websites
+	 * @param relationships array of relationships
+	 * @return
+	 */
 	private JSONObject populateContact(JSONObject contact, JSONArray organizations,
 			JSONArray addresses, JSONArray phones, JSONArray emails,
 			JSONArray ims, JSONArray websites, JSONArray relationships) {
@@ -289,7 +314,13 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return contact;
 	}
 
-	private WhereOptions buildWhereClause(JSONArray filter, String searchTerm) {
+	/**
+	 * Take the search criteria passed into the method and create a SQL WHERE clause.
+	 * @param fields the properties to search against
+	 * @param searchTerm the string to search for
+	 * @return an object containing the selection and selection args
+	 */
+	private WhereOptions buildWhereClause(JSONArray fields, String searchTerm) {
 
 		ArrayList<String> where = new ArrayList<String>();
 		ArrayList<String> whereArgs = new ArrayList<String>();
@@ -307,8 +338,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		
 		String key;
 		try {
-			for (int i=0; i<filter.length(); i++) {
-				key = filter.getString(i);
+			for (int i=0; i<fields.length(); i++) {
+				key = fields.getString(i);
 
 				if (key.startsWith("displayName")) {
 					where.add("(" + dbMap.get(key) + " LIKE ? )");
@@ -410,6 +441,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return options;
 	}
 
+	/**
+	 * Create a ContactOrganization JSONObject
+	 * @param cursor the current database row
+	 * @return a JSONObject representing a ContactOrganization
+	 */
 	private JSONObject organizationQuery(Cursor cursor) {
 		JSONObject organization = new JSONObject();
 		try {
@@ -428,6 +464,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return organization;
 	}
 
+	/**
+	 * Create a ContactAddress JSONObject
+	 * @param cursor the current database row
+	 * @return a JSONObject representing a ContactAddress
+	 */
 	private JSONObject addressQuery(Cursor cursor) {
 		JSONObject address = new JSONObject();
 		try {
@@ -443,6 +484,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return address;
 	}
 
+	/**
+	 * Create a ContactName JSONObject
+	 * @param cursor the current database row
+	 * @return a JSONObject representing a ContactName
+	 */
 	private JSONObject nameQuery(Cursor cursor) {
 		JSONObject contactName = new JSONObject();
 		try {
@@ -472,6 +518,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return contactName;
 	}
 
+	/**
+	 * Create a ContactField JSONObject
+	 * @param cursor the current database row
+	 * @return a JSONObject representing a ContactField
+	 */
 	private JSONObject phoneQuery(Cursor cursor) {
 		JSONObject phoneNumber = new JSONObject();
 		try {
@@ -487,6 +538,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return phoneNumber;
 	}
 
+	/**
+	 * Create a ContactField JSONObject
+	 * @param cursor the current database row
+	 * @return a JSONObject representing a ContactField
+	 */
 	private JSONObject emailQuery(Cursor cursor) {
 		JSONObject email = new JSONObject();
 		try {
@@ -499,6 +555,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return email;
 	}
 
+	/**
+	 * Create a ContactField JSONObject
+	 * @param cursor the current database row
+	 * @return a JSONObject representing a ContactField
+	 */
 	private JSONObject imQuery(Cursor cursor) {
 		JSONObject im = new JSONObject();
 		try {
@@ -511,6 +572,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return im;
 	}	
 
+	/**
+	 * Create a ContactField JSONObject
+	 * @param cursor the current database row
+	 * @return a JSONObject representing a ContactField
+	 */
 	private JSONObject websiteQuery(Cursor cursor) {
 		JSONObject website = new JSONObject();
 		try {
@@ -523,6 +589,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return website;
 	}	
 
+	/**
+	 * Create a ContactField JSONObject
+	 * @param cursor the current database row
+	 * @return a JSONObject representing a ContactField
+	 */
 	private JSONObject relationshipQuery(Cursor cursor) {
 		JSONObject relationship = new JSONObject();
 		try {
@@ -541,6 +612,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	@Override
+	/** 
+	 * This method will remove a Contact from the database based on ID.
+	 * @param id the unique ID of the contact to remove
+	 */
 	public boolean remove(String id) {
     	int result = mApp.getContentResolver().delete(ContactsContract.Data.CONTENT_URI, 
     			ContactsContract.Data.CONTACT_ID + " = ?", 

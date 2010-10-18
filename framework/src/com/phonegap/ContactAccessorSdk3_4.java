@@ -55,6 +55,9 @@ import android.webkit.WebView;
  */
 @SuppressWarnings("deprecation")
 public class ContactAccessorSdk3_4 extends ContactAccessor {
+	/**
+	 * A static map that converts the JavaScript property name to Android database column name.
+	 */
     private static final Map<String, String> dbMap = new HashMap<String, String>();
     static {
     	dbMap.put("id", People._ID);
@@ -73,6 +76,9 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
     	dbMap.put("note", People.NOTES);
     }
 	
+    /**
+     * Create an contact accessor.
+     */
 	public ContactAccessorSdk3_4(WebView view, Activity app)
 	{
 		mApp = app;
@@ -80,7 +86,14 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	}
 	
 	@Override
-	public JSONArray search(JSONArray filter, JSONObject options) {
+	/** 
+	 * This method takes the fields required and search options in order to produce an 
+	 * array of contacts that matches the criteria provided.
+	 * @param fields an array of items to be used as search criteria
+	 * @param options that can be applied to contact searching
+	 * @return an array of contacts 
+	 */
+	public JSONArray search(JSONArray fields, JSONObject options) {
 		String searchTerm = "";
 		int limit = 1;
 		boolean multiple = false;
@@ -102,8 +115,8 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		
     	ContentResolver cr = mApp.getContentResolver();
     	
-    	Set<String> contactIds = buildSetOfContactIds(filter, searchTerm);
-		HashMap<String,Boolean> populate = buildPopulationSet(filter);
+    	Set<String> contactIds = buildSetOfContactIds(fields, searchTerm);
+		HashMap<String,Boolean> populate = buildPopulationSet(fields);
 
     	Iterator<String> it = contactIds.iterator();
     		
@@ -162,13 +175,20 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
     	return contacts;
 	}
 	
-	private Set<String> buildSetOfContactIds(JSONArray filter, String searchTerm) {
+	/**
+	 * Query the database using the search term to build up a list of contact ID's 
+	 * matching the search term
+	 * @param fields
+	 * @param searchTerm
+	 * @return a set of contact ID's
+	 */
+	private Set<String> buildSetOfContactIds(JSONArray fields, String searchTerm) {
 		Set<String> contactIds = new HashSet<String>();	
 		
 		String key;
 		try {
-			for (int i=0; i<filter.length(); i++) {
-				key = filter.getString(i);
+			for (int i=0; i<fields.length(); i++) {
+				key = fields.getString(i);
 				if (key.startsWith("displayName")) {
 					doQuery(searchTerm, contactIds,
 							People.CONTENT_URI,
@@ -235,6 +255,15 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		return contactIds;
 	}
 
+	/**
+	 * A convenience method so we don't duplicate code in doQuery
+	 * @param searchTerm
+	 * @param contactIds
+	 * @param uri
+	 * @param projection
+	 * @param selection
+	 * @param selectionArgs
+	 */
 	private void doQuery(String searchTerm, Set<String> contactIds, 
 			Uri uri, String projection, String selection, String[] selectionArgs) {
 		ContentResolver cr = mApp.getContentResolver();
@@ -252,6 +281,12 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		cursor.close();
 	}
 	
+	/**
+	 * Create a ContactField JSONArray
+	 * @param cr database access object
+	 * @param contactId the ID to search the database for
+	 * @return a JSONArray representing a set of ContactFields
+	 */
 	private JSONArray imQuery(ContentResolver cr, String contactId) {
 		String imWhere = ContactMethods.PERSON_ID 
         	+ " = ? AND " + ContactMethods.KIND + " = ?"; 
@@ -277,6 +312,12 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		return null;
 	}
 
+	/**
+	 * Create a ContactOrganization JSONArray
+	 * @param cr database access object
+	 * @param contactId the ID to search the database for
+	 * @return a JSONArray representing a set of ContactOrganization
+	 */
 	private JSONArray organizationQuery(ContentResolver cr, String contactId) {
 		String orgWhere = ContactMethods.PERSON_ID + " = ?"; 
 		String[] orgWhereParams = new String[]{contactId}; 
@@ -302,6 +343,12 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		return organizations;
 	}
 	
+	/**
+	 * Create a ContactAddress JSONArray
+	 * @param cr database access object
+	 * @param contactId the ID to search the database for
+	 * @return a JSONArray representing a set of ContactAddress
+	 */
 	private JSONArray addressQuery(ContentResolver cr, String contactId) {
 		String addrWhere = ContactMethods.PERSON_ID 
 			+ " = ? AND " + ContactMethods.KIND + " = ?"; 
@@ -323,6 +370,12 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		return addresses;
 	}
 	
+	/**
+	 * Create a ContactField JSONArray
+	 * @param cr database access object
+	 * @param contactId the ID to search the database for
+	 * @return a JSONArray representing a set of ContactFields
+	 */
 	private JSONArray phoneQuery(ContentResolver cr, String contactId) {
 		Cursor cursor = cr.query(
 				Phones.CONTENT_URI, 
@@ -345,6 +398,12 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		return phones;
 	}
 	
+	/**
+	 * Create a ContactField JSONArray
+	 * @param cr database access object
+	 * @param contactId the ID to search the database for
+	 * @return a JSONArray representing a set of ContactFields
+	 */
 	private JSONArray emailQuery(ContentResolver cr, String contactId) {
 		Cursor cursor = cr.query(
 				ContactMethods.CONTENT_EMAIL_URI, 
@@ -375,6 +434,10 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	}
 
 	@Override
+	/** 
+	 * This method will remove a Contact from the database based on ID.
+	 * @param id the unique ID of the contact to remove
+	 */
 	public boolean remove(String id) {
     	int result = mApp.getContentResolver().delete(People.CONTENT_URI, 
     			"people._id = ?", 
