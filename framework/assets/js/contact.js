@@ -190,7 +190,7 @@ var Contacts = function() {
 * @return array of Contacts matching search criteria
 */
 Contacts.prototype.find = function(fields, successCB, errorCB, options) {
-    PhoneGap.execAsync(win, fail, "Contacts", "search", [fields, options]);
+    PhoneGap.execAsync(successCB, errorCB, "Contacts", "search", [fields, options]);
 };
 
 /**
