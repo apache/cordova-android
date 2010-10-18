@@ -95,7 +95,12 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
  */
 Camera.prototype.success = function(picture) {
     if (this.successCallback) {
-        this.successCallback(picture);
+        try {
+            this.successCallback(picture);
+        }
+        catch (e) {
+            console.log("Camera error calling user's success callback: " + e);
+        }
     }
 };
 
@@ -107,7 +112,12 @@ Camera.prototype.success = function(picture) {
  */
 Camera.prototype.error = function(err) {
     if (this.errorCallback) {
-        this.errorCallback(err);
+        try {
+            this.errorCallback(err);
+        }
+        catch (e) {
+            console.log("Camera error calling user's error callback: " + e);
+        }
     }
 };
 
