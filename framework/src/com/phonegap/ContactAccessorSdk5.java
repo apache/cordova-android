@@ -114,8 +114,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
 		// Get the find options
 		String searchTerm = "";
-		int limit = Integer.MAX_VALUE;
-		boolean multiple = true;
+		int limit = 1;
+		boolean multiple = false;
 		try {
 			searchTerm = options.getString("filter");
 			if (searchTerm.length()==0) {

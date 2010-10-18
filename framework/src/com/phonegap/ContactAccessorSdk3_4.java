@@ -82,8 +82,8 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	@Override
 	public JSONArray search(JSONArray filter, JSONObject options) {
 		String searchTerm = "";
-		int limit = Integer.MAX_VALUE;
-		boolean multiple = true;
+		int limit = 1;
+		boolean multiple = false;
 		try {
 			searchTerm = options.getString("filter");
 			if (searchTerm.length()==0) {

@@ -111,8 +111,8 @@ Contacts.prototype.create = function(properties) {
 
 var ContactFindOptions = function(filter, multiple, limit, updatedSince) {
     this.filter = filter || '';
-    this.multiple = multiple || true;
-    this.limit = limit || Number.MAX_VALUE;
+    this.multiple = multiple || false;
+    this.limit = limit || 1;
     this.updatedSince = updatedSince || '';
 };
 
