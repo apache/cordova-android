@@ -13,12 +13,12 @@ var Crypto = function() {
 
 Crypto.prototype.encrypt = function(seed, string, callback) {
     this.encryptWin = callback;
-    PhoneGap.execAsync(null, null, "Crypto", "encrypt", [seed, string]);
+    PhoneGap.exec(null, null, "Crypto", "encrypt", [seed, string]);
 };
 
 Crypto.prototype.decrypt = function(seed, string, callback) {
     this.decryptWin = callback;
-    PhoneGap.execAsync(null, null, "Crypto", "decrypt", [seed, string]);
+    PhoneGap.exec(null, null, "Crypto", "decrypt", [seed, string]);
 };
 
 Crypto.prototype.gotCryptedString = function(string) {

@@ -377,35 +377,6 @@ PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
 
 /**
- * Execute a PhoneGap command in a queued fashion, to ensure commands do not
- * execute with any race conditions, and only run when PhoneGap is ready to
- * recieve them.
- * @param {String} command Command to be run in PhoneGap, e.g. "ClassName.method"
- * @param {String[]} [args] Zero or more arguments to pass to the method
- */
-// TODO: Not used anymore, should be removed.
-PhoneGap.exec = function(clazz, action, args) {
-    try {
-        var callbackId = 0;
-        var r = PluginManager.exec(clazz, action, callbackId, this.stringify(args), false);
-        eval("var v="+r+";");
-        
-        // If status is OK, then return value back to caller
-        if (v.status == 0) {
-            return v.message;
-        }
-
-        // If error, then display error
-        else {
-            console.log("Error: Status="+r.status+" Message="+v.message);
-            return null;
-        }
-    } catch (e) {
-        console.log("Error: "+e);
-    }
-};
-
-/**
  * Execute a PhoneGap command.  It is up to the native side whether this action is synch or async.  
  * The native side can return:
  *      Synchronous: PluginResult object as a JSON string

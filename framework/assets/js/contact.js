@@ -66,13 +66,13 @@ var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, ad
 * @param errorCB error callback
 */
 Contact.prototype.remove = function(successCB, errorCB) {
-	if (this.id == null) {
-		var errorObj = new ContactError();
-		errorObj.code = ContactError.NOT_FOUND_ERROR;
-		errorCB(errorObj);
-	}
-	
-    PhoneGap.execAsync(successCB, errorCB, "Contacts", "remove", [this.id]);	
+    if (this.id == null) {
+        var errorObj = new ContactError();
+        errorObj.code = ContactError.NOT_FOUND_ERROR;
+        errorCB(errorObj);
+    }
+
+    PhoneGap.exec(successCB, errorCB, "Contacts", "remove", [this.id]);
 };
 
 /**
@@ -81,8 +81,8 @@ Contact.prototype.remove = function(successCB, errorCB) {
 * @return copy of this Contact
 */
 Contact.prototype.clone = function() {
-	var clonedContact = PhoneGap.clone(this);
-	clonedContact.id = null;
+    var clonedContact = PhoneGap.clone(this);
+    clonedContact.id = null;
     return clonedContact;
 };
 
@@ -183,14 +183,14 @@ var Contacts = function() {
 }
 /**
 * Returns an array of Contacts matching the search criteria.
-* @param fields that should be searched 
+* @param fields that should be searched
 * @param successCB success callback
 * @param errorCB error callback
 * @param {ContactFindOptions} options that can be applied to contact searching
 * @return array of Contacts matching search criteria
 */
 Contacts.prototype.find = function(fields, successCB, errorCB, options) {
-    PhoneGap.execAsync(successCB, errorCB, "Contacts", "search", [fields, options]);
+    PhoneGap.exec(successCB, errorCB, "Contacts", "search", [fields, options]);
 };
 
 /**
@@ -201,13 +201,13 @@ Contacts.prototype.find = function(fields, successCB, errorCB, options) {
 * @returns new Contact object
 */
 Contacts.prototype.create = function(properties) {
-	var contact = new Contact();
-	for (i in properties) {
-		if (contact[i]!='undefined') {
-			contact[i]=properties[i];
-		}
-	}
-	return contact;
+    var contact = new Contact();
+    for (i in properties) {
+        if (contact[i]!='undefined') {
+            contact[i]=properties[i];
+        }
+    }
+    return contact;
 };
 
 /**
@@ -232,7 +232,7 @@ var ContactError = function() {
     this.code=null;
 };
 
-/** 
+/**
  * Error codes
  */
 ContactError.UNKNOWN_ERROR = 0;

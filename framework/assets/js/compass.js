@@ -46,7 +46,7 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
     }
 
     // Get heading
-    PhoneGap.execAsync(successCallback, errorCallback, "Compass", "getHeading", []);
+    PhoneGap.exec(successCallback, errorCallback, "Compass", "getHeading", []);
 };
 
 /**
@@ -75,10 +75,10 @@ Compass.prototype.watchHeading= function(successCallback, errorCallback, options
     }
 
     // Make sure compass timeout > frequency + 10 sec
-    PhoneGap.execAsync(
+    PhoneGap.exec(
         function(timeout) {
             if (timeout < (frequency + 10000)) {
-                PhoneGap.execAsync(null, null, "Compass", "setTimeout", [frequency + 10000]);
+                PhoneGap.exec(null, null, "Compass", "setTimeout", [frequency + 10000]);
             }
         },
         function(e) { }, "Compass", "getTimeout", []);
@@ -87,7 +87,7 @@ Compass.prototype.watchHeading= function(successCallback, errorCallback, options
     var id = PhoneGap.createUUID();
     navigator.compass.timers[id] = setInterval(
         function() {
-            PhoneGap.execAsync(successCallback, errorCallback, "Compass", "getHeading", []);
+            PhoneGap.exec(successCallback, errorCallback, "Compass", "getHeading", []);
         }, (frequency ? frequency : 1));
 
     return id;

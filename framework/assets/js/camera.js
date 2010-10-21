@@ -85,7 +85,7 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     if (typeof this.options.sourceType == "number") {
         sourceType = this.options.sourceType;
     }
-    PhoneGap.execAsync(null, null, "Camera", "takePicture", [quality, destinationType, sourceType]);
+    PhoneGap.exec(null, null, "Camera", "takePicture", [quality, destinationType, sourceType]);
 };
 
 /**

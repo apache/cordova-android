@@ -68,43 +68,43 @@ FileMgr.prototype.getFileBasePaths = function() {
 };
 
 FileMgr.prototype.testSaveLocationExists = function(successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "testSaveLocationExists", []);
+    PhoneGap.exec(successCallback, errorCallback, "File", "testSaveLocationExists", []);
 };
 
 FileMgr.prototype.testFileExists = function(fileName, successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "testFileExists", [fileName]);
+    PhoneGap.exec(successCallback, errorCallback, "File", "testFileExists", [fileName]);
 };
 
 FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "testDirectoryExists", [dirName]);
+    PhoneGap.exec(successCallback, errorCallback, "File", "testDirectoryExists", [dirName]);
 };
 
 FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "createDirectory", [dirName]);
+    PhoneGap.exec(successCallback, errorCallback, "File", "createDirectory", [dirName]);
 };
 
 FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "deleteDirectory", [dirName]);
+    PhoneGap.exec(successCallback, errorCallback, "File", "deleteDirectory", [dirName]);
 };
 
 FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "deleteFile", [fileName]);
+    PhoneGap.exec(successCallback, errorCallback, "File", "deleteFile", [fileName]);
 };
 
 FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "getFreeDiskSpace", []);
+    PhoneGap.exec(successCallback, errorCallback, "File", "getFreeDiskSpace", []);
 };
 
 FileMgr.prototype.writeAsText = function(fileName, data, append, successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "writeAsText", [fileName, data, append]);
+    PhoneGap.exec(successCallback, errorCallback, "File", "writeAsText", [fileName, data, append]);
 };
 
 FileMgr.prototype.readAsText = function(fileName, encoding, successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "readAsText", [fileName, encoding]);
+    PhoneGap.exec(successCallback, errorCallback, "File", "readAsText", [fileName, encoding]);
 };
 
 FileMgr.prototype.readAsDataURL = function(fileName, successCallback, errorCallback) {
-    PhoneGap.execAsync(successCallback, errorCallback, "File", "readAsDataURL", [fileName]);
+    PhoneGap.exec(successCallback, errorCallback, "File", "readAsDataURL", [fileName]);
 };
 
 PhoneGap.addConstructor(function() {

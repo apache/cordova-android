@@ -57,7 +57,7 @@ Device.prototype.getInfo = function(successCallback, errorCallback) {
     }
 
     // Get info
-    PhoneGap.execAsync(successCallback, errorCallback, "Device", "getDeviceInfo", []);
+    PhoneGap.exec(successCallback, errorCallback, "Device", "getDeviceInfo", []);
 };
 
 /*

@@ -263,7 +263,7 @@ DroidDB_Tx.prototype.executeSql = function(sql, params, successCallback, errorCa
     query.errorCallback = errorCallback;
 
     // Call native code
-    PhoneGap.execAsync(null, null, "Storage", "executeSql", [sql, params, query.id]);
+    PhoneGap.exec(null, null, "Storage", "executeSql", [sql, params, query.id]);
 };
 
 /**
@@ -303,7 +303,7 @@ DroidDB_Rows.prototype.item = function(row) {
  * @return                  Database object
  */
 DroidDB_openDatabase = function(name, version, display_name, size) {
-    PhoneGap.execAsync(null, null, "Storage", "openDatabase", [name, version, display_name, size]);
+    PhoneGap.exec(null, null, "Storage", "openDatabase", [name, version, display_name, size]);
     var db = new DatabaseShell();
     return db;
 };
