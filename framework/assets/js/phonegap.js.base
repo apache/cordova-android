@@ -390,7 +390,7 @@ PhoneGap.callbacks = {};
  * @param {String} action       Action to be run in PhoneGap
  * @param {String[]} [args]     Zero or more arguments to pass to the method
  */
-PhoneGap.execAsync = function(success, fail, service, action, args) {
+PhoneGap.exec = function(success, fail, service, action, args) {
     try {
         var callbackId = service + PhoneGap.callbackId++;
         if (success || fail) {
