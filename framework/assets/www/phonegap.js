@@ -2199,11 +2199,6 @@ PositionError.UNKNOWN_ERROR = 0;
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
 PositionError.TIMEOUT = 3;
-PhoneGap.addConstructor(function() {
-    if (typeof navigator.splashScreen == "undefined") {
-    	navigator.splashScreen = SplashScreen;  // SplashScreen object come from native side through addJavaScriptInterface
-    }
-});
 /*
  * This is purely for the Android 1.5/1.6 HTML 5 Storage
  * I was hoping that Android 2.0 would deprecate this, but given the fact that

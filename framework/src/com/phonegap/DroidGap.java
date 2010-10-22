@@ -63,7 +63,6 @@ public class DroidGap extends Activity {
     private static final String LOG_TAG = "DroidGap";
 
     protected WebView appView;					// The webview for our app
-	protected ImageView splashScreen;
 	protected Boolean loadInWebView = false;
     private LinearLayout root;
 
@@ -95,17 +94,10 @@ public class DroidGap extends Activity {
         root.setBackgroundColor(Color.BLACK);
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
         		ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
-
-        /*
-        splashScreen = new ImageView(this);
-        splashScreen.setLayoutParams(new LinearLayout.LayoutParams(
-        		ViewGroup.LayoutParams.FILL_PARENT,
-        		ViewGroup.LayoutParams.FILL_PARENT, 
-        		1.0F));
-        splashScreen.setImageResource(R.drawable.splash);
-      
-        root.addView(splashScreen);
- 		*/
+        // Uncomment if you want to enable a splashscreen
+        // Make sure R.drawable.splash exists
+        // appView.setBackgroundColor(0);
+        // appView.setBackgroundResource(R.drawable.splash);
 
         initWebView();
         root.addView(this.appView);
@@ -464,8 +456,6 @@ public class DroidGap extends Activity {
      */
     public class GapViewClient extends WebViewClient {
 
-    	// TODO: hide splash screen here
-
         DroidGap ctx;
 
         /**
@@ -614,14 +604,6 @@ public class DroidGap extends Activity {
         return false;
     }
 	
-    /**
-     * Removes the splash screen from root view and adds the WebView
-     */
-    public void hideSplashScreen() {
-    	root.removeView(splashScreen);
-    	root.addView(this.appView);
-    }
-    
     /**
      * Any calls to Activity.startActivityForResult must use method below, so 
      * the result can be routed to them correctly.  
