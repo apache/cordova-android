@@ -18,7 +18,6 @@ import android.content.DialogInterface;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Looper;
 import android.os.Vibrator;
 
 /**
@@ -56,14 +55,12 @@ public class Notification extends Plugin {
 				this.vibrate(args.getLong(0));
 			}
 			else if (action.equals("alert")) {
-				Looper.prepare();
 				this.alert(args.getString(0),args.getString(1),args.getString(2), callbackId);
-				Looper.loop();
+				return new PluginResult(PluginResult.Status.RESULT_TO_BE_SENT);
 			}
 			else if (action.equals("confirm")) {
-				Looper.prepare();
 				this.confirm(args.getString(0),args.getString(1),args.getString(2), callbackId);
-				Looper.loop();
+				return new PluginResult(PluginResult.Status.RESULT_TO_BE_SENT);
 			}
 			else if (action.equals("activityStart")) {
 				this.activityStart(args.getString(0),args.getString(1));
@@ -94,10 +91,10 @@ public class Notification extends Plugin {
 	 */
 	public boolean isSynch(String action) {
 		if (action.equals("alert")) {
-			return false;
+			return true;
 		}
 		else if (action.equals("confirm")) {
-			return false;
+			return true;
 		}
 		else if (action.equals("activityStart")) {
 			return true;
@@ -169,23 +166,30 @@ public class Notification extends Plugin {
 	 * @param buttonLabel 	The label of the button 
 	 * @param callbackId	The callback id
 	 */
-	public synchronized void alert(String message,String title,String buttonLabel, String callbackId) {
+	public synchronized void alert(final String message, final String title, final String buttonLabel, final String callbackId) {
+
+		final DroidGap ctx = this.ctx;
 		final Notification notification = this;
-		final String fCallbackId = callbackId;
 		
-		AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
-        dlg.setMessage(message);
-        dlg.setTitle(title);
-        dlg.setCancelable(false);
-        dlg.setPositiveButton(buttonLabel,
-        	new AlertDialog.OnClickListener() {
-            	public void onClick(DialogInterface dialog, int which) {
-            		dialog.dismiss();
-					notification.success(new PluginResult(PluginResult.Status.OK, 0), fCallbackId);
-            	}
-        	});
-        dlg.create();
-        dlg.show();
+		Runnable runnable = new Runnable() {
+			public void run() {
+		
+				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
+				dlg.setMessage(message);
+				dlg.setTitle(title);
+				dlg.setCancelable(false);
+				dlg.setPositiveButton(buttonLabel,
+						new AlertDialog.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+						notification.success(new PluginResult(PluginResult.Status.OK, 0), callbackId);
+					}
+				});
+				dlg.create();
+				dlg.show();
+			};
+		};
+		this.ctx.runOnUiThread(runnable);
 	}
 
 	/**
@@ -198,54 +202,58 @@ public class Notification extends Plugin {
 	 * @param buttonLabels 	A comma separated list of button labels (Up to 3 buttons)
 	 * @param callbackId	The callback id
 	 */
-	public synchronized void confirm(final String message, final String title, String buttonLabels, String callbackId) {
+	public synchronized void confirm(final String message, final String title, String buttonLabels, final String callbackId) {
 
 		final DroidGap ctx = this.ctx;
 		final Notification notification = this;
 		final String[] fButtons = buttonLabels.split(",");
-		final String fCallbackId = callbackId;
-		
-		AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
-		dlg.setMessage(message);
-		dlg.setTitle(title);
-		dlg.setCancelable(false);
 
-		// First button
-		if (fButtons.length > 0) {
-			dlg.setPositiveButton(fButtons[0],
-					new AlertDialog.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.dismiss();
-					notification.success(new PluginResult(PluginResult.Status.OK, 1), fCallbackId);
+		Runnable runnable = new Runnable() {
+			public void run() {
+				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
+				dlg.setMessage(message);
+				dlg.setTitle(title);
+				dlg.setCancelable(false);
+
+				// First button
+				if (fButtons.length > 0) {
+					dlg.setPositiveButton(fButtons[0],
+							new AlertDialog.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							notification.success(new PluginResult(PluginResult.Status.OK, 1), callbackId);
+						}
+					});
 				}
-			});
-		}
 
-		// Second button
-		if (fButtons.length > 1) {
-			dlg.setNeutralButton(fButtons[1], 
-					new AlertDialog.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.dismiss();
-					notification.success(new PluginResult(PluginResult.Status.OK, 2), fCallbackId);
+				// Second button
+				if (fButtons.length > 1) {
+					dlg.setNeutralButton(fButtons[1], 
+							new AlertDialog.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							notification.success(new PluginResult(PluginResult.Status.OK, 2), callbackId);
+						}
+					});
 				}
-			});
-		}
 
-		// Third button
-		if (fButtons.length > 2) {
-			dlg.setNegativeButton(fButtons[2],
-					new AlertDialog.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.dismiss();
-					notification.success(new PluginResult(PluginResult.Status.OK, 3), fCallbackId);
+				// Third button
+				if (fButtons.length > 2) {
+					dlg.setNegativeButton(fButtons[2],
+							new AlertDialog.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							notification.success(new PluginResult(PluginResult.Status.OK, 3), callbackId);
+						}
+					}
+					);
 				}
-			}
-			);
-		}
 
-		dlg.create();
-		dlg.show();
+				dlg.create();
+				dlg.show();
+			};
+		};
+		this.ctx.runOnUiThread(runnable);
 	}
 
 	/**
