@@ -33,16 +33,17 @@ public class PluginResult {
 		this.status = status.ordinal();
 		this.message = message.toString();
 	}
-	
-	// TODO: BC: Added
+
 	public PluginResult(Status status, int i) {
 		this.status = status.ordinal();
 		this.message = ""+i;
 	}
+
 	public PluginResult(Status status, float f) {
 		this.status = status.ordinal();
 		this.message = ""+f;
 	}
+
 	public PluginResult(Status status, boolean b) {
 		this.status = status.ordinal();
 		this.message = ""+b;
@@ -55,9 +56,9 @@ public class PluginResult {
 	public String getMessage() {
 		return message;
 	}
-	
+		
 	public String getJSONString() {
-		return "{ status: " + this.getStatus() + ", message: " + this.getMessage() + " }";
+		return "{ status: " + this.getStatus() + ", message: '" + this.getMessage() + "' }";
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
@@ -77,7 +78,10 @@ public class PluginResult {
 		"IO error",
 		"Invalid action",
 		"JSON error",
-		"Error"
+		"Error",
+		"Result to be sent later",
+		"Next result",
+		"No more results"
 	};
 	
 	public enum Status {
@@ -89,6 +93,9 @@ public class PluginResult {
 		IO_EXCEPTION,
 		INVALID_ACTION,
 		JSON_EXCEPTION,
-		ERROR
+		ERROR,
+		RESULT_TO_BE_SENT,
+		NEXT_RESULT,
+		NO_MORE_RESULTS
 	}
 }

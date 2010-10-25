@@ -375,6 +375,21 @@ PhoneGap.clone = function(obj) {
 
 PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
+PhoneGap.callbackStatus = {
+    OK: 0,
+    CLASS_NOT_FOUND_EXCEPTION: 1,
+    ILLEGAL_ACCESS_EXCEPTION: 2,
+    INSTANTIATION_EXCEPTION: 3,
+    MALFORMED_URL_EXCEPTION: 4,
+    IO_EXCEPTION: 5,
+    INVALID_ACTION: 6,
+    JSON_EXCEPTION: 7,
+    ERROR: 8,
+    RESULT_TO_BE_SENT: 9,
+    NEXT_RESULT: 10,
+    NO_MORE_RESULTS: 11
+    };
+
 
 /**
  * Execute a PhoneGap command.  It is up to the native side whether this action is synch or async.  
@@ -405,23 +420,37 @@ PhoneGap.exec = function(success, fail, service, action, args) {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
-            if (v.status == 0) {
+            if ((v.status == PhoneGap.callbackStatus.OK) || (v.status == PhoneGap.callbackStatus.NEXT_RESULT)) {
 
                 // If there is a success callback, then call it now with returned value
                 if (success) {
-                    success(v.message);
-                    delete PhoneGap.callbacks[callbackId];
+                    try {
+                        success(v.message);
+                    }
+                    catch (e) {
+                        console.log("Error in success callback: "+callbackId+" = "+e);
+                    }
+
+                    // Clear callback if not expecting any more results
+                    if ((v.status == PhoneGap.callbackStatus.OK) || (v.status == PhoneGap.callbackStatus.NO_MORE_RESULTS)) {
+                        delete PhoneGap.callbacks[callbackId];
+                    }
                 }
                 return v.message;
             }
 
             // If error, then display error
-            else {
+            else if (v.status != PhoneGap.callbackStatus.RESULT_TO_BE_SENT) {
                 console.log("Error: Status="+r.status+" Message="+v.message);
 
                 // If there is a fail callback, then call it now with returned value
                 if (fail) {
-                    fail(v.message);
+                    try {
+                        fail(v.message);
+                    }
+                    catch (e) {
+                        console.log("Error in error callback: "+callbackId+" = "+e);
+                    }
                     delete PhoneGap.callbacks[callbackId];
                 }
                 return null;
@@ -440,15 +469,23 @@ PhoneGap.exec = function(success, fail, service, action, args) {
  */
 PhoneGap.callbackSuccess = function(callbackId, args) {
     if (PhoneGap.callbacks[callbackId]) {
-        try {
-            if (PhoneGap.callbacks[callbackId].success) {
-                PhoneGap.callbacks[callbackId].success(args.message);
+
+        // If result is to be sent to callback
+        if ((args.status == PhoneGap.callbackStatus.OK) || (args.status == PhoneGap.callbackStatus.NEXT_RESULT)) {
+            try {
+                if (PhoneGap.callbacks[callbackId].success) {
+                    PhoneGap.callbacks[callbackId].success(args.message);
+                }
+            }
+            catch (e) {
+                console.log("Error in success callback: "+callbackId+" = "+e);
             }
         }
-        catch (e) {
-            console.log("Error in success callback: "+callbackId+" = "+e);
+    
+        // Clear callback if not expecting any more results
+        if ((args.status == PhoneGap.callbackStatus.OK) || (args.status == PhoneGap.callbackStatus.NO_MORE_RESULTS)) {
+            delete PhoneGap.callbacks[callbackId];
         }
-        delete PhoneGap.callbacks[callbackId];
     }
 };
 
