@@ -18,6 +18,7 @@ import android.content.DialogInterface;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Looper;
 import android.os.Vibrator;
 
 /**
@@ -55,11 +56,14 @@ public class Notification extends Plugin {
 				this.vibrate(args.getLong(0));
 			}
 			else if (action.equals("alert")) {
-				this.alert(args.getString(0),args.getString(1),args.getString(2));
+				Looper.prepare();
+				this.alert(args.getString(0),args.getString(1),args.getString(2), callbackId);
+				Looper.loop();
 			}
 			else if (action.equals("confirm")) {
-				int i =	this.confirm(args.getString(0),args.getString(1),args.getString(2));
-				return new PluginResult(status, i);
+				Looper.prepare();
+				this.confirm(args.getString(0),args.getString(1),args.getString(2), callbackId);
+				Looper.loop();
 			}
 			else if (action.equals("activityStart")) {
 				this.activityStart(args.getString(0),args.getString(1));
@@ -90,10 +94,10 @@ public class Notification extends Plugin {
 	 */
 	public boolean isSynch(String action) {
 		if (action.equals("alert")) {
-			return true;
+			return false;
 		}
 		else if (action.equals("confirm")) {
-			return true;
+			return false;
 		}
 		else if (action.equals("activityStart")) {
 			return true;
@@ -160,11 +164,15 @@ public class Notification extends Plugin {
 	
 	/**
 	 * Builds and shows a native Android alert with given Strings
-	 * @param message The message the alert should display
-	 * @param title The title of the alert
-	 * @param buttonLabel The label of the button 
+	 * @param message 		The message the alert should display
+	 * @param title 		The title of the alert
+	 * @param buttonLabel 	The label of the button 
+	 * @param callbackId	The callback id
 	 */
-	public synchronized void alert(String message,String title,String buttonLabel){
+	public synchronized void alert(String message,String title,String buttonLabel, String callbackId) {
+		final Notification notification = this;
+		final String fCallbackId = callbackId;
+		
 		AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
         dlg.setMessage(message);
         dlg.setTitle(title);
@@ -173,6 +181,7 @@ public class Notification extends Plugin {
         	new AlertDialog.OnClickListener() {
             	public void onClick(DialogInterface dialog, int which) {
             		dialog.dismiss();
+					notification.success(new PluginResult(PluginResult.Status.OK, 0), fCallbackId);
             	}
         	});
         dlg.create();
@@ -182,83 +191,61 @@ public class Notification extends Plugin {
 	/**
 	 * Builds and shows a native Android confirm dialog with given title, message, buttons.
 	 * This dialog only shows up to 3 buttons.  Any labels after that will be ignored.
+	 * The index of the button pressed will be returned to the JavaScript callback identified by callbackId.
 	 * 
 	 * @param message 		The message the dialog should display
 	 * @param title 		The title of the dialog
 	 * @param buttonLabels 	A comma separated list of button labels (Up to 3 buttons)
-	 * @return  			The index of the button clicked (1,2 or 3)
+	 * @param callbackId	The callback id
 	 */
-	public synchronized int confirm(final String message, final String title, String buttonLabels) {
-			
-		// Create dialog on UI thread
+	public synchronized void confirm(final String message, final String title, String buttonLabels, String callbackId) {
+
 		final DroidGap ctx = this.ctx;
 		final Notification notification = this;
 		final String[] fButtons = buttonLabels.split(",");
-		Runnable runnable = new Runnable() {
-			public void run() {
-				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
-				dlg.setMessage(message);
-				dlg.setTitle(title);
-				dlg.setCancelable(false);
-				
-				// First button
-				if (fButtons.length > 0) {
-					dlg.setPositiveButton(fButtons[0],
-						new AlertDialog.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								synchronized(notification) {
-									notification.confirmResult = 1;
-									notification.notifyAll();
-								}
-							}
-						});
-				}
-				
-				// Second button
-				if (fButtons.length > 1) {
-					dlg.setNeutralButton(fButtons[1], 
-						new AlertDialog.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								synchronized(notification) {
-									notification.confirmResult = 2;
-									notification.notifyAll();
-								}
-							}
-						});
-				}
-				
-				// Third button
-				if (fButtons.length > 2) {
-					dlg.setNegativeButton(fButtons[2],
-						new AlertDialog.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								synchronized(notification) {
-									notification.confirmResult = 3;
-									notification.notifyAll();
-								}
-							}
-						}
-					);
-				}
-
-				dlg.create();
-				dlg.show();
-			}
-		};
-		this.ctx.runOnUiThread(runnable);
+		final String fCallbackId = callbackId;
 		
-		// Wait for dialog to close
-		synchronized(runnable) {
-			try {
-				this.wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
+		dlg.setMessage(message);
+		dlg.setTitle(title);
+		dlg.setCancelable(false);
+
+		// First button
+		if (fButtons.length > 0) {
+			dlg.setPositiveButton(fButtons[0],
+					new AlertDialog.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					notification.success(new PluginResult(PluginResult.Status.OK, 1), fCallbackId);
+				}
+			});
 		}
-        return this.confirmResult;        
+
+		// Second button
+		if (fButtons.length > 1) {
+			dlg.setNeutralButton(fButtons[1], 
+					new AlertDialog.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					notification.success(new PluginResult(PluginResult.Status.OK, 2), fCallbackId);
+				}
+			});
+		}
+
+		// Third button
+		if (fButtons.length > 2) {
+			dlg.setNegativeButton(fButtons[2],
+					new AlertDialog.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					notification.success(new PluginResult(PluginResult.Status.OK, 3), fCallbackId);
+				}
+			}
+			);
+		}
+
+		dlg.create();
+		dlg.show();
 	}
 
 	/**

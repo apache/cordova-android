@@ -15,28 +15,30 @@ function Notification() {
 /**
  * Open a native alert dialog, with a customizable title and button text.
  *
- * @param {String} message      Message to print in the body of the alert
- * @param {String} title        Title of the alert dialog (default: Alert)
- * @param {String} buttonLabel  Label of the close button (default: OK)
+ * @param {String} message              Message to print in the body of the alert
+ * @param {Function} completeCallback   The callback that is called when user clicks on a button.
+ * @param {String} title                Title of the alert dialog (default: Alert)
+ * @param {String} buttonLabel          Label of the close button (default: OK)
  */
-Notification.prototype.alert = function(message, title, buttonLabel) {
+Notification.prototype.alert = function(message, completeCallback, title, buttonLabel) {
     var _title = (title || "Alert");
     var _buttonLabel = (buttonLabel || "OK");
-    PhoneGap.exec(null, null, "Notification", "alert", [message,_title,_buttonLabel]);
+    PhoneGap.exec(completeCallback, null, "Notification", "alert", [message,_title,_buttonLabel]);
 };
 
 /**
  * Open a native confirm dialog, with a customizable title and button text.
+ * The result that the user selects is returned to the result callback.
  *
- * @param {String} message      Message to print in the body of the alert
- * @param {String} title        Title of the alert dialog (default: Confirm)
- * @param {String} buttonLabels Comma separated list of the labels of the buttons (default: 'OK,Cancel')
- * @return {Number}             The index of the button clicked
+ * @param {String} message              Message to print in the body of the alert
+ * @param {Function} resultCallback     The callback that is called when user clicks on a button.
+ * @param {String} title                Title of the alert dialog (default: Confirm)
+ * @param {String} buttonLabels         Comma separated list of the labels of the buttons (default: 'OK,Cancel')
  */
-Notification.prototype.confirm = function(message, title, buttonLabels) {
+Notification.prototype.confirm = function(message, resultCallback, title, buttonLabels) {
     var _title = (title || "Confirm");
     var _buttonLabels = (buttonLabels || "OK,Cancel");
-    return PhoneGap.exec(null, null, "Notification", "confirm", [message,_title,_buttonLabels]);
+    PhoneGap.exec(resultCallback, null, "Notification", "confirm", [message,_title,_buttonLabels]);
 };
 
 /**
