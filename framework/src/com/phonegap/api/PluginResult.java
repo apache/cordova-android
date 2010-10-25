@@ -16,7 +16,7 @@ public class PluginResult {
 	
 	public PluginResult(Status status) {
 		this.status = status.ordinal();
-		this.message = PluginResult.StatusMessages[this.status];
+		this.message = "'" + PluginResult.StatusMessages[this.status] + "'";
 	}
 	
 	public PluginResult(Status status, String message) {
@@ -58,7 +58,7 @@ public class PluginResult {
 	}
 		
 	public String getJSONString() {
-		return "{ status: " + this.getStatus() + ", message: '" + this.getMessage() + "' }";
+		return "{ status: " + this.getStatus() + ", message: " + this.getMessage() + " }";
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
