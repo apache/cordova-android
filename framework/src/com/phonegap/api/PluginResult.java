@@ -13,6 +13,7 @@ import org.json.JSONObject;
 public class PluginResult {
 	private final int status;
 	private final String message;
+	private boolean keepCallback = false;
 	
 	public PluginResult(Status status) {
 		this.status = status.ordinal();
@@ -49,6 +50,10 @@ public class PluginResult {
 		this.message = ""+b;
 	}
 	
+	public void setKeepCallback(boolean b) {
+		this.keepCallback = b;
+	}
+	
 	public int getStatus() {
 		return status;
 	}
@@ -56,9 +61,13 @@ public class PluginResult {
 	public String getMessage() {
 		return message;
 	}
-		
+	
+	public boolean getKeepCallback() {
+		return this.keepCallback;
+	}
+	
 	public String getJSONString() {
-		return "{ status: " + this.getStatus() + ", message: " + this.getMessage() + " }";
+		return "{status:" + this.status + ",message:" + this.message + ",keepCallback:" + this.keepCallback + "}";
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
@@ -70,6 +79,7 @@ public class PluginResult {
 	}
 	
 	public static String[] StatusMessages = new String[] {
+		"No result",
 		"OK",
 		"Class not found",
 		"Illegal access",
@@ -78,13 +88,11 @@ public class PluginResult {
 		"IO error",
 		"Invalid action",
 		"JSON error",
-		"Error",
-		"Result to be sent later",
-		"Next result",
-		"No more results"
+		"Error"
 	};
 	
 	public enum Status {
+		NO_RESULT,
 		OK,
 		CLASS_NOT_FOUND_EXCEPTION,
 		ILLEGAL_ACCESS_EXCEPTION,
@@ -93,9 +101,6 @@ public class PluginResult {
 		IO_EXCEPTION,
 		INVALID_ACTION,
 		JSON_EXCEPTION,
-		ERROR,
-		RESULT_TO_BE_SENT,
-		NEXT_RESULT,
-		NO_MORE_RESULTS
+		ERROR
 	}
 }

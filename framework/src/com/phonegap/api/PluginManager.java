@@ -88,18 +88,15 @@ public final class PluginManager {
 								// Call execute on the plugin so that it can do it's thing
 								PluginResult cr = plugin.execute(action, args, callbackId);
 								int status = cr.getStatus();
-								
-								// Check the success (OK, NEXT_RESULT, NO_MORE_RESULTS)
-								if ((status == PluginResult.Status.OK.ordinal()) ||
-									(status == PluginResult.Status.NEXT_RESULT.ordinal()) ||
-									(status == PluginResult.Status.NO_MORE_RESULTS.ordinal())
-									) {
+
+								// If no result to be sent and keeping callback, then no need to sent back to JavaScript
+								if ((status == PluginResult.Status.NO_RESULT.ordinal()) && cr.getKeepCallback()) {
+								}
+
+								// Check the success (OK, NO_RESULT & !KEEP_CALLBACK)
+								else if ((status == PluginResult.Status.OK.ordinal()) || (status == PluginResult.Status.NO_RESULT.ordinal())) {
 									ctx.sendJavascript(cr.toSuccessCallbackString(callbackId));
 								} 
-								
-								// If return result will be sent later, no need to sent back to JavaScript
-								else if (status == PluginResult.Status.RESULT_TO_BE_SENT.ordinal()) {
-								}
 								
 								// If error
 								else {
@@ -117,8 +114,8 @@ public final class PluginManager {
 					// Call execute on the plugin so that it can do it's thing
 					cr = plugin.execute(action, args, callbackId);
 
-					// If return result will be sent later
-					if (cr.getStatus() == PluginResult.Status.RESULT_TO_BE_SENT.ordinal()) {
+					// If no result to be sent and keeping callback, then no need to sent back to JavaScript
+					if ((cr.getStatus() == PluginResult.Status.NO_RESULT.ordinal()) && cr.getKeepCallback()) {
 						return "";
 					}
 				}

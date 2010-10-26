@@ -383,18 +383,16 @@ PhoneGap.clone = function(obj) {
 PhoneGap.callbackId = 0;
 PhoneGap.callbacks = {};
 PhoneGap.callbackStatus = {
-    OK: 0,
-    CLASS_NOT_FOUND_EXCEPTION: 1,
-    ILLEGAL_ACCESS_EXCEPTION: 2,
-    INSTANTIATION_EXCEPTION: 3,
-    MALFORMED_URL_EXCEPTION: 4,
-    IO_EXCEPTION: 5,
-    INVALID_ACTION: 6,
-    JSON_EXCEPTION: 7,
-    ERROR: 8,
-    RESULT_TO_BE_SENT: 9,
-    NEXT_RESULT: 10,
-    NO_MORE_RESULTS: 11
+    NO_RESULT: 0,
+    OK: 1,
+    CLASS_NOT_FOUND_EXCEPTION: 2,
+    ILLEGAL_ACCESS_EXCEPTION: 3,
+    INSTANTIATION_EXCEPTION: 4,
+    MALFORMED_URL_EXCEPTION: 5,
+    IO_EXCEPTION: 6,
+    INVALID_ACTION: 7,
+    JSON_EXCEPTION: 8,
+    ERROR: 9
     };
 
 
@@ -427,7 +425,7 @@ PhoneGap.exec = function(success, fail, service, action, args) {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
-            if ((v.status == PhoneGap.callbackStatus.OK) || (v.status == PhoneGap.callbackStatus.NEXT_RESULT)) {
+            if (v.status == PhoneGap.callbackStatus.OK) {
 
                 // If there is a success callback, then call it now with returned value
                 if (success) {
@@ -439,15 +437,24 @@ PhoneGap.exec = function(success, fail, service, action, args) {
                     }
 
                     // Clear callback if not expecting any more results
-                    if ((v.status == PhoneGap.callbackStatus.OK) || (v.status == PhoneGap.callbackStatus.NO_MORE_RESULTS)) {
+                    if (!v.keepCallback) {
                         delete PhoneGap.callbacks[callbackId];
                     }
                 }
                 return v.message;
             }
 
+            // If no result
+            else if (v.status == PhoneGap.callbackStatus.NO_RESULT) {
+                    
+                // Clear callback if not expecting any more results
+                if (!v.keepCallback) {
+                    delete PhoneGap.callbacks[callbackId];
+                }
+            }
+
             // If error, then display error
-            else if (v.status != PhoneGap.callbackStatus.RESULT_TO_BE_SENT) {
+            else {
                 console.log("Error: Status="+r.status+" Message="+v.message);
 
                 // If there is a fail callback, then call it now with returned value
@@ -458,7 +465,11 @@ PhoneGap.exec = function(success, fail, service, action, args) {
                     catch (e) {
                         console.log("Error in error callback: "+callbackId+" = "+e);
                     }
-                    delete PhoneGap.callbacks[callbackId];
+
+                    // Clear callback if not expecting any more results
+                    if (!v.keepCallback) {
+                        delete PhoneGap.callbacks[callbackId];
+                    }
                 }
                 return null;
             }
@@ -478,7 +489,7 @@ PhoneGap.callbackSuccess = function(callbackId, args) {
     if (PhoneGap.callbacks[callbackId]) {
 
         // If result is to be sent to callback
-        if ((args.status == PhoneGap.callbackStatus.OK) || (args.status == PhoneGap.callbackStatus.NEXT_RESULT)) {
+        if (args.status == PhoneGap.callbackStatus.OK) {
             try {
                 if (PhoneGap.callbacks[callbackId].success) {
                     PhoneGap.callbacks[callbackId].success(args.message);
@@ -490,7 +501,7 @@ PhoneGap.callbackSuccess = function(callbackId, args) {
         }
     
         // Clear callback if not expecting any more results
-        if ((args.status == PhoneGap.callbackStatus.OK) || (args.status == PhoneGap.callbackStatus.NO_MORE_RESULTS)) {
+        if (!args.keepCallback) {
             delete PhoneGap.callbacks[callbackId];
         }
     }
@@ -512,7 +523,11 @@ PhoneGap.callbackError = function(callbackId, args) {
         catch (e) {
             console.log("Error in error callback: "+callbackId+" = "+e);
         }
-        delete PhoneGap.callbacks[callbackId];
+        
+        // Clear callback if not expecting any more results
+        if (!args.keepCallback) {
+            delete PhoneGap.callbacks[callbackId];
+        }
     }
 };
 
