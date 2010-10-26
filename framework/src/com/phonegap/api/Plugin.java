@@ -99,7 +99,7 @@ public abstract class Plugin implements IPlugin {
      * @param statement
      */
     public void sendJavascript(String statement) {
-    	this.ctx.callbackServer.sendJavascript(statement);
+    	this.ctx.sendJavascript(statement);
     }
 
     /**
@@ -113,7 +113,7 @@ public abstract class Plugin implements IPlugin {
 	 * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(PluginResult pluginResult, String callbackId) {
-    	this.ctx.callbackServer.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
+    	this.ctx.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
     }
 
     /**
@@ -123,6 +123,6 @@ public abstract class Plugin implements IPlugin {
 	 * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(PluginResult pluginResult, String callbackId) {
-    	this.ctx.callbackServer.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
+    	this.ctx.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
     }
 }
