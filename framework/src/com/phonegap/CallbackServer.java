@@ -17,10 +17,10 @@ import java.util.LinkedList;
 
 /**
  * This class provides a way for Java to run JavaScript in the web page that has loaded PhoneGap.
- * The CallbackServer class implements an XHR server and a list of JavaScript statements
- * that are to be executed on the web page.
+ * The CallbackServer class implements an XHR server and a polling server with a list of JavaScript
+ * statements that are to be executed on the web page.
  * 
- * The process flow is:
+ * The process flow for XHR is:
  * 1. JavaScript makes an async XHR call. 
  * 2. The server holds the connection open until data is available. 
  * 3. The server writes the data to the client and closes the connection. 
@@ -30,6 +30,14 @@ import java.util.LinkedList;
  *
  * The CallbackServer class requires the following permission in Android manifest file
  * 		<uses-permission android:name="android.permission.INTERNET" />
+ * 
+ * If the device has a proxy set, then XHR cannot be used, so polling must be used instead.
+ * This can be determined by the client by calling CallbackServer.usePolling().  
+ * 
+ * The process flow for polling is:
+ * 1. The client calls CallbackServer.getJavascript() to retrieve next statement.
+ * 2. If statement available, then client processes it.
+ * 3. The client repeats #1 in loop. 
  */
 public class CallbackServer implements Runnable {
 	
@@ -59,6 +67,11 @@ public class CallbackServer implements Runnable {
 	private boolean empty;
 	
 	/**
+	 * Indicates that polling should be used instead of XHR.
+	 */
+	private boolean usePolling;
+	
+	/**
 	 * Constructor.
 	 */
 	public CallbackServer() {
@@ -67,7 +80,23 @@ public class CallbackServer implements Runnable {
 		this.empty = true;
 		this.port = 0;
 		this.javascript = new LinkedList<String>();
-		this.startServer();
+		
+		if (android.net.Proxy.getDefaultHost() != null) {
+			this.usePolling = true;
+		}
+		else {
+			this.usePolling = false;
+			this.startServer();
+		}
+	}
+	
+	/**
+	 * Determine if polling should be used instead of XHR.
+	 * 
+	 * @return
+	 */
+	public boolean usePolling() {
+		return this.usePolling;
 	}
 	
 	/**
