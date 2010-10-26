@@ -70,8 +70,6 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         return;
     }
 
-    this.successCallback = successCallback;
-    this.errorCallback = errorCallback;
     this.options = options;
     var quality = 80;
     if (options.quality) {
@@ -85,40 +83,7 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     if (typeof this.options.sourceType == "number") {
         sourceType = this.options.sourceType;
     }
-    PhoneGap.exec(null, null, "Camera", "takePicture", [quality, destinationType, sourceType]);
-};
-
-/**
- * Callback function from native code that is called when image has been captured.
- *
- * @param picture           The base64 encoded string of the image
- */
-Camera.prototype.success = function(picture) {
-    if (this.successCallback) {
-        try {
-            this.successCallback(picture);
-        }
-        catch (e) {
-            console.log("Camera error calling user's success callback: " + e);
-        }
-    }
-};
-
-/**
- * Callback function from native code that is called when there is an error
- * capturing an image, or the capture is cancelled.
- *
- * @param err               The error message
- */
-Camera.prototype.error = function(err) {
-    if (this.errorCallback) {
-        try {
-            this.errorCallback(err);
-        }
-        catch (e) {
-            console.log("Camera error calling user's error callback: " + e);
-        }
-    }
+    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType]);
 };
 
 PhoneGap.addConstructor(function() {
