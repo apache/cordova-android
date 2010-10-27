@@ -602,7 +602,7 @@ PhoneGap.JSCallback = function() {
                     }
                     catch (e) {
                         // If we're getting an error here, seeing the message will help in debugging
-                        console.log("Message from Server: " + msg");
+                        console.log("Message from Server: " + msg);
                         console.log("JSCallback Error: "+e);
                     }
                 }, 1);
