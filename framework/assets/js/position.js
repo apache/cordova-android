@@ -19,7 +19,7 @@
  */
 function Position(coords, timestamp) {
 	this.coords = coords;
-        this.timestamp = new Date().getTime();
+	this.timestamp = (timestamp != 'undefined') ? timestamp : new Date().getTime();
 }
 
 function Coordinates(lat, lng, alt, acc, head, vel, altacc) {

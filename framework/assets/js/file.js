@@ -350,17 +350,42 @@ FileReader.prototype.readAsBinaryString = function(file) {
  */
 function FileWriter() {
     this.fileName = "";
-    this.result = null;
+
     this.readyState = 0; // EMPTY
+
     this.result = null;
-    this.onerror = null;
-    this.oncomplete = null;
+
+    // Error
+    this.error = null;
+
+    // Event handlers
+    this.onwritestart = null;	// When writing starts
+    this.onprogress = null;		// While writing the file, and reporting partial file data
+    this.onwrite = null;		// When the write has successfully completed.
+    this.onwriteend = null;		// When the request has completed (either in success or failure).
+    this.onabort = null;		// When the write has been aborted. For instance, by invoking the abort() method.
+    this.onerror = null;		// When the write has failed (see errors).
 };
 
 // States
-FileWriter.EMPTY = 0;
-FileWriter.LOADING = 1;
+FileWriter.INIT = 0;
+FileWriter.WRITING = 1;
 FileWriter.DONE = 2;
+
+/**
+ * Abort writing file.
+ */
+FileWriter.prototype.abort = function() {
+    this.readyState = FileWriter.DONE;
+
+    // If abort callback
+    if (typeof this.onabort == "function") {
+        var evt = File._createEvent("abort", this);
+        this.onabort(evt);
+    }
+
+    // TODO: Anything else to do?  Maybe sent to native?
+};
 
 FileWriter.prototype.writeAsText = function(file, text, bAppend) {
     if (bAppend != true) {
@@ -369,12 +394,12 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
 
     this.fileName = file;
 
-    // LOADING state
-    this.readyState = FileWriter.LOADING;
+    // WRITING state
+    this.readyState = FileWriter.WRITING;
 
     var me = this;
 
-    // Read file
+    // Write file
     navigator.fileMgr.writeAsText(file, text, bAppend,
 
         // Success callback
@@ -391,10 +416,16 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             // DONE state
             me.readyState = FileWriter.DONE;
 
-            // If oncomplete callback
-            if (typeof me.oncomplete == "function") {
-                var evt = File._createEvent("complete", me);
-                me.oncomplete(evt);
+            // If onwrite callback
+            if (typeof me.onwrite == "function") {
+                var evt = File._createEvent("write", me);
+                me.onwrite(evt);
+            }
+
+            // If onwriteend callback
+            if (typeof me.onwriteend == "function") {
+                var evt = File._createEvent("writeend", me);
+                me.onwriteend(evt);
             }
         },
 
@@ -416,6 +447,12 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             if (typeof me.onerror == "function") {
                 var evt = File._createEvent("error", me);
                 me.onerror(evt);
+            }
+
+            // If onwriteend callback
+            if (typeof me.onwriteend == "function") {
+                var evt = File._createEvent("writeend", me);
+                me.onwriteend(evt);
             }
         }
         );
