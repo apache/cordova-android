@@ -56,11 +56,15 @@ public class Notification extends Plugin {
 			}
 			else if (action.equals("alert")) {
 				this.alert(args.getString(0),args.getString(1),args.getString(2), callbackId);
-				return new PluginResult(PluginResult.Status.RESULT_TO_BE_SENT);
+				PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
+				r.setKeepCallback(true);
+				return r;
 			}
 			else if (action.equals("confirm")) {
 				this.confirm(args.getString(0),args.getString(1),args.getString(2), callbackId);
-				return new PluginResult(PluginResult.Status.RESULT_TO_BE_SENT);
+				PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
+				r.setKeepCallback(true);
+				return r;
 			}
 			else if (action.equals("activityStart")) {
 				this.activityStart(args.getString(0),args.getString(1));
