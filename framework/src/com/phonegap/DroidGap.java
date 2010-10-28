@@ -487,7 +487,6 @@ public class DroidGap extends Activity {
          */
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
         	// If dialing phone (tel:5551212)
         	if (url.startsWith(WebView.SCHEME_TEL)) {
         		try {
@@ -501,7 +500,7 @@ public class DroidGap extends Activity {
         	}
         	
         	// If displaying map (geo:0,0?q=address)
-        	else if (url.startsWith(WebView.SCHEME_GEO)) {
+        	else if (url.startsWith("geo:")) {
            		try {
         			Intent intent = new Intent(Intent.ACTION_VIEW);
         			intent.setData(Uri.parse(url));
