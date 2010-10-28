@@ -40,7 +40,6 @@ Accelerometer.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
  * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
  */
 Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
-    console.log("Accelerometer.getCurrentAcceleration()");
 
     // successCallback required
     if (typeof successCallback != "function") {

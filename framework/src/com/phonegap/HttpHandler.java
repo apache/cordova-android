@@ -62,7 +62,6 @@ public class HttpHandler {
 				if (numread <= 0)
                    	break;
 				out.write(buff, 0, numread);
-				System.out.println("numread" + numread);
 				i++;
 			} while (true);
 			out.flush();

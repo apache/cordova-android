@@ -36,7 +36,6 @@ public class FileUtils extends Plugin {
 	 * Constructor.
 	 */
 	public FileUtils() {
-		System.out.println("FileUtils()");
 	}
 
 	/**
@@ -156,7 +155,6 @@ public class FileUtils extends Plugin {
      * @throws FileNotFoundException, IOException
      */
     public String readAsText(String filename, String encoding) throws FileNotFoundException, IOException {
-    	System.out.println("FileUtils.readAsText("+filename+", "+encoding+")");
     	StringBuilder data = new StringBuilder();
    		FileInputStream fis = new FileInputStream(filename);
    		BufferedReader reader = new BufferedReader(new InputStreamReader(fis, encoding), 1024);

@@ -37,7 +37,6 @@ public final class PluginManager {
 	 * @param ctx
 	 */
 	public PluginManager(WebView app, DroidGap ctx) {
-		System.out.println("PluginManager()");
 		this.ctx = ctx;
 		this.app = app;
 	}
@@ -66,7 +65,6 @@ public final class PluginManager {
 	 */
 	@SuppressWarnings("unchecked")
 	public String exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
-		System.out.println("PluginManager.exec("+service+", "+action+", "+callbackId+", "+jsonArgs+", "+async+")");
 		PluginResult cr = null;
 		boolean runAsync = async;
 		try {
@@ -133,9 +131,6 @@ public final class PluginManager {
 			}
 			ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 		}
-		if (cr != null) {
-			System.out.println(" -- returning result: "+cr.getJSONString());
-		}
 		return ( cr != null ? cr.getJSONString() : "{ status: 0, message: 'all good' }" );
 	}
 	
@@ -197,7 +192,6 @@ public final class PluginManager {
     	if (this.plugins.containsKey(className)) {
     		return this.getPlugin(className);
     	}
-    	System.out.println("PluginManager.addPlugin("+className+")");
     	try {
               Plugin plugin = (Plugin)clazz.newInstance();
               this.plugins.put(className, plugin);
@@ -233,7 +227,7 @@ public final class PluginManager {
     public void addService(String serviceType, String className) {
     	this.services.put(serviceType, className);
     }
-    
+
     /**
      * Called when the system is about to start resuming a previous activity. 
      */
