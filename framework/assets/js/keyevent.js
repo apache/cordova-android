@@ -17,6 +17,13 @@ KeyEvent.prototype.backTrigger = function()
   document.dispatchEvent(e);
 }
 
+KeyEvent.prototype.menuTrigger = function()
+{
+  var e = document.createEvent('Events');
+  e.initEvent('menuKeyDown');
+  document.dispatchEvent(e);
+}
+
 if (document.keyEvent == null || typeof document.keyEvent == 'undefined')
 {
   window.keyEvent = document.keyEvent = new KeyEvent();
