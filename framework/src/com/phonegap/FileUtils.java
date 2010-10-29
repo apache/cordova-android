@@ -8,6 +8,7 @@
 package com.phonegap;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
@@ -21,13 +22,15 @@ import com.phonegap.api.PluginResult;
  * Only files on the SD card can be accessed.
  */
 public class FileUtils extends Plugin {
+	public static int NOT_FOUND_ERR = 1;
+	public static int SECURITY_ERR = 2;
+	public static int ABORT_ERR = 3;
 
-	public static int NOT_FOUND_ERR = 8;
-	public static int SECURITY_ERR = 18;
-	public static int ABORT_ERR = 20;
-
-	public static int NOT_READABLE_ERR = 24;
-	public static int ENCODING_ERR = 26;
+	public static int NOT_READABLE_ERR = 4;
+	public static int ENCODING_ERR = 5;
+	public static int NO_MODIFICATION_ALLOWED_ERR = 6;
+	public static int INVALID_STATE_ERR = 7;
+	public static int SYNTAX_ERR = 8;
 
 	FileReader f_in;
 	FileWriter f_out;
@@ -107,6 +110,17 @@ public class FileUtils extends Plugin {
 			else if (action.equals("writeAsText")) {
 				try {
 					this.writeAsText(args.getString(0), args.getString(1), args.getBoolean(2));
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_FOUND_ERR);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
+				}
+		    }
+			else if (action.equals("truncate")) {
+				try {
+					this.truncateFile(args.getString(0), args.getLong(1));
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 					return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_FOUND_ERR);
@@ -210,5 +224,21 @@ public class FileUtils extends Plugin {
    		out.close();    			
     }
     
+    
+    /**
+     * Truncate the file to size
+     * 
+     * @param filename
+     * @param size
+     * @throws FileNotFoundException, IOException 
+     */
+    private void truncateFile(String filename, long size) throws FileNotFoundException, IOException {
+		RandomAccessFile raf = new RandomAccessFile(filename, "rw");
+		
+		if (raf.length() >= size) {	   			
+   			FileChannel channel = raf.getChannel();
+   			channel.truncate(size);
+		}
+    }
 
 }

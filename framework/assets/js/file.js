@@ -46,13 +46,16 @@ File._createEvent = function(type, target) {
 function FileError() {
    // File error codes
    // Found in DOMException
-   this.NOT_FOUND_ERR = 8;
-   this.SECURITY_ERR = 18;
-   this.ABORT_ERR = 20;
+   this.NOT_FOUND_ERR = 1;
+   this.SECURITY_ERR = 2;
+   this.ABORT_ERR = 3;
 
    // Added by this specification
-   this.NOT_READABLE_ERR = 24;
-   this.ENCODING_ERR = 26;
+   this.NOT_READABLE_ERR = 4;
+   this.ENCODING_ERR = 5;
+   this.NO_MODIFICATION_ALLOWED_ERR = 6;
+   this.INVALID_STATE_ERR = 7;
+   this.SYNTAX_ERR = 8;
 
    this.code = null;
 };
@@ -97,6 +100,10 @@ FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback) {
 
 FileMgr.prototype.writeAsText = function(fileName, data, append, successCallback, errorCallback) {
     PhoneGap.exec(successCallback, errorCallback, "File", "writeAsText", [fileName, data, append]);
+};
+
+FileMgr.prototype.truncate = function(fileName, size, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "truncate", [fileName, size]);
 };
 
 FileMgr.prototype.readAsText = function(fileName, encoding, successCallback, errorCallback) {
@@ -337,6 +344,16 @@ FileReader.prototype.readAsBinaryString = function(file) {
     this.fileName = file;
 };
 
+/**
+ * Read file and return data as a binary data.
+ *
+ * @param file          The name of the file
+ */
+FileReader.prototype.readAsArrayBuffer = function(file) {
+    // TODO - Can't return binary data to browser.
+    this.fileName = file;
+};
+
 //-----------------------------------------------------------------------------
 // File Writer
 //-----------------------------------------------------------------------------
@@ -388,7 +405,12 @@ FileWriter.prototype.abort = function() {
 };
 
 FileWriter.prototype.writeAsText = function(file, text, bAppend) {
-    if (bAppend != true) {
+	// Throw an exception if we are already writing a file
+	if (this.readyState == FileWriter.WRITING) {
+		throw FileError.INVALID_STATE_ERR;
+	}
+
+	if (bAppend != true) {
         bAppend = false; // for null values
     }
 
@@ -398,6 +420,12 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
     this.readyState = FileWriter.WRITING;
 
     var me = this;
+
+    // If onwritestart callback
+    if (typeof me.onwritestart == "function") {
+        var evt = File._createEvent("writestart", me);
+        me.onwritestart(evt);
+    }
 
     // Write file
     navigator.fileMgr.writeAsText(file, text, bAppend,
@@ -413,14 +441,14 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             // Save result
             me.result = r;
 
-            // DONE state
-            me.readyState = FileWriter.DONE;
-
             // If onwrite callback
             if (typeof me.onwrite == "function") {
                 var evt = File._createEvent("write", me);
                 me.onwrite(evt);
             }
+
+            // DONE state
+            me.readyState = FileWriter.DONE;
 
             // If onwriteend callback
             if (typeof me.onwriteend == "function") {
@@ -440,14 +468,14 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             // Save error
             me.error = e;
 
-            // DONE state
-            me.readyState = FileWriter.DONE;
-
             // If onerror callback
             if (typeof me.onerror == "function") {
                 var evt = File._createEvent("error", me);
                 me.onerror(evt);
             }
+
+            // DONE state
+            me.readyState = FileWriter.DONE;
 
             // If onwriteend callback
             if (typeof me.onwriteend == "function") {
@@ -457,5 +485,83 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
         }
         );
 
+};
+
+FileWriter.prototype.truncate = function(file, size) {
+	// Throw an exception if we are already writing a file
+	if (this.readyState == FileWriter.WRITING) {
+		throw FileError.INVALID_STATE_ERR;
+	}
+
+    this.fileName = file;
+
+    // WRITING state
+    this.readyState = FileWriter.WRITING;
+
+    var me = this;
+
+    // If onwritestart callback
+    if (typeof me.onwritestart == "function") {
+        var evt = File._createEvent("writestart", me);
+        me.onwritestart(evt);
+    }
+
+    // Write file
+    navigator.fileMgr.truncate(file, size,
+
+        // Success callback
+        function(r) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileWriter.DONE) {
+                return;
+            }
+
+            // Save result
+            me.result = r;
+
+            // If onwrite callback
+            if (typeof me.onwrite == "function") {
+                var evt = File._createEvent("write", me);
+                me.onwrite(evt);
+            }
+
+            // DONE state
+            me.readyState = FileWriter.DONE;
+
+            // If onwriteend callback
+            if (typeof me.onwriteend == "function") {
+                var evt = File._createEvent("writeend", me);
+                me.onwriteend(evt);
+            }
+        },
+
+        // Error callback
+        function(e) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileWriter.DONE) {
+                return;
+            }
+
+            // Save error
+            me.error = e;
+
+            // If onerror callback
+            if (typeof me.onerror == "function") {
+                var evt = File._createEvent("error", me);
+                me.onerror(evt);
+            }
+
+            // DONE state
+            me.readyState = FileWriter.DONE;
+
+            // If onwriteend callback
+            if (typeof me.onwriteend == "function") {
+                var evt = File._createEvent("writeend", me);
+                me.onwriteend(evt);
+            }
+        }
+        );
 };
 
