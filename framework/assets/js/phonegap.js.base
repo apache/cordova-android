@@ -578,6 +578,9 @@ PhoneGap.run_command = function() {
 
 };
 
+PhoneGap.JSCallbackPort = CallbackServer.getPort();
+PhoneGap.JSCallbackToken = CallbackServer.getToken();
+
 /**
  * This is only for Android.
  *
@@ -623,7 +626,7 @@ PhoneGap.JSCallback = function() {
         }
     }
 
-    xmlhttp.open("GET", "http://127.0.0.1:"+CallbackServer.getPort()+"/" , true);
+    xmlhttp.open("GET", "http://127.0.0.1:"+PhoneGap.JSCallbackPort+"/"+PhoneGap.JSCallbackToken , true);
     xmlhttp.send();
 };
 

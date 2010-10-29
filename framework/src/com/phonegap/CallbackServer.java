@@ -72,6 +72,11 @@ public class CallbackServer implements Runnable {
 	private boolean usePolling;
 	
 	/**
+	 * Security token to prevent other apps from accessing this callback server via XHR
+	 */
+	private String token;
+	
+	/**
 	 * Constructor.
 	 */
 	public CallbackServer() {
@@ -106,6 +111,15 @@ public class CallbackServer implements Runnable {
 	 */
 	public int getPort() {
 		return this.port;
+	}
+	
+	/**
+	 * Get the security token that this server requires when calling getJavascript().
+	 * 
+	 * @return
+	 */
+	public String getToken() {
+		return this.token;
 	}
 	
 	/**
@@ -145,6 +159,8 @@ public class CallbackServer implements Runnable {
 			ServerSocket waitSocket = new ServerSocket(0);
 			this.port = waitSocket.getLocalPort();
 			//System.out.println(" -- using port " +this.port);
+			this.token = java.util.UUID.randomUUID().toString();
+			//System.out.println(" -- using token "+this.token);
 
 			 while (this.active) {
 				 //System.out.println("CallbackServer: Waiting for data on socket");
@@ -153,36 +169,39 @@ public class CallbackServer implements Runnable {
 				 DataOutputStream output = new DataOutputStream(connection.getOutputStream());
 				 request = xhrReader.readLine();
 				 //System.out.println("Request="+request);
-				 if(request.contains("GET"))
-				 {
-					 //System.out.println(" -- Processing GET request");
-					 
-					 // Wait until there is some data to send, or send empty data every 30 sec 
-					 // to prevent XHR timeout on the client 
-					 synchronized (this) { 
-						 while (this.empty) { 
-							 try { 
-								 this.wait(30000); // prevent timeout from happening
-								 //System.out.println(">>> break <<<");
-								 break;
+				 if (request.contains("GET")) {
+
+					 // Must have security token
+					 if (request.substring(5,41).equals(this.token)) {
+						 //System.out.println(" -- Processing GET request");
+
+						 // Wait until there is some data to send, or send empty data every 30 sec 
+						 // to prevent XHR timeout on the client 
+						 synchronized (this) { 
+							 while (this.empty) { 
+								 try { 
+									 this.wait(30000); // prevent timeout from happening
+									 //System.out.println(">>> break <<<");
+									 break;
+								 } 
+								 catch (Exception e) { }
 							 } 
-							 catch (Exception e) { }
-						 } 
+						 }
+
+						 // If server is still running
+						 if (this.active) {
+
+							 // If no data, then send 404 back to client before it times out
+							 if (this.empty) {
+								 //System.out.println(" -- sending data 0");
+								 output.writeBytes("HTTP/1.1 404 NO DATA\r\n\r\n");
+							 }
+							 else {
+								 //System.out.println(" -- sending item");
+								 output.writeBytes("HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript());
+							 }
+						 }
 					 }
-					 
-					 // If server is still running
-					 if (this.active) {
-					
-						 // If no data, then send 404 back to client before it times out
-						 if (this.empty) {
-							 //System.out.println(" -- sending data 0");
-							 output.writeBytes("HTTP/1.1 404 NO DATA\r\n\r\n");
-						 }
-						 else {
-							 //System.out.println(" -- sending item");
-							 output.writeBytes("HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript());
-						 }
-					 }					 
 				 }
 				 //System.out.println("CallbackServer: closing output");
 				 output.close();				 
