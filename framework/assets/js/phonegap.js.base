@@ -578,8 +578,8 @@ PhoneGap.run_command = function() {
 
 };
 
-PhoneGap.JSCallbackPort = CallbackServer.getPort();
-PhoneGap.JSCallbackToken = CallbackServer.getToken();
+PhoneGap.JSCallbackPort = null;
+PhoneGap.JSCallbackToken = null;
 
 /**
  * This is only for Android.
@@ -605,7 +605,7 @@ PhoneGap.JSCallback = function() {
                     }
                     catch (e) {
                         // If we're getting an error here, seeing the message will help in debugging
-                        console.log("Message from Server: " + msg);
+                        console.log("JSCallback: Message from Server: " + msg);
                         console.log("JSCallback Error: "+e);
                     }
                 }, 1);
@@ -617,15 +617,38 @@ PhoneGap.JSCallback = function() {
                 setTimeout(PhoneGap.JSCallback, 10);
             }
 
+            // If security error
+            else if (xmlhttp.status == 403) {
+                console.log("JSCallback Error: Invalid token.  Stopping callbacks.");
+            }
+
+            // If server is stopping
+            else if (xmlhttp.status == 503) {
+                console.log("JSCallback Error: Service unavailable.  Stopping callbacks.");
+            }
+
+            // If request wasn't GET
+            else if (xmlhttp.status == 400) {
+                console.log("JSCallback Error: Bad request.  Stopping callbacks.");
+            }
+
             // If error, restart callback server
             else {
                 console.log("JSCallback Error: Request failed.");
                 CallbackServer.restartServer();
+                PhoneGap.JSCallbackPort = null;
+                PhoneGap.JSCallbackToken = null;
                 setTimeout(PhoneGap.JSCallback, 100);
             }
         }
     }
 
+    if (PhoneGap.JSCallbackPort == null) {
+        PhoneGap.JSCallbackPort = CallbackServer.getPort();
+    }
+    if (PhoneGap.JSCallbackToken == null) {
+        PhoneGap.JSCallbackToken = CallbackServer.getToken();
+    }
     xmlhttp.open("GET", "http://127.0.0.1:"+PhoneGap.JSCallbackPort+"/"+PhoneGap.JSCallbackToken , true);
     xmlhttp.send();
 };
@@ -651,6 +674,7 @@ PhoneGap.JSCallbackPolling = function() {
                 var t = eval(""+msg);
             }
             catch (e) {
+                console.log("JSCallbackPolling: Message from Server: " + msg);
                 console.log("JSCallbackPolling Error: "+e);
             }
         }, 1);

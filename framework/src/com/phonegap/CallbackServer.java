@@ -168,6 +168,7 @@ public class CallbackServer implements Runnable {
 				 BufferedReader xhrReader = new BufferedReader(new InputStreamReader(connection.getInputStream()),40);
 				 DataOutputStream output = new DataOutputStream(connection.getOutputStream());
 				 request = xhrReader.readLine();
+				 String response = "";
 				 //System.out.println("Request="+request);
 				 if (request.contains("GET")) {
 
@@ -194,16 +195,27 @@ public class CallbackServer implements Runnable {
 							 // If no data, then send 404 back to client before it times out
 							 if (this.empty) {
 								 //System.out.println(" -- sending data 0");
-								 output.writeBytes("HTTP/1.1 404 NO DATA\r\n\r\n");
+								 response = "HTTP/1.1 404 NO DATA\r\n\r\n";
 							 }
 							 else {
 								 //System.out.println(" -- sending item");
-								 output.writeBytes("HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript());
+								 response = "HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript();
 							 }
 						 }
+						 else {
+							 response = "HTTP/1.1 503 Service Unavailable\r\n\r\n";							 
+						 }
+					 }
+					 else {
+						 response = "HTTP/1.1 403 Forbidden\r\n\r\n";						 
 					 }
 				 }
+				 else {
+					 response = "HTTP/1.1 400 Bad Request\r\n\r\n";
+				 }
+				 //System.out.println("CallbackServer: response="+response);
 				 //System.out.println("CallbackServer: closing output");
+				 output.writeBytes(response);
 				 output.close();				 
 			 }
 		 } catch (IOException e) {
