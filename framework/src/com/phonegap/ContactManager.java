@@ -46,7 +46,7 @@ public class ContactManager extends Plugin {
 				return new PluginResult(status, res);
 			}
 			else if (action.equals("save")) {
-				// TODO Coming soon!			
+				return new PluginResult(status, contactAccessor.save(args.getJSONObject(0)));
 			}
 			else if (action.equals("remove")) {
 				if (contactAccessor.remove(args.getString(0))) {

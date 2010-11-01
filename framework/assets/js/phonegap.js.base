@@ -318,18 +318,27 @@ PhoneGap.stringify = function(args) {
             	var start = true;
             	s = s + '{';
             	for (var name in args[i]) {
-            		if (!start) {
-            			s = s + ',';
-            		}
-            		s = s + '"' + name + '":';
-            		var nameType = typeof args[i][name];
-            		if ((nameType == "number") || (nameType == "boolean")) {
-            			s = s + args[i][name];
-            		}
-            		else {
-                        s = s + '"' + args[i][name] + '"';            			
-            		}
-                    start=false;
+            		if (args[i][name] != null) {
+	            		if (!start) {
+	            			s = s + ',';
+	            		}
+	            		s = s + '"' + name + '":';
+	            		var nameType = typeof args[i][name];
+	            		if ((nameType == "number") || (nameType == "boolean")) {
+	            			s = s + args[i][name];
+	            		}
+	            		else if ((typeof args[i][name]) == 'function') {
+		           			// don't copy the functions
+	            			s = s + '""'; 
+	            		}
+	            		else if (args[i][name] instanceof Object) {
+	            			s = s + this.stringify(args[i][name]);
+	            		}
+	            		else {
+	                        s = s + '"' + args[i][name] + '"';            			
+	            		}
+	                    start=false;
+	                 }
             	} 
             	s = s + '}';
             }

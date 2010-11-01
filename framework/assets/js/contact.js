@@ -36,6 +36,7 @@ var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, ad
     ims, organizations, published, updated, birthday, anniversary, gender, note,
     preferredUsername, photos, tags, relationships, urls, accounts, utcOffset, connected) {
     this.id = id || null;
+    this.rawId = null;
     this.displayName = displayName || null;
     this.name = name || null; // ContactName
     this.nickname = nickname || null;
@@ -83,6 +84,48 @@ Contact.prototype.remove = function(successCB, errorCB) {
 Contact.prototype.clone = function() {
     var clonedContact = PhoneGap.clone(this);
     clonedContact.id = null;
+    clonedContact.rawId = null;
+    // Loop through and clear out any id's in phones, emails, etc.
+    if (clonedContact.phoneNumbers) {
+    	for (i=0; i<clonedContact.phoneNumbers.length; i++) {
+    		clonedContact.phoneNumbers[i].id = null;
+    	}
+    }
+    if (clonedContact.emails) {
+    	for (i=0; i<clonedContact.emails.length; i++) {
+    		clonedContact.emails[i].id = null;
+    	}
+    }
+    if (clonedContact.addresses) {
+    	for (i=0; i<clonedContact.addresses.length; i++) {
+    		clonedContact.addresses[i].id = null;
+    	}
+    }
+    if (clonedContact.ims) {
+    	for (i=0; i<clonedContact.ims.length; i++) {
+    		clonedContact.ims[i].id = null;
+    	}
+    }
+    if (clonedContact.organizations) {
+    	for (i=0; i<clonedContact.organizations.length; i++) {
+    		clonedContact.organizations[i].id = null;
+    	}
+    }
+    if (clonedContact.tags) {
+    	for (i=0; i<clonedContact.tags.length; i++) {
+    		clonedContact.tags[i].id = null;
+    	}
+    }
+    if (clonedContact.relationships) {
+    	for (i=0; i<clonedContact.relationships.length; i++) {
+    		clonedContact.relationships[i].id = null;
+    	}
+    }
+    if (clonedContact.urls) {
+    	for (i=0; i<clonedContact.urls.length; i++) {
+    		clonedContact.urls[i].id = null;
+    	}
+    }
     return clonedContact;
 };
 
@@ -92,6 +135,7 @@ Contact.prototype.clone = function() {
 * @param errorCB error callback
 */
 Contact.prototype.save = function(successCB, errorCB) {
+    PhoneGap.exec(successCB, errorCB, "Contacts", "save", [this]);
 };
 
 /**
@@ -114,11 +158,13 @@ var ContactName = function(formatted, familyName, givenName, middle, prefix, suf
 
 /**
 * Generic contact field.
+* @param {DOMString} id unique identifier, should only be set by native code
 * @param type
 * @param value
 * @param primary
 */
 var ContactField = function(type, value, primary) {
+	this.id = null;
     this.type = type || null;
     this.value = value || null;
     this.primary = primary || null;
@@ -126,6 +172,7 @@ var ContactField = function(type, value, primary) {
 
 /**
 * Contact address.
+* @param {DOMString} id unique identifier, should only be set by native code
 * @param formatted
 * @param streetAddress
 * @param locality
@@ -134,6 +181,7 @@ var ContactField = function(type, value, primary) {
 * @param country
 */
 var ContactAddress = function(formatted, streetAddress, locality, region, postalCode, country) {
+	this.id = null;
     this.formatted = formatted || null;
     this.streetAddress = streetAddress || null;
     this.locality = locality || null;
@@ -144,6 +192,7 @@ var ContactAddress = function(formatted, streetAddress, locality, region, postal
 
 /**
 * Contact organization.
+* @param {DOMString} id unique identifier, should only be set by native code
 * @param name
 * @param dept
 * @param title
@@ -153,6 +202,7 @@ var ContactAddress = function(formatted, streetAddress, locality, region, postal
 * @param desc
 */
 var ContactOrganization = function(name, dept, title, startDate, endDate, location, desc) {
+	this.id = null;
     this.name = name || null;
     this.department = dept || null;
     this.title = title || null;
@@ -164,11 +214,13 @@ var ContactOrganization = function(name, dept, title, startDate, endDate, locati
 
 /**
 * Contact account.
+* @param {DOMString} id unique identifier, should only be set by native code
 * @param domain
 * @param username
 * @param userid
 */
 var ContactAccount = function(domain, username, userid) {
+	this.id = null;
     this.domain = domain || null;
     this.username = username || null;
     this.userid = userid || null;
@@ -201,7 +253,7 @@ Contacts.prototype.find = function(fields, successCB, errorCB, options) {
 * @returns new Contact object
 */
 Contacts.prototype.create = function(properties) {
-    var contact = new Contact();
+	var contact = new Contact();
     for (i in properties) {
         if (contact[i]!='undefined') {
             contact[i]=properties[i];
