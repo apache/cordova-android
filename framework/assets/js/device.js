@@ -25,6 +25,7 @@ function Device() {
             me.available = true;
             me.platform = info.platform;
             me.version = info.version;
+            me.name = info.name;
             me.uuid = info.uuid;
             me.phonegap = info.phonegap;
             PhoneGap.onPhoneGapInfoReady.fire();
