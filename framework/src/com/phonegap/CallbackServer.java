@@ -176,12 +176,12 @@ public class CallbackServer implements Runnable {
 					 if (request.substring(5,41).equals(this.token)) {
 						 //System.out.println(" -- Processing GET request");
 
-						 // Wait until there is some data to send, or send empty data every 30 sec 
+						 // Wait until there is some data to send, or send empty data every 10 sec 
 						 // to prevent XHR timeout on the client 
 						 synchronized (this) { 
 							 while (this.empty) { 
 								 try { 
-									 this.wait(30000); // prevent timeout from happening
+									 this.wait(10000); // prevent timeout from happening
 									 //System.out.println(">>> break <<<");
 									 break;
 								 } 
