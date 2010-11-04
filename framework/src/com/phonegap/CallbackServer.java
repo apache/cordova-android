@@ -195,7 +195,7 @@ public class CallbackServer implements Runnable {
 							 // If no data, then send 404 back to client before it times out
 							 if (this.empty) {
 								 //System.out.println(" -- sending data 0");
-								 response = "HTTP/1.1 404 NO DATA\r\n\r\n";
+								 response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
 							 }
 							 else {
 								 //System.out.println(" -- sending item");
@@ -203,19 +203,20 @@ public class CallbackServer implements Runnable {
 							 }
 						 }
 						 else {
-							 response = "HTTP/1.1 503 Service Unavailable\r\n\r\n";							 
+							 response = "HTTP/1.1 503 Service Unavailable\r\n\r\n ";							 
 						 }
 					 }
 					 else {
-						 response = "HTTP/1.1 403 Forbidden\r\n\r\n";						 
+						 response = "HTTP/1.1 403 Forbidden\r\n\r\n ";						 
 					 }
 				 }
 				 else {
-					 response = "HTTP/1.1 400 Bad Request\r\n\r\n";
+					 response = "HTTP/1.1 400 Bad Request\r\n\r\n ";
 				 }
 				 //System.out.println("CallbackServer: response="+response);
 				 //System.out.println("CallbackServer: closing output");
 				 output.writeBytes(response);
+				 output.flush();
 				 output.close();				 
 			 }
 		 } catch (IOException e) {
