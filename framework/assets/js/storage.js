@@ -27,9 +27,8 @@ var DroidDB = function() {
  * @param rawdata           JSON string of the row data
  * @param id                Query id
  */
-DroidDB.prototype.addResult = function(rawdata, id) {
+DroidDB.prototype.addResult = function(data, id) {
     try {
-        eval("var data = " + rawdata + ";");
         var query = this.queryQueue[id];
         query.resultSet.push(data);
     } catch (e) {

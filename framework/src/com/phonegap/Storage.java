@@ -172,12 +172,12 @@ public class Storage extends Plugin {
 				try {
 					for (int i = 0; i < colCount; ++i) {
 						key = cur.getColumnName(i);
-						value = cur.getString(i).replace("\"", "\\\""); // must escape " with \" for JavaScript
+						value = cur.getString(i);
 						result.put(key, value);
 					}
-
+					
 					// Send row back to JavaScript
-					this.sendJavascript("droiddb.addResult('" + result.toString() + "','" + tx_id + "');");
+					this.sendJavascript("droiddb.addResult(" + result.toString() + ",'" + tx_id + "');");
 					
 				} catch (JSONException e) {
 					e.printStackTrace();
