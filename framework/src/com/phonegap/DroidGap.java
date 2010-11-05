@@ -110,6 +110,14 @@ public class DroidGap extends PhonegapActivity {
         initWebView();
         root.addView(this.appView);
         setContentView(root);        
+        
+        // If URL was passed in to intent, then load it
+        Uri uri = this.getIntent().getData();
+        if (uri != null) {
+            System.out.println("Loading initial URI="+uri.toString());
+        	this.loadUrl(uri.toString());
+        }
+
 	}
 	
     /**
