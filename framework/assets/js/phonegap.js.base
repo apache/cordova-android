@@ -722,3 +722,19 @@ PhoneGap.close = function(context, func, params) {
     }
 };
 
+/**
+ * Load a JavaScript file after page has loaded.
+ *
+ * @param {String} jsfile               The url of the JavaScript file to load.
+ * @param {Function} successCallback    The callback to call when the file has been loaded.
+ */
+PhoneGap.includeJavascript = function(jsfile, successCallback) {
+    var id = document.getElementsByTagName("head")[0];         
+    var el = document.createElement('script');
+    el.type = 'text/javascript';
+    if (typeof successCallback == 'function') {
+        el.onload = successCallback;
+    }
+    el.src = jsfile;
+    id.appendChild(el);
+}
