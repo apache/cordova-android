@@ -14,7 +14,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.webkit.WebView;
-import com.phonegap.DroidGap;
 
 /**
  * PluginManager is exposed to JavaScript in the PhoneGap WebView.
@@ -27,7 +26,7 @@ public final class PluginManager {
 	private HashMap<String, Plugin> plugins = new HashMap<String,Plugin>();
 	private HashMap<String, String> services = new HashMap<String,String>();
 	
-	private final DroidGap ctx;
+	private final PhonegapActivity ctx;
 	private final WebView app;
 	
 	/**
@@ -36,7 +35,7 @@ public final class PluginManager {
 	 * @param app
 	 * @param ctx
 	 */
-	public PluginManager(WebView app, DroidGap ctx) {
+	public PluginManager(WebView app, PhonegapActivity ctx) {
 		this.ctx = ctx;
 		this.app = app;
 	}
@@ -76,7 +75,7 @@ public final class PluginManager {
 			}
 			if (isPhoneGapPlugin(c)) {
 				final Plugin plugin = this.addPlugin(clazz, c); 
-				final DroidGap ctx = this.ctx;
+				final PhonegapActivity ctx = this.ctx;
 				runAsync = async && !plugin.isSynch(action);
 				if (runAsync) {
 					// Run this on a different thread so that this one can return back to JS
@@ -195,7 +194,7 @@ public final class PluginManager {
     	try {
               Plugin plugin = (Plugin)clazz.newInstance();
               this.plugins.put(className, plugin);
-              plugin.setContext((DroidGap)this.ctx);
+              plugin.setContext(this.ctx);
               plugin.setView(this.app);
               return plugin;
     	}

@@ -8,7 +8,7 @@
 package com.phonegap.api;
 
 import org.json.JSONArray;
-import com.phonegap.DroidGap;
+
 import android.content.Intent;
 import android.webkit.WebView;
 
@@ -20,7 +20,7 @@ import android.webkit.WebView;
 public abstract class Plugin implements IPlugin {
 
     public WebView webView;					// WebView object
-    public DroidGap ctx;					// DroidGap object
+    public PhonegapActivity ctx;			// PhonegapActivity object
 
 	/**
 	 * Executes the request and returns PluginResult.
@@ -48,7 +48,7 @@ public abstract class Plugin implements IPlugin {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(DroidGap ctx) {
+	public void setContext(PhonegapActivity ctx) {
 		this.ctx = ctx;
 	}
 

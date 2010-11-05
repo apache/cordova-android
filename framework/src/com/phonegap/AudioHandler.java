@@ -20,7 +20,7 @@ import android.content.Context;
 import android.media.AudioManager;
 
 /**
- * This class called by DroidGap to play and record audio.  
+ * This class called by PhonegapActivity to play and record audio.  
  * The file can be local or over a network using http.
  * 
  * Audio formats supported (tested):

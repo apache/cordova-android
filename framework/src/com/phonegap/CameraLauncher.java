@@ -100,7 +100,7 @@ public class CameraLauncher extends Plugin {
 	/**
 	 * Take a picture with the camera.
 	 * When an image is captured or the camera view is cancelled, the result is returned
-	 * in DroidGap.onActivityResult, which forwards the result to this.onActivityResult.
+	 * in PhonegapActivity.onActivityResult, which forwards the result to this.onActivityResult.
 	 * 
 	 * The image can either be returned as a base64 string or a URI that points to the file.
 	 * To display base64 string in an img tag, set the source to:

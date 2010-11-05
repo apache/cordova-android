@@ -7,6 +7,8 @@
  */
 package com.phonegap;
 
+import com.phonegap.api.PhonegapActivity;
+
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
@@ -15,7 +17,7 @@ import android.os.Bundle;
 
 public class NetworkListener implements LocationListener {
 	
-	private DroidGap mCtx;						// DroidGap object
+	private PhonegapActivity mCtx;				// PhonegapActivity object
 	
 	private LocationManager mLocMan;			// Location manager object
 	private GeoListener owner;					// Geolistener object (parent)
@@ -31,7 +33,7 @@ public class NetworkListener implements LocationListener {
 	 * @param interval
 	 * @param m
 	 */
-	public NetworkListener(DroidGap ctx, int interval, GeoListener m) {
+	public NetworkListener(PhonegapActivity ctx, int interval, GeoListener m) {
 		this.owner = m;
 		this.mCtx = ctx;
 		this.mLocMan = (LocationManager) this.mCtx.getSystemService(Context.LOCATION_SERVICE);
