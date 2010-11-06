@@ -21,28 +21,12 @@ var DroidDB = function() {
 };
 
 /**
- * Callback from native code when result from a query is available.
- * PRIVATE METHOD
- *
- * @param rawdata           JSON string of the row data
- * @param id                Query id
- */
-DroidDB.prototype.addResult = function(data, id) {
-    try {
-        var query = this.queryQueue[id];
-        query.resultSet.push(data);
-    } catch (e) {
-        console.log("DroidDB.addResult(): Error="+e);
-    }
-};
-
-/**
  * Callback from native code when query is complete.
  * PRIVATE METHOD
  *
  * @param id                Query id
  */
-DroidDB.prototype.completeQuery = function(id) {
+DroidDB.prototype.completeQuery = function(id, data) {
     var query = this.queryQueue[id];
     if (query) {
         try {
@@ -58,8 +42,8 @@ DroidDB.prototype.completeQuery = function(id) {
 
                 // Save query results
                 var r = new DroidDB_Result();
-                r.rows.resultSet = query.resultSet;
-                r.rows.length = query.resultSet.length;
+                r.rows.resultSet = data;
+                r.rows.length = data.length;
                 try {
                     if (typeof query.successCallback == 'function') {
                         query.successCallback(query.tx, r);
