@@ -127,7 +127,7 @@ var DatabaseShell = function() {
  * @param successCallback {Function}
  * @param errorCallback {Function}
  */
-DatabaseShell.prototype.transaction = function(process, successCallback, errorCallback) {
+DatabaseShell.prototype.transaction = function(process, errorCallback, successCallback) {
     var tx = new DroidDB_Tx();
     tx.successCallback = successCallback;
     tx.errorCallback = errorCallback;
