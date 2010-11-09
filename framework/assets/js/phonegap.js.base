@@ -286,7 +286,7 @@ document.addEventListener = function(evt, handler, capture) {
     } else if (e == 'pause') {
         PhoneGap.onPause.subscribe(handler);
     } else {
-        PhoneGap.m_document_addEventListener.call(document, evt, handler);
+        PhoneGap.m_document_addEventListener.call(document, evt, handler, capture);
     }
 };
 
