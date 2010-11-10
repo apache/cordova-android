@@ -84,10 +84,28 @@ public class CallbackServer implements Runnable {
 		this.active = false;
 		this.empty = true;
 		this.port = 0;
-		this.javascript = new LinkedList<String>();
-		
-		if (android.net.Proxy.getDefaultHost() != null) {
+		this.javascript = new LinkedList<String>();		
+	}
+	
+	/**
+	 * Init callback server and start XHR if running local app.
+	 * 
+	 * If PhoneGap app is loaded from file://, then we can use XHR
+	 * otherwise we have to use polling due to cross-domain security restrictions.
+	 * 
+	 * @param url			The URL of the PhoneGap app being loaded
+	 */
+	public void init(String url) {
+		//System.out.println("CallbackServer.start("+url+")");
+
+		// Determine if XHR or polling is to be used
+		if ((url != null) && !url.startsWith("file://")) {
 			this.usePolling = true;
+			this.stopServer();
+		}
+		else if (android.net.Proxy.getDefaultHost() != null) {
+			this.usePolling = true;
+			this.stopServer();
 		}
 		else {
 			this.usePolling = false;
@@ -96,7 +114,7 @@ public class CallbackServer implements Runnable {
 	}
 	
 	/**
-	 * Determine if polling should be used instead of XHR.
+	 * Return if polling is being used instead of XHR.
 	 * 
 	 * @return
 	 */
@@ -158,9 +176,9 @@ public class CallbackServer implements Runnable {
 			String request;
 			ServerSocket waitSocket = new ServerSocket(0);
 			this.port = waitSocket.getLocalPort();
-			//System.out.println(" -- using port " +this.port);
+			//System.out.println("CallbackServer -- using port " +this.port);
 			this.token = java.util.UUID.randomUUID().toString();
-			//System.out.println(" -- using token "+this.token);
+			//System.out.println("CallbackServer -- using token "+this.token);
 
 			 while (this.active) {
 				 //System.out.println("CallbackServer: Waiting for data on socket");
@@ -169,12 +187,12 @@ public class CallbackServer implements Runnable {
 				 DataOutputStream output = new DataOutputStream(connection.getOutputStream());
 				 request = xhrReader.readLine();
 				 String response = "";
-				 //System.out.println("Request="+request);
+				 //System.out.println("CallbackServerRequest="+request);
 				 if (request.contains("GET")) {
 
 					 // Must have security token
 					 if (request.substring(5,41).equals(this.token)) {
-						 //System.out.println(" -- Processing GET request");
+						 //System.out.println("CallbackServer -- Processing GET request");
 
 						 // Wait until there is some data to send, or send empty data every 10 sec 
 						 // to prevent XHR timeout on the client 
@@ -182,7 +200,7 @@ public class CallbackServer implements Runnable {
 							 while (this.empty) { 
 								 try { 
 									 this.wait(10000); // prevent timeout from happening
-									 //System.out.println(">>> break <<<");
+									 //System.out.println("CallbackServer>>> break <<<");
 									 break;
 								 } 
 								 catch (Exception e) { }
@@ -194,11 +212,11 @@ public class CallbackServer implements Runnable {
 
 							 // If no data, then send 404 back to client before it times out
 							 if (this.empty) {
-								 //System.out.println(" -- sending data 0");
+								 //System.out.println("CallbackServer -- sending data 0");
 								 response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
 							 }
 							 else {
-								 //System.out.println(" -- sending item");
+								 //System.out.println("CallbackServer -- sending item");
 								 response = "HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript();
 							 }
 						 }
@@ -232,11 +250,13 @@ public class CallbackServer implements Runnable {
 	 */
 	public void stopServer() {
 		//System.out.println("CallbackServer.stopServer()");
-		this.active = false;
+		if (this.active) {
+			this.active = false;
 
-		// Break out of server wait
-		synchronized (this) { 
-			this.notify();
+			// Break out of server wait
+			synchronized (this) { 
+				this.notify();
+			}
 		}		
 	}
 

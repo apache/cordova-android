@@ -300,6 +300,9 @@ public class DroidGap extends PhonegapActivity {
         else {
         	this.baseUrl = this.url;
         }
+        
+        // Initialize callback server
+        this.callbackServer.init(url);
 	    
 	    this.runOnUiThread(new Runnable() {
 			public void run() {
