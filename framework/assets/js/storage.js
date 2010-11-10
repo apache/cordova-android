@@ -308,9 +308,87 @@ DroidDB_openDatabase = function(name, version, display_name, size) {
     return db;
 };
 
+
+/**
+ * For browsers with no localStorage we emulate it with SQLite. Follows the w3c api. 
+ * TODO: Do similar for sessionStorage. 
+ */
+
+var CupcakeLocalStorage = function() {
+		try {
+
+			this.db = openDatabase('localStorage', '1.0', 'localStorage', 2621440);	
+			var storage = {};
+			this.db.transaction(
+				function (transaction) {
+					transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
+					transaction.executeSql('SELECT * FROM storage', [], function(tx, result) {
+	                    for(var i = 0; i < result.rows.length; i++) {
+							storage[result.rows.item(i)['id']] =  result.rows.item(i)['body'];
+						}
+					});
+					
+				}, 
+				function (err) {
+					alert(err.message);
+				}
+			);
+			this.setItem = function(key, val) {
+				console.log('set');
+				storage[key] = val;
+				
+				this.db.transaction(
+					function (transaction) {
+						transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
+						
+						transaction.executeSql('REPLACE INTO storage (id, body) values(?,?)', [key,val]);
+					}
+				);
+			}
+			this.getItem = function(key) {			
+				return storage[key];
+			}
+			this.removeItem = function(key) {
+				delete storage[key];
+				this.db.transaction(
+					function (transaction) {
+						transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
+						
+						transaction.executeSql('DELETE FROM storage where id=?', [key]);
+					}
+				);
+				
+			}
+			this.setObject = function(key, value) {
+			    this.setItem(key, JSON.stringify(value));
+			}
+
+			this.getObject = function(key) {
+				try	{
+					var o = this.getItem(key);
+					if(!o) {
+						return false;
+					}
+					return JSON.parse(o);
+				} catch (e) {
+					console.log('bad json ' + o);
+					return false;
+				}
+			}			
+				
+		} catch(e) {
+			alert("Database error "+e+".");
+		    return;
+		}
+};
 PhoneGap.addConstructor(function() {
-    if (typeof window.openDatabase == "undefined") {
+	if (typeof window.openDatabase == "undefined") {
         navigator.openDatabase = window.openDatabase = DroidDB_openDatabase;
         window.droiddb = new DroidDB();
     }
+    
+    if (typeof window.localStorage == "undefined") {
+        navigator.localStorage = window.localStorage = new CupcakeLocalStorage();
+    }
 });
+
