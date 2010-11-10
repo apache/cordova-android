@@ -359,22 +359,6 @@ var CupcakeLocalStorage = function() {
 				);
 				
 			}
-			this.setObject = function(key, value) {
-			    this.setItem(key, JSON.stringify(value));
-			}
-
-			this.getObject = function(key) {
-				try	{
-					var o = this.getItem(key);
-					if(!o) {
-						return false;
-					}
-					return JSON.parse(o);
-				} catch (e) {
-					console.log('bad json ' + o);
-					return false;
-				}
-			}			
 				
 		} catch(e) {
 			alert("Database error "+e+".");
