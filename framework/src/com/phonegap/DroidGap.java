@@ -7,9 +7,6 @@
  */
 package com.phonegap;
 
-
-
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -54,6 +51,20 @@ import com.phonegap.api.PhonegapActivity;
  *       @Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
+ *         
+ *         // Initialize activity
+ *         super.init();
+ *         
+ *         // Set properties for activity
+ *         super.setProperty("loadingDialog", false); // hide loading dialog (default is to show it)
+ *         
+ *         // Add your plugins here or in JavaScript
+ *         super.addService("MyService", "com.phonegap.examples.MyService");
+ *         
+ *         // Clear cache if you want
+ *         super.appView.clearCache(true);
+ *         
+ *         // Load your application
  *         super.loadUrl("file:///android_asset/www/index.html");
  *       }
  *     }
@@ -64,7 +75,6 @@ public class DroidGap extends PhonegapActivity {
 
     protected WebView appView;					// The webview for our app
 	protected ImageView splashScreen;
-	protected Boolean loadInWebView = false;
     private LinearLayout root;
 
     private BrowserKey mKey;
@@ -74,20 +84,28 @@ public class DroidGap extends PhonegapActivity {
     private String url;							// The initial URL for our app
     private String baseUrl;						// The base of the initial URL for our app
 
-    private Plugin activityResultCallback = null;	// Plugin to call when activity result is received
-         
+    // Plugin to call when activity result is received
+    private Plugin activityResultCallback = null;
+    
+    // Flag indicates that "app loading" dialog should be hidden once page is loaded.
+    // The default is to hide it once PhoneGap JavaScript code has initialized.
+    protected boolean hideLoadingDialogOnPageLoad = false;	
+
+    // Flag indicates that a URL navigated to from PhoneGap app should be loaded into same webview
+    // instead of being loaded into the web browser.  
+	protected boolean loadInWebView = false;
+
     /** 
      * Called when the activity is first created. 
      * 
      * @param savedInstanceState
      */
-	@Override
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE); 
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN); 
+                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
 
         root = new LinearLayout(this);
@@ -106,24 +124,21 @@ public class DroidGap extends PhonegapActivity {
       
         root.addView(splashScreen);
  		*/
-
-        initWebView();
-        root.addView(this.appView);
-        setContentView(root);        
-        
-        // If URL was passed in to intent, then load it
-        Uri uri = this.getIntent().getData();
-        if (uri != null) {
-            System.out.println("Loading initial URI="+uri.toString());
-        	this.loadUrl(uri.toString());
+                
+        // If url was passed in to intent, then init webview, which will load the url
+        Bundle bundle = this.getIntent().getExtras();
+        if (bundle != null) {
+        	String url = bundle.getString("url");
+        	if (url != null) {
+        		this.init();
+        	}
         }
-
 	}
 	
     /**
      * Create and initialize web container.
      */
-	private void initWebView() {
+	public void init() {
 		
 		// Create web container
 		this.appView = new WebView(DroidGap.this);
@@ -167,10 +182,46 @@ public class DroidGap extends PhonegapActivity {
 
         // Bind PhoneGap objects to JavaScript
         this.bindBrowser(this.appView);
-	}
 
+        // Add web view
+        root.addView(this.appView);
+        setContentView(root);
+        
+        // Handle activity parameters
+        this.handleActivityParameters();
+	}
 	
-	@Override
+	/**
+	 * Look at activity parameters and process them.
+	 */
+	private void handleActivityParameters() {
+        
+        // If loadingDialog, then show the App loading dialog
+        if (this.getProperty("loadingDialog", true)) {
+            this.pluginManager.exec("Notification", "activityStart", null, "[\"Wait\",\"Loading Application...\"]", false);
+        }
+        
+        // If hideLoadingDialogOnPageLoad
+        this.hideLoadingDialogOnPageLoad = this.getProperty("hideLoadingDialogOnPageLoad", false);
+
+        // If loadInWebView
+        this.loadInWebView = this.getProperty("loadInWebView", false);
+
+        // If spashscreen
+        String splashscreen = this.getProperty("splashscreen", null);
+        if (splashscreen != null) {
+        	// TODO:
+        }
+
+        // If url specified, then load it
+    	String url = this.getProperty("url", null);
+    	if (url != null) {
+    		System.out.println("Loading initial URL="+url);
+    		this.loadUrl(url);        	
+    	}
+	}
+	
+    @Override
     /**
      * Called by the system when the device configuration changes while your activity is running. 
      * 
@@ -179,7 +230,135 @@ public class DroidGap extends PhonegapActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         //don't reload the current page when the orientation is changed
         super.onConfigurationChanged(newConfig);
-    } 
+    }
+    
+    /**
+     * Get boolean property for activity.
+     * 
+     * @param name
+     * @param defaultValue
+     * @return
+     */
+    protected boolean getProperty(String name, boolean defaultValue) {
+    	Bundle bundle = this.getIntent().getExtras();
+    	if (bundle == null) {
+    		return defaultValue;
+    	}
+    	Boolean p = (Boolean)bundle.get(name);
+    	if (p == null) {
+    		return defaultValue;
+    	}
+    	return p.booleanValue();
+    }
+
+    /**
+     * Get int property for activity.
+     * 
+     * @param name
+     * @param defaultValue
+     * @return
+     */
+    protected int getProperty(String name, int defaultValue) {
+    	Bundle bundle = this.getIntent().getExtras();
+    	if (bundle == null) {
+    		return defaultValue;
+    	}
+    	Integer p = (Integer)bundle.get(name);
+    	if (p == null) {
+    		return defaultValue;
+    	}
+    	return p.intValue();
+    }
+
+    /**
+     * Get string property for activity.
+     * 
+     * @param name
+     * @param defaultValue
+     * @return
+     */
+    protected String getProperty(String name, String defaultValue) {
+    	Bundle bundle = this.getIntent().getExtras();
+    	if (bundle == null) {
+    		return defaultValue;
+    	}
+    	String p = bundle.getString(name);
+    	if (p == null) {
+    		return defaultValue;
+    	}
+    	return p;
+    }
+
+    /**
+     * Get double property for activity.
+     * 
+     * @param name
+     * @param defaultValue
+     * @return
+     */
+    protected double getProperty(String name, double defaultValue) {
+    	Bundle bundle = this.getIntent().getExtras();
+    	if (bundle == null) {
+    		return defaultValue;
+    	}
+    	Double p = (Double)bundle.get(name);
+    	if (p == null) {
+    		return defaultValue;
+    	}
+    	return p.doubleValue();
+    }
+
+    /**
+     * Set boolean property on activity.
+     * 
+     * @param name
+     * @param value
+     */
+    protected void setProperty(String name, boolean value) {
+    	if (this.appView != null) {
+    		System.out.println("Setting property after webview is already initialized - no effect.");
+    	}
+    	this.getIntent().putExtra(name, value);
+    }
+    
+    /**
+     * Set int property on activity.
+     * 
+     * @param name
+     * @param value
+     */
+    protected void setProperty(String name, int value) {
+    	if (this.appView != null) {
+    		System.out.println("Setting property after webview is already initialized - no effect.");
+    	}
+    	this.getIntent().putExtra(name, value);
+    }
+    
+    /**
+     * Set string property on activity.
+     * 
+     * @param name
+     * @param value
+     */
+    protected void setProperty(String name, String value) {
+    	if (this.appView != null) {
+    		System.out.println("Setting property after webview is already initialized - no effect.");
+    	}
+    	this.getIntent().putExtra(name, value);
+    }
+    
+    /**
+     * Set double property on activity.
+     * 
+     * @param name
+     * @param value
+     */
+    protected void setProperty(String name, double value) {
+    	if (this.appView != null) {
+    		System.out.println("Setting property after webview is already initialized - no effect.");
+    	}
+    	this.getIntent().putExtra(name, value);
+    }
 
     @Override
     /**
@@ -301,10 +480,16 @@ public class DroidGap extends PhonegapActivity {
         	this.baseUrl = this.url;
         }
         
+        // Init web view if not already done
+        if (this.appView == null) {
+        	this.init();
+        }
+        
         // Initialize callback server
         this.callbackServer.init(url);
-	    
-	    this.runOnUiThread(new Runnable() {
+
+        // Load URL on UI thread
+        this.runOnUiThread(new Runnable() {
 			public void run() {
 		        DroidGap.this.appView.loadUrl(url);
 	        }
@@ -313,6 +498,7 @@ public class DroidGap extends PhonegapActivity {
     
     /**
      * Send JavaScript statement back to JavaScript.
+     * (This is a convenience method)
      * 
      * @param message
      */
@@ -591,6 +777,12 @@ public class DroidGap extends PhonegapActivity {
             // not loaded yet then just set a flag so that the onNativeReady can be fired
             // from the JS side when the JS gets to that code.
     		appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
+    		
+    		// Stop "app loading" spinner if showing
+    		if (this.ctx.hideLoadingDialogOnPageLoad) {
+    			this.ctx.hideLoadingDialogOnPageLoad = false;
+    			this.ctx.pluginManager.exec("Notification", "activityStop", null, "[]", false);
+    		}
         }
     }
 
