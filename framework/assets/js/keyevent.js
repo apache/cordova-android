@@ -6,25 +6,27 @@
  * Copyright (c) 2010, IBM Corporation
  */
 
-function KeyEvent() 
-{
+function KeyEvent() {
 }
 
-KeyEvent.prototype.backTrigger = function()
-{
-  var e = document.createEvent('Events');
-  e.initEvent('backKeyDown');
-  document.dispatchEvent(e);
-}
+KeyEvent.prototype.backTrigger = function() {
+    var e = document.createEvent('Events');
+    e.initEvent('backKeyDown');
+    document.dispatchEvent(e);
+};
 
-KeyEvent.prototype.menuTrigger = function()
-{
-  var e = document.createEvent('Events');
-  e.initEvent('menuKeyDown');
-  document.dispatchEvent(e);
-}
+KeyEvent.prototype.menuTrigger = function() {
+    var e = document.createEvent('Events');
+    e.initEvent('menuKeyDown');
+    document.dispatchEvent(e);
+};
 
-if (document.keyEvent == null || typeof document.keyEvent == 'undefined')
-{
-  window.keyEvent = document.keyEvent = new KeyEvent();
+KeyEvent.prototype.searchTrigger = function() {
+    var e = document.createEvent('Events');
+    e.initEvent('searchKeyDown');
+    document.dispatchEvent(e);
+};
+
+if (document.keyEvent == null || typeof document.keyEvent == 'undefined') {
+    window.keyEvent = document.keyEvent = new KeyEvent();
 }

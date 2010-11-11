@@ -816,11 +816,15 @@ public class DroidGap extends PhonegapActivity {
     		}
     	}
 
-    	if (keyCode == KeyEvent.KEYCODE_MENU) {
-    		// This is where we launch the menu
+    	// If menu key
+    	else if (keyCode == KeyEvent.KEYCODE_MENU) {
     		appView.loadUrl("javascript:keyEvent.menuTrigger()");
     	}
 
+    	// If search key
+    	else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
+    		appView.loadUrl("javascript:keyEvent.searchTrigger()");
+    	}
 
     	return false;
     }
