@@ -74,7 +74,6 @@ public class DroidGap extends PhonegapActivity {
     private static final String LOG_TAG = "DroidGap";
 
     protected WebView appView;					// The webview for our app
-	protected ImageView splashScreen;
     private LinearLayout root;
 
     private BrowserKey mKey;
@@ -95,6 +94,9 @@ public class DroidGap extends PhonegapActivity {
     // instead of being loaded into the web browser.  
 	protected boolean loadInWebView = false;
 
+	// Splash screen drawable resource to display when starting app
+	protected int splashscreen = 0;
+
     /** 
      * Called when the activity is first created. 
      * 
@@ -113,17 +115,6 @@ public class DroidGap extends PhonegapActivity {
     	root.setBackgroundColor(Color.BLACK);
     	root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
     			ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
-
-    	/*
-        splashScreen = new ImageView(this);
-        splashScreen.setLayoutParams(new LinearLayout.LayoutParams(
-        		ViewGroup.LayoutParams.FILL_PARENT,
-        		ViewGroup.LayoutParams.FILL_PARENT, 
-        		1.0F));
-        splashScreen.setImageResource(R.drawable.splash);
-
-        root.addView(splashScreen);
-    	 */
 
     	// If url was passed in to intent, then init webview, which will load the url
     	Bundle bundle = this.getIntent().getExtras();
@@ -230,7 +221,14 @@ public class DroidGap extends PhonegapActivity {
 	 * Look at activity parameters and process them.
 	 */
 	private void handleActivityParameters() {
-        
+
+		// If spashscreen
+		this.splashscreen = this.getProperty("splashscreen", 0);
+		if (this.splashscreen != 0) {
+	    	appView.setBackgroundColor(0);
+	    	appView.setBackgroundResource(splashscreen);
+		}
+
 		// If loadingDialog, then show the App loading dialog
 		if (this.getProperty("loadingDialog", true)) {
 			this.pluginManager.exec("Notification", "activityStart", null, "[\"Wait\",\"Loading Application...\"]", false);
@@ -241,12 +239,6 @@ public class DroidGap extends PhonegapActivity {
 
 		// If loadInWebView
 		this.loadInWebView = this.getProperty("loadInWebView", false);
-
-		// If spashscreen
-		String splashscreen = this.getProperty("splashscreen", null);
-		if (splashscreen != null) {
-			// TODO:
-		}
 
 		// If url specified, then load it
 		String url = this.getProperty("url", null);
@@ -661,8 +653,6 @@ public class DroidGap extends PhonegapActivity {
      * The webview client receives notifications about appView
      */
     public class GapViewClient extends WebViewClient {
-    	
-    	// TODO: hide splash screen here
 
         DroidGap ctx;
 
@@ -778,7 +768,13 @@ public class DroidGap extends PhonegapActivity {
             // not loaded yet then just set a flag so that the onNativeReady can be fired
             // from the JS side when the JS gets to that code.
     		appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
-    		
+
+    		// If splash screen is showing, clear it
+    		if (this.ctx.splashscreen != 0) {
+    			this.ctx.splashscreen = 0;
+    	    	appView.setBackgroundResource(0);
+    		}
+
     		// Stop "app loading" spinner if showing
     		if (this.ctx.hideLoadingDialogOnPageLoad) {
     			this.ctx.hideLoadingDialogOnPageLoad = false;
@@ -827,14 +823,6 @@ public class DroidGap extends PhonegapActivity {
 
 
     	return false;
-    }
-
-    /**
-     * Removes the splash screen from root view and adds the WebView
-     */
-    public void hideSplashScreen() {
-    	root.removeView(splashScreen);
-    	root.addView(this.appView);
     }
 
     /**
