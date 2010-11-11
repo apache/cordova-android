@@ -661,7 +661,7 @@ public class DroidGap extends PhonegapActivity {
      * The webview client receives notifications about appView
      */
     public class GapViewClient extends WebViewClient {
-
+    	
     	// TODO: hide splash screen here
 
         DroidGap ctx;
@@ -787,36 +787,48 @@ public class DroidGap extends PhonegapActivity {
         }
     }
 
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {	
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-        	if (mKey.isBound())
-        	{
-        		//We fire an event here!
-        		appView.loadUrl("javascript:document.keyEvent.backTrigger()");
-        	}
-        	else
-        	{
-        		// only go back if the webview tells you that it is possible to go back
-        		if(appView.canGoBack())
-        		{
-        			appView.goBack();
-        		}
-        		else // if you can't go back, invoke behavior of super class
-        		{
-        			return super.onKeyDown(keyCode, event);
-        		}
-        	}
-        }
-        
-        if (keyCode == KeyEvent.KEYCODE_MENU) 
-        {
-        	// This is where we launch the menu
-        	appView.loadUrl("javascript:keyEvent.menuTrigger()");
-        }
-        return false;
+    
+    /**
+     * Called when a key is pressed.
+     * 
+     * @param keyCode
+     * @param event
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+    	// If back key
+    	if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+    		// If back key is bound, then send event to JavaScript
+    		if (mKey.isBound()) {
+    			this.appView.loadUrl("javascript:document.keyEvent.backTrigger()");
+    		}
+
+    		// If not bound
+    		else {
+
+    			// Go to previous page in webview if it is possible to go back
+    			if (this.appView.canGoBack()) {
+    				this.appView.goBack();
+    			}
+
+    			// If not, then invoke behavior of super class
+    			else {
+    				return super.onKeyDown(keyCode, event);
+    			}
+    		}
+    	}
+
+    	if (keyCode == KeyEvent.KEYCODE_MENU) {
+    		// This is where we launch the menu
+    		appView.loadUrl("javascript:keyEvent.menuTrigger()");
+    	}
+
+
+    	return false;
     }
-	
+
     /**
      * Removes the splash screen from root view and adds the WebView
      */
@@ -824,7 +836,7 @@ public class DroidGap extends PhonegapActivity {
     	root.removeView(splashScreen);
     	root.addView(this.appView);
     }
-    
+
     /**
      * Any calls to Activity.startActivityForResult must use method below, so 
      * the result can be routed to them correctly.  
