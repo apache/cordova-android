@@ -102,39 +102,39 @@ public class DroidGap extends PhonegapActivity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
+    	super.onCreate(savedInstanceState);
+    	getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+    	getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+    			WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+    	// This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
 
-        root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Color.BLACK);
-        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
-        		ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+    	root = new LinearLayout(this);
+    	root.setOrientation(LinearLayout.VERTICAL);
+    	root.setBackgroundColor(Color.BLACK);
+    	root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+    			ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
 
-        /*
+    	/*
         splashScreen = new ImageView(this);
         splashScreen.setLayoutParams(new LinearLayout.LayoutParams(
         		ViewGroup.LayoutParams.FILL_PARENT,
         		ViewGroup.LayoutParams.FILL_PARENT, 
         		1.0F));
         splashScreen.setImageResource(R.drawable.splash);
-      
+
         root.addView(splashScreen);
- 		*/
-                
-        // If url was passed in to intent, then init webview, which will load the url
-        Bundle bundle = this.getIntent().getExtras();
-        if (bundle != null) {
-        	String url = bundle.getString("url");
-        	if (url != null) {
-        		this.init();
-        	}
-        }
-	}
-	
+    	 */
+
+    	// If url was passed in to intent, then init webview, which will load the url
+    	Bundle bundle = this.getIntent().getExtras();
+    	if (bundle != null) {
+    		String url = bundle.getString("url");
+    		if (url != null) {
+    			this.init();
+    		}
+    	}
+    }
+    
     /**
      * Create and initialize web container.
      */
@@ -191,34 +191,102 @@ public class DroidGap extends PhonegapActivity {
         this.handleActivityParameters();
 	}
 	
+    /**
+     * Bind PhoneGap objects to JavaScript.
+     * 
+     * @param appView
+     */
+	private void bindBrowser(WebView appView) {
+
+		this.callbackServer = new CallbackServer();
+		this.pluginManager = new PluginManager(appView, this);
+		this.mKey = new BrowserKey(appView, this);
+
+		// This creates the new javascript interfaces for PhoneGap
+		appView.addJavascriptInterface(this.pluginManager, "PluginManager");
+
+		appView.addJavascriptInterface(this.mKey, "BackButton");
+
+		appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
+		appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
+
+		this.addService("Geolocation", "com.phonegap.GeoBroker");
+		this.addService("Device", "com.phonegap.Device");
+		this.addService("Accelerometer", "com.phonegap.AccelListener");
+		this.addService("Compass", "com.phonegap.CompassListener");
+		this.addService("Media", "com.phonegap.AudioHandler");
+		this.addService("Camera", "com.phonegap.CameraLauncher");
+		this.addService("Contacts", "com.phonegap.ContactManager");
+		this.addService("Crypto", "com.phonegap.CryptoHandler");
+		this.addService("File", "com.phonegap.FileUtils");
+		this.addService("Location", "com.phonegap.GeoBroker");	// Always add Location, even though it is built-in on 2.x devices. Let JavaScript decide which one to use.
+		this.addService("Network Status", "com.phonegap.NetworkManager");
+		this.addService("Notification", "com.phonegap.Notification");
+		this.addService("Storage", "com.phonegap.Storage");
+		this.addService("Temperature", "com.phonegap.TempListener");
+	}
+        
 	/**
 	 * Look at activity parameters and process them.
 	 */
 	private void handleActivityParameters() {
         
-        // If loadingDialog, then show the App loading dialog
-        if (this.getProperty("loadingDialog", true)) {
-            this.pluginManager.exec("Notification", "activityStart", null, "[\"Wait\",\"Loading Application...\"]", false);
-        }
-        
-        // If hideLoadingDialogOnPageLoad
-        this.hideLoadingDialogOnPageLoad = this.getProperty("hideLoadingDialogOnPageLoad", false);
+		// If loadingDialog, then show the App loading dialog
+		if (this.getProperty("loadingDialog", true)) {
+			this.pluginManager.exec("Notification", "activityStart", null, "[\"Wait\",\"Loading Application...\"]", false);
+		}
 
-        // If loadInWebView
-        this.loadInWebView = this.getProperty("loadInWebView", false);
+		// If hideLoadingDialogOnPageLoad
+		this.hideLoadingDialogOnPageLoad = this.getProperty("hideLoadingDialogOnPageLoad", false);
 
-        // If spashscreen
-        String splashscreen = this.getProperty("splashscreen", null);
-        if (splashscreen != null) {
-        	// TODO:
-        }
+		// If loadInWebView
+		this.loadInWebView = this.getProperty("loadInWebView", false);
 
-        // If url specified, then load it
-    	String url = this.getProperty("url", null);
-    	if (url != null) {
-    		System.out.println("Loading initial URL="+url);
-    		this.loadUrl(url);        	
-    	}
+		// If spashscreen
+		String splashscreen = this.getProperty("splashscreen", null);
+		if (splashscreen != null) {
+			// TODO:
+		}
+
+		// If url specified, then load it
+		String url = this.getProperty("url", null);
+		if (url != null) {
+			System.out.println("Loading initial URL="+url);
+			this.loadUrl(url);        	
+		}
+	}
+	
+    /**
+     * Load the url into the webview.
+     * 
+     * @param url
+     */
+	public void loadUrl(final String url) {
+		System.out.println("loadUrl("+url+")");
+		this.url = url;
+		int i = url.lastIndexOf('/');
+		if (i > 0) {
+			this.baseUrl = url.substring(0, i);
+		}
+		else {
+			this.baseUrl = this.url;
+		}
+		System.out.println("url="+url+" baseUrl="+baseUrl);
+
+		// Init web view if not already done
+		if (this.appView == null) {
+			this.init();
+		}
+
+		// Initialize callback server
+		this.callbackServer.init(url);
+
+		// Load URL on UI thread
+		this.runOnUiThread(new Runnable() {
+			public void run() {
+				DroidGap.this.appView.loadUrl(url);
+			}
+		});
 	}
 	
     @Override
@@ -228,8 +296,8 @@ public class DroidGap extends PhonegapActivity {
      * @param Configuration newConfig
      */
     public void onConfigurationChanged(Configuration newConfig) {
-        //don't reload the current page when the orientation is changed
-        super.onConfigurationChanged(newConfig);
+    	//don't reload the current page when the orientation is changed
+    	super.onConfigurationChanged(newConfig);
     }
     
     /**
@@ -428,73 +496,6 @@ public class DroidGap extends PhonegapActivity {
     public void addService(String serviceType, String className) {
     	this.pluginManager.addService(serviceType, className);
     }
-
-    /**
-     * Bind PhoneGap objects to JavaScript.
-     * 
-     * @param appView
-     */
-    private void bindBrowser(WebView appView) {
-        this.callbackServer = new CallbackServer();
-    	this.pluginManager = new PluginManager(appView, this);
-        this.mKey = new BrowserKey(appView, this);
-    	
-    	// This creates the new javascript interfaces for PhoneGap
-    	appView.addJavascriptInterface(this.pluginManager, "PluginManager");
-        
-        appView.addJavascriptInterface(this.mKey, "BackButton");
-        
-        appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
-    	appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
-
-        
-        this.addService("Geolocation", "com.phonegap.GeoBroker");
-        this.addService("Device", "com.phonegap.Device");
-        this.addService("Accelerometer", "com.phonegap.AccelListener");
-        this.addService("Compass", "com.phonegap.CompassListener");
-        this.addService("Media", "com.phonegap.AudioHandler");
-        this.addService("Camera", "com.phonegap.CameraLauncher");
-        this.addService("Contacts", "com.phonegap.ContactManager");
-        this.addService("Crypto", "com.phonegap.CryptoHandler");
-        this.addService("File", "com.phonegap.FileUtils");
-        this.addService("Location", "com.phonegap.GeoBroker");	// Always add Location, even though it is built-in on 2.x devices. Let JavaScript decide which one to use.
-        this.addService("Network Status", "com.phonegap.NetworkManager");
-        this.addService("Notification", "com.phonegap.Notification");
-        this.addService("Storage", "com.phonegap.Storage");
-        this.addService("Temperature", "com.phonegap.TempListener");
-
-    }
-        
-    /**
-     * Load the url into the webview.
-     * 
-     * @param url
-     */
-    public void loadUrl(final String url) {
-        this.url = url;
-        int i = url.lastIndexOf('/');
-        if (i > 0) {
-        	this.baseUrl = url.substring(0, i);
-        }
-        else {
-        	this.baseUrl = this.url;
-        }
-        
-        // Init web view if not already done
-        if (this.appView == null) {
-        	this.init();
-        }
-        
-        // Initialize callback server
-        this.callbackServer.init(url);
-
-        // Load URL on UI thread
-        this.runOnUiThread(new Runnable() {
-			public void run() {
-		        DroidGap.this.appView.loadUrl(url);
-	        }
-        });
-	}
     
     /**
      * Send JavaScript statement back to JavaScript.
@@ -595,67 +596,67 @@ public class DroidGap extends PhonegapActivity {
      * WebChromeClient that extends GapClient with additional support for Android 2.X
      */
     public final class EclairClient extends GapClient {
-        
-		private String TAG = "PhoneGapLog";
-		private long MAX_QUOTA = 100 * 1024 * 1024;
 
-		/**
-		 * Constructor.
-		 * 
-		 * @param ctx
-		 */
-        public EclairClient(Context ctx) {
-            super(ctx);
-        }
+    	private String TAG = "PhoneGapLog";
+    	private long MAX_QUOTA = 100 * 1024 * 1024;
 
-        /**
-         * Handle database quota exceeded notification.
-         *
-         * @param url
-         * @param databaseIdentifier
-         * @param currentQuota
-         * @param estimatedSize
-         * @param totalUsedQuota
-         * @param quotaUpdater
-         */
-        @Override
-		public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
-		    	     long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
-		{
-		  Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));  	
-		  		  
-			if( estimatedSize < MAX_QUOTA)
-		    	{	                                        
-		    	  //increase for 1Mb        		    	  		    	  
-		    		long newQuota = estimatedSize;		    		
-		    		Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );  	
-		    		quotaUpdater.updateQuota(newQuota);
-		    	}
-		    else
-		    	{
-		    		// Set the quota to whatever it is and force an error
-		    		// TODO: get docs on how to handle this properly
-		    		quotaUpdater.updateQuota(currentQuota);
-		    	}		    	
-		}		
-		                    
-		// console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
-        @Override
-		public void onConsoleMessage(String message, int lineNumber, String sourceID)
-		{       
-			// This is a kludgy hack!!!!
-			Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
-		}
-		
-		@Override
-		public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
-			// TODO Auto-generated method stub
-			super.onGeolocationPermissionsShowPrompt(origin, callback);
-			callback.invoke(origin, true, false);
-		}
-		
-	}
-	
+    	/**
+    	 * Constructor.
+    	 * 
+    	 * @param ctx
+    	 */
+    	public EclairClient(Context ctx) {
+    		super(ctx);
+    	}
+
+    	/**
+    	 * Handle database quota exceeded notification.
+    	 *
+    	 * @param url
+    	 * @param databaseIdentifier
+    	 * @param currentQuota
+    	 * @param estimatedSize
+    	 * @param totalUsedQuota
+    	 * @param quotaUpdater
+    	 */
+    	@Override
+    	public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
+    			long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
+    	{
+    		Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));
+
+    		if( estimatedSize < MAX_QUOTA)
+    		{	                                        
+    			//increase for 1Mb
+    			long newQuota = estimatedSize;		    		
+    			Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );
+    			quotaUpdater.updateQuota(newQuota);
+    		}
+    		else
+    		{
+    			// Set the quota to whatever it is and force an error
+    			// TODO: get docs on how to handle this properly
+    			quotaUpdater.updateQuota(currentQuota);
+    		}		    	
+    	}		
+
+    	// console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
+    	@Override
+    	public void onConsoleMessage(String message, int lineNumber, String sourceID)
+    	{       
+    		// This is a kludgy hack!!!!
+    		Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
+    	}
+
+    	@Override
+    	public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
+    		// TODO Auto-generated method stub
+    		super.onGeolocationPermissionsShowPrompt(origin, callback);
+    		callback.invoke(origin, true, false);
+    	}
+
+    }
+
     /**
      * The webview client receives notifications about appView
      */
