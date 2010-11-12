@@ -29,7 +29,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.WebSettings.LayoutAlgorithm;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginManager;
@@ -199,7 +198,6 @@ public class DroidGap extends PhonegapActivity {
 		appView.addJavascriptInterface(this.mKey, "BackButton");
 
 		appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
-		appView.addJavascriptInterface(new SplashScreen(this), "SplashScreen");
 
 		this.addService("Geolocation", "com.phonegap.GeoBroker");
 		this.addService("Device", "com.phonegap.Device");
@@ -225,13 +223,8 @@ public class DroidGap extends PhonegapActivity {
 		// If spashscreen
 		this.splashscreen = this.getProperty("splashscreen", 0);
 		if (this.splashscreen != 0) {
-	    	appView.setBackgroundColor(0);
-	    	appView.setBackgroundResource(splashscreen);
-		}
-
-		// If loadingDialog, then show the App loading dialog
-		if (this.getProperty("loadingDialog", true)) {
-			this.pluginManager.exec("Notification", "activityStart", null, "[\"Wait\",\"Loading Application...\"]", false);
+			appView.setBackgroundColor(0);
+			appView.setBackgroundResource(splashscreen);
 		}
 
 		// If hideLoadingDialogOnPageLoad
@@ -273,12 +266,44 @@ public class DroidGap extends PhonegapActivity {
 		// Initialize callback server
 		this.callbackServer.init(url);
 
+		// If loadingDialog, then show the App loading dialog
+		if (this.getProperty("loadingDialog", true)) {
+			this.pluginManager.exec("Notification", "activityStart", null, "[\"Wait\",\"Loading Application...\"]", false);
+		}
+
 		// Load URL on UI thread
+		final DroidGap me = this;
 		this.runOnUiThread(new Runnable() {
 			public void run() {
-				DroidGap.this.appView.loadUrl(url);
+				me.appView.loadUrl(url);
 			}
 		});
+	}
+	
+	/**
+	 * Load the url into the webview after waiting for period of time.
+	 * This is used to display the splashscreen for certain amount of time.
+	 * 
+	 * @param url
+	 * @param time				The number of ms to wait before loading webview
+	 */
+	public void loadUrl(final String url, final int time) {
+		System.out.println("loadUrl("+url+","+time+")");
+		final DroidGap me = this; 
+		Runnable runnable = new Runnable() {
+			public void run() {
+				try {
+					synchronized(this) {
+						this.wait(time);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				me.loadUrl(url);
+			}
+		};
+		Thread thread = new Thread(runnable);
+		thread.start();
 	}
 	
     @Override
