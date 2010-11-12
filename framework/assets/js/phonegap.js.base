@@ -167,16 +167,23 @@ PhoneGap.addConstructor = function(func) {
 };
 
 /**
- * Adds a plugin object to window.plugins
+ * Adds a plugin object to window.plugins.
+ * The plugin is accessed using window.plugins.<name>
+ *
+ * @param name          The plugin name
+ * @param obj           The plugin object
  */
 PhoneGap.addPlugin = function(name, obj) {
-	if ( !window.plugins ) {
-		window.plugins = {};
-	}
+    if (!window.plugins) {
+        window.plugins = {};
+    }
 
-	if ( !window.plugins[name] ) {
-		window.plugins[name] = obj;
-	}
+    if (!window.plugins[name]) {
+        window.plugins[name] = obj;
+    }
+    else {
+        console.log("Error: Plugin "+name+" already exists.");
+    }
 }
 
 /**
@@ -737,4 +744,4 @@ PhoneGap.includeJavascript = function(jsfile, successCallback) {
     }
     el.src = jsfile;
     id.appendChild(el);
-}
+};
