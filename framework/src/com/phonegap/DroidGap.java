@@ -545,15 +545,6 @@ public class DroidGap extends PhonegapActivity {
     }
     
     /**
-     * Get the port that the callback server is listening on.
-     * 
-     * @return
-     */
-    public int getPort() {
-    	return this.callbackServer.getPort();
-    }
-	
-    /**
      * Provides a hook for calling "alert" from javascript. Useful for
      * debugging your javascript.
      */
