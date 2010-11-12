@@ -7,6 +7,7 @@
  */
 package com.phonegap;
 
+import org.json.JSONArray;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -55,7 +56,7 @@ import com.phonegap.api.PhonegapActivity;
  *         super.init();
  *         
  *         // Set properties for activity
- *         super.setProperty("loadingDialog", false); // hide loading dialog (default is to show it)
+ *         super.setProperty("loadingDialog", "Title,Message"); // show loading dialog
  *         
  *         // Add your plugins here or in JavaScript
  *         super.addService("MyService", "com.phonegap.examples.MyService");
@@ -267,8 +268,27 @@ public class DroidGap extends PhonegapActivity {
 		this.callbackServer.init(url);
 
 		// If loadingDialog, then show the App loading dialog
-		if (this.getProperty("loadingDialog", true)) {
-			this.pluginManager.exec("Notification", "activityStart", null, "[\"Wait\",\"Loading Application...\"]", false);
+		String loading = this.getProperty("loadingDialog", null);
+		if (loading != null) {
+
+			String title = "";
+			String message = "Loading Application...";
+
+			if (loading.length() > 0) {
+				int comma = loading.indexOf(',');
+				if (comma > 0) {
+					title = loading.substring(0, comma);
+					message = loading.substring(comma+1);
+				}
+				else {
+					title = "";
+					message = loading;
+				}
+			}
+			JSONArray parm = new JSONArray();
+			parm.put(title);
+			parm.put(message);
+			this.pluginManager.exec("Notification", "activityStart", null, parm.toString(), false);
 		}
 
 		// Load URL on UI thread
