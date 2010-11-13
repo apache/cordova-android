@@ -51,12 +51,13 @@ import com.phonegap.api.PhonegapActivity;
  *       @Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
- *         
- *         // Initialize activity
- *         super.init();
- *         
+ *                  
  *         // Set properties for activity
  *         super.setProperty("loadingDialog", "Title,Message"); // show loading dialog
+ *         super.setProperty("errorUrl", "file:///android_asset/www/error.html"); // if error loading file in super.loadUrl().
+ *
+ *         // Initialize activity
+ *         super.init();
  *         
  *         // Add your plugins here or in JavaScript
  *         super.addService("MyService", "com.phonegap.examples.MyService");
@@ -65,37 +66,70 @@ import com.phonegap.api.PhonegapActivity;
  *         super.appView.clearCache(true);
  *         
  *         // Load your application
- *         super.loadUrl("file:///android_asset/www/index.html");
+ *         super.loadSplashscreen("file:///android_asset/www/splash.html");
+ *         super.loadUrl("file:///android_asset/www/index.html", 3000); // show splash screen 3 sec before loading app
  *       }
  *     }
+ *
+ * Properties: The application can be configured using the following properties:
+ * 		super.setProperty("hideLoadingDialogOnPage", true);
+ * 		super.setProperty("loadInWebView", true);
+ * 		super.setProperty("splashscreen", R.drawable.splash);
+ * 		super.setProperty("loadUrlTimeoutValue", 60000);
+ * 		super.setProperty("loadingDialog", "Wait,Loading Demo...");
+ * 		super.setProperty("errorUrl", "file:///android_asset/www/error.html");
+ * 
+ * Splash screens:
+ * 		There are 2 ways to display a splash screen.
+ *			1. Specify an image file from the resource drawable directory.  If there
+ *			   is an image called splash.jpg, then you would call:
+ *					super.setProperty("splashscreen", R.drawable.splash
+ *			2. Specify an HTML file that contains the splash screen:
+ *					super.loadSplashScreen("file:///android_asset/www/splash.html");
  */
 public class DroidGap extends PhonegapActivity {
 
-    private static final String LOG_TAG = "DroidGap";
+	// The webview for our app
+	protected WebView appView;					
 
-    protected WebView appView;					// The webview for our app
-    private LinearLayout root;
-
-    private BrowserKey mKey;
-    public CallbackServer callbackServer;
+	private LinearLayout root;
+	private BrowserKey mKey;
+	public CallbackServer callbackServer;
 	protected PluginManager pluginManager;
 
-    private String url;							// The initial URL for our app
-    private String baseUrl;						// The base of the initial URL for our app
+	// The initial URL for our app
+	private String url;
+	
+	// The base of the initial URL for our app
+	private String baseUrl;
 
-    // Plugin to call when activity result is received
-    private Plugin activityResultCallback = null;
-    
-    // Flag indicates that "app loading" dialog should be hidden once page is loaded.
-    // The default is to hide it once PhoneGap JavaScript code has initialized.
-    protected boolean hideLoadingDialogOnPageLoad = false;	
+	// Plugin to call when activity result is received
+	private Plugin activityResultCallback = null;
 
-    // Flag indicates that a URL navigated to from PhoneGap app should be loaded into same webview
-    // instead of being loaded into the web browser.  
+	// Flag indicates that splash screen is currently showing
+	private boolean splashScreenShowing = false;
+	
+	// Flag indicates that a loadUrl timeout occurred
+	private boolean loadUrlTimeout = false;
+	
+	/*
+	 * The variables below are used to cache some of the activity properties.
+	 */
+	
+	// Flag indicates that "app loading" dialog should be hidden once page is loaded.
+	// The default is to hide it once PhoneGap JavaScript code has initialized.
+	protected boolean hideLoadingDialogOnPageLoad = false;	
+
+	// Flag indicates that a URL navigated to from PhoneGap app should be loaded into same webview
+	// instead of being loaded into the web browser.  
 	protected boolean loadInWebView = false;
 
-	// Splash screen drawable resource to display when starting app
+	// Draw a splash screen using an image located in the drawable resource directory.
+	// This is not the same as calling super.loadSplashscreen(url)
 	protected int splashscreen = 0;
+
+	// LoadUrl timeout value in msec (default of 20 sec)
+	protected int loadUrlTimeoutValue = 20000;
 
     /** 
      * Called when the activity is first created. 
@@ -188,16 +222,13 @@ public class DroidGap extends PhonegapActivity {
      * @param appView
      */
 	private void bindBrowser(WebView appView) {
-
 		this.callbackServer = new CallbackServer();
 		this.pluginManager = new PluginManager(appView, this);
 		this.mKey = new BrowserKey(appView, this);
 
 		// This creates the new javascript interfaces for PhoneGap
 		appView.addJavascriptInterface(this.pluginManager, "PluginManager");
-
 		appView.addJavascriptInterface(this.mKey, "BackButton");
-
 		appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
 
 		this.addService("Geolocation", "com.phonegap.GeoBroker");
@@ -234,6 +265,12 @@ public class DroidGap extends PhonegapActivity {
 		// If loadInWebView
 		this.loadInWebView = this.getProperty("loadInWebView", false);
 
+		// If loadUrlTimeoutValue
+		int timeout = this.getProperty("loadUrlTimeoutValue", 0);
+		if (timeout > 0) {
+			this.loadUrlTimeoutValue = timeout;
+		}
+
 		// If url specified, then load it
 		String url = this.getProperty("url", null);
 		if (url != null) {
@@ -266,7 +303,7 @@ public class DroidGap extends PhonegapActivity {
 
 		// Initialize callback server
 		this.callbackServer.init(url);
-
+		
 		// If loadingDialog, then show the App loading dialog
 		String loading = this.getProperty("loadingDialog", null);
 		if (loading != null) {
@@ -291,8 +328,31 @@ public class DroidGap extends PhonegapActivity {
 			this.pluginManager.exec("Notification", "activityStart", null, parm.toString(), false);
 		}
 
-		// Load URL on UI thread
 		final DroidGap me = this;
+
+		// Create a timeout timer for loadUrl
+		Runnable runnable = new Runnable() {
+			public void run() {
+				me.loadUrlTimeout = true;
+				try {
+					synchronized(this) {
+						wait(me.loadUrlTimeoutValue);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				
+				// If timeout, then stop loading and handle error
+				if (me.loadUrlTimeout) {
+					me.appView.stopLoading();
+					me.onReceivedError(-6, "The connection to the server was unsuccessful.", url);
+				}
+			}
+		};
+		Thread thread = new Thread(runnable);
+		thread.start();
+
+		// Load URL on UI thread
 		this.runOnUiThread(new Runnable() {
 			public void run() {
 				me.appView.loadUrl(url);
@@ -326,6 +386,30 @@ public class DroidGap extends PhonegapActivity {
 		thread.start();
 	}
 	
+    /**
+     * Load the url into the webview.
+     *  
+     * @param url
+     */
+	public void loadSplashScreen(final String url) {
+		System.out.println("loadSplashScreen("+url+")");
+		this.splashScreenShowing = true;
+
+		// Load URL on UI thread
+		final DroidGap me = this;
+		Runnable runnable = new Runnable() {
+			public void run() {
+				me.runOnUiThread(new Runnable() {
+					public void run() {
+						me.appView.loadUrl(url);
+					}
+				});
+			}
+		};
+		Thread thread = new Thread(runnable);
+		thread.start();
+	}
+
     @Override
     /**
      * Called by the system when the device configuration changes while your activity is running. 
@@ -571,7 +655,6 @@ public class DroidGap extends PhonegapActivity {
          */
         @Override
         public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-            Log.d(LOG_TAG, message);
             AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
             dlg.setMessage(message);
             dlg.setTitle("Alert");
@@ -798,12 +881,16 @@ public class DroidGap extends PhonegapActivity {
          * @param url			The url of the page.
          */
         @Override
-        public void onPageFinished  (WebView view, String url) {
+        public void onPageFinished(WebView view, String url) {
         	super.onPageFinished(view, url);
-            // Try firing the onNativeReady event in JS. If it fails because the JS is
-            // not loaded yet then just set a flag so that the onNativeReady can be fired
-            // from the JS side when the JS gets to that code.
-    		appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
+
+        	// Clear timeout flag
+        	this.ctx.loadUrlTimeout = false;
+
+        	// Try firing the onNativeReady event in JS. If it fails because the JS is
+        	// not loaded yet then just set a flag so that the onNativeReady can be fired
+        	// from the JS side when the JS gets to that code.
+        	appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
 
     		// If splash screen is showing, clear it
     		if (this.ctx.splashscreen != 0) {
@@ -811,14 +898,39 @@ public class DroidGap extends PhonegapActivity {
     	    	appView.setBackgroundResource(0);
     		}
 
-    		// Stop "app loading" spinner if showing
-    		if (this.ctx.hideLoadingDialogOnPageLoad) {
-    			this.ctx.hideLoadingDialogOnPageLoad = false;
-    			this.ctx.pluginManager.exec("Notification", "activityStop", null, "[]", false);
-    		}
+        	// Stop "app loading" spinner if showing
+        	if (this.ctx.hideLoadingDialogOnPageLoad) {
+        		this.ctx.hideLoadingDialogOnPageLoad = false;
+        		this.ctx.pluginManager.exec("Notification", "activityStop", null, "[]", false);
+        	}
+
+        	// Clear history, so that splash screen isn't there when Back button is pressed
+        	if (this.ctx.splashScreenShowing && this.ctx.appView.canGoBack()) {
+        		this.ctx.splashScreenShowing = false;
+        		this.ctx.appView.clearHistory();
+        	}
+        }
+        
+        /**
+         * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
+         * The errorCode parameter corresponds to one of the ERROR_* constants.
+         *
+         * @param view 			The WebView that is initiating the callback.
+         * @param errorCode 	The error code corresponding to an ERROR_* value.
+         * @param description 	A String describing the error.
+         * @param failingUrl 	The url that failed to load. 
+         */
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+        	System.out.println("onReceivedError: Error code="+errorCode+" Description="+description+" URL="+failingUrl);
+
+        	// Clear timeout flag
+        	this.ctx.loadUrlTimeout = false;
+
+        	// Handle error
+        	this.ctx.onReceivedError(errorCode, description, failingUrl);
         }
     }
-
     
     /**
      * Called when a key is pressed.
@@ -910,11 +1022,75 @@ public class DroidGap extends PhonegapActivity {
      * @param resultCode		The integer result code returned by the child activity through its setResult().
      * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.onActivityResult(requestCode, resultCode, intent);
-        Plugin callback = this.activityResultCallback;
-        if (callback != null) {
-        	callback.onActivityResult(requestCode, resultCode, intent); 
-        }        
-    }
+     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    	 super.onActivityResult(requestCode, resultCode, intent);
+    	 Plugin callback = this.activityResultCallback;
+    	 if (callback != null) {
+    		 callback.onActivityResult(requestCode, resultCode, intent); 
+    	 }        
+     }
+   
+     /**
+      * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
+      * The errorCode parameter corresponds to one of the ERROR_* constants.
+      *
+      * @param errorCode 	The error code corresponding to an ERROR_* value.
+      * @param description 	A String describing the error.
+      * @param failingUrl 	The url that failed to load. 
+      */
+     public void onReceivedError(int errorCode, String description, String failingUrl) {
+    	 final DroidGap me = this;
+
+    	 // Stop "app loading" spinner if showing
+    	 me.pluginManager.exec("Notification", "activityStop", null, "[]", false);
+
+    	 // If errorUrl specified, then load it
+    	 final String errorUrl = me.getProperty("errorUrl", null);
+    	 if ((errorUrl != null) && errorUrl.startsWith("file://") && (!failingUrl.equals(errorUrl))) {
+
+    		 // Load URL on UI thread
+    		 me.runOnUiThread(new Runnable() {
+    			 public void run() {
+    				 me.appView.loadUrl(errorUrl);
+    			 }
+    		 });
+    	 }
+
+    	 // If not, then display error dialog
+    	 else {
+    		 me.appView.loadUrl("about:blank");
+    		 me.displayError("Application Error", description + " ("+failingUrl+")", "OK", true);
+    	 }
+     }
+
+     /**
+      * Display an error dialog and optionally exit application.
+      * 
+      * @param title
+      * @param message
+      * @param button
+      * @param exit
+      */
+     public void displayError(final String title, final String message, final String button, final boolean exit) {
+    	 final DroidGap me = this;
+    	 me.runOnUiThread(new Runnable() {
+    		 public void run() {
+    			 AlertDialog.Builder dlg = new AlertDialog.Builder(me);
+    			 dlg.setMessage(message);
+    			 dlg.setTitle(title);
+    			 dlg.setCancelable(false);
+    			 dlg.setPositiveButton(button,
+    					 new AlertDialog.OnClickListener() {
+    				 public void onClick(DialogInterface dialog, int which) {
+    					 dialog.dismiss();
+    					 if (exit) {
+    						 me.finish();
+    					 }
+    				 }
+    			 });
+    			 dlg.create();
+    			 dlg.show();
+    		 }
+    	 });
+     }
 }
