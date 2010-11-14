@@ -78,6 +78,7 @@ import com.phonegap.api.PhonegapActivity;
  * 		super.setProperty("loadUrlTimeoutValue", 60000);
  * 		super.setProperty("loadingDialog", "Wait,Loading Demo...");
  * 		super.setProperty("errorUrl", "file:///android_asset/www/error.html");
+ * 		super.setProperty("keepRunning", false);
  * 
  * Splash screens:
  * 		There are 2 ways to display a splash screen.
@@ -130,6 +131,11 @@ public class DroidGap extends PhonegapActivity {
 
 	// LoadUrl timeout value in msec (default of 20 sec)
 	protected int loadUrlTimeoutValue = 20000;
+	
+	// Keep app running when pause is received. (default = true)
+	// If true, then the JavaScript and native code continue to run in the background
+	// when another application (activity) is started.
+	protected boolean keepRunning = true;
 
     /** 
      * Called when the activity is first created. 
@@ -270,6 +276,9 @@ public class DroidGap extends PhonegapActivity {
 		if (timeout > 0) {
 			this.loadUrlTimeoutValue = timeout;
 		}
+		
+		// If keepRunning
+		this.keepRunning = this.getProperty("keepRunning", true);
 
 		// If url specified, then load it
 		String url = this.getProperty("url", null);
@@ -555,15 +564,19 @@ public class DroidGap extends PhonegapActivity {
      */
     protected void onPause() {
         super.onPause();
+        
+        // If app doesn't want to run in background
+        if (!this.keepRunning) {
+        	
+        	// Forward to plugins
+        	this.pluginManager.onPause();
 
-        // Forward to plugins
-        this.pluginManager.onPause();
-        
-        // Send pause event to JavaScript
-        this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
-        
-        // Pause JavaScript timers (including setInterval)
-        this.appView.pauseTimers();
+        	// Send pause event to JavaScript
+        	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
+
+        	// Pause JavaScript timers (including setInterval)
+        	this.appView.pauseTimers();
+        }
     }
 
     @Override
@@ -573,14 +586,18 @@ public class DroidGap extends PhonegapActivity {
     protected void onResume() {
         super.onResume();
 
-        // Forward to plugins
-        this.pluginManager.onResume();
-        
-        // Send resume event to JavaScript
-        this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
-        
-        // Resume JavaScript timers (including setInterval)
-        this.appView.resumeTimers();
+        // If app doesn't want to run in background
+        if (!this.keepRunning) {
+
+        	// Forward to plugins
+        	this.pluginManager.onResume();
+
+        	// Send resume event to JavaScript
+        	this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
+
+        	// Resume JavaScript timers (including setInterval)
+        	this.appView.resumeTimers();
+        }
     }
     
     @Override
