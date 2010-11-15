@@ -23,7 +23,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JsResult;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
@@ -107,8 +109,8 @@ public class DroidGap extends PhonegapActivity {
 	// Plugin to call when activity result is received
 	private Plugin activityResultCallback = null;
 
-	// Flag indicates that splash screen is currently showing
-	private boolean splashScreenShowing = false;
+	// URL of the splash screen that is currently showing
+	private String splashScreenShowing = null;
 	
 	// Flag indicates that a loadUrl timeout occurred
 	private boolean loadUrlTimeout = false;
@@ -402,7 +404,7 @@ public class DroidGap extends PhonegapActivity {
      */
 	public void loadSplashScreen(final String url) {
 		System.out.println("loadSplashScreen("+url+")");
-		this.splashScreenShowing = true;
+		this.splashScreenShowing = url;
 
 		// Load URL on UI thread
 		final DroidGap me = this;
@@ -921,11 +923,15 @@ public class DroidGap extends PhonegapActivity {
         		this.ctx.pluginManager.exec("Notification", "activityStop", null, "[]", false);
         	}
 
-        	// Clear history, so that splash screen isn't there when Back button is pressed
-        	if (this.ctx.splashScreenShowing && this.ctx.appView.canGoBack()) {
-        		this.ctx.splashScreenShowing = false;
-        		this.ctx.appView.clearHistory();
-        	}
+    		// Clear history, so that splash screen isn't there when Back button is pressed
+    		WebBackForwardList history = this.ctx.appView.copyBackForwardList();
+    		int i = history.getCurrentIndex();
+    		if (i > 0) {
+    			WebHistoryItem item = history.getItemAtIndex(i-1);
+    			if (item.getUrl().equals(this.ctx.splashScreenShowing)) {
+    				this.ctx.appView.clearHistory();
+    			}
+    		}	 
         }
         
         /**
