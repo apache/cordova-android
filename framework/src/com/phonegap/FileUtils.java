@@ -175,6 +175,7 @@ public class FileUtils extends Plugin {
    		String line;
    		while ((line = reader.readLine()) != null) {
    			data.append(line);
+   			data.append('\n');
    		}
     	return data.toString();
     }

@@ -22,7 +22,7 @@ public class PluginResult {
 	
 	public PluginResult(Status status, String message) {
 		this.status = status.ordinal();
-		this.message = "'" + message + "'";
+		this.message = JSONObject.quote(message);
 	}
 
 	public PluginResult(Status status, JSONArray message) {
