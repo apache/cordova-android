@@ -242,7 +242,7 @@ var Contacts = function() {
 * @return array of Contacts matching search criteria
 */
 Contacts.prototype.find = function(fields, successCB, errorCB, options) {
-    PhoneGap.exec(successCB, errorCB, "Contacts", "search", [fields, options]);
+    PhoneGap.exec(successCB, errorCB, "Contacts", "search", [fields, options], navigator.service.contacts.cast);
 };
 
 /**
@@ -261,6 +261,22 @@ Contacts.prototype.create = function(properties) {
     }
     return contact;
 };
+
+/**
+* This function returns and array of contacts.  It is required as we need to convert raw 
+* JSON objects into concrete Contact objects.  Currently this method is called after 
+* navigator.service.contacts.find but before the find methods success call back.
+* 
+* @param jsonArray an array of JSON Objects that need to be converted to Contact objects.
+* @returns an array of Contact objects
+*/
+Contacts.prototype.cast = function(jsonArray) {
+	var contacts = new Array();
+	for (var i=0; i<jsonArray.length; i++) {
+		contacts.push(navigator.service.contacts.create(jsonArray[i]));
+	}
+	return contacts;
+}
 
 /**
  * ContactFindOptions.
