@@ -162,13 +162,26 @@ FileReader.DONE = 2;
 FileReader.prototype.abort = function() {
     this.readyState = FileReader.DONE;
 
+    // set error
+    var error = new FileError();
+    error.code = error.ABORT_ERR;
+    this.error = error;
+   
+    // If error callback
+    if (typeof this.onerror == "function") {
+        var evt = File._createEvent("error", this);
+        this.onerror(evt);
+    }
     // If abort callback
     if (typeof this.onabort == "function") {
         var evt = File._createEvent("abort", this);
         this.onabort(evt);
     }
-
-    // TODO: Anything else to do?  Maybe sent to native?
+    // If load end callback
+    if (typeof this.onloadend == "function") {
+        var evt = File._createEvent("loadend", this);
+        this.onloadend(evt);
+    }
 };
 
 /**
@@ -208,14 +221,14 @@ FileReader.prototype.readAsText = function(file, encoding) {
             // Save result
             me.result = r;
 
-            // DONE state
-            me.readyState = FileReader.DONE;
-
             // If onload callback
             if (typeof me.onload == "function") {
                 var evt = File._createEvent("load", me);
                 me.onload(evt);
             }
+
+            // DONE state
+            me.readyState = FileReader.DONE;
 
             // If onloadend callback
             if (typeof me.onloadend == "function") {
@@ -235,14 +248,14 @@ FileReader.prototype.readAsText = function(file, encoding) {
             // Save error
             me.error = e;
 
-            // DONE state
-            me.readyState = FileReader.DONE;
-
             // If onerror callback
             if (typeof me.onerror == "function") {
                 var evt = File._createEvent("error", me);
                 me.onerror(evt);
             }
+
+            // DONE state
+            me.readyState = FileReader.DONE;
 
             // If onloadend callback
             if (typeof me.onloadend == "function") {
@@ -289,14 +302,14 @@ FileReader.prototype.readAsDataURL = function(file) {
             // Save result
             me.result = r;
 
-            // DONE state
-            me.readyState = FileReader.DONE;
-
             // If onload callback
             if (typeof me.onload == "function") {
                 var evt = File._createEvent("load", me);
                 me.onload(evt);
             }
+
+            // DONE state
+            me.readyState = FileReader.DONE;
 
             // If onloadend callback
             if (typeof me.onloadend == "function") {
@@ -316,14 +329,14 @@ FileReader.prototype.readAsDataURL = function(file) {
             // Save error
             me.error = e;
 
-            // DONE state
-            me.readyState = FileReader.DONE;
-
             // If onerror callback
             if (typeof me.onerror == "function") {
                 var evt = File._createEvent("error", me);
                 me.onerror(evt);
             }
+
+            // DONE state
+            me.readyState = FileReader.DONE;
 
             // If onloadend callback
             if (typeof me.onloadend == "function") {
