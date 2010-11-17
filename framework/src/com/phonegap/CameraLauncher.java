@@ -80,7 +80,7 @@ public class CameraLauncher extends Plugin {
 					this.takePicture(args.getInt(0), destType);
 				}
 				else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
-					this.getImage(srcType, destType);
+					this.getImage(args.getInt(0), srcType, destType);
 				}
 				PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
 				r.setKeepCallback(true);
@@ -129,10 +129,14 @@ public class CameraLauncher extends Plugin {
 	/**
 	 * Get image from photo library.
 	 * 
-	 * @param returnType
+	 * @param quality			Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
+	 * @param srcType			The album to get image from.
+	 * @param returnType		Set the type of image to return. 
 	 */
 	// TODO: Images selected from SDCARD don't display correctly, but from CAMERA ALBUM do!
-	public void getImage(int srcType, int returnType) {
+	public void getImage(int quality, int srcType, int returnType) {
+		this.mQuality = quality;
+
 		Intent intent = new Intent();
 		intent.setType("image/*");
 		intent.setAction(Intent.ACTION_GET_CONTENT);
