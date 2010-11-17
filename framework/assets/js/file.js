@@ -161,6 +161,7 @@ FileReader.DONE = 2;
  */
 FileReader.prototype.abort = function() {
     this.readyState = FileReader.DONE;
+    this.result = null;
 
     // set error
     var error = new FileError();
@@ -406,15 +407,29 @@ FileWriter.DONE = 2;
  * Abort writing file.
  */
 FileWriter.prototype.abort = function() {
-    this.readyState = FileWriter.DONE;
-
+    // set error
+    var error = new FileError();
+    error.code = error.ABORT_ERR;
+    this.error = error;
+    
+    // If error callback
+    if (typeof this.onerror == "function") {
+        var evt = File._createEvent("error", this);
+        this.onerror(evt);
+    }
     // If abort callback
     if (typeof this.onabort == "function") {
         var evt = File._createEvent("abort", this);
         this.onabort(evt);
     }
+    
+    this.readyState = FileWriter.DONE;
 
-    // TODO: Anything else to do?  Maybe sent to native?
+    // If load end callback
+    if (typeof this.onloadend == "function") {
+        var evt = File._createEvent("writeend", this);
+        this.onloadend(evt);
+    }
 };
 
 FileWriter.prototype.writeAsText = function(file, text, bAppend) {
