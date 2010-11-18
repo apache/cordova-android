@@ -423,11 +423,11 @@ PhoneGap.callbackStatus = {
  * @param {String[]} [args]     Zero or more arguments to pass to the method
  * @param {String} jsClass		The class to cast the return as
  */
-PhoneGap.exec = function(success, fail, service, action, args, cast) {
+PhoneGap.exec = function(success, fail, service, action, args) {
     try {
         var callbackId = service + PhoneGap.callbackId++;
         if (success || fail) {
-            PhoneGap.callbacks[callbackId] = {success:success, fail:fail, cast:cast};
+            PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
         }
         
         // Note: Device returns string, but for some reason emulator returns object - so convert to string.
@@ -443,12 +443,7 @@ PhoneGap.exec = function(success, fail, service, action, args, cast) {
                 // If there is a success callback, then call it now with returned value
                 if (success) {
                     try {
-                    	if (cast) {
-                    		success(cast(v.message));
-                    	}
-                    	else {
-                        	success(v.message);
-                        }
+                       	success(v.message);
                     }
                     catch (e) {
                         console.log("Error in success callback: "+callbackId+" = "+e);
@@ -510,12 +505,7 @@ PhoneGap.callbackSuccess = function(callbackId, args) {
         if (args.status == PhoneGap.callbackStatus.OK) {
             try {
                 if (PhoneGap.callbacks[callbackId].success) {
-                	if (PhoneGap.callbacks[callbackId].cast) {
-                		PhoneGap.callbacks[callbackId].success(PhoneGap.callbacks[callbackId].cast(args.message));
-                	}
-                	else {
-                		PhoneGap.callbacks[callbackId].success(args.message);
-                	}
+               		PhoneGap.callbacks[callbackId].success(args.message);
                 }
             }
             catch (e) {

@@ -14,6 +14,7 @@ public class PluginResult {
 	private final int status;
 	private final String message;
 	private boolean keepCallback = false;
+	private String cast = null;
 	
 	public PluginResult(Status status) {
 		this.status = status.ordinal();
@@ -23,6 +24,12 @@ public class PluginResult {
 	public PluginResult(Status status, String message) {
 		this.status = status.ordinal();
 		this.message = JSONObject.quote(message);
+	}
+
+	public PluginResult(Status status, JSONArray message, String cast) {
+		this.status = status.ordinal();
+		this.message = message.toString();
+		this.cast = cast;
 	}
 
 	public PluginResult(Status status, JSONArray message) {
@@ -71,7 +78,12 @@ public class PluginResult {
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
-		return "PhoneGap.callbackSuccess('"+callbackId+"', " + this.getJSONString() + " );";
+		StringBuffer buf = new StringBuffer("");
+		if (cast != null) {
+			buf.append("var temp = "+cast+"("+this.getJSONString() + ");\n");
+		}
+		buf.append("PhoneGap.callbackSuccess('"+callbackId+"', temp );");
+		return buf.toString();
 	}
 	
 	public String toErrorCallbackString(String callbackId) {

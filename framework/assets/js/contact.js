@@ -242,7 +242,7 @@ var Contacts = function() {
 * @return array of Contacts matching search criteria
 */
 Contacts.prototype.find = function(fields, successCB, errorCB, options) {
-    PhoneGap.exec(successCB, errorCB, "Contacts", "search", [fields, options], navigator.service.contacts.cast);
+    PhoneGap.exec(successCB, errorCB, "Contacts", "search", [fields, options]);
 };
 
 /**
@@ -270,12 +270,13 @@ Contacts.prototype.create = function(properties) {
 * @param jsonArray an array of JSON Objects that need to be converted to Contact objects.
 * @returns an array of Contact objects
 */
-Contacts.prototype.cast = function(jsonArray) {
+Contacts.prototype.cast = function(pluginResult) {
 	var contacts = new Array();
-	for (var i=0; i<jsonArray.length; i++) {
-		contacts.push(navigator.service.contacts.create(jsonArray[i]));
+	for (var i=0; i<pluginResult.message.length; i++) {
+		contacts.push(navigator.service.contacts.create(pluginResult.message[i]));
 	}
-	return contacts;
+	pluginResult.message = contacts;
+	return pluginResult;
 }
 
 /**
