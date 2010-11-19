@@ -12,19 +12,14 @@
  */
 
 /**
- * List of files
+ * This class provides some useful information about a file.
+ * This is the fields returned when navigator.fileMgr.getFileProperties() 
+ * is called.
  */
-function FileList() {
-    this.files = {};
-};
-
-/**
- * Describes a single file in a FileList
- */
-function File() {
-    this.name = null;
-    this.type = null;
-    this.urn = null;
+function FileProperties(filePath) {
+    this.filePath = filePath;
+    this.size = 0;
+    this.lastModifiedDate = null;
 };
 
 /**
@@ -44,21 +39,21 @@ File._createEvent = function(type, target) {
 };
 
 function FileError() {
-   // File error codes
-   // Found in DOMException
-   this.NOT_FOUND_ERR = 1;
-   this.SECURITY_ERR = 2;
-   this.ABORT_ERR = 3;
-
-   // Added by this specification
-   this.NOT_READABLE_ERR = 4;
-   this.ENCODING_ERR = 5;
-   this.NO_MODIFICATION_ALLOWED_ERR = 6;
-   this.INVALID_STATE_ERR = 7;
-   this.SYNTAX_ERR = 8;
-
    this.code = null;
 };
+
+// File error codes
+// Found in DOMException
+FileError.NOT_FOUND_ERR = 1;
+FileError.SECURITY_ERR = 2;
+FileError.ABORT_ERR = 3;
+
+// Added by this specification
+FileError.NOT_READABLE_ERR = 4;
+FileError.ENCODING_ERR = 5;
+FileError.NO_MODIFICATION_ALLOWED_ERR = 6;
+FileError.INVALID_STATE_ERR = 7;
+FileError.SYNTAX_ERR = 8;
 
 //-----------------------------------------------------------------------------
 // File manager
@@ -67,39 +62,51 @@ function FileError() {
 function FileMgr() {
 };
 
+FileMgr.prototype.getFileProperties = function(filePath) {
+    return PhoneGap.exec(null, null, "File", "getFile", [filePath]);
+};
+
 FileMgr.prototype.getFileBasePaths = function() {
 };
 
+FileMgr.prototype.getRootPaths = function() {
+    return PhoneGap.exec(null, null, "File", "getRootPaths", []);
+};
+
 FileMgr.prototype.testSaveLocationExists = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "testSaveLocationExists", []);
+    return PhoneGap.exec(successCallback, errorCallback, "File", "testSaveLocationExists", []);
 };
 
 FileMgr.prototype.testFileExists = function(fileName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "testFileExists", [fileName]);
+    return PhoneGap.exec(successCallback, errorCallback, "File", "testFileExists", [fileName]);
 };
 
 FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "testDirectoryExists", [dirName]);
+    return PhoneGap.exec(successCallback, errorCallback, "File", "testDirectoryExists", [dirName]);
 };
 
 FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "createDirectory", [dirName]);
+    return PhoneGap.exec(successCallback, errorCallback, "File", "createDirectory", [dirName]);
 };
 
 FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "deleteDirectory", [dirName]);
+    return PhoneGap.exec(successCallback, errorCallback, "File", "deleteDirectory", [dirName]);
 };
 
 FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "deleteFile", [fileName]);
+    return PhoneGap.exec(successCallback, errorCallback, "File", "deleteFile", [fileName]);
 };
 
 FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "getFreeDiskSpace", []);
+    return PhoneGap.exec(successCallback, errorCallback, "File", "getFreeDiskSpace", []);
 };
 
 FileMgr.prototype.writeAsText = function(fileName, data, append, successCallback, errorCallback) {
     PhoneGap.exec(successCallback, errorCallback, "File", "writeAsText", [fileName, data, append]);
+};
+
+FileMgr.prototype.write = function(fileName, data, position, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "write", [fileName, data, position]);
 };
 
 FileMgr.prototype.truncate = function(fileName, size, successCallback, errorCallback) {
@@ -378,9 +385,20 @@ FileReader.prototype.readAsArrayBuffer = function(file) {
  * For Android:
  *      The root directory is the root of the file system.
  *      To write to the SD card, the file name is "sdcard/my_file.txt"
+ *      
+ * @param filePath the file to write to
+ * @param append if true write to the end of the file, otherwise overwrite the file
  */
-function FileWriter() {
+function FileWriter(filePath, append) {
     this.fileName = "";
+    this.length = 0;
+	if (filePath) {
+		var f = navigator.fileMgr.getFileProperties(filePath);
+	    this.fileName = f.name;
+	    this.length = f.size;
+	}
+    // default is to write at the beginning of the file
+    this.position = (append !== true) ? 0 : this.length;
 
     this.readyState = 0; // EMPTY
 
@@ -432,6 +450,13 @@ FileWriter.prototype.abort = function() {
     }
 };
 
+/**
+ * @Deprecated: use write instead
+ * 
+ * @param file to write the data to
+ * @param text to be written
+ * @param bAppend if true write to end of file, otherwise overwrite the file
+ */
 FileWriter.prototype.writeAsText = function(file, text, bAppend) {
 	// Throw an exception if we are already writing a file
 	if (this.readyState == FileWriter.WRITING) {
@@ -515,13 +540,16 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
 
 };
 
-FileWriter.prototype.truncate = function(file, size) {
+/**
+ * Writes data to the file
+ *  
+ * @param text to be written
+ */
+FileWriter.prototype.write = function(text) {
 	// Throw an exception if we are already writing a file
 	if (this.readyState == FileWriter.WRITING) {
 		throw FileError.INVALID_STATE_ERR;
 	}
-
-    this.fileName = file;
 
     // WRITING state
     this.readyState = FileWriter.WRITING;
@@ -535,7 +563,7 @@ FileWriter.prototype.truncate = function(file, size) {
     }
 
     // Write file
-    navigator.fileMgr.truncate(file, size,
+    navigator.fileMgr.write(this.fileName, text, this.position,
 
         // Success callback
         function(r) {
@@ -545,8 +573,128 @@ FileWriter.prototype.truncate = function(file, size) {
                 return;
             }
 
-            // Save result
-            me.result = r;
+            // So if the user wants to keep appending to the file
+            me.length = Math.max(me.length, me.position + r);
+            // position always increases by bytes written because file would be extended
+            me.position += r;
+
+            // If onwrite callback
+            if (typeof me.onwrite == "function") {
+                var evt = File._createEvent("write", me);
+                me.onwrite(evt);
+            }
+
+            // DONE state
+            me.readyState = FileWriter.DONE;
+
+            // If onwriteend callback
+            if (typeof me.onwriteend == "function") {
+                var evt = File._createEvent("writeend", me);
+                me.onwriteend(evt);
+            }
+        },
+
+        // Error callback
+        function(e) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileWriter.DONE) {
+                return;
+            }
+
+            // Save error
+            me.error = e;
+
+            // If onerror callback
+            if (typeof me.onerror == "function") {
+                var evt = File._createEvent("error", me);
+                me.onerror(evt);
+            }
+
+            // DONE state
+            me.readyState = FileWriter.DONE;
+
+            // If onwriteend callback
+            if (typeof me.onwriteend == "function") {
+                var evt = File._createEvent("writeend", me);
+                me.onwriteend(evt);
+            }
+        }
+        );
+
+};
+
+/** 
+ * Moves the file pointer to the location specified.
+ * 
+ * If the offset is a negative number the position of the file 
+ * pointer is rewound.  If the offset is greater than the file 
+ * size the position is set to the end of the file.  
+ * 
+ * @param offset is the location to move the file pointer to.
+ */
+FileWriter.prototype.seek = function(offset) {
+    // Throw an exception if we are already writing a file
+    if (this.readyState === FileWriter.WRITING) {
+        throw FileError.INVALID_STATE_ERR;
+    }
+
+    if (!offset) {
+        return;
+    }
+    
+    // See back from end of file.
+    if (offset < 0) {
+		this.position = Math.max(offset + this.length, 0);
+	}
+    // Offset is bigger then file size so set position 
+    // to the end of the file.
+	else if (offset > this.length) {
+		this.position = this.length;
+	}
+    // Offset is between 0 and file size so set the position
+    // to start writing.
+	else {
+		this.position = offset;
+	}	
+};
+
+/** 
+ * Truncates the file to the size specified.
+ * 
+ * @param size to chop the file at.
+ */
+FileWriter.prototype.truncate = function(size) {
+	// Throw an exception if we are already writing a file
+	if (this.readyState == FileWriter.WRITING) {
+		throw FileError.INVALID_STATE_ERR;
+	}
+
+    // WRITING state
+    this.readyState = FileWriter.WRITING;
+
+    var me = this;
+
+    // If onwritestart callback
+    if (typeof me.onwritestart == "function") {
+        var evt = File._createEvent("writestart", me);
+        me.onwritestart(evt);
+    }
+
+    // Write file
+    navigator.fileMgr.truncate(this.fileName, size,
+
+        // Success callback
+        function(r) {
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState == FileWriter.DONE) {
+                return;
+            }
+
+            // Update the length of the file
+            me.length = r;
+            me.position = Math.min(me.position, r);;
 
             // If onwrite callback
             if (typeof me.onwrite == "function") {

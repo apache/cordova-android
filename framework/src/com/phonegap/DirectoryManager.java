@@ -8,6 +8,11 @@
 package com.phonegap;
 
 import java.io.File;
+import java.util.Date;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.os.Environment;
 import android.os.StatFs;
@@ -21,6 +26,8 @@ import android.util.Log;
  */
 public class DirectoryManager {
 	
+	private static final String LOG_TAG = "DirectoryManager";
+
 	/**
 	 * Determine if a file or directory exists.
 	 * 
@@ -36,7 +43,6 @@ public class DirectoryManager {
             File newPath = constructFilePaths(path.toString(), name);
             status = newPath.exists();
     	}
-		
 		// If no SD card
 		else{
     		status = false;
@@ -215,8 +221,52 @@ public class DirectoryManager {
 	 */
 	private static File constructFilePaths (String file1, String file2) {
 		File newPath;
-		newPath = new File(file1+"/"+file2);
+		if (file2.startsWith(file1)) {
+			newPath = new File(file2);
+		}
+		else {
+			newPath = new File(file1+"/"+file2);
+		}
 		return newPath;
+	}
+
+	/**
+	 * This method will determine the file properties of the file specified
+	 * by the filePath.  Creates a JSONObject with name, lastModifiedDate and 
+	 * size properties.
+	 * 
+	 * @param filePath the file to get the properties of
+	 * @return a JSONObject with the files properties
+	 */
+	protected static JSONObject getFile(String filePath) {
+		File fp = new File(filePath);
+		
+		JSONObject obj = new JSONObject();
+		try {
+			obj.put("name", fp.getAbsolutePath());
+			obj.put("lastModifiedDate", new Date(fp.lastModified()).toString());
+			obj.put("size", fp.length());
+		}
+		catch (JSONException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		
+		return obj;
+	}
+
+	/**
+	 * This method returns a JSONArray of file paths.  Android's default 
+	 * location where files can be written is Environment.getExternalStorageDirectory().
+	 * We are returning a array with one element so the interface can remain 
+	 * consistent with BlackBerry as they have two areas where files can be 
+	 * written.
+	 * 
+	 * @return an array of file paths
+	 */
+	protected static JSONArray getRootPaths() {
+        JSONArray retVal = new JSONArray();
+        retVal.put(Environment.getExternalStorageDirectory().getAbsolutePath());
+		return retVal;
 	}
 
 }

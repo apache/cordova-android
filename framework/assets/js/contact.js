@@ -72,8 +72,9 @@ Contact.prototype.remove = function(successCB, errorCB) {
         errorObj.code = ContactError.NOT_FOUND_ERROR;
         errorCB(errorObj);
     }
-
-    PhoneGap.exec(successCB, errorCB, "Contacts", "remove", [this.id]);
+    else {
+        PhoneGap.exec(successCB, errorCB, "Contacts", "remove", [this.id]);
+    }
 };
 
 /**

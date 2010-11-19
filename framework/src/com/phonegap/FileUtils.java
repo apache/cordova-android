@@ -13,6 +13,7 @@ import java.nio.channels.FileChannel;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
@@ -83,6 +84,9 @@ public class FileUtils extends Plugin {
 		        boolean b = DirectoryManager.createDirectory(args.getString(0));
 		        return new PluginResult(status, b);
 		    }
+			else if (action.equals("getRootPaths")) {
+		        return new PluginResult(status, DirectoryManager.getRootPaths());
+		    }
 			else if (action.equals("readAsText")) {
 				try {
 					String s = this.readAsText(args.getString(0), args.getString(1));
@@ -118,9 +122,10 @@ public class FileUtils extends Plugin {
 					return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
 				}
 		    }
-			else if (action.equals("truncate")) {
+			else if (action.equals("write")) {
 				try {
-					this.truncateFile(args.getString(0), args.getLong(1));
+					long fileSize = this.write(args.getString(0), args.getString(1), args.getLong(2));
+					return new PluginResult(status, fileSize);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 					return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_FOUND_ERR);
@@ -129,6 +134,22 @@ public class FileUtils extends Plugin {
 					return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
 				}
 		    }
+			else if (action.equals("truncate")) {
+				try {
+					long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
+					return new PluginResult(status, fileSize);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_FOUND_ERR);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
+				}
+		    }
+			else if (action.equals("getFile")) {
+		        JSONObject obj = DirectoryManager.getFile(args.getString(0));
+		        return new PluginResult(status, obj);
+			}
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -169,15 +190,14 @@ public class FileUtils extends Plugin {
      * @throws FileNotFoundException, IOException
      */
     public String readAsText(String filename, String encoding) throws FileNotFoundException, IOException {
-    	StringBuilder data = new StringBuilder();
-   		FileInputStream fis = new FileInputStream(filename);
-   		BufferedReader reader = new BufferedReader(new InputStreamReader(fis, encoding), 1024);
-   		String line;
-   		while ((line = reader.readLine()) != null) {
-   			data.append(line);
-   			data.append('\n');
-   		}
-    	return data.toString();
+    	byte[] bytes = new byte[1000];
+   		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filename), 1024);
+   		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    	int numRead = 0;
+    	while ((numRead = bis.read(bytes, 0, 1000)) >= 0) {
+    	    bos.write(bytes, 0, numRead);
+    	}
+        return new String(bos.toByteArray(), encoding);
     }
     
     /**
@@ -225,6 +245,23 @@ public class FileUtils extends Plugin {
    		out.close();    			
     }
     
+    /**
+     * Write contents of file.
+     * 
+     * @param filename			The name of the file.
+     * @param data				The contents of the file.
+     * @param offset			The position to begin writing the file.			
+     * @throws FileNotFoundException, IOException
+     */
+    public long write(String filename, String data, long offset) throws FileNotFoundException, IOException {
+    	RandomAccessFile file = new RandomAccessFile(filename, "rw");
+    	file.seek(offset);
+    	file.writeBytes(data);
+    	file.close();
+    	
+    	return data.length();
+    }
+    
     
     /**
      * Truncate the file to size
@@ -233,13 +270,16 @@ public class FileUtils extends Plugin {
      * @param size
      * @throws FileNotFoundException, IOException 
      */
-    private void truncateFile(String filename, long size) throws FileNotFoundException, IOException {
+    private long truncateFile(String filename, long size) throws FileNotFoundException, IOException {
 		RandomAccessFile raf = new RandomAccessFile(filename, "rw");
-		
+
 		if (raf.length() >= size) {	   			
    			FileChannel channel = raf.getChannel();
    			channel.truncate(size);
+   			return size;
 		}
+		
+		return raf.length();
     }
 
 }
