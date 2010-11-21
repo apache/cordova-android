@@ -255,6 +255,7 @@ public class DroidGap extends PhonegapActivity {
 		appView.addJavascriptInterface(this.mKey, "BackButton");
 		appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
 
+		this.addService("App", "com.phonegap.App");
 		this.addService("Geolocation", "com.phonegap.GeoBroker");
 		this.addService("Device", "com.phonegap.Device");
 		this.addService("Accelerometer", "com.phonegap.AccelListener");
