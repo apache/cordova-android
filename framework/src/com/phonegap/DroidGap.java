@@ -93,12 +93,15 @@ import com.phonegap.api.PhonegapActivity;
 public class DroidGap extends PhonegapActivity {
 
 	// The webview for our app
-	protected WebView appView;					
+	protected WebView appView;
+	protected WebViewClient webViewClient;
 
 	private LinearLayout root;
 	private BrowserKey mKey;
 	public CallbackServer callbackServer;
 	protected PluginManager pluginManager;
+	protected boolean cancelLoadUrl = false;
+	protected boolean clearHistory = false;
 
 	// The initial URL for our app
 	private String url;
@@ -113,7 +116,7 @@ public class DroidGap extends PhonegapActivity {
 	private String splashScreenShowing = null;
 	
 	// Flag indicates that a loadUrl timeout occurred
-	private boolean loadUrlTimeout = false;
+	private int loadUrlTimeout = 0;
 	
 	/*
 	 * The variables below are used to cache some of the activity properties.
@@ -190,7 +193,7 @@ public class DroidGap extends PhonegapActivity {
         	this.appView.setWebChromeClient(new GapClient(DroidGap.this));
         }
            
-        this.appView.setWebViewClient(new GapViewClient(this));
+        this.setWebViewClient(this.appView, new GapViewClient(this));
 
         this.appView.setInitialScale(100);
         this.appView.setVerticalScrollBarEnabled(false);
@@ -220,10 +223,28 @@ public class DroidGap extends PhonegapActivity {
         root.addView(this.appView);
         setContentView(root);
         
-        // Handle activity parameters
-        this.handleActivityParameters();
+        // Clear cancel flag
+        this.cancelLoadUrl = false;
+
+        // If url specified, then load it
+        String url = this.getStringProperty("url", null);
+        if (url != null) {
+        	System.out.println("Loading initial URL="+url);
+        	this.loadUrl(url);        	
+        }
 	}
 	
+	/**
+	 * Set the WebViewClient.
+	 * 
+	 * @param appView
+	 * @param client
+	 */
+	protected void setWebViewClient(WebView appView, WebViewClient client) {
+		this.webViewClient = client;
+		appView.setWebViewClient(client);
+	}
+
     /**
      * Bind PhoneGap objects to JavaScript.
      * 
@@ -257,37 +278,36 @@ public class DroidGap extends PhonegapActivity {
         
 	/**
 	 * Look at activity parameters and process them.
+	 * This must be called from the main UI thread.
 	 */
 	private void handleActivityParameters() {
 
+		// Init web view if not already done
+		if (this.appView == null) {
+			this.init();
+		}
+
 		// If spashscreen
-		this.splashscreen = this.getProperty("splashscreen", 0);
+		this.splashscreen = this.getIntegerProperty("splashscreen", 0);
 		if (this.splashscreen != 0) {
-			appView.setBackgroundColor(0);
-			appView.setBackgroundResource(splashscreen);
+			this.appView.setBackgroundColor(0);
+			this.appView.setBackgroundResource(splashscreen);
 		}
 
 		// If hideLoadingDialogOnPageLoad
-		this.hideLoadingDialogOnPageLoad = this.getProperty("hideLoadingDialogOnPageLoad", false);
+		this.hideLoadingDialogOnPageLoad = this.getBooleanProperty("hideLoadingDialogOnPageLoad", false);
 
 		// If loadInWebView
-		this.loadInWebView = this.getProperty("loadInWebView", false);
+		this.loadInWebView = this.getBooleanProperty("loadInWebView", false);
 
 		// If loadUrlTimeoutValue
-		int timeout = this.getProperty("loadUrlTimeoutValue", 0);
+		int timeout = this.getIntegerProperty("loadUrlTimeoutValue", 0);
 		if (timeout > 0) {
 			this.loadUrlTimeoutValue = timeout;
 		}
 		
 		// If keepRunning
-		this.keepRunning = this.getProperty("keepRunning", true);
-
-		// If url specified, then load it
-		String url = this.getProperty("url", null);
-		if (url != null) {
-			System.out.println("Loading initial URL="+url);
-			this.loadUrl(url);        	
-		}
+		this.keepRunning = this.getBooleanProperty("keepRunning", true);
 	}
 	
     /**
@@ -307,65 +327,62 @@ public class DroidGap extends PhonegapActivity {
 		}
 		System.out.println("url="+url+" baseUrl="+baseUrl);
 
-		// Init web view if not already done
-		if (this.appView == null) {
-			this.init();
-		}
-
-		// Initialize callback server
-		this.callbackServer.init(url);
-		
-		// If loadingDialog, then show the App loading dialog
-		String loading = this.getProperty("loadingDialog", null);
-		if (loading != null) {
-
-			String title = "";
-			String message = "Loading Application...";
-
-			if (loading.length() > 0) {
-				int comma = loading.indexOf(',');
-				if (comma > 0) {
-					title = loading.substring(0, comma);
-					message = loading.substring(comma+1);
-				}
-				else {
-					title = "";
-					message = loading;
-				}
-			}
-			JSONArray parm = new JSONArray();
-			parm.put(title);
-			parm.put(message);
-			this.pluginManager.exec("Notification", "activityStart", null, parm.toString(), false);
-		}
-
-		final DroidGap me = this;
-
-		// Create a timeout timer for loadUrl
-		Runnable runnable = new Runnable() {
-			public void run() {
-				me.loadUrlTimeout = true;
-				try {
-					synchronized(this) {
-						wait(me.loadUrlTimeoutValue);
-					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				
-				// If timeout, then stop loading and handle error
-				if (me.loadUrlTimeout) {
-					me.appView.stopLoading();
-					me.onReceivedError(-6, "The connection to the server was unsuccessful.", url);
-				}
-			}
-		};
-		Thread thread = new Thread(runnable);
-		thread.start();
-
 		// Load URL on UI thread
+		final DroidGap me = this;
 		this.runOnUiThread(new Runnable() {
 			public void run() {
+
+				// Handle activity parameters
+				me.handleActivityParameters();
+
+				// Initialize callback server
+				me.callbackServer.init(url);
+
+				// If loadingDialog, then show the App loading dialog
+				String loading = me.getStringProperty("loadingDialog", null);
+				if (loading != null) {
+
+					String title = "";
+					String message = "Loading Application...";
+
+					if (loading.length() > 0) {
+						int comma = loading.indexOf(',');
+						if (comma > 0) {
+							title = loading.substring(0, comma);
+							message = loading.substring(comma+1);
+						}
+						else {
+							title = "";
+							message = loading;
+						}
+					}
+					JSONArray parm = new JSONArray();
+					parm.put(title);
+					parm.put(message);
+					me.pluginManager.exec("Notification", "activityStart", null, parm.toString(), false);
+				}
+
+				// Create a timeout timer for loadUrl
+				final int currentLoadUrlTimeout = me.loadUrlTimeout;
+				Runnable runnable = new Runnable() {
+					public void run() {
+						try {
+							synchronized(this) {
+								wait(me.loadUrlTimeoutValue);
+							}
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}		
+
+						// If timeout, then stop loading and handle error
+						if (me.loadUrlTimeout == currentLoadUrlTimeout) {
+							me.appView.stopLoading();
+							me.webViewClient.onReceivedError(me.appView, -6, "The connection to the server was unsuccessful.", url);
+						}
+					}
+				};
+				Thread thread = new Thread(runnable);
+				thread.start();
 				me.appView.loadUrl(url);
 			}
 		});
@@ -380,7 +397,15 @@ public class DroidGap extends PhonegapActivity {
 	 */
 	public void loadUrl(final String url, final int time) {
 		System.out.println("loadUrl("+url+","+time+")");
-		final DroidGap me = this; 
+		final DroidGap me = this;
+
+		// Handle activity parameters
+		this.runOnUiThread(new Runnable() {
+			public void run() {
+				me.handleActivityParameters();
+			}
+		});
+
 		Runnable runnable = new Runnable() {
 			public void run() {
 				try {
@@ -390,14 +415,46 @@ public class DroidGap extends PhonegapActivity {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				me.loadUrl(url);
+				if (!me.cancelLoadUrl) {
+					me.loadUrl(url);
+				}
+				else{
+					me.cancelLoadUrl = false;
+					System.out.println("Aborting loadUrl("+url+"): Another URL was loaded before timer expired.");
+				}
 			}
 		};
 		Thread thread = new Thread(runnable);
 		thread.start();
 	}
 	
+	/**
+	 * Cancel loadUrl before it has been loaded.
+	 */
+	public void cancelLoadUrl() {
+		this.cancelLoadUrl = true;
+	}
+	
+	/**
+	 * Clear the resource cache.
+	 */
+	public void clearCache() {
+		if (this.appView == null) {
+			this.init();
+		}
+		this.appView.clearCache(true);
+	}
+
     /**
+     * Clear web history in this web view.
+     */
+    public void clearHistory() {
+    	this.clearHistory = true;
+    	if (this.appView != null) {
+    		this.appView.clearHistory();
+    	}
+    }
+
      * Load the url into the webview.
      *  
      * @param url
@@ -439,7 +496,7 @@ public class DroidGap extends PhonegapActivity {
      * @param defaultValue
      * @return
      */
-    protected boolean getProperty(String name, boolean defaultValue) {
+    public boolean getBooleanProperty(String name, boolean defaultValue) {
     	Bundle bundle = this.getIntent().getExtras();
     	if (bundle == null) {
     		return defaultValue;
@@ -458,7 +515,7 @@ public class DroidGap extends PhonegapActivity {
      * @param defaultValue
      * @return
      */
-    protected int getProperty(String name, int defaultValue) {
+    public int getIntegerProperty(String name, int defaultValue) {
     	Bundle bundle = this.getIntent().getExtras();
     	if (bundle == null) {
     		return defaultValue;
@@ -477,7 +534,7 @@ public class DroidGap extends PhonegapActivity {
      * @param defaultValue
      * @return
      */
-    protected String getProperty(String name, String defaultValue) {
+    public String getStringProperty(String name, String defaultValue) {
     	Bundle bundle = this.getIntent().getExtras();
     	if (bundle == null) {
     		return defaultValue;
@@ -496,7 +553,7 @@ public class DroidGap extends PhonegapActivity {
      * @param defaultValue
      * @return
      */
-    protected double getProperty(String name, double defaultValue) {
+    public double getDoubleProperty(String name, double defaultValue) {
     	Bundle bundle = this.getIntent().getExtras();
     	if (bundle == null) {
     		return defaultValue;
@@ -514,10 +571,7 @@ public class DroidGap extends PhonegapActivity {
      * @param name
      * @param value
      */
-    protected void setProperty(String name, boolean value) {
-    	if (this.appView != null) {
-    		System.out.println("Setting property after webview is already initialized - no effect.");
-    	}
+    public void setBooleanProperty(String name, boolean value) {
     	this.getIntent().putExtra(name, value);
     }
     
@@ -527,10 +581,7 @@ public class DroidGap extends PhonegapActivity {
      * @param name
      * @param value
      */
-    protected void setProperty(String name, int value) {
-    	if (this.appView != null) {
-    		System.out.println("Setting property after webview is already initialized - no effect.");
-    	}
+    public void setIntegerProperty(String name, int value) {
     	this.getIntent().putExtra(name, value);
     }
     
@@ -540,23 +591,17 @@ public class DroidGap extends PhonegapActivity {
      * @param name
      * @param value
      */
-    protected void setProperty(String name, String value) {
-    	if (this.appView != null) {
-    		System.out.println("Setting property after webview is already initialized - no effect.");
-    	}
+    public void setStringProperty(String name, String value) {
     	this.getIntent().putExtra(name, value);
     }
-    
+
     /**
      * Set double property on activity.
      * 
      * @param name
      * @param value
      */
-    protected void setProperty(String name, double value) {
-    	if (this.appView != null) {
-    		System.out.println("Setting property after webview is already initialized - no effect.");
-    	}
+    public void setDoubleProperty(String name, double value) {
     	this.getIntent().putExtra(name, value);
     }
 
@@ -904,7 +949,7 @@ public class DroidGap extends PhonegapActivity {
         	super.onPageFinished(view, url);
 
         	// Clear timeout flag
-        	this.ctx.loadUrlTimeout = false;
+        	this.ctx.loadUrlTimeout++;
 
         	// Try firing the onNativeReady event in JS. If it fails because the JS is
         	// not loaded yet then just set a flag so that the onNativeReady can be fired
@@ -948,7 +993,10 @@ public class DroidGap extends PhonegapActivity {
         	System.out.println("onReceivedError: Error code="+errorCode+" Description="+description+" URL="+failingUrl);
 
         	// Clear timeout flag
-        	this.ctx.loadUrlTimeout = false;
+        	this.ctx.loadUrlTimeout++;
+
+       	 	// Stop "app loading" spinner if showing
+       	 	this.ctx.pluginManager.exec("Notification", "activityStop", null, "[]", false);
 
         	// Handle error
         	this.ctx.onReceivedError(errorCode, description, failingUrl);
@@ -1064,11 +1112,8 @@ public class DroidGap extends PhonegapActivity {
      public void onReceivedError(int errorCode, String description, String failingUrl) {
     	 final DroidGap me = this;
 
-    	 // Stop "app loading" spinner if showing
-    	 me.pluginManager.exec("Notification", "activityStop", null, "[]", false);
-
     	 // If errorUrl specified, then load it
-    	 final String errorUrl = me.getProperty("errorUrl", null);
+    	 final String errorUrl = me.getStringProperty("errorUrl", null);
     	 if ((errorUrl != null) && errorUrl.startsWith("file://") && (!failingUrl.equals(errorUrl))) {
 
     		 // Load URL on UI thread
