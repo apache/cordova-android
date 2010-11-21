@@ -424,7 +424,6 @@ PhoneGap.callbackStatus = {
  * @param {String} service      The name of the service to use
  * @param {String} action       Action to be run in PhoneGap
  * @param {String[]} [args]     Zero or more arguments to pass to the method
- * @param {String} jsClass		The class to cast the return as
  */
 PhoneGap.exec = function(success, fail, service, action, args) {
     try {
