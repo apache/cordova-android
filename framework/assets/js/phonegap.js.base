@@ -163,6 +163,13 @@ PhoneGap.addConstructor = function(func) {
 };
 
 /**
+ * Plugins object
+ */
+if (!window.plugins) {
+    window.plugins = {};
+}
+
+/**
  * Adds a plugin object to window.plugins.
  * The plugin is accessed using window.plugins.<name>
  *
@@ -170,10 +177,6 @@ PhoneGap.addConstructor = function(func) {
  * @param obj           The plugin object
  */
 PhoneGap.addPlugin = function(name, obj) {
-    if (!window.plugins) {
-        window.plugins = {};
-    }
-
     if (!window.plugins[name]) {
         window.plugins[name] = obj;
     }
