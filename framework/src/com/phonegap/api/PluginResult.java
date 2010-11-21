@@ -81,8 +81,11 @@ public class PluginResult {
 		StringBuffer buf = new StringBuffer("");
 		if (cast != null) {
 			buf.append("var temp = "+cast+"("+this.getJSONString() + ");\n");
+			buf.append("PhoneGap.callbackSuccess('"+callbackId+"',temp);");
 		}
-		buf.append("PhoneGap.callbackSuccess('"+callbackId+"', temp );");
+		else {
+			buf.append("PhoneGap.callbackSuccess('"+callbackId+"',"+this.getJSONString()+");");			
+		}
 		return buf.toString();
 	}
 	
