@@ -66,27 +66,39 @@ import com.phonegap.api.PhonegapActivity;
  *         super.appView.clearCache(true);
  *         
  *         // Load your application
- *         super.loadSplashscreen("file:///android_asset/www/splash.html");
+ *         super.setProperty("splashscreen", R.drawable.splash); // load splash.jpg image from the resource drawable directory
  *         super.loadUrl("file:///android_asset/www/index.html", 3000); // show splash screen 3 sec before loading app
  *       }
  *     }
  *
  * Properties: The application can be configured using the following properties:
- * 		super.setProperty("hideLoadingDialogOnPage", true);
- * 		super.setProperty("loadInWebView", true);
- * 		super.setProperty("splashscreen", R.drawable.splash);
- * 		super.setProperty("loadUrlTimeoutValue", 60000);
- * 		super.setProperty("loadingDialog", "Wait,Loading Demo...");
- * 		super.setProperty("errorUrl", "file:///android_asset/www/error.html");
- * 		super.setProperty("keepRunning", false);
  * 
- * Splash screens:
- * 		There are 2 ways to display a splash screen.
- *			1. Specify an image file from the resource drawable directory.  If there
- *			   is an image called splash.jpg, then you would call:
- *					super.setProperty("splashscreen", R.drawable.splash
- *			2. Specify an HTML file that contains the splash screen:
- *					super.loadSplashScreen("file:///android_asset/www/splash.html");
+ * 		// Display a native loading dialog.  Format for value = "Title,Message".  
+ * 		// (String - default=null)
+ * 		super.setProperty("loadingDialog", "Wait,Loading Demo...");
+ * 
+ * 		// Hide loadingDialog when page loaded instead of when deviceready event
+ * 		// occurs. (Boolean - default=false)
+ * 		super.setProperty("hideLoadingDialogOnPage", true);
+ * 
+ * 		// Cause all links on web page to be loaded into existing web view, 
+ * 		// instead of being loaded into new browser. (Boolean - default=false)
+ * 		super.setProperty("loadInWebView", true);
+ * 
+ * 		// Load a splash screen image from the resource drawable directory.
+ * 		// (Integer - default=0)
+ * 		super.setProperty("splashscreen", R.drawable.splash);
+ * 
+ * 		// Time in msec to wait before triggering a timeout error when loading
+ * 		// with super.loadUrl().  (Integer - default=20000)
+ * 		super.setProperty("loadUrlTimeoutValue", 60000);
+ * 
+ * 		// URL to load if there's an error loading specified URL with loadUrl().  
+ * 		// Should be a local URL starting with file://. (String - default=null)
+ * 		super.setProperty("errorUrl", "file:///android_asset/www/error.html");
+ * 
+ * 		// Enable app to keep running in background. (Boolean - default=true)
+ * 		super.setProperty("keepRunning", false);
  */
 public class DroidGap extends PhonegapActivity {
 
