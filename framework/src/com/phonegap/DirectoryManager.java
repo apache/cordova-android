@@ -265,7 +265,8 @@ public class DirectoryManager {
 	 */
 	protected static JSONArray getRootPaths() {
         JSONArray retVal = new JSONArray();
-        retVal.put(Environment.getExternalStorageDirectory().getAbsolutePath());
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
+        retVal.put(path);
 		return retVal;
 	}
 
