@@ -95,16 +95,60 @@
 		</exec>
 	</target>
 
-    <target name="build-javascript">
-	  <delete file="assets/www/phonegap.js"/>
+    <!-- Combine JavaScript files into one phonegap.js file.
+         This task does not create a compressed JavaScript file. -->
+    <target name="build-uncompressed-javascript">
+
+      <!-- Clean up existing files -->
+      <delete file="assets/www/phonegap.js"/>
+      <delete file="assets/www/phonegap-tmp.js"/>
+      <delete file="assets/www/phonegap-uncompressed.js"/>
+      
+      <!-- Create uncompressed JS file -->
       <concat destfile="assets/www/phonegap.js">
         <fileset dir="assets/js" includes="phonegap.js.base" />
         <fileset dir="assets/js" includes="*.js" />
       </concat>
     </target>
+    
+    <!-- Combine JavaScript files into one phonegap-uncompressed.js file.
+         Compress this file using yuicompressor to create phonegap.js.  -->
+    <target name="build-javascript">
+        
+      <!-- Clean up existing files -->
+      <delete file="assets/www/phonegap.js"/>
+      <delete file="assets/www/phonegap-tmp.js"/>
+      <delete file="assets/www/phonegap-uncompressed.js"/>
+        
+      <!-- Create uncompressed JS file -->
+      <concat destfile="assets/www/phonegap-uncompressed.js">
+        <fileset dir="assets/js" includes="phonegap.js.base" />
+        <fileset dir="assets/js" includes="*.js" />
+      </concat>
 
+      <!-- Compress JS file -->
+      <java jar="${basedir}/../util/yuicompressor/yuicompressor-2.4.2.jar" fork="true" failonerror="true">
+        <arg line="--nomunge -o assets/www/phonegap-tmp.js assets/www/phonegap-uncompressed.js"/>
+      </java>
+      <concat destfile="assets/www/phonegap.js">
+        <fileset dir="assets/js" includes="header.txt" />
+        <fileset dir="assets/www" includes="phonegap-tmp.js" />
+      </concat>
+        
+      <!-- Delete temp file -->
+      <delete file="assets/www/phonegap-tmp.js"/>
+    </target>
+
+    <!-- Build PhoneGap jar file that includes all native code, and PhoneGap JS file
+         that includes all JavaScript code.
+      
+         The default is to compress the JavaScript code using yuicompressor.
+      
+         If you want uncompressed JavaScript, change 
+            "build-javascript" => "build-uncompressed-javascript".
+    -->
     <target name="jar" depends="build-javascript, compile">
-      <jar jarfile="phonegap.jar" basedir="bin/classes" excludes="**/R*.class" />
+      <jar jarfile="phonegap.jar" basedir="bin/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
     </target>
 
     <target name="phonegap_debug" depends="build-javascript, debug">
