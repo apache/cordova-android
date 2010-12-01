@@ -126,8 +126,7 @@ class Classic
     end 
   end 
 
-  # this is so fucking unholy yet oddly beautiful
-  # not sure if I should thank Ruby or apologize for this abusive use of string interpolation
+  # create java source file
   def write_java
     j = "
     package #{ @pkg };
