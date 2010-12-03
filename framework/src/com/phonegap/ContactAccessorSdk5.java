@@ -1209,15 +1209,23 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		        .build());
 
 		// Add name
-		ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-		        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-		        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-		        .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, getJsonString(contact, "familyName"))
-		        .withValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, getJsonString(contact, "middleName"))
-		        .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, getJsonString(contact, "givenName"))
-		        .withValue(ContactsContract.CommonDataKinds.StructuredName.PREFIX, getJsonString(contact, "honorificPrefix"))
-		        .withValue(ContactsContract.CommonDataKinds.StructuredName.SUFFIX, getJsonString(contact, "honorificSuffix"))
-		        .build());
+		try {
+			JSONObject name = contact.getJSONObject("name");
+			if (name != null) {
+				ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+						.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+						.withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+						.withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, getJsonString(name, "familyName"))
+						.withValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, getJsonString(name, "middleName"))
+						.withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, getJsonString(name, "givenName"))
+						.withValue(ContactsContract.CommonDataKinds.StructuredName.PREFIX, getJsonString(name, "honorificPrefix"))
+						.withValue(ContactsContract.CommonDataKinds.StructuredName.SUFFIX, getJsonString(name, "honorificSuffix"))
+						.build());
+			}
+		}
+		catch (JSONException e) {
+			Log.d(LOG_TAG, "Could not get name object");
+		}
 		
 		//Add phone numbers
 		JSONArray phones = null;
