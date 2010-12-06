@@ -121,6 +121,7 @@ public class DroidGap extends PhonegapActivity {
 
 	// Plugin to call when activity result is received
 	private Plugin activityResultCallback = null;
+	private boolean activityResultKeepRunning;
 
 	// Flag indicates that a loadUrl timeout occurred
 	private int loadUrlTimeout = 0;
@@ -185,6 +186,7 @@ public class DroidGap extends PhonegapActivity {
 		
 		// Create web container
 		this.appView = new WebView(DroidGap.this);
+		this.appView.setId(100);
 		
 		this.appView.setLayoutParams(new LinearLayout.LayoutParams(
         		ViewGroup.LayoutParams.FILL_PARENT,
@@ -1061,6 +1063,14 @@ public class DroidGap extends PhonegapActivity {
      */
     public void startActivityForResult(Plugin command, Intent intent, int requestCode) {
     	this.activityResultCallback = command;
+    	this.activityResultKeepRunning = this.keepRunning;
+    	
+    	// If multitasking turned on, then disable it for activities that return results
+    	if (command != null) {
+    		this.keepRunning = false;
+    	}
+    	
+    	// Start activity
     	super.startActivityForResult(intent, requestCode);
     }
 
@@ -1078,7 +1088,10 @@ public class DroidGap extends PhonegapActivity {
     	 super.onActivityResult(requestCode, resultCode, intent);
     	 Plugin callback = this.activityResultCallback;
     	 if (callback != null) {
-    		 callback.onActivityResult(requestCode, resultCode, intent); 
+    		 callback.onActivityResult(requestCode, resultCode, intent);
+    		 
+    		 // Restore multitasking state
+    		 this.keepRunning = this.activityResultKeepRunning;
     	 }        
      }
    
