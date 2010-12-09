@@ -621,7 +621,13 @@ public class DroidGap extends PhonegapActivity {
         super.onResume();
 
         // If app doesn't want to run in background
-        if (!this.keepRunning) {
+        if (!this.keepRunning || this.activityResultKeepRunning) {
+
+   		 	// Restore multitasking state
+        	if (this.activityResultKeepRunning) {
+        		this.keepRunning = this.activityResultKeepRunning;
+        		this.activityResultKeepRunning = false;
+        	}
 
         	// Forward to plugins
         	this.pluginManager.onResume();
@@ -1089,9 +1095,6 @@ public class DroidGap extends PhonegapActivity {
     	 Plugin callback = this.activityResultCallback;
     	 if (callback != null) {
     		 callback.onActivityResult(requestCode, resultCode, intent);
-    		 
-    		 // Restore multitasking state
-    		 this.keepRunning = this.activityResultKeepRunning;
     	 }        
      }
    
