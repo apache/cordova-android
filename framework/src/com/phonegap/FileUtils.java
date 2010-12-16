@@ -15,6 +15,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.net.Uri;
+
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 
@@ -191,7 +193,7 @@ public class FileUtils extends Plugin {
      */
     public String readAsText(String filename, String encoding) throws FileNotFoundException, IOException {
     	byte[] bytes = new byte[1000];
-   		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filename), 1024);
+   		BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
    		ByteArrayOutputStream bos = new ByteArrayOutputStream();
     	int numRead = 0;
     	while ((numRead = bis.read(bytes, 0, 1000)) >= 0) {
@@ -209,7 +211,7 @@ public class FileUtils extends Plugin {
      */
     public String readAsDataURL(String filename) throws FileNotFoundException, IOException {
     	byte[] bytes = new byte[1000];
-   		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filename), 1024);
+   		BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
    		ByteArrayOutputStream bos = new ByteArrayOutputStream();
     	int numRead = 0;
     	while ((numRead = bis.read(bytes, 0, 1000)) >= 0) {
@@ -281,5 +283,21 @@ public class FileUtils extends Plugin {
 		
 		return raf.length();
     }
-
+    
+    /**
+     * Get an input stream based on file path or content:// uri
+     * 
+     * @param path
+     * @return an input stream
+     * @throws FileNotFoundException 
+     */
+    private InputStream getPathFromUri(String path) throws FileNotFoundException {  	  
+    	if (path.startsWith("content")) {
+    		Uri uri = Uri.parse(path);
+    		return ctx.getContentResolver().openInputStream(uri);
+    	}
+    	else {
+    		return new FileInputStream(path);
+    	}
+    }  
 }
