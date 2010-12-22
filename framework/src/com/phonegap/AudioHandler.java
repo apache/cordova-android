@@ -132,6 +132,7 @@ public class AudioHandler extends Plugin {
     		return false;
     	}
     	AudioPlayer audio = this.players.get(id);
+    	this.players.remove(id);
     	audio.destroy();
     	return true;
 	}
