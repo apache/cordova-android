@@ -16,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.net.Uri;
+import android.webkit.MimeTypeMap;
 
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
@@ -219,8 +220,11 @@ public class FileUtils extends Plugin {
     	}
     	
     	// Determine content type from file name
-    	// TODO
-    	String contentType = "";
+    	MimeTypeMap map = MimeTypeMap.getSingleton();
+    	String contentType = map.getMimeTypeFromExtension(map.getFileExtensionFromUrl(filename));  		
+    	if (contentType == null  && filename.startsWith("content")) {
+    		contentType = "image/jpeg";
+    	}
 
 		byte[] base64 = Base64.encodeBase64(bos.toByteArray());
 		String data = "data:" + contentType + ";base64," + new String(base64);
