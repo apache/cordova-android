@@ -220,10 +220,14 @@ public class FileUtils extends Plugin {
     	}
     	
     	// Determine content type from file name
-    	MimeTypeMap map = MimeTypeMap.getSingleton();
-    	String contentType = map.getMimeTypeFromExtension(map.getFileExtensionFromUrl(filename));  		
-    	if (contentType == null  && filename.startsWith("content")) {
-    		contentType = "image/jpeg";
+    	String contentType = null;
+    	if (filename.startsWith("content:")) {
+    		Uri fileUri = Uri.parse(filename);
+    		contentType = this.ctx.getContentResolver().getType(fileUri);
+    	}
+    	else {
+        	MimeTypeMap map = MimeTypeMap.getSingleton();
+        	contentType = map.getMimeTypeFromExtension(map.getFileExtensionFromUrl(filename));  		    		
     	}
 
 		byte[] base64 = Base64.encodeBase64(bos.toByteArray());
