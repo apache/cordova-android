@@ -902,7 +902,7 @@ public class DroidGap extends PhonegapActivity {
             }  	
 
         	// If http, https or file
-        	else if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://")) {
+        	else if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://") || url.startsWith("market://")) {
 
         		int i = url.lastIndexOf('/');
         		String newBaseUrl = url;
