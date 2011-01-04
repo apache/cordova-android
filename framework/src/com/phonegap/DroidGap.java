@@ -901,8 +901,8 @@ public class DroidGap extends PhonegapActivity {
             	return true;
             }  	
 
-        	// If http, https or file
-        	else if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://") || url.startsWith("market://")) {
+        	// All else
+        	else {
 
         		int i = url.lastIndexOf('/');
         		String newBaseUrl = url;
@@ -911,6 +911,8 @@ public class DroidGap extends PhonegapActivity {
         		}
 
         		// If our app or file:, then load into our webview
+        		// NOTE: This replaces our app with new URL.  When BACK is pressed,
+        		//       our app is reloaded and restarted.  All state is lost.
         		if (this.ctx.loadInWebView || url.startsWith("file://") || this.ctx.baseUrl.equals(newBaseUrl)) {
         			this.ctx.appView.loadUrl(url);
         		}
@@ -927,8 +929,6 @@ public class DroidGap extends PhonegapActivity {
         		}
         		return true;
         	}
-        	
-        	return false;
         }
     	
         /**
