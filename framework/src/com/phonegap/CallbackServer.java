@@ -188,54 +188,57 @@ public class CallbackServer implements Runnable {
 				 request = xhrReader.readLine();
 				 String response = "";
 				 //System.out.println("CallbackServerRequest="+request);
-				 if (request.contains("GET")) {
-
-					 // Must have security token
-					 if (request.substring(5,41).equals(this.token)) {
-						 //System.out.println("CallbackServer -- Processing GET request");
-
-						 // Wait until there is some data to send, or send empty data every 10 sec 
-						 // to prevent XHR timeout on the client 
-						 synchronized (this) { 
-							 while (this.empty) { 
-								 try { 
-									 this.wait(10000); // prevent timeout from happening
-									 //System.out.println("CallbackServer>>> break <<<");
-									 break;
+				 if (request != null) {
+					 if (request.contains("GET")) {
+	
+						 // Must have security token
+						 if (request.substring(5,41).equals(this.token)) {
+							 //System.out.println("CallbackServer -- Processing GET request");
+	
+							 // Wait until there is some data to send, or send empty data every 10 sec 
+							 // to prevent XHR timeout on the client 
+							 synchronized (this) { 
+								 while (this.empty) { 
+									 try { 
+										 this.wait(10000); // prevent timeout from happening
+										 //System.out.println("CallbackServer>>> break <<<");
+										 break;
+									 } 
+									 catch (Exception e) { }
 								 } 
-								 catch (Exception e) { }
-							 } 
-						 }
-
-						 // If server is still running
-						 if (this.active) {
-
-							 // If no data, then send 404 back to client before it times out
-							 if (this.empty) {
-								 //System.out.println("CallbackServer -- sending data 0");
-								 response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
+							 }
+	
+							 // If server is still running
+							 if (this.active) {
+	
+								 // If no data, then send 404 back to client before it times out
+								 if (this.empty) {
+									 //System.out.println("CallbackServer -- sending data 0");
+									 response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
+								 }
+								 else {
+									 //System.out.println("CallbackServer -- sending item");
+									 response = "HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript();
+								 }
 							 }
 							 else {
-								 //System.out.println("CallbackServer -- sending item");
-								 response = "HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript();
+								 response = "HTTP/1.1 503 Service Unavailable\r\n\r\n ";							 
 							 }
 						 }
 						 else {
-							 response = "HTTP/1.1 503 Service Unavailable\r\n\r\n ";							 
+							 response = "HTTP/1.1 403 Forbidden\r\n\r\n ";						 
 						 }
 					 }
 					 else {
-						 response = "HTTP/1.1 403 Forbidden\r\n\r\n ";						 
+						 response = "HTTP/1.1 400 Bad Request\r\n\r\n ";
 					 }
-				 }
-				 else {
-					 response = "HTTP/1.1 400 Bad Request\r\n\r\n ";
-				 }
-				 //System.out.println("CallbackServer: response="+response);
-				 //System.out.println("CallbackServer: closing output");
-				 output.writeBytes(response);
-				 output.flush();
-				 output.close();				 
+					 //System.out.println("CallbackServer: response="+response);
+					 //System.out.println("CallbackServer: closing output");
+					 output.writeBytes(response);
+					 output.flush();
+			     }
+				 output.close();
+				 xhrReader.close();
 			 }
 		 } catch (IOException e) {
 			 e.printStackTrace();
