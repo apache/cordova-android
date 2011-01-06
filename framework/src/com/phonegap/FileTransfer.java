@@ -28,7 +28,7 @@ import android.webkit.CookieManager;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 
-public class FileUploader extends Plugin {
+public class FileTransfer extends Plugin {
 
 	private static final String LOG_TAG = "FileUploader";
 	private static final String LINE_START = "--";

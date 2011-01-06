@@ -7,9 +7,9 @@
  */
 
 /**
- * FileUploader uploads a file to a remote server.
+ * FileTransfer uploads a file to a remote server.
  */
-function FileUploader() {};
+function FileTransfer() {};
 
 /**
  * FileUploadResult
@@ -21,15 +21,15 @@ function FileUploadResult() {
 };
 
 /**
- * FileUploadError
+ * FileTransferError
  */
-function FileUploadError() {
+function FileTransferError() {
     this.code = null;
 };
 
-FileUploadError.FILE_NOT_FOUND_ERR = 1;
-FileUploadError.INVALID_URL_ERR = 2;
-FileUploadError.CONNECTION_ERR = 3;
+FileTransferError.FILE_NOT_FOUND_ERR = 1;
+FileTransferError.INVALID_URL_ERR = 2;
+FileTransferError.CONNECTION_ERR = 3;
 
 /**
 * Given an absolute file path, uploads a file on the device to a remote server 
@@ -40,7 +40,7 @@ FileUploadError.CONNECTION_ERR = 3;
 * @param errorCallback {Function}    Callback to be invoked upon error
 * @param options {FileUploadOptions} Optional parameters such as file name and mimetype           
 */
-FileUploader.prototype.upload = function(filePath, server, successCallback, errorCallback, options) {
+FileTransfer.prototype.upload = function(filePath, server, successCallback, errorCallback, options) {
 
     // check for options
     var fileKey = null;
@@ -59,7 +59,7 @@ FileUploader.prototype.upload = function(filePath, server, successCallback, erro
         }
     }
     
-    PhoneGap.exec(successCallback, errorCallback, 'FileUploader', 'upload', [filePath, server, fileKey, fileName, mimeType, params]);
+    PhoneGap.exec(successCallback, errorCallback, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params]);
 };
 
 /**

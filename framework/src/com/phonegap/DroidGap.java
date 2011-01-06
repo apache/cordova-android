@@ -284,7 +284,7 @@ public class DroidGap extends PhonegapActivity {
 		this.addService("Notification", "com.phonegap.Notification");
 		this.addService("Storage", "com.phonegap.Storage");
 		this.addService("Temperature", "com.phonegap.TempListener");
-		this.addService("FileUploader", "com.phonegap.FileUploader");
+		this.addService("FileTransfer", "com.phonegap.FileTransfer");
 	}
         
 	/**
