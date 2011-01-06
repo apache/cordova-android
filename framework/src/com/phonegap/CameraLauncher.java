@@ -201,6 +201,9 @@ public class CameraLauncher extends Plugin {
 						// Send Uri back to JavaScript for viewing image
 						this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
 					}
+					bitmap.recycle();
+					bitmap = null;
+					System.gc();
 				} catch (IOException e) {
 					e.printStackTrace();
 					this.failPicture("Error capturing image.");
@@ -228,6 +231,9 @@ public class CameraLauncher extends Plugin {
 					try {
 						Bitmap bitmap =	android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
 						this.processPicture(bitmap);
+						bitmap.recycle();
+						bitmap = null;
+						System.gc();
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
 						this.failPicture("Error retrieving image.");
@@ -261,11 +267,15 @@ public class CameraLauncher extends Plugin {
 				byte[] output = Base64.encodeBase64(code);
 				String js_out = new String(output);
 				this.success(new PluginResult(PluginResult.Status.OK, js_out), this.callbackId);
+				js_out = null;
+				output = null;
+				code = null;
 			}	
 		}
 		catch(Exception e) {
 			this.failPicture("Error compressing image.");
 		}		
+		jpeg_data = null;
 	}
 	
 	/**
