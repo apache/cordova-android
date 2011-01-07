@@ -198,7 +198,7 @@ public class FileTransfer extends Plugin {
 		}
 		
 		dos.writeBytes(LINE_START + BOUNDRY + LINE_END);
-		dos.writeBytes("Content-Disposition: form-data; name=\"file\";" + " filename=\"" + fileName +"\"" + LINE_END);
+		dos.writeBytes("Content-Disposition: form-data; name=\"" + fileKey + "\";" + " filename=\"" + fileName +"\"" + LINE_END);
 		dos.writeBytes("Content-Type: " + mimeType + LINE_END); 
 		dos.writeBytes(LINE_END);
 		
