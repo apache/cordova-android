@@ -309,6 +309,7 @@ var CupcakeLocalStorage = function() {
 	                    for(var i = 0; i < result.rows.length; i++) {
 							storage[result.rows.item(i)['id']] =  result.rows.item(i)['body'];
 						}
+	                    PhoneGap.initializationComplete("cupcakeStorage");
 					});
 					
 				}, 
@@ -356,6 +357,7 @@ PhoneGap.addConstructor(function() {
     
     if (typeof window.localStorage == "undefined") {
         navigator.localStorage = window.localStorage = new CupcakeLocalStorage();
+        PhoneGap.waitForInitialization("cupcakeStorage");
     }
 });
 
