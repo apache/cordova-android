@@ -14,14 +14,25 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import android.net.Uri;
 import java.net.URL;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Iterator;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.net.Uri;
 import android.util.Log;
 import android.webkit.CookieManager;
 
@@ -38,6 +49,9 @@ public class FileTransfer extends Plugin {
 	public static int FILE_NOT_FOUND_ERR = 1;
     public static int INVALID_URL_ERR = 2;
     public static int CONNECTION_ERR = 3;
+    
+    private SSLSocketFactory defaultSSLSocketFactory = null;
+    private HostnameVerifier defaultHostnameVerifier = null;
 
 	/* (non-Javadoc)
 	* @see com.phonegap.api.Plugin#execute(java.lang.String, org.json.JSONArray, java.lang.String)
@@ -65,11 +79,12 @@ public class FileTransfer extends Plugin {
 		mimeType = getArgument(args, 4, "image/jpeg");
 
 		try {
-			JSONObject params = args.getJSONObject(5);
+			JSONObject params = args.optJSONObject(5);
+			boolean trustEveryone = args.optBoolean(6);
 
 			if (action.equals("upload")) {
-				FileUploadResult r = upload(file, server, fileKey, fileName, mimeType, params);
-				Log.d(LOG_TAG, "****** ABout to return a result from upload");
+				FileUploadResult r = upload(file, server, fileKey, fileName, mimeType, params, trustEveryone);
+				Log.d(LOG_TAG, "****** About to return a result from upload");
 				return new PluginResult(PluginResult.Status.OK, r.toJSONObject());
 			} else {
 	            return new PluginResult(PluginResult.Status.INVALID_ACTION);
@@ -82,6 +97,11 @@ public class FileTransfer extends Plugin {
 			Log.e(LOG_TAG, e.getMessage(), e);
 			JSONObject error = createFileUploadError(INVALID_URL_ERR);
             return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
+		} catch (SSLException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+			Log.d(LOG_TAG, "Got my ssl exception!!!");
+			JSONObject error = createFileUploadError(CONNECTION_ERR);
+            return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
         } catch (IOException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 			JSONObject error = createFileUploadError(CONNECTION_ERR);
@@ -90,7 +110,50 @@ public class FileTransfer extends Plugin {
 			Log.e(LOG_TAG, e.getMessage(), e);
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
 		}
+	}
 
+	// always verify the host - don't check for certificate
+	final static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+		public boolean verify(String hostname, SSLSession session) {
+			return true;
+        }
+	};
+
+	/**
+	 * This function will install a trust manager that will blindly trust all SSL 
+	 * certificates.  The reason this code is being added is to enable developers 
+	 * to do development using self signed SSL certificates on their web server.
+	 * 
+	 * The standard HttpsURLConnection class will throw an exception on self 
+	 * signed certificates if this code is not run.
+	 */
+	private void trustAllHosts() {
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            	return new java.security.cert.X509Certificate[] {};
+            }
+
+            public void checkClientTrusted(X509Certificate[] chain,
+                            String authType) throws CertificateException {
+            }
+
+            public void checkServerTrusted(X509Certificate[] chain,
+                            String authType) throws CertificateException {
+            }
+        } };
+
+        // Install the all-trusting trust manager
+        try {
+        	// Backup the current SSL socket factory
+        	defaultSSLSocketFactory = HttpsURLConnection.getDefaultSSLSocketFactory();
+        	// Install our all trusting manager
+        	SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        } catch (Exception e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+        }
 	}
 
 	/**
@@ -139,7 +202,7 @@ public class FileTransfer extends Plugin {
      * @return FileUploadResult containing result of upload request
      */
 	public FileUploadResult upload(String file, String server, final String fileKey, final String fileName, 
-			final String mimeType, JSONObject params) throws IOException {
+			final String mimeType, JSONObject params, boolean trustEveryone) throws IOException, SSLException {
 		// Create return object
 		FileUploadResult result = new FileUploadResult();
 		
@@ -158,8 +221,29 @@ public class FileTransfer extends Plugin {
 		// open a URL connection to the server 
 		URL url = new URL(server);
 		
-		// Open a HTTP connection to the URL
-		conn = (HttpURLConnection) url.openConnection();
+		// Open a HTTP connection to the URL based on protocol 
+        if (url.getProtocol().toLowerCase().equals("https")) {
+    		// Using standard HTTPS connection. Will not allow self signed certificate
+        	if (!trustEveryone) {
+        		conn = (HttpsURLConnection) url.openConnection();
+        	}
+        	// Use our HTTPS connection that blindly trusts everyone.
+        	// This should only be used in debug environments
+        	else {
+        		// Setup the HTTPS connection class to trust everyone
+	            trustAllHosts();
+	            HttpsURLConnection https = (HttpsURLConnection) url.openConnection();
+	            // Save the current hostnameVerifier
+	            defaultHostnameVerifier = https.getHostnameVerifier();
+	            // Setup the connection not to verify hostnames 
+	            https.setHostnameVerifier(DO_NOT_VERIFY);
+	        	conn = https;
+        	}
+        } 
+        // Return a standard HTTP conneciton
+        else {
+        	conn = (HttpURLConnection) url.openConnection();
+        }
 		
 		// Allow Inputs
 		conn.setDoInput(true);
@@ -174,7 +258,7 @@ public class FileTransfer extends Plugin {
 		conn.setRequestMethod("POST");
 		conn.setRequestProperty("Connection", "Keep-Alive");
 		conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+BOUNDRY);
-		
+
 		// Set the cookies on the response
 		String cookie = CookieManager.getInstance().getCookie(server);
 		if (cookie != null) {
@@ -210,7 +294,7 @@ public class FileTransfer extends Plugin {
 		// read file and write it into form...
 		bytesRead = fileInputStream.read(buffer, 0, bufferSize);
 		totalBytes = 0;
-		
+
 		while (bytesRead > 0) {
 			totalBytes += bytesRead;
 			result.setBytesSent(totalBytes);
@@ -219,7 +303,7 @@ public class FileTransfer extends Plugin {
 			bufferSize = Math.min(bytesAvailable, maxBufferSize);
 			bytesRead = fileInputStream.read(buffer, 0, bufferSize);
 		}
-		
+
 		// send multipart form data necesssary after file data...
 		dos.writeBytes(LINE_END);
 		dos.writeBytes(LINE_START + BOUNDRY + LINE_START + LINE_END);
@@ -234,20 +318,28 @@ public class FileTransfer extends Plugin {
 		DataInputStream inStream = new DataInputStream ( conn.getInputStream() );
 		String line;
 		while (( line = inStream.readLine()) != null) {
-			Log.d(LOG_TAG,"Server response is: "+line);
 			responseString.append(line);
 		}
-        
+		Log.d(LOG_TAG, "got response from server");
+		Log.d(LOG_TAG, responseString.toString());
+
 		// send request and retrieve response
         result.setResponseCode(conn.getResponseCode());
         result.setResponse(responseString.toString());
 
         inStream.close();
+        conn.disconnect();
+        
+        // Revert back to the proper verifier and socket factories
+        if (trustEveryone && url.getProtocol().toLowerCase().equals("https")) {
+        	((HttpsURLConnection)conn).setHostnameVerifier(defaultHostnameVerifier);
+        	HttpsURLConnection.setDefaultSSLSocketFactory(defaultSSLSocketFactory);
+        }        
         
 		return result;
 	}
 
-    /**
+	/**
      * Get an input stream based on file path or content:// uri
      * 
      * @param path

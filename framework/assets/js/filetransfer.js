@@ -40,7 +40,7 @@ FileTransferError.CONNECTION_ERR = 3;
 * @param errorCallback {Function}    Callback to be invoked upon error
 * @param options {FileUploadOptions} Optional parameters such as file name and mimetype           
 */
-FileTransfer.prototype.upload = function(filePath, server, successCallback, errorCallback, options) {
+FileTransfer.prototype.upload = function(filePath, server, successCallback, errorCallback, options, debug) {
 
     // check for options
     var fileKey = null;
@@ -59,7 +59,7 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
         }
     }
     
-    PhoneGap.exec(successCallback, errorCallback, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params]);
+    PhoneGap.exec(successCallback, errorCallback, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, debug]);
 };
 
 /**
