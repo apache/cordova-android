@@ -714,7 +714,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				if (familyName != null) {
 					builder.withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, familyName);
 				}
-				String middleName = getJsonString(name, "familyName");
+				String middleName = getJsonString(name, "middleName");
 				if (middleName != null) {
 					builder.withValue(ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME, middleName);
 				}
