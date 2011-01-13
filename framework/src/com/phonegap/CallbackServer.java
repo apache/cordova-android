@@ -188,13 +188,16 @@ public class CallbackServer implements Runnable {
 				 request = xhrReader.readLine();
 				 String response = "";
 				 //System.out.println("CallbackServerRequest="+request);
-				 if (request != null) {
+				 if (this.active && (request != null)) {
 					 if (request.contains("GET")) {
-	
+						 
+						 // Get requested file
+						 String[] requestParts = request.split(" "); 
+						 
 						 // Must have security token
-						 if (request.substring(5,41).equals(this.token)) {
+						 if ((requestParts.length == 3) && (requestParts[1].equals(this.token))) {
 							 //System.out.println("CallbackServer -- Processing GET request");
-	
+
 							 // Wait until there is some data to send, or send empty data every 10 sec 
 							 // to prevent XHR timeout on the client 
 							 synchronized (this) { 
@@ -207,10 +210,10 @@ public class CallbackServer implements Runnable {
 									 catch (Exception e) { }
 								 } 
 							 }
-	
+
 							 // If server is still running
 							 if (this.active) {
-	
+
 								 // If no data, then send 404 back to client before it times out
 								 if (this.empty) {
 									 //System.out.println("CallbackServer -- sending data 0");
@@ -236,7 +239,7 @@ public class CallbackServer implements Runnable {
 					 //System.out.println("CallbackServer: closing output");
 					 output.writeBytes(response);
 					 output.flush();
-			     }
+				 }
 				 output.close();
 				 xhrReader.close();
 			 }
