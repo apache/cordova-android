@@ -21,7 +21,7 @@ class Classic
   def setup
     @android_dir    = File.expand_path(File.dirname(__FILE__).gsub('lib',''))
     @framework_dir  = File.join(@android_dir, "framework")
-    @icon           = File.join(@www, 'icon.png')
+    @icon           = File.join(@www, 'icon.png') unless File.exists?(@icon)
     @app_js_dir     = ''
     @content        = 'index.html'
   end
