@@ -195,7 +195,7 @@ public class CallbackServer implements Runnable {
 						 String[] requestParts = request.split(" "); 
 						 
 						 // Must have security token
-						 if ((requestParts.length == 3) && (requestParts[1].equals(this.token))) {
+						 if ((requestParts.length == 3) && (requestParts[1].substring(1).equals(this.token))) {
 							 //System.out.println("CallbackServer -- Processing GET request");
 
 							 // Wait until there is some data to send, or send empty data every 10 sec 
