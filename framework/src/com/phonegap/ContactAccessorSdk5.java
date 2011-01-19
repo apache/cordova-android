@@ -39,9 +39,11 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -108,7 +110,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     	//dbMap.put("gender", null);
     	dbMap.put("note", ContactsContract.CommonDataKinds.Note.NOTE);
     	//dbMap.put("preferredUsername", null);
-    	//dbMap.put("photos.value", null);
+    	dbMap.put("photos.value", ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
     	//dbMap.put("tags.value", null);
     	dbMap.put("relationships", ContactsContract.CommonDataKinds.Relation.NAME);
     	dbMap.put("relationships.value", ContactsContract.CommonDataKinds.Relation.NAME);
@@ -213,7 +215,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONArray emails = new JSONArray();
 		JSONArray ims = new JSONArray();
 		JSONArray websites = new JSONArray();
-		JSONArray relationships = new JSONArray();			
+		JSONArray relationships = new JSONArray();
+		JSONArray photos = new JSONArray();			
 		
 		if (c.getCount() > 0) {
 			while (c.moveToNext() && (contacts.length() <= (limit-1))) {					
@@ -232,7 +235,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 						// Populate the Contact object with it's arrays
 						// and push the contact into the contacts array
 						contacts.put(populateContact(contact, organizations, addresses, phones,
-								emails, ims, websites, relationships));
+								emails, ims, websites, relationships, photos));
 						
 						// Clean up the objects
 						contact = new JSONObject();
@@ -243,6 +246,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 						ims = new JSONArray();
 						websites = new JSONArray();
 						relationships = new JSONArray();
+						photos = new JSONArray();
 						
 						// Set newContact to true as we are starting to populate a new contact
 						newContact = true;
@@ -310,6 +314,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 							contact.put("birthday", c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Event.START_DATE)));
 						}
 					}
+					else if (mimetype.equals(ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE) 
+							&& isRequired("photos",populate)) {
+						photos.put(photoQuery(contactId));
+					}
 				}
 				catch (JSONException e) {
 					Log.e(LOG_TAG, e.getMessage(),e);
@@ -321,7 +329,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	
 			// Push the last contact into the contacts array
 			contacts.put(populateContact(contact, organizations, addresses, phones,
-					emails, ims, websites, relationships));
+					emails, ims, websites, relationships, photos));
 		}
 		c.close();
 		
@@ -376,11 +384,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * @param ims array of instant messenger addresses
 	 * @param websites array of websites
 	 * @param relationships array of relationships
+	 * @param photos 
 	 * @return
 	 */
 	private JSONObject populateContact(JSONObject contact, JSONArray organizations,
 			JSONArray addresses, JSONArray phones, JSONArray emails,
-			JSONArray ims, JSONArray websites, JSONArray relationships) {
+			JSONArray ims, JSONArray websites, JSONArray relationships, JSONArray photos) {
 		try {
 			contact.put("organizations", organizations);
 			contact.put("addresses", addresses);
@@ -389,6 +398,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			contact.put("ims", ims);
 			contact.put("websites", websites);
 			contact.put("relationships", relationships);
+			contact.put("photos", photos);
 		}
 		catch (JSONException e) {
 			Log.e(LOG_TAG,e.getMessage(),e);
@@ -696,6 +706,25 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return relationship;
 	}	
 
+	/**
+	 * Create a ContactField JSONObject
+	 * @param contactId 
+	 * @return a JSONObject representing a ContactField
+	 */
+	private JSONObject photoQuery(String contactId) {
+		JSONObject photo = new JSONObject();
+		try {
+			photo.put("id", contactId);
+			photo.put("primary", false);
+		    Uri person = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, (new Long(contactId)));
+		    Uri photoUri = Uri.withAppendedPath(person, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+			photo.put("value", photoUri.toString());
+		} catch (JSONException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		return photo;
+	}
+	
 	@Override
 	/**
 	 * This method will save a contact object into the devices contacts database.

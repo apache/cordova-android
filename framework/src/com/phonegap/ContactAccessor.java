@@ -155,6 +155,9 @@ public abstract class ContactAccessor {
 				else if (key.startsWith("urls")) {
 					map.put("urls", true);
 				}
+				else if (key.startsWith("photos")) {
+					map.put("photos", true);
+				}
 			}
 		}
 		catch (JSONException e) {
