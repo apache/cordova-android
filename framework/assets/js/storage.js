@@ -318,7 +318,7 @@ var CupcakeLocalStorage = function() {
 				}
 			);
 			this.setItem = function(key, val) {
-				console.log('set');
+				//console.log('set');
 				storage[key] = val;
 				
 				this.db.transaction(
@@ -342,6 +342,16 @@ var CupcakeLocalStorage = function() {
 					}
 				);
 				
+			}
+			this.clear = function() {
+				storage = {};
+				this.db.transaction(
+					function (transaction) {
+						transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
+						
+						transaction.executeSql('DELETE FROM storage', []);
+					}
+				);
 			}
 				
 		} catch(e) {
