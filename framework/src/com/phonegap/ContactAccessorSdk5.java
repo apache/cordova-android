@@ -24,6 +24,10 @@
 
 package com.phonegap;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,7 +72,12 @@ import android.webkit.WebView;
  * </ul>
  */
 public class ContactAccessorSdk5 extends ContactAccessor {
-	
+
+	/**
+	 * Keep the photo size under the 1 MB blog limit.
+	 */
+	private static final long MAX_PHOTO_SIZE = 1048576;
+
 	/**
 	 * A static map that converts the JavaScript property name to Android database column name.
 	 */
@@ -316,7 +325,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 					}
 					else if (mimetype.equals(ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE) 
 							&& isRequired("photos",populate)) {
-						photos.put(photoQuery(contactId));
+						photos.put(photoQuery(c, contactId));
 					}
 				}
 				catch (JSONException e) {
@@ -430,7 +439,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		
 		String key;
 		try {
-			Log.d(LOG_TAG, "How many fields do we have = " + fields.length());
+			//Log.d(LOG_TAG, "How many fields do we have = " + fields.length());
 			for (int i=0; i<fields.length(); i++) {
 				key = fields.getString(i);
 
@@ -711,10 +720,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * @param contactId 
 	 * @return a JSONObject representing a ContactField
 	 */
-	private JSONObject photoQuery(String contactId) {
+	private JSONObject photoQuery(Cursor cursor, String contactId) {
 		JSONObject photo = new JSONObject();
 		try {
-			photo.put("id", contactId);
+			photo.put("id", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Photo._ID)));
 			photo.put("primary", false);
 		    Uri person = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, (new Long(contactId)));
 		    Uri photoUri = Uri.withAppendedPath(person, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
@@ -778,7 +787,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONObject name;
 		try {
 			String displayName = getJsonString(contact, "displayName");
-			Log.d(LOG_TAG, "UPdated display name is = " + displayName);
 			name = contact.getJSONObject("name");
 			if (displayName != null || name != null) {
 				ContentProviderOperation.Builder builder = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
@@ -1128,6 +1136,42 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		        .withValue(ContactsContract.CommonDataKinds.Event.START_DATE, anniversary)
 		        .build());
 		}
+		// Modify photos
+		JSONArray photos = null;
+		try {
+			photos = contact.getJSONArray("photos");
+			if (photos != null) {
+				for (int i=0; i<photos.length(); i++) {
+					JSONObject photo = (JSONObject)photos.get(i);
+					String photoId = getJsonString(photo, "id");
+					byte[] bytes = getPhotoBytes(getJsonString(photo, "value"));
+					// This is a new photo so do a DB insert
+					if (photoId==null) {
+						ContentValues contentValues = new ContentValues();
+					    contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+					    contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
+					    contentValues.put(ContactsContract.Data.IS_SUPER_PRIMARY, 1);
+				        contentValues.put(ContactsContract.CommonDataKinds.Photo.PHOTO, bytes);
+
+					    ops.add(ContentProviderOperation.newInsert(
+					            ContactsContract.Data.CONTENT_URI).withValues(contentValues).build()); 						
+					}
+					// This is an existing photo so do a DB update
+					else {						
+						ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+						        .withSelection(ContactsContract.CommonDataKinds.Photo._ID + "=? AND " + 
+										ContactsContract.Data.MIMETYPE + "=?", 
+										new String[]{photoId, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE})
+						        .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
+						        .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, bytes)
+						        .build());
+					}
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.d(LOG_TAG, "Could not get photos");
+		}
 		
 		boolean retVal = true;
 		
@@ -1266,6 +1310,47 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	/**
+	 * Add a phone to a list of database actions to be performed
+	 * 
+	 * @param ops the list of database actions
+	 * @param phone the item to be inserted
+	 */
+	private void insertPhoto(ArrayList<ContentProviderOperation> ops,
+			JSONObject photo) {
+		byte[] bytes = getPhotoBytes(getJsonString(photo, "value"));
+		ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+		        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+		        .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
+		        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+		        .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, bytes)
+		        .build());
+	}
+	
+	/**
+	 * Gets the raw bytes from the supplied filename
+	 * 
+	 * @param filename the file to read the bytes from
+	 * @return a byte array
+	 */
+	private byte[] getPhotoBytes(String filename) {
+		byte[] buffer = null;
+		try {
+			File fp = new File(filename);
+			FileInputStream in = new FileInputStream(fp);
+			buffer = new byte[(int) fp.length()];
+			if (fp.length() <= MAX_PHOTO_SIZE) {
+				in.read(buffer);
+			}
+			in.close();
+		} catch (FileNotFoundException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		} catch (IOException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		return buffer;
+	}
+
+	/**
 	 * Creates a new contact and stores it in the database
 	 * 
 	 * @param contact the contact to be saved
@@ -1285,7 +1370,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		try {
 			JSONObject name = contact.optJSONObject("name");
 			String displayName = contact.getString("displayName");
-			Log.d(LOG_TAG, "The passed in display name is = " + displayName);
 			if (displayName != null || name != null) {
 				ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
 						.withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
@@ -1449,6 +1533,21 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		        .withValue(ContactsContract.CommonDataKinds.Event.TYPE, ContactsContract.CommonDataKinds.Event.TYPE_ANNIVERSARY)
 		        .withValue(ContactsContract.CommonDataKinds.Event.START_DATE, anniversary)
 		        .build());
+		}
+		
+		// Add photos
+		JSONArray photos = null;
+		try {
+			photos = contact.getJSONArray("photos");
+			if (photos != null) {
+				for (int i=0; i<photos.length(); i++) {
+					JSONObject photo = (JSONObject)photos.get(i);
+					insertPhoto(ops, photo);
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.d(LOG_TAG, "Could not get photos");
 		}
 
 		boolean retVal = true;
