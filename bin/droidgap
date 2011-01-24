@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-ROOT = File.expand_path(File.dirname(__FILE__).gsub('bin',''))
+ROOT = File.expand_path(File.dirname(__FILE__).gsub(/bin$/,''))
 require 'fileutils'
 require File.join(ROOT, "lib", "generate.rb")
 require File.join(ROOT, "lib", "classic.rb")
