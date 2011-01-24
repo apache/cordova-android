@@ -24,10 +24,12 @@
 
 package com.phonegap;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1331,24 +1333,50 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * 
 	 * @param filename the file to read the bytes from
 	 * @return a byte array
+	 * @throws IOException 
 	 */
 	private byte[] getPhotoBytes(String filename) {
-		byte[] buffer = null;
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		try {
-			File fp = new File(filename);
-			FileInputStream in = new FileInputStream(fp);
-			buffer = new byte[(int) fp.length()];
-			if (fp.length() <= MAX_PHOTO_SIZE) {
-				in.read(buffer);
+			int bytesRead = 0;
+			long totalBytesRead = 0;
+			byte[] data = new byte[8192];
+			InputStream in = getPathFromUri(filename);
+			
+			while ((bytesRead = in.read(data, 0, data.length)) != -1 && totalBytesRead <= MAX_PHOTO_SIZE) {
+				buffer.write(data, 0, bytesRead);
+				totalBytesRead += bytesRead;
 			}
+			
 			in.close();
+			buffer.flush();
 		} catch (FileNotFoundException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		} catch (IOException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 		}
-		return buffer;
+		return buffer.toByteArray();
 	}
+	/**
+     * Get an input stream based on file path or uri content://, http://, file://
+     * 
+     * @param path
+     * @return an input stream
+	 * @throws IOException 
+     */
+    private InputStream getPathFromUri(String path) throws IOException {  	  
+    	if (path.startsWith("content:")) {
+    		Uri uri = Uri.parse(path);
+    		return mApp.getContentResolver().openInputStream(uri);
+    	}
+    	if (path.startsWith("http:") || path.startsWith("file:")) {
+    		URL url = new URL(path);
+    		return url.openStream();
+    	}
+    	else {
+    		return new FileInputStream(path);
+    	}
+    }  
 
 	/**
 	 * Creates a new contact and stores it in the database
