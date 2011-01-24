@@ -106,20 +106,23 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		String searchTerm = "";
 		int limit = 1;
 		boolean multiple = false;
-		try {
-			searchTerm = options.getString("filter");
+
+		if (options != null) {
+			searchTerm = options.optString("filter");
 			if (searchTerm.length()==0) {
 				searchTerm = "%";
 			}
 			else {
 				searchTerm = "%" + searchTerm + "%";
 			}
-			multiple = options.getBoolean("multiple");
+			multiple = options.optBoolean("multiple");
 			if (multiple) {
-				limit = options.getInt("limit");
+				limit = options.optInt("limit");
+				limit = limit > 0 ? limit : 1;
 			}
-		} catch (JSONException e) {
-			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		else {
+			searchTerm = "%";
 		}
 		
     	ContentResolver cr = mApp.getContentResolver();

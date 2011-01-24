@@ -42,7 +42,7 @@ public class ContactManager extends Plugin {
 		
 		try {
 			if (action.equals("search")) {
-				JSONArray res = contactAccessor.search(args.getJSONArray(0), args.getJSONObject(1));
+				JSONArray res = contactAccessor.search(args.getJSONArray(0), args.optJSONObject(1));
 				return new PluginResult(status, res, "navigator.service.contacts.cast");
 			}
 			else if (action.equals("save")) {
