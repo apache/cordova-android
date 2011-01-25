@@ -104,8 +104,8 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	 */
 	public JSONArray search(JSONArray fields, JSONObject options) {
 		String searchTerm = "";
-		int limit = 1;
-		boolean multiple = false;
+		int limit = Integer.MAX_VALUE;
+		boolean multiple = true;
 
 		if (options != null) {
 			searchTerm = options.optString("filter");
@@ -115,10 +115,13 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 			else {
 				searchTerm = "%" + searchTerm + "%";
 			}
-			multiple = options.optBoolean("multiple");
-			if (multiple) {
-				limit = options.optInt("limit");
-				limit = limit > 0 ? limit : 1;
+			try {
+				multiple = options.getBoolean("multiple");
+				if (!multiple) {
+					limit = 1;
+				}
+			} catch (JSONException e) {
+				// Multiple was not specified so we assume the default is true.
 			}
 		}
 		else {
@@ -312,7 +315,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 			try{
 			im.put("id", cursor.getString(
 					cursor.getColumnIndex(ContactMethods._ID)));
-			im.put("primary", false);
+			im.put("perf", false);
 			im.put("value", cursor.getString(
 					cursor.getColumnIndex(ContactMethodsColumns.DATA)));
 			im.put("type", getContactType(cursor.getInt(
@@ -346,10 +349,6 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 				organization.put("name", cursor.getString(cursor.getColumnIndex(Organizations.COMPANY)));
 				organization.put("title", cursor.getString(cursor.getColumnIndex(Organizations.TITLE)));
 				// organization.put("department", cursor.getString(cursor.getColumnIndex(Organizations)));
-				// organization.put("description", cursor.getString(cursor.getColumnIndex(Organizations)));
-				// organization.put("endDate", cursor.getString(cursor.getColumnIndex(Organizations)));
-				// organization.put("location", cursor.getString(cursor.getColumnIndex(Organizations)));
-				// organization.put("startDate", cursor.getString(cursor.getColumnIndex(Organizations)));
 				organizations.put(organization);
 			} catch (JSONException e) {
 				Log.e(LOG_TAG, e.getMessage(), e);
@@ -404,7 +403,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 			phone = new JSONObject();
 			try{
 				phone.put("id", cursor.getString(cursor.getColumnIndex(Phones._ID)));
-				phone.put("primary", false);
+				phone.put("perf", false);
 				phone.put("value", cursor.getString(cursor.getColumnIndex(Phones.NUMBER)));
 				phone.put("type", getPhoneType(cursor.getInt(cursor.getColumnIndex(Phones.TYPE))));
 				phones.put(phone);
@@ -433,7 +432,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 			email = new JSONObject();
 			try{
 				email.put("id", cursor.getString(cursor.getColumnIndex(ContactMethods._ID)));
-				email.put("primary", false);
+				email.put("perf", false);
 				email.put("value", cursor.getString(cursor.getColumnIndex(ContactMethods.DATA)));
 				// TODO Find out why adding an email type throws and exception
 				//email.put("type", cursor.getString(cursor.getColumnIndex(ContactMethods.TYPE)));

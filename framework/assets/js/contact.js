@@ -17,24 +17,19 @@
 * @param {ContactAddress[]} addresses array of addresses
 * @param {ContactField[]} ims instant messaging user ids
 * @param {ContactOrganization[]} organizations
-* @param {DOMString} published date contact was first created
-* @param {DOMString} updated date contact was last updated
+* @param {DOMString} revision date contact was last updated
 * @param {DOMString} birthday contact's birthday
-* @param (DOMString} anniversary contact's anniversary
 * @param {DOMString} gender contact's gender
 * @param {DOMString} note user notes about contact
-* @param {DOMString} preferredUsername
 * @param {ContactField[]} photos
-* @param {ContactField[]} tags
-* @param {ContactField[]} relationships
+* @param {ContactField[]} categories
 * @param {ContactField[]} urls contact's web sites
 * @param {ContactAccounts[]} accounts contact's online accounts
 * @param {DOMString} utcOffset UTC time zone offset
 * @param {DOMString} connected
 */
 var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, addresses,
-    ims, organizations, published, updated, birthday, anniversary, gender, note,
-    preferredUsername, photos, tags, relationships, urls, accounts, utcOffset, connected) {
+    ims, organizations, revision, birthday, gender, note, photos, categories, urls, timezone) {
     this.id = id || null;
     this.rawId = null;
     this.displayName = displayName || null;
@@ -45,20 +40,14 @@ var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, ad
     this.addresses = addresses || null; // ContactAddress[]
     this.ims = ims || null; // ContactField[]
     this.organizations = organizations || null; // ContactOrganization[]
-    this.published = published || null;
-    this.updated = updated || null;
+    this.revision = revision || null;
     this.birthday = birthday || null;
-    this.anniversary = anniversary || null;
     this.gender = gender || null;
     this.note = note || null;
-    this.preferredUsername = preferredUsername || null;
     this.photos = photos || null; // ContactField[]
-    this.tags = tags || null; // ContactField[]
-    this.relationships = relationships || null; // ContactField[]
+    this.categories = categories || null; // ContactField[]
     this.urls = urls || null; // ContactField[]
-    this.accounts = accounts || null; // ContactAccount[]
-    this.utcOffset = utcOffset || null;
-    this.connected = connected || null;
+    this.timezone = timezone || null;
 };
 
 /**
@@ -164,11 +153,11 @@ var ContactName = function(formatted, familyName, givenName, middle, prefix, suf
 * @param value
 * @param primary
 */
-var ContactField = function(type, value, primary) {
+var ContactField = function(type, value, pref) {
 	this.id = null;
     this.type = type || null;
     this.value = value || null;
-    this.primary = primary || null;
+    this.pref = pref || null;
 };
 
 /**
@@ -202,30 +191,12 @@ var ContactAddress = function(formatted, streetAddress, locality, region, postal
 * @param location
 * @param desc
 */
-var ContactOrganization = function(name, dept, title, startDate, endDate, location, desc) {
+var ContactOrganization = function(name, dept, title) {
 	this.id = null;
     this.name = name || null;
     this.department = dept || null;
     this.title = title || null;
-    this.startDate = startDate || null;
-    this.endDate = endDate || null;
-    this.location = location || null;
-    this.description = desc || null;
 };
-
-/**
-* Contact account.
-* @param {DOMString} id unique identifier, should only be set by native code
-* @param domain
-* @param username
-* @param userid
-*/
-var ContactAccount = function(domain, username, userid) {
-	this.id = null;
-    this.domain = domain || null;
-    this.username = username || null;
-    this.userid = userid || null;
-}
 
 /**
 * Represents a group of Contacts.
@@ -284,13 +255,11 @@ Contacts.prototype.cast = function(pluginResult) {
  * ContactFindOptions.
  * @param filter used to match contacts against
  * @param multiple boolean used to determine if more than one contact should be returned
- * @param limit maximum number of results to return from the contacts search
  * @param updatedSince return only contact records that have been updated on or after the given time
  */
-var ContactFindOptions = function(filter, multiple, limit, updatedSince) {
+var ContactFindOptions = function(filter, multiple, updatedSince) {
     this.filter = filter || '';
-    this.multiple = multiple || false;
-    this.limit = limit || 1;
+    this.multiple = multiple || true;
     this.updatedSince = updatedSince || '';
 };
 
