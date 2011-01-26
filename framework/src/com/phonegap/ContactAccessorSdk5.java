@@ -695,19 +695,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * @returns true if the contact is successfully saved, false otherwise.
 	 */
 	public boolean save(JSONObject contact) {
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
-		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
 		AccountManager mgr = AccountManager.get(mApp);
-
 		Account[] accounts = mgr.getAccounts();
-
 		Account account = null;
 
 		if (accounts.length == 1)
