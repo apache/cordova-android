@@ -5,6 +5,7 @@
  * 
  * Copyright (c) 2005-2010, Nitobi Software Inc.
  * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2011, Giant Leap Technologies AS
  */
 /*
  * Copyright (C) 2009 The Android Open Source Project
@@ -79,6 +80,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * Keep the photo size under the 1 MB blog limit.
 	 */
 	private static final long MAX_PHOTO_SIZE = 1048576;
+	
+	private static final String EMAIL_REGEXP = ".+@.+\\.+.+";  /* <anything>@<anything>.<anything>*/
 
 	/**
 	 * A static map that converts the JavaScript property name to Android database column name.
@@ -740,7 +743,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		}
 		return photo;
 	}
-	
+
 	@Override
 	/**
 	 * This method will save a contact object into the devices contacts database.
@@ -749,23 +752,62 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * @returns true if the contact is successfully saved, false otherwise.
 	 */
 	public boolean save(JSONObject contact) {
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
+		Log.d(LOG_TAG, "THIS IS THE NEW SAVE!!!");
 		AccountManager mgr = AccountManager.get(mApp);
+
 		Account[] accounts = mgr.getAccounts();
 
-		// TODO For now we are assuming that we should use the first 
-		// account found in the list of accounts
-		if (accounts.length < 1) {
-			return false;
+		Account account = null;
+
+		if (accounts.length == 1)
+			account = accounts[0];
+		else if (accounts.length > 1) {
+			for(Account a : accounts){
+				if(a.type.contains("eas")&& a.name.matches(EMAIL_REGEXP)) /*Exchange ActiveSync*/
+				{
+					account = a;
+					break;
+				}
+			}	
+			if(account == null){
+				for(Account a : accounts){
+					if(a.type.contains("com.google") && a.name.matches(EMAIL_REGEXP)) /*Google sync provider*/
+					{
+						account = a;
+						break;
+					}
+				}
+			}
+			if(account == null){
+				for(Account a : accounts){
+					if(a.name.matches(EMAIL_REGEXP)) /*Last resort, just look for an email address...*/
+					{
+						account = a;
+						break;
+					}
+				}	
+			}
 		}
 		
+		if(account == null)
+			return false;
+
 		String id = getJsonString(contact, "id");
 		// Create new contact
-		if (id==null) {		
-		    return createNewContact(contact, accounts[0]);
+		if (id == null) {
+			return createNewContact(contact, account);
 		}
 		// Modify existing contact
 		else {
-			return modifyContact(id, contact, accounts[0]);
+			return modifyContact(id, contact, account);
 		}
 	}
 
