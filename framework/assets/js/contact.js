@@ -24,9 +24,7 @@
 * @param {ContactField[]} photos
 * @param {ContactField[]} categories
 * @param {ContactField[]} urls contact's web sites
-* @param {ContactAccounts[]} accounts contact's online accounts
-* @param {DOMString} utcOffset UTC time zone offset
-* @param {DOMString} connected
+* @param {DOMString} timezone the contacts time zone
 */
 var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, addresses,
     ims, organizations, revision, birthday, gender, note, photos, categories, urls, timezone) {
@@ -106,9 +104,9 @@ Contact.prototype.clone = function() {
     		clonedContact.tags[i].id = null;
     	}
     }
-    if (clonedContact.relationships) {
-    	for (i=0; i<clonedContact.relationships.length; i++) {
-    		clonedContact.relationships[i].id = null;
+    if (clonedContact.photos) {
+    	for (i=0; i<clonedContact.photos.length; i++) {
+    		clonedContact.photos[i].id = null;
     	}
     }
     if (clonedContact.urls) {
@@ -151,7 +149,7 @@ var ContactName = function(formatted, familyName, givenName, middle, prefix, suf
 * @param {DOMString} id unique identifier, should only be set by native code
 * @param type
 * @param value
-* @param primary
+* @param pref
 */
 var ContactField = function(type, value, pref) {
 	this.id = null;
