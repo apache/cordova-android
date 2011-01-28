@@ -678,6 +678,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		try {
 			photo.put("id", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Photo._ID)));
 			photo.put("pref", false);
+			photo.put("type", "url");
 		    Uri person = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, (new Long(contactId)));
 		    Uri photoUri = Uri.withAppendedPath(person, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
 			photo.put("value", photoUri.toString());
