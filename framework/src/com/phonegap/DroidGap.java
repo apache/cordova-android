@@ -955,9 +955,10 @@ public class DroidGap extends PhonegapActivity {
     		// If splash screen is showing, clear it
     		if (this.ctx.splashscreen != 0) {
     			this.ctx.splashscreen = 0;
-    			view.setPictureListener(new PictureListener(){
+    			appView.setPictureListener(new PictureListener(){
                    public void onNewPicture(WebView viewtwo, Picture picture) {
-               	    	appView.setBackgroundResource(0);
+                	   appView.setBackgroundResource(0);
+                	   appView.setPictureListener(null);
                    }
                });
     		}
