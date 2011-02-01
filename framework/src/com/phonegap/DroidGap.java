@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Picture;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,6 +28,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
+import android.webkit.WebView.PictureListener;
 import android.webkit.WebViewClient;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -953,7 +955,11 @@ public class DroidGap extends PhonegapActivity {
     		// If splash screen is showing, clear it
     		if (this.ctx.splashscreen != 0) {
     			this.ctx.splashscreen = 0;
-    	    	appView.setBackgroundResource(0);
+    			view.setPictureListener(new PictureListener(){
+                   public void onNewPicture(WebView viewtwo, Picture picture) {
+               	    	appView.setBackgroundResource(0);
+                   }
+               });
     		}
 
         	// Stop "app loading" spinner if showing
