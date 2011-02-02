@@ -425,6 +425,11 @@ FileWriter.DONE = 2;
  * Abort writing file.
  */
 FileWriter.prototype.abort = function() {
+    // check for invalid state
+	if (this.readyState === FileWriter.DONE || this.readyState === FileWriter.INIT) {
+		throw FileError.INVALID_STATE_ERR;
+	} 
+
     // set error
     var error = new FileError();
     error.code = error.ABORT_ERR;
