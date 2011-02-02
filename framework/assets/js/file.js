@@ -443,10 +443,10 @@ FileWriter.prototype.abort = function() {
     
     this.readyState = FileWriter.DONE;
 
-    // If load end callback
-    if (typeof this.onloadend == "function") {
+    // If write end callback
+    if (typeof this.onwriteend == "function") {
         var evt = File._createEvent("writeend", this);
-        this.onloadend(evt);
+        this.onwriteend(evt);
     }
 };
 
