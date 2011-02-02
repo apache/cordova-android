@@ -19,7 +19,7 @@
  */
 function Position(coords, timestamp) {
 	this.coords = coords;
-	this.timestamp = (timestamp != 'undefined') ? timestamp : new Date().getTime();
+	this.timestamp = (timestamp !== 'undefined') ? timestamp : new Date().getTime();
 }
 
 function Coordinates(lat, lng, alt, acc, head, vel, altacc) {
@@ -50,7 +50,7 @@ function Coordinates(lat, lng, alt, acc, head, vel, altacc) {
 	/**
 	 * The altitude accuracy of the position.
 	 */
-	this.altitudeAccuracy = (altacc != 'undefined') ? altacc : null; 
+	this.altitudeAccuracy = (altacc !== 'undefined') ? altacc : null; 
 }
 
 /**

@@ -40,8 +40,8 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
     var media = PhoneGap.mediaObjects[id];
 
     // If state update
-    if (msg == Media.MEDIA_STATE) {
-        if (value == Media.MEDIA_STOPPED) {
+    if (msg === Media.MEDIA_STATE) {
+        if (value === Media.MEDIA_STOPPED) {
             if (media.successCallback) {
                 media.successCallback();
             }
@@ -50,10 +50,10 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
             media.statusCallback(value);
         }
     }
-    else if (msg == Media.MEDIA_DURATION) {
+    else if (msg === Media.MEDIA_DURATION) {
         media._duration = value;
     }
-    else if (msg == Media.MEDIA_ERROR) {
+    else if (msg === Media.MEDIA_ERROR) {
         if (media.errorCallback) {
             media.errorCallback(value);
         }
@@ -76,25 +76,25 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
 Media = function(src, successCallback, errorCallback, statusCallback, positionCallback) {
 
     // successCallback optional
-    if (successCallback && (typeof successCallback != "function")) {
+    if (successCallback && (typeof successCallback !== "function")) {
         console.log("Media Error: successCallback is not a function");
         return;
     }
 
     // errorCallback optional
-    if (errorCallback && (typeof errorCallback != "function")) {
+    if (errorCallback && (typeof errorCallback !== "function")) {
         console.log("Media Error: errorCallback is not a function");
         return;
     }
 
     // statusCallback optional
-    if (statusCallback && (typeof statusCallback != "function")) {
+    if (statusCallback && (typeof statusCallback !== "function")) {
         console.log("Media Error: statusCallback is not a function");
         return;
     }
 
     // statusCallback optional
-    if (positionCallback && (typeof positionCallback != "function")) {
+    if (positionCallback && (typeof positionCallback !== "function")) {
         console.log("Media Error: positionCallback is not a function");
         return;
     }
@@ -129,9 +129,9 @@ Media.MEDIA_MSG = ["None", "Starting", "Running", "Paused", "Stopped"];
  * @constructor
  */
 function MediaError() {
-    this.code = null,
+    this.code = null;
     this.message = "";
-};
+}
 
 MediaError.MEDIA_ERR_ABORTED        = 1;
 MediaError.MEDIA_ERR_NETWORK        = 2;

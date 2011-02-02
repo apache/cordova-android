@@ -28,8 +28,9 @@
  *      document.addEventListener("resume", myResumeListener, false);
  */
 
-if (typeof(DeviceInfo) != 'object')
+if (typeof(DeviceInfo) !== 'object') {
     DeviceInfo = {};
+}
 
 /**
  * This represents the PhoneGap API itself, and provides a global namespace for accessing
@@ -48,7 +49,7 @@ var PhoneGap = {
 /**
  * Custom pub-sub channel that can have functions subscribed to it
  */
-PhoneGap.Channel = function(type)
+PhoneGap.Channel = function (type)
 {
     this.type = type;
     this.handlers = {};
@@ -66,10 +67,10 @@ PhoneGap.Channel = function(type)
  */
 PhoneGap.Channel.prototype.subscribe = function(f, c, g) {
     // need a function to call
-    if (f == null) { return; }
+    if (f === null) { return; }
 
     var func = f;
-    if (typeof c == "object" && f instanceof Function) { func = PhoneGap.close(c, f); }
+    if (typeof c === "object" && f instanceof Function) { func = PhoneGap.close(c, f); }
 
     g = g || func.observer_guid || f.observer_guid || this.guid++;
     func.observer_guid = g;
@@ -88,9 +89,9 @@ PhoneGap.Channel.prototype.subscribeOnce = function(f, c) {
     var m = function() {
         f.apply(c || null, arguments);
         _this.unsubscribe(g);
-    }
+    };
     if (this.fired) {
-	    if (typeof c == "object" && f instanceof Function) { f = PhoneGap.close(c, f); }
+	    if (typeof c === "object" && f instanceof Function) { f = PhoneGap.close(c, f); }
         f.apply(this, this.fireArgs);
     } else {
         g = this.subscribe(m);
@@ -113,11 +114,14 @@ PhoneGap.Channel.prototype.unsubscribe = function(g) {
 PhoneGap.Channel.prototype.fire = function(e) {
     if (this.enabled) {
         var fail = false;
-        for (var item in this.handlers) {
-            var handler = this.handlers[item];
-            if (handler instanceof Function) {
-                var rv = (handler.apply(this, arguments)==false);
-                fail = fail || rv;
+        var item, handler, rv;
+        for (item in this.handlers) {
+            if (this.handlers.hasOwnProperty(item)) {
+                handler = this.handlers[item];
+                if (handler instanceof Function) {
+                    rv = (handler.apply(this, arguments) === false);
+                    fail = fail || rv;
+                }
             }
         }
         this.fired = true;
@@ -134,10 +138,13 @@ PhoneGap.Channel.prototype.fire = function(e) {
 PhoneGap.Channel.join = function(h, c) {
     var i = c.length;
     var f = function() {
-        if (!(--i)) h();
-    }
+        if (!(--i)) {
+            h();
+        }
+    };
     var len = i;
-    for (var j=0; j<len; j++) {
+    var j;
+    for (j=0; j<len; j++) {
         if (!c[j].fired) {
             c[j].subscribeOnce(f);
         }
@@ -145,13 +152,15 @@ PhoneGap.Channel.join = function(h, c) {
             i--;
         }
     }
-    if (!i) h();
+    if (!i) {
+        h();
+    }
 };
 
 /**
  * Boolean flag indicating if the PhoneGap API is available and initialized.
  */ // TODO: Remove this, it is unused here ... -jm
-PhoneGap.available = DeviceInfo.uuid != undefined;
+PhoneGap.available = DeviceInfo.uuid !== undefined;
 
 /**
  * Add an initialization function to a queue that ensures it will run and initialize
@@ -189,7 +198,7 @@ PhoneGap.addPlugin = function(name, obj) {
     else {
         console.log("Error: Plugin "+name+" already exists.");
     }
-}
+};
 
 /**
  * onDOMContentLoaded channel is fired when the DOM content 
@@ -337,14 +346,14 @@ PhoneGap.m_document_addEventListener = document.addEventListener;
 
 document.addEventListener = function(evt, handler, capture) {
     var e = evt.toLowerCase();
-    if (e == 'deviceready') {
+    if (e === 'deviceready') {
         PhoneGap.onDeviceReady.subscribeOnce(handler);
-    } else if (e == 'resume') {
+    } else if (e === 'resume') {
         PhoneGap.onResume.subscribe(handler);
         if (PhoneGap.onDeviceReady.fired) {
             PhoneGap.onResume.fire();
         }
-    } else if (e == 'pause') {
+    } else if (e === 'pause') {
         PhoneGap.onPause.subscribe(handler);
     } else {
         PhoneGap.m_document_addEventListener.call(document, evt, handler, capture);
@@ -359,57 +368,51 @@ document.addEventListener = function(evt, handler, capture) {
  * @return
  */
 PhoneGap.stringify = function(args) {
-    if (typeof JSON == "undefined") {
+    if (typeof JSON === "undefined") {
         var s = "[";
-        for (var i=0; i<args.length; i++) {
+        var i, type, start, name, nameType, a;
+        for (i = 0; i < args.length; i++) {
             if (i > 0) {
                 s = s + ",";
             }
-            var type = typeof args[i];
-            if ((type == "number") || (type == "boolean")) {
+            type = typeof args[i];
+            if ((type === "number") || (type === "boolean")) {
                 s = s + args[i];
-            }
-            else if (args[i] instanceof Array) {
-            	s = s + "[" + args[i] + "]";
-            }
-            else if (args[i] instanceof Object) {
-            	var start = true;
-            	s = s + '{';
-            	for (var name in args[i]) {
-            		if (args[i][name] != null) {
-	            		if (!start) {
-	            			s = s + ',';
-	            		}
-	            		s = s + '"' + name + '":';
-	            		var nameType = typeof args[i][name];
-	            		if ((nameType == "number") || (nameType == "boolean")) {
-	            			s = s + args[i][name];
-	            		}
-	            		else if ((typeof args[i][name]) == 'function') {
-		           			// don't copy the functions
-	            			s = s + '""'; 
-	            		}
-	            		else if (args[i][name] instanceof Object) {
-	            			s = s + this.stringify(args[i][name]);
-	            		}
-	            		else {
-	                        s = s + '"' + args[i][name] + '"';            			
-	            		}
-	                    start=false;
-	                 }
-            	} 
-            	s = s + '}';
-            }
-            else {
-                var a = args[i].replace(/\\/g, '\\\\');
+            } else if (args[i] instanceof Array) {
+                s = s + "[" + args[i] + "]";
+            } else if (args[i] instanceof Object) {
+                start = true;
+                s = s + '{';
+                for (name in args[i]) {
+                    if (args[i][name] !== null) {
+                        if (!start) {
+                            s = s + ',';
+                        }
+                        s = s + '"' + name + '":';
+                        nameType = typeof args[i][name];
+                        if ((nameType === "number") || (nameType === "boolean")) {
+                            s = s + args[i][name];
+                        } else if ((typeof args[i][name]) === 'function') {
+                            // don't copy the functions
+                            s = s + '""';
+                        } else if (args[i][name] instanceof Object) {
+                            s = s + this.stringify(args[i][name]);
+                        } else {
+                            s = s + '"' + args[i][name] + '"';
+                        }
+                        start = false;
+                    }
+                }
+                s = s + '}';
+            } else {
+                a = args[i].replace(/\\/g, '\\\\');
                 a = a.replace(/"/g, '\\"');
                 s = s + '"' + a + '"';
             }
         }
         s = s + "]";
         return s;
-    }
-    else {
+    } else {
         return JSON.stringify(args);
     }
 };
@@ -421,13 +424,14 @@ PhoneGap.stringify = function(args) {
  * @return
  */
 PhoneGap.clone = function(obj) {
+    var i, retVal;
 	if(!obj) { 
 		return obj;
 	}
 	
 	if(obj instanceof Array){
-		var retVal = new Array();
-		for(var i = 0; i < obj.length; ++i){
+		retVal = [];
+		for(i = 0; i < obj.length; ++i){
 			retVal.push(PhoneGap.clone(obj[i]));
 		}
 		return retVal;
@@ -445,9 +449,9 @@ PhoneGap.clone = function(obj) {
         return obj;
     }
     
-	retVal = new Object();
+	retVal = {};
 	for(i in obj){
-		if(!(i in retVal) || retVal[i] != obj[i]) {
+		if(!(i in retVal) || retVal[i] !== obj[i]) {
 			retVal[i] = PhoneGap.clone(obj[i]);
 		}
 	}
@@ -499,15 +503,15 @@ PhoneGap.exec = function(success, fail, service, action, args) {
             eval("var v="+r+";");
         
             // If status is OK, then return value back to caller
-            if (v.status == PhoneGap.callbackStatus.OK) {
+            if (v.status === PhoneGap.callbackStatus.OK) {
 
-                // If there is a success callback, then call it now with returned value
+                // If there is a success callback, then call it now with
+                // returned value
                 if (success) {
                     try {
-                       	success(v.message);
-                    }
-                    catch (e) {
-                        console.log("Error in success callback: "+callbackId+" = "+e);
+                        success(v.message);
+                    } catch (e) {
+                        console.log("Error in success callback: " + callbackId  + " = " + e);
                     }
 
                     // Clear callback if not expecting any more results
@@ -519,7 +523,7 @@ PhoneGap.exec = function(success, fail, service, action, args) {
             }
 
             // If no result
-            else if (v.status == PhoneGap.callbackStatus.NO_RESULT) {
+            else if (v.status === PhoneGap.callbackStatus.NO_RESULT) {
                     
                 // Clear callback if not expecting any more results
                 if (!v.keepCallback) {
@@ -536,8 +540,8 @@ PhoneGap.exec = function(success, fail, service, action, args) {
                     try {
                         fail(v.message);
                     }
-                    catch (e) {
-                        console.log("Error in error callback: "+callbackId+" = "+e);
+                    catch (e1) {
+                        console.log("Error in error callback: "+callbackId+" = "+e1);
                     }
 
                     // Clear callback if not expecting any more results
@@ -548,8 +552,8 @@ PhoneGap.exec = function(success, fail, service, action, args) {
                 return null;
             }
         }
-    } catch (e) {
-        console.log("Error: "+e);
+    } catch (e2) {
+        console.log("Error: "+e2);
     }
 };
 
@@ -563,10 +567,10 @@ PhoneGap.callbackSuccess = function(callbackId, args) {
     if (PhoneGap.callbacks[callbackId]) {
 
         // If result is to be sent to callback
-        if (args.status == PhoneGap.callbackStatus.OK) {
+        if (args.status === PhoneGap.callbackStatus.OK) {
             try {
                 if (PhoneGap.callbacks[callbackId].success) {
-               		PhoneGap.callbacks[callbackId].success(args.message);
+                    PhoneGap.callbacks[callbackId].success(args.message);
                 }
             }
             catch (e) {
@@ -615,38 +619,43 @@ PhoneGap.callbackError = function(callbackId, args) {
  */
 // TODO: Is this used?
 PhoneGap.run_command = function() {
-    if (!PhoneGap.available || !PhoneGap.queue.ready)
+    if (!PhoneGap.available || !PhoneGap.queue.ready) {
         return;
-
+    }
     PhoneGap.queue.ready = false;
 
     var args = PhoneGap.queue.commands.shift();
-    if (PhoneGap.queue.commands.length == 0) {
+    if (PhoneGap.queue.commands.length === 0) {
         clearInterval(PhoneGap.queue.timer);
         PhoneGap.queue.timer = null;
     }
 
     var uri = [];
     var dict = null;
-    for (var i = 1; i < args.length; i++) {
+    var i;
+    for (i = 1; i < args.length; i++) {
         var arg = args[i];
-        if (arg == undefined || arg == null)
+        if (arg === undefined || arg === null) {
             arg = '';
-        if (typeof(arg) == 'object')
+        }
+        if (typeof(arg) === 'object') {
             dict = arg;
-        else
+        } else {
             uri.push(encodeURIComponent(arg));
+        }
     }
     var url = "gap://" + args[0] + "/" + uri.join("/");
-    if (dict != null) {
+    if (dict !== null) {
+        var name;
         var query_args = [];
-        for (var name in dict) {
-            if (typeof(name) != 'string')
-                continue;
-            query_args.push(encodeURIComponent(name) + "=" + encodeURIComponent(dict[name]));
+        for (name in dict) {
+            if (dict.hasOwnProperty(name) && (typeof (name) === 'string')) {
+                query_args.push(encodeURIComponent(name) + "=" + encodeURIComponent(dict[name]));
+            }
         }
-        if (query_args.length > 0)
+        if (query_args.length > 0) {
             url += "?" + query_args.join("&");
+        }
     }
     document.location = url;
 
@@ -667,10 +676,10 @@ PhoneGap.JSCallback = function() {
 
     // Callback function when XMLHttpRequest is ready
     xmlhttp.onreadystatechange=function(){
-        if(xmlhttp.readyState == 4){
+        if(xmlhttp.readyState === 4){
 
             // If callback has JavaScript statement to execute
-            if (xmlhttp.status == 200) {
+            if (xmlhttp.status === 200) {
 
                 var msg = xmlhttp.responseText;
                 setTimeout(function() {
@@ -687,22 +696,22 @@ PhoneGap.JSCallback = function() {
             }
 
             // If callback ping (used to keep XHR request from timing out)
-            else if (xmlhttp.status == 404) {
+            else if (xmlhttp.status === 404) {
                 setTimeout(PhoneGap.JSCallback, 10);
             }
 
             // If security error
-            else if (xmlhttp.status == 403) {
+            else if (xmlhttp.status === 403) {
                 console.log("JSCallback Error: Invalid token.  Stopping callbacks.");
             }
 
             // If server is stopping
-            else if (xmlhttp.status == 503) {
+            else if (xmlhttp.status === 503) {
                 console.log("JSCallback Error: Service unavailable.  Stopping callbacks.");
             }
 
             // If request wasn't GET
-            else if (xmlhttp.status == 400) {
+            else if (xmlhttp.status === 400) {
                 console.log("JSCallback Error: Bad request.  Stopping callbacks.");
             }
 
@@ -715,12 +724,12 @@ PhoneGap.JSCallback = function() {
                 setTimeout(PhoneGap.JSCallback, 100);
             }
         }
-    }
+    };
 
-    if (PhoneGap.JSCallbackPort == null) {
+    if (PhoneGap.JSCallbackPort === null) {
         PhoneGap.JSCallbackPort = CallbackServer.getPort();
     }
-    if (PhoneGap.JSCallbackToken == null) {
+    if (PhoneGap.JSCallbackToken === null) {
         PhoneGap.JSCallbackToken = CallbackServer.getToken();
     }
     xmlhttp.open("GET", "http://127.0.0.1:"+PhoneGap.JSCallbackPort+"/"+PhoneGap.JSCallbackToken , true);
@@ -774,9 +783,10 @@ PhoneGap.createUUID = function() {
 
 PhoneGap.UUIDcreatePart = function(length) {
     var uuidpart = "";
-    for (var i=0; i<length; i++) {
-        var uuidchar = parseInt((Math.random() * 256)).toString(16);
-        if (uuidchar.length == 1) {
+    var i, uuidchar;
+    for (i=0; i<length; i++) {
+        uuidchar = parseInt((Math.random() * 256),0).toString(16);
+        if (uuidchar.length === 1) {
             uuidchar = "0" + uuidchar;
         }
         uuidpart += uuidchar;
@@ -788,11 +798,11 @@ PhoneGap.close = function(context, func, params) {
     if (typeof params === 'undefined') {
         return function() {
             return func.apply(context, arguments);
-        }
+        };
     } else {
         return function() {
             return func.apply(context, params);
-        }
+        };
     }
 };
 
@@ -806,7 +816,7 @@ PhoneGap.includeJavascript = function(jsfile, successCallback) {
     var id = document.getElementsByTagName("head")[0];         
     var el = document.createElement('script');
     el.type = 'text/javascript';
-    if (typeof successCallback == 'function') {
+    if (typeof successCallback === 'function') {
         el.onload = successCallback;
     }
     el.src = jsfile;

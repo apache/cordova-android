@@ -46,13 +46,13 @@ function Device() {
 Device.prototype.getInfo = function(successCallback, errorCallback) {
 
     // successCallback required
-    if (typeof successCallback != "function") {
+    if (typeof successCallback !== "function") {
         console.log("Device Error: successCallback is not a function");
         return;
     }
 
     // errorCallback optional
-    if (errorCallback && (typeof errorCallback != "function")) {
+    if (errorCallback && (typeof errorCallback !== "function")) {
         console.log("Device Error: errorCallback is not a function");
         return;
     }
@@ -68,7 +68,7 @@ Device.prototype.getInfo = function(successCallback, errorCallback) {
  */
 Device.prototype.overrideBackButton = function() {
     BackButton.override();
-}
+};
 
 /*
  * This is only for Android.
@@ -77,7 +77,7 @@ Device.prototype.overrideBackButton = function() {
  */
 Device.prototype.resetBackButton = function() {
     BackButton.reset();
-}
+};
 
 /*
  * This is only for Android.
@@ -86,7 +86,7 @@ Device.prototype.resetBackButton = function() {
  */
 Device.prototype.exitApp = function() {
     BackButton.exitApp();
-}
+};
 
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();

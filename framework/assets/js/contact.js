@@ -26,7 +26,7 @@
 * @param {ContactField[]} urls contact's web sites
 * @param {DOMString} timezone the contacts time zone
 */
-var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, addresses,
+var Contact = function (id, displayName, name, nickname, phoneNumbers, emails, addresses,
     ims, organizations, revision, birthday, gender, note, photos, categories, urls, timezone) {
     this.id = id || null;
     this.rawId = null;
@@ -49,12 +49,32 @@ var Contact = function(id, displayName, name, nickname, phoneNumbers, emails, ad
 };
 
 /**
+ *  ContactError.
+ *  An error code assigned by an implementation when an error has occurred
+ */
+var ContactError = function() {
+    this.code=null;
+};
+
+/**
+ * Error codes
+ */
+ContactError.UNKNOWN_ERROR = 0;
+ContactError.INVALID_ARGUMENT_ERROR = 1;
+ContactError.NOT_FOUND_ERROR = 2;
+ContactError.TIMEOUT_ERROR = 3;
+ContactError.PENDING_OPERATION_ERROR = 4;
+ContactError.IO_ERROR = 5;
+ContactError.NOT_SUPPORTED_ERROR = 6;
+ContactError.PERMISSION_DENIED_ERROR = 20;
+
+/**
 * Removes contact from device storage.
 * @param successCB success callback
 * @param errorCB error callback
 */
 Contact.prototype.remove = function(successCB, errorCB) {
-    if (this.id == null) {
+    if (this.id === null) {
         var errorObj = new ContactError();
         errorObj.code = ContactError.NOT_FOUND_ERROR;
         errorCB(errorObj);
@@ -71,48 +91,49 @@ Contact.prototype.remove = function(successCB, errorCB) {
 */
 Contact.prototype.clone = function() {
     var clonedContact = PhoneGap.clone(this);
+    var i;
     clonedContact.id = null;
     clonedContact.rawId = null;
     // Loop through and clear out any id's in phones, emails, etc.
     if (clonedContact.phoneNumbers) {
-    	for (i=0; i<clonedContact.phoneNumbers.length; i++) {
-    		clonedContact.phoneNumbers[i].id = null;
-    	}
+        for (i = 0; i < clonedContact.phoneNumbers.length; i++) {
+            clonedContact.phoneNumbers[i].id = null;
+        }
     }
     if (clonedContact.emails) {
-    	for (i=0; i<clonedContact.emails.length; i++) {
-    		clonedContact.emails[i].id = null;
-    	}
+        for (i = 0; i < clonedContact.emails.length; i++) {
+            clonedContact.emails[i].id = null;
+        }
     }
     if (clonedContact.addresses) {
-    	for (i=0; i<clonedContact.addresses.length; i++) {
-    		clonedContact.addresses[i].id = null;
-    	}
+        for (i = 0; i < clonedContact.addresses.length; i++) {
+            clonedContact.addresses[i].id = null;
+        }
     }
     if (clonedContact.ims) {
-    	for (i=0; i<clonedContact.ims.length; i++) {
-    		clonedContact.ims[i].id = null;
-    	}
+        for (i = 0; i < clonedContact.ims.length; i++) {
+            clonedContact.ims[i].id = null;
+        }
     }
     if (clonedContact.organizations) {
-    	for (i=0; i<clonedContact.organizations.length; i++) {
-    		clonedContact.organizations[i].id = null;
-    	}
+        for (i = 0; i < clonedContact.organizations.length; i++) {
+            clonedContact.organizations[i].id = null;
+        }
     }
     if (clonedContact.tags) {
-    	for (i=0; i<clonedContact.tags.length; i++) {
-    		clonedContact.tags[i].id = null;
-    	}
+        for (i = 0; i < clonedContact.tags.length; i++) {
+            clonedContact.tags[i].id = null;
+        }
     }
     if (clonedContact.photos) {
-    	for (i=0; i<clonedContact.photos.length; i++) {
-    		clonedContact.photos[i].id = null;
-    	}
+        for (i = 0; i < clonedContact.photos.length; i++) {
+            clonedContact.photos[i].id = null;
+        }
     }
     if (clonedContact.urls) {
-    	for (i=0; i<clonedContact.urls.length; i++) {
-    		clonedContact.urls[i].id = null;
-    	}
+        for (i = 0; i < clonedContact.urls.length; i++) {
+            clonedContact.urls[i].id = null;
+        }
     }
     return clonedContact;
 };
@@ -201,8 +222,8 @@ var ContactOrganization = function(name, dept, title) {
 */
 var Contacts = function() {
     this.inProgress = false;
-    this.records = new Array();
-}
+    this.records = [];
+};
 /**
 * Returns an array of Contacts matching the search criteria.
 * @param fields that should be searched
@@ -223,10 +244,11 @@ Contacts.prototype.find = function(fields, successCB, errorCB, options) {
 * @returns new Contact object
 */
 Contacts.prototype.create = function(properties) {
+    var i;
 	var contact = new Contact();
     for (i in properties) {
-        if (contact[i]!='undefined') {
-            contact[i]=properties[i];
+        if (contact[i] !== 'undefined') {
+            contact[i] = properties[i];
         }
     }
     return contact;
@@ -241,13 +263,14 @@ Contacts.prototype.create = function(properties) {
 * @returns an array of Contact objects
 */
 Contacts.prototype.cast = function(pluginResult) {
-	var contacts = new Array();
-	for (var i=0; i<pluginResult.message.length; i++) {
+	var contacts = [];
+	var i;
+	for (i=0; i<pluginResult.message.length; i++) {
 		contacts.push(navigator.service.contacts.create(pluginResult.message[i]));
 	}
 	pluginResult.message = contacts;
 	return pluginResult;
-}
+};
 
 /**
  * ContactFindOptions.
@@ -262,29 +285,13 @@ var ContactFindOptions = function(filter, multiple, updatedSince) {
 };
 
 /**
- *  ContactError.
- *  An error code assigned by an implementation when an error has occurred
- */
-var ContactError = function() {
-    this.code=null;
-};
-
-/**
- * Error codes
- */
-ContactError.UNKNOWN_ERROR = 0;
-ContactError.INVALID_ARGUMENT_ERROR = 1;
-ContactError.NOT_FOUND_ERROR = 2;
-ContactError.TIMEOUT_ERROR = 3;
-ContactError.PENDING_OPERATION_ERROR = 4;
-ContactError.IO_ERROR = 5;
-ContactError.NOT_SUPPORTED_ERROR = 6;
-ContactError.PERMISSION_DENIED_ERROR = 20;
-
-/**
  * Add the contact interface into the browser.
  */
 PhoneGap.addConstructor(function() {
-    if(typeof navigator.service == "undefined") navigator.service = new Object();
-    if(typeof navigator.service.contacts == "undefined") navigator.service.contacts = new Contacts();
+    if(typeof navigator.service === "undefined") {
+        navigator.service = {};
+    }
+    if(typeof navigator.service.contacts === "undefined") {
+        navigator.service.contacts = new Contacts();
+    }
 });

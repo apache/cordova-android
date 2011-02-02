@@ -9,7 +9,7 @@
 /**
  * FileTransfer uploads a file to a remote server.
  */
-function FileTransfer() {};
+function FileTransfer() {}
 
 /**
  * FileUploadResult
@@ -18,14 +18,14 @@ function FileUploadResult() {
     this.bytesSent = 0;
     this.responseCode = null;
     this.response = null;
-};
+}
 
 /**
  * FileTransferError
  */
 function FileTransferError() {
     this.code = null;
-};
+}
 
 FileTransferError.FILE_NOT_FOUND_ERR = 1;
 FileTransferError.INVALID_URL_ERR = 2;
@@ -74,4 +74,4 @@ function FileUploadOptions(fileKey, fileName, mimeType, params) {
     this.fileName = fileName || null;
     this.mimeType = mimeType || null;
     this.params = params || null;
-};
+}

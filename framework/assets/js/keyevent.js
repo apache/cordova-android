@@ -27,6 +27,6 @@ KeyEvent.prototype.searchTrigger = function() {
     document.dispatchEvent(e);
 };
 
-if (document.keyEvent == null || typeof document.keyEvent == 'undefined') {
+if (document.keyEvent === null || typeof document.keyEvent === 'undefined') {
     window.keyEvent = document.keyEvent = new KeyEvent();
 }

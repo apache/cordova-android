@@ -30,6 +30,8 @@ Crypto.prototype.getPlainString = function(string) {
 };
 
 PhoneGap.addConstructor(function() {
-    if (typeof navigator.Crypto == "undefined") navigator.Crypto = new Crypto();
+    if (typeof navigator.Crypto === "undefined") {
+        navigator.Crypto = new Crypto();
+    }
 });
 

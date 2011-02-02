@@ -20,7 +20,7 @@ function FileProperties(filePath) {
     this.filePath = filePath;
     this.size = 0;
     this.lastModifiedDate = null;
-};
+}
 
 /**
  * Create an event object since we can't set target on DOM event.
@@ -40,7 +40,7 @@ File._createEvent = function(type, target) {
 
 function FileError() {
    this.code = null;
-};
+}
 
 // File error codes
 // Found in DOMException
@@ -60,7 +60,7 @@ FileError.SYNTAX_ERR = 8;
 //-----------------------------------------------------------------------------
 
 function FileMgr() {
-};
+}
 
 FileMgr.prototype.getFileProperties = function(filePath) {
     return PhoneGap.exec(null, null, "File", "getFile", [filePath]);
@@ -122,7 +122,9 @@ FileMgr.prototype.readAsDataURL = function(fileName, successCallback, errorCallb
 };
 
 PhoneGap.addConstructor(function() {
-    if (typeof navigator.fileMgr == "undefined") navigator.fileMgr = new FileMgr();
+    if (typeof navigator.fileMgr === "undefined") {
+        navigator.fileMgr = new FileMgr();
+    }
 });
 
 //-----------------------------------------------------------------------------
@@ -156,7 +158,7 @@ function FileReader() {
     this.onerror = null;        // When the read has failed (see errors).
     this.onloadend = null;      // When the request has completed (either in success or failure).
     this.onabort = null;        // When the read has been aborted. For instance, by invoking the abort() method.
-};
+}
 
 // States
 FileReader.EMPTY = 0;
@@ -167,6 +169,7 @@ FileReader.DONE = 2;
  * Abort reading file.
  */
 FileReader.prototype.abort = function() {
+    var evt;
     this.readyState = FileReader.DONE;
     this.result = null;
 
@@ -176,18 +179,18 @@ FileReader.prototype.abort = function() {
     this.error = error;
    
     // If error callback
-    if (typeof this.onerror == "function") {
-        var evt = File._createEvent("error", this);
+    if (typeof this.onerror === "function") {
+        evt = File._createEvent("error", this);
         this.onerror(evt);
     }
     // If abort callback
-    if (typeof this.onabort == "function") {
-        var evt = File._createEvent("abort", this);
+    if (typeof this.onabort === "function") {
+        evt = File._createEvent("abort", this);
         this.onabort(evt);
     }
     // If load end callback
-    if (typeof this.onloadend == "function") {
-        var evt = File._createEvent("loadend", this);
+    if (typeof this.onloadend === "function") {
+        evt = File._createEvent("loadend", this);
         this.onloadend(evt);
     }
 };
@@ -205,7 +208,7 @@ FileReader.prototype.readAsText = function(file, encoding) {
     this.readyState = FileReader.LOADING;
 
     // If loadstart callback
-    if (typeof this.onloadstart == "function") {
+    if (typeof this.onloadstart === "function") {
         var evt = File._createEvent("loadstart", this);
         this.onloadstart(evt);
     }
@@ -220,9 +223,10 @@ FileReader.prototype.readAsText = function(file, encoding) {
 
         // Success callback
         function(r) {
+            var evt;
 
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileReader.DONE) {
+            if (me.readyState === FileReader.DONE) {
                 return;
             }
 
@@ -230,8 +234,8 @@ FileReader.prototype.readAsText = function(file, encoding) {
             me.result = r;
 
             // If onload callback
-            if (typeof me.onload == "function") {
-                var evt = File._createEvent("load", me);
+            if (typeof me.onload === "function") {
+                evt = File._createEvent("load", me);
                 me.onload(evt);
             }
 
@@ -239,17 +243,17 @@ FileReader.prototype.readAsText = function(file, encoding) {
             me.readyState = FileReader.DONE;
 
             // If onloadend callback
-            if (typeof me.onloadend == "function") {
-                var evt = File._createEvent("loadend", me);
+            if (typeof me.onloadend === "function") {
+                evt = File._createEvent("loadend", me);
                 me.onloadend(evt);
             }
         },
 
         // Error callback
         function(e) {
-
+            var evt;
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileReader.DONE) {
+            if (me.readyState === FileReader.DONE) {
                 return;
             }
 
@@ -257,8 +261,8 @@ FileReader.prototype.readAsText = function(file, encoding) {
             me.error = e;
 
             // If onerror callback
-            if (typeof me.onerror == "function") {
-                var evt = File._createEvent("error", me);
+            if (typeof me.onerror === "function") {
+                evt = File._createEvent("error", me);
                 me.onerror(evt);
             }
 
@@ -266,8 +270,8 @@ FileReader.prototype.readAsText = function(file, encoding) {
             me.readyState = FileReader.DONE;
 
             // If onloadend callback
-            if (typeof me.onloadend == "function") {
-                var evt = File._createEvent("loadend", me);
+            if (typeof me.onloadend === "function") {
+                evt = File._createEvent("loadend", me);
                 me.onloadend(evt);
             }
         }
@@ -289,7 +293,7 @@ FileReader.prototype.readAsDataURL = function(file) {
     this.readyState = FileReader.LOADING;
 
     // If loadstart callback
-    if (typeof this.onloadstart == "function") {
+    if (typeof this.onloadstart === "function") {
         var evt = File._createEvent("loadstart", this);
         this.onloadstart(evt);
     }
@@ -301,9 +305,10 @@ FileReader.prototype.readAsDataURL = function(file) {
 
         // Success callback
         function(r) {
+            var evt;
 
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileReader.DONE) {
+            if (me.readyState === FileReader.DONE) {
                 return;
             }
 
@@ -311,8 +316,8 @@ FileReader.prototype.readAsDataURL = function(file) {
             me.result = r;
 
             // If onload callback
-            if (typeof me.onload == "function") {
-                var evt = File._createEvent("load", me);
+            if (typeof me.onload === "function") {
+                evt = File._createEvent("load", me);
                 me.onload(evt);
             }
 
@@ -320,17 +325,17 @@ FileReader.prototype.readAsDataURL = function(file) {
             me.readyState = FileReader.DONE;
 
             // If onloadend callback
-            if (typeof me.onloadend == "function") {
-                var evt = File._createEvent("loadend", me);
+            if (typeof me.onloadend === "function") {
+                evt = File._createEvent("loadend", me);
                 me.onloadend(evt);
             }
         },
 
         // Error callback
         function(e) {
-
+            var evt;
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileReader.DONE) {
+            if (me.readyState === FileReader.DONE) {
                 return;
             }
 
@@ -338,8 +343,8 @@ FileReader.prototype.readAsDataURL = function(file) {
             me.error = e;
 
             // If onerror callback
-            if (typeof me.onerror == "function") {
-                var evt = File._createEvent("error", me);
+            if (typeof me.onerror === "function") {
+                evt = File._createEvent("error", me);
                 me.onerror(evt);
             }
 
@@ -347,8 +352,8 @@ FileReader.prototype.readAsDataURL = function(file) {
             me.readyState = FileReader.DONE;
 
             // If onloadend callback
-            if (typeof me.onloadend == "function") {
-                var evt = File._createEvent("loadend", me);
+            if (typeof me.onloadend === "function") {
+                evt = File._createEvent("loadend", me);
                 me.onloadend(evt);
             }
         }
@@ -414,7 +419,7 @@ function FileWriter(filePath, append) {
     this.onwriteend = null;		// When the request has completed (either in success or failure).
     this.onabort = null;		// When the write has been aborted. For instance, by invoking the abort() method.
     this.onerror = null;		// When the write has failed (see errors).
-};
+}
 
 // States
 FileWriter.INIT = 0;
@@ -431,18 +436,18 @@ FileWriter.prototype.abort = function() {
 	} 
 
     // set error
-    var error = new FileError();
+    var error = new FileError(), evt;
     error.code = error.ABORT_ERR;
     this.error = error;
     
     // If error callback
-    if (typeof this.onerror == "function") {
-        var evt = File._createEvent("error", this);
+    if (typeof this.onerror === "function") {
+        evt = File._createEvent("error", this);
         this.onerror(evt);
     }
     // If abort callback
-    if (typeof this.onabort == "function") {
-        var evt = File._createEvent("abort", this);
+    if (typeof this.onabort === "function") {
+        evt = File._createEvent("abort", this);
         this.onabort(evt);
     }
     
@@ -450,7 +455,7 @@ FileWriter.prototype.abort = function() {
 
     // If write end callback
     if (typeof this.onwriteend == "function") {
-        var evt = File._createEvent("writeend", this);
+        evt = File._createEvent("writeend", this);
         this.onwriteend(evt);
     }
 };
@@ -464,11 +469,11 @@ FileWriter.prototype.abort = function() {
  */
 FileWriter.prototype.writeAsText = function(file, text, bAppend) {
 	// Throw an exception if we are already writing a file
-	if (this.readyState == FileWriter.WRITING) {
+	if (this.readyState === FileWriter.WRITING) {
 		throw FileError.INVALID_STATE_ERR;
 	}
 
-	if (bAppend != true) {
+	if (bAppend !== true) {
         bAppend = false; // for null values
     }
 
@@ -480,7 +485,7 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
     var me = this;
 
     // If onwritestart callback
-    if (typeof me.onwritestart == "function") {
+    if (typeof me.onwritestart === "function") {
         var evt = File._createEvent("writestart", me);
         me.onwritestart(evt);
     }
@@ -490,9 +495,10 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
 
         // Success callback
         function(r) {
+            var evt;
 
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileWriter.DONE) {
+            if (me.readyState === FileWriter.DONE) {
                 return;
             }
 
@@ -500,8 +506,8 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             me.result = r;
 
             // If onwrite callback
-            if (typeof me.onwrite == "function") {
-                var evt = File._createEvent("write", me);
+            if (typeof me.onwrite === "function") {
+                evt = File._createEvent("write", me);
                 me.onwrite(evt);
             }
 
@@ -509,17 +515,18 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             me.readyState = FileWriter.DONE;
 
             // If onwriteend callback
-            if (typeof me.onwriteend == "function") {
-                var evt = File._createEvent("writeend", me);
+            if (typeof me.onwriteend === "function") {
+                evt = File._createEvent("writeend", me);
                 me.onwriteend(evt);
             }
         },
 
         // Error callback
         function(e) {
+            var evt;
 
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileWriter.DONE) {
+            if (me.readyState === FileWriter.DONE) {
                 return;
             }
 
@@ -527,8 +534,8 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             me.error = e;
 
             // If onerror callback
-            if (typeof me.onerror == "function") {
-                var evt = File._createEvent("error", me);
+            if (typeof me.onerror === "function") {
+                evt = File._createEvent("error", me);
                 me.onerror(evt);
             }
 
@@ -536,13 +543,12 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
             me.readyState = FileWriter.DONE;
 
             // If onwriteend callback
-            if (typeof me.onwriteend == "function") {
-                var evt = File._createEvent("writeend", me);
+            if (typeof me.onwriteend === "function") {
+                evt = File._createEvent("writeend", me);
                 me.onwriteend(evt);
             }
         }
-        );
-
+    );
 };
 
 /**
@@ -552,7 +558,7 @@ FileWriter.prototype.writeAsText = function(file, text, bAppend) {
  */
 FileWriter.prototype.write = function(text) {
 	// Throw an exception if we are already writing a file
-	if (this.readyState == FileWriter.WRITING) {
+	if (this.readyState === FileWriter.WRITING) {
 		throw FileError.INVALID_STATE_ERR;
 	}
 
@@ -562,7 +568,7 @@ FileWriter.prototype.write = function(text) {
     var me = this;
 
     // If onwritestart callback
-    if (typeof me.onwritestart == "function") {
+    if (typeof me.onwritestart === "function") {
         var evt = File._createEvent("writestart", me);
         me.onwritestart(evt);
     }
@@ -572,9 +578,9 @@ FileWriter.prototype.write = function(text) {
 
         // Success callback
         function(r) {
-
+            var evt;
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileWriter.DONE) {
+            if (me.readyState === FileWriter.DONE) {
                 return;
             }
 
@@ -584,8 +590,8 @@ FileWriter.prototype.write = function(text) {
             me.position += r;
 
             // If onwrite callback
-            if (typeof me.onwrite == "function") {
-                var evt = File._createEvent("write", me);
+            if (typeof me.onwrite === "function") {
+                evt = File._createEvent("write", me);
                 me.onwrite(evt);
             }
 
@@ -593,17 +599,18 @@ FileWriter.prototype.write = function(text) {
             me.readyState = FileWriter.DONE;
 
             // If onwriteend callback
-            if (typeof me.onwriteend == "function") {
-                var evt = File._createEvent("writeend", me);
+            if (typeof me.onwriteend === "function") {
+                evt = File._createEvent("writeend", me);
                 me.onwriteend(evt);
             }
         },
 
         // Error callback
         function(e) {
+            var evt;
 
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileWriter.DONE) {
+            if (me.readyState === FileWriter.DONE) {
                 return;
             }
 
@@ -611,8 +618,8 @@ FileWriter.prototype.write = function(text) {
             me.error = e;
 
             // If onerror callback
-            if (typeof me.onerror == "function") {
-                var evt = File._createEvent("error", me);
+            if (typeof me.onerror === "function") {
+                evt = File._createEvent("error", me);
                 me.onerror(evt);
             }
 
@@ -620,8 +627,8 @@ FileWriter.prototype.write = function(text) {
             me.readyState = FileWriter.DONE;
 
             // If onwriteend callback
-            if (typeof me.onwriteend == "function") {
-                var evt = File._createEvent("writeend", me);
+            if (typeof me.onwriteend === "function") {
+                evt = File._createEvent("writeend", me);
                 me.onwriteend(evt);
             }
         }
@@ -671,7 +678,7 @@ FileWriter.prototype.seek = function(offset) {
  */
 FileWriter.prototype.truncate = function(size) {
 	// Throw an exception if we are already writing a file
-	if (this.readyState == FileWriter.WRITING) {
+	if (this.readyState === FileWriter.WRITING) {
 		throw FileError.INVALID_STATE_ERR;
 	}
 
@@ -681,7 +688,7 @@ FileWriter.prototype.truncate = function(size) {
     var me = this;
 
     // If onwritestart callback
-    if (typeof me.onwritestart == "function") {
+    if (typeof me.onwritestart === "function") {
         var evt = File._createEvent("writestart", me);
         me.onwritestart(evt);
     }
@@ -691,19 +698,19 @@ FileWriter.prototype.truncate = function(size) {
 
         // Success callback
         function(r) {
-
+            var evt;
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileWriter.DONE) {
+            if (me.readyState === FileWriter.DONE) {
                 return;
             }
 
             // Update the length of the file
             me.length = r;
-            me.position = Math.min(me.position, r);;
+            me.position = Math.min(me.position, r);
 
             // If onwrite callback
-            if (typeof me.onwrite == "function") {
-                var evt = File._createEvent("write", me);
+            if (typeof me.onwrite === "function") {
+                evt = File._createEvent("write", me);
                 me.onwrite(evt);
             }
 
@@ -711,17 +718,17 @@ FileWriter.prototype.truncate = function(size) {
             me.readyState = FileWriter.DONE;
 
             // If onwriteend callback
-            if (typeof me.onwriteend == "function") {
-                var evt = File._createEvent("writeend", me);
+            if (typeof me.onwriteend === "function") {
+                evt = File._createEvent("writeend", me);
                 me.onwriteend(evt);
             }
         },
 
         // Error callback
         function(e) {
-
+            var evt;
             // If DONE (cancelled), then don't do anything
-            if (me.readyState == FileWriter.DONE) {
+            if (me.readyState === FileWriter.DONE) {
                 return;
             }
 
@@ -729,8 +736,8 @@ FileWriter.prototype.truncate = function(size) {
             me.error = e;
 
             // If onerror callback
-            if (typeof me.onerror == "function") {
-                var evt = File._createEvent("error", me);
+            if (typeof me.onerror === "function") {
+                evt = File._createEvent("error", me);
                 me.onerror(evt);
             }
 
@@ -738,11 +745,11 @@ FileWriter.prototype.truncate = function(size) {
             me.readyState = FileWriter.DONE;
 
             // If onwriteend callback
-            if (typeof me.onwriteend == "function") {
-                var evt = File._createEvent("writeend", me);
+            if (typeof me.onwriteend === "function") {
+                evt = File._createEvent("writeend", me);
                 me.onwriteend(evt);
             }
         }
-        );
+    );
 };
 

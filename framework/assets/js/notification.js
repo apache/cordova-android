@@ -111,6 +111,8 @@ Notification.prototype.beep = function(count) {
 };
 
 PhoneGap.addConstructor(function() {
-    if (typeof navigator.notification == "undefined") navigator.notification = new Notification();
+    if (typeof navigator.notification === "undefined") {
+        navigator.notification = new Notification();
+    }
 });
 
