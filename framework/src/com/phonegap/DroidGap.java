@@ -16,6 +16,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Picture;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -179,6 +180,8 @@ public class DroidGap extends PhonegapActivity {
     			this.init();
     		}
     	}
+    	// Setup the hardware volume controls to handle volume control
+		setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
     
     /**
