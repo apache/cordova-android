@@ -10,6 +10,8 @@ package com.phonegap.api;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.util.Log;
+
 public class PluginResult {
 	private final int status;
 	private final String message;
@@ -27,6 +29,12 @@ public class PluginResult {
 	}
 
 	public PluginResult(Status status, JSONArray message, String cast) {
+		this.status = status.ordinal();
+		this.message = message.toString();
+		this.cast = cast;
+	}
+
+	public PluginResult(Status status, JSONObject message, String cast) {
 		this.status = status.ordinal();
 		this.message = message.toString();
 		this.cast = cast;

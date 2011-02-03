@@ -23,6 +23,23 @@ function FileProperties(filePath) {
 }
 
 /**
+ * Represents a single file.
+ * 
+ * name {DOMString} name of the file, without path information
+ * fullPath {DOMString} the full path of the file, including the name
+ * type {DOMString} mime type
+ * lastModifiedDate {Date} last modified date
+ * size {Number} size of the file in bytes
+ */
+function File(name, fullPath, type, lastModifiedDate, size) {
+	this.name = name || null;
+    this.fullPath = fullPath || null;
+	this.type = type || null;
+    this.lastModifiedDate = lastModifiedDate || null;
+    this.size = size || 0;
+}
+
+/**
  * Create an event object since we can't set target on DOM event.
  *
  * @param type
@@ -54,6 +71,10 @@ FileError.ENCODING_ERR = 5;
 FileError.NO_MODIFICATION_ALLOWED_ERR = 6;
 FileError.INVALID_STATE_ERR = 7;
 FileError.SYNTAX_ERR = 8;
+FileError.INVALID_MODIFICATION_ERR = 9;
+FileError.QUOTA_EXCEEDED_ERR = 10;
+FileError.TYPE_MISMATCH_ERR = 11;
+FileError.PATH_EXISTS_ERR = 12;
 
 //-----------------------------------------------------------------------------
 // File manager
@@ -63,14 +84,10 @@ function FileMgr() {
 }
 
 FileMgr.prototype.getFileProperties = function(filePath) {
-    return PhoneGap.exec(null, null, "File", "getFile", [filePath]);
+    return PhoneGap.exec(null, null, "File", "getFileProperties", [filePath]);
 };
 
 FileMgr.prototype.getFileBasePaths = function() {
-};
-
-FileMgr.prototype.getRootPaths = function() {
-    return PhoneGap.exec(null, null, "File", "getRootPaths", []);
 };
 
 FileMgr.prototype.testSaveLocationExists = function(successCallback, errorCallback) {
@@ -83,18 +100,6 @@ FileMgr.prototype.testFileExists = function(fileName, successCallback, errorCall
 
 FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, errorCallback) {
     return PhoneGap.exec(successCallback, errorCallback, "File", "testDirectoryExists", [dirName]);
-};
-
-FileMgr.prototype.createDirectory = function(dirName, successCallback, errorCallback) {
-    return PhoneGap.exec(successCallback, errorCallback, "File", "createDirectory", [dirName]);
-};
-
-FileMgr.prototype.deleteDirectory = function(dirName, successCallback, errorCallback) {
-    return PhoneGap.exec(successCallback, errorCallback, "File", "deleteDirectory", [dirName]);
-};
-
-FileMgr.prototype.deleteFile = function(fileName, successCallback, errorCallback) {
-    return PhoneGap.exec(successCallback, errorCallback, "File", "deleteFile", [fileName]);
 };
 
 FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback) {
@@ -198,11 +203,16 @@ FileReader.prototype.abort = function() {
 /**
  * Read text file.
  *
- * @param file          The name of the file
+ * @param file          {File} File object containing file properties
  * @param encoding      [Optional] (see http://www.iana.org/assignments/character-sets)
  */
 FileReader.prototype.readAsText = function(file, encoding) {
-    this.fileName = file;
+    this.fileName = "";
+	if (typeof file.fullPath === "undefined") {
+		this.fileName = file;
+	} else {
+		this.fileName = file.fullPath;
+	}
 
     // LOADING state
     this.readyState = FileReader.LOADING;
@@ -219,7 +229,7 @@ FileReader.prototype.readAsText = function(file, encoding) {
     var me = this;
 
     // Read file
-    navigator.fileMgr.readAsText(file, enc,
+    navigator.fileMgr.readAsText(this.fileName, enc,
 
         // Success callback
         function(r) {
@@ -284,10 +294,15 @@ FileReader.prototype.readAsText = function(file, encoding) {
  * A data url is of the form:
  *      data:[<mediatype>][;base64],<data>
  *
- * @param file          The name of the file
+ * @param file          {File} File object containing file properties
  */
 FileReader.prototype.readAsDataURL = function(file) {
-    this.fileName = file;
+	this.fileName = "";
+    if (typeof file.fullPath === "undefined") {
+        this.fileName = file;
+    } else {
+        this.fileName = file.fullPath;
+    }
 
     // LOADING state
     this.readyState = FileReader.LOADING;
@@ -301,7 +316,7 @@ FileReader.prototype.readAsDataURL = function(file) {
     var me = this;
 
     // Read file
-    navigator.fileMgr.readAsDataURL(file,
+    navigator.fileMgr.readAsDataURL(this.fileName,
 
         // Success callback
         function(r) {
@@ -363,7 +378,7 @@ FileReader.prototype.readAsDataURL = function(file) {
 /**
  * Read file and return data as a binary data.
  *
- * @param file          The name of the file
+ * @param file          {File} File object containing file properties
  */
 FileReader.prototype.readAsBinaryString = function(file) {
     // TODO - Can't return binary data to browser.
@@ -373,7 +388,7 @@ FileReader.prototype.readAsBinaryString = function(file) {
 /**
  * Read file and return data as a binary data.
  *
- * @param file          The name of the file
+ * @param file          {File} File object containing file properties
  */
 FileReader.prototype.readAsArrayBuffer = function(file) {
     // TODO - Can't return binary data to browser.
@@ -391,19 +406,18 @@ FileReader.prototype.readAsArrayBuffer = function(file) {
  *      The root directory is the root of the file system.
  *      To write to the SD card, the file name is "sdcard/my_file.txt"
  *      
- * @param filePath the file to write to
+ * @param file {File} File object containing file properties
  * @param append if true write to the end of the file, otherwise overwrite the file
  */
-function FileWriter(filePath, append) {
+function FileWriter(file) {
     this.fileName = "";
     this.length = 0;
-	if (filePath) {
-		var f = navigator.fileMgr.getFileProperties(filePath);
-	    this.fileName = f.name;
-	    this.length = f.size;
+	if (file) {
+	    this.fileName = file.fullPath || file;
+	    this.length = file.size || 0;
 	}
     // default is to write at the beginning of the file
-    this.position = (append !== true) ? 0 : this.length;
+    this.position = 0;
 
     this.readyState = 0; // EMPTY
 
@@ -753,3 +767,418 @@ FileWriter.prototype.truncate = function(size) {
     );
 };
 
+function LocalFileSystem() {
+};
+
+// File error codes
+LocalFileSystem.TEMPORARY = 0;
+LocalFileSystem.PERSISTENT = 1;
+LocalFileSystem.RESOURCE = 2;
+LocalFileSystem.APPLICATION = 3;
+
+/**
+ * Requests a filesystem in which to store application data.
+ * 
+ * @param {int} type of file system being requested
+ * @param {Function} successCallback is called with the new FileSystem
+ * @param {Function} errorCallback is called with a FileError
+ */
+LocalFileSystem.prototype.requestFileSystem = function(type, size, successCallback, errorCallback) {
+	if (type < 0 || type > 3) {
+		if (typeof errorCallback == "function") {
+			errorCallback({
+				"code": FileError.SYNTAX_ERR
+			});
+		}
+	}
+	else {
+		PhoneGap.exec(successCallback, errorCallback, "File", "requestFileSystem", [type, size]);
+	}
+};
+
+/**
+ * 
+ * @param {DOMString} uri referring to a local file in a filesystem
+ * @param {Function} successCallback is called with the new entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+LocalFileSystem.prototype.resolveLocalFileSystemURI = function(uri, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "resolveLocalFileSystemURI", [uri]);
+};
+
+/**
+* This function returns and array of contacts.  It is required as we need to convert raw 
+* JSON objects into concrete Contact objects.  Currently this method is called after 
+* navigator.service.contacts.find but before the find methods success call back.
+* 
+* @param a JSON Objects that need to be converted to DirectoryEntry or FileEntry objects.
+* @returns an entry 
+*/
+LocalFileSystem.prototype._castFS = function(pluginResult) {
+    var entry = null;
+    entry = new DirectoryEntry();
+    entry.isDirectory = pluginResult.message.root.isDirectory;
+    entry.isFile = pluginResult.message.root.isFile;
+    entry.name = pluginResult.message.root.name;
+    entry.fullPath = pluginResult.message.root.fullPath;
+    pluginResult.message.root = entry;
+    return pluginResult;    
+}
+
+LocalFileSystem.prototype._castEntry = function(pluginResult) {
+    var entry = null;
+    if (pluginResult.message.isDirectory) {
+        console.log("This is a dir");
+        entry = new DirectoryEntry();
+    }
+    else if (pluginResult.message.isFile) {
+        console.log("This is a file");
+        entry = new FileEntry();
+    }
+    entry.isDirectory = pluginResult.message.isDirectory;
+    entry.isFile = pluginResult.message.isFile;
+    entry.name = pluginResult.message.name;
+    entry.fullPath = pluginResult.message.fullPath;
+    pluginResult.message = entry;
+    return pluginResult;    
+}
+
+LocalFileSystem.prototype._castEntries = function(pluginResult) {
+    var entries = pluginResult.message;
+	var retVal = []; 
+	for (i=0; i<entries.length; i++) {
+		retVal.push(window.localFileSystem._createEntry(entries[i]));
+	}
+    pluginResult.message = retVal;
+    return pluginResult;    
+}
+
+LocalFileSystem.prototype._createEntry = function(castMe) {
+	var entry = null;
+    if (castMe.isDirectory) {
+        console.log("This is a dir");
+        entry = new DirectoryEntry();
+    }
+    else if (castMe.isFile) {
+        console.log("This is a file");
+        entry = new FileEntry();
+    }
+    entry.isDirectory = castMe.isDirectory;
+    entry.isFile = castMe.isFile;
+    entry.name = castMe.name;
+    entry.fullPath = castMe.fullPath;
+    return entry;    
+	
+}
+
+LocalFileSystem.prototype._castDate = function(pluginResult) {
+	if (pluginResult.message.modificationTime) {
+	    var modTime = new Date(pluginResult.message.modificationTime);
+	    pluginResult.message.modificationTime = modTime;
+	}
+	else if (pluginResult.message.lastModifiedDate) {
+		var file = new File();
+        file.size = pluginResult.message.size;
+        file.type = pluginResult.message.type;
+        file.name = pluginResult.message.name;
+        file.fullPath = pluginResult.message.fullPath;
+		file.lastModifedDate = new Date(pluginResult.message.lastModifiedDate);
+	    pluginResult.message = file;		
+	}
+	
+    return pluginResult;	
+}
+
+/**
+ * Information about the state of the file or directory
+ * 
+ * {Date} modificationTime (readonly)
+ */
+function Metadata() {
+    this.modificationTime=null;
+};
+
+/**
+ * Supplies arguments to methods that lookup or create files and directories
+ * 
+ * @param {boolean} create file or directory if it doesn't exist 
+ * @param {boolean} exclusive if true the command will fail if the file or directory exists
+ */
+function Flags(create, exclusive) {
+    this.create = create || false;
+    this.exclusive = exclusive || false;
+};
+
+/**
+ * An interface representing a file system
+ * 
+ * {DOMString} name the unique name of the file system (readonly)
+ * {DirectoryEntry} root directory of the file system (readonly)
+ */
+function FileSystem() {
+    this.name = null;
+    this.root = null;
+};
+
+/**
+ * An interface representing a directory on the file system.
+ * 
+ * {boolean} isFile always false (readonly)
+ * {boolean} isDirectory always true (readonly)
+ * {DOMString} name of the directory, excluding the path leading to it (readonly)
+ * {DOMString} fullPath the absolute full path to the directory (readonly)
+ * {FileSystem} filesystem on which the directory resides (readonly)
+ */
+function DirectoryEntry() {
+    this.isFile = false;
+    this.isDirectory = true;
+    this.name = null;
+    this.fullPath = null;
+    this.filesystem = null;
+};
+
+/**
+ * Copies a directory to a new location
+ * 
+ * @param {DirectoryEntry} parent the directory to which to copy the entry
+ * @param {DOMString} newName the new name of the entry, defaults to the current name
+ * @param {Function} successCallback is called with the new entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryEntry.prototype.copyTo = function(parent, newName, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
+};
+
+/**
+ * Looks up the metadata of the entry
+ * 
+ * @param {Function} successCallback is called with a Metadata object
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryEntry.prototype.getMetadata = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "getMetadata", [this.fullPath]);
+};
+
+/**
+ * Gets the parent of the entry
+ * 
+ * @param {Function} successCallback is called with a parent entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryEntry.prototype.getParent = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
+};
+
+/**
+ * Moves a directory to a new location
+ * 
+ * @param {DirectoryEntry} parent the directory to which to move the entry
+ * @param {DOMString} newName the new name of the entry, defaults to the current name
+ * @param {Function} successCallback is called with the new entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryEntry.prototype.moveTo = function(parent, newName, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
+};
+
+/**
+ * Removes the entry
+ * 
+ * @param {Function} successCallback is called with no parameters
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryEntry.prototype.remove = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "remove", [this.fullPath]);
+};
+
+/**
+ * Returns a URI that can be used to identify this entry.
+ * 
+ * @param {DOMString} mimeType for a FileEntry, the mime type to be used to interpret the file, when loaded through this URI.
+ * @return uri
+ */
+DirectoryEntry.prototype.toURI = function(mimeType) {
+    return "file://" + this.fullPath;
+};
+
+/**
+ * Creates a new DirectoryReader to read entries from this directory
+ */
+DirectoryEntry.prototype.createReader = function(successCallback, errorCallback) {
+    return new DirectoryReader(this.fullPath);
+};
+
+/**
+ * Creates or looks up a directory
+ * 
+ * @param {DOMString} path either a relative or absolute path from this directory in which to look up or create a directory
+ * @param {Flags} options to create or excluively create the directory
+ * @param {Function} successCallback is called with the new entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryEntry.prototype.getDirectory = function(path, options, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "getDirectory", [this.fullPath, path, options]);
+};
+
+/**
+ * Creates or looks up a file
+ * 
+ * @param {DOMString} path either a relative or absolute path from this directory in which to look up or create a file
+ * @param {Flags} options to create or excluively create the file
+ * @param {Function} successCallback is called with the new entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryEntry.prototype.getFile = function(path, options, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "getFile", [this.fullPath, path, options]);
+};
+
+/**
+ * Deletes a directory and all of it's contents
+ * 
+ * @param {Function} successCallback is called with no parameters
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "removeRecursively", [this.fullPath]);
+};
+
+/**
+ * An interface that lists the files and directories in a directory.
+ */
+function DirectoryReader(fullPath){
+	this.fullPath = fullPath || null;    
+};
+
+/**
+ * Returns a list of entries from a directory.
+ * 
+ * @param {Function} successCallback is called with a list of entries
+ * @param {Function} errorCallback is called with a FileError
+ */
+DirectoryReader.prototype.readEntries = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "readEntries", [this.fullPath]);
+}
+ 
+/**
+ * An interface representing a directory on the file system.
+ * 
+ * {boolean} isFile always true (readonly)
+ * {boolean} isDirectory always false (readonly)
+ * {DOMString} name of the file, excluding the path leading to it (readonly)
+ * {DOMString} fullPath the absolute full path to the file (readonly)
+ * {FileSystem} filesystem on which the directory resides (readonly)
+ */
+function FileEntry() {
+    this.isFile = true;
+    this.isDirectory = false;
+    this.name = null;
+    this.fullPath = null;
+    this.filesystem = null;
+};
+
+/**
+ * Copies a file to a new location
+ * 
+ * @param {DirectoryEntry} parent the directory to which to copy the entry
+ * @param {DOMString} newName the new name of the entry, defaults to the current name
+ * @param {Function} successCallback is called with the new entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+FileEntry.prototype.copyTo = function(parent, newName, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
+};
+
+/**
+ * Looks up the metadata of the entry
+ * 
+ * @param {Function} successCallback is called with a Metadata object
+ * @param {Function} errorCallback is called with a FileError
+ */
+FileEntry.prototype.getMetadata = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "getMetadata", [this.fullPath]);
+};
+
+/**
+ * Gets the parent of the entry
+ * 
+ * @param {Function} successCallback is called with a parent entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+FileEntry.prototype.getParent = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
+};
+
+/**
+ * Moves a directory to a new location
+ * 
+ * @param {DirectoryEntry} parent the directory to which to move the entry
+ * @param {DOMString} newName the new name of the entry, defaults to the current name
+ * @param {Function} successCallback is called with the new entry
+ * @param {Function} errorCallback is called with a FileError
+ */
+FileEntry.prototype.moveTo = function(parent, newName, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
+};
+
+/**
+ * Removes the entry
+ * 
+ * @param {Function} successCallback is called with no parameters
+ * @param {Function} errorCallback is called with a FileError
+ */
+FileEntry.prototype.remove = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "remove", [this.fullPath]);
+};
+
+/**
+ * Returns a URI that can be used to identify this entry.
+ * 
+ * @param {DOMString} mimeType for a FileEntry, the mime type to be used to interpret the file, when loaded through this URI.
+ * @return uri
+ */
+FileEntry.prototype.toURI = function(mimeType) {
+    return "file://" + this.fullPath;
+};
+
+/**
+ * Creates a new FileWriter associated with the file that this FileEntry represents.
+ * 
+ * @param {Function} successCallback is called with the new FileWriter
+ * @param {Function} errorCallback is called with a FileError
+ */
+FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
+	var writer = new FileWriter(this.fullPath);
+
+    if (writer.fileName == null || writer.fileName == "") {
+		if (typeof errorCallback == "function") {
+			errorCallback({
+				"code": FileError.INVALID_STATE_ERR
+			});
+		}
+	}
+	
+    if (typeof successCallback == "function") {
+        successCallback(writer);
+    }
+};
+
+/**
+ * Returns a File that represents the current state of the file that this FileEntry represents.
+ * 
+ * @param {Function} successCallback is called with the new File object
+ * @param {Function} errorCallback is called with a FileError
+ */
+FileEntry.prototype.file = function(successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, "File", "getFileMetadata", [this.fullPath]);
+};
+
+/**
+ * Add the FileSystem interface into the browser.
+ */
+PhoneGap.addConstructor(function() {
+	var pgLocalFileSystem = new LocalFileSystem();
+	// Needed for cast methods
+    if(typeof window.localFileSystem == "undefined") window.localFileSystem  = pgLocalFileSystem;
+    if(typeof window.requestFileSystem == "undefined") window.requestFileSystem  = pgLocalFileSystem.requestFileSystem;
+    if(typeof window.resolveLocalFileSystemURI == "undefined") window.resolveLocalFileSystemURI = pgLocalFileSystem.resolveLocalFileSystemURI;
+});
