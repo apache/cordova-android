@@ -80,7 +80,7 @@
 				<include name="lint.js" />
 			</fileset>
 			<fileset dir="assets/www">
-				<include name="phonegap-${version}.js" />
+				<include name="phonegap.${version}.js" />
 			</fileset>
 		</concat>
 
@@ -107,18 +107,18 @@
     <target name="build-uncompressed-javascript">
 
       <!-- Clean up existing files -->
-      <delete file="assets/www/phonegap-${version}.min.js"/>
+      <delete file="assets/www/phonegap.${version}.min.js"/>
       <delete file="assets/www/phonegap-tmp.js"/>
-      <delete file="assets/www/phonegap-${version}.js"/>
+      <delete file="assets/www/phonegap.${version}.js"/>
       
       <!-- Create uncompressed JS file -->
-      <concat destfile="assets/www/phonegap-${version}.js">
+      <concat destfile="assets/www/phonegap.${version}.js">
         <fileset dir="assets/js" includes="phonegap.js.base" />
         <fileset dir="assets/js" includes="*.js" />
       </concat>
 
       <!-- update project files to reference phonegap-x.x.x.js -->
-      <replaceregexp match="phonegap(.*)\.js" replace="phonegap-${version}.js" byline="true">
+      <replaceregexp match="phonegap(.*)\.js" replace="phonegap.${version}.js" byline="true">
         <fileset file="assets/www/index.html" />
         <fileset file="../example/index.html" />
       </replaceregexp>
@@ -134,22 +134,22 @@
       <delete file="assets/www/phonegap_${version}.js"/>
         
       <!-- Create uncompressed JS file -->
-      <concat destfile="assets/www/phonegap-${version}.js">
+      <concat destfile="assets/www/phonegap.${version}.js">
         <fileset dir="assets/js" includes="phonegap.js.base" />
         <fileset dir="assets/js" includes="*.js" />
       </concat>
 
       <!-- Compress JS file -->
       <java jar="${basedir}/../util/yuicompressor/yuicompressor-2.4.2.jar" fork="true" failonerror="true">
-        <arg line="--nomunge -o assets/www/phonegap-tmp.js assets/www/phonegap-${version}.js"/>
+        <arg line="--nomunge -o assets/www/phonegap-tmp.js assets/www/phonegap.${version}.js"/>
       </java>
-      <concat destfile="assets/www/phonegap-${version}.min.js">
+      <concat destfile="assets/www/phonegap.${version}.min.js">
         <fileset dir="assets/js" includes="header.txt" />
         <fileset dir="assets/www" includes="phonegap-tmp.js" />
       </concat>
 
       <!-- update project files to reference phonegap-x.x.x.min.js -->
-      <replaceregexp match="phonegap(.*)\.js" replace="phonegap-${version}.min.js" byline="true">
+      <replaceregexp match="phonegap(.*)\.js" replace="phonegap.${version}.min.js" byline="true">
         <fileset file="assets/www/index.html" />
         <fileset file="../example/index.html" />
       </replaceregexp>
@@ -167,7 +167,7 @@
             "build-javascript" => "build-uncompressed-javascript".
     -->
     <target name="jar" depends="build-javascript, compile">
-      <jar jarfile="phonegap-${version}.jar" basedir="bin/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
+      <jar jarfile="phonegap.${version}.jar" basedir="bin/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
     </target>
 
     <target name="phonegap_debug" depends="build-javascript, debug">
