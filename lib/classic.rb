@@ -82,11 +82,12 @@ class Classic
 
   # copies stuff from src directory into the android project directory (@path)
   def copy_libs
+    version = IO.read(File.join(@framework_dir, '../VERSION'))
     framework_res_dir = File.join(@framework_dir, "res")
     app_res_dir = File.join(@path, "res")
     # copies in the jar
     FileUtils.mkdir_p File.join(@path, "libs")
-    FileUtils.cp File.join(@framework_dir, "phonegap.jar"), File.join(@path, "libs")
+    FileUtils.cp File.join(@framework_dir, "phonegap.#{ version }.jar"), File.join(@path, "libs")
     # copies in the strings.xml
     FileUtils.mkdir_p File.join(app_res_dir, "values")
     FileUtils.cp File.join(framework_res_dir, "values","strings.xml"), File.join(app_res_dir, "values", "strings.xml")
@@ -110,7 +111,7 @@ class Classic
       phonegapjs << IO.read(File.join(js_dir, script))
       phonegapjs << "\n\n"
     end
-    File.open(File.join(@path, "assets", "www", @app_js_dir, "phonegap.js"), 'w') {|f| f.write(phonegapjs) }
+    File.open(File.join(@path, "assets", "www", @app_js_dir, "phonegap.#{ version }.js"), 'w') {|f| f.write(phonegapjs) }
   end
   
   # puts app name in strings
