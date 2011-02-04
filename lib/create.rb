@@ -62,7 +62,7 @@ class Create < Classic
       # will change the name from the directory to the name element text
       @name = @config[:name] if @config[:name]
       # set the icon from the config
-      @icon = File.join(@www, @config[:icon])
+      @icon = File.join(@www, @config[:icon]) if @config[:icon]
       # sets the app js dir where phonegap.js gets copied
       @app_js_dir = @config[:js_dir] ? @config[:js_dir] : ''
       # sets the start page
