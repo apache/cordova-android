@@ -64,7 +64,24 @@ public class WebSocket implements Runnable {
 		DRAFT75, DRAFT76
 	}
 
-	////////////////// CONSTANT
+	// //////////////// CONSTANT
+	/**
+	 * The connection has not yet been established.
+	 */
+	public final static int WEBSOCKET_STATE_CONNECTING = 0;
+	/**
+	 * The WebSocket connection is established and communication is possible.
+	 */
+	public final static int WEBSOCKET_STATE_OPEN = 1;
+	/**
+	 * The connection is going through the closing handshake.
+	 */
+	public final static int WEBSOCKET_STATE_CLOSING = 2;
+	/**
+	 * The connection has been closed or could not be opened.
+	 */
+	public final static int WEBSOCKET_STATE_CLOSED = 3;
+
 	/**
 	 * An empty string
 	 */
@@ -110,7 +127,7 @@ public class WebSocket implements Runnable {
 	 */
 	public static final byte DATA_END_OF_FRAME = (byte) 0xFF;
 
-	////////////////// INSTANCE Variables
+	// //////////////// INSTANCE Variables
 	/**
 	 * The WebView instance from Phonegap DroidGap
 	 */
@@ -183,6 +200,10 @@ public class WebSocket implements Runnable {
 	 * Key3 used in handshake
 	 */
 	private byte[] key3 = null;
+	/**
+	 * The readyState attribute represents the state of the connection.
+	 */
+	private int readyState = WEBSOCKET_STATE_CONNECTING;
 
 	/**
 	 * Constructor.
@@ -243,6 +264,8 @@ public class WebSocket implements Runnable {
 	 * Closes connection with server
 	 */
 	public void close() {
+		this.readyState = WebSocket.WEBSOCKET_STATE_CLOSING;
+		
 		// close socket channel
 		try {
 			this.socketChannel.close();
@@ -251,9 +274,11 @@ public class WebSocket implements Runnable {
 		}
 		this.running = false;
 		selector.wakeup();
-
+		
 		// fire onClose method
 		this.onClose();
+		
+		this.readyState = WebSocket.WEBSOCKET_STATE_CLOSED;
 	}
 
 	/**
@@ -264,7 +289,11 @@ public class WebSocket implements Runnable {
 	 */
 	public void send(String text) {
 		try {
-			_send(text);
+			if(this.readyState == WEBSOCKET_STATE_OPEN){
+				_send(text);
+			} else {
+				this.onError(new NotYetConnectedException());
+			}
 		} catch (IOException e) {
 			this.onError(e);
 		}
@@ -298,10 +327,20 @@ public class WebSocket implements Runnable {
 	}
 
 	/**
-	 * Builds text for javascript engine to invoke proper event method with proper data.
+	 * @return the readyState
+	 */
+	public int getReadyState() {
+		return readyState;
+	}
+
+	/**
+	 * Builds text for javascript engine to invoke proper event method with
+	 * proper data.
 	 * 
-	 * @param event	websocket event (onOpen, onMessage etc.)
-	 * @param msg	Text message received from websocket server
+	 * @param event
+	 *            websocket event (onOpen, onMessage etc.)
+	 * @param msg
+	 *            Text message received from websocket server
 	 * @return
 	 */
 	private String buildJavaScriptData(String event, String msg) {
@@ -350,7 +389,7 @@ public class WebSocket implements Runnable {
 
 	// actual connection logic
 	private void _connect() throws IOException {
-
+		this.readyState = WEBSOCKET_STATE_CONNECTING;
 		socketChannel = SocketChannel.open();
 		socketChannel.configureBlocking(false);
 		socketChannel.connect(new InetSocketAddress(uri.getHost(), port));
@@ -564,6 +603,7 @@ public class WebSocket implements Runnable {
 		}
 
 		if (isConnectionReady) {
+			this.readyState = WEBSOCKET_STATE_OPEN;
 			// fire onOpen method
 			this.onOpen();
 		} else {

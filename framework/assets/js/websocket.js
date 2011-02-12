@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2010 Animesh Kumar  (https://github.com/anismiles)
+ * Copyright (c) 2010 Strumsoft  (https://strumsoft.com)
  *  
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -69,4 +70,9 @@
 	WebSocket.prototype.close = function() {
 		this.socket.close();
 	}
+	
+	WebSocket.prototype.getReadyState = function() {
+		this.socket.getReadyState();
+	}
+
 })();
