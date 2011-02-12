@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import android.util.Log;
 import android.webkit.WebView;
 
 /**
@@ -246,17 +247,42 @@ public class WebSocket implements Runnable {
 	// //////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Starts a new Thread and connects to server
+	 * 
+	 * @throws IOException
 	 */
-	public void connect() {
+	public Thread connect() throws IOException {
 		this.running = true;
-		(new Thread(this)).start();
+		this.readyState = WEBSOCKET_STATE_CONNECTING;
+		// open socket
+		socketChannel = SocketChannel.open();
+		socketChannel.configureBlocking(false);
+		// set address
+		socketChannel.connect(new InetSocketAddress(uri.getHost(), port));
+		// start a thread to make connection
+
+		// More info:
+		// http://groups.google.com/group/android-developers/browse_thread/thread/45a8b53e9bf60d82
+		// http://stackoverflow.com/questions/2879455/android-2-2-and-bad-address-family-on-socket-connect
+		System.setProperty("java.net.preferIPv4Stack", "true");
+		System.setProperty("java.net.preferIPv6Addresses", "false");
+
+		selector = Selector.open();
+		socketChannel.register(selector, SelectionKey.OP_CONNECT);
+		Log.v("websocket", "Starting a new thread to manage data reading/writing");
+
+		Thread th = new Thread(this);
+		th.start();
+		// return thread object for explicit closing, if needed
+		return th;
 	}
 
 	public void run() {
-		try {
-			_connect();
-		} catch (IOException e) {
-			this.onError(e);
+		while (this.running) {
+			try {
+				_connect();
+			} catch (IOException e) {
+				this.onError(e);
+			} 
 		}
 	}
 
@@ -265,7 +291,7 @@ public class WebSocket implements Runnable {
 	 */
 	public void close() {
 		this.readyState = WebSocket.WEBSOCKET_STATE_CLOSING;
-		
+
 		// close socket channel
 		try {
 			this.socketChannel.close();
@@ -274,10 +300,10 @@ public class WebSocket implements Runnable {
 		}
 		this.running = false;
 		selector.wakeup();
-		
+
 		// fire onClose method
 		this.onClose();
-		
+
 		this.readyState = WebSocket.WEBSOCKET_STATE_CLOSED;
 	}
 
@@ -289,7 +315,7 @@ public class WebSocket implements Runnable {
 	 */
 	public void send(String text) {
 		try {
-			if(this.readyState == WEBSOCKET_STATE_OPEN){
+			if (this.readyState == WEBSOCKET_STATE_OPEN) {
 				_send(text);
 			} else {
 				this.onError(new NotYetConnectedException());
@@ -389,45 +415,31 @@ public class WebSocket implements Runnable {
 
 	// actual connection logic
 	private void _connect() throws IOException {
-		this.readyState = WEBSOCKET_STATE_CONNECTING;
-		socketChannel = SocketChannel.open();
-		socketChannel.configureBlocking(false);
-		socketChannel.connect(new InetSocketAddress(uri.getHost(), port));
-
-		// More info:
-		// http://groups.google.com/group/android-developers/browse_thread/thread/45a8b53e9bf60d82
-		// http://stackoverflow.com/questions/2879455/android-2-2-and-bad-address-family-on-socket-connect
-		System.setProperty("java.net.preferIPv4Stack", "true");
-		System.setProperty("java.net.preferIPv6Addresses", "false");
-
-		selector = Selector.open();
-		socketChannel.register(selector, SelectionKey.OP_CONNECT);
-
 		// Continuous loop that is only supposed to end when "close" is called.
-		while (this.running) {
-			selector.select();
-			Set<SelectionKey> keys = selector.selectedKeys();
-			Iterator<SelectionKey> i = keys.iterator();
 
-			while (i.hasNext()) {
-				SelectionKey key = i.next();
-				i.remove();
-				if (key.isConnectable()) {
-					if (socketChannel.isConnectionPending()) {
-						socketChannel.finishConnect();
-					}
-					socketChannel.register(selector, SelectionKey.OP_READ);
-					_writeHandshake();
+		selector.select();
+		Set<SelectionKey> keys = selector.selectedKeys();
+		Iterator<SelectionKey> i = keys.iterator();
+
+		while (i.hasNext()) {
+			SelectionKey key = i.next();
+			i.remove();
+			if (key.isConnectable()) {
+				if (socketChannel.isConnectionPending()) {
+					socketChannel.finishConnect();
 				}
-				if (key.isReadable()) {
-					try {
-						_read();
-					} catch (NoSuchAlgorithmException nsa) {
-						this.onError(nsa);
-					}
+				socketChannel.register(selector, SelectionKey.OP_READ);
+				_writeHandshake();
+			}
+			if (key.isReadable()) {
+				try {
+					_read();
+				} catch (NoSuchAlgorithmException nsa) {
+					this.onError(nsa);
 				}
 			}
 		}
+
 	}
 
 	private void _writeHandshake() throws IOException {

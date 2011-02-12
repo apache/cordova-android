@@ -30,16 +30,14 @@
 	
 	// WebSocket Object. All listener methods are cleaned up!
 	var WebSocket = global.WebSocket = function(url) {
-		// must be overloaded
-		this.onopen = null;
-		this.onmessage = null;
-		this.onclose = null;
-		this.onerror = null;
-		
 		// get a new websocket object from factory (check com.strumsoft.websocket.WebSocketFactory.java)
 		this.socket = WebSocketFactory.getInstance(url);
 		// store in registry
-		WebSocket.store[this.socket.getId()] = this;
+		if(this.socket) {
+			WebSocket.store[this.socket.getId()] = this;
+		} else {
+			throw new Error('websocket instantiation failed! Address could be wrong.');
+		}
 	};
 	
 	// storage to hold websocket object for later invokation of event methods
@@ -62,6 +60,7 @@
 		WebSocket.store[evt._target]['onerror'].call(global, evt._data);
 	}
 
+	// instance event methods
 	WebSocket.prototype.send = function(data) {
 		this.socket.send(data);
 	}
@@ -73,5 +72,23 @@
 	WebSocket.prototype.getReadyState = function() {
 		this.socket.getReadyState();
 	}
-
+	///////////// Must be overloaded
+	WebSocket.prototype.onopen = function(){
+		throw new Error('onopen not implemented.');
+    };
+    
+    // alerts message pushed from server
+    WebSocket.prototype.onmessage = function(msg){
+    	throw new Error('onmessage not implemented.');
+    };
+    
+    // alerts message pushed from server
+    WebSocket.prototype.onerror = function(msg){
+    	throw new Error('onerror not implemented.');
+    };
+    
+    // alert close event
+    WebSocket.prototype.onclose = function(){
+        throw new Error('onclose not implemented.');
+    };
 })();
