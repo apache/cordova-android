@@ -1,30 +1,27 @@
 /*
- *	In DroidGap class, attach WebSocketFactoy like this,
- *  appView.addJavascriptInterface(new WebSocketFactory(appView), "WebSocketFactory");
+ * Copyright (c) 2010 Animesh Kumar  (https://github.com/anismiles)
  *  
- *  Now, in your html file, 
- *  1. Include websocket.js 
- *  	<script type="text/javascript" charset="utf-8" src="js/websocket.js"></script>
- *  2. Create WebSocket object, and override event methods, 
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
  *  
- *	// new socket
- *	var socket = new WebSocket('ws://122.168.196.27:8082/');
- *			
- *	// push a message after the connection is established.
- *	socket.onopen = function() {
- *		socket.send('--message--')
- *	};
- *			
- *	// alerts message pushed from server
- *	socket.onmessage = function(msg) {
- *		alert(JSON.stringify(msg));
- *	};
- *			
- *	// alert close event
- *	socket.onclose = function() {
- *		alert('closed');
- *	};
- *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *  
  */
 (function() {
 	
@@ -37,6 +34,7 @@
 		this.onopen = null;
 		this.onmessage = null;
 		this.onclose = null;
+		this.onerror = null;
 		
 		// get a new websocket object from factory (check com.strumsoft.websocket.WebSocketFactory.java)
 		this.socket = WebSocketFactory.getInstance(url);
@@ -60,6 +58,10 @@
 		WebSocket.store[evt._target]['onclose'].call(global, evt._data);
 	}
 	
+	WebSocket.onerror = function (evt) {
+		WebSocket.store[evt._target]['onerror'].call(global, evt._data);
+	}
+
 	WebSocket.prototype.send = function(data) {
 		this.socket.send(data);
 	}
