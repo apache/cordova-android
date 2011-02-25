@@ -31,7 +31,7 @@ function roundNumber(num) {
     return result;
 }
 
-var accelerationWatch = false;
+var accelerationWatch = null;
 
 function updateAcceleration(a) {
     document.getElementById('x').innerHTML = roundNumber(a.x);
@@ -40,21 +40,19 @@ function updateAcceleration(a) {
 }
 
 var toggleAccel = function() {
-    if (accelerationWatch) {
+    if (accelerationWatch !== null) {
         navigator.accelerometer.clearWatch(accelerationWatch);
         updateAcceleration({
             x : "",
             y : "",
             z : ""
         });
-        accelerationWatch = false;
+        accelerationWatch = null;
     } else {
-        accelerationWatch = true;
         var options = {};
         options.frequency = 1000;
         accelerationWatch = navigator.accelerometer.watchAcceleration(
                 updateAcceleration, function(ex) {
-                    navigator.accelerometer.clearWatch(accel_watch_id);
                     alert("accel fail (" + ex.name + ": " + ex.message + ")");
                 }, options);
     }
@@ -79,9 +77,9 @@ function fail(msg) {
 }
 
 function show_pic() {
-    var viewport = document.getElementById('viewport');
-    viewport.style.display = "";
-    navigator.camera.getPicture(dump_pic, fail, { quality : 50 });
+    navigator.camera.getPicture(dump_pic, fail, {
+        quality : 50
+    });
 }
 
 function close() {
@@ -96,12 +94,15 @@ function readFile() {
 }
 
 function writeFile() {
-    navigator.file.write('foo.txt', "This is a test of writing to a file", fail, fail);
+    navigator.file.write('foo.txt', "This is a test of writing to a file",
+            fail, fail);
 }
 
 function contacts_success(contacts) {
-    alert(contacts.length + ' contacts returned.' + (contacts[2] ? 
-            (' Third contact is ' + contacts[2].displayName)  : ''));
+    alert(contacts.length
+            + ' contacts returned.'
+            + (contacts[2] && contacts[2].name ? (' Third contact is ' + contacts[2].name.formatted)
+                    : ''));
 }
 
 function get_contacts() {
@@ -110,11 +111,30 @@ function get_contacts() {
     obj.multiple = true;
     obj.limit = 5;
     navigator.service.contacts.find(
-            [ "displayName", "phoneNumbers", "emails" ], contacts_success, fail, obj);
+            [ "displayName", "name" ], contacts_success,
+            fail, obj);
+}
+
+var networkReachableCallback = function(reachability) {
+    // There is no consistency on the format of reachability
+    var networkState = reachability.code || reachability;
+
+    var currentState = {};
+    currentState[NetworkStatus.NOT_REACHABLE] = 'No network connection';
+    currentState[NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK] = 'Carrier data connection';
+    currentState[NetworkStatus.REACHABLE_VIA_WIFI_NETWORK] = 'WiFi connection';
+
+    confirm("Connection type:\n" + currentState[networkState]);
+};
+
+function check_network() {
+    navigator.network.isReachable("www.mobiledevelopersolutions.com",
+            networkReachableCallback, {});
 }
 
 function init() {
-    //the next line makes it impossible to see Contacts on the HTC Evo since it doesn't have a scroll button
-    //		document.addEventListener("touchmove", preventBehavior, false);  
+    // the next line makes it impossible to see Contacts on the HTC Evo since it
+    // doesn't have a scroll button
+    // document.addEventListener("touchmove", preventBehavior, false);
     document.addEventListener("deviceready", deviceInfo, true);
 }
