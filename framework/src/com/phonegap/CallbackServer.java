@@ -69,7 +69,7 @@ public class CallbackServer implements Runnable {
 	/**
 	 * Indicates that polling should be used instead of XHR.
 	 */
-	private boolean usePolling;
+	private boolean usePolling = true;
 	
 	/**
 	 * Security token to prevent other apps from accessing this callback server via XHR

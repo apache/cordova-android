@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 
 /**
@@ -62,30 +62,36 @@ Device.prototype.getInfo = function(successCallback, errorCallback) {
 };
 
 /*
+ * DEPRECATED
  * This is only for Android.
  *
  * You must explicitly override the back button.
  */
 Device.prototype.overrideBackButton = function() {
-    BackButton.override();
+	console.log("Device.overrideBackButton() is deprecated.  Use App.overrideBackbutton(true).");
+	app.overrideBackbutton(true);
 };
 
 /*
+ * DEPRECATED
  * This is only for Android.
  *
  * This resets the back button to the default behaviour
  */
 Device.prototype.resetBackButton = function() {
-    BackButton.reset();
+	console.log("Device.resetBackButton() is deprecated.  Use App.overrideBackbutton(false).");
+	app.overrideBackbutton(false);
 };
 
 /*
+ * DEPRECATED
  * This is only for Android.
  *
  * This terminates the activity!
  */
 Device.prototype.exitApp = function() {
-    BackButton.exitApp();
+	console.log("Device.exitApp() is deprecated.  Use App.exitApp().");
+	app.exitApp();
 };
 
 PhoneGap.addConstructor(function() {

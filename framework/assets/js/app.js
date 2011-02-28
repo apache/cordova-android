@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 
 /**
@@ -63,3 +63,27 @@ App.prototype.clearHistory = function() {
 App.prototype.addService = function(serviceType, className) {
 	PhoneGap.exec(null, null, "App", "addService", [serviceType, className]);
 };
+
+/**
+ * Override the default behavior of the Android back button.
+ * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.
+ * 
+ * Note: The user should not have to call this method.  Instead, when the user
+ *       registers for the "backbutton" event, this is automatically done.
+ * 
+ * @param override		T=override, F=cancel override
+ */
+App.prototype.overrideBackbutton = function(override) {
+    PhoneGap.exec(null, null, "App", "overrideBackbutton", [override]);
+};
+
+/**
+ * Exit and terminate the application.
+ */
+App.prototype.exitApp = function() {
+	return PhoneGap.exec(null, null, "App", "exitApp", []);
+};
+
+PhoneGap.addConstructor(function() {
+    navigator.app = window.app = new App();
+});

@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  * 
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 package com.phonegap;
 
@@ -17,7 +17,7 @@ import com.phonegap.api.PluginResult;
  * This class exposes methods in DroidGap that can be called from JavaScript.
  */
 public class App extends Plugin {
-	
+
     /**
      * Executes the request and returns PluginResult.
      *
@@ -45,6 +45,16 @@ public class App extends Plugin {
             }
         	else if (action.equals("addService")) {
             	this.addService(args.getString(0), args.getString(1));
+            }
+        	else if (action.equals("overrideBackbutton")) {
+            	this.overrideBackbutton(args.getBoolean(0));
+            }
+        	else if (action.equals("isBackbuttonOverridden")) {
+            	boolean b = this.isBackbuttonOverridden();
+            	return new PluginResult(status, b);
+            }
+        	else if (action.equals("exitApp")) {
+            	this.exitApp();
             }
             return new PluginResult(status, result);
         } catch (JSONException e) {
@@ -132,4 +142,32 @@ public class App extends Plugin {
     public void addService(String serviceType, String className) {
     	this.ctx.addService(serviceType, className);
     }
+    
+    /**
+     * Override the default behavior of the Android back button.
+     * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.
+     * 
+     * @param override		T=override, F=cancel override
+     */
+    public void overrideBackbutton(boolean override) {
+    	System.out.println("WARNING: Back Button Default Behaviour will be overridden.  The backbutton event will be fired!");
+    	((DroidGap)this.ctx).bound = override;
+    }
+
+    /**
+     * Return whether the Android back button is overridden by the user.
+     * 
+     * @return boolean
+     */
+    public boolean isBackbuttonOverridden() {
+    	return ((DroidGap)this.ctx).bound;
+    }
+
+    /**
+     * Exit the Android application.
+     */
+    public void exitApp() {
+    	((DroidGap)this.ctx).finish();
+    }
+
 }

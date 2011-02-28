@@ -3,11 +3,12 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  * 
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 package com.phonegap;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,6 +27,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
+import android.webkit.JsPromptResult;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
@@ -110,7 +112,7 @@ public class DroidGap extends PhonegapActivity {
 	protected WebViewClient webViewClient;
 
 	private LinearLayout root;
-	private BrowserKey mKey;
+	boolean bound = false;
 	public CallbackServer callbackServer;
 	protected PluginManager pluginManager;
 	protected boolean cancelLoadUrl = false;
@@ -267,12 +269,6 @@ public class DroidGap extends PhonegapActivity {
 	private void bindBrowser(WebView appView) {
 		this.callbackServer = new CallbackServer();
 		this.pluginManager = new PluginManager(appView, this);
-		this.mKey = new BrowserKey(appView, this);
-
-		// This creates the new javascript interfaces for PhoneGap
-		appView.addJavascriptInterface(this.pluginManager, "PluginManager");
-		appView.addJavascriptInterface(this.mKey, "BackButton");
-		appView.addJavascriptInterface(this.callbackServer, "CallbackServer");
 
 		this.addService("App", "com.phonegap.App");
 		this.addService("Geolocation", "com.phonegap.GeoBroker");
@@ -659,10 +655,6 @@ public class DroidGap extends PhonegapActivity {
     	// Load blank page so that JavaScript onunload is called
        	this.appView.loadUrl("about:blank");
     	    	
-    	// Clean up objects
-    	if (this.mKey != null) {
-    	}
-    	
         // Forward to plugins
         this.pluginManager.onDestroy();
 
@@ -762,6 +754,69 @@ public class DroidGap extends PhonegapActivity {
             dlg.create();
             dlg.show();
             return true;
+        }
+
+        /**
+         * Tell the client to display a prompt dialog to the user. 
+         * If the client returns true, WebView will assume that the client will 
+         * handle the prompt dialog and call the appropriate JsPromptResult method.
+         * 
+         * @param view
+         * @param url
+         * @param message
+         * @param defaultValue
+         * @param result
+         */
+        @Override
+        public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
+			
+        	// Calling PluginManager.exec() to call a native service using 
+        	// prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
+        	if (defaultValue.substring(0, 4).equals("gap:")) {
+        		JSONArray array;
+        		try {
+        			array = new JSONArray(defaultValue.substring(4));
+        			String service = array.getString(0);
+        			String action = array.getString(1);
+        			String callbackId = array.getString(2);
+        			boolean async = array.getBoolean(3);
+        			String r = pluginManager.exec(service, action, callbackId, message, async);
+        			result.confirm(r);
+        		} catch (JSONException e) {
+        			e.printStackTrace();
+        		}
+        	}
+        	
+        	// Polling for JavaScript messages 
+        	else if (defaultValue.equals("gap_poll:")) {
+        		String r = callbackServer.getJavascript();
+        		result.confirm(r);
+        	}
+        	
+        	// Calling into CallbackServer
+        	else if (defaultValue.equals("gap_callbackServer:")) {
+        		String r = "";
+        		if (message.equals("usePolling")) {
+        			r = ""+callbackServer.usePolling();
+        		}
+        		else if (message.equals("restartServer")) {
+        			callbackServer.restartServer();
+        		}
+        		else if (message.equals("getPort")) {
+        			r = Integer.toString(callbackServer.getPort());
+        		}
+        		else if (message.equals("getToken")) {
+        			r = callbackServer.getToken();
+        		}
+        		result.confirm(r);
+        	}
+        	
+        	// Show dialog
+        	else {
+        		//@TODO:
+        		result.confirm("");
+        	}
+        	return true;
         }
 
     }
@@ -1016,8 +1071,8 @@ public class DroidGap extends PhonegapActivity {
     	if (keyCode == KeyEvent.KEYCODE_BACK) {
 
     		// If back key is bound, then send event to JavaScript
-    		if (mKey.isBound()) {
-    			this.appView.loadUrl("javascript:document.keyEvent.backTrigger()");
+    		if (this.bound) {
+    			this.appView.loadUrl("javascript:PhoneGap.fireEvent('backbutton');");
     		}
 
     		// If not bound
@@ -1037,12 +1092,12 @@ public class DroidGap extends PhonegapActivity {
 
     	// If menu key
     	else if (keyCode == KeyEvent.KEYCODE_MENU) {
-    		appView.loadUrl("javascript:keyEvent.menuTrigger()");
+    		this.appView.loadUrl("javascript:PhoneGap.fireEvent('menubutton');");
     	}
 
     	// If search key
     	else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-    		appView.loadUrl("javascript:keyEvent.searchTrigger()");
+    		this.appView.loadUrl("javascript:PhoneGap.fireEvent('searchbutton');");
     	}
 
     	return false;
