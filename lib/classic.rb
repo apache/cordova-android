@@ -105,7 +105,7 @@ class Classic
     # icon file copy
     # if it is not in the www directory use the default one in the src dir
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
-      currentIcon = (File.exists?(File.join(@www, @icons[e.to_sym]))) ? File.join(@www, @icons[e.to_sym]) : File.join(framework_res_dir, "drawable", "icon.png")
+      currentIcon = (!@icons[e.to_sym].nil? && File.exists?(File.join(@www, @icons[e.to_sym]))) ? File.join(@www, @icons[e.to_sym]) : File.join(framework_res_dir, "drawable", "icon.png")
       FileUtils.mkdir_p(File.join(app_res_dir, e))
       FileUtils.cp(currentIcon, File.join(app_res_dir, e, "icon.png"))
     end
