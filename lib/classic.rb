@@ -24,10 +24,10 @@ class Classic
     @icon           = File.join(@www, 'icon.png') unless File.exists?(@icon)
     # Hash that stores the location of icons for each resolution type. Uses the default icon for all resolutions as a baseline.
     @icons          = {
-      "drawable-ldpi" => @icon,
-      "drawable-mdpi" => @icon,
-      "drawable-hdpi" => @icon
-    } if @icons.is_nil?
+      :"drawable-ldpi" => @icon,
+      :"drawable-mdpi" => @icon,
+      :"drawable-hdpi" => @icon
+    } if @icons.nil?
     @app_js_dir     = ''
     @content        = 'index.html'
   end
@@ -105,7 +105,7 @@ class Classic
     # icon file copy
     # if it is not in the www directory use the default one in the src dir
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
-      currentIcon = (File.exists?(@icons[e])) ? @icons[e] : File.join(framework_res_dir, "drawable", "icon.png")
+      currentIcon = (File.exists?(File.join(@www, @icons[e.to_sym]))) ? File.join(@www, @icons[e.to_sym]) : File.join(framework_res_dir, "drawable", "icon.png")
       FileUtils.mkdir_p(File.join(app_res_dir, e))
       FileUtils.cp(currentIcon, File.join(app_res_dir, e, "icon.png"))
     end
