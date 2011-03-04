@@ -41,15 +41,27 @@ class Create < Classic
       require 'rexml/document'
       f                 = File.new config_file
       doc               = REXML::Document.new(f)  
-      @config           = {}  
+      @config           = {}
       @config[:id]      = doc.root.attributes["id"]
       @config[:version] = doc.root.attributes["version"]
+      @config[:icons]   = {}
       
       doc.root.elements.each do |n|
         @config[:name]        = n.text.gsub('-','').gsub(' ','') if n.name == 'name'
         @config[:description] = n.text if n.name == 'description'
-        @config[:icon]        = n.attributes["src"] if n.name == 'icon'
-        @config[:content]     = n.attributes["src"] if n.name == 'content'  
+        @config[:content]     = n.attributes["src"] if n.name == 'content'
+        if n.name == 'icon'
+          if n.attributes["width"] == '72' && n.attributes["height"] == '72'
+            @config[:icons]["drawable-hdpi".to_sym] = n.attributes["src"]
+          elsif n.attributes["width"] == '48' && n.attributes["height"] == '48'
+            @config[:icons]["drawable-mdpi".to_sym] = n.attributes["src"]
+          elsif n.attributes["width"] == '36' && n.attributes["height"] == '36'
+            @config[:icons]["drawable-ldpi".to_sym] = n.attributes["src"]
+          else
+            @config[:icon]    = n.attributes["src"]
+          end
+        end
+
         
         if n.name == "preference" && n.attributes["name"] == 'javascript_folder'
           @config[:js_dir] = n.attributes["value"]
@@ -63,6 +75,7 @@ class Create < Classic
       @name = @config[:name] if @config[:name]
       # set the icon from the config
       @icon = File.join(@www, @config[:icon]) if @config[:icon]
+      @icons = @config[:icons] if @config[:icons].length > 0
       # sets the app js dir where phonegap.js gets copied
       @app_js_dir = @config[:js_dir] ? @config[:js_dir] : ''
       # sets the start page

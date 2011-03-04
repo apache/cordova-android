@@ -22,6 +22,12 @@ class Classic
     @android_dir    = File.expand_path(File.dirname(__FILE__).gsub(/lib$/,''))
     @framework_dir  = File.join(@android_dir, "framework")
     @icon           = File.join(@www, 'icon.png') unless File.exists?(@icon)
+    # Hash that stores the location of icons for each resolution type. Uses the default icon for all resolutions as a baseline.
+    @icons          = {
+      "drawable-ldpi" => @icon,
+      "drawable-mdpi" => @icon,
+      "drawable-hdpi" => @icon
+    } if @icons.is_nil?
     @app_js_dir     = ''
     @content        = 'index.html'
   end
@@ -98,10 +104,10 @@ class Classic
     end
     # icon file copy
     # if it is not in the www directory use the default one in the src dir
-    @icon = File.join(framework_res_dir, "drawable", "icon.png") unless File.exists?(@icon)
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
+      currentIcon = (File.exists?(@icons[e])) ? @icons[e] : File.join(framework_res_dir, "drawable", "icon.png")
       FileUtils.mkdir_p(File.join(app_res_dir, e))
-      FileUtils.cp(@icon, File.join(app_res_dir, e, "icon.png"))
+      FileUtils.cp(currentIcon, File.join(app_res_dir, e, "icon.png"))
     end
     # concat JS and put into www folder. this can be overridden in the config.xml via @app_js_dir
     js_dir = File.join(@framework_dir, "assets", "js")
