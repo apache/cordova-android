@@ -40,12 +40,12 @@ class Create < Classic
     if File.exists?(config_file)
       require 'rexml/document'
       f                 = File.new config_file
-      doc               = REXML::Document.new(f)  
+      doc               = REXML::Document.new(f)
       @config           = {}
       @config[:id]      = doc.root.attributes["id"]
       @config[:version] = doc.root.attributes["version"]
       @config[:icons]   = {}
-      
+      defaultIconSize   = 0
       doc.root.elements.each do |n|
         @config[:name]        = n.text.gsub('-','').gsub(' ','') if n.name == 'name'
         @config[:description] = n.text if n.name == 'description'
@@ -53,12 +53,24 @@ class Create < Classic
         if n.name == 'icon'
           if n.attributes["width"] == '72' && n.attributes["height"] == '72'
             @config[:icons]["drawable-hdpi".to_sym] = n.attributes["src"]
+            if 72 > defaultIconSize
+              @config[:icon] = n.attributes["src"]
+              defaultIconSize = 72
+            end
           elsif n.attributes["width"] == '48' && n.attributes["height"] == '48'
             @config[:icons]["drawable-mdpi".to_sym] = n.attributes["src"]
+            if 48 > defaultIconSize
+              @config[:icon] = n.attributes["src"]
+              defaultIconSize = 48
+            end
           elsif n.attributes["width"] == '36' && n.attributes["height"] == '36'
             @config[:icons]["drawable-ldpi".to_sym] = n.attributes["src"]
+            if 36 > defaultIconSize
+              @config[:icon] = n.attributes["src"]
+              defaultIconSize = 36
+            end
           else
-            @config[:icon]    = n.attributes["src"]
+            @config[:icon] = n.attributes["src"]
           end
         end
 

@@ -103,9 +103,17 @@ class Classic
       FileUtils.cp File.join(framework_res_dir, "layout", f), File.join(app_res_dir, "layout", f)
     end
     # icon file copy
-    # if it is not in the www directory use the default one in the src dir
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
-      currentIcon = (!@icons[e.to_sym].nil? && File.exists?(File.join(@www, @icons[e.to_sym]))) ? File.join(@www, @icons[e.to_sym]) : File.join(framework_res_dir, "drawable", "icon.png")
+      # if specific resolution icons are specified, use those. if not, see if a general purpose icon was defined.
+      # finally, fall back to using the default PhoneGap one.
+      currentIcon = ""
+      if !@icons[e.to_sym].nil? && File.exists?(File.join(@www, @icons[e.to_sym]))
+        currentIcon = File.join(@www, @icons[e.to_sym])
+      elsif File.exists?(@icon)
+        currentIcon = @icon
+      else
+        currentIcon = File.join(framework_res_dir, "drawable", "icon.png")
+      end
       FileUtils.mkdir_p(File.join(app_res_dir, e))
       FileUtils.cp(currentIcon, File.join(app_res_dir, e, "icon.png"))
     end
