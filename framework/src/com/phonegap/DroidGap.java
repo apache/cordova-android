@@ -600,15 +600,14 @@ public class DroidGap extends PhonegapActivity {
      */
     protected void onPause() {
         super.onPause();
-        
+       	// Send pause event to JavaScript
+       	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
+
         // If app doesn't want to run in background
         if (!this.keepRunning) {
         	
         	// Forward to plugins
         	this.pluginManager.onPause();
-
-        	// Send pause event to JavaScript
-        	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
 
         	// Pause JavaScript timers (including setInterval)
         	this.appView.pauseTimers();
