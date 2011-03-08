@@ -621,6 +621,9 @@ public class DroidGap extends PhonegapActivity {
     protected void onResume() {
         super.onResume();
 
+       	// Send resume event to JavaScript
+       	this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
+
         // If app doesn't want to run in background
         if (!this.keepRunning || this.activityResultKeepRunning) {
 
@@ -632,9 +635,6 @@ public class DroidGap extends PhonegapActivity {
 
         	// Forward to plugins
         	this.pluginManager.onResume();
-
-        	// Send resume event to JavaScript
-        	this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
 
         	// Resume JavaScript timers (including setInterval)
         	this.appView.resumeTimers();
