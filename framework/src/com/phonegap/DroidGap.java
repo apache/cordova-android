@@ -16,12 +16,12 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Picture;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -31,7 +31,6 @@ import android.webkit.JsPromptResult;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
-import android.webkit.WebView.PictureListener;
 import android.webkit.WebViewClient;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -111,8 +110,8 @@ public class DroidGap extends PhonegapActivity {
 	protected WebView appView;
 	protected WebViewClient webViewClient;
 
-	private LinearLayout root;
-	boolean bound = false;
+	protected LinearLayout root;
+	public boolean bound = false;
 	public CallbackServer callbackServer;
 	protected PluginManager pluginManager;
 	protected boolean cancelLoadUrl = false;
@@ -235,7 +234,8 @@ public class DroidGap extends PhonegapActivity {
         // Bind PhoneGap objects to JavaScript
         this.bindBrowser(this.appView);
 
-        // Add web view
+        // Add web view but make it invisible while loading URL
+        this.appView.setVisibility(View.INVISIBLE);
         root.addView(this.appView);
         setContentView(root);
         
@@ -302,8 +302,7 @@ public class DroidGap extends PhonegapActivity {
 		// If spashscreen
 		this.splashscreen = this.getIntegerProperty("splashscreen", 0);
 		if (this.splashscreen != 0) {
-			this.appView.setBackgroundColor(0);
-			this.appView.setBackgroundResource(splashscreen);
+			root.setBackgroundResource(this.splashscreen);
 		}
 
 		// If hideLoadingDialogOnPageLoad
@@ -1009,16 +1008,8 @@ public class DroidGap extends PhonegapActivity {
         	// from the JS side when the JS gets to that code.
         	appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
 
-    		// If splash screen is showing, clear it
-    		if (this.ctx.splashscreen != 0) {
-    			this.ctx.splashscreen = 0;
-    			appView.setPictureListener(new PictureListener(){
-                   public void onNewPicture(WebView viewtwo, Picture picture) {
-                	   appView.setBackgroundResource(0);
-                	   appView.setPictureListener(null);
-                   }
-               });
-    		}
+        	// Make app view visible
+        	appView.setVisibility(View.VISIBLE);
 
         	// Stop "app loading" spinner if showing
         	if (this.ctx.hideLoadingDialogOnPageLoad) {
