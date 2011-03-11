@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  * 
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 package com.phonegap;
 
@@ -942,7 +942,7 @@ public class FileUtils extends Plugin {
      * @param filename
      * @return a mime type
      */
-	private String getMimeType(String filename) {
+	public static String getMimeType(String filename) {
 		MimeTypeMap map = MimeTypeMap.getSingleton();
 		return map.getMimeTypeFromExtension(map.getFileExtensionFromUrl(filename));
 	}

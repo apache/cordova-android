@@ -10,11 +10,6 @@ if (!PhoneGap.hasResource("file")) {
 PhoneGap.addResource("file");
 
 /**
- * This class provides generic read and write access to the mobile device file system.
- * They are not used to read files from a server.
- */
-
-/**
  * This class provides some useful information about a file.
  * This is the fields returned when navigator.fileMgr.getFileProperties() 
  * is called.
