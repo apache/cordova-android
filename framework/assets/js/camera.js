@@ -59,19 +59,17 @@ Camera.prototype.PictureSourceType = Camera.PictureSourceType;
 Camera.prototype.getPicture = function(successCallback, errorCallback, options) {
 
     // successCallback required
-    if (typeof successCallback != "function") {
+    if (typeof successCallback !== "function") {
         console.log("Camera Error: successCallback is not a function");
         return;
     }
 
     // errorCallback optional
-    if (errorCallback && (typeof errorCallback != "function")) {
+    if (errorCallback && (typeof errorCallback !== "function")) {
         console.log("Camera Error: errorCallback is not a function");
         return;
     }
 
-    this.successCallback = successCallback;
-    this.errorCallback = errorCallback;
     this.options = options;
     var quality = 80;
     if (options.quality) {
@@ -82,45 +80,14 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         destinationType = this.options.destinationType;
     }
     var sourceType = Camera.PictureSourceType.CAMERA;
-    if (typeof this.options.sourceType == "number") {
+    if (typeof this.options.sourceType === "number") {
         sourceType = this.options.sourceType;
     }
-    PhoneGap.exec(null, null, "Camera", "takePicture", [quality, destinationType, sourceType]);
-};
-
-/**
- * Callback function from native code that is called when image has been captured.
- *
- * @param picture           The base64 encoded string of the image
- */
-Camera.prototype.success = function(picture) {
-    if (this.successCallback) {
-        try {
-            this.successCallback(picture);
-        }
-        catch (e) {
-            console.log("Camera error calling user's success callback: " + e);
-        }
-    }
-};
-
-/**
- * Callback function from native code that is called when there is an error
- * capturing an image, or the capture is cancelled.
- *
- * @param err               The error message
- */
-Camera.prototype.error = function(err) {
-    if (this.errorCallback) {
-        try {
-            this.errorCallback(err);
-        }
-        catch (e) {
-            console.log("Camera error calling user's error callback: " + e);
-        }
-    }
+    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType]);
 };
 
 PhoneGap.addConstructor(function() {
-    if (typeof navigator.camera == "undefined") navigator.camera = new Camera();
+    if (typeof navigator.camera === "undefined") {
+        navigator.camera = new Camera();
+    }
 });

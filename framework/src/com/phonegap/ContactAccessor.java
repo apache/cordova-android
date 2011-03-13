@@ -155,6 +155,9 @@ public abstract class ContactAccessor {
 				else if (key.startsWith("urls")) {
 					map.put("urls", true);
 				}
+				else if (key.startsWith("photos")) {
+					map.put("photos", true);
+				}
 			}
 		}
 		catch (JSONException e) {
@@ -162,11 +165,36 @@ public abstract class ContactAccessor {
 		}
 		return map;
 	}
+	
+	/**
+	 * Convenience method to get a string from a JSON object.  Saves a 
+	 * lot of try/catch writing.
+	 * If the property is not found in the object null will be returned.
+	 * 
+	 * @param obj contact object to search
+	 * @param property to be looked up
+	 * @return The value of the property
+	 */
+	protected String getJsonString(JSONObject obj, String property) {
+		String value = null;
+		try {
+			value = obj.getString(property);
+			if (value.equals("null")) {
+				Log.d(LOG_TAG, property + " is string called 'null'");
+				value = null;
+			}
+		}
+		catch (JSONException e) {
+			Log.d(LOG_TAG, "Could not get = " + e.getMessage());
+		}		
+		return value;
+	}
 
     /**
      * Handles adding a JSON Contact object into the database.
+     * @return TODO
      */
-	public abstract void save(JSONObject contact);
+	public abstract boolean save(JSONObject contact);
 
     /**
      * Handles searching through SDK-specific contacts API.

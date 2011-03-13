@@ -86,7 +86,7 @@ public class GeoListener {
 	 * @param msg			The error message
 	 */
 	void fail(int code, String msg) {
-		this.broker.sendJavascript("navigator._geo.fail('" + this.id + "', " + ", " + code + ", '" + msg + "');");
+		this.broker.sendJavascript("navigator._geo.fail('" + this.id + "', '" + code + "', '" + msg + "');");
 		this.stop();
 	}
 	

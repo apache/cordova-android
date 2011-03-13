@@ -14,7 +14,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.webkit.WebView;
-import com.phonegap.DroidGap;
 
 /**
  * PluginManager is exposed to JavaScript in the PhoneGap WebView.
@@ -27,7 +26,7 @@ public final class PluginManager {
 	private HashMap<String, Plugin> plugins = new HashMap<String,Plugin>();
 	private HashMap<String, String> services = new HashMap<String,String>();
 	
-	private final DroidGap ctx;
+	private final PhonegapActivity ctx;
 	private final WebView app;
 	
 	/**
@@ -36,8 +35,7 @@ public final class PluginManager {
 	 * @param app
 	 * @param ctx
 	 */
-	public PluginManager(WebView app, DroidGap ctx) {
-		System.out.println("PluginManager()");
+	public PluginManager(WebView app, PhonegapActivity ctx) {
 		this.ctx = ctx;
 		this.app = app;
 	}
@@ -66,7 +64,6 @@ public final class PluginManager {
 	 */
 	@SuppressWarnings("unchecked")
 	public String exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
-		System.out.println("PluginManager.exec("+service+", "+action+", "+callbackId+", "+jsonArgs+", "+async+")");
 		PluginResult cr = null;
 		boolean runAsync = async;
 		try {
@@ -78,7 +75,7 @@ public final class PluginManager {
 			}
 			if (isPhoneGapPlugin(c)) {
 				final Plugin plugin = this.addPlugin(clazz, c); 
-				final DroidGap ctx = this.ctx;
+				final PhonegapActivity ctx = this.ctx;
 				runAsync = async && !plugin.isSynch(action);
 				if (runAsync) {
 					// Run this on a different thread so that this one can return back to JS
@@ -87,10 +84,19 @@ public final class PluginManager {
 							try {
 								// Call execute on the plugin so that it can do it's thing
 								PluginResult cr = plugin.execute(action, args, callbackId);
-								// Check the status for 0 (success) or otherwise
-								if (cr.getStatus() == 0) {
+								int status = cr.getStatus();
+
+								// If no result to be sent and keeping callback, then no need to sent back to JavaScript
+								if ((status == PluginResult.Status.NO_RESULT.ordinal()) && cr.getKeepCallback()) {
+								}
+
+								// Check the success (OK, NO_RESULT & !KEEP_CALLBACK)
+								else if ((status == PluginResult.Status.OK.ordinal()) || (status == PluginResult.Status.NO_RESULT.ordinal())) {
 									ctx.sendJavascript(cr.toSuccessCallbackString(callbackId));
-								} else {
+								} 
+								
+								// If error
+								else {
 									ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 								}
 							} catch (Exception e) {
@@ -104,6 +110,11 @@ public final class PluginManager {
 				} else {
 					// Call execute on the plugin so that it can do it's thing
 					cr = plugin.execute(action, args, callbackId);
+
+					// If no result to be sent and keeping callback, then no need to sent back to JavaScript
+					if ((cr.getStatus() == PluginResult.Status.NO_RESULT.ordinal()) && cr.getKeepCallback()) {
+						return "";
+					}
 				}
 			}
 		} catch (ClassNotFoundException e) {
@@ -118,9 +129,6 @@ public final class PluginManager {
 				cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);				
 			}
 			ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
-		}
-		if (cr != null) {
-			System.out.println(" -- returning result: "+cr.getJSONString());
 		}
 		return ( cr != null ? cr.getJSONString() : "{ status: 0, message: 'all good' }" );
 	}
@@ -183,11 +191,10 @@ public final class PluginManager {
     	if (this.plugins.containsKey(className)) {
     		return this.getPlugin(className);
     	}
-    	System.out.println("PluginManager.addPlugin("+className+")");
     	try {
               Plugin plugin = (Plugin)clazz.newInstance();
               this.plugins.put(className, plugin);
-              plugin.setContext((DroidGap)this.ctx);
+              plugin.setContext(this.ctx);
               plugin.setView(this.app);
               return plugin;
     	}
@@ -219,7 +226,7 @@ public final class PluginManager {
     public void addService(String serviceType, String className) {
     	this.services.put(serviceType, className);
     }
-    
+
     /**
      * Called when the system is about to start resuming a previous activity. 
      */

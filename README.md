@@ -31,7 +31,7 @@ Commands:
 
 <pre>
 	help ...... See this message. Type help [command name] to see specific help topics.
-	gen ....... Generate an example PhoneGap application to current directory.
+	gen ....... Generate the example PhoneGap application to current directory (or optionally provide an output directory as parameter).
 	create .... Creates an Android compatible project from a WWW folder. 
 	classic ... Backwards support for droidgap script. Run "droidgap help classic" for more info.
 	update .... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
@@ -41,8 +41,8 @@ Commands:
 Quickstart:
 
 <pre>
-  	$ droidgap gen example 
-  	$ cd example
+  	$ droidgap gen exampleapp 
+  	$ cd exampleapp
 	$ ant debug install && adb logcat
 </pre>
 

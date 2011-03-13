@@ -8,7 +8,6 @@
 package com.phonegap.api;
 
 import org.json.JSONArray;
-import com.phonegap.DroidGap;
 import android.content.Intent;
 import android.webkit.WebView;
 
@@ -43,7 +42,7 @@ public interface IPlugin {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	void setContext(DroidGap ctx);
+	void setContext(PhonegapActivity ctx);
 
 	/**
 	 * Sets the main View of the application, this is the WebView within which 

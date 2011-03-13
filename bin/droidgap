@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-ROOT = File.expand_path(File.dirname(__FILE__).gsub('bin',''))
+ROOT = File.expand_path(File.dirname(__FILE__).gsub(/bin$/,''))
 require 'fileutils'
 require File.join(ROOT, "lib", "generate.rb")
 require File.join(ROOT, "lib", "classic.rb")
@@ -60,7 +60,7 @@ if ARGV.first.nil? || ARGV.first == 'help'
   Commands:
   
   help ...... See this message. Type help [command name] to see specific help topics.
-  gen ....... Generate an example PhoneGap application to current directory.
+  gen ....... Generate the example PhoneGap application to current directory (or optionally provide an output directory as parameter).
   create .... Creates an Android compatible project from a WWW folder. 
   classic ... Backwards support for droidgap script. Run "droidgap help classic" for more info.
   update .... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
@@ -68,8 +68,8 @@ if ARGV.first.nil? || ARGV.first == 'help'
     
   Quickstart:
   
-  $ droidgap gen example 
-  $ cd example
+  $ droidgap gen exampleapp 
+  $ cd exampleapp
   $ ant debug install && adb logcat
   
   EOF
@@ -79,11 +79,13 @@ if ARGV.first.nil? || ARGV.first == 'help'
   DroidGap Generate
   -----------------
   
-  Generate an example PhoneGap application to path supplied or current working directory if none is supplied.
+  Generate the example PhoneGap application to path supplied or current working directory if none is supplied.
   
   Usage:
   
     droidgap gen [path]
+    
+  NOTE: Do *not* run "droidgap gen example" - you will end up with a recursive directory problem.
   
   EOF
   

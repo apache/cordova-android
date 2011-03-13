@@ -36,6 +36,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.Contacts;
@@ -62,6 +63,7 @@ import android.webkit.WebView;
  */
 @SuppressWarnings("deprecation")
 public class ContactAccessorSdk3_4 extends ContactAccessor {
+	private static final String PEOPLE_ID_EQUALS = "people._id = ?";
 	/**
 	 * A static map that converts the JavaScript property name to Android database column name.
 	 */
@@ -102,22 +104,28 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	 */
 	public JSONArray search(JSONArray fields, JSONObject options) {
 		String searchTerm = "";
-		int limit = 1;
-		boolean multiple = false;
-		try {
-			searchTerm = options.getString("filter");
+		int limit = Integer.MAX_VALUE;
+		boolean multiple = true;
+
+		if (options != null) {
+			searchTerm = options.optString("filter");
 			if (searchTerm.length()==0) {
 				searchTerm = "%";
 			}
 			else {
 				searchTerm = "%" + searchTerm + "%";
 			}
-			multiple = options.getBoolean("multiple");
-			if (multiple) {
-				limit = options.getInt("limit");
+			try {
+				multiple = options.getBoolean("multiple");
+				if (!multiple) {
+					limit = 1;
+				}
+			} catch (JSONException e) {
+				// Multiple was not specified so we assume the default is true.
 			}
-		} catch (JSONException e) {
-			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		else {
+			searchTerm = "%";
 		}
 		
     	ContentResolver cr = mApp.getContentResolver();
@@ -140,7 +148,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		    	// Do query for name and note
 		        Cursor cur = cr.query(People.CONTENT_URI, 
 					new String[] {People.DISPLAY_NAME, People.NOTES},
-					"people._id = ?",
+					PEOPLE_ID_EQUALS,
 					new String[] {contactId},
 					null);
 		        cur.moveToFirst();
@@ -305,11 +313,13 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			im = new JSONObject();
 			try{
-			im.put("primary", false);
+			im.put("id", cursor.getString(
+					cursor.getColumnIndex(ContactMethods._ID)));
+			im.put("perf", false);
 			im.put("value", cursor.getString(
 					cursor.getColumnIndex(ContactMethodsColumns.DATA)));
-			im.put("type", cursor.getString(
-					cursor.getColumnIndex(ContactMethodsColumns.TYPE)));
+			im.put("type", getContactType(cursor.getInt(
+					cursor.getColumnIndex(ContactMethodsColumns.TYPE))));
 			ims.put(im);
 			} catch (JSONException e) {
 				Log.e(LOG_TAG, e.getMessage(), e);
@@ -335,13 +345,10 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			organization = new JSONObject();
 			try{
+				organization.put("id", cursor.getString(cursor.getColumnIndex(Organizations._ID)));
 				organization.put("name", cursor.getString(cursor.getColumnIndex(Organizations.COMPANY)));
 				organization.put("title", cursor.getString(cursor.getColumnIndex(Organizations.TITLE)));
 				// organization.put("department", cursor.getString(cursor.getColumnIndex(Organizations)));
-				// organization.put("description", cursor.getString(cursor.getColumnIndex(Organizations)));
-				// organization.put("endDate", cursor.getString(cursor.getColumnIndex(Organizations)));
-				// organization.put("location", cursor.getString(cursor.getColumnIndex(Organizations)));
-				// organization.put("startDate", cursor.getString(cursor.getColumnIndex(Organizations)));
 				organizations.put(organization);
 			} catch (JSONException e) {
 				Log.e(LOG_TAG, e.getMessage(), e);
@@ -368,6 +375,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			address = new JSONObject();
 			try{
+				address.put("id", cursor.getString(cursor.getColumnIndex(ContactMethods._ID)));
 				address.put("formatted", cursor.getString(cursor.getColumnIndex(ContactMethodsColumns.DATA)));
 				addresses.put(address);
 			} catch (JSONException e) {
@@ -394,9 +402,10 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			phone = new JSONObject();
 			try{
-				phone.put("primary", false);
+				phone.put("id", cursor.getString(cursor.getColumnIndex(Phones._ID)));
+				phone.put("perf", false);
 				phone.put("value", cursor.getString(cursor.getColumnIndex(Phones.NUMBER)));
-				phone.put("type", cursor.getString(cursor.getColumnIndex(Phones.TYPE)));
+				phone.put("type", getPhoneType(cursor.getInt(cursor.getColumnIndex(Phones.TYPE))));
 				phones.put(phone);
 			} catch (JSONException e) {
 				Log.e(LOG_TAG, e.getMessage(), e);
@@ -422,7 +431,8 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		while (cursor.moveToNext()) {
 			email = new JSONObject();
 			try{
-				email.put("primary", false);
+				email.put("id", cursor.getString(cursor.getColumnIndex(ContactMethods._ID)));
+				email.put("perf", false);
 				email.put("value", cursor.getString(cursor.getColumnIndex(ContactMethods.DATA)));
 				// TODO Find out why adding an email type throws and exception
 				//email.put("type", cursor.getString(cursor.getColumnIndex(ContactMethods.TYPE)));
@@ -434,10 +444,372 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 		return emails;
 	}
 
+	/**
+	 * This method will save a contact object into the devices contacts database.
+	 * 
+	 * @param contact the contact to be saved.
+	 * @returns true if the contact is successfully saved, false otherwise.
+	 */
 	@Override
-	public void save(JSONObject contact) {
-		// TODO Auto-generated method stub
+	public boolean save(JSONObject contact) {
+		ContentValues personValues = new ContentValues();
+
+		String id = getJsonString(contact, "id");
+			
+		String name = getJsonString(contact, "displayName");
+		if (name != null) {
+			personValues.put(Contacts.People.NAME, name);				
+		}
+		String note = getJsonString(contact, "note");
+		if (note != null) {
+			personValues.put(Contacts.People.NOTES, note);
+		}
+
+		/* STARRED 0 = Contacts, 1 = Favorites */
+		personValues.put(Contacts.People.STARRED, 0);
 		
+		Uri newPersonUri;
+		// Add new contact
+		if (id == null) {
+			newPersonUri = Contacts.People.createPersonInMyContactsGroup(mApp.getContentResolver(), personValues);
+		}
+		// modify existing contact
+		else {
+			newPersonUri = Uri.withAppendedPath(Contacts.People.CONTENT_URI, id);
+			mApp.getContentResolver().update(newPersonUri, personValues, PEOPLE_ID_EQUALS,  new String[]{id});
+		}
+		
+		if (newPersonUri != null) {
+			// phoneNumbers
+			savePhoneNumbers(contact, newPersonUri);
+			// emails
+			saveEntries(contact, newPersonUri, "emails", Contacts.KIND_EMAIL);
+			// addresses
+			saveAddresses(contact, newPersonUri);
+			// organizations
+			saveOrganizations(contact, newPersonUri);
+			// ims
+			saveEntries(contact, newPersonUri, "ims", Contacts.KIND_IM);
+			
+			// Successfully create a Contact
+			return true;
+		}
+		return false;
+	}
+	
+	/** 
+	 * Takes a JSON contact object and loops through the available organizations.  If the  
+	 * organization has an id that is not equal to null the organization will be updated in the database.
+	 * If the id is null then we treat it as a new organization.
+	 * 
+	 * @param contact the contact to extract the organizations from
+	 * @param uri the base URI for this contact.
+	 */
+	private void saveOrganizations(JSONObject contact, Uri newPersonUri) {
+		ContentValues values = new ContentValues();
+		Uri orgUri = Uri.withAppendedPath(newPersonUri,
+				Contacts.Organizations.CONTENT_DIRECTORY);
+		String id = null;
+		try {
+			JSONArray orgs = contact.getJSONArray("organizations");
+			if (orgs != null && orgs.length() > 0) {
+				JSONObject org;
+				for (int i=0; i<orgs.length(); i++) {
+					org = orgs.getJSONObject(i);
+					id = getJsonString(org, "id");					
+					values.put(Contacts.Organizations.COMPANY, getJsonString(org, "name"));
+					values.put(Contacts.Organizations.TITLE, getJsonString(org, "title"));
+					if (id == null) {
+						Uri contactUpdate = mApp.getContentResolver().insert(orgUri, values);
+					}
+					else {
+						Uri tempUri = Uri.withAppendedPath(orgUri, id);					
+						mApp.getContentResolver().update(tempUri, values, null, null);
+					}
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.d(LOG_TAG, "Could not save organizations = " + e.getMessage());
+		}
+	}
+
+	/** 
+	 * Takes a JSON contact object and loops through the available addresses.  If the  
+	 * address has an id that is not equal to null the address will be updated in the database.
+	 * If the id is null then we treat it as a new address.
+	 * 
+	 * @param contact the contact to extract the addresses from
+	 * @param uri the base URI for this contact.
+	 */
+	private void saveAddresses(JSONObject contact, Uri uri) {
+		ContentValues values = new ContentValues();
+		Uri newUri = Uri.withAppendedPath(uri,
+				Contacts.People.ContactMethods.CONTENT_DIRECTORY);
+		String id = null;
+		try {
+			JSONArray entries = contact.getJSONArray("addresses");
+			if (entries != null && entries.length() > 0) {
+				JSONObject entry;
+				values.put(Contacts.ContactMethods.KIND, Contacts.KIND_POSTAL);
+				for (int i=0; i<entries.length(); i++) {
+					entry = entries.getJSONObject(i);
+					id = getJsonString(entry, "id");
+					
+					String address = getJsonString(entry, "formatted");
+					if (address != null) {
+						values.put(Contacts.ContactMethods.DATA, address);
+					}
+					else {
+						values.put(Contacts.ContactMethods.DATA, createAddressString(entry));
+					}
+					
+					if (id == null) {
+						Uri contactUpdate = mApp.getContentResolver().insert(newUri, values);
+					}
+					else {
+						Uri tempUri = Uri.withAppendedPath(newUri, id);
+						mApp.getContentResolver().update(tempUri, values, null, null);
+					}
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.d(LOG_TAG, "Could not save address = " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Takes a ContactAddress JSON object and creates a fully 
+	 * formatted address string.
+	 * 
+	 * @param entry the full address object
+	 * @return a formatted address string
+	 */
+	private String createAddressString(JSONObject entry) {
+		StringBuffer buffer = new StringBuffer("");
+		if (getJsonString(entry, "locality") != null ) {
+			buffer.append(getJsonString(entry, "locality"));
+		}
+		if (getJsonString(entry, "region") != null ) {
+			if (buffer.length() > 0 ) {
+				buffer.append(", ");
+			}
+			buffer.append(getJsonString(entry, "region"));
+		}
+		if (getJsonString(entry, "postalCode") != null ) {
+			if (buffer.length() > 0 ) {
+				buffer.append(", ");
+			}
+			buffer.append(getJsonString(entry, "postalCode"));
+		}
+		if (getJsonString(entry, "country") != null ) {
+			if (buffer.length() > 0 ) {
+				buffer.append(", ");
+			}
+			buffer.append(getJsonString(entry, "country"));
+		}
+		return buffer.toString();
+	}
+
+	/** 
+	 * Takes a JSON contact object and loops through the available entries (Emails/IM's).  If the  
+	 * entry has an id that is not equal to null the entry will be updated in the database.
+	 * If the id is null then we treat it as a new entry.
+	 * 
+	 * @param contact the contact to extract the entries from
+	 * @param uri the base URI for this contact.
+	 */
+	private void saveEntries(JSONObject contact, Uri uri, String dataType, int contactKind) {
+		ContentValues values = new ContentValues();
+		Uri newUri = Uri.withAppendedPath(uri,
+				Contacts.People.ContactMethods.CONTENT_DIRECTORY);
+		String id = null;
+
+		try {
+			JSONArray entries = contact.getJSONArray(dataType);
+			if (entries != null && entries.length() > 0) {
+				JSONObject entry;
+				values.put(Contacts.ContactMethods.KIND, contactKind);
+				for (int i=0; i<entries.length(); i++) {
+					entry = entries.getJSONObject(i);
+					id = getJsonString(entry, "id");
+					values.put(Contacts.ContactMethods.DATA, getJsonString(entry, "value"));
+					values.put(Contacts.ContactMethods.TYPE, getContactType(getJsonString(entry, "type")));
+					if (id==null) {
+						Uri contactUpdate = mApp.getContentResolver().insert(newUri, values);
+					}
+					else {
+						Uri tempUri = Uri.withAppendedPath(newUri, id);
+						mApp.getContentResolver().update(tempUri, values, null, null);
+					}
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.d(LOG_TAG, "Could not save " + dataType + " = " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Converts a string from the W3C Contact API to it's Android int value.
+	 * @param string
+	 * @return Android int value
+	 */
+	private int getContactType(String string) {
+		int type = Contacts.ContactMethods.TYPE_OTHER;
+		if (string!=null) {
+			if ("home".equals(string.toLowerCase())) {
+				return Contacts.ContactMethods.TYPE_HOME;
+			}
+			else if ("work".equals(string.toLowerCase())) {
+				return Contacts.ContactMethods.TYPE_WORK;
+			}
+			else if ("other".equals(string.toLowerCase())) {
+				return Contacts.ContactMethods.TYPE_OTHER;
+			}
+			else if ("custom".equals(string.toLowerCase())) {
+				return Contacts.ContactMethods.TYPE_CUSTOM;
+			}		
+		}
+		return type;
+	}
+
+	/**
+	 * getPhoneType converts an Android phone type into a string
+	 * @param type 
+	 * @return phone type as string.
+	 */
+	private String getContactType(int type) {
+		String stringType;
+		switch (type) {
+			case Contacts.ContactMethods.TYPE_CUSTOM: 
+				stringType = "custom";
+				break;
+			case Contacts.ContactMethods.TYPE_HOME: 
+				stringType = "home";
+				break;
+			case Contacts.ContactMethods.TYPE_WORK: 
+				stringType = "work";
+				break;
+			case Contacts.ContactMethods.TYPE_OTHER: 
+			default: 
+				stringType = "other";
+				break;
+		}
+		return stringType;
+	}
+
+	/** 
+	 * Takes a JSON contact object and loops through the available phone numbers.  If the phone 
+	 * number has an id that is not equal to null the phone number will be updated in the database.
+	 * If the id is null then we treat it as a new phone number.
+	 * 
+	 * @param contact the contact to extract the phone numbers from
+	 * @param uri the base URI for this contact.
+	 */
+	private void savePhoneNumbers(JSONObject contact, Uri uri) {
+		ContentValues values = new ContentValues();
+		Uri phonesUri = Uri.withAppendedPath(uri,
+				Contacts.People.Phones.CONTENT_DIRECTORY);	
+		String id = null;
+
+		try {
+			JSONArray phones = contact.getJSONArray("phoneNumbers");
+			if (phones != null && phones.length() > 0) {
+				JSONObject phone;
+				for (int i=0; i<phones.length(); i++) {
+					phone = phones.getJSONObject(i);
+					id = getJsonString(phone, "id");
+					values.put(Contacts.Phones.NUMBER, getJsonString(phone, "value"));
+					values.put(Contacts.Phones.TYPE, getPhoneType(getJsonString(phone, "type")));
+					if (id==null) {
+						Uri phoneUpdate = mApp.getContentResolver().insert(phonesUri, values);
+					}
+					else {
+						Uri newUri = Uri.withAppendedPath(phonesUri, id);
+						mApp.getContentResolver().update(newUri, values, null, null);
+					}
+				}
+			}
+		}
+		catch (JSONException e) {
+			Log.d(LOG_TAG, "Could not save phones = " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Converts a string from the W3C Contact API to it's Android int value.
+	 * @param string
+	 * @return Android int value
+	 */
+	private int getPhoneType(String string) {
+		int type = Contacts.Phones.TYPE_OTHER;
+		if ("home".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_HOME;
+		}
+		else if ("mobile".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_MOBILE;
+		}
+		else if ("work".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_WORK;
+		}
+		else if ("work fax".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_FAX_WORK;
+		}
+		else if ("home fax".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_FAX_HOME;
+		}
+		else if ("fax".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_FAX_WORK;
+		}
+		else if ("pager".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_PAGER;
+		}
+		else if ("other".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_OTHER;
+		}
+		else if ("custom".equals(string.toLowerCase())) {
+			return Contacts.Phones.TYPE_CUSTOM;
+		}
+		return type;
+	}
+
+	/**
+	 * getPhoneType converts an Android phone type into a string
+	 * @param type 
+	 * @return phone type as string.
+	 */
+	private String getPhoneType(int type) {
+		String stringType;
+		switch (type) {
+		case Contacts.Phones.TYPE_CUSTOM:
+			stringType = "custom";
+			break;
+		case Contacts.Phones.TYPE_FAX_HOME:
+			stringType = "home fax";
+			break;
+		case Contacts.Phones.TYPE_FAX_WORK:
+			stringType = "work fax";
+			break;
+		case Contacts.Phones.TYPE_HOME:
+			stringType = "home";
+			break;
+		case Contacts.Phones.TYPE_MOBILE:
+			stringType = "mobile";
+			break;
+		case Contacts.Phones.TYPE_PAGER:
+			stringType = "pager";
+			break;
+		case Contacts.Phones.TYPE_WORK:
+			stringType = "work";
+			break;
+		case Contacts.Phones.TYPE_OTHER:
+		default: 
+			stringType = "custom";
+			break;
+		}
+		return stringType;
 	}
 
 	@Override
@@ -447,7 +819,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	 */
 	public boolean remove(String id) {
     	int result = mApp.getContentResolver().delete(People.CONTENT_URI, 
-    			"people._id = ?", 
+    			PEOPLE_ID_EQUALS, 
     			new String[] {id});
     	
     	return (result > 0) ? true : false;

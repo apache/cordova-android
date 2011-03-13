@@ -11,7 +11,6 @@ import java.io.File;
 
 import android.os.Environment;
 import android.os.StatFs;
-import android.util.Log;
 
 /**
  * This class provides file directory utilities.  
@@ -21,6 +20,8 @@ import android.util.Log;
  */
 public class DirectoryManager {
 	
+	private static final String LOG_TAG = "DirectoryManager";
+
 	/**
 	 * Determine if a file or directory exists.
 	 * 
@@ -36,7 +37,6 @@ public class DirectoryManager {
             File newPath = constructFilePaths(path.toString(), name);
             status = newPath.exists();
     	}
-		
 		// If no SD card
 		else{
     		status = false;
@@ -72,29 +72,6 @@ public class DirectoryManager {
 		return (freeSpace);
 	}	
 	
-	/**
-	 * Create directory on SD card.
-	 * 
-	 * @param directoryName		The name of the directory to create.
-	 * @return 					T=successful, F=failed
-	 */
-	protected static boolean createDirectory(String directoryName) {
-		boolean status;
-		
-		// Make sure SD card exists
-		if ((testSaveLocationExists()) && (!directoryName.equals(""))) {
-			File path = Environment.getExternalStorageDirectory();
-            File newPath = constructFilePaths(path.toString(), directoryName);
-			status = newPath.mkdir();
-			status = true;
-		}
-		
-		// If no SD card or invalid dir name
-		else {
-			status = false;
-		}
-		return status;
-	}
 	
 	/**
 	 * Determine if SD card exists.
@@ -118,95 +95,6 @@ public class DirectoryManager {
 	}
 	
 	/**
-	 * Delete directory.
-	 * 
-	 * @param fileName		The name of the directory to delete
-	 * @return				T=deleted, F=could not delete
-	 */
-	protected static boolean deleteDirectory(String fileName) {
-		boolean status;
-		SecurityManager checker = new SecurityManager();
-			
-		// Make sure SD card exists
-		if ((testSaveLocationExists()) && (!fileName.equals(""))) {	
-			File path = Environment.getExternalStorageDirectory();
-            File newPath = constructFilePaths(path.toString(), fileName);
-			checker.checkDelete(newPath.toString());
-			
-			// If dir to delete is really a directory
-			if (newPath.isDirectory()) {
-				String[] listfile = newPath.list();
-				
-				// Delete all files within the specified directory and then delete the directory
-				try{
-					for (int i=0; i < listfile.length; i++){
-						File deletedFile = new File (newPath.toString()+"/"+listfile[i].toString());
-						deletedFile.delete();
-					}
-					newPath.delete();
-					Log.i("DirectoryManager deleteDirectory", fileName);
-					status = true;
-				}
-				catch (Exception e){
-					e.printStackTrace();
-					status = false;
-				}
-			}
-			
-			// If dir not a directory, then error
-			else {
-				status = false;
-			}
-		}
-		
-		// If no SD card 
-		else {
-			status = false;
-		}
-		return status;
-	}
-	
-	/**
-	 * Delete file.
-	 * 
-	 * @param fileName				The name of the file to delete
-	 * @return						T=deleted, F=not deleted
-	 */
-	protected static boolean deleteFile(String fileName) {
-		boolean status;
-		SecurityManager checker = new SecurityManager();
-			
-		// Make sure SD card exists
-		if ((testSaveLocationExists()) && (!fileName.equals(""))) {
-			File path = Environment.getExternalStorageDirectory();
-            File newPath = constructFilePaths(path.toString(), fileName);
-			checker.checkDelete(newPath.toString());
-			
-			// If file to delete is really a file
-			if (newPath.isFile()){
-				try {
-					Log.i("DirectoryManager deleteFile", fileName);
-					newPath.delete();
-					status = true;
-				}catch (SecurityException se){
-					se.printStackTrace();
-					status = false;
-				}
-			}
-			// If not a file, then error
-			else {
-				status = false;
-			}
-		}
-		
-		// If no SD card
-		else {
-			status = false;
-		}
-		return status;
-	}
-	
-	/**
 	 * Create a new file object from two file paths.
 	 * 
 	 * @param file1			Base file path
@@ -215,8 +103,12 @@ public class DirectoryManager {
 	 */
 	private static File constructFilePaths (String file1, String file2) {
 		File newPath;
-		newPath = new File(file1+"/"+file2);
+		if (file2.startsWith(file1)) {
+			newPath = new File(file2);
+		}
+		else {
+			newPath = new File(file1+"/"+file2);
+		}
 		return newPath;
 	}
-
 }

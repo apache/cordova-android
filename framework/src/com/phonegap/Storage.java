@@ -160,24 +160,25 @@ public class Storage extends Plugin {
 	 */
 	public void processResults(Cursor cur, String tx_id) {
 		
+		String result = "[]";
 		// If query result has rows
+		
 		if (cur.moveToFirst()) {
+			JSONArray fullresult = new JSONArray();
 			String key = "";
 			String value = "";
 			int colCount = cur.getColumnCount();
 			
 			// Build up JSON result object for each row
 			do {
-				JSONObject result = new JSONObject();
+				JSONObject row = new JSONObject();
 				try {
 					for (int i = 0; i < colCount; ++i) {
 						key = cur.getColumnName(i);
-						value = cur.getString(i).replace("\"", "\\\""); // must escape " with \" for JavaScript
-						result.put(key, value);
+						value = cur.getString(i);
+						row.put(key, value);
 					}
-
-					// Send row back to JavaScript
-					this.sendJavascript("droiddb.addResult('" + result.toString() + "','" + tx_id + "');");
+					fullresult.put(row);
 					
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -185,9 +186,11 @@ public class Storage extends Plugin {
 				
 			} while (cur.moveToNext());
 			
+			result = fullresult.toString();
 		}
+		
 		// Let JavaScript know that there are no more rows
-		this.sendJavascript("droiddb.completeQuery('" + tx_id + "');");
+		this.sendJavascript("droiddb.completeQuery('" + tx_id + "', "+result+");");
 		
 	}
 		

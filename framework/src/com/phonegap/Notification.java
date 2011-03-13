@@ -10,6 +10,7 @@ package com.phonegap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import com.phonegap.api.Plugin;
+import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.PluginResult;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -55,11 +56,16 @@ public class Notification extends Plugin {
 				this.vibrate(args.getLong(0));
 			}
 			else if (action.equals("alert")) {
-				this.alert(args.getString(0),args.getString(1),args.getString(2));
+				this.alert(args.getString(0),args.getString(1),args.getString(2), callbackId);
+				PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
+				r.setKeepCallback(true);
+				return r;
 			}
 			else if (action.equals("confirm")) {
-				int i =	this.confirm(args.getString(0),args.getString(1),args.getString(2));
-				return new PluginResult(status, i);
+				this.confirm(args.getString(0),args.getString(1),args.getString(2), callbackId);
+				PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
+				r.setKeepCallback(true);
+				return r;
 			}
 			else if (action.equals("activityStart")) {
 				this.activityStart(args.getString(0),args.getString(1));
@@ -160,105 +166,99 @@ public class Notification extends Plugin {
 	
 	/**
 	 * Builds and shows a native Android alert with given Strings
-	 * @param message The message the alert should display
-	 * @param title The title of the alert
-	 * @param buttonLabel The label of the button 
+	 * @param message 		The message the alert should display
+	 * @param title 		The title of the alert
+	 * @param buttonLabel 	The label of the button 
+	 * @param callbackId	The callback id
 	 */
-	public synchronized void alert(String message,String title,String buttonLabel){
-		AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
-        dlg.setMessage(message);
-        dlg.setTitle(title);
-        dlg.setCancelable(false);
-        dlg.setPositiveButton(buttonLabel,
-        	new AlertDialog.OnClickListener() {
-            	public void onClick(DialogInterface dialog, int which) {
-            		dialog.dismiss();
-            	}
-        	});
-        dlg.create();
-        dlg.show();
+	public synchronized void alert(final String message, final String title, final String buttonLabel, final String callbackId) {
+
+		final PhonegapActivity ctx = this.ctx;
+		final Notification notification = this;
+		
+		Runnable runnable = new Runnable() {
+			public void run() {
+		
+				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
+				dlg.setMessage(message);
+				dlg.setTitle(title);
+				dlg.setCancelable(false);
+				dlg.setPositiveButton(buttonLabel,
+						new AlertDialog.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+						notification.success(new PluginResult(PluginResult.Status.OK, 0), callbackId);
+					}
+				});
+				dlg.create();
+				dlg.show();
+			};
+		};
+		this.ctx.runOnUiThread(runnable);
 	}
 
 	/**
 	 * Builds and shows a native Android confirm dialog with given title, message, buttons.
 	 * This dialog only shows up to 3 buttons.  Any labels after that will be ignored.
+	 * The index of the button pressed will be returned to the JavaScript callback identified by callbackId.
 	 * 
 	 * @param message 		The message the dialog should display
 	 * @param title 		The title of the dialog
 	 * @param buttonLabels 	A comma separated list of button labels (Up to 3 buttons)
-	 * @return  			The index of the button clicked (1,2 or 3)
+	 * @param callbackId	The callback id
 	 */
-	public synchronized int confirm(final String message, final String title, String buttonLabels) {
-			
-		// Create dialog on UI thread
-		final DroidGap ctx = this.ctx;
+	public synchronized void confirm(final String message, final String title, String buttonLabels, final String callbackId) {
+
+		final PhonegapActivity ctx = this.ctx;
 		final Notification notification = this;
 		final String[] fButtons = buttonLabels.split(",");
+
 		Runnable runnable = new Runnable() {
 			public void run() {
 				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
 				dlg.setMessage(message);
 				dlg.setTitle(title);
 				dlg.setCancelable(false);
-				
+
 				// First button
 				if (fButtons.length > 0) {
 					dlg.setPositiveButton(fButtons[0],
-						new AlertDialog.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								synchronized(notification) {
-									notification.confirmResult = 1;
-									notification.notifyAll();
-								}
-							}
-						});
+							new AlertDialog.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							notification.success(new PluginResult(PluginResult.Status.OK, 1), callbackId);
+						}
+					});
 				}
-				
+
 				// Second button
 				if (fButtons.length > 1) {
 					dlg.setNeutralButton(fButtons[1], 
-						new AlertDialog.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								synchronized(notification) {
-									notification.confirmResult = 2;
-									notification.notifyAll();
-								}
-							}
-						});
+							new AlertDialog.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							notification.success(new PluginResult(PluginResult.Status.OK, 2), callbackId);
+						}
+					});
 				}
-				
+
 				// Third button
 				if (fButtons.length > 2) {
 					dlg.setNegativeButton(fButtons[2],
-						new AlertDialog.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								synchronized(notification) {
-									notification.confirmResult = 3;
-									notification.notifyAll();
-								}
-							}
+							new AlertDialog.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+							notification.success(new PluginResult(PluginResult.Status.OK, 3), callbackId);
 						}
+					}
 					);
 				}
 
 				dlg.create();
 				dlg.show();
-			}
+			};
 		};
 		this.ctx.runOnUiThread(runnable);
-		
-		// Wait for dialog to close
-		synchronized(runnable) {
-			try {
-				this.wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-        return this.confirmResult;        
 	}
 
 	/**
@@ -273,7 +273,7 @@ public class Notification extends Plugin {
 			this.spinnerDialog = null;
 		}
 		final Notification notification = this;
-		final DroidGap ctx = this.ctx;
+		final PhonegapActivity ctx = this.ctx;
 		Runnable runnable = new Runnable() {
 			public void run() {
 				notification.spinnerDialog = ProgressDialog.show(ctx, title , message, true, true, 
@@ -309,7 +309,7 @@ public class Notification extends Plugin {
 			this.progressDialog = null;
 		}
 		final Notification notification = this;
-		final DroidGap ctx = this.ctx;
+		final PhonegapActivity ctx = this.ctx;
 		Runnable runnable = new Runnable() {
 			public void run() {
 				notification.progressDialog = new ProgressDialog(ctx);

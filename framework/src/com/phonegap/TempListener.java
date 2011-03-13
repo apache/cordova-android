@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.json.JSONArray;
 
+import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 
@@ -37,7 +38,7 @@ public class TempListener extends Plugin implements SensorEventListener {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(DroidGap ctx) {
+	public void setContext(PhonegapActivity ctx) {
 		super.setContext(ctx);
         this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
 	}

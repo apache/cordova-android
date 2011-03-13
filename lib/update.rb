@@ -15,9 +15,9 @@ class Update
   end
   
   # removes local.properties and recreates based on android_sdk_path 
-  # then generates framework/phonegap.jar
+  # then generates framework/phonegap.jar & framework/assets/www/phonegap.js
   def build_jar
-    puts "Building the JAR..."
+    puts "Building the JAR and combining JS files..."
     %w(local.properties phonegap.js phonegap.jar).each do |f|
       FileUtils.rm File.join(@framework_dir, f) if File.exists? File.join(@framework_dir, f)
     end
@@ -32,23 +32,13 @@ class Update
   # copies stuff from framework into the project
   # TODO need to allow for www import inc icon
   def copy_libs
-    puts "Copying over libraries and assets and creating phonegap.js..."
+    puts "Copying over libraries and assets..."
     
     FileUtils.mkdir_p File.join(@path, "libs")
     FileUtils.cp File.join(@framework_dir, "phonegap.jar"), File.join(@path, "libs")
 
-    # concat JS and put into www folder.
-    js_dir = File.join(@framework_dir, "assets", "js")
-
-    phonegapjs = IO.read(File.join(js_dir, 'phonegap.js.base'))
-
-    Dir.new(js_dir).entries.each do |script|
-      next if script[0].chr == "." or script == "phonegap.js.base"
-      phonegapjs << IO.read(File.join(js_dir, script))
-      phonegapjs << "\n\n"
-    end
-
-    File.open(File.join(@path, "assets", "www", "phonegap.js"), 'w') {|f| f.write(phonegapjs) }
+    FileUtils.mkdir_p File.join(@path, "assets", "www")
+    FileUtils.cp File.join(@framework_dir, "assets", "www", "phonegap.js"), File.join(@path, "assets", "www")
   end
   #
 end

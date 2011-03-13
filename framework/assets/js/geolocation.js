@@ -17,7 +17,7 @@ function Geolocation() {
 
     // Geolocation listeners
     this.listeners = {};
-};
+}
 
 /**
  * Position error object
@@ -28,7 +28,7 @@ function Geolocation() {
 function PositionError(code, message) {
     this.code = code;
     this.message = message;
-};
+}
 
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
@@ -42,7 +42,7 @@ PositionError.TIMEOUT = 3;
  * @param {PositionOptions} options     The options for getting the position data. (OPTIONAL)
  */
 Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options) {
-    if (navigator._geo.listeners["global"]) {
+    if (navigator._geo.listeners.global) {
         console.log("Geolocation Error: Still waiting for previous getCurrentPosition() request.");
         try {
             errorCallback(new PositionError(PositionError.TIMEOUT, "Geolocation Error: Still waiting for previous getCurrentPosition() request."));
@@ -53,20 +53,20 @@ Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallba
     var maximumAge = 10000;
     var enableHighAccuracy = false;
     var timeout = 10000;
-    if (typeof options != "undefined") {
-        if (typeof options.maximumAge != "undefined") {
+    if (typeof options !== "undefined") {
+        if (typeof options.maximumAge !== "undefined") {
             maximumAge = options.maximumAge;
         }
-        if (typeof options.enableHighAccuracy != "undefined") {
+        if (typeof options.enableHighAccuracy !== "undefined") {
             enableHighAccuracy = options.enableHighAccuracy;
         }
-        if (typeof options.timeout != "undefined") {
+        if (typeof options.timeout !== "undefined") {
             timeout = options.timeout;
         }
     }
-    navigator._geo.listeners["global"] = {"success" : successCallback, "fail" : errorCallback };
+    navigator._geo.listeners.global = {"success" : successCallback, "fail" : errorCallback };
     PhoneGap.exec(null, null, "Geolocation", "getCurrentLocation", [enableHighAccuracy, timeout, maximumAge]);
-}
+};
 
 /**
  * Asynchronously watches the geolocation for changes to geolocation.  When a change occurs,
@@ -81,17 +81,17 @@ Geolocation.prototype.watchPosition = function(successCallback, errorCallback, o
     var maximumAge = 10000;
     var enableHighAccuracy = false;
     var timeout = 10000;
-    if (typeof options != "undefined") {
-        if (typeof options.frequency  != "undefined") {
+    if (typeof options !== "undefined") {
+        if (typeof options.frequency  !== "undefined") {
             maximumAge = options.frequency;
         }
-        if (typeof options.maximumAge != "undefined") {
+        if (typeof options.maximumAge !== "undefined") {
             maximumAge = options.maximumAge;
         }
-        if (typeof options.enableHighAccuracy != "undefined") {
+        if (typeof options.enableHighAccuracy !== "undefined") {
             enableHighAccuracy = options.enableHighAccuracy;
         }
-        if (typeof options.timeout != "undefined") {
+        if (typeof options.timeout !== "undefined") {
             timeout = options.timeout;
         }
     }
@@ -118,7 +118,7 @@ Geolocation.prototype.success = function(id, lat, lng, alt, altacc, head, vel, s
     var coords = new Coordinates(lat, lng, alt, altacc, head, vel);
     var loc = new Position(coords, stamp);
     try {
-        if (lat == "undefined" || lng == "undefined") {
+        if (lat === "undefined" || lng === "undefined") {
             navigator._geo.listeners[id].fail(new PositionError(PositionError.POSITION_UNAVAILABLE, "Lat/Lng are undefined."));
         }
         else {
@@ -130,8 +130,8 @@ Geolocation.prototype.success = function(id, lat, lng, alt, altacc, head, vel, s
         console.log("Geolocation Error: Error calling success callback function.");
     }
 
-    if (id == "global") {
-        delete navigator._geo.listeners["global"];
+    if (id === "global") {
+        delete navigator._geo.listeners.global;
     }
 };
 
@@ -186,7 +186,7 @@ PhoneGap.addConstructor(function() {
     navigator._geo = new Geolocation();
 
     // No native geolocation object for Android 1.x, so use PhoneGap geolocation
-    if (typeof navigator.geolocation == 'undefined') {
+    if (typeof navigator.geolocation === 'undefined') {
         navigator.geolocation = navigator._geo;
         Geolocation.usingPhoneGap = true;
     }

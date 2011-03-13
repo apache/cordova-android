@@ -29,7 +29,7 @@ class Create < Classic
     @content          = 'index.html'
     
     # stop executation on errors
-    raise 'Expected index.html in the following folder #{ path }.\nThe path is expected to be the directory droidgap create is run from or specified as a command line arg like droidgap create my_path.' unless File.exists? File.join(path, 'index.html')    
+    raise "Expected index.html in the following folder #{ path }.\nThe path is expected to be the directory droidgap create is run from or specified as a command line arg like droidgap create my_path." unless File.exists? File.join(path, 'index.html')    
     raise 'Could not find android in your PATH!' if @android_sdk_path.empty?
   end
 
@@ -40,16 +40,40 @@ class Create < Classic
     if File.exists?(config_file)
       require 'rexml/document'
       f                 = File.new config_file
-      doc               = REXML::Document.new(f)  
-      @config           = {}  
+      doc               = REXML::Document.new(f)
+      @config           = {}
       @config[:id]      = doc.root.attributes["id"]
       @config[:version] = doc.root.attributes["version"]
-      
+      @config[:icons]   = {}
+      defaultIconSize   = 0
       doc.root.elements.each do |n|
         @config[:name]        = n.text.gsub('-','').gsub(' ','') if n.name == 'name'
         @config[:description] = n.text if n.name == 'description'
-        @config[:icon]        = n.attributes["src"] if n.name == 'icon'
-        @config[:content]     = n.attributes["src"] if n.name == 'content'  
+        @config[:content]     = n.attributes["src"] if n.name == 'content'
+        if n.name == 'icon'
+          if n.attributes["width"] == '72' && n.attributes["height"] == '72'
+            @config[:icons]["drawable-hdpi".to_sym] = n.attributes["src"]
+            if 72 > defaultIconSize
+              @config[:icon] = n.attributes["src"]
+              defaultIconSize = 72
+            end
+          elsif n.attributes["width"] == '48' && n.attributes["height"] == '48'
+            @config[:icons]["drawable-mdpi".to_sym] = n.attributes["src"]
+            if 48 > defaultIconSize
+              @config[:icon] = n.attributes["src"]
+              defaultIconSize = 48
+            end
+          elsif n.attributes["width"] == '36' && n.attributes["height"] == '36'
+            @config[:icons]["drawable-ldpi".to_sym] = n.attributes["src"]
+            if 36 > defaultIconSize
+              @config[:icon] = n.attributes["src"]
+              defaultIconSize = 36
+            end
+          else
+            @config[:icon] = n.attributes["src"]
+          end
+        end
+
         
         if n.name == "preference" && n.attributes["name"] == 'javascript_folder'
           @config[:js_dir] = n.attributes["value"]
@@ -62,7 +86,8 @@ class Create < Classic
       # will change the name from the directory to the name element text
       @name = @config[:name] if @config[:name]
       # set the icon from the config
-      @icon = File.join(@www, @config[:icon])
+      @icon = File.join(@www, @config[:icon]) if @config[:icon]
+      @icons = @config[:icons] if @config[:icons].length > 0
       # sets the app js dir where phonegap.js gets copied
       @app_js_dir = @config[:js_dir] ? @config[:js_dir] : ''
       # sets the start page

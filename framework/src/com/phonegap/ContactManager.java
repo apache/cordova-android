@@ -42,11 +42,11 @@ public class ContactManager extends Plugin {
 		
 		try {
 			if (action.equals("search")) {
-				JSONArray res = contactAccessor.search(args.getJSONArray(0), args.getJSONObject(1));
-				return new PluginResult(status, res);
+				JSONArray res = contactAccessor.search(args.getJSONArray(0), args.optJSONObject(1));
+				return new PluginResult(status, res, "navigator.service.contacts.cast");
 			}
 			else if (action.equals("save")) {
-				// TODO Coming soon!			
+				return new PluginResult(status, contactAccessor.save(args.getJSONObject(0)));
 			}
 			else if (action.equals("remove")) {
 				if (contactAccessor.remove(args.getString(0))) {

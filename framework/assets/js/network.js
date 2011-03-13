@@ -13,7 +13,7 @@
 function NetworkStatus() {
     //this.code = null;
     //this.message = "";
-};
+}
 
 NetworkStatus.NOT_REACHABLE = 0;
 NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
@@ -30,7 +30,7 @@ function Network() {
         remoteHostStatus: int(0/1/2), internetConnectionStatus: int(0/1/2), localWiFiConnectionStatus: int (0/2) }
      */
     this.lastReachability = null;
-};
+}
 
 /**
  * Called by the geolocation framework when the reachability status has changed.
@@ -57,6 +57,8 @@ Network.prototype.isReachable = function(uri, callback, options) {
 };
 
 PhoneGap.addConstructor(function() {
-    if (typeof navigator.network == "undefined") navigator.network = new Network();
+    if (typeof navigator.network === "undefined") {
+        navigator.network = new Network();
+    }
 });
 

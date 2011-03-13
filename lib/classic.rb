@@ -19,9 +19,15 @@ class Classic
   end 
   
   def setup
-    @android_dir    = File.expand_path(File.dirname(__FILE__).gsub('lib',''))
+    @android_dir    = File.expand_path(File.dirname(__FILE__).gsub(/lib$/,''))
     @framework_dir  = File.join(@android_dir, "framework")
-    @icon           = File.join(@www, 'icon.png')
+    @icon           = File.join(@www, 'icon.png') unless File.exists?(@icon)
+    # Hash that stores the location of icons for each resolution type. Uses the default icon for all resolutions as a baseline.
+    @icons          = {
+      :"drawable-ldpi" => @icon,
+      :"drawable-mdpi" => @icon,
+      :"drawable-hdpi" => @icon
+    } if @icons.nil?
     @app_js_dir     = ''
     @content        = 'index.html'
   end
@@ -82,11 +88,12 @@ class Classic
 
   # copies stuff from src directory into the android project directory (@path)
   def copy_libs
+    version = IO.read(File.join(@framework_dir, '../VERSION'))
     framework_res_dir = File.join(@framework_dir, "res")
     app_res_dir = File.join(@path, "res")
     # copies in the jar
     FileUtils.mkdir_p File.join(@path, "libs")
-    FileUtils.cp File.join(@framework_dir, "phonegap.jar"), File.join(@path, "libs")
+    FileUtils.cp File.join(@framework_dir, "phonegap.#{ version }.jar"), File.join(@path, "libs")
     # copies in the strings.xml
     FileUtils.mkdir_p File.join(app_res_dir, "values")
     FileUtils.cp File.join(framework_res_dir, "values","strings.xml"), File.join(app_res_dir, "values", "strings.xml")
@@ -96,11 +103,19 @@ class Classic
       FileUtils.cp File.join(framework_res_dir, "layout", f), File.join(app_res_dir, "layout", f)
     end
     # icon file copy
-    # if it is not in the www directory use the default one in the src dir
-    @icon = File.join(framework_res_dir, "drawable", "icon.png") unless File.exists?(@icon)
     %w(drawable-hdpi drawable-ldpi drawable-mdpi).each do |e|
+      # if specific resolution icons are specified, use those. if not, see if a general purpose icon was defined.
+      # finally, fall back to using the default PhoneGap one.
+      currentIcon = ""
+      if !@icons[e.to_sym].nil? && File.exists?(File.join(@www, @icons[e.to_sym]))
+        currentIcon = File.join(@www, @icons[e.to_sym])
+      elsif File.exists?(@icon)
+        currentIcon = @icon
+      else
+        currentIcon = File.join(framework_res_dir, "drawable", "icon.png")
+      end
       FileUtils.mkdir_p(File.join(app_res_dir, e))
-      FileUtils.cp(@icon, File.join(app_res_dir, e, "icon.png"))
+      FileUtils.cp(currentIcon, File.join(app_res_dir, e, "icon.png"))
     end
     # concat JS and put into www folder. this can be overridden in the config.xml via @app_js_dir
     js_dir = File.join(@framework_dir, "assets", "js")
@@ -110,7 +125,7 @@ class Classic
       phonegapjs << IO.read(File.join(js_dir, script))
       phonegapjs << "\n\n"
     end
-    File.open(File.join(@path, "assets", "www", @app_js_dir, "phonegap.js"), 'w') {|f| f.write(phonegapjs) }
+    File.open(File.join(@path, "assets", "www", @app_js_dir, "phonegap.#{ version }.js"), 'w') {|f| f.write(phonegapjs) }
   end
   
   # puts app name in strings
@@ -126,8 +141,7 @@ class Classic
     end 
   end 
 
-  # this is so fucking unholy yet oddly beautiful
-  # not sure if I should thank Ruby or apologize for this abusive use of string interpolation
+  # create java source file
   def write_java
     j = "
     package #{ @pkg };

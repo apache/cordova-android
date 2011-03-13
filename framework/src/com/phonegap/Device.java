@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 import android.content.Context;
@@ -19,7 +20,7 @@ import android.telephony.TelephonyManager;
 
 public class Device extends Plugin {
 	
-	public static String phonegapVersion = "0.9.2";				// PhoneGap version
+	public static String phonegapVersion = "0.9.4";				// PhoneGap version
 	public static String platform = "Android";					// Device OS
 	public static String uuid;									// Device UUID
     
@@ -35,7 +36,7 @@ public class Device extends Plugin {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(DroidGap ctx) {
+	public void setContext(PhonegapActivity ctx) {
 		super.setContext(ctx);
         Device.uuid = getUuid();
 	}
