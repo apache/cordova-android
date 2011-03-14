@@ -946,19 +946,38 @@ public class DroidGap extends PhonegapActivity {
         		return true;        		
         	}
         	
-        	// If sms:5551212
-            else if (url.startsWith("sms:")) {
-            	try {
-            		Intent intent = new Intent(Intent.ACTION_VIEW);
-            		intent.setData(Uri.parse(url));
-            		intent.putExtra("address", url.substring(4));
-            		intent.setType("vnd.android-dir/mms-sms");
-            		startActivity(intent);
-            	} catch (android.content.ActivityNotFoundException e) {
-            		System.out.println("Error sending sms "+url+":"+ e.toString());
-            	}
-            	return true;
-            }  	
+        	// If sms:5551212?body=This is the message
+        	else if (url.startsWith("sms:")) {
+        		try {
+        			Intent intent = new Intent(Intent.ACTION_VIEW);
+
+        			// Get address
+        			String address = null;
+        			int parmIndex = url.indexOf('?');
+        			if (parmIndex == -1) {
+        				address = url.substring(4);
+        			}
+        			else {
+        				address = url.substring(4, parmIndex);
+
+        				// If body, then set sms body
+        				Uri uri = Uri.parse(url);
+        				String query = uri.getQuery();
+        				if (query != null) {
+        					if (query.startsWith("body=")) {
+        						intent.putExtra("sms_body", query.substring(5));
+        					}
+        				}
+        			}
+        			intent.setData(Uri.parse("sms:"+address));
+        			intent.putExtra("address", address);
+        			intent.setType("vnd.android-dir/mms-sms");
+        			startActivity(intent);
+        		} catch (android.content.ActivityNotFoundException e) {
+        			System.out.println("Error sending sms "+url+":"+ e.toString());
+        		}
+        		return true;
+        	}
 
         	// All else
         	else {
