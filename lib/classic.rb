@@ -21,7 +21,7 @@ class Classic
   def setup
     @android_dir    = File.expand_path(File.dirname(__FILE__).gsub(/lib$/,''))
     @framework_dir  = File.join(@android_dir, "framework")
-    @icon           = File.join(@www, 'icon.png') unless File.exists?(@icon)
+    @icon           = File.join(@www, 'icon.png') unless !@icon.nil? && File.exists?(@icon)
     # Hash that stores the location of icons for each resolution type. Uses the default icon for all resolutions as a baseline.
     @icons          = {
       :"drawable-ldpi" => @icon,
