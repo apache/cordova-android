@@ -649,7 +649,10 @@ public class DroidGap extends PhonegapActivity {
     	
     	// Make sure pause event is sent if onPause hasn't been called before onDestroy
        	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
-    	
+
+       	// Send destroy event to JavaScript
+       	this.appView.loadUrl("javascript:try{PhoneGap.onDestroy.fire();}catch(e){};");
+
     	// Load blank page so that JavaScript onunload is called
        	this.appView.loadUrl("about:blank");
     	    	

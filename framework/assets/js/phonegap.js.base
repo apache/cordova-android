@@ -18,6 +18,8 @@
  * onPhoneGapInfoReady        Internal event fired when device properties are available
  * onDeviceReady              User event fired to indicate that PhoneGap is ready
  * onResume                   User event fired to indicate a start/resume lifecycle event
+ * onPause                    User event fired to indicate a pause lifecycle event
+ * onDestroy                  Internal event fired when app is being destroyed (User should use window.onunload event, not this one).
  *
  * The only PhoneGap events that user code should register for are:
  *      onDeviceReady
@@ -26,6 +28,7 @@
  * Listeners can be registered as:
  *      document.addEventListener("deviceready", myDeviceReadyListener, false);
  *      document.addEventListener("resume", myResumeListener, false);
+ *      document.addEventListener("pause", myPauseListener, false);
  */
 
 if (typeof(DeviceInfo) !== 'object') {
@@ -240,6 +243,17 @@ PhoneGap.onResume = new PhoneGap.Channel('onResume');
  * pauses.
  */
 PhoneGap.onPause = new PhoneGap.Channel('onPause');
+
+/**
+ * onDestroy channel is fired when the PhoneGap native code
+ * is destroyed.  It is used internally.  
+ * Window.onunload should be used by the user.
+ */
+PhoneGap.onDestroy = new PhoneGap.Channel('onDestroy');
+PhoneGap.onDestroy.subscribeOnce(function() {
+    PhoneGap.shuttingDown = true;
+});
+PhoneGap.shuttingDown = false;
 
 // _nativeReady is global variable that the native side can set
 // to signify that the native code is ready. It is a global since 
@@ -696,6 +710,11 @@ PhoneGap.JSCallbackToken = null;
  */
 PhoneGap.JSCallback = function() {
 
+    // Exit if shutting down app
+    if (PhoneGap.shuttingDown) {
+        return;
+    }
+
     // If polling flag was changed, start using polling from now on
     if (PhoneGap.UsePolling) {
         PhoneGap.JSCallbackPolling();
@@ -707,6 +726,11 @@ PhoneGap.JSCallback = function() {
     // Callback function when XMLHttpRequest is ready
     xmlhttp.onreadystatechange=function(){
         if(xmlhttp.readyState === 4){
+            
+            // Exit if shutting down app
+            if (PhoneGap.shuttingDown) {
+                return;
+            }
 
             // If callback has JavaScript statement to execute
             if (xmlhttp.status === 200) {
@@ -785,6 +809,11 @@ PhoneGap.UsePolling = false;    // T=use polling, F=use XHR
  * Java to JavaScript.
  */
 PhoneGap.JSCallbackPolling = function() {
+
+    // Exit if shutting down app
+    if (PhoneGap.shuttingDown) {
+        return;
+    }
 
     // If polling flag was changed, stop using polling from now on
     if (!PhoneGap.UsePolling) {
