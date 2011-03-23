@@ -382,7 +382,7 @@ var CupcakeLocalStorage = function() {
 		}
 };
 PhoneGap.addConstructor(function() {
-	if (typeof window.openDatabase === "undefined") {
+	  if (typeof window.openDatabase === "undefined" || window.openDatabase("test", "1.0", "TestDB", 1000) == null) {
         navigator.openDatabase = window.openDatabase = DroidDB_openDatabase;
         window.droiddb = new DroidDB();
     }
