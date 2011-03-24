@@ -315,7 +315,13 @@ public class FileTransfer extends Plugin {
 
 		//------------------ read the SERVER RESPONSE
 		StringBuffer responseString = new StringBuffer("");
-		DataInputStream inStream = new DataInputStream ( conn.getInputStream() );
+		DataInputStream inStream;
+		try {
+			inStream = new DataInputStream ( conn.getInputStream() );
+		} catch(FileNotFoundException e) {
+			throw new IOException("Received error from server");
+		}
+		
 		String line;
 		while (( line = inStream.readLine()) != null) {
 			responseString.append(line);
