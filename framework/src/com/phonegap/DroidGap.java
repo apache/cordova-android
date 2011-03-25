@@ -10,6 +10,7 @@ package com.phonegap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.app.AlertDialog;
+import android.widget.EditText;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -773,7 +774,7 @@ public class DroidGap extends PhonegapActivity {
 			
         	// Calling PluginManager.exec() to call a native service using 
         	// prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
-        	if (defaultValue.substring(0, 4).equals("gap:")) {
+        	if (defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
         		JSONArray array;
         		try {
         			array = new JSONArray(defaultValue.substring(4));
@@ -814,9 +815,28 @@ public class DroidGap extends PhonegapActivity {
         	
         	// Show dialog
         	else {
-        		//@TODO:
-        		result.confirm("");
-        	}
+				final JsPromptResult res = result;
+				AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
+				dlg.setMessage(message);
+				final EditText input = new EditText(this.ctx);
+				dlg.setView(input);
+				dlg.setCancelable(false);
+				dlg.setPositiveButton(android.R.string.ok, 
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+						String usertext = input.getText().toString();
+						res.confirm(usertext);
+					}
+				});
+				dlg.setNegativeButton(android.R.string.cancel, 
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+						res.cancel();
+					}
+				});
+				dlg.create();
+				dlg.show();
+			}
         	return true;
         }
 
