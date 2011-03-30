@@ -6,7 +6,10 @@
  * Copyright (c) 2010, IBM Corporation
  */
 
-function Acceleration(x, y, z) {
+if (!PhoneGap.hasResource("accelerometer")) {
+PhoneGap.addResource("accelerometer");
+
+Acceleration = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
@@ -17,7 +20,7 @@ function Acceleration(x, y, z) {
  * This class provides access to device accelerometer data.
  * @constructor
  */
-function Accelerometer() {
+Accelerometer = function() {
 
     /**
      * The last known acceleration.  type=Acceleration()
@@ -119,3 +122,4 @@ PhoneGap.addConstructor(function() {
         navigator.accelerometer = new Accelerometer();
     }
 });
+};

@@ -12,6 +12,9 @@
  * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
  */
 
+if (!PhoneGap.hasResource("storage")) {
+PhoneGap.addResource("storage");
+
 /**
  * Storage object that is called by native code when performing queries.
  * PRIVATE METHOD
@@ -392,4 +395,4 @@ PhoneGap.addConstructor(function() {
         PhoneGap.waitForInitialization("cupcakeStorage");
     }
 });
-
+};

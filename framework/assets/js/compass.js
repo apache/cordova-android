@@ -6,11 +6,14 @@
  * Copyright (c) 2010, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("compass")) {
+PhoneGap.addResource("compass");
+
 /**
  * This class provides access to device Compass data.
  * @constructor
  */
-function Compass() {
+Compass = function() {
     /**
      * The last known Compass position.
      */
@@ -20,7 +23,7 @@ function Compass() {
      * List of compass watch timers
      */
     this.timers = {};
-}
+};
 
 Compass.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
 
@@ -113,3 +116,4 @@ PhoneGap.addConstructor(function() {
         navigator.compass = new Compass();
     }
 });
+};

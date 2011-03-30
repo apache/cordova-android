@@ -6,12 +6,15 @@
  * Copyright (c) 2010-2011, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("device")) {
+PhoneGap.addResource("device");
+
 /**
  * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
  * phone, etc.
  * @constructor
  */
-function Device() {
+Device = function() {
     this.available = PhoneGap.available;
     this.platform = null;
     this.version = null;
@@ -35,7 +38,7 @@ function Device() {
             console.log("Error initializing PhoneGap: " + e);
             alert("Error initializing PhoneGap: "+e);
         });
-}
+};
 
 /**
  * Get device info
@@ -97,3 +100,4 @@ Device.prototype.exitApp = function() {
 PhoneGap.addConstructor(function() {
     navigator.device = window.device = new Device();
 });
+};

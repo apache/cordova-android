@@ -6,10 +6,13 @@
  * Copyright (c) 2010-2011, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("app")) {
+PhoneGap.addResource("app");
+
 /**
  * Constructor
  */
-function App() {}
+App = function() {};
 
 /**
  * Clear the resource cache.
@@ -87,3 +90,4 @@ App.prototype.exitApp = function() {
 PhoneGap.addConstructor(function() {
     navigator.app = window.app = new App();
 });
+};

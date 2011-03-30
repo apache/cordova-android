@@ -6,18 +6,21 @@
  * Copyright (c) 2010, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("geolocation")) {
+PhoneGap.addResource("geolocation");
+
 /**
  * This class provides access to device GPS data.
  * @constructor
  */
-function Geolocation() {
+Geolocation = function() {
 
     // The last known GPS position.
     this.lastPosition = null;
 
     // Geolocation listeners
     this.listeners = {};
-}
+};
 
 /**
  * Position error object
@@ -25,10 +28,10 @@ function Geolocation() {
  * @param code
  * @param message
  */
-function PositionError(code, message) {
+PositionError = function(code, message) {
     this.code = code;
     this.message = message;
-}
+};
 
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
@@ -191,4 +194,4 @@ PhoneGap.addConstructor(function() {
         Geolocation.usingPhoneGap = true;
     }
 });
-
+};

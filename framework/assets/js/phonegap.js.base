@@ -6,6 +6,7 @@
  * Copyright (c) 2010-2011, IBM Corporation
  */
 
+if (typeof PhoneGap === "undefined") {
 
 /**
  * The order of events during page load and PhoneGap startup is as follows:
@@ -48,6 +49,30 @@ var PhoneGap = {
     }
 };
 
+/**
+ * List of resource files loaded by PhoneGap.
+ * This is used to ensure JS and other files are loaded only once.
+ */
+PhoneGap.resources = {base: true};
+
+/**
+ * Determine if resource has been loaded by PhoneGap
+ *
+ * @param name
+ * @return
+ */
+PhoneGap.hasResource = function(name) {
+    return PhoneGap.resources[name];
+};
+
+/**
+ * Add a resource to list of loaded resources by PhoneGap
+ *
+ * @param name
+ */
+PhoneGap.addResource = function(name) {
+    PhoneGap.resources[name] = true;
+};
 
 /**
  * Custom pub-sub channel that can have functions subscribed to it
@@ -905,4 +930,5 @@ var PluginManager = {
     addService: function(serviceType, className) {
         navigator.app.addService(serviceType, className);   
     }
+};
 };

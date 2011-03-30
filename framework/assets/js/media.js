@@ -6,6 +6,9 @@
  * Copyright (c) 2010, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("media")) {
+PhoneGap.addResource("media");
+
 /**
  * List of media objects.
  * PRIVATE
@@ -128,10 +131,10 @@ Media.MEDIA_MSG = ["None", "Starting", "Running", "Paused", "Stopped"];
  * This class contains information about any Media errors.
  * @constructor
  */
-function MediaError() {
+MediaError = function() {
     this.code = null;
     this.message = "";
-}
+};
 
 MediaError.MEDIA_ERR_ABORTED        = 1;
 MediaError.MEDIA_ERR_NETWORK        = 2;
@@ -198,4 +201,4 @@ Media.prototype.stopRecord = function() {
 Media.prototype.release = function() {
     PhoneGap.exec(null, null, "Media", "release", [this.id]);
 };
-
+};

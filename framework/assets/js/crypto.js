@@ -8,6 +8,9 @@
 
 // TODO: Needs to be commented
 
+if (!PhoneGap.hasResource("crypto")) {
+PhoneGap.addResource("crypto");
+
 var Crypto = function() {
 };
 
@@ -34,4 +37,4 @@ PhoneGap.addConstructor(function() {
         navigator.Crypto = new Crypto();
     }
 });
-
+};

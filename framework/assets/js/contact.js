@@ -6,6 +6,9 @@
  * Copyright (c) 2010, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("contact")) {
+PhoneGap.addResource("contact");
+
 /**
 * Contains information about a single contact.
 * @param {DOMString} id unique identifier
@@ -295,3 +298,4 @@ PhoneGap.addConstructor(function() {
         navigator.service.contacts = new Contacts();
     }
 });
+};

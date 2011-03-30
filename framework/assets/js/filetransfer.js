@@ -6,26 +6,29 @@
  * Copyright (c) 2010, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("filetransfer")) {
+PhoneGap.addResource("filetransfer");
+
 /**
  * FileTransfer uploads a file to a remote server.
  */
-function FileTransfer() {}
+FileTransfer = function() {};
 
 /**
  * FileUploadResult
  */
-function FileUploadResult() {
+FileUploadResult = function() {
     this.bytesSent = 0;
     this.responseCode = null;
     this.response = null;
-}
+};
 
 /**
  * FileTransferError
  */
-function FileTransferError() {
+FileTransferError = function() {
     this.code = null;
-}
+};
 
 FileTransferError.FILE_NOT_FOUND_ERR = 1;
 FileTransferError.INVALID_URL_ERR = 2;
@@ -69,9 +72,10 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
  * @param mimeType {String}  Mimetype of the uploaded file. Defaults to image/jpeg.
  * @param params {Object}    Object with key: value params to send to the server.
  */
-function FileUploadOptions(fileKey, fileName, mimeType, params) {
+FileUploadOptions = function(fileKey, fileName, mimeType, params) {
     this.fileKey = fileKey || null;
     this.fileName = fileName || null;
     this.mimeType = mimeType || null;
     this.params = params || null;
-}
+};
+};

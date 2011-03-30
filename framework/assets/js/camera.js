@@ -6,6 +6,9 @@
  * Copyright (c) 2010, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("camera")) {
+PhoneGap.addResource("camera");
+
 /**
  * This class provides access to the device camera.
  *
@@ -91,3 +94,4 @@ PhoneGap.addConstructor(function() {
         navigator.camera = new Camera();
     }
 });
+};
