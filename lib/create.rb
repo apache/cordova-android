@@ -1,5 +1,5 @@
 # Create
-# 
+#
 # Generates an Android project from a valid WWW directory and puts it in ../[PROJECT NAME]_android
 #
 class Create < Classic
@@ -8,35 +8,35 @@ class Create < Classic
     read_config
     build
   end
-  
+
   def guess_paths(path)
     # if no path is supplied uses current directory for project
     path = FileUtils.pwd if path.nil?
-    
+
     # if a www is found use it for the project
     path = File.join(path, 'www') if File.exists? File.join(path, 'www')
-    
+
     # defaults
     @name             = path.split("/").last.gsub('-','').gsub(' ','') # no dashses nor spaces
     @path             = File.join(path, '..', "#{ @name }_android")
-    @www              = path 
-    @pkg              = "com.phonegap.#{ @name }" 
+    @www              = path
+    @pkg              = "com.phonegap.#{ @name }"
     @android_sdk_path = Dir.getwd[0,1] != "/" ? `android-sdk-path.bat android.bat`.gsub('\\tools','').gsub('\\', '\\\\\\\\') : `which android`.gsub(/\/tools\/android$/,'').chomp
     @android_dir      = File.expand_path(File.dirname(__FILE__).gsub('lib',''))
     @framework_dir    = File.join(@android_dir, "framework")
     @icon             = File.join(@www, 'icon.png')
     @app_js_dir       = ''
     @content          = 'index.html'
-    
+
     # stop executation on errors
-    raise "Expected index.html in the following folder #{ path }.\nThe path is expected to be the directory droidgap create is run from or specified as a command line arg like droidgap create my_path." unless File.exists? File.join(path, 'index.html')    
+    raise "Expected index.html in the following folder #{ path }.\nThe path is expected to be the directory droidgap create is run from or specified as a command line arg like droidgap create my_path." unless File.exists? File.join(path, 'index.html')
     raise 'Could not find android in your PATH!' if @android_sdk_path.empty?
   end
 
   # reads in a config.xml file
   def read_config
     config_file = File.join(@www, 'config.xml')
-    
+
     if File.exists?(config_file)
       require 'rexml/document'
       f                 = File.new config_file
@@ -47,9 +47,9 @@ class Create < Classic
       @config[:icons]   = {}
       defaultIconSize   = 0
       doc.root.elements.each do |n|
-        @config[:name]        = n.text.gsub('-','').gsub(' ','') if n.name == 'name'
-        @config[:description] = n.text if n.name == 'description'
-        @config[:content]     = n.attributes["src"] if n.name == 'content'
+        @config[:name]             = n.text.gsub('-','').gsub(' ','') if n.name == 'name'
+        @config[:description]      = n.text if n.name == 'description'
+        @config[:content]          = n.attributes["src"] if n.name == 'content'
         if n.name == 'icon'
           if n.attributes["width"] == '72' && n.attributes["height"] == '72'
             @config[:icons]["drawable-hdpi".to_sym] = n.attributes["src"]
@@ -74,12 +74,12 @@ class Create < Classic
           end
         end
 
-        
+
         if n.name == "preference" && n.attributes["name"] == 'javascript_folder'
           @config[:js_dir] = n.attributes["value"]
-        end 
-      end 
-      
+        end
+      end
+
       # extract android specific stuff
       @config[:versionCode] = doc.elements["//android:versionCode"] ? doc.elements["//android:versionCode"].text : 3
       @config[:minSdkVersion] = doc.elements["//android:minSdkVersion"] ? doc.elements["//android:minSdkVersion"].text : 1
@@ -92,6 +92,6 @@ class Create < Classic
       @app_js_dir = @config[:js_dir] ? @config[:js_dir] : ''
       # sets the start page
       @content = @config[:content] ? @config[:content] : 'index.html'
-    end     
-  end 
+    end
+  end
 end

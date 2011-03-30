@@ -25,7 +25,8 @@ Position = function(coords, timestamp) {
 	this.timestamp = (timestamp !== 'undefined') ? timestamp : new Date().getTime();
 };
 
-Coordinates = function(lat, lng, alt, acc, head, vel, altacc) {
+/** @constructor */
+function Coordinates(lat, lng, alt, acc, head, vel, altacc) {
 	/**
 	 * The latitude of the position.
 	 */
@@ -53,8 +54,8 @@ Coordinates = function(lat, lng, alt, acc, head, vel, altacc) {
 	/**
 	 * The altitude accuracy of the position.
 	 */
-	this.altitudeAccuracy = (altacc !== 'undefined') ? altacc : null; 
-};
+	this.altitudeAccuracy = (altacc !== 'undefined') ? altacc : null;
+}
 
 /**
  * This class specifies the options for requesting position data.

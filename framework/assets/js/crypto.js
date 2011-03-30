@@ -11,6 +11,9 @@
 if (!PhoneGap.hasResource("crypto")) {
 PhoneGap.addResource("crypto");
 
+/**
+* @constructor
+*/
 var Crypto = function() {
 };
 

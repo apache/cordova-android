@@ -18,6 +18,7 @@ PhoneGap.mediaObjects = {};
 /**
  * Object that receives native callbacks.
  * PRIVATE
+ * @constructor
  */
 PhoneGap.Media = function() {};
 
@@ -66,6 +67,7 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
 /**
  * This class provides access to the device media, interfaces to both sound and video
  *
+ * @constructor
  * @param src                   The file name or url to play
  * @param successCallback       The callback to be called when the file is done playing or recording.
  *                                  successCallback() - OPTIONAL
@@ -174,8 +176,6 @@ Media.prototype.getDuration = function() {
 
 /**
  * Get position of audio.
- *
- * @return
  */
 Media.prototype.getCurrentPosition = function(success, fail) {
     PhoneGap.exec(success, fail, "Media", "getCurrentPositionAudio", [this.id]);

@@ -9,7 +9,8 @@
 if (!PhoneGap.hasResource("accelerometer")) {
 PhoneGap.addResource("accelerometer");
 
-Acceleration = function(x, y, z) {
+/** @constructor */
+function Acceleration(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;

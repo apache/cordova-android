@@ -11,22 +11,23 @@ PhoneGap.addResource("contact");
 
 /**
 * Contains information about a single contact.
+* @constructor
 * @param {DOMString} id unique identifier
 * @param {DOMString} displayName
 * @param {ContactName} name
 * @param {DOMString} nickname
-* @param {ContactField[]} phoneNumbers array of phone numbers
-* @param {ContactField[]} emails array of email addresses
-* @param {ContactAddress[]} addresses array of addresses
-* @param {ContactField[]} ims instant messaging user ids
-* @param {ContactOrganization[]} organizations
+* @param {Array.<ContactField>} phoneNumbers array of phone numbers
+* @param {Array.<ContactField>} emails array of email addresses
+* @param {Array.<ContactAddress>} addresses array of addresses
+* @param {Array.<ContactField>} ims instant messaging user ids
+* @param {Array.<ContactOrganization>} organizations
 * @param {DOMString} revision date contact was last updated
 * @param {DOMString} birthday contact's birthday
 * @param {DOMString} gender contact's gender
 * @param {DOMString} note user notes about contact
-* @param {ContactField[]} photos
-* @param {ContactField[]} categories
-* @param {ContactField[]} urls contact's web sites
+* @param {Array.<ContactField>} photos
+* @param {Array.<ContactField>} categories
+* @param {Array.<ContactField>} urls contact's web sites
 * @param {DOMString} timezone the contacts time zone
 */
 var Contact = function (id, displayName, name, nickname, phoneNumbers, emails, addresses,
@@ -53,7 +54,8 @@ var Contact = function (id, displayName, name, nickname, phoneNumbers, emails, a
 
 /**
  *  ContactError.
- *  An error code assigned by an implementation when an error has occurred
+ *  An error code assigned by an implementation when an error has occurreds
+ * @constructor
  */
 var ContactError = function() {
     this.code=null;
@@ -152,6 +154,7 @@ Contact.prototype.save = function(successCB, errorCB) {
 
 /**
 * Contact name.
+* @constructor
 * @param formatted
 * @param familyName
 * @param givenName
@@ -170,6 +173,7 @@ var ContactName = function(formatted, familyName, givenName, middle, prefix, suf
 
 /**
 * Generic contact field.
+* @constructor
 * @param {DOMString} id unique identifier, should only be set by native code
 * @param type
 * @param value
@@ -184,6 +188,7 @@ var ContactField = function(type, value, pref) {
 
 /**
 * Contact address.
+* @constructor
 * @param {DOMString} id unique identifier, should only be set by native code
 * @param formatted
 * @param streetAddress
@@ -204,6 +209,7 @@ var ContactAddress = function(formatted, streetAddress, locality, region, postal
 
 /**
 * Contact organization.
+* @constructor
 * @param {DOMString} id unique identifier, should only be set by native code
 * @param name
 * @param dept
@@ -222,6 +228,7 @@ var ContactOrganization = function(name, dept, title) {
 
 /**
 * Represents a group of Contacts.
+* @constructor
 */
 var Contacts = function() {
     this.inProgress = false;
@@ -258,10 +265,10 @@ Contacts.prototype.create = function(properties) {
 };
 
 /**
-* This function returns and array of contacts.  It is required as we need to convert raw 
-* JSON objects into concrete Contact objects.  Currently this method is called after 
+* This function returns and array of contacts.  It is required as we need to convert raw
+* JSON objects into concrete Contact objects.  Currently this method is called after
 * navigator.service.contacts.find but before the find methods success call back.
-* 
+*
 * @param jsonArray an array of JSON Objects that need to be converted to Contact objects.
 * @returns an array of Contact objects
 */
@@ -277,6 +284,7 @@ Contacts.prototype.cast = function(pluginResult) {
 
 /**
  * ContactFindOptions.
+ * @constructor
  * @param filter used to match contacts against
  * @param multiple boolean used to determine if more than one contact should be returned
  * @param updatedSince return only contact records that have been updated on or after the given time

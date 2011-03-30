@@ -11,6 +11,7 @@ PhoneGap.addResource("app");
 
 /**
  * Constructor
+ * @constructor
  */
 App = function() {};
 
@@ -23,7 +24,7 @@ App.prototype.clearCache = function() {
 
 /**
  * Load the url into the webview.
- * 
+ *
  * @param url           The URL to load
  * @param props         Properties that can be passed in to the activity:
  *      wait: int                           => wait msec before loading URL
@@ -33,7 +34,7 @@ App.prototype.clearCache = function() {
  *      loadUrlTimeoutValue: int            => time in msec to wait before triggering a timeout error
  *      errorUrl: URL                       => URL to load if there's an error loading specified URL with loadUrl().  Should be a local URL such as file:///android_asset/www/error.html");
  *      keepRunning: boolean                => enable app to keep running in background
- * 
+ *
  * Example:
  *      App app = new App();
  *      app.loadUrl("http://server/myapp/index.html", {wait:2000, loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
@@ -59,7 +60,7 @@ App.prototype.clearHistory = function() {
 
 /**
  * Add a class that implements a service.
- * 
+ *
  * @param serviceType
  * @param className
  */
@@ -70,10 +71,10 @@ App.prototype.addService = function(serviceType, className) {
 /**
  * Override the default behavior of the Android back button.
  * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.
- * 
+ *
  * Note: The user should not have to call this method.  Instead, when the user
  *       registers for the "backbutton" event, this is automatically done.
- * 
+ *
  * @param override		T=override, F=cancel override
  */
 App.prototype.overrideBackbutton = function(override) {

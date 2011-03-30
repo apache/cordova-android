@@ -18,6 +18,7 @@ PhoneGap.addResource("storage");
 /**
  * Storage object that is called by native code when performing queries.
  * PRIVATE METHOD
+ * @constructor
  */
 var DroidDB = function() {
     this.queryQueue = {};
@@ -105,6 +106,7 @@ DroidDB.prototype.fail = function(reason, id) {
 /**
  * Transaction object
  * PRIVATE METHOD
+ * @constructor
  */
 var DroidDB_Tx = function() {
 
@@ -165,7 +167,7 @@ DroidDB_Tx.prototype.queryComplete = function(id) {
         var i;
         for (i in this.queryList) {
             if (this.queryList.hasOwnProperty(i)) {
-                count++;   
+                count++;
             }
         }
         if (count === 0) {
@@ -205,6 +207,7 @@ DroidDB_Tx.prototype.queryFailed = function(id, reason) {
  * SQL query object
  * PRIVATE METHOD
  *
+ * @constructor
  * @param tx                The transaction object that this query belongs to
  */
 var DroidDB_Query = function(tx) {
@@ -260,6 +263,7 @@ DroidDB_Tx.prototype.executeSql = function(sql, params, successCallback, errorCa
 /**
  * SQL result set that is returned to user.
  * PRIVATE METHOD
+ * @constructor
  */
 DroidDB_Result = function() {
     this.rows = new DroidDB_Rows();
@@ -268,6 +272,7 @@ DroidDB_Result = function() {
 /**
  * SQL result set object
  * PRIVATE METHOD
+ * @constructor
  */
 DroidDB_Rows = function() {
     this.resultSet = [];    // results array
@@ -301,14 +306,17 @@ DroidDB_openDatabase = function(name, version, display_name, size) {
 
 
 /**
- * For browsers with no localStorage we emulate it with SQLite. Follows the w3c api. 
- * TODO: Do similar for sessionStorage. 
+ * For browsers with no localStorage we emulate it with SQLite. Follows the w3c api.
+ * TODO: Do similar for sessionStorage.
  */
 
+/**
+ * @constructor
+ */
 var CupcakeLocalStorage = function() {
 		try {
 
-			this.db = openDatabase('localStorage', '1.0', 'localStorage', 2621440);	
+			this.db = openDatabase('localStorage', '1.0', 'localStorage', 2621440);
 			var storage = {};
 			this.length = 0;
 			function setLength (length) {
@@ -326,8 +334,8 @@ var CupcakeLocalStorage = function() {
 						setLength(result.rows.length);
 						PhoneGap.initializationComplete("cupcakeStorage");
 					});
-					
-				}, 
+
+				},
 				function (err) {
 					alert(err.message);
 				}
@@ -344,7 +352,7 @@ var CupcakeLocalStorage = function() {
 					}
 				);
 			};
-			this.getItem = function(key) {			
+			this.getItem = function(key) {
 				return storage[key];
 			};
 			this.removeItem = function(key) {

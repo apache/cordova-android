@@ -11,6 +11,7 @@ PhoneGap.addResource("notification");
 
 /**
  * This class provides access to notifications on the device.
+ * @constructor
  */
 Notification = function() {
 };
