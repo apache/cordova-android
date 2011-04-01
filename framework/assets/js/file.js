@@ -228,6 +228,7 @@ FileReader.prototype.readAsText = function(file, encoding) {
 
             // If onload callback
             if (typeof me.onload === "function") {
+                me.onload({"type":"load", "target":me});
             }
 
             // DONE state
