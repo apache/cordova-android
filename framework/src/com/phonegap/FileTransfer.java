@@ -272,7 +272,7 @@ public class FileTransfer extends Plugin {
 			for (Iterator iter = params.keys(); iter.hasNext();) {
 				Object key = iter.next();
 				dos.writeBytes(LINE_START + BOUNDRY + LINE_END); 
-				dos.writeBytes("Content-Disposition: form-data; name=\"" +  key.toString() + "\"; ");
+				dos.writeBytes("Content-Disposition: form-data; name=\"" +  key.toString() + "\";");
 				dos.writeBytes(LINE_END + LINE_END); 
 				dos.writeBytes(params.getString(key.toString()));
 				dos.writeBytes(LINE_END); 
