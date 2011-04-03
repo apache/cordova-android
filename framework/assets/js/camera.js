@@ -78,6 +78,12 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     if (options.quality) {
         quality = this.options.quality;
     }
+    
+    var maxResolution = 0;
+    if (options.maxResolution) {
+    	maxResolution = this.options.maxResolution;
+    }
+    
     var destinationType = Camera.DestinationType.DATA_URL;
     if (this.options.destinationType) {
         destinationType = this.options.destinationType;
@@ -86,7 +92,7 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     if (typeof this.options.sourceType === "number") {
         sourceType = this.options.sourceType;
     }
-    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType]);
+    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, maxResolution]);
 };
 
 PhoneGap.addConstructor(function() {

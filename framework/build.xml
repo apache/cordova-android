@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="PhoneGap" default="help">
+<project name="PhoneGap" default="jar">
 
     <!-- LOAD VERSION -->
     <loadfile property="version" srcFile="../VERSION">
@@ -167,7 +167,7 @@
             "build-javascript" => "build-uncompressed-javascript".
     -->
     <target name="jar" depends="build-javascript, compile">
-      <jar jarfile="phonegap.${version}.jar" basedir="bin/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
+      <jar jarfile="phonegap.${version}.jar" basedir="out/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
     </target>
 
     <target name="phonegap_debug" depends="build-javascript, debug">
