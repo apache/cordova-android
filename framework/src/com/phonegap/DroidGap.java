@@ -601,6 +601,10 @@ public class DroidGap extends PhonegapActivity {
      */
     protected void onPause() {
         super.onPause();
+        if (this.appView == null) {
+        	return;
+        }
+        
        	// Send pause event to JavaScript
        	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
 
@@ -621,6 +625,9 @@ public class DroidGap extends PhonegapActivity {
      */
     protected void onResume() {
         super.onResume();
+        if (this.appView == null) {
+        	return;
+        }
 
        	// Send resume event to JavaScript
        	this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
@@ -649,6 +656,8 @@ public class DroidGap extends PhonegapActivity {
     public void onDestroy() {
     	super.onDestroy();
     	
+        if (this.appView != null) {
+    	
     	// Make sure pause event is sent if onPause hasn't been called before onDestroy
        	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
 
@@ -664,6 +673,7 @@ public class DroidGap extends PhonegapActivity {
     	if (this.callbackServer != null) {
     		this.callbackServer.destroy();
     	}
+        }
     }
 
     /**
@@ -1099,6 +1109,9 @@ public class DroidGap extends PhonegapActivity {
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (this.appView == null) {
+        	return super.onKeyDown(keyCode, event);
+        }
 
     	// If back key
     	if (keyCode == KeyEvent.KEYCODE_BACK) {
