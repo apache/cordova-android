@@ -244,7 +244,9 @@ FileReader.prototype.readAsText = function(file, encoding) {
             }
 
             // Save error
-            me.error = e;
+		    var fileError = new FileError();
+		    fileError.code = e;
+		    me.error = fileError;
 
             // If onerror callback
             if (typeof me.onerror === "function") {
@@ -326,7 +328,9 @@ FileReader.prototype.readAsDataURL = function(file) {
             }
 
             // Save error
-            me.error = e;
+            var fileError = new FileError();
+            fileError.code = e;
+            me.error = fileError;
 
             // If onerror callback
             if (typeof me.onerror === "function") {
@@ -501,7 +505,9 @@ FileWriter.prototype.write = function(text) {
             }
 
             // Save error
-            me.error = e;
+            var fileError = new FileError();
+            fileError.code = e;
+            me.error = fileError;
 
             // If onerror callback
             if (typeof me.onerror === "function") {
@@ -614,7 +620,9 @@ FileWriter.prototype.truncate = function(size) {
             }
 
             // Save error
-            me.error = e;
+            var fileError = new FileError();
+            fileError.code = e;
+            me.error = fileError;
 
             // If onerror callback
             if (typeof me.onerror === "function") {
