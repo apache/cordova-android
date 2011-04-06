@@ -385,9 +385,21 @@ var CupcakeLocalStorage = function() {
 		}
 };
 PhoneGap.addConstructor(function() {
-	  if (typeof window.openDatabase === "undefined" || window.openDatabase("test", "1.0", "TestDB", 1000) == null) {
+    var setupDroidDB = function() {
         navigator.openDatabase = window.openDatabase = DroidDB_openDatabase;
         window.droiddb = new DroidDB();
+    }
+	  if (typeof window.openDatabase === "undefined") {
+        setupDroidDB();
+    } else {
+        window.openDatabase_orig = window.openDatabase;
+        window.openDatabase = function(name, version, desc, size) {
+            var db = window.openDatabase_orig(name, version, desc, size);
+            if (db == null) {
+                setupDroidDB();
+                return DroidDB_openDatabas/e(name, version, desc, size);
+            } else return db;
+        }
     }
     
     if (typeof window.localStorage === "undefined") {
