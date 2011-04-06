@@ -397,7 +397,7 @@ PhoneGap.addConstructor(function() {
             var db = window.openDatabase_orig(name, version, desc, size);
             if (db == null) {
                 setupDroidDB();
-                return DroidDB_openDatabas/e(name, version, desc, size);
+                return DroidDB_openDatabase(name, version, desc, size);
             } else return db;
         }
     }
