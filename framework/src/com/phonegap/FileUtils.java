@@ -836,49 +836,19 @@ public class FileUtils extends Plugin {
 	 * @return			T=returns value
 	 */
 	public boolean isSynch(String action) {		
-		if (action.equals("readAsText")) {
-			return false;
-		}
-		else if (action.equals("readAsDataURL")) {
-			return false;
-		}
-		else if (action.equals("writeAsText")) {
-			return false;
-		}
-		else if (action.equals("requestFileSystem")) {
-			return false;
-		}
-		else if (action.equals("getMetadata")) {
-			return false;
-		}
-		else if (action.equals("toURI")) {
-			return false;
-		}
-		else if (action.equals("getParent")) {
-			return false;
-		}
-		else if (action.equals("getFile")) {
-			return false;
-		}
-		else if (action.equals("getDirectory")) {
-			return false;
-		}
-		else if (action.equals("remove")) {
-			return false;
-		}
-		else if (action.equals("removeRecursively")) {
-			return false;
-		}
-		else if (action.equals("readEntries")) {
-			return false;
-		}
-		else if (action.equals("getFileMetadata")) {
-			return false;
-		}
-		else if (action.equals("resolveLocalFileSystemURI")) {
-			return false;
-		}
-		return true;
+		if (action.equals("testSaveLocationExists")) {
+			return true;
+	    }  
+		else if (action.equals("getFreeDiskSpace")) {
+			return true;
+	    }
+		else if (action.equals("testFileExists")) {
+			return true;
+	    }
+		else if (action.equals("testDirectoryExists")) {
+			return true;
+	    }
+		return false;
 	}
 
     //--------------------------------------------------------------------------
