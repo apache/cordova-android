@@ -389,7 +389,7 @@ PhoneGap.addConstructor(function() {
         navigator.openDatabase = window.openDatabase = DroidDB_openDatabase;
         window.droiddb = new DroidDB();
     }
-	  if (typeof window.openDatabase === "undefined") {
+	if ((typeof window.openDatabase === "undefined") || (navigator.userAgent.indexOf("Android 3.0") != -1)) {
         setupDroidDB();
     } else {
         window.openDatabase_orig = window.openDatabase;

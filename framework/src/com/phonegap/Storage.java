@@ -21,6 +21,12 @@ import android.database.sqlite.*;
  */
 public class Storage extends Plugin {
 
+	// Data Definition Language
+	private static final String ALTER = "alter";
+	private static final String CREATE = "create";
+	private static final String DROP = "drop";
+	private static final String TRUNCATE = "truncate";
+	
 	SQLiteDatabase myDb = null; // Database object
 	String path = null; // Database path
 	String dbName = null; // Database name
@@ -83,7 +89,7 @@ public class Storage extends Plugin {
 	 * @return T=returns value
 	 */
 	public boolean isSynch(String action) {
-		return false;
+		return true;
 	}
 
 	/**
@@ -159,18 +165,37 @@ public class Storage extends Plugin {
 	 */
 	public void executeSql(String query, String[] params, String tx_id) {
 		try {
-			Cursor myCursor = this.myDb.rawQuery(query, params);
-			this.processResults(myCursor, tx_id);
-			myCursor.close();
-		} catch (SQLiteException ex) {
+			if (isDDL(query)) {
+				this.myDb.execSQL(query);
+				this.sendJavascript("droiddb.completeQuery('" + tx_id + "', '');");
+			} 
+			else {
+				Cursor myCursor = this.myDb.rawQuery(query, params);
+				this.processResults(myCursor, tx_id);
+				myCursor.close();
+			}
+		} 
+		catch (SQLiteException ex) {
 			ex.printStackTrace();
-			System.out
-					.println("Storage.executeSql(): Error=" + ex.getMessage());
-
+			System.out.println("Storage.executeSql(): Error=" +  ex.getMessage());
+			
 			// Send error message back to JavaScript
-			this.sendJavascript("droiddb.fail('" + ex.getMessage() + "','"
-					+ tx_id + "');");
+			this.sendJavascript("droiddb.fail('" + ex.getMessage() + "','" + tx_id + "');");
 		}
+	}
+
+	/**
+	 * Checks to see the the query is a Data Definintion command
+	 * 
+	 * @param query to be executed
+	 * @return true if it is a DDL command, false otherwise
+	 */
+	private boolean isDDL(String query) {
+		String cmd = query.toLowerCase();
+		if (cmd.startsWith(DROP) || cmd.startsWith(CREATE) || cmd.startsWith(ALTER) || cmd.startsWith(TRUNCATE)) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
