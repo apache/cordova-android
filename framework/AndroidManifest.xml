@@ -8,6 +8,7 @@
     	android:resizeable="true"
     	android:anyDensity="true"
     	/>
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -23,6 +24,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />   
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <application android:icon="@drawable/icon" android:label="@string/app_name"
     	android:debuggable="true">
         <activity android:name=".StandAlone"
@@ -33,6 +37,7 @@
             </intent-filter>
         </activity>
     </application>
-	<uses-sdk android:minSdkVersion="2" />
+
+	  <uses-sdk android:minSdkVersion="2" />
 
 </manifest> 
