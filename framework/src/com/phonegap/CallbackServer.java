@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URLEncoder;
 import java.util.LinkedList;
 
 /**
@@ -221,7 +222,10 @@ public class CallbackServer implements Runnable {
 								 }
 								 else {
 									 //System.out.println("CallbackServer -- sending item");
-									 response = "HTTP/1.1 200 OK\r\n\r\n"+this.getJavascript();
+									 response = "HTTP/1.1 200 OK\r\n\r\n";
+									 String js = this.getJavascript();
+									 if (js != null)
+										 response += URLEncoder.encode(js, "UTF-8");
 								 }
 							 }
 							 else {

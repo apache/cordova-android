@@ -760,7 +760,8 @@ PhoneGap.JSCallback = function() {
             // If callback has JavaScript statement to execute
             if (xmlhttp.status === 200) {
 
-                var msg = xmlhttp.responseText;
+                // Need to url decode the response and replace %20 with a space
+                var msg = decodeURIComponent(xmlhttp.responseText.replace(/\+/g, '%20'));
                 setTimeout(function() {
                     try {
                         var t = eval(msg);
@@ -919,7 +920,6 @@ PhoneGap.includeJavascript = function(jsfile, successCallback) {
     id.appendChild(el);
 };
 
-
 /**
  * This class is provided to bridge the gap between the way plugins were setup in 0.9.3 and 0.9.4.  
  * Users should be calling navigator.add.addService() instead of PluginManager.addService().
@@ -931,4 +931,5 @@ var PluginManager = {
         navigator.app.addService(serviceType, className);   
     }
 };
+
 };
