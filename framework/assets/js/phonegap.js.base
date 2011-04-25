@@ -119,7 +119,7 @@ PhoneGap.Channel.prototype.subscribeOnce = function(f, c) {
         _this.unsubscribe(g);
     };
     if (this.fired) {
-	    if (typeof c === "object" && f instanceof Function) { f = PhoneGap.close(c, f); }
+        if (typeof c === "object" && f instanceof Function) { f = PhoneGap.close(c, f); }
         f.apply(this, this.fireArgs);
     } else {
         g = this.subscribe(m);
@@ -258,6 +258,12 @@ PhoneGap.onPhoneGapReady = new PhoneGap.Channel('onPhoneGapReady');
 PhoneGap.onPhoneGapInfoReady = new PhoneGap.Channel('onPhoneGapInfoReady');
 
 /**
+ * onPhoneGapConnectionReady channel is fired when the PhoneGap connection properties
+ * has been set.
+ */
+PhoneGap.onPhoneGapConnectionReady = new PhoneGap.Channel('onPhoneGapConnectionReady');
+
+/**
  * onResume channel is fired when the PhoneGap native code
  * resumes.
  */
@@ -293,7 +299,7 @@ PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
 
 // Array of channels that must fire before "deviceready" is fired
-PhoneGap.deviceReadyChannelsArray = [ PhoneGap.onPhoneGapReady, PhoneGap.onPhoneGapInfoReady];
+PhoneGap.deviceReadyChannelsArray = [ PhoneGap.onPhoneGapReady, PhoneGap.onPhoneGapInfoReady, PhoneGap.onPhoneGapConnectionReady];
 
 // Hashtable of user defined channels that must also fire before "deviceready" is fired
 PhoneGap.deviceReadyChannelsMap = {};
@@ -488,37 +494,37 @@ PhoneGap.stringify = function(args) {
  */
 PhoneGap.clone = function(obj) {
     var i, retVal;
-	if(!obj) { 
-		return obj;
-	}
-	
-	if(obj instanceof Array){
-		retVal = [];
-		for(i = 0; i < obj.length; ++i){
-			retVal.push(PhoneGap.clone(obj[i]));
-		}
-		return retVal;
-	}
-	
-	if (obj instanceof Function) {
-		return obj;
-	}
-	
-	if(!(obj instanceof Object)){
-		return obj;
-	}
-	
+    if(!obj) { 
+        return obj;
+    }
+    
+    if(obj instanceof Array){
+        retVal = [];
+        for(i = 0; i < obj.length; ++i){
+            retVal.push(PhoneGap.clone(obj[i]));
+        }
+        return retVal;
+    }
+    
+    if (obj instanceof Function) {
+        return obj;
+    }
+    
+    if(!(obj instanceof Object)){
+        return obj;
+    }
+    
     if (obj instanceof Date) {
         return obj;
     }
     
-	retVal = {};
-	for(i in obj){
-		if(!(i in retVal) || retVal[i] !== obj[i]) {
-			retVal[i] = PhoneGap.clone(obj[i]);
-		}
-	}
-	return retVal;
+    retVal = {};
+    for(i in obj){
+        if(!(i in retVal) || retVal[i] !== obj[i]) {
+            retVal[i] = PhoneGap.clone(obj[i]);
+        }
+    }
+    return retVal;
 };
 
 PhoneGap.callbackId = 0;

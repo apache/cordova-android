@@ -59,9 +59,66 @@ Network.prototype.isReachable = function(uri, callback, options) {
     PhoneGap.exec(callback, null, "Network Status", "isReachable", [uri, isIpAddress]);
 };
 
+/**
+ * This class contains information about the current network Connection.
+ * @constructor
+ */
+Connection = function() {
+    this.type = null;
+    this.homeNW = null;
+    this.currentNW = null;
+
+    var me = this;
+    this.getInfo(
+        function(info) {
+            me.type = info.type;
+            me.homeNW = info.homeNW;
+            me.currentNW = info.currentNW;
+            PhoneGap.onPhoneGapConnectionReady.fire();
+        },
+        function(e) {
+            console.log("Error initializing Network Connection: " + e);
+        });
+};
+
+Connection.UNKNOWN = 0;
+Connection.ETHERNET = 1;
+Connection.WIFI = 2;
+Connection.CELL_2G = 3;
+Connection.CELL_3G = 4;
+Connection.CELL_4G = 5;
+Connection.NONE = 20;
+
+/**
+ * Get connection info
+ *
+ * @param {Function} successCallback The function to call when the Connection data is available
+ * @param {Function} errorCallback The function to call when there is an error getting the Connection data. (OPTIONAL)
+ */
+Connection.prototype.getInfo = function(successCallback, errorCallback) {
+    // successCallback required
+    if (typeof successCallback !== "function") {
+        console.log("Connection Error: successCallback is not a function");
+        return;
+    }
+
+    // errorCallback optional
+    if (errorCallback && (typeof errorCallback !== "function")) {
+        console.log("Connection Error: errorCallback is not a function");
+        return;
+    }
+
+    // Get info
+    PhoneGap.exec(successCallback, errorCallback, "Network Status", "getConnectionInfo", []);
+};
+
+
 PhoneGap.addConstructor(function() {
     if (typeof navigator.network === "undefined") {
         navigator.network = new Network();
+    }
+    if (typeof navigator.connection === "undefined") {
+        navigator.connection = new Connection();
     }
 });
 };
