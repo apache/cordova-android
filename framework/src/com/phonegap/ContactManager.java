@@ -46,7 +46,14 @@ public class ContactManager extends Plugin {
 				return new PluginResult(status, res, "navigator.service.contacts.cast");
 			}
 			else if (action.equals("save")) {
-				return new PluginResult(status, contactAccessor.save(args.getJSONObject(0)));
+				if (contactAccessor.save(args.getJSONObject(0))) {
+					return new PluginResult(status, result);					
+				}
+				else {
+					JSONObject r = new JSONObject();
+					r.put("code", 0);
+					return new PluginResult(PluginResult.Status.ERROR, r);
+				}
 			}
 			else if (action.equals("remove")) {
 				if (contactAccessor.remove(args.getString(0))) {
