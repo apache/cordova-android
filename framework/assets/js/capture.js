@@ -24,9 +24,9 @@ CaptureError.CAPTURE_NOT_SUPPORTED = 20;
  * The Capture interface exposes an interface to the camera and microphone of the hosting device.
  */
 function Capture() {
-	this.supportedAudioFormats = [];
-	this.supportedImageFormats = [];
-	this.supportedVideoFormats = [];
+	this.supportedAudioModes = [];
+	this.supportedImageModes = [];
+	this.supportedVideoModes = [];
 };
 
 /**
