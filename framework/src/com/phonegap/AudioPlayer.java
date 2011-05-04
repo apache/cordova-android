@@ -238,7 +238,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	 */
 	public void seekToPlaying(int milliseconds) {
 		if (this.mPlayer != null) {
-			this.mPlayer.seekTo(milliseconds);
+		    this.mPlayer.seekTo(milliseconds);
 		}
 	}
 	
