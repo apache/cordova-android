@@ -156,6 +156,13 @@ Media.prototype.stop = function() {
 };
 
 /**
+ * Seek or jump to a new time in the track.
+ */
+Media.prototype.seekTo = function(milliseconds) {
+    PhoneGap.exec(null, null, "Media", "seekToAudio", [this.id, milliseconds]);
+};
+
+/**
  * Pause playing audio file.
  */
 Media.prototype.pause = function() {
