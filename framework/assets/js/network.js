@@ -96,18 +96,6 @@ Connection.NONE = 20;
  * @param {Function} errorCallback The function to call when there is an error getting the Connection data. (OPTIONAL)
  */
 Connection.prototype.getInfo = function(successCallback, errorCallback) {
-    // successCallback required
-    if (typeof successCallback !== "function") {
-        console.log("Connection Error: successCallback is not a function");
-        return;
-    }
-
-    // errorCallback optional
-    if (errorCallback && (typeof errorCallback !== "function")) {
-        console.log("Connection Error: errorCallback is not a function");
-        return;
-    }
-
     // Get info
     PhoneGap.exec(successCallback, errorCallback, "Network Status", "getConnectionInfo", []);
 };
@@ -117,8 +105,13 @@ PhoneGap.addConstructor(function() {
     if (typeof navigator.network === "undefined") {
         navigator.network = new Network();
     }
+    // No native connection object for Android 2.1 or earlier, so use PhoneGap connection
     if (typeof navigator.connection === "undefined") {
         navigator.connection = new Connection();
     }
+	// If Android 2.2+ then fire the connection ready event
+	else {
+		PhoneGap.onPhoneGapConnectionReady.fire();
+	}
 });
 };
