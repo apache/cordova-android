@@ -1033,19 +1033,21 @@ FileEntry.prototype.toURI = function(mimeType) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
-	var writer = new FileWriter(this.fullPath);
-
-    if (writer.fileName == null || writer.fileName == "") {
-		if (typeof errorCallback == "function") {
-			errorCallback({
-				"code": FileError.INVALID_STATE_ERR
-			});
-		}
-	}
-
-    if (typeof successCallback == "function") {
-        successCallback(writer);
-    }
+    this.file(function(filePointer) {
+        var writer = new FileWriter(filePointer);
+    
+        if (writer.fileName == null || writer.fileName == "") {
+            if (typeof errorCallback == "function") {
+                errorCallback({
+                    "code": FileError.INVALID_STATE_ERR
+                });
+            }
+        }
+    
+        if (typeof successCallback == "function") {
+            successCallback(writer);
+        }       
+    }, errorCallback);
 };
 
 /**
