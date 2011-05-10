@@ -125,8 +125,8 @@ public class DroidGap extends PhonegapActivity {
 	private String baseUrl;
 
 	// Plugin to call when activity result is received
-	private Plugin activityResultCallback = null;
-	private boolean activityResultKeepRunning;
+	protected Plugin activityResultCallback = null;
+	protected boolean activityResultKeepRunning;
 
 	// Flag indicates that a loadUrl timeout occurred
 	private int loadUrlTimeout = 0;
@@ -202,11 +202,11 @@ public class DroidGap extends PhonegapActivity {
 
         WebViewReflect.checkCompatibility();
 
-        if (android.os.Build.VERSION.RELEASE.startsWith("2.")) {
-        	this.appView.setWebChromeClient(new EclairClient(DroidGap.this));        	
+        if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {
+        	this.appView.setWebChromeClient(new GapClient(DroidGap.this));
         }
         else {
-        	this.appView.setWebChromeClient(new GapClient(DroidGap.this));
+        	this.appView.setWebChromeClient(new EclairClient(DroidGap.this));        	
         }
            
         this.setWebViewClient(this.appView, new GapViewClient(this));
@@ -850,13 +850,13 @@ public class DroidGap extends PhonegapActivity {
 			}
         	return true;
         }
-
+        
     }
 
     /**
      * WebChromeClient that extends GapClient with additional support for Android 2.X
      */
-    public final class EclairClient extends GapClient {
+    public class EclairClient extends GapClient {
 
     	private String TAG = "PhoneGapLog";
     	private long MAX_QUOTA = 100 * 1024 * 1024;
@@ -910,6 +910,12 @@ public class DroidGap extends PhonegapActivity {
     	}
 
     	@Override
+    	/**
+    	 * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin. 
+    	 * 
+    	 * @param origin
+    	 * @param callback
+    	 */
     	public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
     		// TODO Auto-generated method stub
     		super.onGeolocationPermissionsShowPrompt(origin, callback);
