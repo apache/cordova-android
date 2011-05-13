@@ -90,7 +90,7 @@ Capture.prototype.captureVideo = function(successCallback, errorCallback, option
  */
 function ConfigurationData() {
     // The ASCII-encoded string in lower case representing the media type. 
-    this.type; 
+    this.type = null; 
     // The height attribute represents height of the image or video in pixels. 
     // In the case of a sound clip this attribute has value 0. 
     this.height = 0;
@@ -106,7 +106,7 @@ function CaptureImageOptions() {
     // Upper limit of images user can take. Value must be equal or greater than 1.
     this.limit = 1; 
     // The selected image mode. Must match with one of the elements in supportedImageModes array.
-    this.mode; 
+    this.mode = null; 
 };
 
 /**
@@ -114,11 +114,11 @@ function CaptureImageOptions() {
  */
 function CaptureVideoOptions() {
     // Upper limit of videos user can record. Value must be equal or greater than 1.
-    this.limit;
+    this.limit = 1;
     // Maximum duration of a single video clip in seconds.
-    this.duration;
+    this.duration = 0;
     // The selected video mode. Must match with one of the elements in supportedVideoModes array.
-    this.mode;
+    this.mode = null;
 };
 
 /**
@@ -126,11 +126,11 @@ function CaptureVideoOptions() {
  */
 function CaptureAudioOptions() {
     // Upper limit of sound clips user can record. Value must be equal or greater than 1.
-    this.limit;
+    this.limit = 1;
     // Maximum duration of a single sound clip in seconds.
-    this.duration;
+    this.duration = 0;
     // The selected audio mode. Must match with one of the elements in supportedAudioModes array.
-    this.mode;
+    this.mode = null;
 };
 
 /**
