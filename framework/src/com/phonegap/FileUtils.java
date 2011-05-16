@@ -97,48 +97,23 @@ public class FileUtils extends Plugin {
 			        return new PluginResult(status, b);
 			    }
 				else if (action.equals("readAsText")) {
-					try {
-						String s = this.readAsText(args.getString(0), args.getString(1));
-				        return new PluginResult(status, s);
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					String s = this.readAsText(args.getString(0), args.getString(1));
+			        return new PluginResult(status, s);
 			    }
 				else if (action.equals("readAsDataURL")) {
-					try {
-						String s = this.readAsDataURL(args.getString(0));
-				        return new PluginResult(status, s);
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					String s = this.readAsDataURL(args.getString(0));
+			        return new PluginResult(status, s);
 			    }
 				else if (action.equals("writeAsText")) {
-					try {
-						this.writeAsText(args.getString(0), args.getString(1), args.getBoolean(2));
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					this.writeAsText(args.getString(0), args.getString(1), args.getBoolean(2));
 			    }
 				else if (action.equals("write")) {
-					try {
-						long fileSize = this.write(args.getString(0), args.getString(1), args.getLong(2));
-						return new PluginResult(status, fileSize);
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
+					return new PluginResult(status, fileSize);
 			    }
 				else if (action.equals("truncate")) {
-					try {
-						long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
-						return new PluginResult(status, fileSize);
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
+					return new PluginResult(status, fileSize);
 			    }
 				else if (action.equals("requestFileSystem")) {
 					long size = args.optLong(1);
@@ -945,15 +920,25 @@ public class FileUtils extends Plugin {
      * @param offset			The position to begin writing the file.			
      * @throws FileNotFoundException, IOException
      */
-    public long write(String filename, String data, long offset) throws FileNotFoundException, IOException {
-    	RandomAccessFile file = new RandomAccessFile(filename, "rw");
-    	file.seek(offset);
-    	file.writeBytes(data);
-    	file.close();
+    /**/
+    public long write(String filename, String data, int offset) throws FileNotFoundException, IOException {
+    	boolean append = false;
+    	if (offset > 0) {
+    		this.truncateFile(filename, offset);
+    		append = true;
+    	}
+    	
+   		byte [] rawData = data.getBytes();
+   		ByteArrayInputStream in = new ByteArrayInputStream(rawData);    			    			
+   		FileOutputStream out = new FileOutputStream(filename, append);
+   		byte buff[] = new byte[rawData.length];
+   		in.read(buff, 0, buff.length);
+   		out.write(buff, 0, rawData.length);
+   		out.flush();
+   		out.close();    			
     	
     	return data.length();
     }
-    
     
     /**
      * Truncate the file to size

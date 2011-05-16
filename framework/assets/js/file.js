@@ -249,9 +249,7 @@ FileReader.prototype.readAsText = function(file, encoding) {
             }
 
             // Save error
-		    var fileError = new FileError();
-		    fileError.code = e;
-		    me.error = fileError;
+		    me.error = e;
 
             // If onerror callback
             if (typeof me.onerror === "function") {
@@ -333,9 +331,7 @@ FileReader.prototype.readAsDataURL = function(file) {
             }
 
             // Save error
-            var fileError = new FileError();
-            fileError.code = e;
-            me.error = fileError;
+            me.error = e;
 
             // If onerror callback
             if (typeof me.onerror === "function") {
@@ -482,10 +478,10 @@ FileWriter.prototype.write = function(text) {
                 return;
             }
 
-            // So if the user wants to keep appending to the file
-            me.length = Math.max(me.length, me.position + r);
             // position always increases by bytes written because file would be extended
             me.position += r;
+            // The length of the file is now where we are done writing.
+            me.length = me.position;
 
             // If onwrite callback
             if (typeof me.onwrite === "function") {
@@ -511,9 +507,7 @@ FileWriter.prototype.write = function(text) {
             }
 
             // Save error
-            var fileError = new FileError();
-            fileError.code = e;
-            me.error = fileError;
+            me.error = e;
 
             // If onerror callback
             if (typeof me.onerror === "function") {
@@ -626,9 +620,7 @@ FileWriter.prototype.truncate = function(size) {
             }
 
             // Save error
-            var fileError = new FileError();
-            fileError.code = e;
-            me.error = fileError;
+            me.error = e;
 
             // If onerror callback
             if (typeof me.onerror === "function") {
