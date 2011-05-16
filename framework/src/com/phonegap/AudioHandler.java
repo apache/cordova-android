@@ -63,6 +63,9 @@ public class AudioHandler extends Plugin {
 			else if (action.equals("startPlayingAudio")) {
 				this.startPlayingAudio(args.getString(0), args.getString(1));
 			}
+			else if (action.equals("seekToAudio")) {
+				this.seekToAudio(args.getString(0), args.getInt(1));
+			}
 			else if (action.equals("pausePlayingAudio")) {
 				this.pausePlayingAudio(args.getString(0));
 			}
@@ -181,6 +184,20 @@ public class AudioHandler extends Plugin {
     	audio.startPlaying(file);
     }
 
+    /**
+     * Seek to a location.
+     * 
+     * 
+	 * @param id				The id of the audio player
+	 * @param miliseconds		int: number of milliseconds to skip 1000 = 1 second
+     */
+    public void seekToAudio(String id, int milliseconds) {
+    	AudioPlayer audio = this.players.get(id);
+    	if (audio != null) {
+    		audio.seekToPlaying(milliseconds);
+    	}
+    }
+    
     /**
      * Pause playing.
      * 

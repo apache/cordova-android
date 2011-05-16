@@ -234,6 +234,15 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	} 
 
 	/**
+	 * Seek or jump to a new time in the track.
+	 */
+	public void seekToPlaying(int milliseconds) {
+		if (this.mPlayer != null) {
+		    this.mPlayer.seekTo(milliseconds);
+		}
+	}
+	
+	/**
 	 * Pause playing.
 	 */
 	public void pausePlaying() {
