@@ -397,17 +397,29 @@ PhoneGap.addConstructor(function() {
         navigator.openDatabase = window.openDatabase = DroidDB_openDatabase;
         window.droiddb = new DroidDB();
     }
-	if ((typeof window.openDatabase === "undefined") || (navigator.userAgent.indexOf("Android 3.") != -1)) {
+    if (typeof window.openDatabase === "undefined") {
         setupDroidDB();
     } else {
         window.openDatabase_orig = window.openDatabase;
-        window.openDatabase = function(name, version, desc, size) {
-            var db = window.openDatabase_orig(name, version, desc, size);
-            if (db == null) {
-                setupDroidDB();
-                return DroidDB_openDatabase(name, version, desc, size);
-            } else return db;
-        }
+        window.openDatabase = function(name, version, desc, size){
+			// Some versions of Android will throw a SECURITY_ERR so we need 
+			// to catch the exception and seutp our own DB handling.
+			var db = null;
+			try {
+				db = window.openDatabase_orig(name, version, desc, size);
+			} 
+			catch (ex) {
+				db = null;
+			}
+			
+			if (db == null) {
+				setupDroidDB();
+				return DroidDB_openDatabase(name, version, desc, size);
+			}
+			else {
+				return db;
+			}
+		}
     }
     
     if (typeof window.localStorage === "undefined") {
