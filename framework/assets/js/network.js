@@ -105,13 +105,8 @@ PhoneGap.addConstructor(function() {
     if (typeof navigator.network === "undefined") {
         navigator.network = new Network();
     }
-    // No native connection object for Android 2.1 or earlier, so use PhoneGap connection
-    if (typeof navigator.connection === "undefined") {
-        navigator.connection = new Connection();
+    if (typeof navigator.network.connection === "undefined") {
+        navigator.network.connection = new Connection();
     }
-	// If Android 2.2+ then fire the connection ready event
-	else {
-		PhoneGap.onPhoneGapConnectionReady.fire();
-	}
 });
 };
