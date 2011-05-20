@@ -14,7 +14,7 @@ PhoneGap.addResource("device");
  * phone, etc.
  * @constructor
  */
-Device = function() {
+var Device = function() {
     this.available = PhoneGap.available;
     this.platform = null;
     this.version = null;
@@ -72,7 +72,7 @@ Device.prototype.getInfo = function(successCallback, errorCallback) {
  */
 Device.prototype.overrideBackButton = function() {
 	console.log("Device.overrideBackButton() is deprecated.  Use App.overrideBackbutton(true).");
-	app.overrideBackbutton(true);
+	navigator.app.overrideBackbutton(true);
 };
 
 /*
@@ -83,7 +83,7 @@ Device.prototype.overrideBackButton = function() {
  */
 Device.prototype.resetBackButton = function() {
 	console.log("Device.resetBackButton() is deprecated.  Use App.overrideBackbutton(false).");
-	app.overrideBackbutton(false);
+	navigator.app.overrideBackbutton(false);
 };
 
 /*
@@ -94,7 +94,7 @@ Device.prototype.resetBackButton = function() {
  */
 Device.prototype.exitApp = function() {
 	console.log("Device.exitApp() is deprecated.  Use App.exitApp().");
-	app.exitApp();
+	navigator.app.exitApp();
 };
 
 PhoneGap.addConstructor(function() {
@@ -102,4 +102,4 @@ PhoneGap.addConstructor(function() {
         navigator.device = window.device = new Device();
     }
 });
-};
+}

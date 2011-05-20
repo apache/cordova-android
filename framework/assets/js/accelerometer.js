@@ -3,25 +3,25 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 
 if (!PhoneGap.hasResource("accelerometer")) {
 PhoneGap.addResource("accelerometer");
 
 /** @constructor */
-function Acceleration(x, y, z) {
+var Acceleration = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
   this.timestamp = new Date().getTime();
-}
+};
 
 /**
  * This class provides access to device accelerometer data.
  * @constructor
  */
-Accelerometer = function() {
+var Accelerometer = function() {
 
     /**
      * The last known acceleration.  type=Acceleration()
@@ -32,7 +32,7 @@ Accelerometer = function() {
      * List of accelerometer watch timers
      */
     this.timers = {};
-}
+};
 
 Accelerometer.ERROR_MSG = ["Not running", "Starting", "", "Failed to start"];
 
@@ -123,4 +123,4 @@ PhoneGap.addConstructor(function() {
         navigator.accelerometer = new Accelerometer();
     }
 });
-};
+}

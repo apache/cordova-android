@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 
 if (!PhoneGap.hasResource("filetransfer")) {
@@ -13,13 +13,13 @@ PhoneGap.addResource("filetransfer");
  * FileTransfer uploads a file to a remote server.
  * @constructor
  */
-FileTransfer = function() {};
+var FileTransfer = function() {};
 
 /**
  * FileUploadResult
  * @constructor
  */
-FileUploadResult = function() {
+var FileUploadResult = function() {
     this.bytesSent = 0;
     this.responseCode = null;
     this.response = null;
@@ -29,7 +29,7 @@ FileUploadResult = function() {
  * FileTransferError
  * @constructor
  */
-FileTransferError = function() {
+var FileTransferError = function() {
     this.code = null;
 };
 
@@ -76,10 +76,10 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
  * @param mimeType {String}  Mimetype of the uploaded file. Defaults to image/jpeg.
  * @param params {Object}    Object with key: value params to send to the server.
  */
-FileUploadOptions = function(fileKey, fileName, mimeType, params) {
+var FileUploadOptions = function(fileKey, fileName, mimeType, params) {
     this.fileKey = fileKey || null;
     this.fileName = fileName || null;
     this.mimeType = mimeType || null;
     this.params = params || null;
 };
-};
+}

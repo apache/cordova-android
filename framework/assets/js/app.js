@@ -13,7 +13,7 @@ PhoneGap.addResource("app");
  * Constructor
  * @constructor
  */
-App = function() {};
+var App = function() {};
 
 /**
  * Clear the resource cache.
@@ -91,4 +91,4 @@ App.prototype.exitApp = function() {
 PhoneGap.addConstructor(function() {
     navigator.app = window.app = new App();
 });
-};
+}

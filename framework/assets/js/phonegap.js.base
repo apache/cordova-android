@@ -33,7 +33,7 @@ if (typeof PhoneGap === "undefined") {
  */
 
 if (typeof(DeviceInfo) !== 'object') {
-    DeviceInfo = {};
+    var DeviceInfo = {};
 }
 
 /**
@@ -440,7 +440,7 @@ PhoneGap.stringify = function(args) {
         var s = "[";
         var i, type, start, name, nameType, a;
         for (i = 0; i < args.length; i++) {
-            if (args[i] != null) {
+            if (args[i] !== null) {
                 if (i > 0) {
                     s = s + ",";
                 }
@@ -939,4 +939,4 @@ var PluginManager = {
     }
 };
 
-};
+}

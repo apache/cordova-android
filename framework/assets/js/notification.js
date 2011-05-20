@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 
 if (!PhoneGap.hasResource("notification")) {
@@ -13,7 +13,7 @@ PhoneGap.addResource("notification");
  * This class provides access to notifications on the device.
  * @constructor
  */
-Notification = function() {
+var Notification = function() {
 };
 
 /**
@@ -119,4 +119,4 @@ PhoneGap.addConstructor(function() {
         navigator.notification = new Notification();
     }
 });
-};
+}

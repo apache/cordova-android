@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 
 if (!PhoneGap.hasResource("geolocation")) {
@@ -13,7 +13,7 @@ PhoneGap.addResource("geolocation");
  * This class provides access to device GPS data.
  * @constructor
  */
-Geolocation = function() {
+var Geolocation = function() {
 
     // The last known GPS position.
     this.lastPosition = null;
@@ -29,7 +29,7 @@ Geolocation = function() {
  * @param code
  * @param message
  */
-PositionError = function(code, message) {
+var PositionError = function(code, message) {
     this.code = code;
     this.message = message;
 };
@@ -195,4 +195,4 @@ PhoneGap.addConstructor(function() {
         Geolocation.usingPhoneGap = true;
     }
 });
-};
+}

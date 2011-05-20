@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 
 if (!PhoneGap.hasResource("network")) {
@@ -13,7 +13,7 @@ PhoneGap.addResource("network");
  * This class contains information about any NetworkStatus.
  * @constructor
  */
-NetworkStatus = function() {
+var NetworkStatus = function() {
     //this.code = null;
     //this.message = "";
 };
@@ -26,7 +26,7 @@ NetworkStatus.REACHABLE_VIA_WIFI_NETWORK = 2;
  * This class provides access to device Network data (reachability).
  * @constructor
  */
-Network = function() {
+var Network = function() {
     /**
      * The last known Network status.
      * { hostName: string, ipAddress: string,
@@ -63,7 +63,7 @@ Network.prototype.isReachable = function(uri, callback, options) {
  * This class contains information about the current network Connection.
  * @constructor
  */
-Connection = function() {
+var Connection = function() {
     this.type = null;
     this.homeNW = null;
     this.currentNW = null;
@@ -109,4 +109,4 @@ PhoneGap.addConstructor(function() {
         navigator.network.connection = new Connection();
     }
 });
-};
+}

@@ -3,7 +3,7 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 
 if (!PhoneGap.hasResource("position")) {
@@ -20,13 +20,13 @@ PhoneGap.addResource("position");
  * @param {Object} vel
  * @constructor
  */
-Position = function(coords, timestamp) {
+var Position = function(coords, timestamp) {
 	this.coords = coords;
 	this.timestamp = (timestamp !== 'undefined') ? timestamp : new Date().getTime();
 };
 
 /** @constructor */
-function Coordinates(lat, lng, alt, acc, head, vel, altacc) {
+var Coordinates = function(lat, lng, alt, acc, head, vel, altacc) {
 	/**
 	 * The latitude of the position.
 	 */
@@ -55,13 +55,13 @@ function Coordinates(lat, lng, alt, acc, head, vel, altacc) {
 	 * The altitude accuracy of the position.
 	 */
 	this.altitudeAccuracy = (altacc !== 'undefined') ? altacc : null;
-}
+};
 
 /**
  * This class specifies the options for requesting position data.
  * @constructor
  */
-PositionOptions = function() {
+var PositionOptions = function() {
 	/**
 	 * Specifies the desired position accuracy.
 	 */
@@ -77,7 +77,7 @@ PositionOptions = function() {
  * This class contains information about any GSP errors.
  * @constructor
  */
-PositionError = function() {
+var PositionError = function() {
 	this.code = null;
 	this.message = "";
 };
@@ -86,4 +86,4 @@ PositionError.UNKNOWN_ERROR = 0;
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
 PositionError.TIMEOUT = 3;
-};
+}
