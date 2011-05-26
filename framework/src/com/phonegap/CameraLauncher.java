@@ -166,7 +166,14 @@ public class CameraLauncher extends Plugin {
 			if (resultCode == Activity.RESULT_OK) {
 				try {
 					// Read in bitmap of captured image
-					Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getContentResolver(), imageUri);
+          Bitmap bitmap;
+          try {
+            bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getContentResolver(), imageUri);
+          } catch (FileNotFoundException e) {
+            Uri uri = intent.getData();
+            android.content.ContentResolver resolver = this.ctx.getContentResolver();
+            bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+          }
 
 					// If sending base64 image back
 					if (destType == DATA_URL) {
