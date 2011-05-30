@@ -9,6 +9,8 @@ package com.phonegap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.widget.EditText;
 import android.content.Context;
@@ -17,6 +19,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -168,7 +171,7 @@ public class DroidGap extends PhonegapActivity {
     			WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
     	// This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
 
-    	root = new LinearLayout(this);
+    	root = new LinearLayoutSoftKeyboardDetect(this);
     	root.setOrientation(LinearLayout.VERTICAL);
     	root.setBackgroundColor(Color.BLACK);
     	root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
@@ -1276,4 +1279,66 @@ public class DroidGap extends PhonegapActivity {
     		 }
     	 });
      }
+     
+     /**
+      * We are providing this class to detect when the soft keyboard is shown 
+      * and hidden in the web view.
+      */
+     class LinearLayoutSoftKeyboardDetect extends LinearLayout {
+
+    	    private static final String LOG_TAG = "SoftKeyboardDetect";
+    	    
+    	    private int oldHeight = 0;	// Need to save the old height as not to send redundant events
+
+			public LinearLayoutSoftKeyboardDetect(Context context) {
+    	        super(context);   	        
+    	    }
+
+    	    @Override
+    	    /**
+    	     * Start listening to new measurement events.  Fire events when the height 
+    	     * gets smaller fire a show keyboard event and when height gets bigger fire 
+    	     * a hide keyboard event.
+    	     * 
+    	     * Note: We are using callbackServer.sendJavascript() instead of 
+    	     * this.appView.loadUrl() as changing the URL of the app would cause the 
+    	     * soft keyboard to go away.
+    	     * 
+    	     * @param widthMeasureSpec
+    	     * @param heightMeasureSpec
+    	     */
+    	    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    	        super.onMeasure(widthMeasureSpec, heightMeasureSpec);       
+    	        
+    	    	Log.d(LOG_TAG, "We are in our onMeasure method");
+
+    	    	// Get the current height of the visible part of the screen.
+    	    	// This height will not included the status bar.
+    	    	int height = MeasureSpec.getSize(heightMeasureSpec);
+    	        
+    	        Log.d(LOG_TAG, "Old Height = " + oldHeight);
+    	        Log.d(LOG_TAG, "Height = " + height);  	        
+    	        
+    	        // If the oldHeight = 0 then this is the first measure event as the app starts up.
+    	        // If oldHeight == height then we got a measurement change that doesn't affect us.
+    	        if (oldHeight == 0 || oldHeight == height) {
+    	        	Log.d(LOG_TAG, "Ignore this event");
+    	        }
+    	        // If the height as gotten bigger then we will assume the soft keyboard has 
+    	        // gone away.
+    	        else if (height > oldHeight) {
+    	        	Log.d(LOG_TAG, "Throw hide keyboard event");
+    	        	callbackServer.sendJavascript("PhoneGap.fireEvent('hidekeyboard');");
+    	        } 
+    	        // If the height as gotten smaller then we will assume the soft keyboard has 
+    	        // been displayed.
+    	        else if (height < oldHeight) {
+    	        	Log.d(LOG_TAG, "Throw show keyboard event");
+    	        	callbackServer.sendJavascript("PhoneGap.fireEvent('showkeyboard');");
+    	        }
+
+    	        // Update the old height for the next event
+    	        oldHeight = height;
+    	    }
+    }
 }
