@@ -57,13 +57,15 @@ public class NetworkManager extends Plugin {
 	private static final String LOG_TAG = "NetworkManager";
 	private String connectionCallbackId;
 
-    ConnectivityManager sockMan;
-    TelephonyManager telephonyManager;
+	ConnectivityManager sockMan;
+	TelephonyManager telephonyManager;
+	BroadcastReceiver receiver;
 	
 	/**
 	 * Constructor.
 	 */
 	public NetworkManager()	{
+		this.receiver = null;
 	}
 
 	/**
@@ -76,18 +78,23 @@ public class NetworkManager extends Plugin {
 		super.setContext(ctx);
 		this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);		
 		this.telephonyManager = ((TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE));
-		
+		this.connectionCallbackId = null;
+
 		// We need to listen to connectivity events to update navigator.connection
 		IntentFilter intentFilter = new IntentFilter() ;
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-		ctx.registerReceiver(new BroadcastReceiver() {
-		    @Override
-		    public void onReceive(Context context, Intent intent) {				
-	            updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));				
-		    }
-		}, intentFilter);
-	}
+		if (this.receiver == null) {
+			this.receiver = new BroadcastReceiver() {
+				@Override
+				public void onReceive(Context context, Intent intent) {				
+					updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));				
+				}
+			};
+			ctx.registerReceiver(this.receiver, intentFilter);
+		}
 
+	}
+	
 	/**
 	 * Executes the request and returns PluginResult.
 	 * 
@@ -134,6 +141,19 @@ public class NetworkManager extends Plugin {
 	public boolean isSynch(String action) {
 		// All methods take a while, so always use async
 		return false;
+	}
+	
+	/**
+	 * Stop network receiver.
+	 */
+	public void onDestroy() {
+		if (this.receiver != null) {
+			try {
+				this.ctx.unregisterReceiver(this.receiver);
+			} catch (Exception e) {
+				System.out.println("Error unregistering network receiver: " + e.getMessage());
+			}
+		}
 	}
 
     //--------------------------------------------------------------------------
