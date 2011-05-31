@@ -658,21 +658,18 @@ public class DroidGap extends PhonegapActivity {
     	
         if (this.appView != null) {
     	
-    	// Make sure pause event is sent if onPause hasn't been called before onDestroy
-       	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
+        	// Make sure pause event is sent if onPause hasn't been called before onDestroy
+        	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
 
-       	// Send destroy event to JavaScript
-       	this.appView.loadUrl("javascript:try{PhoneGap.onDestroy.fire();}catch(e){};");
+        	// Send destroy event to JavaScript
+        	this.appView.loadUrl("javascript:try{PhoneGap.onDestroy.fire();}catch(e){};");
 
-    	// Load blank page so that JavaScript onunload is called
-       	this.appView.loadUrl("about:blank");
+        	// Load blank page so that JavaScript onunload is called
+        	this.appView.loadUrl("about:blank");
     	    	
-        // Forward to plugins
-        this.pluginManager.onDestroy();
+        	// Forward to plugins
+        	this.pluginManager.onDestroy();
 
-    	if (this.callbackServer != null) {
-    		this.callbackServer.destroy();
-    	}
         }
     }
 
@@ -1065,7 +1062,9 @@ public class DroidGap extends PhonegapActivity {
         	// Try firing the onNativeReady event in JS. If it fails because the JS is
         	// not loaded yet then just set a flag so that the onNativeReady can be fired
         	// from the JS side when the JS gets to that code.
-        	appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
+        	if (!url.equals("about:blank")) {
+        		appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
+        	}
 
         	// Make app view visible
         	appView.setVisibility(View.VISIBLE);
@@ -1080,6 +1079,13 @@ public class DroidGap extends PhonegapActivity {
     		if (this.ctx.clearHistory) {
     			this.ctx.clearHistory = false;
     			this.ctx.appView.clearHistory();
+    		}
+    		
+    		// Shutdown if blank loaded
+    		if (url.equals("about:blank")) {
+    			if (this.ctx.callbackServer != null) {
+    				this.ctx.callbackServer.destroy();
+    			}
     		}
         }
         
