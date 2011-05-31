@@ -767,8 +767,8 @@ PhoneGap.JSCallback = function() {
             // If callback has JavaScript statement to execute
             if (xmlhttp.status === 200) {
 
-                // Need to url decode the response and replace %20 with a space
-                var msg = decodeURIComponent(xmlhttp.responseText.replace(/\+/g, '%20'));
+                // Need to url decode the response
+                var msg = decodeURIComponent(xmlhttp.responseText);
                 setTimeout(function() {
                     try {
                         var t = eval(msg);
