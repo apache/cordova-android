@@ -24,6 +24,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -171,7 +172,11 @@ public class DroidGap extends PhonegapActivity {
     			WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
     	// This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
 
-    	root = new LinearLayoutSoftKeyboardDetect(this);
+    	Display display = getWindowManager().getDefaultDisplay(); 
+    	int width = display.getWidth();
+    	int height = display.getHeight();
+    	
+    	root = new LinearLayoutSoftKeyboardDetect(this, width, height);
     	root.setOrientation(LinearLayout.VERTICAL);
     	root.setBackgroundColor(Color.BLACK);
     	root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
@@ -1289,9 +1294,14 @@ public class DroidGap extends PhonegapActivity {
     	    private static final String LOG_TAG = "SoftKeyboardDetect";
     	    
     	    private int oldHeight = 0;	// Need to save the old height as not to send redundant events
-
-			public LinearLayoutSoftKeyboardDetect(Context context) {
-    	        super(context);   	        
+    	    private int oldWidth = 0; // Need to save old width for orientation change    	    
+    	    private int screenWidth = 0;
+    	    private int screenHeight = 0;
+    	        	    
+			public LinearLayoutSoftKeyboardDetect(Context context, int width, int height) {
+    	    	super(context);   	
+    	        screenWidth = width;
+    	        screenHeight = height;      	        
     	    }
 
     	    @Override
@@ -1315,14 +1325,26 @@ public class DroidGap extends PhonegapActivity {
     	    	// Get the current height of the visible part of the screen.
     	    	// This height will not included the status bar.
     	    	int height = MeasureSpec.getSize(heightMeasureSpec);
+    	        int width = MeasureSpec.getSize(widthMeasureSpec);
     	        
     	        Log.d(LOG_TAG, "Old Height = " + oldHeight);
-    	        Log.d(LOG_TAG, "Height = " + height);  	        
+    	        Log.d(LOG_TAG, "Height = " + height);  	       
+    	        Log.d(LOG_TAG, "Old Width = " + oldWidth);
+    	        Log.d(LOG_TAG, "Width = " + width);
+    	        
     	        
     	        // If the oldHeight = 0 then this is the first measure event as the app starts up.
     	        // If oldHeight == height then we got a measurement change that doesn't affect us.
     	        if (oldHeight == 0 || oldHeight == height) {
     	        	Log.d(LOG_TAG, "Ignore this event");
+    	        }
+    	        // Account for orientation change and ignore this event/Fire orientation change
+    	        else if(screenHeight == width)
+    	        {
+    	        	int tmp_var = screenHeight;
+    	        	screenHeight = screenWidth;
+    	        	screenWidth = tmp_var;
+    	        	Log.d(LOG_TAG, "Orientation Change");
     	        }
     	        // If the height as gotten bigger then we will assume the soft keyboard has 
     	        // gone away.
@@ -1339,6 +1361,7 @@ public class DroidGap extends PhonegapActivity {
 
     	        // Update the old height for the next event
     	        oldHeight = height;
+    	        oldWidth = width;
     	    }
     }
 }
