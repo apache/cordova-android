@@ -11,10 +11,13 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.LinkedList;
+
+import android.util.Log;
 
 /**
  * This class provides a way for Java to run JavaScript in the web page that has loaded PhoneGap.
@@ -42,6 +45,8 @@ import java.util.LinkedList;
  */
 public class CallbackServer implements Runnable {
 	
+	private static final String LOG_TAG = "CallbackServer";
+
 	/**
 	 * The list of JavaScript statements to be sent to JavaScript.
 	 */
@@ -224,8 +229,9 @@ public class CallbackServer implements Runnable {
 									 //System.out.println("CallbackServer -- sending item");
 									 response = "HTTP/1.1 200 OK\r\n\r\n";
 									 String js = this.getJavascript();
-									 if (js != null)
-										 response += URLEncoder.encode(js, "UTF-8");
+									 if (js != null) {
+										 response += encode(js);
+									 }
 								 }
 							 }
 							 else {
@@ -319,6 +325,42 @@ public class CallbackServer implements Runnable {
 			this.empty = false;
 			this.notify();
 		}
+	}
+	
+	/**
+	 * This will encode the return value to JavaScript.  We revert the encoding for 
+	 * common characters that don't require encoding to reduce the size of the string 
+	 * being passed to JavaScript.
+	 * 
+	 * @param value to be encoded
+	 * @return encoded string
+	 */
+	public static String encode(String value) {
+		String encoded = null;
+		try {
+			encoded = URLEncoder.encode(value, "UTF-8")
+				.replaceAll("\\+", " ")
+				.replaceAll("\\%21", "!")
+				.replaceAll("\\%22", "\"")
+				.replaceAll("\\%27", "'")
+				.replaceAll("\\%28", "(")
+				.replaceAll("\\%29", ")")
+				.replaceAll("\\%2C", ",")
+				.replaceAll("\\%3C", "<")
+				.replaceAll("\\%3D", "=")
+				.replaceAll("\\%3E", ">")
+				.replaceAll("\\%3F", "?")
+				.replaceAll("\\%40", "@")
+				.replaceAll("\\%5B", "[")
+				.replaceAll("\\%5D", "]")
+				.replaceAll("\\%7B", "{")
+				.replaceAll("\\%7D", "}")
+				.replaceAll("\\%3A", ":")
+				.replaceAll("\\%7E", "~");
+		} catch (UnsupportedEncodingException e) {
+			Log.e(LOG_TAG, e.getMessage(), e);
+		}
+		return encoded;
 	}
 	
 }
