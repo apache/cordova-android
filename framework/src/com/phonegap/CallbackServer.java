@@ -230,7 +230,7 @@ public class CallbackServer implements Runnable {
 									 response = "HTTP/1.1 200 OK\r\n\r\n";
 									 String js = this.getJavascript();
 									 if (js != null) {
-										 response += encode(js);
+										 response += encode(js, "UTF-8");
 									 }
 								 }
 							 }
@@ -327,40 +327,81 @@ public class CallbackServer implements Runnable {
 		}
 	}
 	
-	/**
-	 * This will encode the return value to JavaScript.  We revert the encoding for 
-	 * common characters that don't require encoding to reduce the size of the string 
-	 * being passed to JavaScript.
-	 * 
-	 * @param value to be encoded
-	 * @return encoded string
-	 */
-	public static String encode(String value) {
-		String encoded = null;
-		try {
-			encoded = URLEncoder.encode(value, "UTF-8")
-				.replaceAll("\\+", " ")
-				.replaceAll("\\%21", "!")
-				.replaceAll("\\%22", "\"")
-				.replaceAll("\\%27", "'")
-				.replaceAll("\\%28", "(")
-				.replaceAll("\\%29", ")")
-				.replaceAll("\\%2C", ",")
-				.replaceAll("\\%3C", "<")
-				.replaceAll("\\%3D", "=")
-				.replaceAll("\\%3E", ">")
-				.replaceAll("\\%3F", "?")
-				.replaceAll("\\%40", "@")
-				.replaceAll("\\%5B", "[")
-				.replaceAll("\\%5D", "]")
-				.replaceAll("\\%7B", "{")
-				.replaceAll("\\%7D", "}")
-				.replaceAll("\\%3A", ":")
-				.replaceAll("\\%7E", "~");
-		} catch (UnsupportedEncodingException e) {
-			Log.e(LOG_TAG, e.getMessage(), e);
-		}
-		return encoded;
-	}
+	/* The Following code has been modified from original implementation of URLEncoder */
 	
+	/* start */
+	
+	/*
+     *  Licensed to the Apache Software Foundation (ASF) under one or more
+     *  contributor license agreements.  See the NOTICE file distributed with
+     *  this work for additional information regarding copyright ownership.
+     *  The ASF licenses this file to You under the Apache License, Version 2.0
+     *  (the "License"); you may not use this file except in compliance with
+     *  the License.  You may obtain a copy of the License at
+     *
+     *     http://www.apache.org/licenses/LICENSE-2.0
+     *
+     *  Unless required by applicable law or agreed to in writing, software
+     *  distributed under the License is distributed on an "AS IS" BASIS,
+     *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     *  See the License for the specific language governing permissions and
+     *  limitations under the License.
+     */
+	static final String digits = "0123456789ABCDEF";
+
+    /**
+     * This will encode the return value to JavaScript.  We revert the encoding for 
+     * common characters that don't require encoding to reduce the size of the string 
+     * being passed to JavaScript.
+     * 
+     * @param s to be encoded
+     * @param enc encoding type
+     * @return encoded string
+     */
+	public static String encode(String s, String enc) throws UnsupportedEncodingException {
+        if (s == null || enc == null) {
+            throw new NullPointerException();
+        }
+        // check for UnsupportedEncodingException
+        "".getBytes(enc);
+        
+        // Guess a bit bigger for encoded form
+        StringBuilder buf = new StringBuilder(s.length() + 16);
+        int start = -1;
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+                    || (ch >= '0' && ch <= '9')
+                    || " .-*_'(),<>=?@[]{}:~\"\\/;!".indexOf(ch) > -1) {
+                if (start >= 0) {
+                    convert(s.substring(start, i), buf, enc);
+                    start = -1;
+                }
+                if (ch != ' ') {
+                    buf.append(ch);
+                } else {
+                    buf.append(' ');
+                }
+            } else {
+                if (start < 0) {
+                    start = i;
+                }
+            }
+        }
+        if (start >= 0) {
+            convert(s.substring(start, s.length()), buf, enc);
+        }
+        return buf.toString();
+    }
+
+    private static void convert(String s, StringBuilder buf, String enc) throws UnsupportedEncodingException {
+        byte[] bytes = s.getBytes(enc);
+        for (int j = 0; j < bytes.length; j++) {
+            buf.append('%');
+            buf.append(digits.charAt((bytes[j] & 0xf0) >> 4));
+            buf.append(digits.charAt(bytes[j] & 0xf));
+        }
+    }
+    
+    /* end */
 }
