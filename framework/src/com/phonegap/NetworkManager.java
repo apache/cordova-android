@@ -22,12 +22,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.*;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 public class NetworkManager extends Plugin {
 	
-	public static int NOT_REACHABLE = 0;
+    public static int NOT_REACHABLE = 0;
 	public static int REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
 	public static int REACHABLE_VIA_WIFI_NETWORK = 2;
 
@@ -46,19 +48,23 @@ public class NetworkManager extends Plugin {
 	public static final String LTE = "lte";
 	public static final String UMB = "umb";
 	// return types
-	public static final int TYPE_UNKNOWN = 0;
-	public static final int TYPE_ETHERNET = 1;
-	public static final int TYPE_WIFI = 2;
-	public static final int TYPE_2G = 3;
-	public static final int TYPE_3G = 4;
-	public static final int TYPE_4G = 5;
-	public static final int TYPE_NONE = 20;
+	public static final String TYPE_UNKNOWN = "unknown";
+	public static final String TYPE_ETHERNET = "ethernet";
+	public static final String TYPE_WIFI = "wifi";
+	public static final String TYPE_2G = "2g";
+	public static final String TYPE_3G = "3g";
+	public static final String TYPE_4G = "4g";
+	public static final String TYPE_NONE = "none";
 	
 	private static final String LOG_TAG = "NetworkManager";
+	private static final String NETWORK_NAME = "networkName";
+	private static final String TYPE = "type";
+
 	private String connectionCallbackId;
 
 	ConnectivityManager sockMan;
 	TelephonyManager telephonyManager;
+	WifiManager wifiManager;
 	BroadcastReceiver receiver;
 	
 	/**
@@ -78,8 +84,9 @@ public class NetworkManager extends Plugin {
 		super.setContext(ctx);
 		this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);		
 		this.telephonyManager = ((TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE));
+		this.wifiManager = ((WifiManager) ctx.getSystemService(Context.WIFI_SERVICE));
 		this.connectionCallbackId = null;
-
+		
 		// We need to listen to connectivity events to update navigator.connection
 		IntentFilter intentFilter = new IntentFilter() ;
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -151,7 +158,7 @@ public class NetworkManager extends Plugin {
 			try {
 				this.ctx.unregisterReceiver(this.receiver);
 			} catch (Exception e) {
-				System.out.println("Error unregistering network receiver: " + e.getMessage());
+				Log.e(LOG_TAG, "Error unregistering network receiver: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -167,11 +174,11 @@ public class NetworkManager extends Plugin {
 	 * @param info the current active network info
 	 * @return
 	 */
-	private void updateConnectionInfo(NetworkInfo info) {
-		JSONObject connection = this.getConnectionInfo(info); 
-
-		// send update to javascript "navigator.connection"
-		sendUpdate(connection);
+	private void updateConnectionInfo(NetworkInfo info) {	 
+		JSONObject connection = this.getConnectionInfo(info);
+		
+        // send update to javascript "navigator.network.connection"
+        sendUpdate(connection);
 	}
 
 	/** 
@@ -187,24 +194,26 @@ public class NetworkManager extends Plugin {
 			if (info != null) {
 				// If we are not connected to any network set type to none
 				if (!info.isConnected()) {
-					connection.put("type", TYPE_NONE);
-					connection.put("homeNW", null);
-					connection.put("currentNW", null);				
+					connection.put(TYPE, TYPE_NONE);
+					connection.put(NETWORK_NAME, null);
 				}			
 				else {
 					// If we are connected check which type
 					// First off is wifi
 					if (info.getTypeName().toLowerCase().equals(WIFI)) {
-						connection.put("type", TYPE_WIFI);
-						connection.put("homeNW", null);
-						connection.put("currentNW", null);				
+						connection.put(TYPE, TYPE_WIFI);
+						WifiInfo wifiInfo = this.wifiManager.getConnectionInfo();
+						if (wifiInfo != null) {
+	                        connection.put(NETWORK_NAME, wifiInfo.getSSID());
+						} else {
+	                        connection.put(NETWORK_NAME, null);
+						}
 					}
 					// Otherwise it must be one of the mobile network protocols
 					else {
 						// Determine the correct type, 2G, 3G, 4G
-						connection.put("type", getType(info));
-						connection.put("homeNW", telephonyManager.getSimOperatorName());
-						connection.put("currentNW",  telephonyManager.getNetworkOperatorName());
+						connection.put(TYPE, getType(info));
+						connection.put(NETWORK_NAME,  telephonyManager.getNetworkOperatorName());
 					}
 				}
 			}
@@ -233,7 +242,7 @@ public class NetworkManager extends Plugin {
 	 * @param info the network info so we can determine connection type.
 	 * @return the type of mobile network we are on
 	 */
-	private int getType(NetworkInfo info) {
+	private String getType(NetworkInfo info) {
 		if (info != null) {
 			String type = info.getTypeName(); 
 
