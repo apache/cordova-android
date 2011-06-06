@@ -411,7 +411,7 @@ public class FileUtils extends Plugin {
 		}
 		
 		// Check to make sure we are not copying the directory into itself
-		if (destinationDir.getAbsolutePath().startsWith(srcDir.getAbsolutePath())) {
+		if (isCopyOnItself(srcDir.getAbsolutePath(), destinationDir.getAbsolutePath())) {
 			throw new InvalidModificationException("Can't copy itself into itself");
 		}
 		
@@ -434,6 +434,26 @@ public class FileUtils extends Plugin {
 		
 		return getEntry(destinationDir);
 	}
+
+	/**
+	 * Check to see if the user attempted to copy an entry into its parent without changing its name, 
+	 * or attempted to copy a directory into a directory that it contains directly or indirectly.
+	 * 
+	 * @param srcDir
+	 * @param destinationDir
+	 * @return 
+	 */
+    private boolean isCopyOnItself(String src, String dest) {
+        
+        // This weird test is to determine if we are copying or moving a directory into itself.  
+        // Copy /sdcard/myDir to /sdcard/myDir-backup is okay but
+        // Copy /sdcard/myDir to /sdcard/myDir/backup should thow an INVALID_MODIFICATION_ERR
+        if (dest.startsWith(src) && dest.indexOf(File.separator, src.length()-1) != -1) {
+            return true;
+        }
+        
+        return false;
+    }
 
 	/**
 	 * Move a file 
@@ -480,8 +500,8 @@ public class FileUtils extends Plugin {
 		}
 		
 		// Check to make sure we are not copying the directory into itself
-		if (destinationDir.getAbsolutePath().startsWith(srcDir.getAbsolutePath())) {
-			throw new InvalidModificationException("Can't copy itself into itself");
+		if (isCopyOnItself(srcDir.getAbsolutePath(), destinationDir.getAbsolutePath())) {
+			throw new InvalidModificationException("Can't move itself into itself");
 		}
 		
 		// If the destination directory already exists and is empty then delete it.  This is according to spec.
