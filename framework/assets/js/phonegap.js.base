@@ -344,10 +344,13 @@ PhoneGap.Channel.join(function() {
             }
             else {
                 var polling = prompt("usePolling", "gap_callbackServer:");
+                PhoneGap.UsePolling = polling;
                 if (polling == "true") {
+                    PhoneGap.UsePolling = true;
                     PhoneGap.JSCallbackPolling();
                 }
                 else {
+                    PhoneGap.UsePolling = false;
                     PhoneGap.JSCallback();
                 }
             }
