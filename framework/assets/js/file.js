@@ -1044,7 +1044,7 @@ LocalFileSystem.prototype._castDate = function(pluginResult) {
         file.type = pluginResult.message.type;
         file.name = pluginResult.message.name;
         file.fullPath = pluginResult.message.fullPath;
-        file.lastModifedDate = new Date(pluginResult.message.lastModifiedDate);
+        file.lastModifiedDate = new Date(pluginResult.message.lastModifiedDate);
         pluginResult.message = file;
     }
     return pluginResult;
