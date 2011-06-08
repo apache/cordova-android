@@ -11,7 +11,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.Plugin;
@@ -21,10 +20,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.*;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.telephony.TelephonyManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 public class NetworkManager extends Plugin {
@@ -57,14 +54,10 @@ public class NetworkManager extends Plugin {
 	public static final String TYPE_NONE = "none";
 	
 	private static final String LOG_TAG = "NetworkManager";
-	private static final String NETWORK_NAME = "networkName";
-	private static final String TYPE = "type";
 
 	private String connectionCallbackId;
 
 	ConnectivityManager sockMan;
-	TelephonyManager telephonyManager;
-	WifiManager wifiManager;
 	BroadcastReceiver receiver;
 	
 	/**
@@ -83,8 +76,6 @@ public class NetworkManager extends Plugin {
 	public void setContext(PhonegapActivity ctx) {
 		super.setContext(ctx);
 		this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);		
-		this.telephonyManager = ((TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE));
-		this.wifiManager = ((WifiManager) ctx.getSystemService(Context.WIFI_SERVICE));
 		this.connectionCallbackId = null;
 		
 		// We need to listen to connectivity events to update navigator.connection
@@ -175,10 +166,8 @@ public class NetworkManager extends Plugin {
 	 * @return
 	 */
 	private void updateConnectionInfo(NetworkInfo info) {	 
-		JSONObject connection = this.getConnectionInfo(info);
-		
         // send update to javascript "navigator.network.connection"
-        sendUpdate(connection);
+        sendUpdate(this.getConnectionInfo(info));
 	}
 
 	/** 
@@ -187,42 +176,18 @@ public class NetworkManager extends Plugin {
 	 * @param info the current active network info
 	 * @return a JSONObject that represents the network info
 	 */
-	private JSONObject getConnectionInfo(NetworkInfo info) {
-		JSONObject connection = new JSONObject();
-		
-		try {
-			if (info != null) {
-				// If we are not connected to any network set type to none
-				if (!info.isConnected()) {
-					connection.put(TYPE, TYPE_NONE);
-					connection.put(NETWORK_NAME, null);
-				}			
-				else {
-					// If we are connected check which type
-					// First off is wifi
-					if (info.getTypeName().toLowerCase().equals(WIFI)) {
-						connection.put(TYPE, TYPE_WIFI);
-						WifiInfo wifiInfo = this.wifiManager.getConnectionInfo();
-						if (wifiInfo != null) {
-	                        connection.put(NETWORK_NAME, wifiInfo.getSSID());
-						} else {
-	                        connection.put(NETWORK_NAME, null);
-						}
-					}
-					// Otherwise it must be one of the mobile network protocols
-					else {
-						// Determine the correct type, 2G, 3G, 4G
-						connection.put(TYPE, getType(info));
-						connection.put(NETWORK_NAME,  telephonyManager.getNetworkOperatorName());
-					}
-				}
+	private String getConnectionInfo(NetworkInfo info) {
+	    String type = TYPE_NONE;
+		if (info != null) {
+			// If we are not connected to any network set type to none
+			if (!info.isConnected()) {
+				type = TYPE_NONE;
+			}			
+			else {
+				type = getType(info);
 			}
 		}
-		catch (JSONException e) {
-			// this should never happen
-			Log.e(LOG_TAG, e.getMessage(), e);
-		}
-		return connection;
+        return type;
 	}
 	
 	/**
@@ -230,8 +195,8 @@ public class NetworkManager extends Plugin {
 	 * 
 	 * @param connection the network info to set as navigator.connection
 	 */
-	private void sendUpdate(JSONObject connection) {
-		PluginResult result = new PluginResult(PluginResult.Status.OK, connection);
+	private void sendUpdate(String type) {
+		PluginResult result = new PluginResult(PluginResult.Status.OK, type);
 		result.setKeepCallback(true);
 		this.success(result, this.connectionCallbackId);
 	}
@@ -246,7 +211,10 @@ public class NetworkManager extends Plugin {
 		if (info != null) {
 			String type = info.getTypeName(); 
 
-			if (type.toLowerCase().equals(MOBILE)) {
+            if (type.toLowerCase().equals(WIFI)) {
+                return TYPE_WIFI;
+            }
+            else if (type.toLowerCase().equals(MOBILE)) {
 				type = info.getSubtypeName();
 				if (type.toLowerCase().equals(GSM) || 
 						type.toLowerCase().equals(GPRS) ||
