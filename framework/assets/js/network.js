@@ -65,20 +65,18 @@ Network.prototype.isReachable = function(uri, callback, options) {
  */
 var Connection = function() {
     this.type = null;
-    this.networkName = null;
     this._firstRun = true;
     this._timer = null;
     this.timeout = 500;
 
     var me = this;
     this.getInfo(
-        function(info) {
+        function(type) {
             // Need to send events if we are on or offline
-            if (info.type == "none") {
+            if (type == "none") {
                 // set a timer if still offline at the end of timer send the offline event
                 me._timer = setTimeout(function(){
-                    me.type = info.type;
-                    me.networkName = info.networkName;
+                    me.type = type;
                     PhoneGap.fireEvent('offline');
                     me._timer = null;
                     }, me.timeout);
@@ -88,8 +86,7 @@ var Connection = function() {
                     clearTimeout(me._timer);
                     me._timer = null;
                 }
-                me.type = info.type;
-                me.networkName = info.networkName;
+                me.type = type;
                 PhoneGap.fireEvent('online');
             }
             
