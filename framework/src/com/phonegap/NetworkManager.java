@@ -275,7 +275,7 @@ public class NetworkManager extends Plugin {
 	public int isReachable(String uri, boolean isIpAddress) {
 		int reachable = NOT_REACHABLE;
 		
-		if (uri.indexOf("http://") == -1) {
+		if (uri.indexOf("http://") == -1 && uri.indexOf("https://") == -1) {
 			uri = "http://" + uri;
 		}
 
