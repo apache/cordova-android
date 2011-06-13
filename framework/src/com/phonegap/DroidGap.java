@@ -787,10 +787,14 @@ public class DroidGap extends PhonegapActivity {
          */
         @Override
         public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
+        	boolean reqOk = false;
+        	if (((DroidGap)(this.ctx)).url.equals(url)) {
+        		reqOk = true;
+        	}
 			
         	// Calling PluginManager.exec() to call a native service using 
         	// prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
-        	if (defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
+        	if (reqOk && defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
         		JSONArray array;
         		try {
         			array = new JSONArray(defaultValue.substring(4));
@@ -806,13 +810,13 @@ public class DroidGap extends PhonegapActivity {
         	}
         	
         	// Polling for JavaScript messages 
-        	else if (defaultValue.equals("gap_poll:")) {
+        	else if (reqOk && defaultValue.equals("gap_poll:")) {
         		String r = callbackServer.getJavascript();
         		result.confirm(r);
         	}
         	
         	// Calling into CallbackServer
-        	else if (defaultValue.equals("gap_callbackServer:")) {
+        	else if (reqOk && defaultValue.equals("gap_callbackServer:")) {
         		String r = "";
         		if (message.equals("usePolling")) {
         			r = ""+callbackServer.usePolling();
