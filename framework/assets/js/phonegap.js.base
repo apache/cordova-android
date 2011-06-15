@@ -99,7 +99,7 @@ PhoneGap.Channel.prototype.subscribe = function(f, c, g) {
     if (f === null) { return; }
 
     var func = f;
-    if (typeof c === "object" && f instanceof Function) { func = PhoneGap.close(c, f); }
+    if (typeof c === "object" && typeof f === "function") { func = PhoneGap.close(c, f); }
 
     g = g || func.observer_guid || f.observer_guid || this.guid++;
     func.observer_guid = g;
@@ -120,7 +120,7 @@ PhoneGap.Channel.prototype.subscribeOnce = function(f, c) {
         _this.unsubscribe(g);
     };
     if (this.fired) {
-        if (typeof c === "object" && f instanceof Function) { f = PhoneGap.close(c, f); }
+        if (typeof c === "object" && typeof f === "function") { f = PhoneGap.close(c, f); }
         f.apply(this, this.fireArgs);
     } else {
         g = this.subscribe(m);
@@ -132,7 +132,7 @@ PhoneGap.Channel.prototype.subscribeOnce = function(f, c) {
  * Unsubscribes the function with the given guid from the channel.
  */
 PhoneGap.Channel.prototype.unsubscribe = function(g) {
-    if (g instanceof Function) { g = g.observer_guid; }
+    if (typeof g === "function") { g = g.observer_guid; }
     this.handlers[g] = null;
     delete this.handlers[g];
 };
@@ -147,7 +147,7 @@ PhoneGap.Channel.prototype.fire = function(e) {
         for (item in this.handlers) {
             if (this.handlers.hasOwnProperty(item)) {
                 handler = this.handlers[item];
-                if (handler instanceof Function) {
+                if (typeof handler === "function") {
                     rv = (handler.apply(this, arguments) === false);
                     fail = fail || rv;
                 }
@@ -510,7 +510,7 @@ PhoneGap.clone = function(obj) {
         return retVal;
     }
     
-    if (obj instanceof Function) {
+    if (typeof obj === "function") {
         return obj;
     }
     
