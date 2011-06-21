@@ -15,11 +15,15 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -31,6 +35,7 @@ import android.view.WindowManager;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -1133,6 +1138,27 @@ public class DroidGap extends PhonegapActivity {
 
         	// Handle error
         	this.ctx.onReceivedError(errorCode, description, failingUrl);
+        }
+        
+        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            
+        	final String packageName = this.ctx.getPackageName();
+    	    final PackageManager pm = this.ctx.getPackageManager();
+    	    ApplicationInfo appInfo;
+    		try {
+    			appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+    	        if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+    	            // debug = true
+    	        	handler.proceed();
+    	            return;
+    	        } else {
+    	            // debug = false
+    	        	super.onReceivedSslError(view, handler, error);    
+    	        }
+    		} catch (NameNotFoundException e) {
+    			// When it doubt, lock it out!
+    			super.onReceivedSslError(view, handler, error);
+    		}
         }
     }
     
