@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.content.Intent;
 import android.webkit.WebView;
 
 /**
@@ -263,6 +264,16 @@ public final class PluginManager {
     		Entry<String,Plugin> entry = it.next();
     		Plugin plugin = entry.getValue();
     		plugin.onDestroy();
+    	}
+    }
+    
+    public void onNewIntent(Intent intent) {
+    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
+    	while(it.hasNext()) {
+    		Entry<String,Plugin> entry = it.next();
+    		Plugin plugin = entry.getValue();
+    		plugin.onNewIntent(intent);
     	}
     }
 }

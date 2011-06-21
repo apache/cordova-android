@@ -9,13 +9,12 @@ package com.phonegap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+
 import android.app.AlertDialog;
-import android.widget.EditText;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -26,19 +25,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.GeolocationPermissions.Callback;
+import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
-import android.webkit.JsPromptResult;
 import android.webkit.WebSettings;
+import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.GeolocationPermissions.Callback;
-import android.webkit.WebSettings.LayoutAlgorithm;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+
+import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginManager;
-import com.phonegap.api.PhonegapActivity;
 
 /**
  * This class is the main Android activity that represents the PhoneGap
@@ -608,17 +609,28 @@ public class DroidGap extends PhonegapActivity {
        	// Send pause event to JavaScript
        	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
 
+      	// Forward to plugins
+      	this.pluginManager.onPause();
+
         // If app doesn't want to run in background
         if (!this.keepRunning) {
-        	
-        	// Forward to plugins
-        	this.pluginManager.onPause();
 
         	// Pause JavaScript timers (including setInterval)
         	this.appView.pauseTimers();
         }
     }
-
+		
+		@Override
+		/**
+		 * Called when the activity receives a new intent
+		 **/
+		protected void onNewIntent(Intent intent) {
+			super.onNewIntent(intent);
+			
+			//Forward to plugins
+			this.pluginManager.onNewIntent(intent);
+		}
+		
     @Override
     /**
      * Called when the activity will start interacting with the user. 
@@ -632,6 +644,9 @@ public class DroidGap extends PhonegapActivity {
        	// Send resume event to JavaScript
        	this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
 
+      	// Forward to plugins
+      	this.pluginManager.onResume();
+
         // If app doesn't want to run in background
         if (!this.keepRunning || this.activityResultKeepRunning) {
 
@@ -640,9 +655,6 @@ public class DroidGap extends PhonegapActivity {
         		this.keepRunning = this.activityResultKeepRunning;
         		this.activityResultKeepRunning = false;
         	}
-
-        	// Forward to plugins
-        	this.pluginManager.onResume();
 
         	// Resume JavaScript timers (including setInterval)
         	this.appView.resumeTimers();
