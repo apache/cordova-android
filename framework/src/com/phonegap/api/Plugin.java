@@ -77,8 +77,8 @@ public abstract class Plugin implements IPlugin {
     /**
      * Called when the activity receives a new intent. 
      */
-	public void onNewIntent(Intent intent) {
-	}
+    public void onNewIntent(Intent intent) {
+    }
     
     /**
      * The final call you receive before your activity is destroyed. 
