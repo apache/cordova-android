@@ -128,7 +128,12 @@ public class DroidGap extends PhonegapActivity {
 	protected boolean clearHistory = false;
 
 	// The initial URL for our app
+	// ie http://server/path/index.html#abc?query
 	private String url;
+	
+	// The initial URL for our app up to and including the file name
+	// ie http://server/path/index.html
+	private String urlFile;
 	
 	// The base of the initial URL for our app
 	private String baseUrl;
@@ -343,6 +348,7 @@ public class DroidGap extends PhonegapActivity {
      */
 	public void loadUrl(final String url) {
 		System.out.println("loadUrl("+url+")");
+		this.urlFile = this.getUrlFile(url);
 		this.url = url;
 		int i = url.lastIndexOf('/');
 		if (i > 0) {
@@ -718,12 +724,28 @@ public class DroidGap extends PhonegapActivity {
     }
     
     /**
+     * Return up to file part of url.
+     * If url = http://server/page.html#abc, then return http://server/page.html
+     * 
+     * @param url
+     * @return
+     */
+    private String getUrlFile(String url) {
+    	int p1 = url.indexOf("#");
+    	int p2 = url.indexOf("?");
+    	if (p1 < 0) p1 = url.length();
+    	if (p2 < 0) p2 = url.length();
+    	int p3 = (p1 < p2) ? p1 : p2;
+    	return url.substring(0, p3);
+    }
+
+    /**
      * Provides a hook for calling "alert" from javascript. Useful for
      * debugging your javascript.
      */
     public class GapClient extends WebChromeClient {
 
-        private Context ctx;
+        private DroidGap ctx;
         
         /**
          * Constructor.
@@ -731,7 +753,7 @@ public class DroidGap extends PhonegapActivity {
          * @param ctx
          */
         public GapClient(Context ctx) {
-            this.ctx = ctx;
+            this.ctx = (DroidGap)ctx;
         }
 
         /**
@@ -804,7 +826,7 @@ public class DroidGap extends PhonegapActivity {
         @Override
         public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
         	boolean reqOk = false;
-        	if (((DroidGap)(this.ctx)).url.equals(url)) {
+			if (this.ctx.urlFile.equals(this.ctx.getUrlFile(url))) {
         		reqOk = true;
         	}
 			
