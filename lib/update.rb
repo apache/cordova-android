@@ -33,12 +33,19 @@ class Update
   # TODO need to allow for www import inc icon
   def copy_libs
     puts "Copying over libraries and assets..."
-    
-    FileUtils.mkdir_p File.join(@path, "libs")
-    FileUtils.cp File.join(@framework_dir, "phonegap.jar"), File.join(@path, "libs")
+    version = IO.read(File.join(@framework_dir, '../VERSION'))
 
-    FileUtils.mkdir_p File.join(@path, "assets", "www")
-    FileUtils.cp File.join(@framework_dir, "assets", "www", "phonegap.js"), File.join(@path, "assets", "www")
+    FileUtils.cp File.join(@framework_dir, "phonegap.#{ version }.jar"), File.join(@path, "libs")
+
+    # concat JS and put into www folder. this can be overridden in the config.xml via @app_js_dir
+    js_dir = File.join(@framework_dir, "assets", "js")
+    phonegapjs = IO.read(File.join(js_dir, 'phonegap.js.base'))
+    Dir.new(js_dir).entries.each do |script|
+      next if script[0].chr == "." or script == "phonegap.js.base"
+      phonegapjs << IO.read(File.join(js_dir, script))
+      phonegapjs << "\n\n"
+    end
+    File.open(File.join(@path, "assets", "www", "phonegap.#{ version }.js"), 'w') {|f| f.write(phonegapjs) }
   end
   #
 end
