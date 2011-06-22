@@ -1202,6 +1202,7 @@ public class DroidGap extends PhonegapActivity {
     		// If back key is bound, then send event to JavaScript
     		if (this.bound) {
     			this.appView.loadUrl("javascript:PhoneGap.fireEvent('backbutton');");
+    			return true;
     		}
 
     		// If not bound
@@ -1210,6 +1211,7 @@ public class DroidGap extends PhonegapActivity {
     			// Go to previous page in webview if it is possible to go back
     			if (this.appView.canGoBack()) {
     				this.appView.goBack();
+    				return true;
     			}
 
     			// If not, then invoke behavior of super class
@@ -1222,11 +1224,13 @@ public class DroidGap extends PhonegapActivity {
     	// If menu key
     	else if (keyCode == KeyEvent.KEYCODE_MENU) {
     		this.appView.loadUrl("javascript:PhoneGap.fireEvent('menubutton');");
+    		return true;
     	}
 
     	// If search key
     	else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
     		this.appView.loadUrl("javascript:PhoneGap.fireEvent('searchbutton');");
+    		return true;
     	}
 
     	return false;
