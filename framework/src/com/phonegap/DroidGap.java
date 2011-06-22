@@ -637,18 +637,18 @@ public class DroidGap extends PhonegapActivity {
         	this.appView.pauseTimers();
         }
     }
-		
-	@Override
-	/**
-	 * Called when the activity receives a new intent
-	 **/
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		
-		//Forward to plugins
-		this.pluginManager.onNewIntent(intent);
-	}
-		
+
+    @Override
+    /**
+     * Called when the activity receives a new intent
+     **/
+    protected void onNewIntent(Intent intent) {
+    	super.onNewIntent(intent);
+
+    	//Forward to plugins
+    	this.pluginManager.onNewIntent(intent);
+    }
+    
     @Override
     /**
      * Called when the activity will start interacting with the user. 

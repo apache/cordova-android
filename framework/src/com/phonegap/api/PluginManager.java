@@ -267,6 +267,9 @@ public final class PluginManager {
     	}
     }
     
+    /**
+     * Called when the activity receives a new intent. 
+     */    
     public void onNewIntent(Intent intent) {
     	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
     	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
