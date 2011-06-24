@@ -5,3 +5,4 @@ local.properties
 framework/phonegap.jar
 framework/bin
 framework/assets/www/.DS_Store
+.DS_Store
