@@ -43,29 +43,26 @@ public class ContactManager extends Plugin {
 		try {
 			if (action.equals("search")) {
 				JSONArray res = contactAccessor.search(args.getJSONArray(0), args.optJSONObject(1));
-				return new PluginResult(status, res, "navigator.service.contacts.cast");
+				return new PluginResult(status, res, "navigator.contacts.cast");
 			}
 			else if (action.equals("save")) {
-				if (contactAccessor.save(args.getJSONObject(0))) {
-					return new PluginResult(status, result);					
-				}
-				else {
-					JSONObject r = new JSONObject();
-					r.put("code", 0);
-					return new PluginResult(PluginResult.Status.ERROR, r);
+			    String id = contactAccessor.save(args.getJSONObject(0));
+				if (id != null) {
+	                JSONObject res = contactAccessor.getContactById(id);
+	                if (res != null) {
+	                    return new PluginResult(status, res);
+	                }
 				}
 			}
 			else if (action.equals("remove")) {
 				if (contactAccessor.remove(args.getString(0))) {
 					return new PluginResult(status, result);					
 				}
-				else {
-					JSONObject r = new JSONObject();
-					r.put("code", 2);
-					return new PluginResult(PluginResult.Status.ERROR, r);
-				}
 			}
-			return new PluginResult(status, result);
+			// If we get to this point an error has occurred
+            JSONObject r = new JSONObject();
+            r.put("code", 0);
+            return new PluginResult(PluginResult.Status.ERROR, r);
 		} catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);

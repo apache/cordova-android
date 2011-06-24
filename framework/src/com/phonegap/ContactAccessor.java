@@ -114,51 +114,65 @@ public abstract class ContactAccessor {
 		
 		String key;
 		try {
-			for (int i=0; i<fields.length(); i++) {
-				key = fields.getString(i);
-				if (key.startsWith("displayName")) {
-					map.put("displayName", true);
-				}
-				else if (key.startsWith("name")) {
-					map.put("name", true);
-				}
-				else if (key.startsWith("nickname")) {
-					map.put("nickname", true);
-				}
-				else if (key.startsWith("phoneNumbers")) {
-					map.put("phoneNumbers", true);
-				}
-				else if (key.startsWith("emails")) {
-					map.put("emails", true);
-				}
-				else if (key.startsWith("addresses")) {
-					map.put("addresses", true);
-				}
-				else if (key.startsWith("ims")) {
-					map.put("ims", true);
-				}
-				else if (key.startsWith("organizations")) {
-					map.put("organizations", true);
-				}
-				else if (key.startsWith("birthday")) {
-					map.put("birthday", true);
-				}
-				else if (key.startsWith("anniversary")) {
-					map.put("anniversary", true);
-				}
-				else if (key.startsWith("note")) {
-					map.put("note", true);
-				}
-				else if (key.startsWith("relationships")) {
-					map.put("relationships", true);
-				}
-				else if (key.startsWith("urls")) {
-					map.put("urls", true);
-				}
-				else if (key.startsWith("photos")) {
-					map.put("photos", true);
-				}
-			}
+		    if (fields.length() == 1 && fields.getString(0).equals("*")) {
+                map.put("displayName", true);
+                map.put("name", true);
+                map.put("nickname", true);
+                map.put("phoneNumbers", true);
+                map.put("emails", true);
+                map.put("addresses", true);
+                map.put("ims", true);
+                map.put("organizations", true);
+                map.put("birthday", true);
+                map.put("note", true);
+                map.put("urls", true);
+                map.put("photos", true);
+                map.put("categories", true);
+		    } 
+		    else {
+    			for (int i=0; i<fields.length(); i++) {
+    				key = fields.getString(i);
+    				if (key.startsWith("displayName")) {
+    					map.put("displayName", true);
+    				}
+    				else if (key.startsWith("name")) {
+    					map.put("name", true);
+    				}
+    				else if (key.startsWith("nickname")) {
+    					map.put("nickname", true);
+    				}
+    				else if (key.startsWith("phoneNumbers")) {
+    					map.put("phoneNumbers", true);
+    				}
+    				else if (key.startsWith("emails")) {
+    					map.put("emails", true);
+    				}
+    				else if (key.startsWith("addresses")) {
+    					map.put("addresses", true);
+    				}
+    				else if (key.startsWith("ims")) {
+    					map.put("ims", true);
+    				}
+    				else if (key.startsWith("organizations")) {
+    					map.put("organizations", true);
+    				}
+    				else if (key.startsWith("birthday")) {
+    					map.put("birthday", true);
+    				}
+    				else if (key.startsWith("note")) {
+    					map.put("note", true);
+    				}
+    				else if (key.startsWith("urls")) {
+    					map.put("urls", true);
+    				}
+                    else if (key.startsWith("photos")) {
+                        map.put("photos", true);
+                    }
+                    else if (key.startsWith("categories")) {
+                        map.put("categories", true);
+                    }
+    			}
+		    }
 		}
 		catch (JSONException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
@@ -196,12 +210,18 @@ public abstract class ContactAccessor {
      * Handles adding a JSON Contact object into the database.
      * @return TODO
      */
-	public abstract boolean save(JSONObject contact);
+	public abstract String save(JSONObject contact);
 
     /**
      * Handles searching through SDK-specific contacts API.
      */
     public abstract JSONArray search(JSONArray filter, JSONObject options);
+
+    /**
+     * Handles searching through SDK-specific contacts API.
+     * @throws JSONException 
+     */
+    public abstract JSONObject getContactById(String id) throws JSONException;
 
     /**
      * Handles removing a contact from the database.

@@ -451,7 +451,7 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 	 * @returns true if the contact is successfully saved, false otherwise.
 	 */
 	@Override
-	public boolean save(JSONObject contact) {
+	public String save(JSONObject contact) {
 		ContentValues personValues = new ContentValues();
 
 		String id = getJsonString(contact, "id");
@@ -492,9 +492,9 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
 			saveEntries(contact, newPersonUri, "ims", Contacts.KIND_IM);
 			
 			// Successfully create a Contact
-			return true;
+			return id;
 		}
-		return false;
+		return null;
 	}
 	
 	/** 
@@ -824,4 +824,10 @@ public class ContactAccessorSdk3_4 extends ContactAccessor {
     	
     	return (result > 0) ? true : false;
 	}
+
+    @Override
+    public JSONObject getContactById(String id) throws JSONException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

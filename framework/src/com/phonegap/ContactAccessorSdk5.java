@@ -46,6 +46,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.OperationApplicationException;
@@ -88,7 +89,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 */
     private static final Map<String, String> dbMap = new HashMap<String, String>();
     static {
-    	dbMap.put("id", ContactsContract.Contacts._ID);
+    	dbMap.put("id", ContactsContract.Data.CONTACT_ID);
     	dbMap.put("displayName", ContactsContract.Contacts.DISPLAY_NAME);
     	dbMap.put("name", ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME);
     	dbMap.put("name.formatted", ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME);
@@ -115,14 +116,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     	dbMap.put("organizations.name", ContactsContract.CommonDataKinds.Organization.COMPANY);
     	dbMap.put("organizations.department", ContactsContract.CommonDataKinds.Organization.DEPARTMENT);
     	dbMap.put("organizations.title", ContactsContract.CommonDataKinds.Organization.TITLE);
-    	//dbMap.put("revision", null);
     	dbMap.put("birthday", ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE);
     	dbMap.put("note", ContactsContract.CommonDataKinds.Note.NOTE);
     	dbMap.put("photos.value", ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
     	//dbMap.put("categories.value", null);
     	dbMap.put("urls", ContactsContract.CommonDataKinds.Website.URL);
     	dbMap.put("urls.value", ContactsContract.CommonDataKinds.Website.URL);
-    	//dbMap.put("timezone", null);
     }
 
     /**
@@ -142,9 +141,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 */
 	@Override
 	public JSONArray search(JSONArray fields, JSONObject options) {
-		long totalEnd;
-		long totalStart = System.currentTimeMillis();
-
 		// Get the find options
 		String searchTerm = "";
 		int limit = Integer.MAX_VALUE;
@@ -180,7 +176,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		
 		// Build the ugly where clause and where arguments for one big query.
 		WhereOptions whereOptions = buildWhereClause(fields, searchTerm);
-			
+					
 		// Get all the id's where the search term matches the fields passed in.
 		Cursor idCursor = mApp.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
 				new String[] { ContactsContract.Data.CONTACT_ID },
@@ -206,8 +202,49 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 				idOptions.getWhereArgs(),
 				ContactsContract.Data.CONTACT_ID + " ASC");				
 		
-		
-		//Log.d(LOG_TAG, "Cursor length = " + c.getCount());
+		JSONArray contacts = populateContactArray(limit, populate, c);		
+		return contacts;
+	}
+	
+	/**
+	 * A special search that finds one contact by id 
+	 * 
+	 * @param id   contact to find by id
+	 * @return     a JSONObject representing the contact
+	 * @throws JSONException 
+	 */
+	public JSONObject getContactById(String id) throws JSONException {     
+        // Do the id query
+        Cursor c = mApp.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
+                null,
+                ContactsContract.Data.CONTACT_ID + " = ? ",
+                new String[] { id },
+                ContactsContract.Data.CONTACT_ID + " ASC");             
+
+        JSONArray fields = new JSONArray();
+        fields.put("*");
+        
+        HashMap<String,Boolean> populate = buildPopulationSet(fields);
+	    
+        JSONArray contacts = populateContactArray(1, populate, c);
+        
+        if (contacts.length() == 1) {
+            return contacts.getJSONObject(0);
+        } else {
+            return null;
+        }
+	}
+
+	/** 
+	 * Creates an array of contacts from the cursor you pass in
+	 * 
+	 * @param limit        max number of contacts for the array
+	 * @param populate     whether or not you should populate a certain value
+	 * @param c            the cursor
+	 * @return             a JSONArray of contacts
+	 */
+    private JSONArray populateContactArray(int limit,
+            HashMap<String, Boolean> populate, Cursor c) {
 		
 		String contactId = "";
 		String rawId = "";
@@ -334,12 +371,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			}
 		}
 		c.close();
-		
-		
-		totalEnd = System.currentTimeMillis();
-		Log.d(LOG_TAG,"Total time = " + (totalEnd-totalStart));
-		return contacts;
-	}
+        return contacts;
+    }
 
 	/**
 	 * Builds a where clause all all the ids passed into the method
@@ -418,15 +451,67 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		ArrayList<String> whereArgs = new ArrayList<String>();
 		
 		WhereOptions options = new WhereOptions();
+        
+        /*
+         * Special case where the user wants all fields returned
+         */
+        if (isWildCardSearch(fields)) {
+            // Get all contacts with all properties
+            if ("%".equals(searchTerm)) {
+                options.setWhere("(" + ContactsContract.Contacts.DISPLAY_NAME + " LIKE ? )");
+                options.setWhereArgs(new String[] {searchTerm});
+                return options;
+            } else {
+                // Get all contacts that match the filter but return all properties 
+                where.add("(" + dbMap.get("displayName") + " LIKE ? )");
+                whereArgs.add(searchTerm);
+                where.add("(" + dbMap.get("name") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
+                where.add("(" + dbMap.get("nickname") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");               
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE);
+                where.add("(" + dbMap.get("phoneNumbers") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");               
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+                where.add("(" + dbMap.get("emails") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");               
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+                where.add("(" + dbMap.get("addresses") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");               
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
+                where.add("(" + dbMap.get("ims") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");               
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE);
+                where.add("(" + dbMap.get("organizations") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");               
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
+                where.add("(" + dbMap.get("note") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");               
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE);
+                where.add("(" + dbMap.get("urls") + " LIKE ? AND " 
+                        + ContactsContract.Data.MIMETYPE + " = ? )");               
+                whereArgs.add(searchTerm);
+                whereArgs.add(ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            }
+        }
 
 		/*
-		 * Special case for when the user wants all the contacts
+		 * Special case for when the user wants all the contacts but
 		 */
 		if ("%".equals(searchTerm)) {
 			options.setWhere("(" + ContactsContract.Contacts.DISPLAY_NAME + " LIKE ? )");
 			options.setWhereArgs(new String[] {searchTerm});
 			return options;
-		}		
+		}
 		
 		String key;
 		try {
@@ -434,10 +519,14 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			for (int i=0; i<fields.length(); i++) {
 				key = fields.getString(i);
 
-				if (key.startsWith("displayName")) {
-					where.add("(" + dbMap.get(key) + " LIKE ? )");
-					whereArgs.add(searchTerm);
-				}
+                if (key.equals("id")) {
+                    where.add("(" + dbMap.get(key) + " = ? )");
+                    whereArgs.add(searchTerm.substring(1, searchTerm.length()-1));
+                }
+                else if (key.startsWith("displayName")) {
+                    where.add("(" + dbMap.get(key) + " LIKE ? )");
+                    whereArgs.add(searchTerm);
+                }
 				else if (key.startsWith("name")) {
 					where.add("(" + dbMap.get(key) + " LIKE ? AND " 
 							+ ContactsContract.Data.MIMETYPE + " = ? )");
@@ -523,6 +612,26 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	}
 
 	/**
+	 * If the user passes in the '*' wildcard character for search then they want all fields for each contact
+	 * 
+	 * @param fields
+	 * @return true if wildcard search requested, false otherwise
+	 */
+	private boolean isWildCardSearch(JSONArray fields) {
+	    // Only do a wildcard search if we are passed ["*"]
+	    if (fields.length() == 1) {
+	        try {
+                if ("*".equals(fields.getString(0))) {
+                    return true;
+                }                
+            } catch (JSONException e) {
+                return false;
+            }
+	    }
+        return false;
+    }
+
+    /**
 	 * Create a ContactOrganization JSONObject
 	 * @param cursor the current database row
 	 * @return a JSONObject representing a ContactOrganization
@@ -531,6 +640,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONObject organization = new JSONObject();
 		try {
 			organization.put("id", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization._ID)));
+			organization.put("pref", false); // Android does not store pref attribute
+            organization.put("type", getOrgType(cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TYPE))));
 			organization.put("department", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.DEPARTMENT)));
 			organization.put("name", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.COMPANY)));
 			organization.put("title", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE)));
@@ -549,6 +660,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		JSONObject address = new JSONObject();
 		try {
 			address.put("id", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal._ID)));
+			address.put("pref", false); // Android does not store pref attribute
+            address.put("type", getAddressType(cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TYPE))));
 			address.put("formatted", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS)));
 			address.put("streetAddress", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET)));
 			address.put("locality", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.CITY)));
@@ -695,9 +808,9 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * This method will save a contact object into the devices contacts database.
 	 * 
 	 * @param contact the contact to be saved.
-	 * @returns true if the contact is successfully saved, false otherwise.
+	 * @returns the id if the contact is successfully saved, null otherwise.
 	 */
-	public boolean save(JSONObject contact) {
+	public String save(JSONObject contact) {
 		AccountManager mgr = AccountManager.get(mApp);
 		Account[] accounts = mgr.getAccounts();
 		Account account = null;
@@ -732,8 +845,9 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			}
 		}
 		
-		if(account == null)
-			return false;
+		if(account == null) {
+			return null;
+		}
 
 		String id = getJsonString(contact, "id");
 		// Create new contact
@@ -753,7 +867,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * @param contact the contact to be saved
 	 * @param account the account to be saved under
 	 */
-	private boolean modifyContact(String id, JSONObject contact, Account account) {
+	private String modifyContact(String id, JSONObject contact, Account account) {
 		// Get the RAW_CONTACT_ID which is needed to insert new values in an already existing contact.
 		// But not needed to update existing values.
 		int rawId = (new Integer(getJsonString(contact,"rawId"))).intValue();
@@ -894,6 +1008,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 						ContentValues contentValues = new ContentValues();
 					    contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
 					    contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
+                        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, getAddressType(getJsonString(address, "type")));
 					    contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, getJsonString(address, "formatted"));
 				        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.STREET, getJsonString(address, "streetAddress"));
 				        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.CITY, getJsonString(address, "locality"));
@@ -910,6 +1025,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 						        .withSelection(ContactsContract.CommonDataKinds.StructuredPostal._ID + "=? AND " + 
 										ContactsContract.Data.MIMETYPE + "=?", 
 										new String[]{addressId, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE})
+                                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, getAddressType(getJsonString(address, "type")))
 						        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, getJsonString(address, "formatted"))
 						        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.STREET, getJsonString(address, "streetAddress"))
 						        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.CITY, getJsonString(address, "locality"))
@@ -938,6 +1054,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 						ContentValues contentValues = new ContentValues();
 					    contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
 					    contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
+                        contentValues.put(ContactsContract.CommonDataKinds.Organization.TYPE, getOrgType(getJsonString(org, "type")));
 					    contentValues.put(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, getJsonString(org, "department"));
 				        contentValues.put(ContactsContract.CommonDataKinds.Organization.COMPANY, getJsonString(org, "name"));
 				        contentValues.put(ContactsContract.CommonDataKinds.Organization.TITLE, getJsonString(org, "title"));
@@ -951,6 +1068,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 						        .withSelection(ContactsContract.CommonDataKinds.Organization._ID + "=? AND " + 
 										ContactsContract.Data.MIMETYPE + "=?", 
 										new String[]{orgId, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE})
+                                .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, getOrgType(getJsonString(org, "type")))
 						        .withValue(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, getJsonString(org, "department"))
 						        .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, getJsonString(org, "name"))
 						        .withValue(ContactsContract.CommonDataKinds.Organization.TITLE, getJsonString(org, "title"))
@@ -1109,7 +1227,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		
 		//Modify contact
 		try {
-			mApp.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+		    mApp.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
 		} catch (RemoteException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
 			Log.e(LOG_TAG, Log.getStackTraceString(e), e);
@@ -1120,7 +1238,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			retVal = false;
 		}
 		
-		return retVal;
+		// if the save was a succes return the contact ID
+		if (retVal) {
+		    return id;
+		} else {
+		    return null;
+		}
 	}
 
 	/**
@@ -1165,7 +1288,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
 		        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
 		        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE)
-		        .withValue(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, getJsonString(org, "department"))
+		        .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, getOrgType(getJsonString(org, "type")))
+                .withValue(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, getJsonString(org, "department"))
 		        .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, getJsonString(org, "name"))
 		        .withValue(ContactsContract.CommonDataKinds.Organization.TITLE, getJsonString(org, "title"))
 		        .build());
@@ -1182,6 +1306,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
 		        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
 		        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, getAddressType(getJsonString(address, "type")))
 		        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, getJsonString(address, "formatted"))
 		        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.STREET, getJsonString(address, "streetAddress"))
 		        .withValue(ContactsContract.CommonDataKinds.StructuredPostal.CITY, getJsonString(address, "locality"))
@@ -1296,7 +1421,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 	 * @param contact the contact to be saved
 	 * @param account the account to be saved under
 	 */
-	private boolean createNewContact(JSONObject contact, Account account) {
+	private String createNewContact(JSONObject contact, Account account) {
 		// Create a list of attributes to add to the contact database
 		ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
@@ -1463,18 +1588,21 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			Log.d(LOG_TAG, "Could not get photos");
 		}
 
-		boolean retVal = true;
+		String newId = null;
 		//Add contact
 		try {
-			mApp.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+		    ContentProviderResult[] cpResults = mApp.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+            if (cpResults.length >= 0) {
+                newId = cpResults[0].uri.getLastPathSegment();
+            }
 		} catch (RemoteException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
-			retVal = false;
+			newId = null;
 		} catch (OperationApplicationException e) {
 			Log.e(LOG_TAG, e.getMessage(), e);
-			retVal = false;
+            newId = null;
 		}
-		return retVal;
+		return newId;
 	}
 
 	@Override
@@ -1645,58 +1773,144 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 		return stringType;
 	}
 
-	/**
-	 * Converts a string from the W3C Contact API to it's Android int value.
-	 * @param string
-	 * @return Android int value
-	 */
-	private int getContactType(String string) {
-		int type = ContactsContract.CommonDataKinds.Email.TYPE_OTHER;
-		if (string!=null) {
-			if ("home".equals(string.toLowerCase())) {
-				return ContactsContract.CommonDataKinds.Email.TYPE_HOME;
-			}
-			else if ("work".equals(string.toLowerCase())) {
-				return ContactsContract.CommonDataKinds.Email.TYPE_WORK;
-			}
-			else if ("other".equals(string.toLowerCase())) {
-				return ContactsContract.CommonDataKinds.Email.TYPE_OTHER;
-			}
-			else if ("mobile".equals(string.toLowerCase())) {
-				return ContactsContract.CommonDataKinds.Email.TYPE_MOBILE;
-			}
-			else if ("custom".equals(string.toLowerCase())) {
-				return ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM;
-			}		
-		}
-		return type;
-	}
+    /**
+     * Converts a string from the W3C Contact API to it's Android int value.
+     * @param string
+     * @return Android int value
+     */
+    private int getContactType(String string) {
+        int type = ContactsContract.CommonDataKinds.Email.TYPE_OTHER;
+        if (string!=null) {
+            if ("home".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Email.TYPE_HOME;
+            }
+            else if ("work".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Email.TYPE_WORK;
+            }
+            else if ("other".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Email.TYPE_OTHER;
+            }
+            else if ("mobile".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Email.TYPE_MOBILE;
+            }
+            else if ("custom".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM;
+            }       
+        }
+        return type;
+    }
 
-	/**
-	 * getPhoneType converts an Android phone type into a string
-	 * @param type 
-	 * @return phone type as string.
-	 */
-	private String getContactType(int type) {
-		String stringType;
-		switch (type) {
-			case ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM: 
-				stringType = "custom";
-				break;
-			case ContactsContract.CommonDataKinds.Email.TYPE_HOME: 
-				stringType = "home";
-				break;
-			case ContactsContract.CommonDataKinds.Email.TYPE_WORK: 
-				stringType = "work";
-				break;
-			case ContactsContract.CommonDataKinds.Email.TYPE_MOBILE: 
-				stringType = "mobile";
-				break;
-			case ContactsContract.CommonDataKinds.Email.TYPE_OTHER: 
-			default: 
-				stringType = "other";
-				break;
-		}
-		return stringType;
-	}
+    /**
+     * getPhoneType converts an Android phone type into a string
+     * @param type 
+     * @return phone type as string.
+     */
+    private String getContactType(int type) {
+        String stringType;
+        switch (type) {
+            case ContactsContract.CommonDataKinds.Email.TYPE_CUSTOM: 
+                stringType = "custom";
+                break;
+            case ContactsContract.CommonDataKinds.Email.TYPE_HOME: 
+                stringType = "home";
+                break;
+            case ContactsContract.CommonDataKinds.Email.TYPE_WORK: 
+                stringType = "work";
+                break;
+            case ContactsContract.CommonDataKinds.Email.TYPE_MOBILE: 
+                stringType = "mobile";
+                break;
+            case ContactsContract.CommonDataKinds.Email.TYPE_OTHER: 
+            default: 
+                stringType = "other";
+                break;
+        }
+        return stringType;
+    }
+
+    /**
+     * Converts a string from the W3C Contact API to it's Android int value.
+     * @param string
+     * @return Android int value
+     */
+    private int getOrgType(String string) {
+        int type = ContactsContract.CommonDataKinds.Organization.TYPE_OTHER;
+        if (string!=null) {
+            if ("work".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Organization.TYPE_WORK;
+            }
+            else if ("other".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Organization.TYPE_OTHER;
+            }
+            else if ("custom".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Organization.TYPE_CUSTOM;
+            }       
+        }
+        return type;
+    }
+
+    /**
+     * getPhoneType converts an Android phone type into a string
+     * @param type 
+     * @return phone type as string.
+     */
+    private String getOrgType(int type) {
+        String stringType;
+        switch (type) {
+            case ContactsContract.CommonDataKinds.Organization.TYPE_CUSTOM: 
+                stringType = "custom";
+                break;
+            case ContactsContract.CommonDataKinds.Organization.TYPE_WORK: 
+                stringType = "work";
+                break;
+            case ContactsContract.CommonDataKinds.Organization.TYPE_OTHER: 
+            default: 
+                stringType = "other";
+                break;
+        }
+        return stringType;
+    }
+
+    /**
+     * Converts a string from the W3C Contact API to it's Android int value.
+     * @param string
+     * @return Android int value
+     */
+    private int getAddressType(String string) {
+        int type = ContactsContract.CommonDataKinds.StructuredPostal.TYPE_OTHER;
+        if (string!=null) {
+            if ("work".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK;
+            }
+            else if ("other".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.StructuredPostal.TYPE_OTHER;
+            }
+            else if ("home".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME;
+            }       
+        }
+        return type;
+    }
+
+    /**
+     * getPhoneType converts an Android phone type into a string
+     * @param type 
+     * @return phone type as string.
+     */
+    private String getAddressType(int type) {
+        String stringType;
+        switch (type) {
+            case ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME: 
+                stringType = "home";
+                break;
+            case ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK: 
+                stringType = "work";
+                break;
+            case ContactsContract.CommonDataKinds.StructuredPostal.TYPE_OTHER: 
+            default: 
+                stringType = "other";
+                break;
+        }
+        return stringType;
+    }
 }
