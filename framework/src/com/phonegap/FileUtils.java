@@ -10,6 +10,7 @@ package com.phonegap;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 
 import org.apache.commons.codec.binary.Base64;
@@ -229,15 +230,16 @@ public class FileUtils extends Plugin {
 	 * @throws JSONException
 	 */
 	private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
+        String decoded = URLDecoder.decode(url, "UTF-8");
 		// Test to see if this is a valid URL first
-		@SuppressWarnings("unused")
-		URL testUrl = new URL(url);
-		
+        @SuppressWarnings("unused") 
+		URL testUrl = new URL(decoded);
+
 		File fp = null;
-		if (url.startsWith("file://")) {
-			fp = new File(url.substring(7, url.length()));
+		if (decoded.startsWith("file://")) {
+			fp = new File(decoded.substring(7, decoded.length()));
 		} else {
-			fp = new File(url);
+			fp = new File(decoded);
 		}
 		if (!fp.exists()) {
 			throw new FileNotFoundException();
