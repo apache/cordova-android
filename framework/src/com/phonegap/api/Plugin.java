@@ -64,14 +64,18 @@ public abstract class Plugin implements IPlugin {
 	
     /**
      * Called when the system is about to start resuming a previous activity. 
+     * 
+     * @param multitasking		Flag indicating if multitasking is turned on for app
      */
-    public void onPause() {
+    public void onPause(boolean multitasking) {
     }
 
     /**
      * Called when the activity will start interacting with the user. 
+     * 
+     * @param multitasking		Flag indicating if multitasking is turned on for app
      */
-    public void onResume() {
+    public void onResume(boolean multitasking) {
     }
     
     /**

@@ -628,7 +628,7 @@ public class DroidGap extends PhonegapActivity {
        	this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
 
       	// Forward to plugins
-      	this.pluginManager.onPause();
+    	this.pluginManager.onPause(this.keepRunning);
 
         // If app doesn't want to run in background
         if (!this.keepRunning) {
@@ -663,7 +663,7 @@ public class DroidGap extends PhonegapActivity {
        	this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
 
       	// Forward to plugins
-      	this.pluginManager.onResume();
+    	this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
 
         // If app doesn't want to run in background
         if (!this.keepRunning || this.activityResultKeepRunning) {
