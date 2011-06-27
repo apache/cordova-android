@@ -936,7 +936,11 @@ PhoneGap.includeJavascript = function(jsfile, successCallback) {
  */
 var PluginManager = {
     addService: function(serviceType, className) {
-        navigator.app.addService(serviceType, className);   
+        try {
+            navigator.app.addService(serviceType, className);
+        } catch (e) {
+            console.log("Error adding service "+serviceType+": "+e);
+        }
     }
 };
 
