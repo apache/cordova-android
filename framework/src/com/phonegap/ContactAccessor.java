@@ -178,11 +178,13 @@ public abstract class ContactAccessor {
 	protected String getJsonString(JSONObject obj, String property) {
 		String value = null;
 		try {
+		    if (obj != null) {
 			value = obj.getString(property);
-			if (value.equals("null")) {
-				Log.d(LOG_TAG, property + " is string called 'null'");
-				value = null;
-			}
+    			if (value.equals("null")) {
+    				Log.d(LOG_TAG, property + " is string called 'null'");
+    				value = null;
+    			}
+		    }
 		}
 		catch (JSONException e) {
 			Log.d(LOG_TAG, "Could not get = " + e.getMessage());

@@ -1420,7 +1420,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			        .build());
 		}
 		
-		
 		// Add urls	
 		JSONArray websites = null;
 		try {
@@ -1473,7 +1472,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			Log.e(LOG_TAG, e.getMessage(), e);
 			retVal = false;
 		}
-		
 		return retVal;
 	}
 
