@@ -805,13 +805,11 @@ PhoneGap.JSCallback = function() {
                 console.log("JSCallback Error: Bad request.  Stopping callbacks.");
             }
 
-            // If error, restart callback server
+            // If error, revert to polling
             else {
                 console.log("JSCallback Error: Request failed.");
-                prompt("restartServer", "gap_callbackServer:");
-                PhoneGap.JSCallbackPort = null;
-                PhoneGap.JSCallbackToken = null;
-                setTimeout(PhoneGap.JSCallback, 100);
+                PhoneGap.UsePolling = true;
+                PhoneGap.JSCallbackPolling();
             }
         }
     };
@@ -938,7 +936,11 @@ PhoneGap.includeJavascript = function(jsfile, successCallback) {
  */
 var PluginManager = {
     addService: function(serviceType, className) {
-        navigator.app.addService(serviceType, className);   
+        try {
+            navigator.app.addService(serviceType, className);
+        } catch (e) {
+            console.log("Error adding service "+serviceType+": "+e);
+        }
     }
 };
 
