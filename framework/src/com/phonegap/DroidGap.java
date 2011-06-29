@@ -7,6 +7,8 @@
  */
 package com.phonegap;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -136,7 +138,7 @@ public class DroidGap extends PhonegapActivity {
 	private String urlFile;
 	
 	// The base of the initial URL for our app
-	private String baseUrl;
+	private String baseUrl = null;
 
 	// Plugin to call when activity result is received
 	protected Plugin activityResultCallback = null;
@@ -350,12 +352,14 @@ public class DroidGap extends PhonegapActivity {
 		System.out.println("loadUrl("+url+")");
 		this.urlFile = this.getUrlFile(url);
 		this.url = url;
-		int i = url.lastIndexOf('/');
-		if (i > 0) {
-			this.baseUrl = url.substring(0, i);
-		}
-		else {
-			this.baseUrl = this.url;
+		if (this.baseUrl == null) {
+			int i = url.lastIndexOf('/');
+			if (i > 0) {
+				this.baseUrl = url.substring(0, i+1);
+			}
+			else {
+				this.baseUrl = this.url + "/";
+			}
 		}
 		System.out.println("url="+url+" baseUrl="+baseUrl);
 
@@ -738,6 +742,56 @@ public class DroidGap extends PhonegapActivity {
     	int p3 = (p1 < p2) ? p1 : p2;
     	return url.substring(0, p3);
     }
+    
+    /**
+     * Display a new browser with the specified URL.
+     * 
+     * NOTE: If usePhoneGap is set, only trusted PhoneGap URLs should be loaded,
+     *       since any PhoneGap API can be called by the loaded HTML page.
+     *
+     * @param url           The url to load.
+     * @param usePhoneGap   Load url in PhoneGap webview.
+     * @return              "" if ok, or error message.
+     */
+    public void showWebPage(String url, boolean usePhoneGap, HashMap<String, Object> params) {
+        try {
+        	Intent intent = null;
+        	if (usePhoneGap) {
+        		intent = new Intent().setClass(this, com.phonegap.DroidGap.class);
+        		intent.putExtra("url", url);
+
+        		// Add parameters
+        		if (params != null) {
+        			java.util.Set<Entry<String,Object>> s = params.entrySet();
+        			java.util.Iterator<Entry<String,Object>> it = s.iterator();
+        			while(it.hasNext()) {
+        				Entry<String,Object> entry = it.next();
+        				String key = entry.getKey();
+        				Object value = entry.getValue();
+        				if (value == null) {
+        				}
+        				else if (value.getClass().equals(String.class)) {
+        					intent.putExtra(key, (String)value);
+        				}
+        				else if (value.getClass().equals(Boolean.class)) {
+        					intent.putExtra(key, (Boolean)value);
+        				}
+        				else if (value.getClass().equals(Integer.class)) {
+        					intent.putExtra(key, (Integer)value);
+        				}
+        			}
+
+        		}                
+        	}
+        	else {
+        		intent = new Intent(Intent.ACTION_VIEW);
+        		intent.setData(Uri.parse(url));
+        	}
+        	this.startActivity(intent);
+        } catch (android.content.ActivityNotFoundException e) {
+            System.out.println("DroidGap.showWebPage: Error loading url "+url+":"+ e.toString());
+        }
+    }
 
     /**
      * Provides a hook for calling "alert" from javascript. Useful for
@@ -826,7 +880,7 @@ public class DroidGap extends PhonegapActivity {
         @Override
         public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
         	boolean reqOk = false;
-			if (this.ctx.urlFile.equals(this.ctx.getUrlFile(url))) {
+        	if (url.indexOf(this.ctx.baseUrl) == 0) {
         		reqOk = true;
         	}
 			
@@ -1069,17 +1123,14 @@ public class DroidGap extends PhonegapActivity {
         	// All else
         	else {
 
-        		int i = url.lastIndexOf('/');
-        		String newBaseUrl = url;
-        		if (i > 0) {
-        			newBaseUrl = url.substring(0, i);
-        		}
-
         		// If our app or file:, then load into our webview
         		// NOTE: This replaces our app with new URL.  When BACK is pressed,
         		//       our app is reloaded and restarted.  All state is lost.
-        		if (this.ctx.loadInWebView || url.startsWith("file://") || this.ctx.baseUrl.equals(newBaseUrl)) {
-        			this.ctx.appView.loadUrl(url);
+        		if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0) {
+        			HashMap<String, Object> params = new HashMap<String, Object>();
+        			params.put("loadingDialog", "");
+        			params.put("hideLoadingDialogOnPageLoad", true);
+        			this.ctx.showWebPage(url, true, params);
         		}
   		
         		// If not our application, let default viewer handle
