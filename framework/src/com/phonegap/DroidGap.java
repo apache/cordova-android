@@ -751,46 +751,49 @@ public class DroidGap extends PhonegapActivity {
      *
      * @param url           The url to load.
      * @param usePhoneGap   Load url in PhoneGap webview.
-     * @return              "" if ok, or error message.
+     * @param clearPrev		Clear the activity stack, so new app becomes top of stack
+     * @param params		DroidGap parameters for new app
+     * @throws android.content.ActivityNotFoundException
      */
-    public void showWebPage(String url, boolean usePhoneGap, HashMap<String, Object> params) {
-        try {
-        	Intent intent = null;
-        	if (usePhoneGap) {
-        		intent = new Intent().setClass(this, com.phonegap.DroidGap.class);
-        		intent.putExtra("url", url);
+    public void showWebPage(String url, boolean usePhoneGap, boolean clearPrev, HashMap<String, Object> params) throws android.content.ActivityNotFoundException {
+    	Intent intent = null;
+    	if (usePhoneGap) {
+    		intent = new Intent().setClass(this, com.phonegap.DroidGap.class);
+    		intent.putExtra("url", url);
 
-        		// Add parameters
-        		if (params != null) {
-        			java.util.Set<Entry<String,Object>> s = params.entrySet();
-        			java.util.Iterator<Entry<String,Object>> it = s.iterator();
-        			while(it.hasNext()) {
-        				Entry<String,Object> entry = it.next();
-        				String key = entry.getKey();
-        				Object value = entry.getValue();
-        				if (value == null) {
-        				}
-        				else if (value.getClass().equals(String.class)) {
-        					intent.putExtra(key, (String)value);
-        				}
-        				else if (value.getClass().equals(Boolean.class)) {
-        					intent.putExtra(key, (Boolean)value);
-        				}
-        				else if (value.getClass().equals(Integer.class)) {
-        					intent.putExtra(key, (Integer)value);
-        				}
-        			}
+    		// Add parameters
+    		if (params != null) {
+    			java.util.Set<Entry<String,Object>> s = params.entrySet();
+    			java.util.Iterator<Entry<String,Object>> it = s.iterator();
+    			while(it.hasNext()) {
+    				Entry<String,Object> entry = it.next();
+    				String key = entry.getKey();
+    				Object value = entry.getValue();
+    				if (value == null) {
+    				}
+    				else if (value.getClass().equals(String.class)) {
+    					intent.putExtra(key, (String)value);
+    				}
+    				else if (value.getClass().equals(Boolean.class)) {
+    					intent.putExtra(key, (Boolean)value);
+    				}
+    				else if (value.getClass().equals(Integer.class)) {
+    					intent.putExtra(key, (Integer)value);
+    				}
+    			}
 
-        		}                
-        	}
-        	else {
-        		intent = new Intent(Intent.ACTION_VIEW);
-        		intent.setData(Uri.parse(url));
-        	}
-        	this.startActivity(intent);
-        } catch (android.content.ActivityNotFoundException e) {
-            System.out.println("DroidGap.showWebPage: Error loading url "+url+":"+ e.toString());
-        }
+    		}                
+    	}
+    	else {
+    		intent = new Intent(Intent.ACTION_VIEW);
+    		intent.setData(Uri.parse(url));
+    	}
+    	this.startActivity(intent);
+    	
+    	// Finish current activity
+		if (clearPrev) {
+			this.finish();
+		}
     }
 
     /**
@@ -1127,10 +1130,14 @@ public class DroidGap extends PhonegapActivity {
         		// NOTE: This replaces our app with new URL.  When BACK is pressed,
         		//       our app is reloaded and restarted.  All state is lost.
         		if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0) {
-        			HashMap<String, Object> params = new HashMap<String, Object>();
-        			params.put("loadingDialog", "");
-        			params.put("hideLoadingDialogOnPageLoad", true);
-        			this.ctx.showWebPage(url, true, params);
+        			try {
+        				HashMap<String, Object> params = new HashMap<String, Object>();
+        				params.put("loadingDialog", "");
+        				params.put("hideLoadingDialogOnPageLoad", true);
+        				this.ctx.showWebPage(url, true, true, params);
+        			} catch (android.content.ActivityNotFoundException e) {
+        				System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
+        			}
         		}
   		
         		// If not our application, let default viewer handle
