@@ -882,6 +882,9 @@ public class DroidGap extends PhonegapActivity {
          */
         @Override
         public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
+        	
+        	// Security check to make sure any requests are coming from the page initially
+        	// loaded in webview and not another loaded in an iframe.
         	boolean reqOk = false;
         	if (url.indexOf(this.ctx.baseUrl) == 0) {
         		reqOk = true;
