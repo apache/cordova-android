@@ -37,8 +37,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.phonegap.DroidGap" android:label="@string/app_name">
+            <intent-filter>
+            </intent-filter>
+        </activity>
     </application>
 
-	  <uses-sdk android:minSdkVersion="2" />
-
+	<uses-sdk android:minSdkVersion="2" />
 </manifest> 
