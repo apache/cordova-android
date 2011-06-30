@@ -1137,7 +1137,7 @@ public class DroidGap extends PhonegapActivity {
         				HashMap<String, Object> params = new HashMap<String, Object>();
         				params.put("loadingDialog", "");
         				params.put("hideLoadingDialogOnPageLoad", true);
-        				this.ctx.showWebPage(url, true, true, params);
+        				this.ctx.showWebPage(url, true, false, params);
         			} catch (android.content.ActivityNotFoundException e) {
         				System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
         			}
