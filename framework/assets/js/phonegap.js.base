@@ -99,7 +99,7 @@ PhoneGap.Channel.prototype.subscribe = function(f, c, g) {
     if (f === null) { return; }
 
     var func = f;
-    if (typeof c === "object" && f instanceof Function) { func = PhoneGap.close(c, f); }
+    if (typeof c === "object" && typeof f === "function") { func = PhoneGap.close(c, f); }
 
     g = g || func.observer_guid || f.observer_guid || this.guid++;
     func.observer_guid = g;
@@ -120,7 +120,7 @@ PhoneGap.Channel.prototype.subscribeOnce = function(f, c) {
         _this.unsubscribe(g);
     };
     if (this.fired) {
-        if (typeof c === "object" && f instanceof Function) { f = PhoneGap.close(c, f); }
+        if (typeof c === "object" && typeof f === "function") { f = PhoneGap.close(c, f); }
         f.apply(this, this.fireArgs);
     } else {
         g = this.subscribe(m);
@@ -132,7 +132,7 @@ PhoneGap.Channel.prototype.subscribeOnce = function(f, c) {
  * Unsubscribes the function with the given guid from the channel.
  */
 PhoneGap.Channel.prototype.unsubscribe = function(g) {
-    if (g instanceof Function) { g = g.observer_guid; }
+    if (typeof g === "function") { g = g.observer_guid; }
     this.handlers[g] = null;
     delete this.handlers[g];
 };
@@ -147,7 +147,7 @@ PhoneGap.Channel.prototype.fire = function(e) {
         for (item in this.handlers) {
             if (this.handlers.hasOwnProperty(item)) {
                 handler = this.handlers[item];
-                if (handler instanceof Function) {
+                if (typeof handler === "function") {
                     rv = (handler.apply(this, arguments) === false);
                     fail = fail || rv;
                 }
@@ -344,10 +344,13 @@ PhoneGap.Channel.join(function() {
             }
             else {
                 var polling = prompt("usePolling", "gap_callbackServer:");
+                PhoneGap.UsePolling = polling;
                 if (polling == "true") {
+                    PhoneGap.UsePolling = true;
                     PhoneGap.JSCallbackPolling();
                 }
                 else {
+                    PhoneGap.UsePolling = false;
                     PhoneGap.JSCallback();
                 }
             }
@@ -507,7 +510,7 @@ PhoneGap.clone = function(obj) {
         return retVal;
     }
     
-    if (obj instanceof Function) {
+    if (typeof obj === "function") {
         return obj;
     }
     
@@ -767,8 +770,8 @@ PhoneGap.JSCallback = function() {
             // If callback has JavaScript statement to execute
             if (xmlhttp.status === 200) {
 
-                // Need to url decode the response and replace %20 with a space
-                var msg = decodeURIComponent(xmlhttp.responseText.replace(/\+/g, '%20'));
+                // Need to url decode the response
+                var msg = decodeURIComponent(xmlhttp.responseText);
                 setTimeout(function() {
                     try {
                         var t = eval(msg);
@@ -802,13 +805,11 @@ PhoneGap.JSCallback = function() {
                 console.log("JSCallback Error: Bad request.  Stopping callbacks.");
             }
 
-            // If error, restart callback server
+            // If error, revert to polling
             else {
                 console.log("JSCallback Error: Request failed.");
-                prompt("restartServer", "gap_callbackServer:");
-                PhoneGap.JSCallbackPort = null;
-                PhoneGap.JSCallbackToken = null;
-                setTimeout(PhoneGap.JSCallback, 100);
+                PhoneGap.UsePolling = true;
+                PhoneGap.JSCallbackPolling();
             }
         }
     };
@@ -935,7 +936,11 @@ PhoneGap.includeJavascript = function(jsfile, successCallback) {
  */
 var PluginManager = {
     addService: function(serviceType, className) {
-        navigator.app.addService(serviceType, className);   
+        try {
+            navigator.app.addService(serviceType, className);
+        } catch (e) {
+            console.log("Error adding service "+serviceType+": "+e);
+        }
     }
 };
 

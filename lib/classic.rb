@@ -88,7 +88,7 @@ class Classic
 
   # copies stuff from src directory into the android project directory (@path)
   def copy_libs
-    version = IO.read(File.join(@framework_dir, '../VERSION'))
+    version = IO.read(File.join(@framework_dir, '../VERSION')).lstrip.rstrip
     framework_res_dir = File.join(@framework_dir, "res")
     app_res_dir = File.join(@path, "res")
     # copies in the jar

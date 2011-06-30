@@ -14,13 +14,11 @@ import org.json.JSONObject;
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
-import android.content.Context;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
 
 public class Device extends Plugin {
 	
-	public static String phonegapVersion = "0.9.5";				// PhoneGap version
+    public static String phonegapVersion = "0.9.6.1";               // PhoneGap version
 	public static String platform = "Android";					// Device OS
 	public static String uuid;									// Device UUID
     
@@ -116,34 +114,13 @@ public class Device extends Plugin {
 	public String getPhonegapVersion() {
 		return Device.phonegapVersion;
 	}	
-
-	public String getLine1Number(){
-	  TelephonyManager operator = (TelephonyManager)this.ctx.getSystemService(Context.TELEPHONY_SERVICE);
-	  return operator.getLine1Number();
-	}
 	
-	public String getDeviceId(){
-	  TelephonyManager operator = (TelephonyManager)this.ctx.getSystemService(Context.TELEPHONY_SERVICE);
-	  return operator.getDeviceId();
-	}
-	
-	public String getSimSerialNumber(){
-	  TelephonyManager operator = (TelephonyManager)this.ctx.getSystemService(Context.TELEPHONY_SERVICE);
-	  return operator.getSimSerialNumber();
-  }
-  
-	public String getSubscriberId(){
-	  TelephonyManager operator = (TelephonyManager)this.ctx.getSystemService(Context.TELEPHONY_SERVICE);
-	  return operator.getSubscriberId();
-	}
-	
-	public String getModel()
-	{
+	public String getModel() {
 		String model = android.os.Build.MODEL;
 		return model;
 	}
-	public String getProductName()
-	{
+	
+	public String getProductName() {
 		String productname = android.os.Build.PRODUCT;
 		return productname;
 	}
@@ -158,8 +135,7 @@ public class Device extends Plugin {
 		return osversion;
 	}
 	
-	public String getSDKVersion()
-	{
+	public String getSDKVersion() {
 		String sdkversion = android.os.Build.VERSION.SDK;
 		return sdkversion;
 	}

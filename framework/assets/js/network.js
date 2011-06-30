@@ -65,29 +65,49 @@ Network.prototype.isReachable = function(uri, callback, options) {
  */
 var Connection = function() {
     this.type = null;
-    this.homeNW = null;
-    this.currentNW = null;
+    this._firstRun = true;
+    this._timer = null;
+    this.timeout = 500;
 
     var me = this;
     this.getInfo(
-        function(info) {
-            me.type = info.type;
-            me.homeNW = info.homeNW;
-            me.currentNW = info.currentNW;
-            PhoneGap.onPhoneGapConnectionReady.fire();
+        function(type) {
+            // Need to send events if we are on or offline
+            if (type == "none") {
+                // set a timer if still offline at the end of timer send the offline event
+                me._timer = setTimeout(function(){
+                    me.type = type;
+                    PhoneGap.fireEvent('offline');
+                    me._timer = null;
+                    }, me.timeout);
+            } else {
+                // If there is a current offline event pending clear it
+                if (me._timer != null) {
+                    clearTimeout(me._timer);
+                    me._timer = null;
+                }
+                me.type = type;
+                PhoneGap.fireEvent('online');
+            }
+            
+            // should only fire this once
+            if (me._firstRun) {
+                me._firstRun = false;
+                PhoneGap.onPhoneGapConnectionReady.fire();
+            }            
         },
         function(e) {
             console.log("Error initializing Network Connection: " + e);
         });
 };
 
-Connection.UNKNOWN = 0;
-Connection.ETHERNET = 1;
-Connection.WIFI = 2;
-Connection.CELL_2G = 3;
-Connection.CELL_3G = 4;
-Connection.CELL_4G = 5;
-Connection.NONE = 20;
+Connection.UNKNOWN = "unknown";
+Connection.ETHERNET = "ethernet";
+Connection.WIFI = "wifi";
+Connection.CELL_2G = "2g";
+Connection.CELL_3G = "3g";
+Connection.CELL_4G = "4g";
+Connection.NONE = "none";
 
 /**
  * Get connection info
