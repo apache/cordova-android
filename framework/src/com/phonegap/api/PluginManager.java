@@ -7,13 +7,16 @@
  */
 package com.phonegap.api;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Intent;
+import android.content.res.XmlResourceParser;
 import android.webkit.WebView;
 
 /**
@@ -39,6 +42,33 @@ public final class PluginManager {
 	public PluginManager(WebView app, PhonegapActivity ctx) {
 		this.ctx = ctx;
 		this.app = app;
+		this.loadPlugins();
+	}
+	
+	/**
+	 * Load plugins from res/xml/plugins.xml
+	 */
+	public void loadPlugins() {
+		XmlResourceParser xml = ctx.getResources().getXml(com.phonegap.R.xml.plugins);
+		int eventType = -1;
+		while (eventType != XmlResourceParser.END_DOCUMENT) {
+			if (eventType == XmlResourceParser.START_TAG) {
+				String strNode = xml.getName();
+				if (strNode.equals("plugin")) {
+					String name = xml.getAttributeValue(null, "name");
+					String value = xml.getAttributeValue(null, "value");
+					System.out.println("Plugin: "+name+" => "+value);
+					this.addService(name, value);
+				}
+			}
+			try {
+				eventType = xml.next();
+			} catch (XmlPullParserException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
