@@ -97,6 +97,9 @@ class Classic
     # copies in the strings.xml
     FileUtils.mkdir_p File.join(app_res_dir, "values")
     FileUtils.cp File.join(framework_res_dir, "values","strings.xml"), File.join(app_res_dir, "values", "strings.xml")
+    # copies in plugins.xml
+    FileUtils.mkdir_p File.join(app_res_dir, "xml")
+    FileUtils.cp File.join(framework_res_dir, "xml","plugins.xml"), File.join(app_res_dir, "xml", "plugins.xml")
     # drops in the layout files: main.xml and preview.xml
     FileUtils.mkdir_p File.join(app_res_dir, "layout")
     %w(main.xml).each do |f|
