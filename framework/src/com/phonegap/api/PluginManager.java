@@ -101,7 +101,7 @@ public final class PluginManager {
 									ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 								}
 							} catch (Exception e) {
-								PluginResult cr = new PluginResult(PluginResult.Status.ERROR);
+								PluginResult cr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
 								ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 							}
 						}
@@ -160,24 +160,7 @@ public final class PluginManager {
 		}
 		return false;
 	}
-	
-    /**
-     * Add plugin to be loaded and cached.  This creates an instance of the plugin.
-     * If plugin is already created, then just return it.
-     * 
-     * @param className				The class to load
-     * @return						The plugin
-     */
-	public Plugin addPlugin(String className) {
-	    try {
-            return this.addPlugin(className, this.getClassByName(className)); 
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("Error adding plugin "+className+".");
-        }
-        return null;
-	}
-	
+
     /**
      * Add plugin to be loaded and cached.  This creates an instance of the plugin.
      * If plugin is already created, then just return it.

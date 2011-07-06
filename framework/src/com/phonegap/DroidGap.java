@@ -9,6 +9,7 @@ package com.phonegap;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -617,7 +618,7 @@ public class DroidGap extends PhonegapActivity {
     public void setDoubleProperty(String name, double value) {
     	this.getIntent().putExtra(name, value);
     }
-
+    
     @Override
     /**
      * Called when the system is about to start resuming a previous activity. 
@@ -1311,12 +1312,7 @@ public class DroidGap extends PhonegapActivity {
     @Override
     public void startActivityForResult(Intent intent, int requestCode) throws RuntimeException {
     	System.out.println("startActivityForResult(intent,"+requestCode+")");
-    	if (requestCode == -1) {
-    		super.startActivityForResult(intent, requestCode);
-    	}
-    	else {
-    		throw new RuntimeException("PhoneGap Exception: Call startActivityForResult(Command, Intent) instead.");
-    	}
+    	super.startActivityForResult(intent, requestCode);
     }
 
     /**
@@ -1357,7 +1353,12 @@ public class DroidGap extends PhonegapActivity {
     		 callback.onActivityResult(requestCode, resultCode, intent);
     	 }        
      }
-   
+
+     @Override
+     public void setActivityResultCallback(Plugin plugin) {
+    	 this.activityResultCallback = plugin;
+     }
+     
      /**
       * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
       * The errorCode parameter corresponds to one of the ERROR_* constants.

@@ -15,7 +15,7 @@ import android.content.Intent;
  * It is used to isolate plugin development, and remove dependency on entire Phonegap library.
  */
 public abstract class PhonegapActivity extends Activity {
-		
+
     /**
      * Add a class that implements a service.
      * 
@@ -40,4 +40,11 @@ public abstract class PhonegapActivity extends Activity {
      * @param requestCode		The request code that is passed to callback to identify the activity
      */
     abstract public void startActivityForResult(Plugin command, Intent intent, int requestCode);
+
+    /**
+     * Set the plugin to be called when a sub-activity exits.
+     * 
+     * @param plugin			The plugin on which onActivityResult is to be called
+     */
+    abstract public void setActivityResultCallback(Plugin plugin);
 }
