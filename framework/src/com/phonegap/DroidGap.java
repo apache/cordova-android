@@ -134,11 +134,9 @@ public class DroidGap extends PhonegapActivity {
 	// ie http://server/path/index.html#abc?query
 	private String url;
 	
-	// The initial URL for our app up to and including the file name
-	// ie http://server/path/index.html
-	private String urlFile;
-	
-	// The base of the initial URL for our app
+	// The base of the initial URL for our app.
+	// Does not include file name.  Ends with /
+	// ie http://server/path/
 	private String baseUrl = null;
 
 	// Plugin to call when activity result is received
@@ -334,7 +332,6 @@ public class DroidGap extends PhonegapActivity {
      */
 	public void loadUrl(final String url) {
 		System.out.println("loadUrl("+url+")");
-		this.urlFile = this.getUrlFile(url);
 		this.url = url;
 		if (this.baseUrl == null) {
 			int i = url.lastIndexOf('/');
@@ -711,21 +708,6 @@ public class DroidGap extends PhonegapActivity {
     	this.callbackServer.sendJavascript(statement);
     }
     
-    /**
-     * Return up to file part of url.
-     * If url = http://server/page.html#abc, then return http://server/page.html
-     * 
-     * @param url
-     * @return
-     */
-    private String getUrlFile(String url) {
-    	int p1 = url.indexOf("#");
-    	int p2 = url.indexOf("?");
-    	if (p1 < 0) p1 = url.length();
-    	if (p2 < 0) p2 = url.length();
-    	int p3 = (p1 < p2) ? p1 : p2;
-    	return url.substring(0, p3);
-    }
     
     /**
      * Display a new browser with the specified URL.
