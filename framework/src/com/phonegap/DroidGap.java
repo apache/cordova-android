@@ -291,23 +291,6 @@ public class DroidGap extends PhonegapActivity {
 		this.callbackServer = new CallbackServer();
 		this.pluginManager = new PluginManager(appView, this);
 
-		this.addService("App", "com.phonegap.App");
-		this.addService("Geolocation", "com.phonegap.GeoBroker");
-		this.addService("Device", "com.phonegap.Device");
-		this.addService("Accelerometer", "com.phonegap.AccelListener");
-		this.addService("Compass", "com.phonegap.CompassListener");
-		this.addService("Media", "com.phonegap.AudioHandler");
-		this.addService("Camera", "com.phonegap.CameraLauncher");
-		this.addService("Contacts", "com.phonegap.ContactManager");
-		this.addService("Crypto", "com.phonegap.CryptoHandler");
-		this.addService("File", "com.phonegap.FileUtils");
-		this.addService("Location", "com.phonegap.GeoBroker");	// Always add Location, even though it is built-in on 2.x devices. Let JavaScript decide which one to use.
-		this.addService("Network Status", "com.phonegap.NetworkManager");
-		this.addService("Notification", "com.phonegap.Notification");
-		this.addService("Storage", "com.phonegap.Storage");
-		this.addService("Temperature", "com.phonegap.TempListener");
-		this.addService("FileTransfer", "com.phonegap.FileTransfer");
-		this.addService("Capture", "com.phonegap.Capture");
 	}
         
 	/**
