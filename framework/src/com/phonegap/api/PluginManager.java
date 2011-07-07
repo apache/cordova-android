@@ -7,13 +7,16 @@
  */
 package com.phonegap.api;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Intent;
+import android.content.res.XmlResourceParser;
 import android.webkit.WebView;
 
 /**
@@ -39,6 +42,33 @@ public final class PluginManager {
 	public PluginManager(WebView app, PhonegapActivity ctx) {
 		this.ctx = ctx;
 		this.app = app;
+		this.loadPlugins();
+	}
+	
+	/**
+	 * Load plugins from res/xml/plugins.xml
+	 */
+	public void loadPlugins() {
+		XmlResourceParser xml = ctx.getResources().getXml(com.phonegap.R.xml.plugins);
+		int eventType = -1;
+		while (eventType != XmlResourceParser.END_DOCUMENT) {
+			if (eventType == XmlResourceParser.START_TAG) {
+				String strNode = xml.getName();
+				if (strNode.equals("plugin")) {
+					String name = xml.getAttributeValue(null, "name");
+					String value = xml.getAttributeValue(null, "value");
+					System.out.println("Plugin: "+name+" => "+value);
+					this.addService(name, value);
+				}
+			}
+			try {
+				eventType = xml.next();
+			} catch (XmlPullParserException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -101,7 +131,7 @@ public final class PluginManager {
 									ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 								}
 							} catch (Exception e) {
-								PluginResult cr = new PluginResult(PluginResult.Status.ERROR);
+								PluginResult cr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
 								ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 							}
 						}
@@ -160,24 +190,7 @@ public final class PluginManager {
 		}
 		return false;
 	}
-	
-    /**
-     * Add plugin to be loaded and cached.  This creates an instance of the plugin.
-     * If plugin is already created, then just return it.
-     * 
-     * @param className				The class to load
-     * @return						The plugin
-     */
-	public Plugin addPlugin(String className) {
-	    try {
-            return this.addPlugin(className, this.getClassByName(className)); 
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("Error adding plugin "+className+".");
-        }
-        return null;
-	}
-	
+
     /**
      * Add plugin to be loaded and cached.  This creates an instance of the plugin.
      * If plugin is already created, then just return it.

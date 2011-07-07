@@ -9,6 +9,7 @@ package com.phonegap;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -133,11 +134,9 @@ public class DroidGap extends PhonegapActivity {
 	// ie http://server/path/index.html#abc?query
 	private String url;
 	
-	// The initial URL for our app up to and including the file name
-	// ie http://server/path/index.html
-	private String urlFile;
-	
-	// The base of the initial URL for our app
+	// The base of the initial URL for our app.
+	// Does not include file name.  Ends with /
+	// ie http://server/path/
 	private String baseUrl = null;
 
 	// Plugin to call when activity result is received
@@ -291,23 +290,6 @@ public class DroidGap extends PhonegapActivity {
 		this.callbackServer = new CallbackServer();
 		this.pluginManager = new PluginManager(appView, this);
 
-		this.addService("App", "com.phonegap.App");
-		this.addService("Geolocation", "com.phonegap.GeoBroker");
-		this.addService("Device", "com.phonegap.Device");
-		this.addService("Accelerometer", "com.phonegap.AccelListener");
-		this.addService("Compass", "com.phonegap.CompassListener");
-		this.addService("Media", "com.phonegap.AudioHandler");
-		this.addService("Camera", "com.phonegap.CameraLauncher");
-		this.addService("Contacts", "com.phonegap.ContactManager");
-		this.addService("Crypto", "com.phonegap.CryptoHandler");
-		this.addService("File", "com.phonegap.FileUtils");
-		this.addService("Location", "com.phonegap.GeoBroker");	// Always add Location, even though it is built-in on 2.x devices. Let JavaScript decide which one to use.
-		this.addService("Network Status", "com.phonegap.NetworkManager");
-		this.addService("Notification", "com.phonegap.Notification");
-		this.addService("Storage", "com.phonegap.Storage");
-		this.addService("Temperature", "com.phonegap.TempListener");
-		this.addService("FileTransfer", "com.phonegap.FileTransfer");
-		this.addService("Capture", "com.phonegap.Capture");
 	}
         
 	/**
@@ -350,7 +332,6 @@ public class DroidGap extends PhonegapActivity {
      */
 	public void loadUrl(final String url) {
 		System.out.println("loadUrl("+url+")");
-		this.urlFile = this.getUrlFile(url);
 		this.url = url;
 		if (this.baseUrl == null) {
 			int i = url.lastIndexOf('/');
@@ -617,7 +598,7 @@ public class DroidGap extends PhonegapActivity {
     public void setDoubleProperty(String name, double value) {
     	this.getIntent().putExtra(name, value);
     }
-
+    
     @Override
     /**
      * Called when the system is about to start resuming a previous activity. 
@@ -727,21 +708,6 @@ public class DroidGap extends PhonegapActivity {
     	this.callbackServer.sendJavascript(statement);
     }
     
-    /**
-     * Return up to file part of url.
-     * If url = http://server/page.html#abc, then return http://server/page.html
-     * 
-     * @param url
-     * @return
-     */
-    private String getUrlFile(String url) {
-    	int p1 = url.indexOf("#");
-    	int p2 = url.indexOf("?");
-    	if (p1 < 0) p1 = url.length();
-    	if (p2 < 0) p2 = url.length();
-    	int p3 = (p1 < p2) ? p1 : p2;
-    	return url.substring(0, p3);
-    }
     
     /**
      * Display a new browser with the specified URL.
@@ -1311,12 +1277,7 @@ public class DroidGap extends PhonegapActivity {
     @Override
     public void startActivityForResult(Intent intent, int requestCode) throws RuntimeException {
     	System.out.println("startActivityForResult(intent,"+requestCode+")");
-    	if (requestCode == -1) {
-    		super.startActivityForResult(intent, requestCode);
-    	}
-    	else {
-    		throw new RuntimeException("PhoneGap Exception: Call startActivityForResult(Command, Intent) instead.");
-    	}
+    	super.startActivityForResult(intent, requestCode);
     }
 
     /**
@@ -1357,7 +1318,12 @@ public class DroidGap extends PhonegapActivity {
     		 callback.onActivityResult(requestCode, resultCode, intent);
     	 }        
      }
-   
+
+     @Override
+     public void setActivityResultCallback(Plugin plugin) {
+    	 this.activityResultCallback = plugin;
+     }
+     
      /**
       * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
       * The errorCode parameter corresponds to one of the ERROR_* constants.
