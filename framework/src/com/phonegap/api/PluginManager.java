@@ -27,7 +27,7 @@ import android.webkit.WebView;
  */
 public final class PluginManager {	
 
-	private HashMap<String, Plugin> plugins = new HashMap<String,Plugin>();
+	private HashMap<String, IPlugin> plugins = new HashMap<String,IPlugin>();
 	private HashMap<String, String> services = new HashMap<String,String>();
 	
 	private final PhonegapActivity ctx;
@@ -105,7 +105,7 @@ public final class PluginManager {
 				c = getClassByName(clazz);
 			}
 			if (isPhoneGapPlugin(c)) {
-				final Plugin plugin = this.addPlugin(clazz, c); 
+				final IPlugin plugin = this.addPlugin(clazz, c); 
 				final PhonegapActivity ctx = this.ctx;
 				runAsync = async && !plugin.isSynch(action);
 				if (runAsync) {
@@ -201,12 +201,12 @@ public final class PluginManager {
      * @return						The plugin
      */
 	@SuppressWarnings("unchecked")
-	private Plugin addPlugin(String className, Class clazz) { 
+	private IPlugin addPlugin(String className, Class clazz) { 
     	if (this.plugins.containsKey(className)) {
     		return this.getPlugin(className);
     	}
     	try {
-              Plugin plugin = (Plugin)clazz.newInstance();
+              IPlugin plugin = (IPlugin)clazz.newInstance();
               this.plugins.put(className, plugin);
               plugin.setContext(this.ctx);
               plugin.setView(this.app);
@@ -225,8 +225,8 @@ public final class PluginManager {
      * @param className				The class of the loaded plugin.
      * @return
      */
-    private Plugin getPlugin(String className) {
-    	Plugin plugin = this.plugins.get(className);
+    private IPlugin getPlugin(String className) {
+    	IPlugin plugin = this.plugins.get(className);
     	return plugin;
     }
     
@@ -247,11 +247,11 @@ public final class PluginManager {
      * @param multitasking		Flag indicating if multitasking is turned on for app
      */
     public void onPause(boolean multitasking) {
-    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
+    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Plugin> entry = it.next();
-    		Plugin plugin = entry.getValue();
+    		Entry<String,IPlugin> entry = it.next();
+    		IPlugin plugin = entry.getValue();
     		plugin.onPause(multitasking);
     	}
     }
@@ -262,11 +262,11 @@ public final class PluginManager {
      * @param multitasking		Flag indicating if multitasking is turned on for app
      */
     public void onResume(boolean multitasking) {
-    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
+    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Plugin> entry = it.next();
-    		Plugin plugin = entry.getValue();
+    		Entry<String,IPlugin> entry = it.next();
+    		IPlugin plugin = entry.getValue();
     		plugin.onResume(multitasking);
     	}    	
     }
@@ -275,11 +275,11 @@ public final class PluginManager {
      * The final call you receive before your activity is destroyed. 
      */
     public void onDestroy() {
-    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
+    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Plugin> entry = it.next();
-    		Plugin plugin = entry.getValue();
+    		Entry<String,IPlugin> entry = it.next();
+    		IPlugin plugin = entry.getValue();
     		plugin.onDestroy();
     	}
     }
@@ -288,11 +288,11 @@ public final class PluginManager {
      * Called when the activity receives a new intent. 
      */    
     public void onNewIntent(Intent intent) {
-    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
+    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Plugin> entry = it.next();
-    		Plugin plugin = entry.getValue();
+    		Entry<String,IPlugin> entry = it.next();
+    		IPlugin plugin = entry.getValue();
     		plugin.onNewIntent(intent);
     	}
     }
