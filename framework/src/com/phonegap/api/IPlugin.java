@@ -67,6 +67,11 @@ public interface IPlugin {
     void onResume(boolean multitasking);
     
     /**
+     * Called when the activity receives a new intent. 
+     */
+    void onNewIntent(Intent intent);
+
+    /**
      * The final call you receive before your activity is destroyed. 
      */
     void onDestroy();
