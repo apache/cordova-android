@@ -264,16 +264,18 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 						newContact = false;
 						contact.put("id", contactId);
 						contact.put("rawId", rawId);
-						contact.put("displayName", c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME)));
 					}
 					
 					// Grab the mimetype of the current row as it will be used in a lot of comparisons
 					mimetype = c.getString(c.getColumnIndex(ContactsContract.Data.MIMETYPE));
 					
-					if (mimetype.equals(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE) 
-							&& isRequired("name",populate)) {
-						contact.put("name", nameQuery(c));
-					}
+                    if (mimetype.equals(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)) {
+                        contact.put("displayName", c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME)));
+                    }
+                    if (mimetype.equals(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE) 
+                            && isRequired("name",populate)) {
+                        contact.put("name", nameQuery(c));
+                    }
 					else if (mimetype.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE) 
 							&& isRequired("phoneNumbers",populate)) {
 						phones.put(phoneQuery(c));
