@@ -49,7 +49,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.phonegap.api.PhonegapActivity;
-import com.phonegap.api.Plugin;
+import com.phonegap.api.IPlugin;
 import com.phonegap.api.PluginManager;
 
 /**
@@ -140,7 +140,7 @@ public class DroidGap extends PhonegapActivity {
 	private String baseUrl = null;
 
 	// Plugin to call when activity result is received
-	protected Plugin activityResultCallback = null;
+	protected IPlugin activityResultCallback = null;
 	protected boolean activityResultKeepRunning;
 
 	// Flag indicates that a loadUrl timeout occurred
@@ -1288,7 +1288,7 @@ public class DroidGap extends PhonegapActivity {
      * @param intent			The intent to start
      * @param requestCode		The request code that is passed to callback to identify the activity
      */
-    public void startActivityForResult(Plugin command, Intent intent, int requestCode) {
+    public void startActivityForResult(IPlugin command, Intent intent, int requestCode) {
     	this.activityResultCallback = command;
     	this.activityResultKeepRunning = this.keepRunning;
     	
@@ -1313,14 +1313,14 @@ public class DroidGap extends PhonegapActivity {
      */
      protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
     	 super.onActivityResult(requestCode, resultCode, intent);
-    	 Plugin callback = this.activityResultCallback;
+    	 IPlugin callback = this.activityResultCallback;
     	 if (callback != null) {
     		 callback.onActivityResult(requestCode, resultCode, intent);
     	 }        
      }
 
      @Override
-     public void setActivityResultCallback(Plugin plugin) {
+     public void setActivityResultCallback(IPlugin plugin) {
     	 this.activityResultCallback = plugin;
      }
      
