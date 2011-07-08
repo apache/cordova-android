@@ -35,7 +35,7 @@ class Update
     puts "Copying over libraries and assets..."
     version = IO.read(File.join(@framework_dir, '../VERSION'))
 
-    FileUtils.cp File.join(@framework_dir, "phonegap.#{ version }.jar"), File.join(@path, "libs")
+    FileUtils.cp File.join(@framework_dir, "phonegap-#{ version }.jar"), File.join(@path, "libs")
 
     # concat JS and put into www folder. this can be overridden in the config.xml via @app_js_dir
     js_dir = File.join(@framework_dir, "assets", "js")
@@ -45,7 +45,7 @@ class Update
       phonegapjs << IO.read(File.join(js_dir, script))
       phonegapjs << "\n\n"
     end
-    File.open(File.join(@path, "assets", "www", "phonegap.#{ version }.js"), 'w') {|f| f.write(phonegapjs) }
+    File.open(File.join(@path, "assets", "www", "phonegap-#{ version }.js"), 'w') {|f| f.write(phonegapjs) }
   end
   #
 end
