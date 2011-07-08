@@ -173,7 +173,7 @@
             "build-javascript" => "build-uncompressed-javascript".
     -->
     <target name="jar" depends="build-javascript, compile">
-      <jar jarfile="phonegap.${version}.jar" basedir="bin/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
+      <jar jarfile="phonegap-${version}.jar" basedir="bin/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
     </target>
 
     <target name="phonegap_debug" depends="build-javascript, debug">
