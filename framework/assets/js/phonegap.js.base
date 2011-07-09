@@ -365,10 +365,6 @@ PhoneGap.Channel.join(function() {
     // Fire onDeviceReady event once all constructors have run and PhoneGap info has been
     // received from native side, and any user defined initialization channels.
     PhoneGap.Channel.join(function() {
-
-        // Turn off app loading dialog
-        navigator.notification.activityStop();
-
         PhoneGap.onDeviceReady.fire();
 
         // Fire the onresume event, since first one happens before JavaScript is loaded

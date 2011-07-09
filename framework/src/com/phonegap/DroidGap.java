@@ -15,6 +15,7 @@ import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -94,10 +95,6 @@ import com.phonegap.api.PluginManager;
  * 		// (String - default=null)
  * 		super.setStringProperty("loadingDialog", "Wait,Loading Demo...");
  * 
- * 		// Hide loadingDialog when page loaded instead of when deviceready event
- * 		// occurs. (Boolean - default=false)
- * 		super.setBooleanProperty("hideLoadingDialogOnPage", true);
- * 
  * 		// Cause all links on web page to be loaded into existing web view, 
  * 		// instead of being loaded into new browser. (Boolean - default=false)
  * 		super.setBooleanProperty("loadInWebView", true);
@@ -129,6 +126,7 @@ public class DroidGap extends PhonegapActivity {
 	protected PluginManager pluginManager;
 	protected boolean cancelLoadUrl = false;
 	protected boolean clearHistory = false;
+	protected ProgressDialog spinnerDialog = null;
 
 	// The initial URL for our app
 	// ie http://server/path/index.html#abc?query
@@ -149,10 +147,6 @@ public class DroidGap extends PhonegapActivity {
 	/*
 	 * The variables below are used to cache some of the activity properties.
 	 */
-	
-	// Flag indicates that "app loading" dialog should be hidden once page is loaded.
-	// The default is to hide it once PhoneGap JavaScript code has initialized.
-	protected boolean hideLoadingDialogOnPageLoad = false;	
 
 	// Flag indicates that a URL navigated to from PhoneGap app should be loaded into same webview
 	// instead of being loaded into the web browser.  
@@ -309,9 +303,6 @@ public class DroidGap extends PhonegapActivity {
 			root.setBackgroundResource(this.splashscreen);
 		}
 
-		// If hideLoadingDialogOnPageLoad
-		this.hideLoadingDialogOnPageLoad = this.getBooleanProperty("hideLoadingDialogOnPageLoad", false);
-
 		// If loadInWebView
 		this.loadInWebView = this.getBooleanProperty("loadInWebView", false);
 
@@ -373,10 +364,7 @@ public class DroidGap extends PhonegapActivity {
 							message = loading;
 						}
 					}
-					JSONArray parm = new JSONArray();
-					parm.put(title);
-					parm.put(message);
-					me.pluginManager.exec("Notification", "activityStart", null, parm.toString(), false);
+					me.spinnerStart(title, message);
 				}
 
 				// Create a timeout timer for loadUrl
@@ -761,6 +749,36 @@ public class DroidGap extends PhonegapActivity {
 			this.finish();
 		}
     }
+    
+    /**
+     * Show the spinner.  Must be called from the UI thread.
+     * 
+     * @param title			Title of the dialog
+     * @param message		The message of the dialog
+     */
+    public void spinnerStart(final String title, final String message) {
+    	if (this.spinnerDialog != null) {
+    		this.spinnerDialog.dismiss();
+    		this.spinnerDialog = null;
+    	}
+    	final DroidGap me = this;
+    	this.spinnerDialog = ProgressDialog.show(DroidGap.this, title , message, true, true, 
+    			new DialogInterface.OnCancelListener() { 
+    		public void onCancel(DialogInterface dialog) {
+    			me.spinnerDialog = null;
+    		}
+    	});
+    }
+
+    /**
+     * Stop spinner.
+     */
+    public void spinnerStop() {
+    	if (this.spinnerDialog != null) {
+    		this.spinnerDialog.dismiss();
+    		this.spinnerDialog = null;
+		}
+    }
 
     /**
      * Provides a hook for calling "alert" from javascript. Useful for
@@ -1102,7 +1120,6 @@ public class DroidGap extends PhonegapActivity {
         			try {
         				HashMap<String, Object> params = new HashMap<String, Object>();
         				params.put("loadingDialog", "");
-        				params.put("hideLoadingDialogOnPageLoad", true);
         				this.ctx.showWebPage(url, true, false, params);
         			} catch (android.content.ActivityNotFoundException e) {
         				System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
@@ -1147,10 +1164,7 @@ public class DroidGap extends PhonegapActivity {
         	appView.setVisibility(View.VISIBLE);
 
         	// Stop "app loading" spinner if showing
-        	if (this.ctx.hideLoadingDialogOnPageLoad) {
-        		this.ctx.hideLoadingDialogOnPageLoad = false;
-        		this.ctx.pluginManager.exec("Notification", "activityStop", null, "[]", false);
-        	}
+       		this.ctx.spinnerStop();
 
     		// Clear history, so that previous screen isn't there when Back button is pressed
     		if (this.ctx.clearHistory) {
