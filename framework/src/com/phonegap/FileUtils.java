@@ -105,9 +105,6 @@ public class FileUtils extends Plugin {
 					String s = this.readAsDataURL(args.getString(0));
 			        return new PluginResult(status, s);
 			    }
-				else if (action.equals("writeAsText")) {
-					this.writeAsText(args.getString(0), args.getString(1), args.getBoolean(2));
-			    }
 				else if (action.equals("write")) {
 					long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
 					return new PluginResult(status, fileSize);
@@ -913,26 +910,6 @@ public class FileUtils extends Plugin {
 		MimeTypeMap map = MimeTypeMap.getSingleton();
 		return map.getMimeTypeFromExtension(map.getFileExtensionFromUrl(filename));
 	}
-    
-    /**
-     * Write contents of file.
-     * 
-     * @param filename			The name of the file.
-     * @param data				The contents of the file.
-     * @param append			T=append, F=overwrite
-     * @throws FileNotFoundException, IOException
-     */
-    public void writeAsText(String filename, String data, boolean append) throws FileNotFoundException, IOException {
-    	String FilePath= filename;
-   		byte [] rawData = data.getBytes();
-   		ByteArrayInputStream in = new ByteArrayInputStream(rawData);    			    			
-   		FileOutputStream out= new FileOutputStream(FilePath, append);
-   		byte buff[] = new byte[rawData.length];
-   		in.read(buff, 0, buff.length);
-   		out.write(buff, 0, rawData.length);
-   		out.flush();
-   		out.close();    			
-    }
     
     /**
      * Write contents of file.

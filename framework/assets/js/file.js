@@ -92,10 +92,6 @@ FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback) {
     return PhoneGap.exec(successCallback, errorCallback, "File", "getFreeDiskSpace", []);
 };
 
-FileMgr.prototype.writeAsText = function(fileName, data, append, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "writeAsText", [fileName, data, append]);
-};
-
 FileMgr.prototype.write = function(fileName, data, position, successCallback, errorCallback) {
     PhoneGap.exec(successCallback, errorCallback, "File", "write", [fileName, data, position]);
 };
