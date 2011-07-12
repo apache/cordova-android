@@ -49,7 +49,8 @@ public final class PluginManager {
 	 * Load plugins from res/xml/plugins.xml
 	 */
 	public void loadPlugins() {
-		XmlResourceParser xml = ctx.getResources().getXml(com.phonegap.R.xml.plugins);
+		int id = ctx.getResources().getIdentifier("plugins", "xml", ctx.getPackageName());
+		XmlResourceParser xml = ctx.getResources().getXml(id);
 		int eventType = -1;
 		while (eventType != XmlResourceParser.END_DOCUMENT) {
 			if (eventType == XmlResourceParser.START_TAG) {
@@ -57,7 +58,7 @@ public final class PluginManager {
 				if (strNode.equals("plugin")) {
 					String name = xml.getAttributeValue(null, "name");
 					String value = xml.getAttributeValue(null, "value");
-					System.out.println("Plugin: "+name+" => "+value);
+					//System.out.println("Plugin: "+name+" => "+value);
 					this.addService(name, value);
 				}
 			}
