@@ -24,7 +24,6 @@
 
 package com.phonegap;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
 import android.app.Activity;
@@ -44,53 +43,9 @@ import org.json.JSONObject;
  */
 public abstract class ContactAccessor {
 	
-    /**
-     * Static singleton instance of {@link ContactAccessor} holding the
-     * SDK-specific implementation of the class.
-     */
-    private static ContactAccessor sInstance;
     protected final String LOG_TAG = "ContactsAccessor";
     protected Activity mApp;
     protected WebView mView;
-
-    public static ContactAccessor getInstance(WebView view, Activity app) {
-        if (sInstance == null) {
-            String className;
-
-            /*
-             * Check the version of the SDK we are running on. Choose an
-             * implementation class designed for that version of the SDK.
-             *
-             * Unfortunately we have to use strings to represent the class
-             * names. If we used the conventional ContactAccessorSdk5.class.getName()
-             * syntax, we would get a ClassNotFoundException at runtime on pre-Eclair SDKs.
-             * Using the above syntax would force Dalvik to load the class and try to
-             * resolve references to all other classes it uses. Since the pre-Eclair
-             * does not have those classes, the loading of ContactAccessorSdk5 would fail.
-             */
-            
-            if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {
-                className = "com.phonegap.ContactAccessorSdk3_4";
-            } else {
-                className = "com.phonegap.ContactAccessorSdk5";
-            }
-
-            /*
-             * Find the required class by name and instantiate it.
-             */
-            try {
-                Class<? extends ContactAccessor> clazz =
-                        Class.forName(className).asSubclass(ContactAccessor.class);
-                // Grab constructor for contactsmanager class dynamically.
-                Constructor<? extends ContactAccessor> classConstructor = clazz.getConstructor(Class.forName("android.webkit.WebView"), Class.forName("android.app.Activity"));
-                sInstance = classConstructor.newInstance(view, app);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        }
-
-        return sInstance;
-    }
 	
     /**
      * Check to see if the data associated with the key is required to 
