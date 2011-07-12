@@ -7,10 +7,7 @@
  */
 package com.phonegap;
 
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
-import org.json.JSONException;
 
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.Plugin;
@@ -102,32 +99,18 @@ public class NetworkManager extends Plugin {
 	 * @return 				A PluginResult object with a status and message.
 	 */
 	public PluginResult execute(String action, JSONArray args, String callbackId) {
-		PluginResult.Status status = PluginResult.Status.OK;
-		String result = "";		
-		try {
-			if (action.equals("isAvailable")) {
-				boolean b = this.isAvailable();
-				return new PluginResult(status, b);
-			}
-			else if (action.equals("isWifiActive")) {
-				boolean b = this.isWifiActive();
-				return new PluginResult(status, b);
-			}
-			else if (action.equals("isReachable")) {
-				int i = this.isReachable(args.getString(0), args.getBoolean(1));
-				return new PluginResult(status, i);
-			}
-			else if (action.equals("getConnectionInfo")) {
-				this.connectionCallbackId = callbackId;
-				NetworkInfo info = sockMan.getActiveNetworkInfo();
-				PluginResult pluginResult = new PluginResult(status, this.getConnectionInfo(info));
-				pluginResult.setKeepCallback(true);
-				return pluginResult;
-			}			
-			return new PluginResult(status, result);
-		} catch (JSONException e) {
-			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+		PluginResult.Status status = PluginResult.Status.INVALID_ACTION;
+		String result = "Unsupported Operation: " + action;	
+		
+		if (action.equals("getConnectionInfo")) {
+			this.connectionCallbackId = callbackId;
+			NetworkInfo info = sockMan.getActiveNetworkInfo();
+			PluginResult pluginResult = new PluginResult(status, this.getConnectionInfo(info));
+			pluginResult.setKeepCallback(true);
+			return pluginResult;
 		}
+		
+		return new PluginResult(status, result);
 	}
 
 	/**
@@ -235,67 +218,5 @@ public class NetworkManager extends Plugin {
 			return TYPE_NONE;
 		}
 		return TYPE_UNKNOWN;
-	}
-	
-	/**
-     * Determine if a network connection exists.
-     * 
-     * @return
-     */
-	public boolean isAvailable() {
-		NetworkInfo info = sockMan.getActiveNetworkInfo();
-		boolean conn = false;
-		if (info != null) {
-			conn = info.isConnected();
-		}
-		return conn;
-	}
-	
-	/**
-	 * Determine if a WIFI connection exists.
-	 * 
-	 * @return
-	 */
-	public boolean isWifiActive() {
-		NetworkInfo info = sockMan.getActiveNetworkInfo();
-		if (info != null) {
-			String type = info.getTypeName();
-			return type.equals("WIFI");
-		}
-		return false;
-	}
-	
-	/**
-	 * Determine if a URI is reachable over the network.
-	 * 
-	 * @param uri
-	 * @param isIpAddress
-	 * @return
-	 */
-	public int isReachable(String uri, boolean isIpAddress) {
-		int reachable = NOT_REACHABLE;
-		
-		if (uri.indexOf("http://") == -1 && uri.indexOf("https://") == -1) {
-			uri = "http://" + uri;
-		}
-
-		if (this.isAvailable()) {
-			try {
-				DefaultHttpClient httpclient = new DefaultHttpClient();
-				HttpGet httpget = new HttpGet(uri);
-				httpclient.execute(httpget);			
-
-				if (this.isWifiActive()) {
-					reachable = REACHABLE_VIA_WIFI_NETWORK;
-				}
-				else {
-					reachable = REACHABLE_VIA_CARRIER_DATA_NETWORK;
-				}
-			} catch (Exception e) { 
-				reachable = NOT_REACHABLE;
-			}
-		}
-				
-		return reachable;
 	}
 }
