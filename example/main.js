@@ -88,16 +88,6 @@ function close() {
     viewport.style.display = "none";
 }
 
-// This is just to do this.
-function readFile() {
-    navigator.file.read('/sdcard/phonegap.txt', fail, fail);
-}
-
-function writeFile() {
-    navigator.file.write('foo.txt', "This is a test of writing to a file",
-            fail, fail);
-}
-
 function contacts_success(contacts) {
     alert(contacts.length
             + ' contacts returned.'
@@ -109,27 +99,24 @@ function get_contacts() {
     var obj = new ContactFindOptions();
     obj.filter = "";
     obj.multiple = true;
-    obj.limit = 5;
     navigator.service.contacts.find(
             [ "displayName", "name" ], contacts_success,
             fail, obj);
 }
 
-var networkReachableCallback = function(reachability) {
-    // There is no consistency on the format of reachability
-    var networkState = reachability.code || reachability;
-
-    var currentState = {};
-    currentState[NetworkStatus.NOT_REACHABLE] = 'No network connection';
-    currentState[NetworkStatus.REACHABLE_VIA_CARRIER_DATA_NETWORK] = 'Carrier data connection';
-    currentState[NetworkStatus.REACHABLE_VIA_WIFI_NETWORK] = 'WiFi connection';
-
-    confirm("Connection type:\n" + currentState[networkState]);
-};
-
 function check_network() {
-    navigator.network.isReachable("www.mobiledevelopersolutions.com",
-            networkReachableCallback, {});
+    var networkState = navigator.network.connection.type;
+
+    var states = {};
+    states[Connection.UNKNOWN]  = 'Unknown connection';
+    states[Connection.ETHERNET] = 'Ethernet connection';
+    states[Connection.WIFI]     = 'WiFi connection';
+    states[Connection.CELL_2G]  = 'Cell 2G connection';
+    states[Connection.CELL_3G]  = 'Cell 3G connection';
+    states[Connection.CELL_4G]  = 'Cell 4G connection';
+    states[Connection.NONE]     = 'No network connection';
+
+    confirm('Connection type:\n ' + states[networkState]);
 }
 
 function init() {
