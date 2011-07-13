@@ -235,9 +235,9 @@ public class DroidGap extends PhonegapActivity {
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
 
         // Enable database
-        Package pack = this.getClass().getPackage();
-        String appPackage = pack.getName();
-        WebViewReflect.setStorage(settings, true, "/data/data/" + appPackage + "/app_database/");
+        settings.setDatabaseEnabled(true);
+        String databasePath = this.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath(); 
+        settings.setDatabasePath(databasePath);
 
         // Enable DOM storage
         WebViewReflect.setDomStorage(settings);
