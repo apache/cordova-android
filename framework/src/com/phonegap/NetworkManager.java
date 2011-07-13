@@ -105,7 +105,7 @@ public class NetworkManager extends Plugin {
 		if (action.equals("getConnectionInfo")) {
 			this.connectionCallbackId = callbackId;
 			NetworkInfo info = sockMan.getActiveNetworkInfo();
-			PluginResult pluginResult = new PluginResult(status, this.getConnectionInfo(info));
+			PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, this.getConnectionInfo(info));
 			pluginResult.setKeepCallback(true);
 			return pluginResult;
 		}
