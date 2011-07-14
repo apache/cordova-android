@@ -9,6 +9,7 @@ package com.phonegap;
 
 import java.io.File;
 
+import android.content.Context;
 import android.os.Environment;
 import android.os.StatFs;
 
@@ -111,4 +112,31 @@ public class DirectoryManager {
 		}
 		return newPath;
 	}
+    
+    /**
+     * Determine if we can use the SD Card to store the temporary file.  If not then use 
+     * the internal cache directory.
+     * 
+     * @return the absolute path of where to store the file
+     */
+    protected static String getTempDirectoryPath(Context ctx) {
+        File cache = null;
+        
+        // SD Card Mounted
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            cache = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + 
+                    "/Android/data/" + ctx.getPackageName() + "/cache/");
+        } 
+        // Use internal storage
+        else {
+            cache = ctx.getCacheDir();
+        }
+
+        // Create the cache directory if it doesn't exist
+        if (!cache.exists()) {
+            cache.mkdirs();
+        }
+
+        return cache.getAbsolutePath();
+    }
 }

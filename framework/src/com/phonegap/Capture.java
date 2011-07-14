@@ -168,7 +168,7 @@ public class Capture extends Plugin {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
         // Specify file so that large image is captured and returned
-        File photo = new File(Environment.getExternalStorageDirectory(),  "Capture.jpg");
+        File photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Capture.jpg");
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
 
