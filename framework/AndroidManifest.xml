@@ -5,6 +5,7 @@
     	android:largeScreens="true"
     	android:normalScreens="true"
     	android:smallScreens="true"
+    	android:xlargeScreens="true"
     	android:resizeable="true"
     	android:anyDensity="true"
     	/>
