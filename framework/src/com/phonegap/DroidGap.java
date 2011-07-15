@@ -1118,8 +1118,19 @@ public class DroidGap extends PhonegapActivity {
         		//       our app is reloaded and restarted.  All state is lost.
         		if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0) {
         			try {
+        				// Init parameters to new DroidGap activity and propagate existing parameters
         				HashMap<String, Object> params = new HashMap<String, Object>();
         				params.put("loadingDialog", "");
+        				if (this.ctx.loadInWebView) {
+        					params.put("loadInWebView", true);
+        				}
+        				params.put("keepRunning", this.ctx.keepRunning);
+        				params.put("loadUrlTimeoutValue", this.ctx.loadUrlTimeoutValue);
+        				String errorUrl = this.ctx.getStringProperty("errorUrl", null);
+        				if (errorUrl != null) {
+        					params.put("errorUrl", errorUrl);
+        				}
+
         				this.ctx.showWebPage(url, true, false, params);
         			} catch (android.content.ActivityNotFoundException e) {
         				System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
