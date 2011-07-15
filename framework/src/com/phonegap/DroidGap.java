@@ -1197,7 +1197,7 @@ public class DroidGap extends PhonegapActivity {
         	this.ctx.loadUrlTimeout++;
 
        	 	// Stop "app loading" spinner if showing
-       	 	this.ctx.pluginManager.exec("Notification", "activityStop", null, "[]", false);
+       		this.ctx.spinnerStop();
 
         	// Handle error
         	this.ctx.onReceivedError(errorCode, description, failingUrl);
