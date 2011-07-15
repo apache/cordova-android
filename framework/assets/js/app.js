@@ -59,16 +59,6 @@ App.prototype.clearHistory = function() {
 };
 
 /**
- * Add a class that implements a service.
- *
- * @param serviceType
- * @param className
- */
-App.prototype.addService = function(serviceType, className) {
-	PhoneGap.exec(null, null, "App", "addService", [serviceType, className]);
-};
-
-/**
  * Override the default behavior of the Android back button.
  * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.
  *

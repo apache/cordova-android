@@ -44,9 +44,6 @@ public class App extends Plugin {
         	else if (action.equals("clearHistory")) {
             	this.clearHistory();
             }
-        	else if (action.equals("addService")) {
-            	this.addService(args.getString(0), args.getString(1));
-            }
         	else if (action.equals("overrideBackbutton")) {
             	this.overrideBackbutton(args.getBoolean(0));
             }
@@ -148,16 +145,6 @@ public class App extends Plugin {
     	((DroidGap)this.ctx).clearHistory();
     }
 
-    /**
-     * Add a class that implements a service.
-     * 
-     * @param serviceType
-     * @param className
-     */
-    public void addService(String serviceType, String className) {
-    	this.ctx.addService(serviceType, className);
-    }
-    
     /**
      * Override the default behavior of the Android back button.
      * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.

@@ -924,20 +924,4 @@ PhoneGap.includeJavascript = function(jsfile, successCallback) {
     id.appendChild(el);
 };
 
-/**
- * This class is provided to bridge the gap between the way plugins were setup in 0.9.3 and 0.9.4.  
- * Users should be calling navigator.add.addService() instead of PluginManager.addService().
- * @class
- * @deprecated
- */
-var PluginManager = {
-    addService: function(serviceType, className) {
-        try {
-            navigator.app.addService(serviceType, className);
-        } catch (e) {
-            console.log("Error adding service "+serviceType+": "+e);
-        }
-    }
-};
-
 }
