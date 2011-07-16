@@ -50,6 +50,7 @@ public final class PluginManager {
 	 */
 	public void loadPlugins() {
 		int id = ctx.getResources().getIdentifier("plugins", "xml", ctx.getPackageName());
+		if (id == 0) { pluginConfigurationMissing(); }
 		XmlResourceParser xml = ctx.getResources().getXml(id);
 		int eventType = -1;
 		while (eventType != XmlResourceParser.END_DOCUMENT) {
@@ -297,4 +298,11 @@ public final class PluginManager {
     		plugin.onNewIntent(intent);
     	}
     }
+
+	private void pluginConfigurationMissing() {
+		System.err.println("=====================================================================================");
+		System.err.println("ERROR: plugin.xml is missing.  Add res/xml/plugins.xml to your project.");      
+		System.err.println("https://raw.github.com/phonegap/phonegap-android/master/framework/res/xml/plugins.xml");        
+		System.err.println("=====================================================================================");
+	}
 }
