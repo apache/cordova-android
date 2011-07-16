@@ -921,6 +921,9 @@ public class DroidGap extends PhonegapActivity {
 				AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
 				dlg.setMessage(message);
 				final EditText input = new EditText(this.ctx);
+				if (defaultValue != null) {
+					input.setText(defaultValue);
+				}
 				dlg.setView(input);
 				dlg.setCancelable(false);
 				dlg.setPositiveButton(android.R.string.ok, 
