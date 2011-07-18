@@ -18,8 +18,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -228,22 +230,34 @@ public class FileUtils extends Plugin {
 	 */
 	private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
         String decoded = URLDecoder.decode(url, "UTF-8");
-		// Test to see if this is a valid URL first
-        @SuppressWarnings("unused") 
-		URL testUrl = new URL(decoded);
+        
+        File fp = null;
+        
+        // Handle the special case where you get an Android content:// uri.
+        if (decoded.startsWith("content:")) {
+            Cursor cursor = this.ctx.managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
+            // Note: MediaStore.Images/Audio/Video.Media.DATA is always "_data"
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            fp = new File(cursor.getString(column_index));
+        } else {
+    		// Test to see if this is a valid URL first
+            @SuppressWarnings("unused") 
+    		URL testUrl = new URL(decoded);
+    
+    		if (decoded.startsWith("file://")) {
+    			fp = new File(decoded.substring(7, decoded.length()));
+    		} else {
+    			fp = new File(decoded);
+    		}
+        }
 
-		File fp = null;
-		if (decoded.startsWith("file://")) {
-			fp = new File(decoded.substring(7, decoded.length()));
-		} else {
-			fp = new File(decoded);
-		}
-		if (!fp.exists()) {
-			throw new FileNotFoundException();
-		}
-		if (!fp.canRead()) {
-			throw new IOException();
-		}
+        if (!fp.exists()) {
+            throw new FileNotFoundException();
+        }
+        if (!fp.canRead()) {
+            throw new IOException();
+        }
 		return getEntry(fp);
 	}
 

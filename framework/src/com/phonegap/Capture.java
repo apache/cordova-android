@@ -95,7 +95,13 @@ public class Capture extends Plugin {
 			obj.put("duration", 0);
 			obj.put("codecs", "");
 
-			if (mimeType.equals("image/jpeg")) {
+			// If the mimeType isn't set the rest will fail
+			// so let's see if we can determine it.
+			if (mimeType == null || mimeType.equals("")) {
+			    mimeType = FileUtils.getMimeType(filePath);
+			}
+			
+			if (mimeType.equals("image/jpeg") || filePath.endsWith(".jpg")) {
 				obj = getImageData(filePath, obj);
 			}
 			else if (filePath.endsWith("audio/3gpp")) {
