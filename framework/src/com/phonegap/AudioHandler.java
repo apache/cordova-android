@@ -63,6 +63,9 @@ public class AudioHandler extends Plugin {
 			else if (action.equals("startPlayingAudio")) {
 				this.startPlayingAudio(args.getString(0), args.getString(1));
 			}
+			else if (action.equals("seekToAudio")) {
+				this.seekToAudio(args.getString(0), args.getInt(1));
+			}
 			else if (action.equals("pausePlayingAudio")) {
 				this.pausePlayingAudio(args.getString(0));
 			}
@@ -70,12 +73,12 @@ public class AudioHandler extends Plugin {
 				this.stopPlayingAudio(args.getString(0));
 			}
 			else if (action.equals("getCurrentPositionAudio")) {
-				long l = this.getCurrentPositionAudio(args.getString(0));
-				return new PluginResult(status, l);
+				float f = this.getCurrentPositionAudio(args.getString(0));
+				return new PluginResult(status, f);
 			}
 			else if (action.equals("getDurationAudio")) {
-				long l = this.getDurationAudio(args.getString(0), args.getString(1));
-				return new PluginResult(status, l);
+				float f = this.getDurationAudio(args.getString(0), args.getString(1));
+				return new PluginResult(status, f);
 			}
 			else if (action.equals("release")) {
 				boolean b = this.release(args.getString(0));
@@ -182,6 +185,20 @@ public class AudioHandler extends Plugin {
     }
 
     /**
+     * Seek to a location.
+     * 
+     * 
+	 * @param id				The id of the audio player
+	 * @param miliseconds		int: number of milliseconds to skip 1000 = 1 second
+     */
+    public void seekToAudio(String id, int milliseconds) {
+    	AudioPlayer audio = this.players.get(id);
+    	if (audio != null) {
+    		audio.seekToPlaying(milliseconds);
+    	}
+    }
+    
+    /**
      * Pause playing.
      * 
 	 * @param id				The id of the audio player
@@ -213,10 +230,10 @@ public class AudioHandler extends Plugin {
 	 * @param id				The id of the audio player
      * @return 					position in msec
      */
-    public long getCurrentPositionAudio(String id) {
+    public float getCurrentPositionAudio(String id) {
     	AudioPlayer audio = this.players.get(id);
     	if (audio != null) {
-    		return(audio.getCurrentPosition());
+    		return(audio.getCurrentPosition()/1000.0f);
     	}
     	return -1;
     }
@@ -228,7 +245,7 @@ public class AudioHandler extends Plugin {
      * @param file				The name of the audio file.
      * @return					The duration in msec.
      */
-    public long getDurationAudio(String id, String file) {
+    public float getDurationAudio(String id, String file) {
     	
     	// Get audio file
     	AudioPlayer audio = this.players.get(id);

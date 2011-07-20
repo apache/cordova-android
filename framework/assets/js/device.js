@@ -6,12 +6,15 @@
  * Copyright (c) 2010-2011, IBM Corporation
  */
 
+if (!PhoneGap.hasResource("device")) {
+PhoneGap.addResource("device");
+
 /**
  * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
  * phone, etc.
  * @constructor
  */
-function Device() {
+var Device = function() {
     this.available = PhoneGap.available;
     this.platform = null;
     this.version = null;
@@ -35,7 +38,7 @@ function Device() {
             console.log("Error initializing PhoneGap: " + e);
             alert("Error initializing PhoneGap: "+e);
         });
-}
+};
 
 /**
  * Get device info
@@ -69,7 +72,7 @@ Device.prototype.getInfo = function(successCallback, errorCallback) {
  */
 Device.prototype.overrideBackButton = function() {
 	console.log("Device.overrideBackButton() is deprecated.  Use App.overrideBackbutton(true).");
-	app.overrideBackbutton(true);
+	navigator.app.overrideBackbutton(true);
 };
 
 /*
@@ -80,7 +83,7 @@ Device.prototype.overrideBackButton = function() {
  */
 Device.prototype.resetBackButton = function() {
 	console.log("Device.resetBackButton() is deprecated.  Use App.overrideBackbutton(false).");
-	app.overrideBackbutton(false);
+	navigator.app.overrideBackbutton(false);
 };
 
 /*
@@ -91,9 +94,12 @@ Device.prototype.resetBackButton = function() {
  */
 Device.prototype.exitApp = function() {
 	console.log("Device.exitApp() is deprecated.  Use App.exitApp().");
-	app.exitApp();
+	navigator.app.exitApp();
 };
 
 PhoneGap.addConstructor(function() {
-    navigator.device = window.device = new Device();
+    if (typeof navigator.device === "undefined") {
+        navigator.device = window.device = new Device();
+    }
 });
+}

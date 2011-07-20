@@ -15,6 +15,7 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaRecorder;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.os.Environment;
 
 /**
  * This class implements the audio playback and recording capabilities used by PhoneGap.
@@ -53,7 +54,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	private String id;								// The id of this player (used to identify Media object in JavaScript)
 	private int state = MEDIA_NONE;					// State of recording or playback
 	private String audioFile = null;				// File name to play or record to
-	private long duration = -1;						// Duration of audio
+	private float duration = -1;					// Duration of audio
 
 	private MediaRecorder recorder = null;			// Audio recording object
 	private String tempFile = null;					// Temporary recording file name
@@ -70,10 +71,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public AudioPlayer(AudioHandler handler, String id) {
 		this.handler = handler;
 		this.id = id;
-		
-		// YES, I know this is bad, but I can't do it the right way because Google didn't have the
-		// foresight to add android.os.environment.getExternalDataDirectory until Android 2.2
-        this.tempFile = "/sdcard/tmprecording.mp3";
+        this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
 	}	
 
 	/**
@@ -209,7 +207,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 					this.mPlayer.prepare();
 
 					// Get duration
-					this.duration = this.mPlayer.getDuration();
+					this.duration = getDurationInSeconds();
 				}
 			} 
 			catch (Exception e) { 
@@ -233,6 +231,15 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		}
 	} 
 
+	/**
+	 * Seek or jump to a new time in the track.
+	 */
+	public void seekToPlaying(int milliseconds) {
+		if (this.mPlayer != null) {
+		    this.mPlayer.seekTo(milliseconds);
+		}
+	}
+	
 	/**
 	 * Pause playing.
 	 */
@@ -310,7 +317,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      * 							-1=can't be determined
      * 							-2=not allowed
      */
-	public long getDuration(String file) {
+	public float getDuration(String file) {
 		
 		// Can't get duration of recording
 		if (this.recorder != null) {
@@ -353,12 +360,21 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		}
 		
 		// Save off duration
-		this.duration = this.mPlayer.getDuration();	
+		this.duration = getDurationInSeconds();	
 		this.prepareOnly = false;
 
 		// Send status notification to JavaScript
 		this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_DURATION+","+this.duration+");");
 		
+	}
+
+	/**
+	 * By default Android returns the length of audio in mills but we want seconds
+	 * 
+	 * @return length of clip in seconds
+	 */
+	private float getDurationInSeconds() {
+		return (this.mPlayer.getDuration() / 1000.0f);
 	}
 
 	/**

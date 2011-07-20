@@ -272,7 +272,7 @@ public class FileTransfer extends Plugin {
 			for (Iterator iter = params.keys(); iter.hasNext();) {
 				Object key = iter.next();
 				dos.writeBytes(LINE_START + BOUNDRY + LINE_END); 
-				dos.writeBytes("Content-Disposition: form-data; name=\"" +  key.toString() + "\"; ");
+				dos.writeBytes("Content-Disposition: form-data; name=\"" +  key.toString() + "\";");
 				dos.writeBytes(LINE_END + LINE_END); 
 				dos.writeBytes(params.getString(key.toString()));
 				dos.writeBytes(LINE_END); 
@@ -315,7 +315,13 @@ public class FileTransfer extends Plugin {
 
 		//------------------ read the SERVER RESPONSE
 		StringBuffer responseString = new StringBuffer("");
-		DataInputStream inStream = new DataInputStream ( conn.getInputStream() );
+		DataInputStream inStream;
+		try {
+			inStream = new DataInputStream ( conn.getInputStream() );
+		} catch(FileNotFoundException e) {
+			throw new IOException("Received error from server");
+		}
+		
 		String line;
 		while (( line = inStream.readLine()) != null) {
 			responseString.append(line);

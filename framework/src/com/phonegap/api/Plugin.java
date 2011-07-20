@@ -8,6 +8,7 @@
 package com.phonegap.api;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.content.Intent;
 import android.webkit.WebView;
@@ -19,6 +20,7 @@ import android.webkit.WebView;
  */
 public abstract class Plugin implements IPlugin {
 
+	public String id;
     public WebView webView;					// WebView object
     public PhonegapActivity ctx;			// PhonegapActivity object
 
@@ -64,14 +66,24 @@ public abstract class Plugin implements IPlugin {
 	
     /**
      * Called when the system is about to start resuming a previous activity. 
+     * 
+     * @param multitasking		Flag indicating if multitasking is turned on for app
      */
-    public void onPause() {
+    public void onPause(boolean multitasking) {
     }
 
     /**
      * Called when the activity will start interacting with the user. 
+     * 
+     * @param multitasking		Flag indicating if multitasking is turned on for app
      */
-    public void onResume() {
+    public void onResume(boolean multitasking) {
+    }
+    
+    /**
+     * Called when the activity receives a new intent. 
+     */
+    public void onNewIntent(Intent intent) {
     }
     
     /**
@@ -117,6 +129,26 @@ public abstract class Plugin implements IPlugin {
     }
 
     /**
+     * Helper for success callbacks that just returns the Status.OK by default
+     * 
+     * @param message			The message to add to the success result.
+     * @param callbackId		The callback id used when calling back into JavaScript.
+     */
+    public void success(JSONObject message, String callbackId) {
+    	this.ctx.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+    }
+
+    /**
+     * Helper for success callbacks that just returns the Status.OK by default
+     * 
+     * @param message			The message to add to the success result.
+     * @param callbackId		The callback id used when calling back into JavaScript.
+     */
+    public void success(String message, String callbackId) {
+    	this.ctx.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+    }
+    
+    /**
      * Call the JavaScript error callback for this plugin.
      * 
      * @param pluginResult		The result to return.
@@ -124,5 +156,25 @@ public abstract class Plugin implements IPlugin {
      */
     public void error(PluginResult pluginResult, String callbackId) {
     	this.ctx.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
+    }
+
+    /**
+     * Helper for error callbacks that just returns the Status.ERROR by default
+     * 
+     * @param message			The message to add to the error result.
+     * @param callbackId		The callback id used when calling back into JavaScript.
+     */
+    public void error(JSONObject message, String callbackId) {
+    	this.ctx.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+    }
+
+    /**
+     * Helper for error callbacks that just returns the Status.ERROR by default
+     * 
+     * @param message			The message to add to the error result.
+     * @param callbackId		The callback id used when calling back into JavaScript.
+     */
+    public void error(String message, String callbackId) {
+    	this.ctx.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
     }
 }

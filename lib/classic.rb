@@ -5,7 +5,7 @@ class Classic
     @android_sdk_path, @name, @pkg, @www, @path = a
     build
   end
-  
+
   def build
     setup
     clobber
@@ -16,8 +16,8 @@ class Classic
     copy_libs
     add_name_to_strings
     write_java
-  end 
-  
+  end
+
   def setup
     @android_dir    = File.expand_path(File.dirname(__FILE__).gsub(/lib$/,''))
     @framework_dir  = File.join(@android_dir, "framework")
@@ -31,14 +31,14 @@ class Classic
     @app_js_dir     = ''
     @content        = 'index.html'
   end
-  
+
   # replaces @path with new android project
   def clobber
     FileUtils.rm_r(@path) if File.exists? @path
     FileUtils.mkdir_p @path
   end
-  
-  # removes local.properties and recreates based on android_sdk_path 
+
+  # removes local.properties and recreates based on android_sdk_path
   # then generates framework/phonegap.jar
   def build_jar
     %w(local.properties phonegap.js phonegap.jar).each do |f|
@@ -46,7 +46,7 @@ class Classic
     end
     open(File.join(@framework_dir, "local.properties"), 'w') do |f|
       f.puts "sdk.dir=#{ @android_sdk_path }"
-    end 
+    end
     Dir.chdir(@framework_dir)
     `ant jar`
     Dir.chdir(@android_dir)
@@ -55,9 +55,9 @@ class Classic
   # runs android create project
   # TODO need to allow more flexible SDK targetting via config.xml
   def create_android
-    IO.popen("android list targets") { |f| 
+    IO.popen("android list targets") { |f|
       targets = f.readlines(nil)[0].scan(/id\:.*$/)
-      if (targets.length > 0) 
+      if (targets.length > 0)
         target_id = targets.last.match(/\d+/).to_a.first
         `android create project -t #{ target_id } -k #{ @pkg } -a #{ @name } -n #{ @name } -p #{ @path }`
       else
@@ -66,7 +66,7 @@ class Classic
       end
     }
   end
-  
+
   # copies the project/www folder into tmp/android/www
   def include_www
     FileUtils.mkdir_p File.join(@path, "assets", "www")
@@ -88,15 +88,18 @@ class Classic
 
   # copies stuff from src directory into the android project directory (@path)
   def copy_libs
-    version = IO.read(File.join(@framework_dir, '../VERSION'))
+    version = IO.read(File.join(@framework_dir, '../VERSION')).lstrip.rstrip
     framework_res_dir = File.join(@framework_dir, "res")
     app_res_dir = File.join(@path, "res")
     # copies in the jar
     FileUtils.mkdir_p File.join(@path, "libs")
-    FileUtils.cp File.join(@framework_dir, "phonegap.#{ version }.jar"), File.join(@path, "libs")
+    FileUtils.cp File.join(@framework_dir, "phonegap-#{ version }.jar"), File.join(@path, "libs")
     # copies in the strings.xml
     FileUtils.mkdir_p File.join(app_res_dir, "values")
     FileUtils.cp File.join(framework_res_dir, "values","strings.xml"), File.join(app_res_dir, "values", "strings.xml")
+    # copies in plugins.xml
+    FileUtils.mkdir_p File.join(app_res_dir, "xml")
+    FileUtils.cp File.join(framework_res_dir, "xml","plugins.xml"), File.join(app_res_dir, "xml", "plugins.xml")
     # drops in the layout files: main.xml and preview.xml
     FileUtils.mkdir_p File.join(app_res_dir, "layout")
     %w(main.xml).each do |f|
@@ -125,9 +128,9 @@ class Classic
       phonegapjs << IO.read(File.join(js_dir, script))
       phonegapjs << "\n\n"
     end
-    File.open(File.join(@path, "assets", "www", @app_js_dir, "phonegap.#{ version }.js"), 'w') {|f| f.write(phonegapjs) }
+    File.open(File.join(@path, "assets", "www", @app_js_dir, "phonegap-#{ version }.js"), 'w') {|f| f.write(phonegapjs) }
   end
-  
+
   # puts app name in strings
   def add_name_to_strings
     x = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -138,8 +141,8 @@ class Classic
     "
     open(File.join(@path, "res", "values", "strings.xml"), 'w') do |f|
       f.puts x.gsub('    ','')
-    end 
-  end 
+    end
+  end
 
   # create java source file
   def write_java
@@ -164,7 +167,7 @@ class Classic
     FileUtils.mkdir_p(code_dir)
     open(File.join(code_dir, "#{ @name }.java"),'w') { |f| f.puts j }
   end
-  
+
   # friendly output for now
   def msg
     puts "Created #{ @path }"

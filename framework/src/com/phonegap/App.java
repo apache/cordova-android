@@ -12,6 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
+import java.util.HashMap;
 
 /**
  * This class exposes methods in DroidGap that can be called from JavaScript.
@@ -42,9 +43,6 @@ public class App extends Plugin {
             }
         	else if (action.equals("clearHistory")) {
             	this.clearHistory();
-            }
-        	else if (action.equals("addService")) {
-            	this.addService(args.getString(0), args.getString(1));
             }
         	else if (action.equals("overrideBackbutton")) {
             	this.overrideBackbutton(args.getBoolean(0));
@@ -83,8 +81,11 @@ public class App extends Plugin {
 	public void loadUrl(String url, JSONObject props) throws JSONException {
 		System.out.println("App.loadUrl("+url+","+props+")");
 		int wait = 0;
-		
+		boolean usePhoneGap = true;
+		boolean clearPrev = false;
+
 		// If there are properties, then set them on the Activity
+		HashMap<String, Object> params = new HashMap<String, Object>();
 		if (props != null) {
 			JSONArray keys = props.names();
 			for (int i=0; i<keys.length(); i++) {
@@ -92,31 +93,42 @@ public class App extends Plugin {
 				if (key.equals("wait")) {
 					wait = props.getInt(key);
 				}
+				else if (key.equalsIgnoreCase("usephonegap")) {
+					usePhoneGap = props.getBoolean(key);
+				}
+				else if (key.equalsIgnoreCase("clearprev")) {
+					clearPrev = props.getBoolean(key);
+				}
 				else {
 					Object value = props.get(key);
 					if (value == null) {
-						
+
 					}
 					else if (value.getClass().equals(String.class)) {
-						this.ctx.getIntent().putExtra(key, (String)value);
+						params.put(key, (String)value);
 					}
 					else if (value.getClass().equals(Boolean.class)) {
-						this.ctx.getIntent().putExtra(key, (Boolean)value);
+						params.put(key, (Boolean)value);
 					}
 					else if (value.getClass().equals(Integer.class)) {
-						this.ctx.getIntent().putExtra(key, (Integer)value);
+						params.put(key, (Integer)value);
 					}
 				}
 			}
 		}
-		
+
 		// If wait property, then delay loading
+
 		if (wait > 0) {
-			((DroidGap)this.ctx).loadUrl(url, wait);
+			try {
+				synchronized(this) {
+					this.wait(wait);
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-		else {
-			((DroidGap)this.ctx).loadUrl(url);
-		}
+		((DroidGap)this.ctx).showWebPage(url, usePhoneGap, clearPrev, params);
 	}
 
 	/**
@@ -133,16 +145,6 @@ public class App extends Plugin {
     	((DroidGap)this.ctx).clearHistory();
     }
 
-    /**
-     * Add a class that implements a service.
-     * 
-     * @param serviceType
-     * @param className
-     */
-    public void addService(String serviceType, String className) {
-    	this.ctx.addService(serviceType, className);
-    }
-    
     /**
      * Override the default behavior of the Android back button.
      * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.

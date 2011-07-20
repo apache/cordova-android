@@ -3,13 +3,14 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  * 
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
 package com.phonegap;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 
 import org.apache.commons.codec.binary.Base64;
@@ -17,8 +18,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -97,48 +100,20 @@ public class FileUtils extends Plugin {
 			        return new PluginResult(status, b);
 			    }
 				else if (action.equals("readAsText")) {
-					try {
-						String s = this.readAsText(args.getString(0), args.getString(1));
-				        return new PluginResult(status, s);
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					String s = this.readAsText(args.getString(0), args.getString(1));
+			        return new PluginResult(status, s);
 			    }
 				else if (action.equals("readAsDataURL")) {
-					try {
-						String s = this.readAsDataURL(args.getString(0));
-				        return new PluginResult(status, s);
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
-			    }
-				else if (action.equals("writeAsText")) {
-					try {
-						this.writeAsText(args.getString(0), args.getString(1), args.getBoolean(2));
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					String s = this.readAsDataURL(args.getString(0));
+			        return new PluginResult(status, s);
 			    }
 				else if (action.equals("write")) {
-					try {
-						long fileSize = this.write(args.getString(0), args.getString(1), args.getLong(2));
-						return new PluginResult(status, fileSize);
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
+					return new PluginResult(status, fileSize);
 			    }
 				else if (action.equals("truncate")) {
-					try {
-						long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
-						return new PluginResult(status, fileSize);
-					} catch (IOException e) {
-						e.printStackTrace();
-						return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_READABLE_ERR);
-					}
+					long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
+					return new PluginResult(status, fileSize);
 			    }
 				else if (action.equals("requestFileSystem")) {
 					long size = args.optLong(1);
@@ -254,22 +229,35 @@ public class FileUtils extends Plugin {
 	 * @throws JSONException
 	 */
 	private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
-		// Test to see if this is a valid URL first
-		@SuppressWarnings("unused")
-		URL testUrl = new URL(url);
-		
-		File fp = null;
-		if (url.startsWith("file://")) {
-			fp = new File(url.substring(7, url.length()));
-		} else {
-			fp = new File(url);
-		}
-		if (!fp.exists()) {
-			throw new FileNotFoundException();
-		}
-		if (!fp.canRead()) {
-			throw new IOException();
-		}
+        String decoded = URLDecoder.decode(url, "UTF-8");
+        
+        File fp = null;
+        
+        // Handle the special case where you get an Android content:// uri.
+        if (decoded.startsWith("content:")) {
+            Cursor cursor = this.ctx.managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
+            // Note: MediaStore.Images/Audio/Video.Media.DATA is always "_data"
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            fp = new File(cursor.getString(column_index));
+        } else {
+    		// Test to see if this is a valid URL first
+            @SuppressWarnings("unused") 
+    		URL testUrl = new URL(decoded);
+    
+    		if (decoded.startsWith("file://")) {
+    			fp = new File(decoded.substring(7, decoded.length()));
+    		} else {
+    			fp = new File(decoded);
+    		}
+        }
+
+        if (!fp.exists()) {
+            throw new FileNotFoundException();
+        }
+        if (!fp.canRead()) {
+            throw new IOException();
+        }
 		return getEntry(fp);
 	}
 
@@ -436,7 +424,7 @@ public class FileUtils extends Plugin {
 		}
 		
 		// Check to make sure we are not copying the directory into itself
-		if (destinationDir.getAbsolutePath().startsWith(srcDir.getAbsolutePath())) {
+		if (isCopyOnItself(srcDir.getAbsolutePath(), destinationDir.getAbsolutePath())) {
 			throw new InvalidModificationException("Can't copy itself into itself");
 		}
 		
@@ -459,6 +447,26 @@ public class FileUtils extends Plugin {
 		
 		return getEntry(destinationDir);
 	}
+
+	/**
+	 * Check to see if the user attempted to copy an entry into its parent without changing its name, 
+	 * or attempted to copy a directory into a directory that it contains directly or indirectly.
+	 * 
+	 * @param srcDir
+	 * @param destinationDir
+	 * @return 
+	 */
+    private boolean isCopyOnItself(String src, String dest) {
+        
+        // This weird test is to determine if we are copying or moving a directory into itself.  
+        // Copy /sdcard/myDir to /sdcard/myDir-backup is okay but
+        // Copy /sdcard/myDir to /sdcard/myDir/backup should thow an INVALID_MODIFICATION_ERR
+        if (dest.startsWith(src) && dest.indexOf(File.separator, src.length()-1) != -1) {
+            return true;
+        }
+        
+        return false;
+    }
 
 	/**
 	 * Move a file 
@@ -505,8 +513,8 @@ public class FileUtils extends Plugin {
 		}
 		
 		// Check to make sure we are not copying the directory into itself
-		if (destinationDir.getAbsolutePath().startsWith(srcDir.getAbsolutePath())) {
-			throw new InvalidModificationException("Can't copy itself into itself");
+		if (isCopyOnItself(srcDir.getAbsolutePath(), destinationDir.getAbsolutePath())) {
+			throw new InvalidModificationException("Can't move itself into itself");
 		}
 		
 		// If the destination directory already exists and is empty then delete it.  This is according to spec.
@@ -836,49 +844,19 @@ public class FileUtils extends Plugin {
 	 * @return			T=returns value
 	 */
 	public boolean isSynch(String action) {		
-		if (action.equals("readAsText")) {
-			return false;
-		}
-		else if (action.equals("readAsDataURL")) {
-			return false;
-		}
-		else if (action.equals("writeAsText")) {
-			return false;
-		}
-		else if (action.equals("requestFileSystem")) {
-			return false;
-		}
-		else if (action.equals("getMetadata")) {
-			return false;
-		}
-		else if (action.equals("toURI")) {
-			return false;
-		}
-		else if (action.equals("getParent")) {
-			return false;
-		}
-		else if (action.equals("getFile")) {
-			return false;
-		}
-		else if (action.equals("getDirectory")) {
-			return false;
-		}
-		else if (action.equals("remove")) {
-			return false;
-		}
-		else if (action.equals("removeRecursively")) {
-			return false;
-		}
-		else if (action.equals("readEntries")) {
-			return false;
-		}
-		else if (action.equals("getFileMetadata")) {
-			return false;
-		}
-		else if (action.equals("resolveLocalFileSystemURI")) {
-			return false;
-		}
-		return true;
+		if (action.equals("testSaveLocationExists")) {
+			return true;
+	    }  
+		else if (action.equals("getFreeDiskSpace")) {
+			return true;
+	    }
+		else if (action.equals("testFileExists")) {
+			return true;
+	    }
+		else if (action.equals("testDirectoryExists")) {
+			return true;
+	    }
+		return false;
 	}
 
     //--------------------------------------------------------------------------
@@ -942,7 +920,7 @@ public class FileUtils extends Plugin {
      * @param filename
      * @return a mime type
      */
-	private String getMimeType(String filename) {
+	public static String getMimeType(String filename) {
 		MimeTypeMap map = MimeTypeMap.getSingleton();
 		return map.getMimeTypeFromExtension(map.getFileExtensionFromUrl(filename));
 	}
@@ -952,38 +930,28 @@ public class FileUtils extends Plugin {
      * 
      * @param filename			The name of the file.
      * @param data				The contents of the file.
-     * @param append			T=append, F=overwrite
+     * @param offset			The position to begin writing the file.			
      * @throws FileNotFoundException, IOException
      */
-    public void writeAsText(String filename, String data, boolean append) throws FileNotFoundException, IOException {
-    	String FilePath= filename;
+    /**/
+    public long write(String filename, String data, int offset) throws FileNotFoundException, IOException {
+    	boolean append = false;
+    	if (offset > 0) {
+    		this.truncateFile(filename, offset);
+    		append = true;
+    	}
+    	
    		byte [] rawData = data.getBytes();
    		ByteArrayInputStream in = new ByteArrayInputStream(rawData);    			    			
-   		FileOutputStream out= new FileOutputStream(FilePath, append);
+   		FileOutputStream out = new FileOutputStream(filename, append);
    		byte buff[] = new byte[rawData.length];
    		in.read(buff, 0, buff.length);
    		out.write(buff, 0, rawData.length);
    		out.flush();
    		out.close();    			
-    }
-    
-    /**
-     * Write contents of file.
-     * 
-     * @param filename			The name of the file.
-     * @param data				The contents of the file.
-     * @param offset			The position to begin writing the file.			
-     * @throws FileNotFoundException, IOException
-     */
-    public long write(String filename, String data, long offset) throws FileNotFoundException, IOException {
-    	RandomAccessFile file = new RandomAccessFile(filename, "rw");
-    	file.seek(offset);
-    	file.writeBytes(data);
-    	file.close();
     	
     	return data.length();
     }
-    
     
     /**
      * Truncate the file to size

@@ -7,12 +7,16 @@
  */
 package com.phonegap.api;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.xmlpull.v1.XmlPullParserException;
 
+import android.content.Intent;
+import android.content.res.XmlResourceParser;
 import android.webkit.WebView;
 
 /**
@@ -23,7 +27,7 @@ import android.webkit.WebView;
  */
 public final class PluginManager {	
 
-	private HashMap<String, Plugin> plugins = new HashMap<String,Plugin>();
+	private HashMap<String, IPlugin> plugins = new HashMap<String,IPlugin>();
 	private HashMap<String, String> services = new HashMap<String,String>();
 	
 	private final PhonegapActivity ctx;
@@ -38,6 +42,35 @@ public final class PluginManager {
 	public PluginManager(WebView app, PhonegapActivity ctx) {
 		this.ctx = ctx;
 		this.app = app;
+		this.loadPlugins();
+	}
+	
+	/**
+	 * Load plugins from res/xml/plugins.xml
+	 */
+	public void loadPlugins() {
+		int id = ctx.getResources().getIdentifier("plugins", "xml", ctx.getPackageName());
+		if (id == 0) { pluginConfigurationMissing(); }
+		XmlResourceParser xml = ctx.getResources().getXml(id);
+		int eventType = -1;
+		while (eventType != XmlResourceParser.END_DOCUMENT) {
+			if (eventType == XmlResourceParser.START_TAG) {
+				String strNode = xml.getName();
+				if (strNode.equals("plugin")) {
+					String name = xml.getAttributeValue(null, "name");
+					String value = xml.getAttributeValue(null, "value");
+					//System.out.println("Plugin: "+name+" => "+value);
+					this.addService(name, value);
+				}
+			}
+			try {
+				eventType = xml.next();
+			} catch (XmlPullParserException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -74,7 +107,7 @@ public final class PluginManager {
 				c = getClassByName(clazz);
 			}
 			if (isPhoneGapPlugin(c)) {
-				final Plugin plugin = this.addPlugin(clazz, c); 
+				final IPlugin plugin = this.addPlugin(clazz, c); 
 				final PhonegapActivity ctx = this.ctx;
 				runAsync = async && !plugin.isSynch(action);
 				if (runAsync) {
@@ -100,7 +133,7 @@ public final class PluginManager {
 									ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 								}
 							} catch (Exception e) {
-								PluginResult cr = new PluginResult(PluginResult.Status.ERROR);
+								PluginResult cr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
 								ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
 							}
 						}
@@ -159,24 +192,7 @@ public final class PluginManager {
 		}
 		return false;
 	}
-	
-    /**
-     * Add plugin to be loaded and cached.  This creates an instance of the plugin.
-     * If plugin is already created, then just return it.
-     * 
-     * @param className				The class to load
-     * @return						The plugin
-     */
-	public Plugin addPlugin(String className) {
-	    try {
-            return this.addPlugin(className, this.getClassByName(className)); 
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("Error adding plugin "+className+".");
-        }
-        return null;
-	}
-	
+
     /**
      * Add plugin to be loaded and cached.  This creates an instance of the plugin.
      * If plugin is already created, then just return it.
@@ -187,12 +203,12 @@ public final class PluginManager {
      * @return						The plugin
      */
 	@SuppressWarnings("unchecked")
-	private Plugin addPlugin(String className, Class clazz) { 
+	private IPlugin addPlugin(String className, Class clazz) { 
     	if (this.plugins.containsKey(className)) {
     		return this.getPlugin(className);
     	}
     	try {
-              Plugin plugin = (Plugin)clazz.newInstance();
+              IPlugin plugin = (IPlugin)clazz.newInstance();
               this.plugins.put(className, plugin);
               plugin.setContext(this.ctx);
               plugin.setView(this.app);
@@ -211,8 +227,8 @@ public final class PluginManager {
      * @param className				The class of the loaded plugin.
      * @return
      */
-    private Plugin getPlugin(String className) {
-    	Plugin plugin = this.plugins.get(className);
+    private IPlugin getPlugin(String className) {
+    	IPlugin plugin = this.plugins.get(className);
     	return plugin;
     }
     
@@ -229,27 +245,31 @@ public final class PluginManager {
 
     /**
      * Called when the system is about to start resuming a previous activity. 
+     * 
+     * @param multitasking		Flag indicating if multitasking is turned on for app
      */
-    public void onPause() {
-    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
+    public void onPause(boolean multitasking) {
+    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Plugin> entry = it.next();
-    		Plugin plugin = entry.getValue();
-    		plugin.onPause();
+    		Entry<String,IPlugin> entry = it.next();
+    		IPlugin plugin = entry.getValue();
+    		plugin.onPause(multitasking);
     	}
     }
     
     /**
      * Called when the activity will start interacting with the user. 
+     * 
+     * @param multitasking		Flag indicating if multitasking is turned on for app
      */
-    public void onResume() {
-    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
+    public void onResume(boolean multitasking) {
+    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Plugin> entry = it.next();
-    		Plugin plugin = entry.getValue();
-    		plugin.onResume();
+    		Entry<String,IPlugin> entry = it.next();
+    		IPlugin plugin = entry.getValue();
+    		plugin.onResume(multitasking);
     	}    	
     }
 
@@ -257,12 +277,32 @@ public final class PluginManager {
      * The final call you receive before your activity is destroyed. 
      */
     public void onDestroy() {
-    	java.util.Set<Entry<String,Plugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,Plugin>> it = s.iterator();
+    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
     	while(it.hasNext()) {
-    		Entry<String,Plugin> entry = it.next();
-    		Plugin plugin = entry.getValue();
+    		Entry<String,IPlugin> entry = it.next();
+    		IPlugin plugin = entry.getValue();
     		plugin.onDestroy();
     	}
     }
+    
+    /**
+     * Called when the activity receives a new intent. 
+     */    
+    public void onNewIntent(Intent intent) {
+    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
+    	while(it.hasNext()) {
+    		Entry<String,IPlugin> entry = it.next();
+    		IPlugin plugin = entry.getValue();
+    		plugin.onNewIntent(intent);
+    	}
+    }
+
+	private void pluginConfigurationMissing() {
+		System.err.println("=====================================================================================");
+		System.err.println("ERROR: plugin.xml is missing.  Add res/xml/plugins.xml to your project.");      
+		System.err.println("https://raw.github.com/phonegap/phonegap-android/master/framework/res/xml/plugins.xml");        
+		System.err.println("=====================================================================================");
+	}
 }

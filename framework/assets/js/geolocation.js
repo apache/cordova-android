@@ -3,32 +3,36 @@
  * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
  *
  * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010, IBM Corporation
+ * Copyright (c) 2010-2011, IBM Corporation
  */
+
+if (!PhoneGap.hasResource("geolocation")) {
+PhoneGap.addResource("geolocation");
 
 /**
  * This class provides access to device GPS data.
  * @constructor
  */
-function Geolocation() {
+var Geolocation = function() {
 
     // The last known GPS position.
     this.lastPosition = null;
 
     // Geolocation listeners
     this.listeners = {};
-}
+};
 
 /**
  * Position error object
  *
+ * @constructor
  * @param code
  * @param message
  */
-function PositionError(code, message) {
+var PositionError = function(code, message) {
     this.code = code;
     this.message = message;
-}
+};
 
 PositionError.PERMISSION_DENIED = 1;
 PositionError.POSITION_UNAVAILABLE = 2;
@@ -191,4 +195,4 @@ PhoneGap.addConstructor(function() {
         Geolocation.usingPhoneGap = true;
     }
 });
-
+}

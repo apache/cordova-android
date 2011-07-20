@@ -28,6 +28,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 
 /**
  * This class launches the camera view, allows the user to take a picture, closes the camera view,
@@ -119,14 +120,14 @@ public class CameraLauncher extends Plugin {
         
         // Specify file so that large image is captured and returned
         // TODO: What if there isn't any external storage?
-        File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
+        File photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.jpg");
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
 
         this.ctx.startActivityForResult((Plugin) this, intent, (CAMERA+1)*16 + returnType+1);
 	}
-	
-	/**
+
+    /**
 	 * Get image from photo library.
 	 * 
 	 * @param quality			Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
@@ -161,12 +162,18 @@ public class CameraLauncher extends Plugin {
 
 		// If CAMERA
 		if (srcType == CAMERA) {
-			
 			// If image available
 			if (resultCode == Activity.RESULT_OK) {
 				try {
 					// Read in bitmap of captured image
-					Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getContentResolver(), imageUri);
+          Bitmap bitmap;
+          try {
+            bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getContentResolver(), imageUri);
+          } catch (FileNotFoundException e) {
+            Uri uri = intent.getData();
+            android.content.ContentResolver resolver = this.ctx.getContentResolver();
+            bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+          }
 
 					// If sending base64 image back
 					if (destType == DATA_URL) {
