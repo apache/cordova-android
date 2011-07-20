@@ -8,6 +8,7 @@
 
 if (!PhoneGap.hasResource("app")) {
 PhoneGap.addResource("app");
+(function() {
 
 /**
  * Constructor
@@ -79,6 +80,7 @@ App.prototype.exitApp = function() {
 };
 
 PhoneGap.addConstructor(function() {
-    navigator.app = window.app = new App();
+    navigator.app = new App();
 });
+}());
 }
