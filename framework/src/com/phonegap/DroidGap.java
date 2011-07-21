@@ -1123,7 +1123,7 @@ public class DroidGap extends PhonegapActivity {
         			try {
         				// Init parameters to new DroidGap activity and propagate existing parameters
         				HashMap<String, Object> params = new HashMap<String, Object>();
-        				params.put("loadingDialog", "");
+        				params.put("loadingDialog", null);
         				if (this.ctx.loadInWebView) {
         					params.put("loadInWebView", true);
         				}
