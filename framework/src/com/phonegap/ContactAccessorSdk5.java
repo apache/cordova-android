@@ -425,13 +425,28 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 			JSONArray addresses, JSONArray phones, JSONArray emails,
 			JSONArray ims, JSONArray websites, JSONArray photos) {
 		try {
-			contact.put("organizations", organizations);
-			contact.put("addresses", addresses);
-			contact.put("phoneNumbers", phones);
-			contact.put("emails", emails);
-			contact.put("ims", ims);
-			contact.put("websites", websites);
-			contact.put("photos", photos);
+		    // Only return the array if it has at least one entry
+            if (organizations.length() > 0) {
+                contact.put("organizations", organizations);
+            }
+            if (addresses.length() > 0) {
+                contact.put("addresses", addresses);
+            }
+            if (phones.length() > 0) {
+                contact.put("phoneNumbers", phones);
+            }
+            if (emails.length() > 0) {
+                contact.put("emails", emails);
+            }
+            if (ims.length() > 0) {
+                contact.put("ims", ims);
+            }
+            if (websites.length() > 0) {
+                contact.put("websites", websites);
+            }
+            if (photos.length() > 0) {
+                contact.put("photos", photos);
+            }
 		}
 		catch (JSONException e) {
 			Log.e(LOG_TAG,e.getMessage(),e);
