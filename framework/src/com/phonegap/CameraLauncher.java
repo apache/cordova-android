@@ -45,6 +45,7 @@ public class CameraLauncher extends Plugin {
 	private static final int SAVEDPHOTOALBUM = 2;		// Choose image from picture library (same as PHOTOLIBRARY for Android)
 	
 	private int mQuality;					// Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
+	private int mMaxResolution;				// Maximum resolution of picture taken from camera (width or height, depending on the ratio)
 	private Uri imageUri;					// Uri of captured image 
 	public String callbackId;
 	
@@ -66,6 +67,7 @@ public class CameraLauncher extends Plugin {
 		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		this.callbackId = callbackId;
+		this.mMaxResolution = 0;
 		
 		try {
 			if (action.equals("takePicture")) {
@@ -76,6 +78,9 @@ public class CameraLauncher extends Plugin {
 				int srcType = CAMERA;
 				if (args.length() > 2) {
 					srcType = args.getInt(2);
+				}
+				if (args.length() > 3) {
+					this.mMaxResolution = args.getInt(3); 
 				}
 				if (srcType == CAMERA) {
 					this.takePicture(args.getInt(0), destType);
@@ -146,6 +151,32 @@ public class CameraLauncher extends Plugin {
 				new String("Get Picture")), (srcType+1)*16 + returnType + 1);
 	}
 
+	/**
+	 * Scales the bitmap according to the requested size.
+	 * 
+	 * @param bitmap		The bitmap to scale.
+	 * @return Bitmap		A new Bitmap object of the same bitmap after scaling. 
+	 */
+	public Bitmap scaleBitmap(Bitmap bitmap) {
+		int newWidth = 0;
+		int newHeight = 0;
+		
+		if (this.mMaxResolution != 0) {
+			
+			// Check if a horizontal or vertical picture was taken
+			if (bitmap.getWidth() > bitmap.getHeight()) {
+				newWidth = this.mMaxResolution;
+				newHeight = (int)(((float)bitmap.getHeight() / (float)bitmap.getWidth()) * newWidth);
+			} else {
+				newHeight = this.mMaxResolution;
+				newWidth = (int)(((float)bitmap.getWidth() / (float)bitmap.getHeight()) * newHeight);
+			}
+			// Scale the bitmap before returning a compressed image
+			return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+		}
+		return bitmap;
+	}
+	
     /**
      * Called when the camera view exits. 
      * 
@@ -175,6 +206,8 @@ public class CameraLauncher extends Plugin {
             bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
           }
 
+					bitmap = scaleBitmap(bitmap);
+					
 					// If sending base64 image back
 					if (destType == DATA_URL) {
 						this.processPicture(bitmap);
@@ -237,6 +270,7 @@ public class CameraLauncher extends Plugin {
 				if (destType == DATA_URL) {
 					try {
 						Bitmap bitmap =	android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+						bitmap = scaleBitmap(bitmap);
 						this.processPicture(bitmap);
 						bitmap.recycle();
 						bitmap = null;
