@@ -11,11 +11,12 @@ import java.io.File;
 import java.io.IOException;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaRecorder;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.media.MediaRecorder;
 import android.os.Environment;
+import android.util.Log;
 
 /**
  * This class implements the audio playback and recording capabilities used by PhoneGap.
@@ -28,7 +29,9 @@ import android.os.Environment;
  */
 public class AudioPlayer implements OnCompletionListener, OnPreparedListener, OnErrorListener {
 
-	// AudioPlayer states
+    private static final String LOG_TAG = "AudioPlayer";
+
+    // AudioPlayer states
 	private static int MEDIA_NONE = 0;
 	private static int MEDIA_STARTING = 1;
 	private static int MEDIA_RUNNING = 2;
@@ -38,6 +41,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	// AudioPlayer message ids
 	private static int MEDIA_STATE = 1;
 	private static int MEDIA_DURATION = 2;
+    private static int MEDIA_POSITION = 3;
 	private static int MEDIA_ERROR = 9;
 	
 	// AudioPlayer error codes
@@ -99,7 +103,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	 */
 	public void startRecording(String file) {
 		if (this.mPlayer != null) {
-			System.out.println("AudioPlayer Error: Can't record in play mode.");
+			Log.d(LOG_TAG, "AudioPlayer Error: Can't record in play mode.");
 			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_PLAY_MODE_SET+");");
 		}
 		
@@ -124,7 +128,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_STARTING_RECORDING+");");			
 		}
 		else {
-			System.out.println("AudioPlayer Error: Already recording.");
+		    Log.d(LOG_TAG, "AudioPlayer Error: Already recording.");
 			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_ALREADY_RECORDING+");");			
 		}
 	}
@@ -166,7 +170,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      */
 	public void startPlaying(String file) {
 		if (this.recorder != null) {
-			System.out.println("AudioPlayer Error: Can't play in record mode.");
+		    Log.d(LOG_TAG, "AudioPlayer Error: Can't play in record mode.");
 			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_RECORD_MODE_SET+");");
 		}
 		
@@ -225,7 +229,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 				this.setState(MEDIA_RUNNING);
 			}
 			else {
-				System.out.println("AudioPlayer Error: startPlaying() called during invalid state: "+this.state);
+			    Log.d(LOG_TAG, "AudioPlayer Error: startPlaying() called during invalid state: "+this.state);
 				this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_RESUME_STATE+");");			
 			}
 		}
@@ -237,6 +241,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public void seekToPlaying(int milliseconds) {
 		if (this.mPlayer != null) {
 		    this.mPlayer.seekTo(milliseconds);
+		    Log.d(LOG_TAG, "Send a onStatus update for the new seek");
+		    this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_POSITION+", "+milliseconds/1000.0f+");");
 		}
 	}
 	
@@ -251,7 +257,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			this.setState(MEDIA_PAUSED);
 		}
 		else {
-			System.out.println("AudioPlayer Error: pausePlaying() called during invalid state: "+this.state);			
+		    Log.d(LOG_TAG, "AudioPlayer Error: pausePlaying() called during invalid state: "+this.state);			
 			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_PAUSE_STATE+");");			
 		}
 	}
@@ -265,7 +271,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			this.setState(MEDIA_STOPPED);
 		}
 		else {
-			System.out.println("AudioPlayer Error: stopPlaying() called during invalid state: "+this.state);			
+		    Log.d(LOG_TAG, "AudioPlayer Error: stopPlaying() called during invalid state: "+this.state);			
 			this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERROR_STOP_STATE+");");			
 		}
 	}
@@ -286,7 +292,9 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      */
 	public long getCurrentPosition() {
 		if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
-			return this.mPlayer.getCurrentPosition();
+		    int curPos = this.mPlayer.getCurrentPosition();
+		    this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_POSITION+", "+curPos/1000.0f+");");
+			return curPos;
 		} 
 		else { 
 			return -1; 
@@ -386,7 +394,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	 * @param arg2				an extra code, specific to the error.
 	 */
 	public boolean onError(MediaPlayer mPlayer, int arg1, int arg2) {
-		System.out.println("AudioPlayer.onError(" + arg1 + ", " + arg2+")");
+	    Log.d(LOG_TAG, "AudioPlayer.onError(" + arg1 + ", " + arg2+")");
 
 		// TODO: Not sure if this needs to be sent?
 		this.mPlayer.stop();
@@ -409,5 +417,4 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		
 		this.state = state;
 	}
-
 }
