@@ -99,7 +99,7 @@ function get_contacts() {
     var obj = new ContactFindOptions();
     obj.filter = "";
     obj.multiple = true;
-    navigator.service.contacts.find(
+    navigator.contacts.find(
             [ "displayName", "name" ], contacts_success,
             fail, obj);
 }
