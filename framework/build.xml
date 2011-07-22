@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="PhoneGap" default="help">
+<project name="PhoneGap" default="jar">
 
     <!-- LOAD VERSION -->
     <loadfile property="version" srcFile="../VERSION">
