@@ -26,8 +26,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 
 /**
@@ -44,8 +42,12 @@ public class CameraLauncher extends Plugin {
 	private static final int CAMERA = 1;				// Take picture from camera
 	private static final int SAVEDPHOTOALBUM = 2;		// Choose image from picture library (same as PHOTOLIBRARY for Android)
 	
+	private static final int JPEG = 0;                  // Take a picture of type JPEG
+	private static final int PNG = 1;                   // Take a picture of type PNG
+	
 	private int mQuality;					// Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
-	private int mMaxResolution;				// Maximum resolution of picture taken from camera (width or height, depending on the ratio)
+	private int targetWidth;                // desired width of the image
+	private int targetHeight;               // desired height of the image
 	private Uri imageUri;					// Uri of captured image 
 	public String callbackId;
 	
@@ -67,7 +69,6 @@ public class CameraLauncher extends Plugin {
 		PluginResult.Status status = PluginResult.Status.OK;
 		String result = "";		
 		this.callbackId = callbackId;
-		this.mMaxResolution = 0;
 		
 		try {
 			if (action.equals("takePicture")) {
@@ -79,11 +80,18 @@ public class CameraLauncher extends Plugin {
 				if (args.length() > 2) {
 					srcType = args.getInt(2);
 				}
-				if (args.length() > 3) {
-					this.mMaxResolution = args.getInt(3); 
-				}
+                if (args.length() > 3) {
+                    this.targetWidth = args.getInt(3); 
+                }
+                if (args.length() > 4) {
+                    this.targetHeight = args.getInt(4); 
+                }
+                int encodingType = JPEG;
+                if (args.length() > 5) {
+                    encodingType = args.getInt(5); 
+                }
 				if (srcType == CAMERA) {
-					this.takePicture(args.getInt(0), destType);
+					this.takePicture(args.getInt(0), destType, encodingType);
 				}
 				else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
 					this.getImage(args.getInt(0), srcType, destType);
@@ -117,7 +125,7 @@ public class CameraLauncher extends Plugin {
 	 * @param quality			Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
 	 * @param returnType		Set the type of image to return. 
 	 */
-	public void takePicture(int quality, int returnType) {
+	public void takePicture(int quality, int returnType, int encodingType) {
 		this.mQuality = quality;
 		
 		// Display camera
@@ -125,12 +133,28 @@ public class CameraLauncher extends Plugin {
         
         // Specify file so that large image is captured and returned
         // TODO: What if there isn't any external storage?
-        File photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.jpg");
+        File photo = createCaptureFile(encodingType);
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
 
         this.ctx.startActivityForResult((Plugin) this, intent, (CAMERA+1)*16 + returnType+1);
 	}
+
+	/**
+	 * Create a file in the applications temporary directory based upon the supplied encoding.
+	 * 
+	 * @param encodingType of the image to be taken
+	 * @return a File object pointing to the temporary picture
+	 */
+    private File createCaptureFile(int encodingType) {
+        File photo = null;
+        if (encodingType == JPEG) {
+            photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.jpg");
+        } else {
+            photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.png");            
+        }
+        return photo;
+    }
 
     /**
 	 * Get image from photo library.
@@ -158,23 +182,41 @@ public class CameraLauncher extends Plugin {
 	 * @return Bitmap		A new Bitmap object of the same bitmap after scaling. 
 	 */
 	public Bitmap scaleBitmap(Bitmap bitmap) {
-		int newWidth = 0;
-		int newHeight = 0;
-		
-		if (this.mMaxResolution != 0) {
-			
-			// Check if a horizontal or vertical picture was taken
-			if (bitmap.getWidth() > bitmap.getHeight()) {
-				newWidth = this.mMaxResolution;
-				newHeight = (int)(((float)bitmap.getHeight() / (float)bitmap.getWidth()) * newWidth);
-			} else {
-				newHeight = this.mMaxResolution;
-				newWidth = (int)(((float)bitmap.getWidth() / (float)bitmap.getHeight()) * newHeight);
-			}
-			// Scale the bitmap before returning a compressed image
-			return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-		}
-		return bitmap;
+        int newWidth = this.targetWidth;
+        int newHeight = this.targetHeight;
+        int origWidth = bitmap.getWidth();
+        int origHeight = bitmap.getHeight();
+
+        // If no new width or height were specified return the original bitmap
+    	if (newWidth <= 0 && newHeight <= 0) {
+    	    return bitmap;
+    	}
+    	// Only the width was specified
+    	else if (newWidth > 0 && newHeight <= 0) {
+            newHeight = (newWidth * origHeight) / origWidth;
+        }
+    	// only the height was specified
+    	else if (newWidth <= 0 && newHeight > 0) {
+            newWidth = (newHeight * origWidth) / origHeight;
+        }
+        // If the user specified both a positive width and height
+        // (potentially different aspect ratio) then the width or height is
+        // scaled so that the image fits while maintaining aspect ratio.
+        // Alternatively, the specified width and height could have been
+        // kept and Bitmap.SCALE_TO_FIT specified when scaling, but this
+        // would result in whitespace in the new image.
+    	else {
+            double newRatio = newWidth / (double)newHeight;
+            double origRatio = origWidth / (double)origHeight;
+
+            if (origRatio > newRatio) {
+                newHeight = (newWidth * origHeight) / origWidth;
+            } else if (origRatio < newRatio) {
+                newWidth = (newHeight * origWidth) / origHeight;
+            }
+        }
+        
+        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
 	}
 	
     /**
