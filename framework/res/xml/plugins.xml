@@ -10,7 +10,6 @@
     <plugin name="Contacts" value="com.phonegap.ContactManager"/>
     <plugin name="Crypto" value="com.phonegap.CryptoHandler"/>
     <plugin name="File" value="com.phonegap.FileUtils"/>
-    <plugin name="Location" value="com.phonegap.GeoBroker"/>
     <plugin name="Network Status" value="com.phonegap.NetworkManager"/>
     <plugin name="Notification" value="com.phonegap.Notification"/>
     <plugin name="Storage" value="com.phonegap.Storage"/>
