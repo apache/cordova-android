@@ -18,7 +18,7 @@ import android.provider.Settings;
 
 public class Device extends Plugin {
 	
-    public static String phonegapVersion = "1.0.0rc3";               // PhoneGap version
+    public static String phonegapVersion = "1.0.0";               // PhoneGap version
 	public static String platform = "Android";					// Device OS
 	public static String uuid;									// Device UUID
     
