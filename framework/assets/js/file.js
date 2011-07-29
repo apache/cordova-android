@@ -172,7 +172,7 @@ FileReader.prototype.abort = function() {
     }
     // If abort callback
     if (typeof this.onabort === "function") {
-        this.oneabort({"type":"abort", "target":this});
+        this.onabort({"type":"abort", "target":this});
     }
     // If load end callback
     if (typeof this.onloadend === "function") {
@@ -431,7 +431,7 @@ FileWriter.prototype.abort = function() {
     }
     // If abort callback
     if (typeof this.onabort === "function") {
-        this.oneabort({"type":"abort", "target":this});
+        this.onabort({"type":"abort", "target":this});
     }
 
     this.readyState = FileWriter.DONE;
