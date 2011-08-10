@@ -70,12 +70,12 @@ public class AudioHandler extends Plugin {
 			else if (action.equals("stopPlayingAudio")) {
 				this.stopPlayingAudio(args.getString(0));
 			} else if (action.equals("setVolume")) {
-               try {
-                   this.setVolume(args.getString(0), Float.parseFloat(args.getString(1)));
-               } catch (NumberFormatException nfe) {
-                   //no-op
-               }
-            } else if (action.equals("getCurrentPositionAudio")) {
+			   try {
+				   this.setVolume(args.getString(0), Float.parseFloat(args.getString(1)));
+			   } catch (NumberFormatException nfe) {
+				   //no-op
+			   }
+			} else if (action.equals("getCurrentPositionAudio")) {
 				float f = this.getCurrentPositionAudio(args.getString(0));
 				return new PluginResult(status, f);
 			}
