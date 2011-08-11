@@ -27,7 +27,7 @@ var Connection = function() {
                 // set a timer if still offline at the end of timer send the offline event
                 me._timer = setTimeout(function(){
                     me.type = type;
-                    PhoneGap.fireEvent('offline');
+                    PhoneGap.fireDocumentEvent('offline');
                     me._timer = null;
                     }, me.timeout);
             } else {
@@ -37,7 +37,7 @@ var Connection = function() {
                     me._timer = null;
                 }
                 me.type = type;
-                PhoneGap.fireEvent('online');
+                PhoneGap.fireDocumentEvent('online');
             }
             
             // should only fire this once
