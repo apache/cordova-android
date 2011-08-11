@@ -1256,7 +1256,7 @@ public class DroidGap extends PhonegapActivity {
 
     		// If back key is bound, then send event to JavaScript
     		if (this.bound) {
-    			this.appView.loadUrl("javascript:PhoneGap.fireEvent('backbutton');");
+    			this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('backbutton');");
     			return true;
     		}
 
@@ -1278,13 +1278,13 @@ public class DroidGap extends PhonegapActivity {
 
     	// If menu key
     	else if (keyCode == KeyEvent.KEYCODE_MENU) {
-    		this.appView.loadUrl("javascript:PhoneGap.fireEvent('menubutton');");
+    		this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('menubutton');");
     		return true;
     	}
 
     	// If search key
     	else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-    		this.appView.loadUrl("javascript:PhoneGap.fireEvent('searchbutton');");
+    		this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('searchbutton');");
     		return true;
     	}
 
@@ -1478,13 +1478,13 @@ public class DroidGap extends PhonegapActivity {
     	        // gone away.
     	        else if (height > oldHeight) {
     	        	Log.d(LOG_TAG, "Throw hide keyboard event");
-    	        	callbackServer.sendJavascript("PhoneGap.fireEvent('hidekeyboard');");
+    	        	callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('hidekeyboard');");
     	        } 
     	        // If the height as gotten smaller then we will assume the soft keyboard has 
     	        // been displayed.
     	        else if (height < oldHeight) {
     	        	Log.d(LOG_TAG, "Throw show keyboard event");
-    	        	callbackServer.sendJavascript("PhoneGap.fireEvent('showkeyboard');");
+    	        	callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('showkeyboard');");
     	        }
 
     	        // Update the old height for the next event
