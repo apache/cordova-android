@@ -95,6 +95,10 @@ import com.phonegap.api.PluginManager;
  * 		// (String - default=null)
  * 		super.setStringProperty("loadingDialog", "Wait,Loading Demo...");
  * 
+ * 		// Display a native loading dialog when loading sub-pages.  Format for value = "Title,Message".  
+ * 		// (String - default=null)
+ * 		super.setStringProperty("loadingPageDialog", "Loading page...");
+ *  
  * 		// Cause all links on web page to be loaded into existing web view, 
  * 		// instead of being loaded into new browser. (Boolean - default=false)
  * 		super.setBooleanProperty("loadInWebView", true);
@@ -102,6 +106,10 @@ import com.phonegap.api.PluginManager;
  * 		// Load a splash screen image from the resource drawable directory.
  * 		// (Integer - default=0)
  * 		super.setIntegerProperty("splashscreen", R.drawable.splash);
+ *
+ * 		// Set the background color.
+ * 		// (Integer - default=0 or BLACK)
+ * 		super.setIntegerProperty("backgroundColor", Color.WHITE);
  * 
  * 		// Time in msec to wait before triggering a timeout error when loading
  * 		// with super.loadUrl().  (Integer - default=20000)
@@ -144,6 +152,10 @@ public class DroidGap extends PhonegapActivity {
 	// Flag indicates that a loadUrl timeout occurred
 	private int loadUrlTimeout = 0;
 	
+	// Default background color for activity 
+	// (this is not the color for the webview, which is set in HTML)
+	private int backgroundColor = Color.BLACK;
+	
 	/*
 	 * The variables below are used to cache some of the activity properties.
 	 */
@@ -183,7 +195,7 @@ public class DroidGap extends PhonegapActivity {
     	
     	root = new LinearLayoutSoftKeyboardDetect(this, width, height);
     	root.setOrientation(LinearLayout.VERTICAL);
-    	root.setBackgroundColor(Color.BLACK);
+    	root.setBackgroundColor(this.backgroundColor);
     	root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
     			ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
 
@@ -296,6 +308,10 @@ public class DroidGap extends PhonegapActivity {
 		if (this.appView == null) {
 			this.init();
 		}
+
+		// If backgroundColor
+		this.backgroundColor = this.getIntegerProperty("backgroundColor", Color.BLACK);
+		this.root.setBackgroundColor(this.backgroundColor);
 
 		// If spashscreen
 		this.splashscreen = this.getIntegerProperty("splashscreen", 0);
@@ -712,31 +728,37 @@ public class DroidGap extends PhonegapActivity {
     public void showWebPage(String url, boolean usePhoneGap, boolean clearPrev, HashMap<String, Object> params) throws android.content.ActivityNotFoundException {
     	Intent intent = null;
     	if (usePhoneGap) {
-    		intent = new Intent().setClass(this, com.phonegap.DroidGap.class);
-    		intent.putExtra("url", url);
+    		try {
+    			intent = new Intent().setClass(this, Class.forName(this.getComponentName().getClassName()));
+    			intent.putExtra("url", url);
 
-    		// Add parameters
-    		if (params != null) {
-    			java.util.Set<Entry<String,Object>> s = params.entrySet();
-    			java.util.Iterator<Entry<String,Object>> it = s.iterator();
-    			while(it.hasNext()) {
-    				Entry<String,Object> entry = it.next();
-    				String key = entry.getKey();
-    				Object value = entry.getValue();
-    				if (value == null) {
+    			// Add parameters
+    			if (params != null) {
+    				java.util.Set<Entry<String,Object>> s = params.entrySet();
+    				java.util.Iterator<Entry<String,Object>> it = s.iterator();
+    				while(it.hasNext()) {
+    					Entry<String,Object> entry = it.next();
+    					String key = entry.getKey();
+    					Object value = entry.getValue();
+    					if (value == null) {
+    					}
+    					else if (value.getClass().equals(String.class)) {
+    						intent.putExtra(key, (String)value);
+    					}
+    					else if (value.getClass().equals(Boolean.class)) {
+    						intent.putExtra(key, (Boolean)value);
+    					}
+    					else if (value.getClass().equals(Integer.class)) {
+    						intent.putExtra(key, (Integer)value);
+    					}
     				}
-    				else if (value.getClass().equals(String.class)) {
-    					intent.putExtra(key, (String)value);
-    				}
-    				else if (value.getClass().equals(Boolean.class)) {
-    					intent.putExtra(key, (Boolean)value);
-    				}
-    				else if (value.getClass().equals(Integer.class)) {
-    					intent.putExtra(key, (Integer)value);
-    				}
-    			}
 
-    		}                
+    			}                
+    		} catch (ClassNotFoundException e) {
+    			e.printStackTrace();
+    			intent = new Intent(Intent.ACTION_VIEW);
+    			intent.setData(Uri.parse(url));
+    		}
     	}
     	else {
     		intent = new Intent(Intent.ACTION_VIEW);
@@ -745,9 +767,9 @@ public class DroidGap extends PhonegapActivity {
     	this.startActivity(intent);
     	
     	// Finish current activity
-		if (clearPrev) {
-			this.finish();
-		}
+    	if (clearPrev) {
+    		this.finish();
+    	}
     }
     
     /**
@@ -915,6 +937,14 @@ public class DroidGap extends PhonegapActivity {
         		result.confirm(r);
         	}
         	
+        	// PhoneGap JS has initialized, so show webview
+        	// (This solves white flash seen when rendering HTML)
+        	else if (reqOk && defaultValue.equals("gap_init:")) {
+		        appView.setVisibility(View.VISIBLE);
+    			ctx.spinnerStop();
+    			result.confirm("OK");
+    		}
+
         	// Show dialog
         	else {
 				final JsPromptResult res = result;
@@ -1123,7 +1153,11 @@ public class DroidGap extends PhonegapActivity {
         			try {
         				// Init parameters to new DroidGap activity and propagate existing parameters
         				HashMap<String, Object> params = new HashMap<String, Object>();
-        				params.put("loadingDialog", null);
+        				String loadingPage = this.ctx.getStringProperty("loadingPageDialog", null);
+        				if (loadingPage != null) {
+        					params.put("loadingDialog", loadingPage);
+        					params.put("loadingPageDialog", loadingPage);
+        				}
         				if (this.ctx.loadInWebView) {
         					params.put("loadInWebView", true);
         				}
@@ -1133,6 +1167,7 @@ public class DroidGap extends PhonegapActivity {
         				if (errorUrl != null) {
         					params.put("errorUrl", errorUrl);
         				}
+        				params.put("backgroundColor", this.ctx.backgroundColor);
 
         				this.ctx.showWebPage(url, true, false, params);
         			} catch (android.content.ActivityNotFoundException e) {
@@ -1174,11 +1209,23 @@ public class DroidGap extends PhonegapActivity {
         		appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
         	}
 
-        	// Make app view visible
-        	appView.setVisibility(View.VISIBLE);
-
-        	// Stop "app loading" spinner if showing
-       		this.ctx.spinnerStop();
+        	// Make app visible after 2 sec in case there was a JS error and PhoneGap JS never initialized correctly
+        	Thread t = new Thread(new Runnable() {
+        		public void run() {
+        			try {
+        				Thread.sleep(2000);
+        				ctx.runOnUiThread(new Runnable() {
+        					public void run() {
+        						appView.setVisibility(View.VISIBLE);
+        						ctx.spinnerStop();
+        					}
+        				});
+        			} catch (InterruptedException e) {
+        			}
+        		}
+        	});
+        	t.start();
+        	
 
     		// Clear history, so that previous screen isn't there when Back button is pressed
     		if (this.ctx.clearHistory) {
