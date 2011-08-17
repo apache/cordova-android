@@ -156,6 +156,13 @@ Media.prototype.release = function() {
 };
 
 /**
+ * Adjust the volume.
+ */
+Media.prototype.setVolume = function(volume) {
+    PhoneGap.exec(null, null, "Media", "setVolume", [this.id, volume]);
+};
+
+/**
  * List of media objects.
  * PRIVATE
  */

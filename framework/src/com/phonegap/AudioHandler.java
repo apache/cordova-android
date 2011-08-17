@@ -7,17 +7,15 @@
  */
 package com.phonegap;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
+import android.content.Context;
+import android.media.AudioManager;
+import com.phonegap.api.Plugin;
+import com.phonegap.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.phonegap.api.Plugin;
-import com.phonegap.api.PluginResult;
-
-import android.content.Context;
-import android.media.AudioManager;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 /**
  * This class called by PhonegapActivity to play and record audio.  
@@ -71,8 +69,13 @@ public class AudioHandler extends Plugin {
 			}
 			else if (action.equals("stopPlayingAudio")) {
 				this.stopPlayingAudio(args.getString(0));
-			}
-			else if (action.equals("getCurrentPositionAudio")) {
+			} else if (action.equals("setVolume")) {
+			   try {
+				   this.setVolume(args.getString(0), Float.parseFloat(args.getString(1)));
+			   } catch (NumberFormatException nfe) {
+				   //no-op
+			   }
+			} else if (action.equals("getCurrentPositionAudio")) {
 				float f = this.getCurrentPositionAudio(args.getString(0));
 				return new PluginResult(status, f);
 			}
@@ -295,5 +298,20 @@ public class AudioHandler extends Plugin {
 		else {
 			return -1;
 		}
-    }       
+    }
+
+    /**
+     * Set the volume for an audio device
+     *
+     * @param id				The id of the audio player
+     * @param volume            Volume to adjust to 0.0f - 1.0f
+     */
+    public void setVolume(String id, float volume) {
+        AudioPlayer audio = this.players.get(id);
+        if (audio != null) {
+            audio.setVolume(volume);
+        } else {
+            System.out.println("AudioHandler.setVolume() Error: Unknown Audio Player " + id);
+        }
+    }
 }
