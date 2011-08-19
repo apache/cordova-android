@@ -15,13 +15,24 @@ PhoneGap/Android Developer Tools
 
 Tools for developers building mobile apps using PhoneGap for Android.
 
-Commands:
+Commands
 
-    ./bin/create [path package activity]
-    ./bin/debug [path]
+    ./bin/create [path package activity] ... create a phonegap/android project
+    ./bin/debug ............................ install to first device
+    ./bin/emulate .......................... start emulator named default
+    ./bin/log .............................. starts logging to stdout
+    ./bin/test ............................. run mobile-spec
+
+Usage
+
+    # start avd (emulator) named 'default'
     ./bin/emulate
-    ./bin/log
 
+    # create the exmaple project and build it to the first device
+    ./bin/create && cd example && ./../bin/debug
+
+    # start logging to stdout
+    ./bin/log
 
 Importing a PhoneGap/Android app into Eclipse
 ---------------------------------------------
