@@ -1,0 +1,50 @@
+#! /bin/sh
+#
+# create a phonegap/android project
+# 
+# USAGE
+#   ./create [path package activity]
+#
+PROJECT_PATH=${1:-"./example"}
+PACKAGE=${2:-"com.phonegap.example"}
+ACTIVITY=${3:-"PhoneGapExample"}
+ACTIVITY_PATH=./Example/src/com/phonegap/example/$ACTIVITY.java
+TARGET=$(android list targets | grep 'id: ' | sed 's/id: \([0-9]\).*/\1/g' | tail -1)
+VERSION=$(cat ./VERSION)
+
+# clobber any existing example
+if [ $# -eq 0 ]
+then
+    rm -rf $PROJECT_PATH
+fi
+
+# compile phonegap.js and phonegap.jar
+cd ./framework && ant jar && cd ../
+
+# create the project
+android create project --target $TARGET --path $PROJECT_PATH --package $PACKAGE --activity $ACTIVITY
+
+# copy in www
+mkdir -p ./Example/assets && cp -r ./bin/templates/www ./Example/assets/www
+
+# copy in phonegap.js
+cp ./framework/assets/www/phonegap-$VERSION.js ./Example/assets/www/phonegap-$VERSION.js
+
+# copy in phonegap.jar
+mkdir -p ./Example/libs && cp ./framework/phonegap-$VERSION.jar ./Example/libs/phonegap-$VERSION.jar
+
+# copy in default activity
+cat ./bin/templates/Activity.java > $ACTIVITY_PATH
+
+# interpolate the acivity name and package
+find "$ACTIVITY_PATH" | xargs grep '__ACTIVITY__' -sl | xargs -L1 sed -i "" "s/__ACTIVITY__/${ACTIVITY}/g"
+find "$ACTIVITY_PATH" | xargs grep '__ID__' -sl | xargs -L1 sed -i "" "s/__ID__/${PACKAGE}/g"
+
+# copy in uses-permission elements
+sed '$d' < $PROJECT_PATH/AndroidManifest.xml > tmpFile ; mv tmpFile $PROJECT_PATH/AndroidManifest.xml
+cat ./bin/templates/uses-permission-elements >> $PROJECT_PATH/AndroidManifest.xml
+echo '</manifest>' >> $PROJECT_PATH/AndroidManifest.xml
+
+# copy in plugins.xml
+mkdir -p $PROJECT_PATH/res/xml
+cp ./bin/templates/plugins.xml $PROJECT_PATH/res/xml/plugins.xml

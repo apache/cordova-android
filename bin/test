@@ -1,0 +1,3 @@
+#! /bin/sh
+
+echo 'TODO download mobile-spec, generate a project, copy it in, build it'

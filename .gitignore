@@ -3,9 +3,10 @@ default.properties
 gen
 assets/www/phonegap.js
 local.properties
+framework/proguard.cfg
 framework/phonegap.jar
 framework/phonegap-*.jar
 framework/bin
 framework/assets/www/.DS_Store
 framework/assets/www/phonegap-*.js
-.DS_Store
+example

@@ -1,0 +1,3 @@
+#! /bin/sh
+
+emulator -cpu-delay 0 -no-boot-anim -cache ./tmp/cache -avd default > /dev/null 2>&1 & # put the avd's chatty ass in the background
