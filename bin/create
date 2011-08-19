@@ -48,3 +48,7 @@ echo '</manifest>' >> $PROJECT_PATH/AndroidManifest.xml
 # copy in plugins.xml
 mkdir -p $PROJECT_PATH/res/xml
 cp ./bin/templates/plugins.xml $PROJECT_PATH/res/xml/plugins.xml
+
+# leave the id for launching
+touch $PROJECT_PATH/package-activity
+echo $PACKAGE/$PACKAGE.$ACTIVITY >  $PROJECT_PATH/package-activity 
