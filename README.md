@@ -23,7 +23,7 @@ Commands
     ./bin/log .............................. starts logging to stdout
     ./bin/test ............................. run mobile-spec
 
-Usage
+Running the Example Project
 
     # start avd (emulator) named 'default'
     ./bin/emulate
@@ -33,6 +33,14 @@ Usage
 
     # start logging to stdout
     ./bin/log
+
+Running Mobile-Spec
+
+    ./bin/test
+
+Create a new PhoneGap/Android Project
+
+    ./bin/create ~/Desktop/myapp com.phonegap.special MyApp
 
 Importing a PhoneGap/Android app into Eclipse
 ---------------------------------------------
@@ -70,10 +78,8 @@ Debugging
     
 Attach it to a process on the device
 
-    $ adb jdwp
-    adb forward tcp:8000 jdwp: jdb -attach localhost:8000
-    
-    
+    adb jdwp
+
 For more info see
 -----------------
 - [http://docs.phonegap.com](http://docs.phonegap.com)

@@ -11,7 +11,7 @@ then
 fi
 
 # generate a working proj
-./bin/create ./test
+./bin/create ./test com.phonegap.test PhoneGapTest
 
 # kill the default app and replace it w/ mobile-spec
 rm -rf ./test/assets/www
@@ -19,6 +19,4 @@ mv ./mobile-spec ./test/assets/www
 cp ./framework/assets/www/phonegap-$VERSION.js ./test/assets/www/phoengap-$VERSION.js
 
 # build it, launch it and start logging on stdout
-cd ./test && ./../bin/debug
-adb shell am start -n com.phonegap.example/com.phonegap.example.PhoneGapExample
-./../bin/log
+cd ./test && ./../bin/debug && ./../bin/log

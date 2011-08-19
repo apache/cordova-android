@@ -8,7 +8,8 @@
 PROJECT_PATH=${1:-"./example"}
 PACKAGE=${2:-"com.phonegap.example"}
 ACTIVITY=${3:-"PhoneGapExample"}
-ACTIVITY_PATH=$PROJECT_PATH/src/com/phonegap/example/$ACTIVITY.java
+PACKAGE_AS_PATH=$(echo $PACKAGE | sed 's/\./\//g')
+ACTIVITY_PATH=$PROJECT_PATH/src/$PACKAGE_AS_PATH/$ACTIVITY.java
 TARGET=$(android list targets | grep 'id: ' | sed 's/id: \([0-9]\).*/\1/g' | tail -1)
 VERSION=$(cat ./VERSION)
 
