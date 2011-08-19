@@ -8,7 +8,7 @@
 PROJECT_PATH=${1:-"./example"}
 PACKAGE=${2:-"com.phonegap.example"}
 ACTIVITY=${3:-"PhoneGapExample"}
-ACTIVITY_PATH=./Example/src/com/phonegap/example/$ACTIVITY.java
+ACTIVITY_PATH=$PROJECT_PATH/src/com/phonegap/example/$ACTIVITY.java
 TARGET=$(android list targets | grep 'id: ' | sed 's/id: \([0-9]\).*/\1/g' | tail -1)
 VERSION=$(cat ./VERSION)
 
@@ -25,13 +25,13 @@ cd ./framework && ant jar && cd ../
 android create project --target $TARGET --path $PROJECT_PATH --package $PACKAGE --activity $ACTIVITY
 
 # copy in www
-mkdir -p ./Example/assets && cp -r ./bin/templates/www ./Example/assets/www
+mkdir -p $PROJECT_PATH/assets && cp -r ./bin/templates/www $PROJECT_PATH/assets/www
 
 # copy in phonegap.js
-cp ./framework/assets/www/phonegap-$VERSION.js ./Example/assets/www/phonegap-$VERSION.js
+cp ./framework/assets/www/phonegap-$VERSION.js $PROJECT_PATH/assets/www/phonegap-$VERSION.js
 
 # copy in phonegap.jar
-mkdir -p ./Example/libs && cp ./framework/phonegap-$VERSION.jar ./Example/libs/phonegap-$VERSION.jar
+mkdir -p $PROJECT_PATH/libs && cp ./framework/phonegap-$VERSION.jar $PROJECT_PATH/libs/phonegap-$VERSION.jar
 
 # copy in default activity
 cat ./bin/templates/Activity.java > $ACTIVITY_PATH
