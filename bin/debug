@@ -1,4 +1,17 @@
 #! /bin/sh
+#
+# USAGE
+#    ./debug [path]
+#
+set -e
 
+PROJECT_PATH=${1:-$PWD}
+
+# go to the proj
+cd $PROJECT_PATH
+
+# compile and install to the first device
 ant debug install
+
+# start the app
 adb shell am start -n $(cat ./package-activity)
