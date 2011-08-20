@@ -5,10 +5,10 @@
     	android:largeScreens="true"
     	android:normalScreens="true"
     	android:smallScreens="true"
-    	android:xlargeScreens="true"
     	android:resizeable="true"
     	android:anyDensity="true"
     	/>
+    <!-- android:xlargeScreens="true" screen supported only after Android-9 -->
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
