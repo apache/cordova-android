@@ -3,38 +3,43 @@ PhoneGap/Android
 
 PhoneGap/Android is an Android application library that allows for PhoneGap based projects to be built for the Android Platform. PhoneGap based applications are, at the core, an application written with web technology: HTML, CSS and JavaScript. 
 
-Pre Requisites
+Requires
 ---
 
 - Java JDK 1.5
-- Android SDK [http://developer.android.com](http://developer.android.com)
 - Apache ANT
+- Android SDK [http://developer.android.com](http://developer.android.com)
 
 PhoneGap/Android Developer Tools
 ---
 
-Tools for developers building mobile apps using PhoneGap for Android.
-
 Commands
 
-    ./bin/create [path package activity] ... create a phonegap/android project
+    ./bin/create [path package activity] ... create the ./exmaple app or a phonegap/android project
     ./bin/debug ............................ install to first device
-    ./bin/emulate .......................... start emulator named default
-    ./bin/log .............................. starts logging to stdout
+    ./bin/emulate .......................... start avd (emulator) named default
+    ./bin/log .............................. starts logcat
     ./bin/test ............................. run mobile-spec
+    ./bin/autotest ......................... run the cli unit tests (requires nodejs)
 
 Running the Example Project
+---
 
-    # start avd (emulator) named 'default'
+Start avd (emulator) named `default`:
+
     ./bin/emulate
 
-    # create the exmaple project and build it to the first device
-    ./bin/create && cd example && ./../bin/debug
+Create the exmaple project and build it to the first device:
 
-    # start logging to stdout
+    ./bin/create
+    cd example
+    ./../bin/debug
+
+Start adb logcat (console.log calls output here):
+
     ./bin/log
 
-Running Mobile-Spec
+Running the [phonegap/mobile-spec](http://github.com/phonegap/mobile-spec) tests:
 
     ./bin/test
 
@@ -42,8 +47,8 @@ Create a new PhoneGap/Android Project
 
     ./bin/create ~/Desktop/myapp com.phonegap.special MyApp
 
-Importing a PhoneGap/Android app into Eclipse
----------------------------------------------
+Importing a PhoneGap/Android Project into Eclipse
+----
 
 1. File > New > Project...
 2. Android > Android Project
@@ -53,34 +58,9 @@ Importing a PhoneGap/Android app into Eclipse
 6. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
 
 
-Common Commandline Tools
-===
-
-List devices attached
+Further Reading
 ---
 
-	adb devices 
-
-Install APK onto device
----
-
-	apk -s 0123456789012 install phonegap.apk
-    
-Logging 
----
-
-Via console.log calls from your apps javascript.
-
-	adb logcat
-    
-Debugging
----
-    
-Attach it to a process on the device
-
-    adb jdwp
-
-For more info see
------------------
+- [http://developer.android.com](http://developer.android.com)
 - [http://docs.phonegap.com](http://docs.phonegap.com)
 - [http://wiki.phonegap.com](http://wiki.phonegap.com)
