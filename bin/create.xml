@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PhoneGap" default="create" basedir="../">
+
+	<property name="project.path" value="${basedir}/example"/>
+	<property name="package" value="com.phonegap.example"/>
+	<property name="activity" value="PhoneGapExample"/>
+
+	<target name="create">
+
+		<echo file="tmp/package.tmp">package-as-path=${package}</echo>
+		<replace file="tmp/package.tmp" token="." value="\\" />
+		<property file="tmp/package.tmp" />
+		<property name="activity.path" value="${project.path}/src/${package-as-path}/${activity}.java" />
+		<property name="manifest.path" value="${project.path}/AndroidManifest.xml" />
+
+		<!-- get the highest target on this machine -->
+		<exec executable="cmd" osfamily="windows" output="target.list.tmp">
+			<arg line="/c android.bat list targets"/>
+		</exec>
+		<exec executable="android" osfamily="mac,unix">
+			<arg line="list targets"/>
+		</exec>
+		<replaceregexp file="tmp/target.list.tmp" match=".*id:\s([0-9]).*" replace="target=\1" flags="s" />
+		<property file="tmp/target.list.tmp" />
+
+		<!-- var VERSION=read('VERSION').replace(/\r\n/,'').replace(/\n/,''); -->
+		<copy file="VERSION" tofile="tmp/VERSION.tmp" overwrite="true" />
+		<replaceregexp file="tmp/VERSION.tmp" match="^" replace="version=" />
+		<replaceregexp file="tmp/VERSION.tmp" match="\r\n" replace="" />
+		<property file="tmp/VERSION.tmp" />
+
+		<!-- clobber any existing example -->
+
+		<!-- create the project -->
+		<exec executable="cmd" osfamily="windows">
+			<arg line="/c android.bat create project --target ${target} --path ${project.path} --package ${package} --activity ${activity}"/>
+		</exec>
+		<exec executable="android" osfamily="mac,unix">
+			<arg line="create project --target ${target} --path ${project.path} --package ${package} --activity ${activity}"/>
+		</exec>
+
+		<!-- update the framework dir -->
+		<exec executable="cmd" osfamily="windows">
+			<arg line="/c android.bat update project --target ${target} --path ${basedir}/framework"/>
+		</exec>
+		<exec executable="android" osfamily="mac,unix">
+			<arg line="update project --target ${target} --path ${basedir}/framework"/>
+		</exec>
+
+		<!-- compile phonegap.js and phonegap.jar -->
+		<!--	// if you see an error about "Unable to resolve target" then you may need to 
+				// update your android tools or install an additional Android platform version -->
+		<exec executable="cmd" osfamily="windows">
+			<arg line="ant.bat -v -f ${basedir}/framework/build.xml jar"/>
+		</exec>
+		<exec executable="ant" osfamily="mac,unix">
+			<arg line="-v -f ${basedir}/framework/build.xml jar"/>
+		</exec>
+
+		<!-- copy in the project template -->
+		<copy todir="${project.path}" overwrite="true">
+			<fileset dir="${basedir}/bin/templates/project"/>
+		</copy>
+
+		<!-- copy in phonegap.js -->
+		<copy file="${basedir}/framework/assets/www/phonegap-${version}.js" todir="${project.path}/assets/www/" />
+
+		<!-- copy in phonegap.jar -->
+		<copy file="${basedir}/framework/phonegap-${version}.jar" todir="${project.path}/libs/" />
+
+		<!-- copy in default activity -->
+		<copy file="${basedir}/bin/templates/Activity.java" tofile="${activity.path}" overwrite="true" />
+
+		<!-- interpolate the activity name and package -->
+		<replaceregexp file="${activity.path}" match="__ACTIVITY__" replace="${activity}" />
+		<replaceregexp file="${activity.path}" match="__ID__" replace="${package}" />
+
+		<replaceregexp file="${manifest.path}" match="__ACTIVITY__" replace="${activity}" />
+		<replaceregexp file="${manifest.path}" match="__PACKAGE__" replace="${package}" />
+	</target>
+</project>
