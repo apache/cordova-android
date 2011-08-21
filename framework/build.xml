@@ -109,7 +109,7 @@
     <target name="build-javascript">
         
       <!-- Clean up existing files -->
-      <delete file="assets/www/phonegap_${version}.js"/>
+      <!--<delete file="assets/www/phonegap_${version}.js"/>-->
         
       <!-- Create uncompressed JS file -->
       <concat destfile="assets/www/phonegap-${version}.js">
@@ -120,14 +120,14 @@
       <!-- update project files to reference phonegap-x.x.x.min.js -->
       <replaceregexp match="phonegap(.*)\.js" replace="phonegap-${version}.js" byline="true">
          <fileset file="assets/www/index.html" /> 
-        <fileset file="../bin/templates/www/index.html" />
+        <fileset file="../bin/templates/project/assets/www/index.html" />
       </replaceregexp>
       <replaceregexp match="phonegapVersion = [\u0022].*[\u0022];" replace="phonegapVersion = ${dblQuote}${version}${dblQuote};" byline="true">
         <fileset file="src/com/phonegap/Device.java" />
       </replaceregexp>
         
       <!-- Delete temp file -->
-      <delete file="assets/www/phonegap-tmp.js"/>
+      <!--<delete file="assets/www/phonegap-tmp.js"/>-->
     </target>
 
     <!-- Build PhoneGap jar file that includes all native code, and PhoneGap JS file

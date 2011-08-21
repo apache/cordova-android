@@ -60,7 +60,7 @@ exec('android.bat update project --target '+TARGET+' --path framework');
 // compile phonegap.js and phonegap.jar
 // if you see an error about "Unable to resolve target" then you may need to 
 // update your android tools or install an additional Android platform version
-exec('ant.bat -v -f framework\\build.xml jar');
+exec('ant.bat -f framework\\build.xml jar');
 
 // copy in the project template
 exec('cmd /c xcopy bin\\templates\\project '+PROJECT_PATH+' /S /Y');

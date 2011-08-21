@@ -7,17 +7,20 @@
 
 	<target name="create">
 
+		<!-- this stuff is seriously stupid -->
 		<echo file="tmp/package.tmp">package-as-path=${package}</echo>
 		<replace file="tmp/package.tmp" token="." value="\\" />
 		<property file="tmp/package.tmp" />
+
 		<property name="activity.path" value="${project.path}/src/${package-as-path}/${activity}.java" />
 		<property name="manifest.path" value="${project.path}/AndroidManifest.xml" />
 
 		<!-- get the highest target on this machine -->
-		<exec executable="cmd" osfamily="windows" output="target.list.tmp">
+		<!-- this stuff is also seriously stupid -->
+		<exec executable="cmd" osfamily="windows" output="tmp/target.list.tmp">
 			<arg line="/c android.bat list targets"/>
 		</exec>
-		<exec executable="android" osfamily="mac,unix">
+		<exec executable="android" osfamily="mac" output="tmp/target.list.tmp">
 			<arg line="list targets"/>
 		</exec>
 		<replaceregexp file="tmp/target.list.tmp" match=".*id:\s([0-9]).*" replace="target=\1" flags="s" />
@@ -35,7 +38,7 @@
 		<exec executable="cmd" osfamily="windows">
 			<arg line="/c android.bat create project --target ${target} --path ${project.path} --package ${package} --activity ${activity}"/>
 		</exec>
-		<exec executable="android" osfamily="mac,unix">
+		<exec executable="android" osfamily="mac">
 			<arg line="create project --target ${target} --path ${project.path} --package ${package} --activity ${activity}"/>
 		</exec>
 
@@ -43,19 +46,14 @@
 		<exec executable="cmd" osfamily="windows">
 			<arg line="/c android.bat update project --target ${target} --path ${basedir}/framework"/>
 		</exec>
-		<exec executable="android" osfamily="mac,unix">
+		<exec executable="android" osfamily="mac">
 			<arg line="update project --target ${target} --path ${basedir}/framework"/>
 		</exec>
 
 		<!-- compile phonegap.js and phonegap.jar -->
 		<!--	// if you see an error about "Unable to resolve target" then you may need to 
 				// update your android tools or install an additional Android platform version -->
-		<exec executable="cmd" osfamily="windows">
-			<arg line="ant.bat -v -f ${basedir}/framework/build.xml jar"/>
-		</exec>
-		<exec executable="ant" osfamily="mac,unix">
-			<arg line="-v -f ${basedir}/framework/build.xml jar"/>
-		</exec>
+		<ant antfile="${basedir}/framework/build.xml" useNativeBasedir="true" inheritAll="false" />
 
 		<!-- copy in the project template -->
 		<copy todir="${project.path}" overwrite="true">
