@@ -914,13 +914,13 @@ public class DroidGap extends PhonegapActivity {
         	}
         	
         	// Polling for JavaScript messages 
-        	else if (reqOk && defaultValue.equals("gap_poll:")) {
+        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
         		String r = callbackServer.getJavascript();
         		result.confirm(r);
         	}
         	
         	// Calling into CallbackServer
-        	else if (reqOk && defaultValue.equals("gap_callbackServer:")) {
+        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
         		String r = "";
         		if (message.equals("usePolling")) {
         			r = ""+callbackServer.usePolling();
@@ -939,7 +939,7 @@ public class DroidGap extends PhonegapActivity {
         	
         	// PhoneGap JS has initialized, so show webview
         	// (This solves white flash seen when rendering HTML)
-        	else if (reqOk && defaultValue.equals("gap_init:")) {
+        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
 		        appView.setVisibility(View.VISIBLE);
     			ctx.spinnerStop();
     			result.confirm("OK");
