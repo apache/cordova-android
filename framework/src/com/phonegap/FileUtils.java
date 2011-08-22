@@ -25,6 +25,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 import com.phonegap.file.EncodingException;
@@ -39,7 +40,8 @@ import com.phonegap.file.TypeMismatchException;
  */
 public class FileUtils extends Plugin {
 	private static final String LOG_TAG = "FileUtils";
-	
+	private static final String _DATA = "_data";    // The column name where the file path is stored
+
 	public static int NOT_FOUND_ERR = 1;
 	public static int SECURITY_ERR = 2;
 	public static int ABORT_ERR = 3;
@@ -988,5 +990,19 @@ public class FileUtils extends Plugin {
     		return new FileInputStream(path);
     	}
     }  
+    
+    /**
+     * Queries the media store to find out what the file path is for the Uri we supply
+     * 
+     * @param contentUri the Uri of the audio/image/video
+     * @param ctx the current applicaiton context
+     * @return the full path to the file
+     */
+    protected static String getRealPathFromURI(Uri contentUri, PhonegapActivity ctx) {
+        String[] proj = { _DATA };
+        Cursor cursor = ctx.managedQuery(contentUri, proj, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(_DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
 }
-
