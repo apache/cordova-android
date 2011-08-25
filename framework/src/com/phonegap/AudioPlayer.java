@@ -86,7 +86,10 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		
 		// Stop any play or record
 		if (this.mPlayer != null) {
-			this.stopPlaying();
+	        if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
+	            this.mPlayer.stop();
+	            this.setState(MEDIA_STOPPED);
+	        }
 			this.mPlayer.release();
 			this.mPlayer = null;
 		}
