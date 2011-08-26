@@ -8,9 +8,6 @@
 PROJECT_PATH=${1:-"./example"}
 PACKAGE=${2:-"com.phonegap.example"}
 ACTIVITY=${3:-"PhoneGapExample"}
-PACKAGE_AS_PATH=$(echo $PACKAGE | sed 's/\./\//g')
-ACTIVITY_PATH=$PROJECT_PATH/src/$PACKAGE_AS_PATH/$ACTIVITY.java
-MANIFEST_PATH=$PROJECT_PATH/AndroidManifest.xml
 TARGET=$(android list targets | grep 'id: ' | sed 's/id: \([0-9]\).*/\1/g' | tail -1)
 VERSION=$(cat ./VERSION)
 
@@ -26,28 +23,22 @@ android update project --target $TARGET --path ./framework
 # compile phonegap.js and phonegap.jar
 cd ./framework && ant jar && cd ../
 
-# create the project
-android create project --target $TARGET --path $PROJECT_PATH --package $PACKAGE --activity $ACTIVITY
-
-# copy in all default project files (plugins.xml, manifest, www etc)
-cp -r ./bin/templates/project $PROJECT_PATH
+# copy all the bin scripts etc in there
+cp -R ./bin/templates/project/ $PROJECT_PATH
 
 # copy in phonegap.js
-cp ./framework/assets/www/phonegap-$VERSION.js $PROJECT_PATH/assets/www/phonegap-$VERSION.js
+cp ./framework/assets/www/phonegap-$VERSION.js $PROJECT_PATH/.phonegap/android/phonegap-$VERSION.js
 
 # copy in phonegap.jar
-mkdir -p $PROJECT_PATH/libs && cp ./framework/phonegap-$VERSION.jar $PROJECT_PATH/libs/phonegap-$VERSION.jar
+cp ./framework/phonegap-$VERSION.jar $PROJECT_PATH/.phonegap/android/phonegap-$VERSION.jar
 
-# copy in default activity
-cat ./bin/templates/Activity.java > $ACTIVITY_PATH
+# app properties
+cat > $PROJECT_PATH/.phonegap/config <<eom
+VERSION=$VERSION
+PROJECT_PATH=$PROJECT_PATH
+PACKAGE=$PACKAGE
+ACTIVITY=$ACTIVITY
+TARGET=$TARGET
+eom
 
-# interpolate the acivity name and package
-find "$ACTIVITY_PATH" | xargs grep '__ACTIVITY__' -sl | xargs -L1 sed -i "" "s/__ACTIVITY__/${ACTIVITY}/g"
-find "$ACTIVITY_PATH" | xargs grep '__ID__' -sl | xargs -L1 sed -i "" "s/__ID__/${PACKAGE}/g"
-
-find "$MANIFEST_PATH" | xargs grep '__ACTIVITY__' -sl | xargs -L1 sed -i "" "s/__ACTIVITY__/${ACTIVITY}/g"
-find "$MANIFEST_PATH" | xargs grep '__PACKAGE__' -sl | xargs -L1 sed -i "" "s/__PACKAGE__/${PACKAGE}/g"
-
-# leave the id for launching
-touch $PROJECT_PATH/package-activity
-echo $PACKAGE/$PACKAGE.$ACTIVITY >  $PROJECT_PATH/package-activity 
+(cd $PROJECT_PATH && ./bin/create)

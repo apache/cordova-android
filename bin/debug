@@ -1,4 +1,0 @@
-#! /bin/sh
-
-ant debug install
-adb shell am start -n $(cat ./package-activity)
