@@ -27,7 +27,7 @@ var Connection = function() {
                 // set a timer if still offline at the end of timer send the offline event
                 me._timer = setTimeout(function(){
                     me.type = type;
-                    PhoneGap.fireEvent('offline');
+                    PhoneGap.fireDocumentEvent('offline');
                     me._timer = null;
                     }, me.timeout);
             } else {
@@ -37,7 +37,7 @@ var Connection = function() {
                     me._timer = null;
                 }
                 me.type = type;
-                PhoneGap.fireEvent('online');
+                PhoneGap.fireDocumentEvent('online');
             }
             
             // should only fire this once
@@ -47,6 +47,12 @@ var Connection = function() {
             }            
         },
         function(e) {
+            // If we can't get the network info we should still tell PhoneGap
+            // to fire the deviceready event.
+            if (me._firstRun) {
+                me._firstRun = false;
+                PhoneGap.onPhoneGapConnectionReady.fire();
+            }            
             console.log("Error initializing Network Connection: " + e);
         });
 };

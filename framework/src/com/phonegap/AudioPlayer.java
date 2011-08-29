@@ -7,8 +7,6 @@
  */
 package com.phonegap;
 
-import java.io.File;
-import java.io.IOException;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -17,6 +15,9 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * This class implements the audio playback and recording capabilities used by PhoneGap.
@@ -85,7 +86,10 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		
 		// Stop any play or record
 		if (this.mPlayer != null) {
-			this.stopPlaying();
+	        if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
+	            this.mPlayer.stop();
+	            this.setState(MEDIA_STOPPED);
+	        }
 			this.mPlayer.release();
 			this.mPlayer = null;
 		}
@@ -417,4 +421,13 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		
 		this.state = state;
 	}
+
+	/**
+	 * Set the volume for audio player
+	 *
+	 * @param volume
+	 */
+    public void setVolume(float volume) {
+        this.mPlayer.setVolume(volume, volume);
+    }
 }
