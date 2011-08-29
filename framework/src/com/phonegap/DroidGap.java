@@ -9,6 +9,11 @@ package com.phonegap;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.Iterator;
+import java.io.IOException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +28,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.media.AudioManager;
@@ -52,6 +58,8 @@ import android.widget.LinearLayout;
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.IPlugin;
 import com.phonegap.api.PluginManager;
+
+import 	org.xmlpull.v1.XmlPullParserException;
 
 /**
  * This class is the main Android activity that represents the PhoneGap
@@ -127,6 +135,8 @@ public class DroidGap extends PhonegapActivity {
     // The webview for our app
     protected WebView appView;
     protected WebViewClient webViewClient;
+    private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
+    
 
     protected LinearLayout root;
     public boolean bound = false;
@@ -209,6 +219,7 @@ public class DroidGap extends PhonegapActivity {
         }
         // Setup the hardware volume controls to handle volume control
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        loadWhiteList();
     }
     
     /**
@@ -892,9 +903,22 @@ public class DroidGap extends PhonegapActivity {
             // Security check to make sure any requests are coming from the page initially
             // loaded in webview and not another loaded in an iframe.
             boolean reqOk = false;
-            if (url.indexOf(this.ctx.baseUrl) == 0) {
-                reqOk = true;
+            // looking for url in whitelist
+            boolean isUrlWhiteListed = false;
+            Iterator<Pattern> pit = whiteList.iterator();
+            while(pit.hasNext()) {
+              Pattern p = pit.next();
+              Matcher m = p.matcher(url);
+              if(m.find()) {
+                isUrlWhiteListed = true;
+                break;
+              }
             }
+
+            if (url.indexOf(this.ctx.baseUrl) == 0 || isUrlWhiteListed) {
+              reqOk = true;
+            }
+            
             
             // Calling PluginManager.exec() to call a native service using 
             // prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
@@ -1539,4 +1563,37 @@ public class DroidGap extends PhonegapActivity {
                 oldWidth = width;
             }
     }
+  private void loadWhiteList() {
+    int id = getResources().getIdentifier("phonegap", "xml", getPackageName());
+    if (id == 0) {
+      Log.i("PhoneGapLog", "whitelist.xml missing. Ignoring...");
+      return;
+    }
+    XmlResourceParser xml = getResources().getXml(id);
+    int eventType = -1;
+    while (eventType != XmlResourceParser.END_DOCUMENT) {
+      if (eventType == XmlResourceParser.START_TAG) {
+        String strNode = xml.getName();
+        if (strNode.equals("access")) {
+          String origin = xml.getAttributeValue(null, "origin");
+          String subdomains = xml.getAttributeValue(null, "subdomains");
+          if(subdomains != null && subdomains.compareToIgnoreCase("true") == 0) {
+            Log.d("PhoneGapLog", "Origin to allow with subdomains: "+origin);
+            whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://.*")));
+          } else {
+            Log.d("PhoneGapLog", "Origin to allow: "+origin);
+            whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://")));
+          }
+        }
+      }
+      try {
+        eventType = xml.next();
+      } catch (XmlPullParserException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+    
 }
