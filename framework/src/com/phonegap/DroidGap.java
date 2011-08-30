@@ -136,7 +136,7 @@ public class DroidGap extends PhonegapActivity {
     protected WebView appView;
     protected WebViewClient webViewClient;
     private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
-    
+
 
     protected LinearLayout root;
     public boolean bound = false;
@@ -149,7 +149,7 @@ public class DroidGap extends PhonegapActivity {
     // The initial URL for our app
     // ie http://server/path/index.html#abc?query
     private String url;
-    
+
     // The base of the initial URL for our app.
     // Does not include file name.  Ends with /
     // ie http://server/path/
@@ -161,11 +161,11 @@ public class DroidGap extends PhonegapActivity {
 
     // Flag indicates that a loadUrl timeout occurred
     private int loadUrlTimeout = 0;
-    
+
     // Default background color for activity 
     // (this is not the color for the webview, which is set in HTML)
     private int backgroundColor = Color.BLACK;
-    
+
     /*
      * The variables below are used to cache some of the activity properties.
      */
@@ -180,7 +180,7 @@ public class DroidGap extends PhonegapActivity {
 
     // LoadUrl timeout value in msec (default of 20 sec)
     protected int loadUrlTimeoutValue = 20000;
-    
+
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
@@ -192,49 +192,49 @@ public class DroidGap extends PhonegapActivity {
      * @param savedInstanceState
      */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
 
-        Display display = getWindowManager().getDefaultDisplay(); 
-        int width = display.getWidth();
-        int height = display.getHeight();
-        
-        root = new LinearLayoutSoftKeyboardDetect(this, width, height);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(this.backgroundColor);
-        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
-                ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+            Display display = getWindowManager().getDefaultDisplay(); 
+            int width = display.getWidth();
+            int height = display.getHeight();
 
-        // If url was passed in to intent, then init webview, which will load the url
-        Bundle bundle = this.getIntent().getExtras();
-        if (bundle != null) {
-            String url = bundle.getString("url");
-            if (url != null) {
-                this.init();
+            root = new LinearLayoutSoftKeyboardDetect(this, width, height);
+            root.setOrientation(LinearLayout.VERTICAL);
+            root.setBackgroundColor(this.backgroundColor);
+            root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+                        ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+
+            // If url was passed in to intent, then init webview, which will load the url
+            Bundle bundle = this.getIntent().getExtras();
+            if (bundle != null) {
+                String url = bundle.getString("url");
+                if (url != null) {
+                    this.init();
+                }
             }
+            // Setup the hardware volume controls to handle volume control
+            setVolumeControlStream(AudioManager.STREAM_MUSIC);
+            loadWhiteList();
         }
-        // Setup the hardware volume controls to handle volume control
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        loadWhiteList();
-    }
-    
+
     /**
      * Create and initialize web container.
      */
     public void init() {
-        
+
         // Create web container
         this.appView = new WebView(DroidGap.this);
         this.appView.setId(100);
-        
+
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.FILL_PARENT,
-                ViewGroup.LayoutParams.FILL_PARENT, 
-                1.0F));
+                    ViewGroup.LayoutParams.FILL_PARENT,
+                    ViewGroup.LayoutParams.FILL_PARENT, 
+                    1.0F));
 
         WebViewReflect.checkCompatibility();
 
@@ -244,7 +244,7 @@ public class DroidGap extends PhonegapActivity {
         else {
             this.appView.setWebChromeClient(new EclairClient(DroidGap.this));           
         }
-           
+
         this.setWebViewClient(this.appView, new GapViewClient(this));
 
         this.appView.setInitialScale(100);
@@ -264,7 +264,7 @@ public class DroidGap extends PhonegapActivity {
 
         // Enable DOM storage
         WebViewReflect.setDomStorage(settings);
-        
+
         // Enable built-in geolocation
         WebViewReflect.setGeolocationEnabled(settings, true);
 
@@ -275,7 +275,7 @@ public class DroidGap extends PhonegapActivity {
         this.appView.setVisibility(View.INVISIBLE);
         root.addView(this.appView);
         setContentView(root);
-        
+
         // Clear cancel flag
         this.cancelLoadUrl = false;
 
@@ -286,7 +286,7 @@ public class DroidGap extends PhonegapActivity {
             this.loadUrl(url);          
         }
     }
-    
+
     /**
      * Set the WebViewClient.
      * 
@@ -308,7 +308,7 @@ public class DroidGap extends PhonegapActivity {
         this.pluginManager = new PluginManager(appView, this);
 
     }
-        
+
     /**
      * Look at activity parameters and process them.
      * This must be called from the main UI thread.
@@ -338,11 +338,11 @@ public class DroidGap extends PhonegapActivity {
         if (timeout > 0) {
             this.loadUrlTimeoutValue = timeout;
         }
-        
+
         // If keepRunning
         this.keepRunning = this.getBooleanProperty("keepRunning", true);
     }
-    
+
     /**
      * Load the url into the webview.
      * 
@@ -365,7 +365,7 @@ public class DroidGap extends PhonegapActivity {
         // Load URL on UI thread
         final DroidGap me = this;
         this.runOnUiThread(new Runnable() {
-            public void run() {
+                public void run() {
 
                 // Handle activity parameters
                 me.handleActivityParameters();
@@ -377,21 +377,21 @@ public class DroidGap extends PhonegapActivity {
                 String loading = me.getStringProperty("loadingDialog", null);
                 if (loading != null) {
 
-                    String title = "";
-                    String message = "Loading Application...";
+                String title = "";
+                String message = "Loading Application...";
 
-                    if (loading.length() > 0) {
-                        int comma = loading.indexOf(',');
-                        if (comma > 0) {
-                            title = loading.substring(0, comma);
-                            message = loading.substring(comma+1);
-                        }
-                        else {
-                            title = "";
-                            message = loading;
-                        }
-                    }
-                    me.spinnerStart(title, message);
+                if (loading.length() > 0) {
+                int comma = loading.indexOf(',');
+                if (comma > 0) {
+                title = loading.substring(0, comma);
+                message = loading.substring(comma+1);
+                }
+                else {
+                    title = "";
+                    message = loading;
+                }
+                }
+                me.spinnerStart(title, message);
                 }
 
                 // Create a timeout timer for loadUrl
@@ -416,10 +416,10 @@ public class DroidGap extends PhonegapActivity {
                 Thread thread = new Thread(runnable);
                 thread.start();
                 me.appView.loadUrl(url);
-            }
+                }
         });
     }
-    
+
     /**
      * Load the url into the webview after waiting for period of time.
      * This is used to display the splashscreen for certain amount of time.
@@ -433,10 +433,10 @@ public class DroidGap extends PhonegapActivity {
 
         // Handle activity parameters
         this.runOnUiThread(new Runnable() {
-            public void run() {
+                public void run() {
                 me.handleActivityParameters();
-            }
-        });
+                }
+                });
 
         Runnable runnable = new Runnable() {
             public void run() {
@@ -459,14 +459,14 @@ public class DroidGap extends PhonegapActivity {
         Thread thread = new Thread(runnable);
         thread.start();
     }
-    
+
     /**
      * Cancel loadUrl before it has been loaded.
      */
     public void cancelLoadUrl() {
         this.cancelLoadUrl = true;
     }
-    
+
     /**
      * Clear the resource cache.
      */
@@ -488,16 +488,16 @@ public class DroidGap extends PhonegapActivity {
     }
 
     @Override
-    /**
-     * Called by the system when the device configuration changes while your activity is running. 
-     * 
-     * @param Configuration newConfig
-     */
-    public void onConfigurationChanged(Configuration newConfig) {
-        //don't reload the current page when the orientation is changed
-        super.onConfigurationChanged(newConfig);
-    }
-    
+        /**
+         * Called by the system when the device configuration changes while your activity is running. 
+         * 
+         * @param Configuration newConfig
+         */
+        public void onConfigurationChanged(Configuration newConfig) {
+            //don't reload the current page when the orientation is changed
+            super.onConfigurationChanged(newConfig);
+        }
+
     /**
      * Get boolean property for activity.
      * 
@@ -583,7 +583,7 @@ public class DroidGap extends PhonegapActivity {
     public void setBooleanProperty(String name, boolean value) {
         this.getIntent().putExtra(name, value);
     }
-    
+
     /**
      * Set int property on activity.
      * 
@@ -593,7 +593,7 @@ public class DroidGap extends PhonegapActivity {
     public void setIntegerProperty(String name, int value) {
         this.getIntent().putExtra(name, value);
     }
-    
+
     /**
      * Set string property on activity.
      * 
@@ -613,95 +613,95 @@ public class DroidGap extends PhonegapActivity {
     public void setDoubleProperty(String name, double value) {
         this.getIntent().putExtra(name, value);
     }
-    
-    @Override
-    /**
-     * Called when the system is about to start resuming a previous activity. 
-     */
-    protected void onPause() {
-        super.onPause();
-        if (this.appView == null) {
-            return;
-        }
-        
-        // Send pause event to JavaScript
-        this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
-
-        // Forward to plugins
-        this.pluginManager.onPause(this.keepRunning);
-
-        // If app doesn't want to run in background
-        if (!this.keepRunning) {
-
-            // Pause JavaScript timers (including setInterval)
-            this.appView.pauseTimers();
-        }
-    }
 
     @Override
-    /**
-     * Called when the activity receives a new intent
-     **/
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-
-        //Forward to plugins
-        this.pluginManager.onNewIntent(intent);
-    }
-    
-    @Override
-    /**
-     * Called when the activity will start interacting with the user. 
-     */
-    protected void onResume() {
-        super.onResume();
-        if (this.appView == null) {
-            return;
-        }
-
-        // Send resume event to JavaScript
-        this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
-
-        // Forward to plugins
-        this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
-
-        // If app doesn't want to run in background
-        if (!this.keepRunning || this.activityResultKeepRunning) {
-
-            // Restore multitasking state
-            if (this.activityResultKeepRunning) {
-                this.keepRunning = this.activityResultKeepRunning;
-                this.activityResultKeepRunning = false;
+        /**
+         * Called when the system is about to start resuming a previous activity. 
+         */
+        protected void onPause() {
+            super.onPause();
+            if (this.appView == null) {
+                return;
             }
 
-            // Resume JavaScript timers (including setInterval)
-            this.appView.resumeTimers();
-        }
-    }
-    
-    @Override
-    /**
-     * The final call you receive before your activity is destroyed. 
-     */
-    public void onDestroy() {
-        super.onDestroy();
-        
-        if (this.appView != null) {
-        
-            // Make sure pause event is sent if onPause hasn't been called before onDestroy
-            this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
+            // Send pause event to JavaScript
+            this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
 
-            // Send destroy event to JavaScript
-            this.appView.loadUrl("javascript:try{PhoneGap.onDestroy.fire();}catch(e){};");
-
-            // Load blank page so that JavaScript onunload is called
-            this.appView.loadUrl("about:blank");
-                
             // Forward to plugins
-            this.pluginManager.onDestroy();
+            this.pluginManager.onPause(this.keepRunning);
 
+            // If app doesn't want to run in background
+            if (!this.keepRunning) {
+
+                // Pause JavaScript timers (including setInterval)
+                this.appView.pauseTimers();
+            }
         }
-    }
+
+    @Override
+        /**
+         * Called when the activity receives a new intent
+         **/
+        protected void onNewIntent(Intent intent) {
+            super.onNewIntent(intent);
+
+            //Forward to plugins
+            this.pluginManager.onNewIntent(intent);
+        }
+
+    @Override
+        /**
+         * Called when the activity will start interacting with the user. 
+         */
+        protected void onResume() {
+            super.onResume();
+            if (this.appView == null) {
+                return;
+            }
+
+            // Send resume event to JavaScript
+            this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
+
+            // Forward to plugins
+            this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
+
+            // If app doesn't want to run in background
+            if (!this.keepRunning || this.activityResultKeepRunning) {
+
+                // Restore multitasking state
+                if (this.activityResultKeepRunning) {
+                    this.keepRunning = this.activityResultKeepRunning;
+                    this.activityResultKeepRunning = false;
+                }
+
+                // Resume JavaScript timers (including setInterval)
+                this.appView.resumeTimers();
+            }
+        }
+
+    @Override
+        /**
+         * The final call you receive before your activity is destroyed. 
+         */
+        public void onDestroy() {
+            super.onDestroy();
+
+            if (this.appView != null) {
+
+                // Make sure pause event is sent if onPause hasn't been called before onDestroy
+                this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
+
+                // Send destroy event to JavaScript
+                this.appView.loadUrl("javascript:try{PhoneGap.onDestroy.fire();}catch(e){};");
+
+                // Load blank page so that JavaScript onunload is called
+                this.appView.loadUrl("about:blank");
+
+                // Forward to plugins
+                this.pluginManager.onDestroy();
+
+            }
+        }
 
     /**
      * Add a class that implements a service.
@@ -712,7 +712,7 @@ public class DroidGap extends PhonegapActivity {
     public void addService(String serviceType, String className) {
         this.pluginManager.addService(serviceType, className);
     }
-    
+
     /**
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)
@@ -722,8 +722,8 @@ public class DroidGap extends PhonegapActivity {
     public void sendJavascript(String statement) {
         this.callbackServer.sendJavascript(statement);
     }
-    
-    
+
+
     /**
      * Display a new browser with the specified URL.
      * 
@@ -776,13 +776,13 @@ public class DroidGap extends PhonegapActivity {
             intent.setData(Uri.parse(url));
         }
         this.startActivity(intent);
-        
+
         // Finish current activity
         if (clearPrev) {
             this.finish();
         }
     }
-    
+
     /**
      * Show the spinner.  Must be called from the UI thread.
      * 
@@ -797,10 +797,10 @@ public class DroidGap extends PhonegapActivity {
         final DroidGap me = this;
         this.spinnerDialog = ProgressDialog.show(DroidGap.this, title , message, true, true, 
                 new DialogInterface.OnCancelListener() { 
-            public void onCancel(DialogInterface dialog) {
+                public void onCancel(DialogInterface dialog) {
                 me.spinnerDialog = null;
-            }
-        });
+                }
+                });
     }
 
     /**
@@ -820,7 +820,7 @@ public class DroidGap extends PhonegapActivity {
     public class GapClient extends WebChromeClient {
 
         private DroidGap ctx;
-        
+
         /**
          * Constructor.
          * 
@@ -839,21 +839,21 @@ public class DroidGap extends PhonegapActivity {
          * @param result
          */
         @Override
-        public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-            AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
-            dlg.setMessage(message);
-            dlg.setTitle("Alert");
-            dlg.setCancelable(false);
-            dlg.setPositiveButton(android.R.string.ok,
-                new AlertDialog.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
+            public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
+                AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
+                dlg.setMessage(message);
+                dlg.setTitle("Alert");
+                dlg.setCancelable(false);
+                dlg.setPositiveButton(android.R.string.ok,
+                        new AlertDialog.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
                         result.confirm();
-                    }
-                });
-            dlg.create();
-            dlg.show();
-            return true;
-        }       
+                        }
+                        });
+                dlg.create();
+                dlg.show();
+                return true;
+            }       
 
         /**
          * Tell the client to display a confirm dialog to the user.
@@ -864,27 +864,27 @@ public class DroidGap extends PhonegapActivity {
          * @param result
          */
         @Override
-        public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-            AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
-            dlg.setMessage(message);
-            dlg.setTitle("Confirm");
-            dlg.setCancelable(false);
-            dlg.setPositiveButton(android.R.string.ok, 
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
+            public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
+                AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
+                dlg.setMessage(message);
+                dlg.setTitle("Confirm");
+                dlg.setCancelable(false);
+                dlg.setPositiveButton(android.R.string.ok, 
+                        new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
                         result.confirm();
-                    }
-                });
-            dlg.setNegativeButton(android.R.string.cancel, 
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
+                        }
+                        });
+                dlg.setNegativeButton(android.R.string.cancel, 
+                        new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
                         result.cancel();
-                    }
-                });
-            dlg.create();
-            dlg.show();
-            return true;
-        }
+                        }
+                        });
+                dlg.create();
+                dlg.show();
+                return true;
+            }
 
         /**
          * Tell the client to display a prompt dialog to the user. 
@@ -898,107 +898,96 @@ public class DroidGap extends PhonegapActivity {
          * @param result
          */
         @Override
-        public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-            
-            // Security check to make sure any requests are coming from the page initially
-            // loaded in webview and not another loaded in an iframe.
-            boolean reqOk = false;
-            // looking for url in whitelist
-            boolean isUrlWhiteListed = false;
-            Iterator<Pattern> pit = whiteList.iterator();
-            while(pit.hasNext()) {
-              Pattern p = pit.next();
-              Matcher m = p.matcher(url);
-              if(m.find()) {
-                isUrlWhiteListed = true;
-                break;
-              }
-            }
+            public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
 
-            if (url.indexOf(this.ctx.baseUrl) == 0 || isUrlWhiteListed) {
-              reqOk = true;
-            }
-            
-            
-            // Calling PluginManager.exec() to call a native service using 
-            // prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
-            if (reqOk && defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
-                JSONArray array;
-                try {
-                    array = new JSONArray(defaultValue.substring(4));
-                    String service = array.getString(0);
-                    String action = array.getString(1);
-                    String callbackId = array.getString(2);
-                    boolean async = array.getBoolean(3);
-                    String r = pluginManager.exec(service, action, callbackId, message, async);
+                // Security check to make sure any requests are coming from the page initially
+                // loaded in webview and not another loaded in an iframe.
+                boolean reqOk = false;
+
+                if (url.indexOf(this.ctx.baseUrl) == 0 || isUrlWhiteListed(url)) {
+                    reqOk = true;
+                }
+
+
+                // Calling PluginManager.exec() to call a native service using 
+                // prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
+                if (reqOk && defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
+                    JSONArray array;
+                    try {
+                        array = new JSONArray(defaultValue.substring(4));
+                        String service = array.getString(0);
+                        String action = array.getString(1);
+                        String callbackId = array.getString(2);
+                        boolean async = array.getBoolean(3);
+                        String r = pluginManager.exec(service, action, callbackId, message, async);
+                        result.confirm(r);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // Polling for JavaScript messages 
+                else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
+                    String r = callbackServer.getJavascript();
                     result.confirm(r);
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
-            }
-            
-            // Polling for JavaScript messages 
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-                String r = callbackServer.getJavascript();
-                result.confirm(r);
-            }
-            
-            // Calling into CallbackServer
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
-                String r = "";
-                if (message.equals("usePolling")) {
-                    r = ""+callbackServer.usePolling();
+
+                // Calling into CallbackServer
+                else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
+                    String r = "";
+                    if (message.equals("usePolling")) {
+                        r = ""+callbackServer.usePolling();
+                    }
+                    else if (message.equals("restartServer")) {
+                        callbackServer.restartServer();
+                    }
+                    else if (message.equals("getPort")) {
+                        r = Integer.toString(callbackServer.getPort());
+                    }
+                    else if (message.equals("getToken")) {
+                        r = callbackServer.getToken();
+                    }
+                    result.confirm(r);
                 }
-                else if (message.equals("restartServer")) {
-                    callbackServer.restartServer();
+
+                // PhoneGap JS has initialized, so show webview
+                // (This solves white flash seen when rendering HTML)
+                else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
+                    appView.setVisibility(View.VISIBLE);
+                    ctx.spinnerStop();
+                    result.confirm("OK");
                 }
-                else if (message.equals("getPort")) {
-                    r = Integer.toString(callbackServer.getPort());
+
+                // Show dialog
+                else {
+                    final JsPromptResult res = result;
+                    AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
+                    dlg.setMessage(message);
+                    final EditText input = new EditText(this.ctx);
+                    if (defaultValue != null) {
+                        input.setText(defaultValue);
+                    }
+                    dlg.setView(input);
+                    dlg.setCancelable(false);
+                    dlg.setPositiveButton(android.R.string.ok, 
+                            new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            String usertext = input.getText().toString();
+                            res.confirm(usertext);
+                            }
+                            });
+                    dlg.setNegativeButton(android.R.string.cancel, 
+                            new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            res.cancel();
+                            }
+                            });
+                    dlg.create();
+                    dlg.show();
                 }
-                else if (message.equals("getToken")) {
-                    r = callbackServer.getToken();
-                }
-                result.confirm(r);
-            }
-            
-            // PhoneGap JS has initialized, so show webview
-            // (This solves white flash seen when rendering HTML)
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
-                appView.setVisibility(View.VISIBLE);
-                ctx.spinnerStop();
-                result.confirm("OK");
+                return true;
             }
 
-            // Show dialog
-            else {
-                final JsPromptResult res = result;
-                AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
-                dlg.setMessage(message);
-                final EditText input = new EditText(this.ctx);
-                if (defaultValue != null) {
-                    input.setText(defaultValue);
-                }
-                dlg.setView(input);
-                dlg.setCancelable(false);
-                dlg.setPositiveButton(android.R.string.ok, 
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                        String usertext = input.getText().toString();
-                        res.confirm(usertext);
-                    }
-                });
-                dlg.setNegativeButton(android.R.string.cancel, 
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                        res.cancel();
-                    }
-                });
-                dlg.create();
-                dlg.show();
-            }
-            return true;
-        }
-        
     }
 
     /**
@@ -1029,46 +1018,46 @@ public class DroidGap extends PhonegapActivity {
          * @param quotaUpdater
          */
         @Override
-        public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
-                long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
-        {
-            Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));
-
-            if( estimatedSize < MAX_QUOTA)
-            {                                           
-                //increase for 1Mb
-                long newQuota = estimatedSize;                  
-                Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );
-                quotaUpdater.updateQuota(newQuota);
-            }
-            else
+            public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
+                    long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
             {
-                // Set the quota to whatever it is and force an error
-                // TODO: get docs on how to handle this properly
-                quotaUpdater.updateQuota(currentQuota);
-            }               
-        }       
+                Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));
+
+                if( estimatedSize < MAX_QUOTA)
+                {                                           
+                    //increase for 1Mb
+                    long newQuota = estimatedSize;                  
+                    Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );
+                    quotaUpdater.updateQuota(newQuota);
+                }
+                else
+                {
+                    // Set the quota to whatever it is and force an error
+                    // TODO: get docs on how to handle this properly
+                    quotaUpdater.updateQuota(currentQuota);
+                }               
+            }       
 
         // console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
         @Override
-        public void onConsoleMessage(String message, int lineNumber, String sourceID)
-        {       
-            // This is a kludgy hack!!!!
-            Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
-        }
+            public void onConsoleMessage(String message, int lineNumber, String sourceID)
+            {       
+                // This is a kludgy hack!!!!
+                Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
+            }
 
         @Override
-        /**
-         * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin. 
-         * 
-         * @param origin
-         * @param callback
-         */
-        public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
-            // TODO Auto-generated method stub
-            super.onGeolocationPermissionsShowPrompt(origin, callback);
-            callback.invoke(origin, true, false);
-        }
+            /**
+             * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin. 
+             * 
+             * @param origin
+             * @param callback
+             */
+            public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
+                // TODO Auto-generated method stub
+                super.onGeolocationPermissionsShowPrompt(origin, callback);
+                callback.invoke(origin, true, false);
+            }
 
     }
 
@@ -1087,7 +1076,7 @@ public class DroidGap extends PhonegapActivity {
         public GapViewClient(DroidGap ctx) {
             this.ctx = ctx;
         }
-        
+
         /**
          * Give the host application a chance to take over the control when a new url 
          * is about to be loaded in the current WebView.
@@ -1097,122 +1086,122 @@ public class DroidGap extends PhonegapActivity {
          * @return              true to override, false for default behavior
          */
         @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            // If dialing phone (tel:5551212)
-            if (url.startsWith(WebView.SCHEME_TEL)) {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_DIAL);
-                    intent.setData(Uri.parse(url));
-                    startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    System.out.println("Error dialing "+url+": "+ e.toString());
-                }
-                return true;
-            }
-            
-            // If displaying map (geo:0,0?q=address)
-            else if (url.startsWith("geo:")) {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    System.out.println("Error showing map "+url+": "+ e.toString());
-                }
-                return true;                
-            }
-            
-            // If sending email (mailto:abc@corp.com)
-            else if (url.startsWith(WebView.SCHEME_MAILTO)) {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    System.out.println("Error sending email "+url+": "+ e.toString());
-                }
-                return true;                
-            }
-            
-            // If sms:5551212?body=This is the message
-            else if (url.startsWith("sms:")) {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-
-                    // Get address
-                    String address = null;
-                    int parmIndex = url.indexOf('?');
-                    if (parmIndex == -1) {
-                        address = url.substring(4);
-                    }
-                    else {
-                        address = url.substring(4, parmIndex);
-
-                        // If body, then set sms body
-                        Uri uri = Uri.parse(url);
-                        String query = uri.getQuery();
-                        if (query != null) {
-                            if (query.startsWith("body=")) {
-                                intent.putExtra("sms_body", query.substring(5));
-                            }
-                        }
-                    }
-                    intent.setData(Uri.parse("sms:"+address));
-                    intent.putExtra("address", address);
-                    intent.setType("vnd.android-dir/mms-sms");
-                    startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    System.out.println("Error sending sms "+url+":"+ e.toString());
-                }
-                return true;
-            }
-
-            // All else
-            else {
-
-                // If our app or file:, then load into our webview
-                // NOTE: This replaces our app with new URL.  When BACK is pressed,
-                //       our app is reloaded and restarted.  All state is lost.
-                if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0) {
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                // If dialing phone (tel:5551212)
+                if (url.startsWith(WebView.SCHEME_TEL)) {
                     try {
-                        // Init parameters to new DroidGap activity and propagate existing parameters
-                        HashMap<String, Object> params = new HashMap<String, Object>();
-                        String loadingPage = this.ctx.getStringProperty("loadingPageDialog", null);
-                        if (loadingPage != null) {
-                            params.put("loadingDialog", loadingPage);
-                            params.put("loadingPageDialog", loadingPage);
-                        }
-                        if (this.ctx.loadInWebView) {
-                            params.put("loadInWebView", true);
-                        }
-                        params.put("keepRunning", this.ctx.keepRunning);
-                        params.put("loadUrlTimeoutValue", this.ctx.loadUrlTimeoutValue);
-                        String errorUrl = this.ctx.getStringProperty("errorUrl", null);
-                        if (errorUrl != null) {
-                            params.put("errorUrl", errorUrl);
-                        }
-                        params.put("backgroundColor", this.ctx.backgroundColor);
-
-                        this.ctx.showWebPage(url, true, false, params);
+                        Intent intent = new Intent(Intent.ACTION_DIAL);
+                        intent.setData(Uri.parse(url));
+                        startActivity(intent);
                     } catch (android.content.ActivityNotFoundException e) {
-                        System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
+                        System.out.println("Error dialing "+url+": "+ e.toString());
                     }
+                    return true;
                 }
-        
-                // If not our application, let default viewer handle
-                else {
+
+                // If displaying map (geo:0,0?q=address)
+                else if (url.startsWith("geo:")) {
                     try {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setData(Uri.parse(url));
                         startActivity(intent);
                     } catch (android.content.ActivityNotFoundException e) {
-                        System.out.println("Error loading url "+url+":"+ e.toString());
+                        System.out.println("Error showing map "+url+": "+ e.toString());
                     }
+                    return true;                
                 }
-                return true;
+
+                // If sending email (mailto:abc@corp.com)
+                else if (url.startsWith(WebView.SCHEME_MAILTO)) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setData(Uri.parse(url));
+                        startActivity(intent);
+                    } catch (android.content.ActivityNotFoundException e) {
+                        System.out.println("Error sending email "+url+": "+ e.toString());
+                    }
+                    return true;                
+                }
+
+                // If sms:5551212?body=This is the message
+                else if (url.startsWith("sms:")) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                        // Get address
+                        String address = null;
+                        int parmIndex = url.indexOf('?');
+                        if (parmIndex == -1) {
+                            address = url.substring(4);
+                        }
+                        else {
+                            address = url.substring(4, parmIndex);
+
+                            // If body, then set sms body
+                            Uri uri = Uri.parse(url);
+                            String query = uri.getQuery();
+                            if (query != null) {
+                                if (query.startsWith("body=")) {
+                                    intent.putExtra("sms_body", query.substring(5));
+                                }
+                            }
+                        }
+                        intent.setData(Uri.parse("sms:"+address));
+                        intent.putExtra("address", address);
+                        intent.setType("vnd.android-dir/mms-sms");
+                        startActivity(intent);
+                    } catch (android.content.ActivityNotFoundException e) {
+                        System.out.println("Error sending sms "+url+":"+ e.toString());
+                    }
+                    return true;
+                }
+
+                // All else
+                else {
+
+                    // If our app or file:, then load into our webview
+                    // NOTE: This replaces our app with new URL.  When BACK is pressed,
+                    //       our app is reloaded and restarted.  All state is lost.
+                    if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0 || isUrlWhiteListed(url)) {
+                        try {
+                            // Init parameters to new DroidGap activity and propagate existing parameters
+                            HashMap<String, Object> params = new HashMap<String, Object>();
+                            String loadingPage = this.ctx.getStringProperty("loadingPageDialog", null);
+                            if (loadingPage != null) {
+                                params.put("loadingDialog", loadingPage);
+                                params.put("loadingPageDialog", loadingPage);
+                            }
+                            if (this.ctx.loadInWebView) {
+                                params.put("loadInWebView", true);
+                            }
+                            params.put("keepRunning", this.ctx.keepRunning);
+                            params.put("loadUrlTimeoutValue", this.ctx.loadUrlTimeoutValue);
+                            String errorUrl = this.ctx.getStringProperty("errorUrl", null);
+                            if (errorUrl != null) {
+                                params.put("errorUrl", errorUrl);
+                            }
+                            params.put("backgroundColor", this.ctx.backgroundColor);
+
+                            this.ctx.showWebPage(url, true, false, params);
+                        } catch (android.content.ActivityNotFoundException e) {
+                            System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
+                        }
+                    }
+
+                    // If not our application, let default viewer handle
+                    else {
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setData(Uri.parse(url));
+                            startActivity(intent);
+                        } catch (android.content.ActivityNotFoundException e) {
+                            System.out.println("Error loading url "+url+":"+ e.toString());
+                        }
+                    }
+                    return true;
+                }
             }
-        }
-        
+
         /**
          * Notify the host application that a page has finished loading.
          * 
@@ -1220,51 +1209,51 @@ public class DroidGap extends PhonegapActivity {
          * @param url           The url of the page.
          */
         @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
 
-            // Clear timeout flag
-            this.ctx.loadUrlTimeout++;
+                // Clear timeout flag
+                this.ctx.loadUrlTimeout++;
 
-            // Try firing the onNativeReady event in JS. If it fails because the JS is
-            // not loaded yet then just set a flag so that the onNativeReady can be fired
-            // from the JS side when the JS gets to that code.
-            if (!url.equals("about:blank")) {
-                appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
-            }
+                // Try firing the onNativeReady event in JS. If it fails because the JS is
+                // not loaded yet then just set a flag so that the onNativeReady can be fired
+                // from the JS side when the JS gets to that code.
+                if (!url.equals("about:blank")) {
+                    appView.loadUrl("javascript:try{ PhoneGap.onNativeReady.fire();}catch(e){_nativeReady = true;}");
+                }
 
-            // Make app visible after 2 sec in case there was a JS error and PhoneGap JS never initialized correctly
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    try {
+                // Make app visible after 2 sec in case there was a JS error and PhoneGap JS never initialized correctly
+                Thread t = new Thread(new Runnable() {
+                        public void run() {
+                        try {
                         Thread.sleep(2000);
                         ctx.runOnUiThread(new Runnable() {
                             public void run() {
-                                appView.setVisibility(View.VISIBLE);
-                                ctx.spinnerStop();
+                            appView.setVisibility(View.VISIBLE);
+                            ctx.spinnerStop();
                             }
+                            });
+                        } catch (InterruptedException e) {
+                        }
+                        }
                         });
-                    } catch (InterruptedException e) {
+                t.start();
+
+
+                // Clear history, so that previous screen isn't there when Back button is pressed
+                if (this.ctx.clearHistory) {
+                    this.ctx.clearHistory = false;
+                    this.ctx.appView.clearHistory();
+                }
+
+                // Shutdown if blank loaded
+                if (url.equals("about:blank")) {
+                    if (this.ctx.callbackServer != null) {
+                        this.ctx.callbackServer.destroy();
                     }
                 }
-            });
-            t.start();
-            
+            }
 
-            // Clear history, so that previous screen isn't there when Back button is pressed
-            if (this.ctx.clearHistory) {
-                this.ctx.clearHistory = false;
-                this.ctx.appView.clearHistory();
-            }
-            
-            // Shutdown if blank loaded
-            if (url.equals("about:blank")) {
-                if (this.ctx.callbackServer != null) {
-                    this.ctx.callbackServer.destroy();
-                }
-            }
-        }
-        
         /**
          * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
          * The errorCode parameter corresponds to one of the ERROR_* constants.
@@ -1275,21 +1264,21 @@ public class DroidGap extends PhonegapActivity {
          * @param failingUrl    The url that failed to load. 
          */
         @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            System.out.println("onReceivedError: Error code="+errorCode+" Description="+description+" URL="+failingUrl);
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                System.out.println("onReceivedError: Error code="+errorCode+" Description="+description+" URL="+failingUrl);
 
-            // Clear timeout flag
-            this.ctx.loadUrlTimeout++;
+                // Clear timeout flag
+                this.ctx.loadUrlTimeout++;
 
-            // Stop "app loading" spinner if showing
-            this.ctx.spinnerStop();
+                // Stop "app loading" spinner if showing
+                this.ctx.spinnerStop();
 
-            // Handle error
-            this.ctx.onReceivedError(errorCode, description, failingUrl);
-        }
-        
+                // Handle error
+                this.ctx.onReceivedError(errorCode, description, failingUrl);
+            }
+
         public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-            
+
             final String packageName = this.ctx.getPackageName();
             final PackageManager pm = this.ctx.getPackageManager();
             ApplicationInfo appInfo;
@@ -1309,7 +1298,7 @@ public class DroidGap extends PhonegapActivity {
             }
         }
     }
-    
+
     /**
      * Called when a key is pressed.
      * 
@@ -1317,50 +1306,50 @@ public class DroidGap extends PhonegapActivity {
      * @param event
      */
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (this.appView == null) {
-            return super.onKeyDown(keyCode, event);
-        }
-
-        // If back key
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-
-            // If back key is bound, then send event to JavaScript
-            if (this.bound) {
-                this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('backbutton');");
-                return true;
+        public boolean onKeyDown(int keyCode, KeyEvent event) {
+            if (this.appView == null) {
+                return super.onKeyDown(keyCode, event);
             }
 
-            // If not bound
-            else {
+            // If back key
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
 
-                // Go to previous page in webview if it is possible to go back
-                if (this.appView.canGoBack()) {
-                    this.appView.goBack();
+                // If back key is bound, then send event to JavaScript
+                if (this.bound) {
+                    this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('backbutton');");
                     return true;
                 }
 
-                // If not, then invoke behavior of super class
+                // If not bound
                 else {
-                    return super.onKeyDown(keyCode, event);
+
+                    // Go to previous page in webview if it is possible to go back
+                    if (this.appView.canGoBack()) {
+                        this.appView.goBack();
+                        return true;
+                    }
+
+                    // If not, then invoke behavior of super class
+                    else {
+                        return super.onKeyDown(keyCode, event);
+                    }
                 }
             }
-        }
 
-        // If menu key
-        else if (keyCode == KeyEvent.KEYCODE_MENU) {
-            this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('menubutton');");
-            return true;
-        }
+            // If menu key
+            else if (keyCode == KeyEvent.KEYCODE_MENU) {
+                this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('menubutton');");
+                return true;
+            }
 
-        // If search key
-        else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-            this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('searchbutton');");
-            return true;
-        }
+            // If search key
+            else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
+                this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('searchbutton');");
+                return true;
+            }
 
-        return false;
-    }
+            return false;
+        }
 
     /**
      * Any calls to Activity.startActivityForResult must use method below, so 
@@ -1374,10 +1363,10 @@ public class DroidGap extends PhonegapActivity {
      * @throws RuntimeException
      */
     @Override
-    public void startActivityForResult(Intent intent, int requestCode) throws RuntimeException {
-        System.out.println("startActivityForResult(intent,"+requestCode+")");
-        super.startActivityForResult(intent, requestCode);
-    }
+        public void startActivityForResult(Intent intent, int requestCode) throws RuntimeException {
+            System.out.println("startActivityForResult(intent,"+requestCode+")");
+            super.startActivityForResult(intent, requestCode);
+        }
 
     /**
      * Launch an activity for which you would like a result when it finished. When this activity exits, 
@@ -1390,120 +1379,120 @@ public class DroidGap extends PhonegapActivity {
     public void startActivityForResult(IPlugin command, Intent intent, int requestCode) {
         this.activityResultCallback = command;
         this.activityResultKeepRunning = this.keepRunning;
-        
+
         // If multitasking turned on, then disable it for activities that return results
         if (command != null) {
             this.keepRunning = false;
         }
-        
+
         // Start activity
         super.startActivityForResult(intent, requestCode);
     }
 
-     @Override
+    @Override
+        /**
+         * Called when an activity you launched exits, giving you the requestCode you started it with,
+         * the resultCode it returned, and any additional data from it. 
+         * 
+         * @param requestCode       The request code originally supplied to startActivityForResult(), 
+         *                          allowing you to identify who this result came from.
+         * @param resultCode        The integer result code returned by the child activity through its setResult().
+         * @param data              An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+         */
+        protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+            super.onActivityResult(requestCode, resultCode, intent);
+            IPlugin callback = this.activityResultCallback;
+            if (callback != null) {
+                callback.onActivityResult(requestCode, resultCode, intent);
+            }        
+        }
+
+    @Override
+        public void setActivityResultCallback(IPlugin plugin) {
+            this.activityResultCallback = plugin;
+        }
+
     /**
-     * Called when an activity you launched exits, giving you the requestCode you started it with,
-     * the resultCode it returned, and any additional data from it. 
-     * 
-     * @param requestCode       The request code originally supplied to startActivityForResult(), 
-     *                          allowing you to identify who this result came from.
-     * @param resultCode        The integer result code returned by the child activity through its setResult().
-     * @param data              An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
+     * The errorCode parameter corresponds to one of the ERROR_* constants.
+     *
+     * @param errorCode    The error code corresponding to an ERROR_* value.
+     * @param description  A String describing the error.
+     * @param failingUrl   The url that failed to load. 
      */
-     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-         super.onActivityResult(requestCode, resultCode, intent);
-         IPlugin callback = this.activityResultCallback;
-         if (callback != null) {
-             callback.onActivityResult(requestCode, resultCode, intent);
-         }        
-     }
+    public void onReceivedError(int errorCode, String description, String failingUrl) {
+        final DroidGap me = this;
 
-     @Override
-     public void setActivityResultCallback(IPlugin plugin) {
-         this.activityResultCallback = plugin;
-     }
-     
-     /**
-      * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
-      * The errorCode parameter corresponds to one of the ERROR_* constants.
-      *
-      * @param errorCode    The error code corresponding to an ERROR_* value.
-      * @param description  A String describing the error.
-      * @param failingUrl   The url that failed to load. 
-      */
-     public void onReceivedError(int errorCode, String description, String failingUrl) {
-         final DroidGap me = this;
+        // If errorUrl specified, then load it
+        final String errorUrl = me.getStringProperty("errorUrl", null);
+        if ((errorUrl != null) && errorUrl.startsWith("file://") && (!failingUrl.equals(errorUrl))) {
 
-         // If errorUrl specified, then load it
-         final String errorUrl = me.getStringProperty("errorUrl", null);
-         if ((errorUrl != null) && errorUrl.startsWith("file://") && (!failingUrl.equals(errorUrl))) {
+            // Load URL on UI thread
+            me.runOnUiThread(new Runnable() {
+                    public void run() {
+                    me.appView.loadUrl(errorUrl);
+                    }
+                    });
+        }
 
-             // Load URL on UI thread
-             me.runOnUiThread(new Runnable() {
-                 public void run() {
-                     me.appView.loadUrl(errorUrl);
-                 }
-             });
-         }
+        // If not, then display error dialog
+        else {
+            me.appView.loadUrl("about:blank");
+            me.displayError("Application Error", description + " ("+failingUrl+")", "OK", true);
+        }
+    }
 
-         // If not, then display error dialog
-         else {
-             me.appView.loadUrl("about:blank");
-             me.displayError("Application Error", description + " ("+failingUrl+")", "OK", true);
-         }
-     }
+    /**
+     * Display an error dialog and optionally exit application.
+     * 
+     * @param title
+     * @param message
+     * @param button
+     * @param exit
+     */
+    public void displayError(final String title, final String message, final String button, final boolean exit) {
+        final DroidGap me = this;
+        me.runOnUiThread(new Runnable() {
+                public void run() {
+                AlertDialog.Builder dlg = new AlertDialog.Builder(me);
+                dlg.setMessage(message);
+                dlg.setTitle(title);
+                dlg.setCancelable(false);
+                dlg.setPositiveButton(button,
+                    new AlertDialog.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    if (exit) {
+                    me.finish();
+                    }
+                    }
+                    });
+                dlg.create();
+                dlg.show();
+                }
+                });
+    }
 
-     /**
-      * Display an error dialog and optionally exit application.
-      * 
-      * @param title
-      * @param message
-      * @param button
-      * @param exit
-      */
-     public void displayError(final String title, final String message, final String button, final boolean exit) {
-         final DroidGap me = this;
-         me.runOnUiThread(new Runnable() {
-             public void run() {
-                 AlertDialog.Builder dlg = new AlertDialog.Builder(me);
-                 dlg.setMessage(message);
-                 dlg.setTitle(title);
-                 dlg.setCancelable(false);
-                 dlg.setPositiveButton(button,
-                         new AlertDialog.OnClickListener() {
-                     public void onClick(DialogInterface dialog, int which) {
-                         dialog.dismiss();
-                         if (exit) {
-                             me.finish();
-                         }
-                     }
-                 });
-                 dlg.create();
-                 dlg.show();
-             }
-         });
-     }
-     
-     /**
-      * We are providing this class to detect when the soft keyboard is shown 
-      * and hidden in the web view.
-      */
-     class LinearLayoutSoftKeyboardDetect extends LinearLayout {
+    /**
+     * We are providing this class to detect when the soft keyboard is shown 
+     * and hidden in the web view.
+     */
+    class LinearLayoutSoftKeyboardDetect extends LinearLayout {
 
-            private static final String LOG_TAG = "SoftKeyboardDetect";
-            
-            private int oldHeight = 0;  // Need to save the old height as not to send redundant events
-            private int oldWidth = 0; // Need to save old width for orientation change          
-            private int screenWidth = 0;
-            private int screenHeight = 0;
-                        
-            public LinearLayoutSoftKeyboardDetect(Context context, int width, int height) {
-                super(context);     
-                screenWidth = width;
-                screenHeight = height;                  
-            }
+        private static final String LOG_TAG = "SoftKeyboardDetect";
 
-            @Override
+        private int oldHeight = 0;  // Need to save the old height as not to send redundant events
+        private int oldWidth = 0; // Need to save old width for orientation change          
+        private int screenWidth = 0;
+        private int screenHeight = 0;
+
+        public LinearLayoutSoftKeyboardDetect(Context context, int width, int height) {
+            super(context);     
+            screenWidth = width;
+            screenHeight = height;                  
+        }
+
+        @Override
             /**
              * Start listening to new measurement events.  Fire events when the height 
              * gets smaller fire a show keyboard event and when height gets bigger fire 
@@ -1518,20 +1507,20 @@ public class DroidGap extends PhonegapActivity {
              */
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);       
-                
+
                 Log.d(LOG_TAG, "We are in our onMeasure method");
 
                 // Get the current height of the visible part of the screen.
                 // This height will not included the status bar.
                 int height = MeasureSpec.getSize(heightMeasureSpec);
                 int width = MeasureSpec.getSize(widthMeasureSpec);
-                
+
                 Log.d(LOG_TAG, "Old Height = " + oldHeight);
                 Log.d(LOG_TAG, "Height = " + height);          
                 Log.d(LOG_TAG, "Old Width = " + oldWidth);
                 Log.d(LOG_TAG, "Width = " + width);
-                
-                
+
+
                 // If the oldHeight = 0 then this is the first measure event as the app starts up.
                 // If oldHeight == height then we got a measurement change that doesn't affect us.
                 if (oldHeight == 0 || oldHeight == height) {
@@ -1563,37 +1552,50 @@ public class DroidGap extends PhonegapActivity {
                 oldWidth = width;
             }
     }
-  private void loadWhiteList() {
-    int id = getResources().getIdentifier("phonegap", "xml", getPackageName());
-    if (id == 0) {
-      Log.i("PhoneGapLog", "whitelist.xml missing. Ignoring...");
-      return;
-    }
-    XmlResourceParser xml = getResources().getXml(id);
-    int eventType = -1;
-    while (eventType != XmlResourceParser.END_DOCUMENT) {
-      if (eventType == XmlResourceParser.START_TAG) {
-        String strNode = xml.getName();
-        if (strNode.equals("access")) {
-          String origin = xml.getAttributeValue(null, "origin");
-          String subdomains = xml.getAttributeValue(null, "subdomains");
-          if(subdomains != null && subdomains.compareToIgnoreCase("true") == 0) {
-            Log.d("PhoneGapLog", "Origin to allow with subdomains: "+origin);
-            whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://.*")));
-          } else {
-            Log.d("PhoneGapLog", "Origin to allow: "+origin);
-            whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://")));
-          }
+    private void loadWhiteList() {
+        int id = getResources().getIdentifier("phonegap", "xml", getPackageName());
+        if (id == 0) {
+            Log.i("PhoneGapLog", "whitelist.xml missing. Ignoring...");
+            return;
         }
-      }
-      try {
-        eventType = xml.next();
-      } catch (XmlPullParserException e) {
-        e.printStackTrace();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+        XmlResourceParser xml = getResources().getXml(id);
+        int eventType = -1;
+        while (eventType != XmlResourceParser.END_DOCUMENT) {
+            if (eventType == XmlResourceParser.START_TAG) {
+                String strNode = xml.getName();
+                if (strNode.equals("access")) {
+                    String origin = xml.getAttributeValue(null, "origin");
+                    String subdomains = xml.getAttributeValue(null, "subdomains");
+                    if(subdomains != null && subdomains.compareToIgnoreCase("true") == 0) {
+                        Log.d("PhoneGapLog", "Origin to allow with subdomains: "+origin);
+                        whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://.*")));
+                    } else {
+                        Log.d("PhoneGapLog", "Origin to allow: "+origin);
+                        whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://")));
+                    }
+                }
+            }
+            try {
+                eventType = xml.next();
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
-  }
-    
+
+    private boolean isUrlWhiteListed(String url) {
+        Iterator<Pattern> pit = whiteList.iterator();
+        while(pit.hasNext()) {
+            Pattern p = pit.next();
+            Matcher m = p.matcher(url);
+            if(m.find()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
