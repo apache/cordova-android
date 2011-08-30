@@ -47,4 +47,11 @@ public abstract class PhonegapActivity extends Activity {
      * @param plugin			The plugin on which onActivityResult is to be called
      */
     abstract public void setActivityResultCallback(IPlugin plugin);
+
+    /**
+     * Load the specified URL in the PhoneGap webview.
+     * 
+     * @param url				The URL to load.
+     */
+    abstract public void loadUrl(String url);
 }
