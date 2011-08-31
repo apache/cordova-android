@@ -104,6 +104,10 @@ public abstract class Plugin implements IPlugin {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
     }
 
+    public boolean onOverrideUrlLoading(String url) {
+    	return false;
+    }
+
     /**
      * Send generic JavaScript statement back to JavaScript.
      * success(...) and error(...) should be used instead where possible.
