@@ -13,14 +13,22 @@ Requires
 PhoneGap/Android Developer Tools
 ---
 
+The PhoneGap developer tooling is split between general tooling and project level tooling. 
+
 Commands
 
     ./bin/create [path package activity] ... create the ./exmaple app or a phonegap/android project
-    ./bin/debug [path] ..................... install to first device
-    ./bin/emulate .......................... start avd (emulator) named default
-    ./bin/log .............................. starts logcat
+    ./bin/bench ............................ generate a bench proj
+    ./bin/autotest ......................... test the cli tools
     ./bin/test ............................. run mobile-spec
-    ./bin/autotest ......................... run the cli unit tests (requires nodejs)
+
+Project Commands
+
+These commands live in a generated PhoneGap/Android project.
+
+    ./phonegap/debug [path] ..................... install to first device
+    ./phonegap/emulate .......................... start avd (emulator) named default
+    ./phonegap/log .............................. starts logcat
 
 Running the Example Project
 ---
@@ -32,11 +40,12 @@ Start avd (emulator) named `default`:
 Create the exmaple project and build it to the first device:
 
     ./bin/create
-    ./bin/debug ./example
+    cd example
+    ./phonegap/debug
 
 Start adb logcat (console.log calls output here):
 
-    ./bin/log
+    ./phonegap/log
 
 Running the [phonegap/mobile-spec](http://github.com/phonegap/mobile-spec) tests:
 
