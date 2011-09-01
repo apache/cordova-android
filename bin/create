@@ -5,6 +5,8 @@
 # USAGE
 #   ./create [path package activity]
 #
+set -e
+
 PROJECT_PATH=${1:-"./example"}
 PACKAGE=${2:-"com.phonegap.example"}
 ACTIVITY=${3:-"PhoneGapExample"}
