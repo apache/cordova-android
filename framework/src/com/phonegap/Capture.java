@@ -29,6 +29,10 @@ import com.phonegap.api.PluginResult;
 
 public class Capture extends Plugin {
 
+    private static final String VIDEO_3GPP = "video/3gpp";
+    private static final String AUDIO_3GPP = "audio/3gpp";
+    private static final String IMAGE_JPEG = "image/jpeg";
+    
     private static final int CAPTURE_AUDIO = 0;     // Constant for capture audio
     private static final int CAPTURE_IMAGE = 1;     // Constant for capture image
     private static final int CAPTURE_VIDEO = 2;     // Constant for capture video
@@ -97,14 +101,15 @@ public class Capture extends Plugin {
             if (mimeType == null || mimeType.equals("")) {
                 mimeType = FileUtils.getMimeType(filePath);
             }
+            Log.d(LOG_TAG, "Mime type = " + mimeType);
             
-            if (mimeType.equals("image/jpeg") || filePath.endsWith(".jpg")) {
+            if (mimeType.equals(IMAGE_JPEG) || filePath.endsWith(".jpg")) {
                 obj = getImageData(filePath, obj);
             }
-            else if (filePath.endsWith("audio/3gpp")) {
+            else if (mimeType.endsWith(AUDIO_3GPP)) {
                 obj = getAudioVideoData(filePath, obj, false);
             }
-            else if (mimeType.equals("video/3gpp")) {
+            else if (mimeType.equals(VIDEO_3GPP)) {
                 obj = getAudioVideoData(filePath, obj, true);
             }
         }
@@ -233,7 +238,7 @@ public class Capture extends Plugin {
                     // Create entry in media store for image
                     // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
                     ContentValues values = new ContentValues();
-                    values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                    values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, IMAGE_JPEG);
                     Uri uri = null;
                     try {
                         uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -329,7 +334,20 @@ public class Capture extends Plugin {
             // File properties
             obj.put("name", fp.getName());
             obj.put("fullPath", fp.getAbsolutePath());
-            obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath()));
+            
+            // Because of an issue with MimeTypeMap.getMimeTypeFromExtension() all .3gpp files 
+            // are reported as video/3gpp. I'm doing this hacky check of the URI to see if it 
+            // is stored in the audio or video content store.
+            if (fp.getAbsoluteFile().toString().endsWith(".3gp") || fp.getAbsoluteFile().toString().endsWith(".3gpp")) {
+                if (data.toString().contains("/audio/")) {
+                    obj.put("type", AUDIO_3GPP);                
+                } else {
+                    obj.put("type", VIDEO_3GPP);                
+                }               
+            } else {
+                obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath()));                
+            }
+            
             obj.put("lastModifiedDate", fp.lastModified());
             obj.put("size", fp.length());
         } catch (JSONException e) {
