@@ -41,6 +41,8 @@ public class NetworkManager extends Plugin {
     public static final String HSPA = "hspa";
     public static final String HSUPA = "hsupa";
     public static final String HSDPA = "hsdpa";
+    public static final String ONEXRTT = "1xrtt";
+    public static final String EHRPD = "ehrpd";
     // 4G network types
     public static final String LTE = "lte";
     public static final String UMB = "umb";
@@ -208,8 +210,10 @@ public class NetworkManager extends Plugin {
                         type.toLowerCase().equals(EDGE)) {
                     return TYPE_2G;
                 }
-                else if (type.toLowerCase().equals(CDMA) || 
+                else if (type.toLowerCase().startsWith(CDMA) || 
                         type.toLowerCase().equals(UMTS)  ||
+                        type.toLowerCase().equals(ONEXRTT) ||
+                        type.toLowerCase().equals(EHRPD) ||
                         type.toLowerCase().equals(HSUPA) ||
                         type.toLowerCase().equals(HSDPA) ||
                         type.toLowerCase().equals(HSPA)) {
