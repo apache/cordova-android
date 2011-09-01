@@ -16,8 +16,8 @@ MANIFEST_PATH=./AndroidManifest.xml
 # create the project
 android create project --target $TARGET --path . --package $PACKAGE --activity $ACTIVITY
 
-# copy all the bin scripts etc in there
-cp -R ./bin/templates/project/ .
+# copy all the phonegap scripts etc in there
+cp -R ./phonegap/templates/project/ .
 
 # copy in phonegap.js
 cp ./.phonegap/android/phonegap-$VERSION.js ./assets/www
@@ -26,7 +26,7 @@ cp ./.phonegap/android/phonegap-$VERSION.js ./assets/www
 cp ./.phonegap/android/phonegap-$VERSION.jar ./libs
 
 # copy in default activity
-cat ./bin/templates/Activity.java > $ACTIVITY_PATH
+cat ./phonegap/templates/Activity.java > $ACTIVITY_PATH
 
 # interpolate the acivity name and package
 find "$ACTIVITY_PATH" | xargs grep '__ACTIVITY__' -sl | xargs -L1 sed -i "" "s/__ACTIVITY__/${ACTIVITY}/g"

@@ -43,4 +43,4 @@ ACTIVITY=$ACTIVITY
 TARGET=$TARGET
 eom
 
-(cd $PROJECT_PATH && ./bin/create)
+(cd $PROJECT_PATH && ./phonegap/create)
