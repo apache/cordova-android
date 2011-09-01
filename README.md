@@ -16,7 +16,7 @@ PhoneGap/Android Developer Tools
 Commands
 
     ./bin/create [path package activity] ... create the ./exmaple app or a phonegap/android project
-    ./bin/debug ............................ install to first device
+    ./bin/debug [path] ..................... install to first device
     ./bin/emulate .......................... start avd (emulator) named default
     ./bin/log .............................. starts logcat
     ./bin/test ............................. run mobile-spec
@@ -32,8 +32,7 @@ Start avd (emulator) named `default`:
 Create the exmaple project and build it to the first device:
 
     ./bin/create
-    cd example
-    ./../bin/debug
+    ./bin/debug ./example
 
 Start adb logcat (console.log calls output here):
 
