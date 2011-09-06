@@ -274,7 +274,7 @@ public class FileTransfer extends Plugin {
 				dos.writeBytes(LINE_START + BOUNDRY + LINE_END); 
 				dos.writeBytes("Content-Disposition: form-data; name=\"" +  key.toString() + "\";");
 				dos.writeBytes(LINE_END + LINE_END); 
-				dos.writeBytes(params.getString(key.toString()));
+				dos.write(params.getString(key.toString()).getBytes());
 				dos.writeBytes(LINE_END); 
 			}
 		} catch (JSONException e) {
