@@ -10,7 +10,7 @@ set -e
 PROJECT_PATH=${1:-"./example"}
 PACKAGE=${2:-"com.phonegap.example"}
 ACTIVITY=${3:-"PhoneGapExample"}
-TARGET=$(android list targets | grep 'id: ' | sed 's/id: \([0-9]\).*/\1/g' | tail -1)
+TARGET=$(android list targets | grep 'id: ' | sed 's/id: \([0-9]*\).*/\1/g' | tail -1)
 VERSION=$(cat ./VERSION)
 
 # clobber any existing example
