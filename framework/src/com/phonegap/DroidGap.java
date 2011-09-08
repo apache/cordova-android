@@ -1074,8 +1074,13 @@ public class DroidGap extends PhonegapActivity {
          */
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            
+            // First give any plugins the chance to handle the url themselves
+            if (this.ctx.pluginManager.onOverrideUrlLoading(url)) {
+            }
+            
             // If dialing phone (tel:5551212)
-            if (url.startsWith(WebView.SCHEME_TEL)) {
+            else if (url.startsWith(WebView.SCHEME_TEL)) {
                 try {
                     Intent intent = new Intent(Intent.ACTION_DIAL);
                     intent.setData(Uri.parse(url));
@@ -1083,9 +1088,8 @@ public class DroidGap extends PhonegapActivity {
                 } catch (android.content.ActivityNotFoundException e) {
                     System.out.println("Error dialing "+url+": "+ e.toString());
                 }
-                return true;
             }
-            
+
             // If displaying map (geo:0,0?q=address)
             else if (url.startsWith("geo:")) {
                 try {
@@ -1095,9 +1099,8 @@ public class DroidGap extends PhonegapActivity {
                 } catch (android.content.ActivityNotFoundException e) {
                     System.out.println("Error showing map "+url+": "+ e.toString());
                 }
-                return true;                
             }
-            
+
             // If sending email (mailto:abc@corp.com)
             else if (url.startsWith(WebView.SCHEME_MAILTO)) {
                 try {
@@ -1107,9 +1110,8 @@ public class DroidGap extends PhonegapActivity {
                 } catch (android.content.ActivityNotFoundException e) {
                     System.out.println("Error sending email "+url+": "+ e.toString());
                 }
-                return true;                
             }
-            
+
             // If sms:5551212?body=This is the message
             else if (url.startsWith("sms:")) {
                 try {
@@ -1140,15 +1142,13 @@ public class DroidGap extends PhonegapActivity {
                 } catch (android.content.ActivityNotFoundException e) {
                     System.out.println("Error sending sms "+url+":"+ e.toString());
                 }
-                return true;
             }
 
             // All else
             else {
 
-                // If our app or file:, then load into our webview
-                // NOTE: This replaces our app with new URL.  When BACK is pressed,
-                //       our app is reloaded and restarted.  All state is lost.
+                // If our app or file:, then load into a new phonegap webview container by starting a new instance of our activity.
+                // Our app continues to run.  When BACK is pressed, our app is redisplayed.
                 if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0) {
                     try {
                         // Init parameters to new DroidGap activity and propagate existing parameters
@@ -1174,7 +1174,7 @@ public class DroidGap extends PhonegapActivity {
                         System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
                     }
                 }
-        
+
                 // If not our application, let default viewer handle
                 else {
                     try {
@@ -1185,8 +1185,8 @@ public class DroidGap extends PhonegapActivity {
                         System.out.println("Error loading url "+url+":"+ e.toString());
                     }
                 }
-                return true;
             }
+            return true;
         }
         
         /**
