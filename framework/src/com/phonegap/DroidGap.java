@@ -224,13 +224,7 @@ public class DroidGap extends PhonegapActivity {
 
         WebViewReflect.checkCompatibility();
 
-        if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {
-            this.appView.setWebChromeClient(new GapClient(DroidGap.this));
-        }
-        else {
-            this.appView.setWebChromeClient(new EclairClient(DroidGap.this));           
-        }
-
+        this.appView.setWebChromeClient(new GapClient(DroidGap.this));
         this.setWebViewClient(this.appView, new GapViewClient(this));
 
         this.appView.setInitialScale(100);
@@ -798,11 +792,12 @@ public class DroidGap extends PhonegapActivity {
     }
 
     /**
-     * Provides a hook for calling "alert" from javascript. Useful for
-     * debugging your javascript.
+     * Set the chrome handler.
      */
     public class GapClient extends WebChromeClient {
 
+        private String TAG = "PhoneGapLog";
+        private long MAX_QUOTA = 100 * 1024 * 1024;
         private DroidGap ctx;
         
         /**
@@ -970,25 +965,6 @@ public class DroidGap extends PhonegapActivity {
             return true;
         }
         
-    }
-
-    /**
-     * WebChromeClient that extends GapClient with additional support for Android 2.X
-     */
-    public class EclairClient extends GapClient {
-
-        private String TAG = "PhoneGapLog";
-        private long MAX_QUOTA = 100 * 1024 * 1024;
-
-        /**
-         * Constructor.
-         * 
-         * @param ctx
-         */
-        public EclairClient(Context ctx) {
-            super(ctx);
-        }
-
         /**
          * Handle database quota exceeded notification.
          *
