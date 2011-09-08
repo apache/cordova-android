@@ -77,9 +77,6 @@ import com.phonegap.api.PluginManager;
  *         // Initialize activity
  *         super.init();
  *         
- *         // Add your plugins here or in JavaScript
- *         super.addService("MyService", "com.phonegap.examples.MyService");
- *         
  *         // Clear cache if you want
  *         super.appView.clearCache(true);
  *         
@@ -91,7 +88,7 @@ import com.phonegap.api.PluginManager;
  *
  * Properties: The application can be configured using the following properties:
  * 
- *      // Display a native loading dialog.  Format for value = "Title,Message".  
+ *      // Display a native loading dialog when loading app.  Format for value = "Title,Message".  
  *      // (String - default=null)
  *      super.setStringProperty("loadingDialog", "Wait,Loading Demo...");
  * 
@@ -233,7 +230,7 @@ public class DroidGap extends PhonegapActivity {
         else {
             this.appView.setWebChromeClient(new EclairClient(DroidGap.this));           
         }
-           
+
         this.setWebViewClient(this.appView, new GapViewClient(this));
 
         this.appView.setInitialScale(100);
@@ -272,7 +269,7 @@ public class DroidGap extends PhonegapActivity {
         String url = this.getStringProperty("url", null);
         if (url != null) {
             System.out.println("Loading initial URL="+url);
-            this.loadUrl(url);          
+            this.loadUrl(url);
         }
     }
     
@@ -393,7 +390,7 @@ public class DroidGap extends PhonegapActivity {
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                        }       
+                        }
 
                         // If timeout, then stop loading and handle error
                         if (me.loadUrlTimeout == currentLoadUrlTimeout) {
@@ -602,7 +599,7 @@ public class DroidGap extends PhonegapActivity {
     public void setDoubleProperty(String name, double value) {
         this.getIntent().putExtra(name, value);
     }
-    
+
     @Override
     /**
      * Called when the system is about to start resuming a previous activity. 
@@ -612,7 +609,7 @@ public class DroidGap extends PhonegapActivity {
         if (this.appView == null) {
             return;
         }
-        
+
         // Send pause event to JavaScript
         this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
 
@@ -685,10 +682,9 @@ public class DroidGap extends PhonegapActivity {
 
             // Load blank page so that JavaScript onunload is called
             this.appView.loadUrl("about:blank");
-                
+
             // Forward to plugins
             this.pluginManager.onDestroy();
-
         }
     }
 
@@ -711,8 +707,7 @@ public class DroidGap extends PhonegapActivity {
     public void sendJavascript(String statement) {
         this.callbackServer.sendJavascript(statement);
     }
-    
-    
+
     /**
      * Display a new browser with the specified URL.
      * 
@@ -914,13 +909,13 @@ public class DroidGap extends PhonegapActivity {
             }
             
             // Polling for JavaScript messages 
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
+            else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
                 String r = callbackServer.getJavascript();
                 result.confirm(r);
             }
             
             // Calling into CallbackServer
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
+            else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
                 String r = "";
                 if (message.equals("usePolling")) {
                     r = ""+callbackServer.usePolling();
@@ -939,7 +934,7 @@ public class DroidGap extends PhonegapActivity {
             
             // PhoneGap JS has initialized, so show webview
             // (This solves white flash seen when rendering HTML)
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
+            else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
                 appView.setVisibility(View.VISIBLE);
                 ctx.spinnerStop();
                 result.confirm("OK");
@@ -1011,9 +1006,9 @@ public class DroidGap extends PhonegapActivity {
             Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));
 
             if( estimatedSize < MAX_QUOTA)
-            {                                           
+            {
                 //increase for 1Mb
-                long newQuota = estimatedSize;                  
+                long newQuota = estimatedSize;
                 Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );
                 quotaUpdater.updateQuota(newQuota);
             }
@@ -1022,8 +1017,8 @@ public class DroidGap extends PhonegapActivity {
                 // Set the quota to whatever it is and force an error
                 // TODO: get docs on how to handle this properly
                 quotaUpdater.updateQuota(currentQuota);
-            }               
-        }       
+            }
+        }
 
         // console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
         @Override
@@ -1041,7 +1036,6 @@ public class DroidGap extends PhonegapActivity {
          * @param callback
          */
         public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
-            // TODO Auto-generated method stub
             super.onGeolocationPermissionsShowPrompt(origin, callback);
             callback.invoke(origin, true, false);
         }
@@ -1398,7 +1392,7 @@ public class DroidGap extends PhonegapActivity {
      public void setActivityResultCallback(IPlugin plugin) {
          this.activityResultCallback = plugin;
      }
-     
+
      /**
       * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
       * The errorCode parameter corresponds to one of the ERROR_* constants.
