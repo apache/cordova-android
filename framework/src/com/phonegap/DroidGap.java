@@ -77,9 +77,6 @@ import com.phonegap.api.PluginManager;
  *         // Initialize activity
  *         super.init();
  *         
- *         // Add your plugins here or in JavaScript
- *         super.addService("MyService", "com.phonegap.examples.MyService");
- *         
  *         // Clear cache if you want
  *         super.appView.clearCache(true);
  *         
@@ -91,7 +88,7 @@ import com.phonegap.api.PluginManager;
  *
  * Properties: The application can be configured using the following properties:
  * 
- *      // Display a native loading dialog.  Format for value = "Title,Message".  
+ *      // Display a native loading dialog when loading app.  Format for value = "Title,Message".  
  *      // (String - default=null)
  *      super.setStringProperty("loadingDialog", "Wait,Loading Demo...");
  * 
@@ -227,13 +224,7 @@ public class DroidGap extends PhonegapActivity {
 
         WebViewReflect.checkCompatibility();
 
-        if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {
-            this.appView.setWebChromeClient(new GapClient(DroidGap.this));
-        }
-        else {
-            this.appView.setWebChromeClient(new EclairClient(DroidGap.this));           
-        }
-           
+        this.appView.setWebChromeClient(new GapClient(DroidGap.this));
         this.setWebViewClient(this.appView, new GapViewClient(this));
 
         this.appView.setInitialScale(100);
@@ -272,7 +263,7 @@ public class DroidGap extends PhonegapActivity {
         String url = this.getStringProperty("url", null);
         if (url != null) {
             System.out.println("Loading initial URL="+url);
-            this.loadUrl(url);          
+            this.loadUrl(url);
         }
     }
     
@@ -393,7 +384,7 @@ public class DroidGap extends PhonegapActivity {
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                        }       
+                        }
 
                         // If timeout, then stop loading and handle error
                         if (me.loadUrlTimeout == currentLoadUrlTimeout) {
@@ -602,7 +593,7 @@ public class DroidGap extends PhonegapActivity {
     public void setDoubleProperty(String name, double value) {
         this.getIntent().putExtra(name, value);
     }
-    
+
     @Override
     /**
      * Called when the system is about to start resuming a previous activity. 
@@ -612,7 +603,7 @@ public class DroidGap extends PhonegapActivity {
         if (this.appView == null) {
             return;
         }
-        
+
         // Send pause event to JavaScript
         this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
 
@@ -685,10 +676,9 @@ public class DroidGap extends PhonegapActivity {
 
             // Load blank page so that JavaScript onunload is called
             this.appView.loadUrl("about:blank");
-                
+
             // Forward to plugins
             this.pluginManager.onDestroy();
-
         }
     }
 
@@ -711,8 +701,7 @@ public class DroidGap extends PhonegapActivity {
     public void sendJavascript(String statement) {
         this.callbackServer.sendJavascript(statement);
     }
-    
-    
+
     /**
      * Display a new browser with the specified URL.
      * 
@@ -803,11 +792,12 @@ public class DroidGap extends PhonegapActivity {
     }
 
     /**
-     * Provides a hook for calling "alert" from javascript. Useful for
-     * debugging your javascript.
+     * Set the chrome handler.
      */
     public class GapClient extends WebChromeClient {
 
+        private String TAG = "PhoneGapLog";
+        private long MAX_QUOTA = 100 * 1024 * 1024;
         private DroidGap ctx;
         
         /**
@@ -914,13 +904,13 @@ public class DroidGap extends PhonegapActivity {
             }
             
             // Polling for JavaScript messages 
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
+            else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
                 String r = callbackServer.getJavascript();
                 result.confirm(r);
             }
             
             // Calling into CallbackServer
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
+            else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
                 String r = "";
                 if (message.equals("usePolling")) {
                     r = ""+callbackServer.usePolling();
@@ -939,7 +929,7 @@ public class DroidGap extends PhonegapActivity {
             
             // PhoneGap JS has initialized, so show webview
             // (This solves white flash seen when rendering HTML)
-        	else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
+            else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
                 appView.setVisibility(View.VISIBLE);
                 ctx.spinnerStop();
                 result.confirm("OK");
@@ -975,25 +965,6 @@ public class DroidGap extends PhonegapActivity {
             return true;
         }
         
-    }
-
-    /**
-     * WebChromeClient that extends GapClient with additional support for Android 2.X
-     */
-    public class EclairClient extends GapClient {
-
-        private String TAG = "PhoneGapLog";
-        private long MAX_QUOTA = 100 * 1024 * 1024;
-
-        /**
-         * Constructor.
-         * 
-         * @param ctx
-         */
-        public EclairClient(Context ctx) {
-            super(ctx);
-        }
-
         /**
          * Handle database quota exceeded notification.
          *
@@ -1011,9 +982,9 @@ public class DroidGap extends PhonegapActivity {
             Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));
 
             if( estimatedSize < MAX_QUOTA)
-            {                                           
+            {
                 //increase for 1Mb
-                long newQuota = estimatedSize;                  
+                long newQuota = estimatedSize;
                 Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );
                 quotaUpdater.updateQuota(newQuota);
             }
@@ -1022,8 +993,8 @@ public class DroidGap extends PhonegapActivity {
                 // Set the quota to whatever it is and force an error
                 // TODO: get docs on how to handle this properly
                 quotaUpdater.updateQuota(currentQuota);
-            }               
-        }       
+            }
+        }
 
         // console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
         @Override
@@ -1041,7 +1012,6 @@ public class DroidGap extends PhonegapActivity {
          * @param callback
          */
         public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
-            // TODO Auto-generated method stub
             super.onGeolocationPermissionsShowPrompt(origin, callback);
             callback.invoke(origin, true, false);
         }
@@ -1074,8 +1044,13 @@ public class DroidGap extends PhonegapActivity {
          */
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            
+            // First give any plugins the chance to handle the url themselves
+            if (this.ctx.pluginManager.onOverrideUrlLoading(url)) {
+            }
+            
             // If dialing phone (tel:5551212)
-            if (url.startsWith(WebView.SCHEME_TEL)) {
+            else if (url.startsWith(WebView.SCHEME_TEL)) {
                 try {
                     Intent intent = new Intent(Intent.ACTION_DIAL);
                     intent.setData(Uri.parse(url));
@@ -1083,9 +1058,8 @@ public class DroidGap extends PhonegapActivity {
                 } catch (android.content.ActivityNotFoundException e) {
                     System.out.println("Error dialing "+url+": "+ e.toString());
                 }
-                return true;
             }
-            
+
             // If displaying map (geo:0,0?q=address)
             else if (url.startsWith("geo:")) {
                 try {
@@ -1095,9 +1069,8 @@ public class DroidGap extends PhonegapActivity {
                 } catch (android.content.ActivityNotFoundException e) {
                     System.out.println("Error showing map "+url+": "+ e.toString());
                 }
-                return true;                
             }
-            
+
             // If sending email (mailto:abc@corp.com)
             else if (url.startsWith(WebView.SCHEME_MAILTO)) {
                 try {
@@ -1107,9 +1080,8 @@ public class DroidGap extends PhonegapActivity {
                 } catch (android.content.ActivityNotFoundException e) {
                     System.out.println("Error sending email "+url+": "+ e.toString());
                 }
-                return true;                
             }
-            
+
             // If sms:5551212?body=This is the message
             else if (url.startsWith("sms:")) {
                 try {
@@ -1140,15 +1112,13 @@ public class DroidGap extends PhonegapActivity {
                 } catch (android.content.ActivityNotFoundException e) {
                     System.out.println("Error sending sms "+url+":"+ e.toString());
                 }
-                return true;
             }
 
             // All else
             else {
 
-                // If our app or file:, then load into our webview
-                // NOTE: This replaces our app with new URL.  When BACK is pressed,
-                //       our app is reloaded and restarted.  All state is lost.
+                // If our app or file:, then load into a new phonegap webview container by starting a new instance of our activity.
+                // Our app continues to run.  When BACK is pressed, our app is redisplayed.
                 if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0) {
                     try {
                         // Init parameters to new DroidGap activity and propagate existing parameters
@@ -1174,7 +1144,7 @@ public class DroidGap extends PhonegapActivity {
                         System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
                     }
                 }
-        
+
                 // If not our application, let default viewer handle
                 else {
                     try {
@@ -1185,8 +1155,8 @@ public class DroidGap extends PhonegapActivity {
                         System.out.println("Error loading url "+url+":"+ e.toString());
                     }
                 }
-                return true;
             }
+            return true;
         }
         
         /**
@@ -1398,7 +1368,7 @@ public class DroidGap extends PhonegapActivity {
      public void setActivityResultCallback(IPlugin plugin) {
          this.activityResultCallback = plugin;
      }
-     
+
      /**
       * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
       * The errorCode parameter corresponds to one of the ERROR_* constants.
