@@ -10,6 +10,7 @@ package com.phonegap;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -75,6 +76,9 @@ public class CameraLauncher extends Plugin {
         try {
             if (action.equals("takePicture")) {
                 int destType = DATA_URL;
+                this.targetHeight = 0;
+                this.targetWidth = 0;
+                
                 if (args.length() > 1) {
                     destType = args.getInt(1);
                 }
@@ -340,7 +344,30 @@ public class CameraLauncher extends Plugin {
                 
                 // If sending filename back
                 else if (destType == FILE_URI) {
-                    this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
+                    // Do we need to scale the returned file
+                    if (this.targetHeight != 0 && this.targetWidth != 0) {
+                        try {
+                            Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+                            bitmap = scaleBitmap(bitmap);
+
+                            String fileName = DirectoryManager.getTempDirectoryPath(ctx) + "/resize.jpg";
+                            OutputStream os = new FileOutputStream(fileName);                         
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
+                            os.close();
+
+                            bitmap.recycle();
+                            bitmap = null;
+                            
+                            this.success(new PluginResult(PluginResult.Status.OK, ("file://" + fileName)), this.callbackId);
+                            System.gc();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            this.failPicture("Error retrieving image.");
+                        }
+                    }
+                    else {
+                        this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);                        
+                    }
                 }
             }
             else if (resultCode == Activity.RESULT_CANCELED) {
