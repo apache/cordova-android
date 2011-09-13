@@ -11,8 +11,6 @@ PhoneGap.addResource("file");
 
 /**
  * This class provides some useful information about a file.
- * This is the fields returned when navigator.fileMgr.getFileProperties()
- * is called.
  * @constructor
  */
 var FileProperties = function(filePath) {
@@ -32,9 +30,9 @@ var FileProperties = function(filePath) {
  * @param size {Number} size of the file in bytes
  */
 var File = function(name, fullPath, type, lastModifiedDate, size) {
-	this.name = name || null;
+    this.name = name || null;
     this.fullPath = fullPath || null;
-	this.type = type || null;
+    this.type = type || null;
     this.lastModifiedDate = lastModifiedDate || null;
     this.size = size || 0;
 };
@@ -62,63 +60,8 @@ FileError.TYPE_MISMATCH_ERR = 11;
 FileError.PATH_EXISTS_ERR = 12;
 
 //-----------------------------------------------------------------------------
-// File manager
-//-----------------------------------------------------------------------------
-
-/** @constructor */
-var FileMgr = function() {
-};
-
-FileMgr.prototype.getFileProperties = function(filePath) {
-    return PhoneGap.exec(null, null, "File", "getFileProperties", [filePath]);
-};
-
-FileMgr.prototype.getFileBasePaths = function() {
-};
-
-FileMgr.prototype.testSaveLocationExists = function(successCallback, errorCallback) {
-    return PhoneGap.exec(successCallback, errorCallback, "File", "testSaveLocationExists", []);
-};
-
-FileMgr.prototype.testFileExists = function(fileName, successCallback, errorCallback) {
-    return PhoneGap.exec(successCallback, errorCallback, "File", "testFileExists", [fileName]);
-};
-
-FileMgr.prototype.testDirectoryExists = function(dirName, successCallback, errorCallback) {
-    return PhoneGap.exec(successCallback, errorCallback, "File", "testDirectoryExists", [dirName]);
-};
-
-FileMgr.prototype.getFreeDiskSpace = function(successCallback, errorCallback) {
-    return PhoneGap.exec(successCallback, errorCallback, "File", "getFreeDiskSpace", []);
-};
-
-FileMgr.prototype.write = function(fileName, data, position, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "write", [fileName, data, position]);
-};
-
-FileMgr.prototype.truncate = function(fileName, size, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "truncate", [fileName, size]);
-};
-
-FileMgr.prototype.readAsText = function(fileName, encoding, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "readAsText", [fileName, encoding]);
-};
-
-FileMgr.prototype.readAsDataURL = function(fileName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "readAsDataURL", [fileName]);
-};
-
-PhoneGap.addConstructor(function() {
-    if (typeof navigator.fileMgr === "undefined") {
-        navigator.fileMgr = new FileMgr();
-    }
-});
-
-//-----------------------------------------------------------------------------
 // File Reader
 //-----------------------------------------------------------------------------
-// TODO: All other FileMgr function operate on the SD card as root.  However,
-//       for FileReader & FileWriter the root is not SD card.  Should this be changed?
 
 /**
  * This class reads the mobile device file system.
@@ -188,11 +131,11 @@ FileReader.prototype.abort = function() {
  */
 FileReader.prototype.readAsText = function(file, encoding) {
     this.fileName = "";
-	if (typeof file.fullPath === "undefined") {
-		this.fileName = file;
-	} else {
-		this.fileName = file.fullPath;
-	}
+    if (typeof file.fullPath === "undefined") {
+        this.fileName = file;
+    } else {
+        this.fileName = file.fullPath;
+    }
 
     // LOADING state
     this.readyState = FileReader.LOADING;
@@ -208,8 +151,7 @@ FileReader.prototype.readAsText = function(file, encoding) {
     var me = this;
 
     // Read file
-    navigator.fileMgr.readAsText(this.fileName, enc,
-
+    PhoneGap.exec(
         // Success callback
         function(r) {
             var evt;
@@ -235,89 +177,6 @@ FileReader.prototype.readAsText = function(file, encoding) {
                 me.onloadend({"type":"loadend", "target":me});
             }
         },
-
-        // Error callback
-        function(e) {
-            var evt;
-            // If DONE (cancelled), then don't do anything
-            if (me.readyState === FileReader.DONE) {
-                return;
-            }
-
-            // Save error
-		    me.error = e;
-
-            // If onerror callback
-            if (typeof me.onerror === "function") {
-                me.onerror({"type":"error", "target":me});
-            }
-
-            // DONE state
-            me.readyState = FileReader.DONE;
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend({"type":"loadend", "target":me});
-            }
-        }
-        );
-};
-
-
-/**
- * Read file and return data as a base64 encoded data url.
- * A data url is of the form:
- *      data:[<mediatype>][;base64],<data>
- *
- * @param file          {File} File object containing file properties
- */
-FileReader.prototype.readAsDataURL = function(file) {
-	this.fileName = "";
-    if (typeof file.fullPath === "undefined") {
-        this.fileName = file;
-    } else {
-        this.fileName = file.fullPath;
-    }
-
-    // LOADING state
-    this.readyState = FileReader.LOADING;
-
-    // If loadstart callback
-    if (typeof this.onloadstart === "function") {
-        this.onloadstart({"type":"loadstart", "target":this});
-    }
-
-    var me = this;
-
-    // Read file
-    navigator.fileMgr.readAsDataURL(this.fileName,
-
-        // Success callback
-        function(r) {
-            var evt;
-
-            // If DONE (cancelled), then don't do anything
-            if (me.readyState === FileReader.DONE) {
-                return;
-            }
-
-            // Save result
-            me.result = r;
-
-            // If onload callback
-            if (typeof me.onload === "function") {
-                me.onload({"type":"load", "target":me});
-            }
-
-            // DONE state
-            me.readyState = FileReader.DONE;
-
-            // If onloadend callback
-            if (typeof me.onloadend === "function") {
-                me.onloadend({"type":"loadend", "target":me});
-            }
-        },
-
         // Error callback
         function(e) {
             var evt;
@@ -341,8 +200,86 @@ FileReader.prototype.readAsDataURL = function(file) {
             if (typeof me.onloadend === "function") {
                 me.onloadend({"type":"loadend", "target":me});
             }
-        }
-        );
+        }, "File", "readAsText", [this.fileName, enc]);
+};
+
+
+/**
+ * Read file and return data as a base64 encoded data url.
+ * A data url is of the form:
+ *      data:[<mediatype>][;base64],<data>
+ *
+ * @param file          {File} File object containing file properties
+ */
+FileReader.prototype.readAsDataURL = function(file) {
+    this.fileName = "";
+    if (typeof file.fullPath === "undefined") {
+        this.fileName = file;
+    } else {
+        this.fileName = file.fullPath;
+    }
+
+    // LOADING state
+    this.readyState = FileReader.LOADING;
+
+    // If loadstart callback
+    if (typeof this.onloadstart === "function") {
+        this.onloadstart({"type":"loadstart", "target":this});
+    }
+
+    var me = this;
+
+    // Read file
+    PhoneGap.exec(
+        // Success callback
+        function(r) {
+            var evt;
+
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState === FileReader.DONE) {
+                return;
+            }
+
+            // Save result
+            me.result = r;
+
+            // If onload callback
+            if (typeof me.onload === "function") {
+                me.onload({"type":"load", "target":me});
+            }
+
+            // DONE state
+            me.readyState = FileReader.DONE;
+
+            // If onloadend callback
+            if (typeof me.onloadend === "function") {
+                me.onloadend({"type":"loadend", "target":me});
+            }
+        },
+        // Error callback
+        function(e) {
+            var evt;
+            // If DONE (cancelled), then don't do anything
+            if (me.readyState === FileReader.DONE) {
+                return;
+            }
+
+            // Save error
+            me.error = e;
+
+            // If onerror callback
+            if (typeof me.onerror === "function") {
+                me.onerror({"type":"error", "target":me});
+            }
+
+            // DONE state
+            me.readyState = FileReader.DONE;
+
+            // If onloadend callback
+            if (typeof me.onloadend === "function") {
+                me.onloadend({"type":"loadend", "target":me});
+            }
+        }, "File", "readAsDataURL", [this.fileName]);
 };
 
 /**
@@ -383,10 +320,10 @@ FileReader.prototype.readAsArrayBuffer = function(file) {
 var FileWriter = function(file) {
     this.fileName = "";
     this.length = 0;
-	if (file) {
-	    this.fileName = file.fullPath || file;
-	    this.length = file.size || 0;
-	}
+    if (file) {
+        this.fileName = file.fullPath || file;
+        this.length = file.size || 0;
+    }
     // default is to write at the beginning of the file
     this.position = 0;
 
@@ -398,12 +335,12 @@ var FileWriter = function(file) {
     this.error = null;
 
     // Event handlers
-    this.onwritestart = null;	// When writing starts
-    this.onprogress = null;		// While writing the file, and reporting partial file data
-    this.onwrite = null;		// When the write has successfully completed.
-    this.onwriteend = null;		// When the request has completed (either in success or failure).
-    this.onabort = null;		// When the write has been aborted. For instance, by invoking the abort() method.
-    this.onerror = null;		// When the write has failed (see errors).
+    this.onwritestart = null;   // When writing starts
+    this.onprogress = null;     // While writing the file, and reporting partial file data
+    this.onwrite = null;        // When the write has successfully completed.
+    this.onwriteend = null;     // When the request has completed (either in success or failure).
+    this.onabort = null;        // When the write has been aborted. For instance, by invoking the abort() method.
+    this.onerror = null;        // When the write has failed (see errors).
 };
 
 // States
@@ -416,9 +353,9 @@ FileWriter.DONE = 2;
  */
 FileWriter.prototype.abort = function() {
     // check for invalid state
-	if (this.readyState === FileWriter.DONE || this.readyState === FileWriter.INIT) {
-		throw FileError.INVALID_STATE_ERR;
-	}
+    if (this.readyState === FileWriter.DONE || this.readyState === FileWriter.INIT) {
+        throw FileError.INVALID_STATE_ERR;
+    }
 
     // set error
     var error = new FileError(), evt;
@@ -448,10 +385,10 @@ FileWriter.prototype.abort = function() {
  * @param text to be written
  */
 FileWriter.prototype.write = function(text) {
-	// Throw an exception if we are already writing a file
-	if (this.readyState === FileWriter.WRITING) {
-		throw FileError.INVALID_STATE_ERR;
-	}
+    // Throw an exception if we are already writing a file
+    if (this.readyState === FileWriter.WRITING) {
+        throw FileError.INVALID_STATE_ERR;
+    }
 
     // WRITING state
     this.readyState = FileWriter.WRITING;
@@ -464,8 +401,7 @@ FileWriter.prototype.write = function(text) {
     }
 
     // Write file
-    navigator.fileMgr.write(this.fileName, text, this.position,
-
+    PhoneGap.exec(
         // Success callback
         function(r) {
             var evt;
@@ -492,7 +428,6 @@ FileWriter.prototype.write = function(text) {
                 me.onwriteend({"type":"writeend", "target":me});
             }
         },
-
         // Error callback
         function(e) {
             var evt;
@@ -517,9 +452,7 @@ FileWriter.prototype.write = function(text) {
             if (typeof me.onwriteend === "function") {
                 me.onwriteend({"type":"writeend", "target":me});
             }
-        }
-        );
-
+        }, "File", "write", [this.fileName, text, this.position]);
 };
 
 /**
@@ -543,18 +476,18 @@ FileWriter.prototype.seek = function(offset) {
 
     // See back from end of file.
     if (offset < 0) {
-		this.position = Math.max(offset + this.length, 0);
-	}
+        this.position = Math.max(offset + this.length, 0);
+    }
     // Offset is bigger then file size so set position
     // to the end of the file.
-	else if (offset > this.length) {
-		this.position = this.length;
-	}
+    else if (offset > this.length) {
+        this.position = this.length;
+    }
     // Offset is between 0 and file size so set the position
     // to start writing.
-	else {
-		this.position = offset;
-	}
+    else {
+        this.position = offset;
+    }
 };
 
 /**
@@ -563,10 +496,10 @@ FileWriter.prototype.seek = function(offset) {
  * @param size to chop the file at.
  */
 FileWriter.prototype.truncate = function(size) {
-	// Throw an exception if we are already writing a file
-	if (this.readyState === FileWriter.WRITING) {
-		throw FileError.INVALID_STATE_ERR;
-	}
+    // Throw an exception if we are already writing a file
+    if (this.readyState === FileWriter.WRITING) {
+        throw FileError.INVALID_STATE_ERR;
+    }
 
     // WRITING state
     this.readyState = FileWriter.WRITING;
@@ -579,8 +512,7 @@ FileWriter.prototype.truncate = function(size) {
     }
 
     // Write file
-    navigator.fileMgr.truncate(this.fileName, size,
-
+    PhoneGap.exec(
         // Success callback
         function(r) {
             var evt;
@@ -606,7 +538,6 @@ FileWriter.prototype.truncate = function(size) {
                 me.onwriteend({"type":"writeend", "target":me});
             }
         },
-
         // Error callback
         function(e) {
             var evt;
@@ -630,8 +561,7 @@ FileWriter.prototype.truncate = function(size) {
             if (typeof me.onwriteend === "function") {
                 me.onwriteend({"type":"writeend", "target":me});
             }
-        }
-    );
+        }, "File", "truncate", [this.fileName, size]);
 };
 
 /**
@@ -1050,8 +980,8 @@ LocalFileSystem.prototype._castDate = function(pluginResult) {
  * Add the FileSystem interface into the browser.
  */
 PhoneGap.addConstructor(function() {
-	var pgLocalFileSystem = new LocalFileSystem();
-	// Needed for cast methods
+    var pgLocalFileSystem = new LocalFileSystem();
+    // Needed for cast methods
     if(typeof window.localFileSystem == "undefined") window.localFileSystem  = pgLocalFileSystem;
     if(typeof window.requestFileSystem == "undefined") window.requestFileSystem  = pgLocalFileSystem.requestFileSystem;
     if(typeof window.resolveLocalFileSystemURI == "undefined") window.resolveLocalFileSystemURI = pgLocalFileSystem.resolveLocalFileSystemURI;
