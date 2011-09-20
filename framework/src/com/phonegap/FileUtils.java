@@ -120,7 +120,7 @@ public class FileUtils extends Plugin {
 				else if (action.equals("requestFileSystem")) {
 					long size = args.optLong(1);
 					if (size != 0) {
-						if (size > DirectoryManager.getFreeDiskSpace()) {
+						if (size > (DirectoryManager.getFreeDiskSpace()*1024)) {
 							JSONObject error = new JSONObject().put("code", FileUtils.QUOTA_EXCEEDED_ERR);
 							return new PluginResult(PluginResult.Status.ERROR, error);
 						}
