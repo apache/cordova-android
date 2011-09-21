@@ -53,10 +53,14 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
     var fileName = null;
     var mimeType = null;
     var params = null;
+    var chunkedMode = true;
     if (options) {
         fileKey = options.fileKey;
         fileName = options.fileName;
         mimeType = options.mimeType;
+        if (options.chunkedMode) {
+            chunkedMode = options.chunkedMode;
+        }
         if (options.params) {
             params = options.params;
         }
@@ -65,7 +69,7 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
         }
     }
 
-    PhoneGap.exec(successCallback, errorCallback, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, debug]);
+    PhoneGap.exec(successCallback, errorCallback, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, debug, chunkedMode]);
 };
 
 /**

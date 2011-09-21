@@ -81,9 +81,10 @@ public class FileTransfer extends Plugin {
 		try {
 			JSONObject params = args.optJSONObject(5);
 			boolean trustEveryone = args.optBoolean(6);
+			boolean chunkedMode = args.getBoolean(7);
 
 			if (action.equals("upload")) {
-				FileUploadResult r = upload(file, server, fileKey, fileName, mimeType, params, trustEveryone);
+				FileUploadResult r = upload(file, server, fileKey, fileName, mimeType, params, trustEveryone, chunkedMode);
 				Log.d(LOG_TAG, "****** About to return a result from upload");
 				return new PluginResult(PluginResult.Status.OK, r.toJSONObject());
 			} else {
@@ -202,7 +203,7 @@ public class FileTransfer extends Plugin {
      * @return FileUploadResult containing result of upload request
      */
 	public FileUploadResult upload(String file, String server, final String fileKey, final String fileName, 
-			final String mimeType, JSONObject params, boolean trustEveryone) throws IOException, SSLException {
+			final String mimeType, JSONObject params, boolean trustEveryone, boolean chunkedMode) throws IOException, SSLException {
 		// Create return object
 		FileUploadResult result = new FileUploadResult();
 		
@@ -240,7 +241,7 @@ public class FileTransfer extends Plugin {
 	        	conn = https;
         	}
         } 
-        // Return a standard HTTP conneciton
+        // Return a standard HTTP connection
         else {
         	conn = (HttpURLConnection) url.openConnection();
         }
@@ -264,7 +265,12 @@ public class FileTransfer extends Plugin {
 		if (cookie != null) {
 			conn.setRequestProperty("Cookie", cookie);
 		}
-
+		
+		// Should set this up as an option
+		if (chunkedMode) {
+		    conn.setChunkedStreamingMode(maxBufferSize);
+		}
+		    
 		dos = new DataOutputStream( conn.getOutputStream() );
 
 		// Send any extra parameters
@@ -356,6 +362,9 @@ public class FileTransfer extends Plugin {
     	if (path.startsWith("content:")) {
     		Uri uri = Uri.parse(path);
     		return ctx.getContentResolver().openInputStream(uri);
+    	}
+    	else if (path.startsWith("file://")) {
+    	    return new FileInputStream(path.substring(6)); 
     	}
     	else {
     		return new FileInputStream(path);
