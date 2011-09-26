@@ -9,6 +9,11 @@ package com.phonegap;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.Iterator;
+import java.io.IOException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +28,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.media.AudioManager;
@@ -52,6 +58,7 @@ import android.widget.LinearLayout;
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.IPlugin;
 import com.phonegap.api.PluginManager;
+import 	org.xmlpull.v1.XmlPullParserException;
 
 /**
  * This class is the main Android activity that represents the PhoneGap
@@ -124,6 +131,8 @@ public class DroidGap extends PhonegapActivity {
     // The webview for our app
     protected WebView appView;
     protected WebViewClient webViewClient;
+    private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
+    private HashMap<String, Boolean> whiteListCache = new HashMap<String,Boolean>();
 
     protected LinearLayout root;
     public boolean bound = false;
@@ -195,6 +204,9 @@ public class DroidGap extends PhonegapActivity {
         root.setBackgroundColor(this.backgroundColor);
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
                 ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+        
+        // Load white list of allowed URLs
+        this.loadWhiteList();
 
         // If url was passed in to intent, then init webview, which will load the url
         Bundle bundle = this.getIntent().getExtras();
@@ -882,7 +894,7 @@ public class DroidGap extends PhonegapActivity {
             // Security check to make sure any requests are coming from the page initially
             // loaded in webview and not another loaded in an iframe.
             boolean reqOk = false;
-            if (url.indexOf(this.ctx.baseUrl) == 0) {
+            if (url.indexOf(this.ctx.baseUrl) == 0 || isUrlWhiteListed(url)) {
                 reqOk = true;
             }
             
@@ -1119,7 +1131,7 @@ public class DroidGap extends PhonegapActivity {
 
                 // If our app or file:, then load into a new phonegap webview container by starting a new instance of our activity.
                 // Our app continues to run.  When BACK is pressed, our app is redisplayed.
-                if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0) {
+                if (this.ctx.loadInWebView || url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0 || isUrlWhiteListed(url)) {
                     try {
                         // Init parameters to new DroidGap activity and propagate existing parameters
                         HashMap<String, Object> params = new HashMap<String, Object>();
@@ -1509,4 +1521,83 @@ public class DroidGap extends PhonegapActivity {
                 oldWidth = width;
             }
     }
+     
+    /**
+     * Load approved list of URLs that can be loaded into DroidGap.
+     * This list is loaded from res/xml/phonegap.xml
+     * 		<access origin="http://server regexp" subdomains="true" />
+     */
+    private void loadWhiteList() {
+        int id = getResources().getIdentifier("phonegap", "xml", getPackageName());
+        if (id == 0) {
+            Log.i("PhoneGapLog", "phonegap.xml missing. Ignoring...");
+            return;
+        }
+        XmlResourceParser xml = getResources().getXml(id);
+        int eventType = -1;
+        while (eventType != XmlResourceParser.END_DOCUMENT) {
+            if (eventType == XmlResourceParser.START_TAG) {
+                String strNode = xml.getName();
+                if (strNode.equals("access")) {
+                    String origin = xml.getAttributeValue(null, "origin");
+                    String subdomains = xml.getAttributeValue(null, "subdomains");
+                    if (origin != null) {
+                        this.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                    }
+                }
+            }
+            try {
+                eventType = xml.next();
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Add entry to approved list of URLs (whitelist)
+     * 
+     * @param origin        URL regular expression to allow
+     * @param subdomains    T=include all subdomains under origin
+     */
+    public void addWhiteListEntry(String origin, boolean subdomains) {
+        if (subdomains) {
+            Log.d("PhoneGapLog", "Origin to allow with subdomains: "+origin);
+            whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://.*")));
+        } else {
+            Log.d("PhoneGapLog", "Origin to allow: "+origin);
+            whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://")));
+        }    
+    }
+
+    /**
+     * Determine if URL is in approved list of URLs to load.
+     * 
+     * @param url
+     * @return
+     */
+    private boolean isUrlWhiteListed(String url) {
+
+        // Check to see if we have matched url previously
+        if (whiteListCache.get(url) != null) {
+            return true;
+        }
+
+        // Look for match in white list
+        Iterator<Pattern> pit = whiteList.iterator();
+        while (pit.hasNext()) {
+            Pattern p = pit.next();
+            Matcher m = p.matcher(url);
+
+            // If match found, then cache it to speed up subsequent comparisons
+            if (m.find()) {
+                whiteListCache.put(url, true);
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
