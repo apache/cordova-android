@@ -54,6 +54,9 @@ public class App extends Plugin {
         	else if (action.equals("exitApp")) {
             	this.exitApp();
             }
+        	else if (action.equals("addWhiteListEntry")) {
+        		this.addWhiteListEntry(args.getString(0), args.optBoolean(1));
+        	}
             return new PluginResult(status, result);
         } catch (JSONException e) {
             return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
@@ -172,4 +175,13 @@ public class App extends Plugin {
     	((DroidGap)this.ctx).finish();
     }
 
+    /**
+     * Add entry to approved list of URLs (whitelist)
+     * 
+     * @param origin		URL regular expression to allow
+     * @param subdomains	T=include all subdomains under origin
+     */
+    public void addWhiteListEntry(String origin, boolean subdomains) {
+    	((DroidGap)this.ctx).addWhiteListEntry(origin, subdomains);
+    }
 }

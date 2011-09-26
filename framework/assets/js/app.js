@@ -79,6 +79,16 @@ App.prototype.exitApp = function() {
 	return PhoneGap.exec(null, null, "App", "exitApp", []);
 };
 
+/**
+ * Add entry to approved list of URLs (whitelist) that will be loaded into PhoneGap container instead of default browser.
+ * 
+ * @param origin		URL regular expression to allow
+ * @param subdomains	T=include all subdomains under origin
+ */
+App.prototype.addWhiteListEntry = function(origin, subdomains) {
+	return PhoneGap.exec(null, null, "App", "addWhiteListEntry", [origin, subdomains]);	
+};
+
 PhoneGap.addConstructor(function() {
     navigator.app = new App();
 });

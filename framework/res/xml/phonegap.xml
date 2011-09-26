@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phonegap>
+    <access origin="http://127.0.0.1*"/>
+</phonegap>
