@@ -9,6 +9,21 @@
 if (!PhoneGap.hasResource("compass")) {
 PhoneGap.addResource("compass");
 
+CompassError = function(){
+    this.code = null;
+};
+
+// Capture error codes
+CompassError.COMPASS_INTERNAL_ERR = 0;
+CompassError.COMPASS_NOT_SUPPORTED = 20;
+
+CompassHeading = function() {
+    this.magneticHeading = null;
+    this.trueHeading = null;
+    this.headingAccuracy = null;
+    this.timestamp = null;
+};
+
 /**
  * This class provides access to device Compass data.
  * @constructor
@@ -109,6 +124,14 @@ Compass.prototype.clearWatch = function(id) {
         clearInterval(navigator.compass.timers[id]);
         delete navigator.compass.timers[id];
     }
+};
+
+Compass.prototype._castDate = function(pluginResult) {
+    if (pluginResult.message.timestamp) {
+        var timestamp = new Date(pluginResult.message.timestamp);
+        pluginResult.message.timestamp = timestamp;
+    }
+    return pluginResult;
 };
 
 PhoneGap.addConstructor(function() {
