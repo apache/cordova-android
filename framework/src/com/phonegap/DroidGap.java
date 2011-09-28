@@ -145,6 +145,7 @@ public class DroidGap extends PhonegapActivity {
     // The initial URL for our app
     // ie http://server/path/index.html#abc?query
     private String url;
+    private boolean firstPage = true;
     
     // The base of the initial URL for our app.
     // Does not include file name.  Ends with /
@@ -209,11 +210,13 @@ public class DroidGap extends PhonegapActivity {
         this.loadWhiteList();
 
         // If url was passed in to intent, then init webview, which will load the url
+        this.firstPage = true;
         Bundle bundle = this.getIntent().getExtras();
         if (bundle != null) {
             String url = bundle.getString("url");
             if (url != null) {
-                this.init();
+            	this.url = url;
+            	this.firstPage = false;
             }
         }
         // Setup the hardware volume controls to handle volume control
@@ -271,12 +274,6 @@ public class DroidGap extends PhonegapActivity {
         // Clear cancel flag
         this.cancelLoadUrl = false;
 
-        // If url specified, then load it
-        String url = this.getStringProperty("url", null);
-        if (url != null) {
-            System.out.println("Loading initial URL="+url);
-            this.loadUrl(url);
-        }
     }
     
     /**
@@ -318,7 +315,7 @@ public class DroidGap extends PhonegapActivity {
 
         // If spashscreen
         this.splashscreen = this.getIntegerProperty("splashscreen", 0);
-        if (this.splashscreen != 0) {
+        if (this.firstPage && (this.splashscreen != 0)) {
             root.setBackgroundResource(this.splashscreen);
         }
 
@@ -340,7 +337,24 @@ public class DroidGap extends PhonegapActivity {
      * 
      * @param url
      */
-    public void loadUrl(final String url) {
+    public void loadUrl(String url) {
+    	
+    	// If first page of app, then set URL to load to be the one passed in
+    	if (this.firstPage) {
+    		this.loadUrlIntoView(url);
+    	}
+    	// Otherwise use the URL specified in the activity's extras bundle
+    	else {
+    		this.loadUrlIntoView(this.url);
+    	}
+    }
+    
+    /**
+     * Load the url into the webview.
+     * 
+     * @param url
+     */
+    private void loadUrlIntoView(final String url) {
         System.out.println("loadUrl("+url+")");
         this.url = url;
         if (this.baseUrl == null) {
@@ -365,8 +379,14 @@ public class DroidGap extends PhonegapActivity {
                 // Initialize callback server
                 me.callbackServer.init(url);
 
-                // If loadingDialog, then show the App loading dialog
-                String loading = me.getStringProperty("loadingDialog", null);
+                // If loadingDialog property, then show the App loading dialog for first page of app
+                String loading = null;
+                if (me.firstPage) {
+                	loading = me.getStringProperty("loadingDialog", null);
+                }
+                else {
+                	loading = me.getStringProperty("loadingPageDialog", null);                	
+                }
                 if (loading != null) {
 
                     String title = "";
@@ -419,7 +439,32 @@ public class DroidGap extends PhonegapActivity {
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
-    public void loadUrl(final String url, final int time) {
+    public void loadUrl(final String url, int time) {
+    	
+    	// If first page of app, then set URL to load to be the one passed in
+    	if (this.firstPage) {
+    		this.loadUrlIntoView(url, time);
+    	}
+    	// Otherwise use the URL specified in the activity's extras bundle
+    	else {
+    		this.loadUrlIntoView(this.url);
+    	}
+    }
+
+    /**
+     * Load the url into the webview after waiting for period of time.
+     * This is used to display the splashscreen for certain amount of time.
+     * 
+     * @param url
+     * @param time              The number of ms to wait before loading webview
+     */
+    private void loadUrlIntoView(final String url, final int time) {
+    	
+    	// If not first page of app, then load immediately
+    	if (!this.firstPage) {
+    		this.loadUrl(url);
+    	}
+        
         System.out.println("loadUrl("+url+","+time+")");
         final DroidGap me = this;
 
@@ -1135,22 +1180,6 @@ public class DroidGap extends PhonegapActivity {
                     try {
                         // Init parameters to new DroidGap activity and propagate existing parameters
                         HashMap<String, Object> params = new HashMap<String, Object>();
-                        String loadingPage = this.ctx.getStringProperty("loadingPageDialog", null);
-                        if (loadingPage != null) {
-                            params.put("loadingDialog", loadingPage);
-                            params.put("loadingPageDialog", loadingPage);
-                        }
-                        if (this.ctx.loadInWebView) {
-                            params.put("loadInWebView", true);
-                        }
-                        params.put("keepRunning", this.ctx.keepRunning);
-                        params.put("loadUrlTimeoutValue", this.ctx.loadUrlTimeoutValue);
-                        String errorUrl = this.ctx.getStringProperty("errorUrl", null);
-                        if (errorUrl != null) {
-                            params.put("errorUrl", errorUrl);
-                        }
-                        params.put("backgroundColor", this.ctx.backgroundColor);
-
                         this.ctx.showWebPage(url, true, false, params);
                     } catch (android.content.ActivityNotFoundException e) {
                         System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
