@@ -263,8 +263,9 @@ public class DroidGap extends PhonegapActivity {
         // Enable built-in geolocation
         WebViewReflect.setGeolocationEnabled(settings, true);
 
-        // Bind PhoneGap objects to JavaScript
-        this.bindBrowser(this.appView);
+        // Create callback server and plugin manager
+        this.callbackServer = new CallbackServer();
+        this.pluginManager = new PluginManager(this.appView, this);        
 
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
@@ -287,17 +288,6 @@ public class DroidGap extends PhonegapActivity {
         appView.setWebViewClient(client);
     }
 
-    /**
-     * Bind PhoneGap objects to JavaScript.
-     * 
-     * @param appView
-     */
-    private void bindBrowser(WebView appView) {
-        this.callbackServer = new CallbackServer();
-        this.pluginManager = new PluginManager(appView, this);
-
-    }
-        
     /**
      * Look at activity parameters and process them.
      * This must be called from the main UI thread.
