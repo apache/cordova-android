@@ -10,6 +10,7 @@ package com.phonegap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.app.Activity;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 import java.util.HashMap;
@@ -172,7 +173,8 @@ public class App extends Plugin {
      * Exit the Android application.
      */
     public void exitApp() {
-    	((DroidGap)this.ctx).finish();
+        ((DroidGap)this.ctx).setResult(Activity.RESULT_OK);
+    	((DroidGap)this.ctx).onDestroy();
     }
 
     /**

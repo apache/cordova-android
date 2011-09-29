@@ -155,6 +155,7 @@ public class DroidGap extends PhonegapActivity {
     // Plugin to call when activity result is received
     protected IPlugin activityResultCallback = null;
     protected boolean activityResultKeepRunning;
+    private static int PG_REQUEST_CODE = 99;
 
     // Flag indicates that a loadUrl timeout occurred
     private int loadUrlTimeout = 0;
@@ -714,7 +715,14 @@ public class DroidGap extends PhonegapActivity {
         super.onDestroy();
         
         if (this.appView != null) {
-        
+
+            // Make invisible
+            DroidGap.this.runOnUiThread(new Runnable() {
+                public void run() {
+                    DroidGap.this.setVisible(false);
+                }
+            });
+
             // Make sure pause event is sent if onPause hasn't been called before onDestroy
             this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
 
@@ -726,6 +734,9 @@ public class DroidGap extends PhonegapActivity {
 
             // Forward to plugins
             this.pluginManager.onDestroy();
+        }
+        else {
+            this.finish();
         }
     }
 
@@ -788,19 +799,20 @@ public class DroidGap extends PhonegapActivity {
                             intent.putExtra(key, (Integer)value);
                         }
                     }
-
                 }                
+                super.startActivityForResult(intent, PG_REQUEST_CODE);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
                 intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(url));
+                this.startActivity(intent);
             }
         }
         else {
             intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse(url));
+            this.startActivity(intent);
         }
-        this.startActivity(intent);
         
         // Finish current activity
         if (clearPrev) {
@@ -1233,12 +1245,13 @@ public class DroidGap extends PhonegapActivity {
                 this.ctx.clearHistory = false;
                 this.ctx.appView.clearHistory();
             }
-            
+
             // Shutdown if blank loaded
             if (url.equals("about:blank")) {
                 if (this.ctx.callbackServer != null) {
                     this.ctx.callbackServer.destroy();
                 }
+                this.ctx.finish();
             }
         }
         
@@ -1389,6 +1402,17 @@ public class DroidGap extends PhonegapActivity {
      */
      protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
          super.onActivityResult(requestCode, resultCode, intent);
+         
+         // If a subsequent DroidGap activity is returning
+         if (requestCode == PG_REQUEST_CODE) {
+             // If terminating app, then shut down this activity too
+             if (resultCode == Activity.RESULT_OK) {
+                 this.setResult(Activity.RESULT_OK);
+                 this.onDestroy();
+             }
+             return;
+         }
+         
          IPlugin callback = this.activityResultCallback;
          if (callback != null) {
              callback.onActivityResult(requestCode, resultCode, intent);
