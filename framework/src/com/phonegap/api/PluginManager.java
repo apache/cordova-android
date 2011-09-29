@@ -217,6 +217,7 @@ public final class PluginManager {
 				this.plugins.put(className, plugin);
 				plugin.setContext(this.ctx);
 				plugin.setView(this.app);
+				plugin.onResume(true);
 				return plugin;
 			}
     	} catch (Exception e) {
