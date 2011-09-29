@@ -43,15 +43,25 @@ public class CameraLauncher extends Plugin {
     private static final int CAMERA = 1;                // Take picture from camera
     private static final int SAVEDPHOTOALBUM = 2;       // Choose image from picture library (same as PHOTOLIBRARY for Android)
     
+    private static final int PICTURE = 0;               // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
+    private static final int VIDEO = 1;                 // allow selection of video only, ONLY RETURNS URL
+    private static final int ALLMEDIA = 2;              // allow selection from all media types
+    
     private static final int JPEG = 0;                  // Take a picture of type JPEG
     private static final int PNG = 1;                   // Take a picture of type PNG
+    private static final String GET_PICTURE = "Get Picture";
+    private static final String GET_VIDEO = "Get Video";
+    private static final String GET_All = "Get All";
+    
+    private static final String LOG_TAG = "CameraLauncher";
     
     private int mQuality;                   // Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
     private int targetWidth;                // desired width of the image
     private int targetHeight;               // desired height of the image
-    private Uri imageUri;       
-    private int encodingType;
-    // Uri of captured image 
+    private Uri imageUri;                   // Uri of captured image       
+    private int encodingType;               // Type of encoding to use
+    private int mediaType;                  // What type of media to retrieve
+     
     public String callbackId;
     
     /**
@@ -95,6 +105,10 @@ public class CameraLauncher extends Plugin {
                 this.encodingType = JPEG;
                 if (args.length() > 5) {
                     this.encodingType = args.getInt(5); 
+                }
+                this.mediaType = PICTURE;
+                if (args.length() > 6) {
+                    this.mediaType = args.getInt(6); 
                 }
                 if (srcType == CAMERA) {
                     this.takePicture(args.getInt(0), destType, encodingType);
@@ -174,11 +188,25 @@ public class CameraLauncher extends Plugin {
         this.mQuality = quality;
 
         Intent intent = new Intent();
-        intent.setType("image/*");
+        String title = GET_PICTURE;
+        if (this.mediaType == PICTURE) {
+            intent.setType("image/*");  
+        }
+        else if (this.mediaType == VIDEO) {
+            intent.setType("video/*");     
+            title = GET_VIDEO;
+        }
+        else if (this.mediaType == ALLMEDIA) {
+            // I wanted to make the type 'image/*, video/*' but this does not work on all versions 
+            // of android so I had to go with the wildcard search.
+            intent.setType("*/*"); 
+            title = GET_All;
+        }
+        
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         this.ctx.startActivityForResult((Plugin) this, Intent.createChooser(intent,
-                new String("Get Picture")), (srcType+1)*16 + returnType + 1);
+                new String(title)), (srcType+1)*16 + returnType + 1);
     }
 
     /**
@@ -327,46 +355,54 @@ public class CameraLauncher extends Plugin {
             if (resultCode == Activity.RESULT_OK) {
                 Uri uri = intent.getData();
                 android.content.ContentResolver resolver = this.ctx.getContentResolver();
-                // If sending base64 image back
-                if (destType == DATA_URL) {
-                    try {
-                        Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
-                        bitmap = scaleBitmap(bitmap);
-                        this.processPicture(bitmap);
-                        bitmap.recycle();
-                        bitmap = null;
-                        System.gc();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                        this.failPicture("Error retrieving image.");
-                    }
-                }
                 
-                // If sending filename back
-                else if (destType == FILE_URI) {
-                    // Do we need to scale the returned file
-                    if (this.targetHeight != 0 && this.targetWidth != 0) {
+                // If you ask for video or all media type you will automatically get back a file URI 
+                // and there will be no attempt to resize any returned data
+                if (this.mediaType != PICTURE) {
+                    this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);                        
+                }
+                else {
+                    // If sending base64 image back
+                    if (destType == DATA_URL) {
                         try {
                             Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
                             bitmap = scaleBitmap(bitmap);
-
-                            String fileName = DirectoryManager.getTempDirectoryPath(ctx) + "/resize.jpg";
-                            OutputStream os = new FileOutputStream(fileName);                         
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
-                            os.close();
-
+                            this.processPicture(bitmap);
                             bitmap.recycle();
                             bitmap = null;
-                            
-                            this.success(new PluginResult(PluginResult.Status.OK, ("file://" + fileName)), this.callbackId);
                             System.gc();
-                        } catch (Exception e) {
+                        } catch (FileNotFoundException e) {
                             e.printStackTrace();
                             this.failPicture("Error retrieving image.");
                         }
                     }
-                    else {
-                        this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);                        
+                    
+                    // If sending filename back
+                    else if (destType == FILE_URI) {
+                        // Do we need to scale the returned file
+                        if (this.targetHeight > 0 && this.targetWidth > 0) {
+                            try {
+                                Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+                                bitmap = scaleBitmap(bitmap);
+    
+                                String fileName = DirectoryManager.getTempDirectoryPath(ctx) + "/resize.jpg";
+                                OutputStream os = new FileOutputStream(fileName);                         
+                                bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
+                                os.close();
+    
+                                bitmap.recycle();
+                                bitmap = null;
+                                
+                                this.success(new PluginResult(PluginResult.Status.OK, ("file://" + fileName)), this.callbackId);
+                                System.gc();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                this.failPicture("Error retrieving image.");
+                            }
+                        }
+                        else {
+                            this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);                        
+                        }
                     }
                 }
             }
