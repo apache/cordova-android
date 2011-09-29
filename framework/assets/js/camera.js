@@ -50,6 +50,24 @@ Camera.EncodingType = {
 Camera.prototype.EncodingType = Camera.EncodingType;
 
 /**
+ * Type of pictures to select from.  Only applicable when
+ *      PictureSourceType is PHOTOLIBRARY or SAVEDPHOTOALBUM
+ *
+ * Example: navigator.camera.getPicture(success, fail,
+ *              { quality: 80,
+ *                destinationType: Camera.DestinationType.DATA_URL,
+ *                sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
+ *                mediaType: Camera.MediaType.PICTURE})
+ */
+Camera.MediaType = {
+       PICTURE: 0,      // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
+       VIDEO: 1,        // allow selection of video only, ONLY RETURNS URL
+       ALLMEDIA : 2     // allow selection from all media types
+};
+Camera.prototype.MediaType = Camera.MediaType;
+
+
+/**
  * Source to getPicture from.
  *
  * Example: navigator.camera.getPicture(success, fail,
@@ -111,6 +129,10 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     if (typeof options.encodingType == "number") {
         encodingType = this.options.encodingType;
     }
+    var mediaType = Camera.MediaType.PICTURE;
+    if (typeof options.mediaType == "number") {
+        mediaType = this.options.mediaType;
+    }
     
     var targetWidth = -1;
     if (typeof options.targetWidth == "number") {
@@ -132,7 +154,7 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         }
     }
     
-    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType]);
+    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType]);
 };
 
 PhoneGap.addConstructor(function() {
