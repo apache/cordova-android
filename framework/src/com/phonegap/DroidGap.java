@@ -716,13 +716,6 @@ public class DroidGap extends PhonegapActivity {
         
         if (this.appView != null) {
 
-            // Make invisible
-            DroidGap.this.runOnUiThread(new Runnable() {
-                public void run() {
-                    DroidGap.this.setVisible(false);
-                }
-            });
-
             // Make sure pause event is sent if onPause hasn't been called before onDestroy
             this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};");
 
@@ -816,7 +809,7 @@ public class DroidGap extends PhonegapActivity {
         
         // Finish current activity
         if (clearPrev) {
-            this.finish();
+            this.endActivity();
         }
     }
     
@@ -1301,6 +1294,13 @@ public class DroidGap extends PhonegapActivity {
     }
     
     /**
+     * End this activity by simulating backbutton keypress
+     */
+    public void endActivity() {
+        super.onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+    }
+    
+    /**
      * Called when a key is pressed.
      * 
      * @param keyCode
@@ -1408,7 +1408,7 @@ public class DroidGap extends PhonegapActivity {
              // If terminating app, then shut down this activity too
              if (resultCode == Activity.RESULT_OK) {
                  this.setResult(Activity.RESULT_OK);
-                 this.onDestroy();
+                 this.endActivity();
              }
              return;
          }

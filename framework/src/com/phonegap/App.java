@@ -45,6 +45,9 @@ public class App extends Plugin {
         	else if (action.equals("clearHistory")) {
             	this.clearHistory();
             }
+            else if (action.equals("backHistory")) {
+                this.backHistory();
+            }
         	else if (action.equals("overrideBackbutton")) {
             	this.overrideBackbutton(args.getBoolean(0));
             }
@@ -144,9 +147,19 @@ public class App extends Plugin {
 	
     /**
      * Clear web history in this web view.
+     * This does not have any effect since each page has its own activity.
      */
     public void clearHistory() {
     	((DroidGap)this.ctx).clearHistory();
+    	// TODO: Kill previous activities?
+    }
+    
+    /**
+     * Go to previous page displayed.
+     * This is the same as pressing the backbutton on Android device.
+     */
+    public void backHistory() {
+        ((DroidGap)this.ctx).endActivity();
     }
 
     /**
@@ -174,7 +187,7 @@ public class App extends Plugin {
      */
     public void exitApp() {
         ((DroidGap)this.ctx).setResult(Activity.RESULT_OK);
-    	((DroidGap)this.ctx).onDestroy();
+    	((DroidGap)this.ctx).endActivity();
     }
 
     /**
