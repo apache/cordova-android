@@ -104,6 +104,12 @@ public abstract class Plugin implements IPlugin {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
     }
 
+    /**
+     * By specifying a <url-filter> in plugins.xml you can map a URL (using startsWith atm) to this method.
+     * 
+     * @param url				The URL that is trying to be loaded in the PhoneGap webview.
+     * @return					Return true to prevent the URL from loading. Default is false.
+     */
     public boolean onOverrideUrlLoading(String url) {
     	return false;
     }
