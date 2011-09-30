@@ -105,56 +105,46 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         console.log("Camera Error: errorCallback is not a function");
         return;
     }
-
-    this.options = options;
-    var quality = 80;
-    if (options.quality) {
-        quality = this.options.quality;
-    }
     
-    var maxResolution = 0;
-    if (options.maxResolution) {
-    	maxResolution = this.options.maxResolution;
+    if (!options) {
+        options = {};
     }
-    
-    var destinationType = Camera.DestinationType.DATA_URL;
-    if (this.options.destinationType) {
-        destinationType = this.options.destinationType;
+    if (!options.quality) {
+        options.quality = 80;
     }
-    var sourceType = Camera.PictureSourceType.CAMERA;
-    if (typeof this.options.sourceType === "number") {
-        sourceType = this.options.sourceType;
+    if (!options.maxResolution) {
+    	options.maxResolution = 0;
     }
-    var encodingType = Camera.EncodingType.JPEG;
-    if (typeof options.encodingType == "number") {
-        encodingType = this.options.encodingType;
+    if (!options.destinationType) {
+        options.destinationType = Camera.DestinationType.DATA_URL;
     }
-    var mediaType = Camera.MediaType.PICTURE;
-    if (typeof options.mediaType == "number") {
-        mediaType = this.options.mediaType;
+    if (!options.sourceType) {
+        options.sourceType = Camera.PictureSourceType.CAMERA;
     }
-    
-    var targetWidth = -1;
-    if (typeof options.targetWidth == "number") {
-        targetWidth = options.targetWidth;
+    if (!options.encodingType) {
+        options.encodingType = Camera.EncodingType.JPEG;
+    }
+    if (!options.mediaType) {
+        options.mediaType = Camera.MediaType.PICTURE;
+    }
+    if (!options.targetWidth) {
+        options.targetWidth = -1;
     } else if (typeof options.targetWidth == "string") {
         var width = new Number(options.targetWidth);
         if (isNaN(width) === false) {
-            targetWidth = width.valueOf();
+            options.targetWidth = width.valueOf();
         }
     }
-
-    var targetHeight = -1;
-    if (typeof options.targetHeight == "number") {
-        targetHeight = options.targetHeight;
+    if (!options.targetHeight) {
+        options.targetHeight = -1;
     } else if (typeof options.targetHeight == "string") {
         var height = new Number(options.targetHeight);
         if (isNaN(height) === false) {
-            targetHeight = height.valueOf();
+            options.targetHeight = height.valueOf();
         }
     }
     
-    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType]);
+    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [options]);
 };
 
 PhoneGap.addConstructor(function() {

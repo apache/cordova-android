@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
@@ -28,7 +29,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -89,36 +89,30 @@ public class CameraLauncher extends Plugin {
         
         try {
             if (action.equals("takePicture")) {
+                int srcType = CAMERA;
                 int destType = DATA_URL;
                 this.targetHeight = 0;
                 this.targetWidth = 0;
-                
-                if (args.length() > 1) {
-                    destType = args.getInt(1);
-                }
-                int srcType = CAMERA;
-                if (args.length() > 2) {
-                    srcType = args.getInt(2);
-                }
-                if (args.length() > 3) {
-                    this.targetWidth = args.getInt(3); 
-                }
-                if (args.length() > 4) {
-                    this.targetHeight = args.getInt(4); 
-                }
                 this.encodingType = JPEG;
-                if (args.length() > 5) {
-                    this.encodingType = args.getInt(5); 
-                }
                 this.mediaType = PICTURE;
-                if (args.length() > 6) {
-                    this.mediaType = args.getInt(6); 
+                this.mQuality = 80;
+
+                JSONObject options = args.optJSONObject(0);
+                if (options != null) {
+                    srcType = options.getInt("sourceType");
+                    destType = options.getInt("destinationType");
+                    this.targetHeight = options.getInt("targetHeight");
+                    this.targetWidth = options.getInt("targetWidth");
+                    this.encodingType = options.getInt("encodingType");
+                    this.mediaType = options.getInt("mediaType");
+                    this.mQuality = options.getInt("quality");
                 }
+                
                 if (srcType == CAMERA) {
-                    this.takePicture(args.getInt(0), destType, encodingType);
+                    this.takePicture(destType, encodingType);
                 }
                 else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
-                    this.getImage(args.getInt(0), srcType, destType);
+                    this.getImage(srcType, destType);
                 }
                 PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
                 r.setKeepCallback(true);
@@ -149,9 +143,7 @@ public class CameraLauncher extends Plugin {
      * @param quality           Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
      * @param returnType        Set the type of image to return. 
      */
-    public void takePicture(int quality, int returnType, int encodingType) {
-        this.mQuality = quality;
-
+    public void takePicture(int returnType, int encodingType) {
         // Save the number of images currently on disk for later
         this.numPics = queryImgDB().getCount();
                 
@@ -191,9 +183,7 @@ public class CameraLauncher extends Plugin {
      * @param returnType        Set the type of image to return. 
      */
     // TODO: Images selected from SDCARD don't display correctly, but from CAMERA ALBUM do!
-    public void getImage(int quality, int srcType, int returnType) {
-        this.mQuality = quality;
-
+    public void getImage(int srcType, int returnType) {
         Intent intent = new Intent();
         String title = GET_PICTURE;
         if (this.mediaType == PICTURE) {
@@ -447,22 +437,19 @@ public class CameraLauncher extends Plugin {
      * @param type FILE_URI or DATA_URL
      */
     private void checkForDuplicateImage(int type) {
-        int diff = 0;
+        int diff = 1;
         Cursor cursor = queryImgDB();
         int currentNumOfImages = cursor.getCount();
         
         if (type == FILE_URI) {
-            diff = 1;
+            diff = 2;
         }
         
         // delete the duplicate file if the difference is 2 for file URI or 1 for Data URL
-        if ((currentNumOfImages - numPics) > diff) {
+        if ((currentNumOfImages - numPics) == diff) {
             cursor.moveToLast();
             int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;                    
             Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
-            
-            Log.d(LOG_TAG, "Deleting URI = " + uri.toString());
-            
             this.ctx.getContentResolver().delete(uri, null, null);
         }
     }
