@@ -158,6 +158,7 @@ public class FileUtils extends Plugin {
 					success = remove(args.getString(0));
 					
 					if (success) {
+					    notifyDelete(args.getString(0));
 						return new PluginResult(status);
 					} else {
 						JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
@@ -221,6 +222,17 @@ public class FileUtils extends Plugin {
 	}
 
 	/**
+	 * Need to check to see if we need to clean up the content store
+	 * 
+	 * @param filePath the path to check
+	 */
+	private void notifyDelete(String filePath) {
+        int result = this.ctx.getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, 
+                MediaStore.Images.Media.DATA + " = ?", 
+                new String[] {filePath});
+	}
+
+    /**
 	 * Allows the user to look up the Entry for a file or directory referred to by a local URI.
 	 * 
 	 * @param url of the file/directory to look up
