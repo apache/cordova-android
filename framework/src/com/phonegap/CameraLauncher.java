@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
@@ -24,9 +25,11 @@ import com.phonegap.api.PluginResult;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 
 /**
@@ -63,6 +66,7 @@ public class CameraLauncher extends Plugin {
     private int mediaType;                  // What type of media to retrieve
      
     public String callbackId;
+    private int numPics;
     
     /**
      * Constructor.
@@ -85,36 +89,30 @@ public class CameraLauncher extends Plugin {
         
         try {
             if (action.equals("takePicture")) {
+                int srcType = CAMERA;
                 int destType = DATA_URL;
                 this.targetHeight = 0;
                 this.targetWidth = 0;
-                
-                if (args.length() > 1) {
-                    destType = args.getInt(1);
-                }
-                int srcType = CAMERA;
-                if (args.length() > 2) {
-                    srcType = args.getInt(2);
-                }
-                if (args.length() > 3) {
-                    this.targetWidth = args.getInt(3); 
-                }
-                if (args.length() > 4) {
-                    this.targetHeight = args.getInt(4); 
-                }
                 this.encodingType = JPEG;
-                if (args.length() > 5) {
-                    this.encodingType = args.getInt(5); 
-                }
                 this.mediaType = PICTURE;
-                if (args.length() > 6) {
-                    this.mediaType = args.getInt(6); 
+                this.mQuality = 80;
+
+                JSONObject options = args.optJSONObject(0);
+                if (options != null) {
+                    srcType = options.getInt("sourceType");
+                    destType = options.getInt("destinationType");
+                    this.targetHeight = options.getInt("targetHeight");
+                    this.targetWidth = options.getInt("targetWidth");
+                    this.encodingType = options.getInt("encodingType");
+                    this.mediaType = options.getInt("mediaType");
+                    this.mQuality = options.getInt("quality");
                 }
+                
                 if (srcType == CAMERA) {
-                    this.takePicture(args.getInt(0), destType, encodingType);
+                    this.takePicture(destType, encodingType);
                 }
                 else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
-                    this.getImage(args.getInt(0), srcType, destType);
+                    this.getImage(srcType, destType);
                 }
                 PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
                 r.setKeepCallback(true);
@@ -145,9 +143,10 @@ public class CameraLauncher extends Plugin {
      * @param quality           Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
      * @param returnType        Set the type of image to return. 
      */
-    public void takePicture(int quality, int returnType, int encodingType) {
-        this.mQuality = quality;
-        
+    public void takePicture(int returnType, int encodingType) {
+        // Save the number of images currently on disk for later
+        this.numPics = queryImgDB().getCount();
+                
         // Display camera
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         
@@ -184,9 +183,7 @@ public class CameraLauncher extends Plugin {
      * @param returnType        Set the type of image to return. 
      */
     // TODO: Images selected from SDCARD don't display correctly, but from CAMERA ALBUM do!
-    public void getImage(int quality, int srcType, int returnType) {
-        this.mQuality = quality;
-
+    public void getImage(int srcType, int returnType) {
         Intent intent = new Intent();
         String title = GET_PICTURE;
         if (this.mediaType == PICTURE) {
@@ -266,7 +263,7 @@ public class CameraLauncher extends Plugin {
         // Get src and dest types from request code
         int srcType = (requestCode/16) - 1;
         int destType = (requestCode % 16) - 1;
-
+        
         // If CAMERA
         if (srcType == CAMERA) {
             // If image available
@@ -294,6 +291,7 @@ public class CameraLauncher extends Plugin {
                     // If sending base64 image back
                     if (destType == DATA_URL) {
                         this.processPicture(bitmap);
+                        checkForDuplicateImage(DATA_URL);
                     }
 
                     // If sending filename back
@@ -333,6 +331,8 @@ public class CameraLauncher extends Plugin {
                     bitmap.recycle();
                     bitmap = null;
                     System.gc();
+                    
+                    checkForDuplicateImage(FILE_URI);
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.failPicture("Error capturing image.");
@@ -414,7 +414,46 @@ public class CameraLauncher extends Plugin {
             }
         }
     }
+
+    /**
+     * Creates a cursor that can be used to determine how many images we have.
+     * 
+     * @return a cursor
+     */
+    private Cursor queryImgDB() {
+        return this.ctx.getContentResolver().query(
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Images.Media._ID },
+                null,
+                null,
+                null);
+    }
     
+    /**
+     * Used to find out if we are in a situation where the Camera Intent adds to images
+     * to the content store. If we are using a FILE_URI and the number of images in the DB 
+     * increases by 2 we have a duplicate, when using a DATA_URL the number is 1.
+     * 
+     * @param type FILE_URI or DATA_URL
+     */
+    private void checkForDuplicateImage(int type) {
+        int diff = 1;
+        Cursor cursor = queryImgDB();
+        int currentNumOfImages = cursor.getCount();
+        
+        if (type == FILE_URI) {
+            diff = 2;
+        }
+        
+        // delete the duplicate file if the difference is 2 for file URI or 1 for Data URL
+        if ((currentNumOfImages - numPics) == diff) {
+            cursor.moveToLast();
+            int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;                    
+            Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
+            this.ctx.getContentResolver().delete(uri, null, null);
+        }
+    }
+
     /**
      * Compress bitmap using jpeg, convert to Base64 encoded string, and return to JavaScript.
      *
