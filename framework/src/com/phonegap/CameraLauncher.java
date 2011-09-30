@@ -24,9 +24,12 @@ import com.phonegap.api.PluginResult;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
+import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 
 /**
@@ -63,6 +66,7 @@ public class CameraLauncher extends Plugin {
     private int mediaType;                  // What type of media to retrieve
      
     public String callbackId;
+    private int numPics;
     
     /**
      * Constructor.
@@ -147,7 +151,10 @@ public class CameraLauncher extends Plugin {
      */
     public void takePicture(int quality, int returnType, int encodingType) {
         this.mQuality = quality;
-        
+
+        // Save the number of images currently on disk for later
+        this.numPics = queryImgDB().getCount();
+                
         // Display camera
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         
@@ -266,7 +273,7 @@ public class CameraLauncher extends Plugin {
         // Get src and dest types from request code
         int srcType = (requestCode/16) - 1;
         int destType = (requestCode % 16) - 1;
-
+        
         // If CAMERA
         if (srcType == CAMERA) {
             // If image available
@@ -294,6 +301,7 @@ public class CameraLauncher extends Plugin {
                     // If sending base64 image back
                     if (destType == DATA_URL) {
                         this.processPicture(bitmap);
+                        checkForDuplicateImage(DATA_URL);
                     }
 
                     // If sending filename back
@@ -333,6 +341,8 @@ public class CameraLauncher extends Plugin {
                     bitmap.recycle();
                     bitmap = null;
                     System.gc();
+                    
+                    checkForDuplicateImage(FILE_URI);
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.failPicture("Error capturing image.");
@@ -414,7 +424,49 @@ public class CameraLauncher extends Plugin {
             }
         }
     }
+
+    /**
+     * Creates a cursor that can be used to determine how many images we have.
+     * 
+     * @return a cursor
+     */
+    private Cursor queryImgDB() {
+        return this.ctx.getContentResolver().query(
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Images.Media._ID },
+                null,
+                null,
+                null);
+    }
     
+    /**
+     * Used to find out if we are in a situation where the Camera Intent adds to images
+     * to the content store. If we are using a FILE_URI and the number of images in the DB 
+     * increases by 2 we have a duplicate, when using a DATA_URL the number is 1.
+     * 
+     * @param type FILE_URI or DATA_URL
+     */
+    private void checkForDuplicateImage(int type) {
+        int diff = 0;
+        Cursor cursor = queryImgDB();
+        int currentNumOfImages = cursor.getCount();
+        
+        if (type == FILE_URI) {
+            diff = 1;
+        }
+        
+        // delete the duplicate file if the difference is 2 for file URI or 1 for Data URL
+        if ((currentNumOfImages - numPics) > diff) {
+            cursor.moveToLast();
+            int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;                    
+            Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
+            
+            Log.d(LOG_TAG, "Deleting URI = " + uri.toString());
+            
+            this.ctx.getContentResolver().delete(uri, null, null);
+        }
+    }
+
     /**
      * Compress bitmap using jpeg, convert to Base64 encoded string, and return to JavaScript.
      *
