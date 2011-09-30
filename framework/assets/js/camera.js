@@ -106,38 +106,40 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         return;
     }
     
-    if (!options) {
+    if (options === null || typeof options === "undefined") {
         options = {};
     }
-    if (!options.quality) {
+    if (options.quality === null || typeof options.quality === "undefined") {
         options.quality = 80;
     }
-    if (!options.maxResolution) {
+    if (options.maxResolution === null || typeof options.maxResolution === "undefined") {
     	options.maxResolution = 0;
     }
-    if (!options.destinationType) {
+    if (options.destinationType === null || typeof options.destinationType === "undefined") {
         options.destinationType = Camera.DestinationType.DATA_URL;
     }
-    if (!options.sourceType) {
+    if (options.sourceType === null || typeof options.sourceType === "undefined") {
         options.sourceType = Camera.PictureSourceType.CAMERA;
     }
-    if (!options.encodingType) {
+    if (options.encodingType === null || typeof options.encodingType === "undefined") {
         options.encodingType = Camera.EncodingType.JPEG;
     }
-    if (!options.mediaType) {
+    if (options.mediaType === null || typeof options.mediaType === "undefined") {
         options.mediaType = Camera.MediaType.PICTURE;
     }
-    if (!options.targetWidth) {
+    if (options.targetWidth === null || typeof options.targetWidth === "undefined") {
         options.targetWidth = -1;
-    } else if (typeof options.targetWidth == "string") {
+    } 
+    else if (typeof options.targetWidth == "string") {
         var width = new Number(options.targetWidth);
         if (isNaN(width) === false) {
             options.targetWidth = width.valueOf();
         }
     }
-    if (!options.targetHeight) {
+    if (options.targetHeight === null || typeof options.targetHeight === "undefined") {
         options.targetHeight = -1;
-    } else if (typeof options.targetHeight == "string") {
+    } 
+    else if (typeof options.targetHeight == "string") {
         var height = new Number(options.targetHeight);
         if (isNaN(height) === false) {
             options.targetHeight = height.valueOf();

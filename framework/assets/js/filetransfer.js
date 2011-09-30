@@ -58,7 +58,7 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
         fileKey = options.fileKey;
         fileName = options.fileName;
         mimeType = options.mimeType;
-        if (options.chunkedMode) {
+        if (options.chunkedMode != null || typeof options.chunkedMode != "undefined") {
             chunkedMode = options.chunkedMode;
         }
         if (options.params) {
