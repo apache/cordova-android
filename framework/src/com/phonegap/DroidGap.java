@@ -126,6 +126,25 @@ import 	org.xmlpull.v1.XmlPullParserException;
  * 
  *      // Enable app to keep running in background. (Boolean - default=true)
  *      super.setBooleanProperty("keepRunning", false);
+ *      
+ * Phonegap.xml configuration:
+ *      PhoneGap uses a configuration file at res/xml/phonegap.xml to specify the following settings.
+ *      
+ *      Approved list of URLs that can be loaded into DroidGap
+ *          <access origin="http://server regexp" subdomains="true" />
+ *      Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
+ *          <log level="DEBUG" />
+ *
+ * Phonegap plugins:
+ *      PhoneGap uses a file at res/xml/plugins.xml to list all plugins that are installed.
+ *      Before using a new plugin, a new element must be added to the file.
+ *          name attribute is the service name passed to PhoneGap.exec() in JavaScript
+ *          value attribute is the Java class name to call.
+ *      
+ *      <plugins>
+ *          <plugin name="App" value="com.phonegap.App"/>
+ *          ...
+ *      </plugins>
  */
 public class DroidGap extends PhonegapActivity {
     public static String TAG = "DroidGap";
@@ -210,8 +229,10 @@ public class DroidGap extends PhonegapActivity {
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
                 ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
         
-        // Load white list of allowed URLs
-        this.loadWhiteList();
+        // Load PhoneGap configuration:
+        //      white list of allowed URLs
+        //      debug setting
+        this.loadConfiguration();
 
         // If url was passed in to intent, then init webview, which will load the url
         this.firstPage = true;
@@ -1576,11 +1597,13 @@ public class DroidGap extends PhonegapActivity {
     }
      
     /**
-     * Load approved list of URLs that can be loaded into DroidGap.
-     * This list is loaded from res/xml/phonegap.xml
+     * Load PhoneGap configuration from res/xml/phonegap.xml.
+     * Approved list of URLs that can be loaded into DroidGap
      * 		<access origin="http://server regexp" subdomains="true" />
+     * Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
+     *      <log level="DEBUG" />
      */
-    private void loadWhiteList() {
+    private void loadConfiguration() {
         int id = getResources().getIdentifier("phonegap", "xml", getPackageName());
         if (id == 0) {
             LOG.i("PhoneGapLog", "phonegap.xml missing. Ignoring...");
