@@ -67,7 +67,7 @@ public class LOG {
      * @param s
      */
     public static void v(String tag, String s) {
-        if (LOG.VERBOSE <= LOGLEVEL) Log.v(tag, s);
+        if (LOG.VERBOSE >= LOGLEVEL) Log.v(tag, s);
     }
 
     /**
@@ -77,7 +77,7 @@ public class LOG {
      * @param s
      */
     public static void d(String tag, String s) {
-        if (LOG.DEBUG <= LOGLEVEL) Log.d(tag, s);
+        if (LOG.DEBUG >= LOGLEVEL) Log.d(tag, s);
     }
     
     /**
@@ -87,7 +87,7 @@ public class LOG {
      * @param s
      */
     public static void i(String tag, String s) {
-        if (LOG.INFO <= LOGLEVEL) Log.i(tag, s);
+        if (LOG.INFO >= LOGLEVEL) Log.i(tag, s);
     }
 
     /**
@@ -97,7 +97,7 @@ public class LOG {
      * @param s
      */
     public static void w(String tag, String s) {
-        if (LOG.WARN <= LOGLEVEL) Log.w(tag, s);
+        if (LOG.WARN >= LOGLEVEL) Log.w(tag, s);
     }
 
     /**
@@ -107,7 +107,7 @@ public class LOG {
      * @param s
      */
     public static void e(String tag, String s) {
-        if (LOG.ERROR <= LOGLEVEL) Log.e(tag, s);
+        if (LOG.ERROR >= LOGLEVEL) Log.e(tag, s);
     }
 
     /**
@@ -118,7 +118,7 @@ public class LOG {
      * @param e
      */
     public static void v(String tag, String s, Throwable e) {
-        if (LOG.VERBOSE <= LOGLEVEL) Log.v(tag, s, e);
+        if (LOG.VERBOSE >= LOGLEVEL) Log.v(tag, s, e);
     }
 
     /**
@@ -129,7 +129,7 @@ public class LOG {
      * @param e
      */
     public static void d(String tag, String s, Throwable e) {
-        if (LOG.DEBUG <= LOGLEVEL) Log.d(tag, s, e);
+        if (LOG.DEBUG >= LOGLEVEL) Log.d(tag, s, e);
     }
     
     /**
@@ -140,7 +140,7 @@ public class LOG {
      * @param e
      */
     public static void i(String tag, String s, Throwable e) {
-        if (LOG.INFO <= LOGLEVEL) Log.i(tag, s, e);
+        if (LOG.INFO >= LOGLEVEL) Log.i(tag, s, e);
     }
 
     /**
@@ -151,7 +151,7 @@ public class LOG {
      * @param e
      */
     public static void w(String tag, String s, Throwable e) {
-        if (LOG.WARN <= LOGLEVEL) Log.w(tag, s, e);
+        if (LOG.WARN >= LOGLEVEL) Log.w(tag, s, e);
     }
 
     /**
@@ -162,7 +162,7 @@ public class LOG {
      * @param e
      */
     public static void e(String tag, String s, Throwable e) {
-        if (LOG.ERROR <= LOGLEVEL) Log.e(tag, s, e);
+        if (LOG.ERROR >= LOGLEVEL) Log.e(tag, s, e);
     }
 
     /**
@@ -173,7 +173,7 @@ public class LOG {
      * @param args
      */
     public static void v(String tag, String s, Object... args) {
-        if (LOG.VERBOSE <= LOGLEVEL) Log.v(tag, String.format(s, args));
+        if (LOG.VERBOSE >= LOGLEVEL) Log.v(tag, String.format(s, args));
     }
 
     /**
@@ -184,7 +184,7 @@ public class LOG {
      * @param args
      */
     public static void d(String tag, String s, Object... args) {
-        if (LOG.DEBUG <= LOGLEVEL) Log.d(tag, String.format(s, args));
+        if (LOG.DEBUG >= LOGLEVEL) Log.d(tag, String.format(s, args));
     }
 
     /**
@@ -195,7 +195,7 @@ public class LOG {
      * @param args
      */
     public static void i(String tag, String s, Object... args) {
-        if (LOG.INFO <= LOGLEVEL) Log.i(tag, String.format(s, args));
+        if (LOG.INFO >= LOGLEVEL) Log.i(tag, String.format(s, args));
     }
     
     /**
@@ -206,7 +206,7 @@ public class LOG {
      * @param args
      */
     public static void w(String tag, String s, Object... args) {
-        if (LOG.WARN <= LOGLEVEL) Log.w(tag, String.format(s, args));
+        if (LOG.WARN >= LOGLEVEL) Log.w(tag, String.format(s, args));
     }
     
     /**
@@ -217,7 +217,7 @@ public class LOG {
      * @param args
      */
     public static void e(String tag, String s, Object... args) {
-        if (LOG.ERROR <= LOGLEVEL) Log.e(tag, String.format(s, args));
+        if (LOG.ERROR >= LOGLEVEL) Log.e(tag, String.format(s, args));
     }
 
 }
