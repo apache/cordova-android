@@ -55,6 +55,7 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import com.phonegap.api.LOG;
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.IPlugin;
 import com.phonegap.api.PluginManager;
@@ -127,7 +128,8 @@ import 	org.xmlpull.v1.XmlPullParserException;
  *      super.setBooleanProperty("keepRunning", false);
  */
 public class DroidGap extends PhonegapActivity {
-
+    public static String TAG = "DroidGap";
+    
     // The webview for our app
     protected WebView appView;
     protected WebViewClient webViewClient;
@@ -191,6 +193,7 @@ public class DroidGap extends PhonegapActivity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        LOG.d(TAG, "DroidGap.onCreate()");
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
@@ -228,6 +231,7 @@ public class DroidGap extends PhonegapActivity {
      * Create and initialize web container.
      */
     public void init() {
+        LOG.d(TAG, "DroidGap.init()");
         
         // Create web container
         this.appView = new WebView(DroidGap.this);
@@ -346,7 +350,10 @@ public class DroidGap extends PhonegapActivity {
      * @param url
      */
     private void loadUrlIntoView(final String url) {
-        System.out.println("loadUrl("+url+")");
+        if (!url.startsWith("javascript:")) {
+            LOG.d(TAG, "DroidGap.loadUrl(%s)", url);
+        }
+               
         this.url = url;
         if (this.baseUrl == null) {
             int i = url.lastIndexOf('/');
@@ -357,8 +364,10 @@ public class DroidGap extends PhonegapActivity {
                 this.baseUrl = this.url + "/";
             }
         }
-        System.out.println("url="+url+" baseUrl="+baseUrl);
-
+        if (!url.startsWith("javascript:")) {
+            LOG.d(TAG, "DroidGap: url=%s baseUrl=%s", url, baseUrl);
+        }
+        
         // Load URL on UI thread
         final DroidGap me = this;
         this.runOnUiThread(new Runnable() {
@@ -456,7 +465,9 @@ public class DroidGap extends PhonegapActivity {
     		this.loadUrl(url);
     	}
         
-        System.out.println("loadUrl("+url+","+time+")");
+    	if (!url.startsWith("javascript:")) {
+    	    LOG.d(TAG, "DroidGap.loadUrl(%s, %d)", url, time);
+        }
         final DroidGap me = this;
 
         // Handle activity parameters
@@ -480,7 +491,7 @@ public class DroidGap extends PhonegapActivity {
                 }
                 else{
                     me.cancelLoadUrl = false;
-                    System.out.println("Aborting loadUrl("+url+"): Another URL was loaded before timer expired.");
+                    LOG.d(TAG, "Aborting loadUrl(%s): Another URL was loaded before timer expired.", url);
                 }
             }
         };
@@ -1031,13 +1042,13 @@ public class DroidGap extends PhonegapActivity {
         public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
                 long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
         {
-            Log.d(TAG, "event raised onExceededDatabaseQuota estimatedSize: " + Long.toString(estimatedSize) + " currentQuota: " + Long.toString(currentQuota) + " totalUsedQuota: " + Long.toString(totalUsedQuota));
+            LOG.d(TAG, "DroidGap:  onExceededDatabaseQuota estimatedSize: %d  currentQuota: %d  totalUsedQuota: %d", estimatedSize, currentQuota, totalUsedQuota);
 
             if( estimatedSize < MAX_QUOTA)
             {
                 //increase for 1Mb
                 long newQuota = estimatedSize;
-                Log.d(TAG, "calling quotaUpdater.updateQuota newQuota: " + Long.toString(newQuota) );
+                LOG.d(TAG, "calling quotaUpdater.updateQuota newQuota: %d", newQuota);
                 quotaUpdater.updateQuota(newQuota);
             }
             else
@@ -1053,7 +1064,7 @@ public class DroidGap extends PhonegapActivity {
         public void onConsoleMessage(String message, int lineNumber, String sourceID)
         {       
             // This is a kludgy hack!!!!
-            Log.d(TAG, sourceID + ": Line " + Integer.toString(lineNumber) + " : " + message);              
+            LOG.d(TAG, "%s: Line %d : %s", sourceID, lineNumber, message);              
         }
 
         @Override
@@ -1108,7 +1119,7 @@ public class DroidGap extends PhonegapActivity {
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
                 } catch (android.content.ActivityNotFoundException e) {
-                    System.out.println("Error dialing "+url+": "+ e.toString());
+                    LOG.e(TAG, "Error dialing "+url+": "+ e.toString());
                 }
             }
 
@@ -1119,7 +1130,7 @@ public class DroidGap extends PhonegapActivity {
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
                 } catch (android.content.ActivityNotFoundException e) {
-                    System.out.println("Error showing map "+url+": "+ e.toString());
+                    LOG.e(TAG, "Error showing map "+url+": "+ e.toString());
                 }
             }
 
@@ -1130,7 +1141,7 @@ public class DroidGap extends PhonegapActivity {
                     intent.setData(Uri.parse(url));
                     startActivity(intent);
                 } catch (android.content.ActivityNotFoundException e) {
-                    System.out.println("Error sending email "+url+": "+ e.toString());
+                    LOG.e(TAG, "Error sending email "+url+": "+ e.toString());
                 }
             }
 
@@ -1162,7 +1173,7 @@ public class DroidGap extends PhonegapActivity {
                     intent.setType("vnd.android-dir/mms-sms");
                     startActivity(intent);
                 } catch (android.content.ActivityNotFoundException e) {
-                    System.out.println("Error sending sms "+url+":"+ e.toString());
+                    LOG.e(TAG, "Error sending sms "+url+":"+ e.toString());
                 }
             }
 
@@ -1177,7 +1188,7 @@ public class DroidGap extends PhonegapActivity {
                         HashMap<String, Object> params = new HashMap<String, Object>();
                         this.ctx.showWebPage(url, true, false, params);
                     } catch (android.content.ActivityNotFoundException e) {
-                        System.out.println("Error loading url into DroidGap - "+url+":"+ e.toString());
+                        LOG.e(TAG, "Error loading url into DroidGap - "+url, e);
                     }
                 }
 
@@ -1188,7 +1199,7 @@ public class DroidGap extends PhonegapActivity {
                         intent.setData(Uri.parse(url));
                         startActivity(intent);
                     } catch (android.content.ActivityNotFoundException e) {
-                        System.out.println("Error loading url "+url+":"+ e.toString());
+                        LOG.e(TAG, "Error loading url "+url, e);
                     }
                 }
             }
@@ -1259,7 +1270,7 @@ public class DroidGap extends PhonegapActivity {
          */
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            System.out.println("onReceivedError: Error code="+errorCode+" Description="+description+" URL="+failingUrl);
+            LOG.d(TAG, "DroidGap: GapViewClient.onReceivedError: Error code=%s Description=%s URL=%s", errorCode, description, failingUrl);
 
             // Clear timeout flag
             this.ctx.loadUrlTimeout++;
@@ -1365,7 +1376,7 @@ public class DroidGap extends PhonegapActivity {
      */
     @Override
     public void startActivityForResult(Intent intent, int requestCode) throws RuntimeException {
-        System.out.println("startActivityForResult(intent,"+requestCode+")");
+        LOG.d(TAG, "DroidGap.startActivityForResult(intent,%d)", requestCode);
         super.startActivityForResult(intent, requestCode);
     }
 
@@ -1491,7 +1502,7 @@ public class DroidGap extends PhonegapActivity {
       */
      class LinearLayoutSoftKeyboardDetect extends LinearLayout {
 
-            private static final String LOG_TAG = "SoftKeyboardDetect";
+            private static final String TAG = "SoftKeyboardDetect";
             
             private int oldHeight = 0;  // Need to save the old height as not to send redundant events
             private int oldWidth = 0; // Need to save old width for orientation change          
@@ -1520,23 +1531,22 @@ public class DroidGap extends PhonegapActivity {
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);       
                 
-                Log.d(LOG_TAG, "We are in our onMeasure method");
+                LOG.v(TAG, "We are in our onMeasure method");
 
                 // Get the current height of the visible part of the screen.
                 // This height will not included the status bar.
                 int height = MeasureSpec.getSize(heightMeasureSpec);
                 int width = MeasureSpec.getSize(widthMeasureSpec);
-                
-                Log.d(LOG_TAG, "Old Height = " + oldHeight);
-                Log.d(LOG_TAG, "Height = " + height);          
-                Log.d(LOG_TAG, "Old Width = " + oldWidth);
-                Log.d(LOG_TAG, "Width = " + width);
-                
-                
+
+                LOG.v(TAG, "Old Height = %d", oldHeight);
+                LOG.v(TAG, "Height = %d", height);             
+                LOG.v(TAG, "Old Width = %d", oldWidth);
+                LOG.v(TAG, "Width = %d", width);
+
                 // If the oldHeight = 0 then this is the first measure event as the app starts up.
                 // If oldHeight == height then we got a measurement change that doesn't affect us.
                 if (oldHeight == 0 || oldHeight == height) {
-                    Log.d(LOG_TAG, "Ignore this event");
+                    LOG.d(TAG, "Ignore this event");
                 }
                 // Account for orientation change and ignore this event/Fire orientation change
                 else if(screenHeight == width)
@@ -1544,18 +1554,18 @@ public class DroidGap extends PhonegapActivity {
                     int tmp_var = screenHeight;
                     screenHeight = screenWidth;
                     screenWidth = tmp_var;
-                    Log.d(LOG_TAG, "Orientation Change");
+                    LOG.v(TAG, "Orientation Change");
                 }
                 // If the height as gotten bigger then we will assume the soft keyboard has 
                 // gone away.
                 else if (height > oldHeight) {
-                    Log.d(LOG_TAG, "Throw hide keyboard event");
+                    LOG.v(TAG, "Throw hide keyboard event");
                     callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('hidekeyboard');");
                 } 
                 // If the height as gotten smaller then we will assume the soft keyboard has 
                 // been displayed.
                 else if (height < oldHeight) {
-                    Log.d(LOG_TAG, "Throw show keyboard event");
+                    LOG.v(TAG, "Throw show keyboard event");
                     callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('showkeyboard');");
                 }
 
@@ -1573,7 +1583,7 @@ public class DroidGap extends PhonegapActivity {
     private void loadWhiteList() {
         int id = getResources().getIdentifier("phonegap", "xml", getPackageName());
         if (id == 0) {
-            Log.i("PhoneGapLog", "phonegap.xml missing. Ignoring...");
+            LOG.i("PhoneGapLog", "phonegap.xml missing. Ignoring...");
             return;
         }
         XmlResourceParser xml = getResources().getXml(id);
@@ -1586,6 +1596,13 @@ public class DroidGap extends PhonegapActivity {
                     String subdomains = xml.getAttributeValue(null, "subdomains");
                     if (origin != null) {
                         this.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                    }
+                }
+                else if (strNode.equals("log")) {
+                    String level = xml.getAttributeValue(null, "level");
+                    LOG.i("PhoneGapLog", "Found log level %s", level);
+                    if (level != null) {
+                        LOG.setLogLevel(level);
                     }
                 }
             }
@@ -1607,10 +1624,10 @@ public class DroidGap extends PhonegapActivity {
      */
     public void addWhiteListEntry(String origin, boolean subdomains) {
         if (subdomains) {
-            Log.d("PhoneGapLog", "Origin to allow with subdomains: "+origin);
+            LOG.d(TAG, "Origin to allow with subdomains: %s", origin);
             whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://.*")));
         } else {
-            Log.d("PhoneGapLog", "Origin to allow: "+origin);
+            LOG.d(TAG, "Origin to allow: %s", origin);
             whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://")));
         }    
     }
