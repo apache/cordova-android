@@ -364,7 +364,7 @@ public class FileTransfer extends Plugin {
     		return ctx.getContentResolver().openInputStream(uri);
     	}
     	else if (path.startsWith("file://")) {
-    	    return new FileInputStream(path.substring(6)); 
+    	    return new FileInputStream(path.substring(7)); 
     	}
     	else {
     		return new FileInputStream(path);
