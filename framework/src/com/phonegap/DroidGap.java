@@ -931,7 +931,7 @@ public class DroidGap extends PhonegapActivity {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
             dlg.setMessage(message);
             dlg.setTitle("Confirm");
-            dlg.setCancelable(false);
+            dlg.setCancelable(true);
             dlg.setPositiveButton(android.R.string.ok, 
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -944,6 +944,12 @@ public class DroidGap extends PhonegapActivity {
                         result.cancel();
                     }
                 });
+            dlg.setOnCancelListener(
+            	new DialogInterface.OnCancelListener() {												
+					public void onCancel(DialogInterface dialog) {
+						result.cancel();
+					}
+				});
             dlg.create();
             dlg.show();
             return true;
