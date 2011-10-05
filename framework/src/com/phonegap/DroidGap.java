@@ -761,7 +761,7 @@ public class DroidGap extends PhonegapActivity {
             this.pluginManager.onDestroy();
         }
         else {
-            this.finish();
+            this.endActivity();
         }
     }
 
@@ -1248,22 +1248,23 @@ public class DroidGap extends PhonegapActivity {
             }
 
             // Make app visible after 2 sec in case there was a JS error and PhoneGap JS never initialized correctly
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(2000);
-                        ctx.runOnUiThread(new Runnable() {
-                            public void run() {
-                                appView.setVisibility(View.VISIBLE);
-                                ctx.spinnerStop();
-                            }
-                        });
-                    } catch (InterruptedException e) {
+            if (appView.getVisibility() == View.INVISIBLE) {
+                Thread t = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            Thread.sleep(2000);
+                            ctx.runOnUiThread(new Runnable() {
+                                public void run() {
+                                    appView.setVisibility(View.VISIBLE);
+                                    ctx.spinnerStop();
+                                }
+                            });
+                        } catch (InterruptedException e) {
+                        }
                     }
-                }
-            });
-            t.start();
-            
+                });
+                t.start();
+            }
 
             // Clear history, so that previous screen isn't there when Back button is pressed
             if (this.ctx.clearHistory) {
@@ -1276,7 +1277,7 @@ public class DroidGap extends PhonegapActivity {
                 if (this.ctx.callbackServer != null) {
                     this.ctx.callbackServer.destroy();
                 }
-                this.ctx.finish();
+                this.ctx.endActivity();
             }
         }
         
@@ -1469,19 +1470,19 @@ public class DroidGap extends PhonegapActivity {
 
          // If errorUrl specified, then load it
          final String errorUrl = me.getStringProperty("errorUrl", null);
-         if ((errorUrl != null) && errorUrl.startsWith("file://") && (!failingUrl.equals(errorUrl))) {
+         if ((errorUrl != null) && (errorUrl.startsWith("file://") || errorUrl.indexOf(me.baseUrl) == 0 || isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
 
              // Load URL on UI thread
              me.runOnUiThread(new Runnable() {
                  public void run() {
-                     me.appView.loadUrl(errorUrl);
+                     me.showWebPage(errorUrl, true, true, null); 
                  }
              });
          }
 
          // If not, then display error dialog
          else {
-             me.appView.loadUrl("about:blank");
+             me.appView.setVisibility(View.GONE);
              me.displayError("Application Error", description + " ("+failingUrl+")", "OK", true);
          }
      }
@@ -1507,7 +1508,7 @@ public class DroidGap extends PhonegapActivity {
                      public void onClick(DialogInterface dialog, int which) {
                          dialog.dismiss();
                          if (exit) {
-                             me.finish();
+                             me.endActivity();
                          }
                      }
                  });
