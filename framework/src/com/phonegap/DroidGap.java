@@ -1345,10 +1345,10 @@ public class DroidGap extends PhonegapActivity {
     }
     
     /**
-     * End this activity by simulating backbutton keypress
+     * End this activity by calling finish for activity
      */
     public void endActivity() {
-        super.onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+        this.finish();
     }
     
     /**
