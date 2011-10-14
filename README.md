@@ -1,62 +1,62 @@
 PhoneGap/Android
-================
+===
+
 PhoneGap/Android is an Android application library that allows for PhoneGap based projects to be built for the Android Platform. PhoneGap based applications are, at the core, an application written with web technology: HTML, CSS and JavaScript. 
 
-Pre Requisites
---------------
+Requires
+---
+
 - Java JDK 1.5
-- Android SDK [http://developer.android.com](http://developer.android.com)
 - Apache ANT
-- Ruby (Optional, see section: DroidGap with JRuby)
+- Android SDK [http://developer.android.com](http://developer.android.com)
 
-Install
--------
+PhoneGap/Android Developer Tools
+---
 
-On any POSIX machine add PhoneGap/Android to your PATH variable like so:
+The PhoneGap developer tooling is split between general tooling and project level tooling. 
 
-    export PATH=$PATH:~/phonegap-android/bin
+Commands
 
-On Windows add the phonegap-android/bin to your PATH as normal.
+    ./bin/create [path package activity] ... create the ./exmaple app or a phonegap/android project
+    ./bin/bench ............................ generate a bench proj
+    ./bin/autotest ......................... test the cli tools
+    ./bin/test ............................. run mobile-spec
 
-DroidGap: PhoneGap/Android Dev Script
--------------------------------------
+Project Commands
 
-Tools for developers building mobile apps using PhoneGap for Android.
+These commands live in a generated PhoneGap/Android project.
 
-Usage:
+    ./phonegap/debug [path] ..................... install to first device
+    ./phonegap/emulate .......................... start avd (emulator) named default
+    ./phonegap/log .............................. starts logcat
 
-<pre>droidgap [command] [parameters]</pre>
+Running the Example Project
+---
 
-Commands:    
+Start avd (emulator) named `default`:
 
-<pre>
-	help ...... See this message. Type help [command name] to see specific help topics.
-	gen ....... Generate the example PhoneGap application to current directory (or optionally provide an output directory as parameter).
-	create .... Creates an Android compatible project from a WWW folder. 
-	classic ... Backwards support for droidgap script. Run "droidgap help classic" for more info.
-	update .... Copy a fresh phonegap.jar and phonegap.js into a valid PhoneGap/Android project.
-	test ...... Gets edge copy of mobile-spec and runs in first device or emulator attached.
-</pre>
+    ./bin/emulate
 
-Quickstart:
+Create the exmaple project and build it to the first device:
 
-<pre>
-  	$ droidgap gen exampleapp 
-  	$ cd exampleapp
-	$ ant debug install && adb logcat
-</pre>
+    ./bin/create
+    cd example
+    ./phonegap/debug
 
-DroidGap with JRuby
--------------------
+Start adb logcat (console.log calls output here):
 
-If you want to use the droidgap command but do not want to install Ruby then you can call it using jruby jar included in the lib folder. All the options are the same and a call looks like this:
+    ./phonegap/log
 
-    java -jar jruby-complete-1.4.0RC1.jar ../bin/droidgap help run
-    
-Keep in mind this will be slower due to JVM warmup.
+Running the [phonegap/mobile-spec](http://github.com/phonegap/mobile-spec) tests:
 
-Importing a PhoneGap/Android app into Eclipse
----------------------------------------------
+    ./bin/test
+
+Create a new PhoneGap/Android Project
+
+    ./bin/create ~/Desktop/myapp com.phonegap.special MyApp
+
+Importing a PhoneGap/Android Project into Eclipse
+----
 
 1. File > New > Project...
 2. Android > Android Project
@@ -66,63 +66,9 @@ Importing a PhoneGap/Android app into Eclipse
 6. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
 
 
-Common Command Line Tasks
-=========================
-
-Running Mobile Spec
+Further Reading
 ---
 
-droidgap test
-    
-Compile an APK
----
-
-Make sure you have a device plugged in (with debugging enabled) or a running emulator. Then:
-
-	ant debug install
-	
-or
-
-	droidgap run
-
-Converting a W3C Widget into a an APK
----
-
-Given a Widget called FooBar with an index.html file in it. You navigate to its folder and run:
-
-	droidgap create
-	cd ../FooBar_android
-	ant debug install
-
-List devices attached
----
-
-	adb devices 
-    List of devices attached 
-    0123456789012	device
-
-Install APK onto device
----
-
-	apk -s 0123456789012 install phonegap.apk
-    
-Logging 
----
-
-Via console.log calls from your apps javascript.
-
-	adb logcat
-    
-Debugging
----
-    
-Attach it to a process on the device
-
-    $ adb jdwp
-    adb forward tcp:8000 jdwp: jdb -attach localhost:8000
-    
-    
-For more info see
------------------
+- [http://developer.android.com](http://developer.android.com)
 - [http://docs.phonegap.com](http://docs.phonegap.com)
 - [http://wiki.phonegap.com](http://wiki.phonegap.com)

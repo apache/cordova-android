@@ -1,0 +1,12 @@
+#! /bin/sh
+
+#Available Android Virtual Devices:
+#    Name: default
+#    Path: /Users/davejohnson/.android/avd/default.avd
+#  Target: Android 2.2 (API level 8)
+#    Skin: WVGA800
+#  Sdcard: 100M
+
+# get the name of the first virtual device or use command line arg or use "default"
+
+emulator -cpu-delay 0 -no-boot-anim -cache ./tmp/cache -avd default > /dev/null 2>&1 & # put the avd's chatty ass in the background

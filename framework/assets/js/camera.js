@@ -50,6 +50,24 @@ Camera.EncodingType = {
 Camera.prototype.EncodingType = Camera.EncodingType;
 
 /**
+ * Type of pictures to select from.  Only applicable when
+ *      PictureSourceType is PHOTOLIBRARY or SAVEDPHOTOALBUM
+ *
+ * Example: navigator.camera.getPicture(success, fail,
+ *              { quality: 80,
+ *                destinationType: Camera.DestinationType.DATA_URL,
+ *                sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
+ *                mediaType: Camera.MediaType.PICTURE})
+ */
+Camera.MediaType = {
+       PICTURE: 0,      // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
+       VIDEO: 1,        // allow selection of video only, ONLY RETURNS URL
+       ALLMEDIA : 2     // allow selection from all media types
+};
+Camera.prototype.MediaType = Camera.MediaType;
+
+
+/**
  * Source to getPicture from.
  *
  * Example: navigator.camera.getPicture(success, fail,
@@ -87,52 +105,48 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         console.log("Camera Error: errorCallback is not a function");
         return;
     }
-
-    this.options = options;
-    var quality = 80;
-    if (options.quality) {
-        quality = this.options.quality;
-    }
     
-    var maxResolution = 0;
-    if (options.maxResolution) {
-    	maxResolution = this.options.maxResolution;
+    if (options === null || typeof options === "undefined") {
+        options = {};
     }
-    
-    var destinationType = Camera.DestinationType.DATA_URL;
-    if (this.options.destinationType) {
-        destinationType = this.options.destinationType;
+    if (options.quality === null || typeof options.quality === "undefined") {
+        options.quality = 80;
     }
-    var sourceType = Camera.PictureSourceType.CAMERA;
-    if (typeof this.options.sourceType === "number") {
-        sourceType = this.options.sourceType;
+    if (options.maxResolution === null || typeof options.maxResolution === "undefined") {
+    	options.maxResolution = 0;
     }
-    var encodingType = Camera.EncodingType.JPEG;
-    if (typeof options.encodingType == "number") {
-        encodingType = this.options.encodingType;
+    if (options.destinationType === null || typeof options.destinationType === "undefined") {
+        options.destinationType = Camera.DestinationType.DATA_URL;
     }
-    
-    var targetWidth = -1;
-    if (typeof options.targetWidth == "number") {
-        targetWidth = options.targetWidth;
-    } else if (typeof options.targetWidth == "string") {
+    if (options.sourceType === null || typeof options.sourceType === "undefined") {
+        options.sourceType = Camera.PictureSourceType.CAMERA;
+    }
+    if (options.encodingType === null || typeof options.encodingType === "undefined") {
+        options.encodingType = Camera.EncodingType.JPEG;
+    }
+    if (options.mediaType === null || typeof options.mediaType === "undefined") {
+        options.mediaType = Camera.MediaType.PICTURE;
+    }
+    if (options.targetWidth === null || typeof options.targetWidth === "undefined") {
+        options.targetWidth = -1;
+    } 
+    else if (typeof options.targetWidth == "string") {
         var width = new Number(options.targetWidth);
         if (isNaN(width) === false) {
-            targetWidth = width.valueOf();
+            options.targetWidth = width.valueOf();
         }
     }
-
-    var targetHeight = -1;
-    if (typeof options.targetHeight == "number") {
-        targetHeight = options.targetHeight;
-    } else if (typeof options.targetHeight == "string") {
+    if (options.targetHeight === null || typeof options.targetHeight === "undefined") {
+        options.targetHeight = -1;
+    } 
+    else if (typeof options.targetHeight == "string") {
         var height = new Number(options.targetHeight);
         if (isNaN(height) === false) {
-            targetHeight = height.valueOf();
+            options.targetHeight = height.valueOf();
         }
     }
     
-    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType]);
+    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [options]);
 };
 
 PhoneGap.addConstructor(function() {

@@ -60,6 +60,14 @@ App.prototype.clearHistory = function() {
 };
 
 /**
+ * Go to previous page displayed.
+ * This is the same as pressing the backbutton on Android device.
+ */
+App.prototype.backHistory = function() {
+    PhoneGap.exec(null, null, "App", "backHistory", []);
+};
+
+/**
  * Override the default behavior of the Android back button.
  * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.
  *
@@ -77,6 +85,16 @@ App.prototype.overrideBackbutton = function(override) {
  */
 App.prototype.exitApp = function() {
 	return PhoneGap.exec(null, null, "App", "exitApp", []);
+};
+
+/**
+ * Add entry to approved list of URLs (whitelist) that will be loaded into PhoneGap container instead of default browser.
+ * 
+ * @param origin		URL regular expression to allow
+ * @param subdomains	T=include all subdomains under origin
+ */
+App.prototype.addWhiteListEntry = function(origin, subdomains) {
+	return PhoneGap.exec(null, null, "App", "addWhiteListEntry", [origin, subdomains]);	
 };
 
 PhoneGap.addConstructor(function() {

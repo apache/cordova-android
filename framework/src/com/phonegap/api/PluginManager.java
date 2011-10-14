@@ -9,6 +9,7 @@ package com.phonegap.api;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.json.JSONArray;
@@ -17,6 +18,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
+import android.util.Log;
 import android.webkit.WebView;
 
 /**
@@ -25,13 +27,17 @@ import android.webkit.WebView;
  * Calling native plugin code can be done by calling PluginManager.exec(...)
  * from JavaScript.
  */
-public final class PluginManager {	
+public final class PluginManager {
 
 	private HashMap<String, IPlugin> plugins = new HashMap<String,IPlugin>();
 	private HashMap<String, String> services = new HashMap<String,String>();
 	
 	private final PhonegapActivity ctx;
 	private final WebView app;
+	
+    // Map URL schemes like foo: to plugins that want to handle those schemes
+    // This would allow how all URLs are handled to be offloaded to a plugin
+    protected HashMap<String, String> urlMap = new HashMap<String,String>();
 	
 	/**
 	 * Constructor.
@@ -53,14 +59,17 @@ public final class PluginManager {
 		if (id == 0) { pluginConfigurationMissing(); }
 		XmlResourceParser xml = ctx.getResources().getXml(id);
 		int eventType = -1;
+		String pluginClass = "", pluginName = "";
 		while (eventType != XmlResourceParser.END_DOCUMENT) {
 			if (eventType == XmlResourceParser.START_TAG) {
 				String strNode = xml.getName();
 				if (strNode.equals("plugin")) {
-					String name = xml.getAttributeValue(null, "name");
-					String value = xml.getAttributeValue(null, "value");
+					pluginClass = xml.getAttributeValue(null, "value");
+					pluginName = xml.getAttributeValue(null, "name");
 					//System.out.println("Plugin: "+name+" => "+value);
-					this.addService(name, value);
+					this.addService(pluginName, pluginClass);
+				} else if (strNode.equals("url-filter")) {
+					this.urlMap.put(xml.getAttributeValue(null, "value"), pluginName);
 				}
 			}
 			try {
@@ -101,14 +110,9 @@ public final class PluginManager {
 		boolean runAsync = async;
 		try {
 			final JSONArray args = new JSONArray(jsonArgs);
-			String clazz = this.services.get(service);
-			Class c = null;
-			if (clazz != null) {
-				c = getClassByName(clazz);
-			}
-			if (isPhoneGapPlugin(c)) {
-				final IPlugin plugin = this.addPlugin(clazz, c); 
-				final PhonegapActivity ctx = this.ctx;
+			final IPlugin plugin = this.getPlugin(service); 
+			final PhonegapActivity ctx = this.ctx;
+			if (plugin != null) {
 				runAsync = async && !plugin.isSynch(action);
 				if (runAsync) {
 					// Run this on a different thread so that this one can return back to JS
@@ -150,8 +154,6 @@ public final class PluginManager {
 					}
 				}
 			}
-		} catch (ClassNotFoundException e) {
-			cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
 		} catch (JSONException e) {
 			System.out.println("ERROR: "+e.toString());
 			cr = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
@@ -175,7 +177,11 @@ public final class PluginManager {
 	 */
 	@SuppressWarnings("unchecked")
 	private Class getClassByName(final String clazz) throws ClassNotFoundException {
-		return Class.forName(clazz);
+		Class c = null;
+		if (clazz != null) {
+			c = Class.forName(clazz);
+		}
+		return c;
 	}
 
 	/**
@@ -203,18 +209,18 @@ public final class PluginManager {
      * @return						The plugin
      */
 	@SuppressWarnings("unchecked")
-	private IPlugin addPlugin(String className, Class clazz) { 
-    	if (this.plugins.containsKey(className)) {
-    		return this.getPlugin(className);
-    	}
-    	try {
-              IPlugin plugin = (IPlugin)clazz.newInstance();
-              this.plugins.put(className, plugin);
-              plugin.setContext(this.ctx);
-              plugin.setView(this.app);
-              return plugin;
-    	}
-    	catch (Exception e) {
+	private IPlugin addPlugin(String pluginName, String className) {
+		try {
+			Class c = getClassByName(className);
+			if (isPhoneGapPlugin(c)) {
+				IPlugin plugin = (IPlugin)c.newInstance();
+				this.plugins.put(className, plugin);
+				plugin.setContext(this.ctx);
+				plugin.setView(this.app);
+				plugin.onResume(true);
+				return plugin;
+			}
+    	} catch (Exception e) {
     		  e.printStackTrace();
     		  System.out.println("Error adding plugin "+className+".");
     	}
@@ -224,12 +230,18 @@ public final class PluginManager {
     /**
      * Get the loaded plugin.
      * 
+     * If the plugin is not already loaded then load it.
+     * 
      * @param className				The class of the loaded plugin.
      * @return
      */
-    private IPlugin getPlugin(String className) {
-    	IPlugin plugin = this.plugins.get(className);
-    	return plugin;
+    private IPlugin getPlugin(String pluginName) {
+		String className = this.services.get(pluginName);
+    	if (this.plugins.containsKey(className)) {
+    		return this.plugins.get(className);
+    	} else {
+	    	return this.addPlugin(pluginName, className);
+	    }
     }
     
     /**
@@ -297,6 +309,23 @@ public final class PluginManager {
     		IPlugin plugin = entry.getValue();
     		plugin.onNewIntent(intent);
     	}
+    }
+
+    /**
+     * Called when the URL of the webview changes.
+     * 
+     * @param url The URL that is being changed to.
+     * @return Return false to allow the URL to load, return true to prevent the URL from loading.
+     */
+    public boolean onOverrideUrlLoading(String url) {
+    	Iterator<Entry<String, String>> it = this.urlMap.entrySet().iterator();
+        while (it.hasNext()) {
+            HashMap.Entry<String, String> pairs = it.next();
+            if (url.startsWith(pairs.getKey())) {
+            	return this.getPlugin(pairs.getValue()).onOverrideUrlLoading(url);
+            }
+        }
+    	return false;
     }
 
 	private void pluginConfigurationMissing() {

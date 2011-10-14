@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <phonegap>
     <access origin="http://127.0.0.1*"/>
+<<<<<<< HEAD
+=======
+    <log level="DEBUG"/>
+>>>>>>> 7ee04ebf313c7403cf623a1f9c00b6b5e7cc9f0b
 </phonegap>

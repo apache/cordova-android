@@ -1,0 +1,29 @@
+#! /bin/sh
+#
+# Creates an app in `./bench` that posts results to http://phonegap-bench.heroku.com with current PhoneGap/Android sha.
+#
+# USAGE
+#   ./bin/bench
+#
+
+# clobber any existing bench
+if [ -e ./bench ]
+then
+    rm -rf ./bench
+fi
+
+# create a benching app
+./bin/create ./bench com.phonegap.bench PhoneGapBench
+
+# grab the latest bench www code
+git clone git@github.com:brianleroux/phonegap-bench.git
+
+# copy it into the app
+cat ./phonegap-bench/www/index.html > ./bench/assets/www/index.html
+#cat ~/Desktop/phonegap-bench/www/index.html > ./bench/assets/www/index.html
+
+# clean up
+rm -rf ./phonegap-bench
+
+# launch to the first device found
+./bin/debug ./bench

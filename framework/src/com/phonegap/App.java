@@ -10,6 +10,7 @@ package com.phonegap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.app.Activity;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 import java.util.HashMap;
@@ -44,6 +45,9 @@ public class App extends Plugin {
         	else if (action.equals("clearHistory")) {
             	this.clearHistory();
             }
+            else if (action.equals("backHistory")) {
+                this.backHistory();
+            }
         	else if (action.equals("overrideBackbutton")) {
             	this.overrideBackbutton(args.getBoolean(0));
             }
@@ -54,6 +58,9 @@ public class App extends Plugin {
         	else if (action.equals("exitApp")) {
             	this.exitApp();
             }
+        	else if (action.equals("addWhiteListEntry")) {
+        		this.addWhiteListEntry(args.getString(0), args.optBoolean(1));
+        	}
             return new PluginResult(status, result);
         } catch (JSONException e) {
             return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
@@ -140,9 +147,19 @@ public class App extends Plugin {
 	
     /**
      * Clear web history in this web view.
+     * This does not have any effect since each page has its own activity.
      */
     public void clearHistory() {
     	((DroidGap)this.ctx).clearHistory();
+    	// TODO: Kill previous activities?
+    }
+    
+    /**
+     * Go to previous page displayed.
+     * This is the same as pressing the backbutton on Android device.
+     */
+    public void backHistory() {
+        ((DroidGap)this.ctx).endActivity();
     }
 
     /**
@@ -169,7 +186,17 @@ public class App extends Plugin {
      * Exit the Android application.
      */
     public void exitApp() {
-    	((DroidGap)this.ctx).finish();
+        ((DroidGap)this.ctx).setResult(Activity.RESULT_OK);
+    	((DroidGap)this.ctx).endActivity();
     }
 
+    /**
+     * Add entry to approved list of URLs (whitelist)
+     * 
+     * @param origin		URL regular expression to allow
+     * @param subdomains	T=include all subdomains under origin
+     */
+    public void addWhiteListEntry(String origin, boolean subdomains) {
+    	((DroidGap)this.ctx).addWhiteListEntry(origin, subdomains);
+    }
 }
