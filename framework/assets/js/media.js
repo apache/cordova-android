@@ -84,6 +84,7 @@ var MediaError = function() {
     this.message = "";
 };
 
+MediaError.MEDIA_ERR_NONE_ACTIVE    = 0;
 MediaError.MEDIA_ERR_ABORTED        = 1;
 MediaError.MEDIA_ERR_NETWORK        = 2;
 MediaError.MEDIA_ERR_DECODE         = 3;
@@ -211,7 +212,7 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
     }
     else if (msg === Media.MEDIA_ERROR) {
         if (media.errorCallback) {
-            media.errorCallback(value);
+            media.errorCallback({"code":value});
         }
     }
     else if (msg == Media.MEDIA_POSITION) {
