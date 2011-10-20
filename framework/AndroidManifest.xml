@@ -2,12 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:windowSoftInputMode="adjustPan"
       package="com.phonegap" android:versionName="1.1" android:versionCode="5">
     <supports-screens
-    	android:largeScreens="true"
-    	android:normalScreens="true"
-    	android:smallScreens="true"
-    	android:resizeable="true"
-    	android:anyDensity="true"
-    	/>
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true"
+        android:resizeable="true"
+        android:anyDensity="true"
+        />
     <!-- android:xlargeScreens="true" screen supported only after Android-9 -->
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -31,7 +31,7 @@
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <application android:icon="@drawable/icon" android:label="@string/app_name"
-    	android:debuggable="true">
+        android:debuggable="true">
         <activity android:name=".StandAlone" android:windowSoftInputMode="adjustPan"
                   android:label="@string/app_name" android:configChanges="orientation|keyboardHidden">
             <intent-filter>
@@ -46,5 +46,5 @@
         </activity>
     </application>
 
-	<uses-sdk android:minSdkVersion="2" />
+    <uses-sdk android:minSdkVersion="2" />
 </manifest> 
