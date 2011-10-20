@@ -1665,13 +1665,35 @@ public class DroidGap extends PhonegapActivity {
      * @param subdomains    T=include all subdomains under origin
      */
     public void addWhiteListEntry(String origin, boolean subdomains) {
-        if (subdomains) {
-            LOG.d(TAG, "Origin to allow with subdomains: %s", origin);
-            whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://.*")));
-        } else {
-            LOG.d(TAG, "Origin to allow: %s", origin);
-            whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://")));
-        }    
+      try {
+        // Unlimited access to network resources
+        if(origin.compareTo("*") == 0) {
+            LOG.d(TAG, "Unlimited access to network resources");
+            whiteList.add(Pattern.compile("*"));
+        } else { // specific access
+          // check if subdomains should be included
+          // TODO: we should not add more domains if * has already been added
+          if (subdomains) {
+              // XXX making it stupid friendly for people who forget to include protocol/SSL
+              if(origin.startsWith("http")) {
+                whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://.*")));
+              } else {
+                whiteList.add(Pattern.compile("^https{0,1}://.*"+origin));
+              }
+              LOG.d(TAG, "Origin to allow with subdomains: %s", origin);
+          } else {
+              // XXX making it stupid friendly for people who forget to include protocol/SSL
+              if(origin.startsWith("http")) {
+                whiteList.add(Pattern.compile(origin.replaceFirst("https{0,1}://", "^https{0,1}://")));
+              } else {
+                whiteList.add(Pattern.compile("^https{0,1}://"+origin));
+              }
+              LOG.d(TAG, "Origin to allow: %s", origin);
+          }    
+        }
+      } catch(Exception e) {
+        LOG.d(TAG, "Failed to add origin %s", origin);
+      }
     }
 
     /**
