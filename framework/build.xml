@@ -28,12 +28,14 @@
 
          Properties related to the SDK location or the project target should
          be updated using the 'android' tool with the 'update' action.
-
          This file is an integral part of the build system for your
          application and should be checked into Version Control Systems.
 
          -->
     <property file="ant.properties" />
+    
+    <!-- We need to setup the double quote. -->
+    <property name="dblQuote">"</property>
 
     <!-- The project.properties file is created and updated by the 'android'
          tool, as well as ADT.
@@ -46,16 +48,47 @@
          application and should be checked into Version Control Systems. -->
     <loadproperties srcFile="project.properties" />
 
-    <property name="dblQuote">"</property>
-
-    <!-- quick check on sdk.dir -->
+   <!-- quick check on sdk.dir -->
     <fail
             message="sdk.dir is missing. Make sure to generate local.properties using 'android update project'"
             unless="sdk.dir"
     />
 
-    <!-- version-tag: custom -->
-    <import file="${sdk.dir}/tools/ant/build.xml" />
+   <!-- version-tag: custom -->
+<!-- extension targets. Uncomment the ones where you want to do custom work
+     in between standard targets -->
+<!--
+    <target name="-pre-build">
+    </target>
+    <target name="-pre-compile">
+    </target>
+
+    /* This is typically used for code obfuscation.
+       Compiled code location: ${out.classes.absolute.dir}
+       If this is not done in place, override ${out.dex.input.absolute.dir} */
+    <target name="-post-compile">
+    </target>
+-->
+
+    <!-- Import the actual build file.
+
+         To customize existing targets, there are two options:
+         - Customize only one target:
+             - copy/paste the target into this file, *before* the
+               <import> task.
+             - customize it to your needs.
+         - Customize the whole content of build.xml
+             - copy/paste the content of the rules files (minus the top node)
+               into this file, replacing the <import> task.
+             - customize to your needs.
+
+         ***********************
+         ****** IMPORTANT ******
+         ***********************
+         In all cases you must update the value of version-tag below to read 'custom' instead of an integer,
+         in order to avoid having your file be overridden by tools such as "android update project"
+    -->
+   <import file="${sdk.dir}/tools/ant/build.xml" />
 
 
     <target name="check-javascript" depends="build-javascript">
@@ -127,7 +160,5 @@
 
     <target name="phonegap_release" depends="build-javascript, release">
     </target>
-
-
 
 </project>
