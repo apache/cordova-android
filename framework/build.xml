@@ -28,7 +28,6 @@
 
          Properties related to the SDK location or the project target should
          be updated using the 'android' tool with the 'update' action.
-
          This file is an integral part of the build system for your
          application and should be checked into Version Control Systems.
 
@@ -49,13 +48,13 @@
          application and should be checked into Version Control Systems. -->
     <loadproperties srcFile="project.properties" />
 
-    <!-- quick check on sdk.dir -->
+   <!-- quick check on sdk.dir -->
     <fail
             message="sdk.dir is missing. Make sure to generate local.properties using 'android update project'"
             unless="sdk.dir"
     />
 
-
+   <!-- version-tag: custom -->
 <!-- extension targets. Uncomment the ones where you want to do custom work
      in between standard targets -->
 <!--
@@ -89,8 +88,7 @@
          In all cases you must update the value of version-tag below to read 'custom' instead of an integer,
          in order to avoid having your file be overridden by tools such as "android update project"
     -->
-    <!-- version-tag: 1 -->
-    <import file="${sdk.dir}/tools/ant/build.xml" />
+   <import file="${sdk.dir}/tools/ant/build.xml" />
 
 
     <target name="check-javascript" depends="build-javascript">
@@ -141,7 +139,8 @@
          <fileset file="assets/www/index.html" /> 
          <!-- <fileset file="../bin/templates/project/assets/www/index.html" /> -->
       </replaceregexp>
-      <replaceregexp match="phonegapVersion = [\u0022].*[\u0022];" replace="phonegapVersion = ${dblQuote}${version}${dblQuote};" byline="true">
+      <!-- This is sketchy, but it works, ${dblQuote} does not -->
+      <replaceregexp match="phonegapVersion = [\u0022].*[\u0022];" replace='phonegapVersion = ${dblQuote}${version}${dblQuote};' byline="true">
         <fileset file="src/com/phonegap/Device.java" />
       </replaceregexp>
         

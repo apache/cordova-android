@@ -42,6 +42,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
@@ -277,6 +278,9 @@ public class DroidGap extends PhonegapActivity {
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
+        
+        //Set the nav dump for HTC
+        settings.setNavDump(true);
 
         // Enable database
         settings.setDatabaseEnabled(true);
@@ -1102,8 +1106,14 @@ public class DroidGap extends PhonegapActivity {
         @Override
         public void onConsoleMessage(String message, int lineNumber, String sourceID)
         {       
-            // This is a kludgy hack!!!!
             LOG.d(TAG, "%s: Line %d : %s", sourceID, lineNumber, message);              
+        }
+        
+        @Override
+        public boolean onConsoleMessage(ConsoleMessage consoleMessage)
+        {       
+            LOG.d(TAG, consoleMessage.message());
+            return true;
         }
 
         @Override
