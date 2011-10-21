@@ -910,11 +910,30 @@ public class DroidGap extends PhonegapActivity {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
             dlg.setMessage(message);
             dlg.setTitle("Alert");
-            dlg.setCancelable(false);
+            //Don't let alerts break the back button
+            dlg.setCancelable(true);
             dlg.setPositiveButton(android.R.string.ok,
                 new AlertDialog.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         result.confirm();
+                    }
+                });
+            dlg.setOnCancelListener(
+               new DialogInterface.OnCancelListener() {
+                   public void onCancel(DialogInterface dialog) {
+                       result.confirm();
+                       }
+                   });
+            dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                //DO NOTHING
+                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                    if(keyCode == KeyEvent.KEYCODE_BACK)
+                    {
+                        result.confirm();
+                        return false;
+                    }
+                    else
+                        return true;
                     }
                 });
             dlg.create();
@@ -949,23 +968,23 @@ public class DroidGap extends PhonegapActivity {
                     }
                 });
             dlg.setOnCancelListener(
-            	new DialogInterface.OnCancelListener() {												
-					public void onCancel(DialogInterface dialog) {
-						result.cancel();
-					}
-				});
+                new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        result.cancel();
+                        }
+                    });
             dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {
-            	//DO NOTHING
-				public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-					if(keyCode == KeyEvent.KEYCODE_BACK)
-					{
-						result.cancel();
-						return false;
-					}
-					else
-						return true;
-				}
-			});
+                //DO NOTHING
+                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                    if(keyCode == KeyEvent.KEYCODE_BACK)
+                    {
+                        result.cancel();
+                        return false;
+                    }
+                    else
+                        return true;
+                    }
+                });
             dlg.create();
             dlg.show();
             return true;
