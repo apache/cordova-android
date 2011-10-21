@@ -24,21 +24,18 @@ App.prototype.clearCache = function() {
 };
 
 /**
- * Load the url into the webview.
+ * Load the url into the webview or into new browser instance.
  *
  * @param url           The URL to load
  * @param props         Properties that can be passed in to the activity:
  *      wait: int                           => wait msec before loading URL
  *      loadingDialog: "Title,Message"      => display a native loading dialog
- *      hideLoadingDialogOnPage: boolean    => hide loadingDialog when page loaded instead of when deviceready event occurs.
- *      loadInWebView: boolean              => cause all links on web page to be loaded into existing web view, instead of being loaded into new browser.
  *      loadUrlTimeoutValue: int            => time in msec to wait before triggering a timeout error
- *      errorUrl: URL                       => URL to load if there's an error loading specified URL with loadUrl().  Should be a local URL such as file:///android_asset/www/error.html");
- *      keepRunning: boolean                => enable app to keep running in background
+ *      clearHistory: boolean              => clear webview history (default=false)
+ *      openExternal: boolean              => open in a new browser (default=false)
  *
  * Example:
- *      App app = new App();
- *      app.loadUrl("http://server/myapp/index.html", {wait:2000, loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
+ *      navigator.app.loadUrl("http://server/myapp/index.html", {wait:2000, loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
  */
 App.prototype.loadUrl = function(url, props) {
     PhoneGap.exec(null, null, "App", "loadUrl", [url, props]);

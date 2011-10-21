@@ -23,13 +23,18 @@ if (typeof PhoneGap === "undefined") {
  * onDestroy                  Internal event fired when app is being destroyed (User should use window.onunload event, not this one).
  *
  * The only PhoneGap events that user code should register for are:
- *      onDeviceReady
- *      onResume
+ *      deviceready           PhoneGap native code is initialized and PhoneGap APIs can be called from JavaScript
+ *      pause                 App has moved to background
+ *      resume                App has returned to foreground
  *
  * Listeners can be registered as:
  *      document.addEventListener("deviceready", myDeviceReadyListener, false);
  *      document.addEventListener("resume", myResumeListener, false);
  *      document.addEventListener("pause", myPauseListener, false);
+ *
+ * The DOM lifecycle events should be used for saving and restoring state
+ *      window.onload
+ *      window.onunload
  */
 
 if (typeof(DeviceInfo) !== 'object') {

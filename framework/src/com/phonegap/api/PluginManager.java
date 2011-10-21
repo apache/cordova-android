@@ -52,6 +52,17 @@ public final class PluginManager {
 	}
 	
 	/**
+	 * Re-init when loading a new HTML page into webview.
+	 */
+	public void reinit() {
+	    
+	    // Stop plugins on current HTML page and discard
+	    this.onPause(false);
+	    this.onDestroy();
+	    this.plugins = new HashMap<String, IPlugin>();
+	}
+	
+	/**
 	 * Load plugins from res/xml/plugins.xml
 	 */
 	public void loadPlugins() {

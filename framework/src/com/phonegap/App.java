@@ -78,18 +78,18 @@ public class App extends Plugin {
 		((DroidGap)this.ctx).clearCache();
 	}
 	
-    /**
-     * Load the url into the webview.
-     * 
-     * @param url
-     * @param props			Properties that can be passed in to the DroidGap activity (i.e. loadingDialog, wait, ...)
-     * @throws JSONException 
-     */
+	/**
+	 * Load the url into the webview.
+	 * 
+	 * @param url
+	 * @param props			Properties that can be passed in to the DroidGap activity (i.e. loadingDialog, wait, ...)
+	 * @throws JSONException 
+	 */
 	public void loadUrl(String url, JSONObject props) throws JSONException {
 		System.out.println("App.loadUrl("+url+","+props+")");
 		int wait = 0;
-		boolean usePhoneGap = true;
-		boolean clearPrev = false;
+		boolean openExternal = false;
+		boolean clearHistory = false;
 
 		// If there are properties, then set them on the Activity
 		HashMap<String, Object> params = new HashMap<String, Object>();
@@ -100,11 +100,11 @@ public class App extends Plugin {
 				if (key.equals("wait")) {
 					wait = props.getInt(key);
 				}
-				else if (key.equalsIgnoreCase("usephonegap")) {
-					usePhoneGap = props.getBoolean(key);
+				else if (key.equalsIgnoreCase("openexternal")) {
+					openExternal = props.getBoolean(key);
 				}
-				else if (key.equalsIgnoreCase("clearprev")) {
-					clearPrev = props.getBoolean(key);
+				else if (key.equalsIgnoreCase("clearhistory")) {
+					clearHistory = props.getBoolean(key);
 				}
 				else {
 					Object value = props.get(key);
@@ -135,7 +135,7 @@ public class App extends Plugin {
 				e.printStackTrace();
 			}
 		}
-		((DroidGap)this.ctx).showWebPage(url, usePhoneGap, clearPrev, params);
+		((DroidGap)this.ctx).showWebPage(url, openExternal, clearHistory, params);
 	}
 
 	/**
@@ -146,12 +146,10 @@ public class App extends Plugin {
 	}
 	
     /**
-     * Clear web history in this web view.
-     * This does not have any effect since each page has its own activity.
+     * Clear page history for the app.
      */
     public void clearHistory() {
     	((DroidGap)this.ctx).clearHistory();
-    	// TODO: Kill previous activities?
     }
     
     /**
@@ -159,7 +157,7 @@ public class App extends Plugin {
      * This is the same as pressing the backbutton on Android device.
      */
     public void backHistory() {
-        ((DroidGap)this.ctx).endActivity();
+        ((DroidGap)this.ctx).backHistory();
     }
 
     /**
@@ -186,7 +184,6 @@ public class App extends Plugin {
      * Exit the Android application.
      */
     public void exitApp() {
-        ((DroidGap)this.ctx).setResult(Activity.RESULT_OK);
     	((DroidGap)this.ctx).endActivity();
     }
 
