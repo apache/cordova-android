@@ -1406,6 +1406,7 @@ public class DroidGap extends PhonegapActivity {
      * End this activity by calling finish for activity
      */
     public void endActivity() {
+        this.activityState = ACTIVITY_EXITING;
         this.finish();
     }
     
