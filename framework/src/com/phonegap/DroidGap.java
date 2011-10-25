@@ -1410,6 +1410,7 @@ public class DroidGap extends PhonegapActivity {
      * End this activity by calling finish for activity
      */
     public void endActivity() {
+        this.activityState = ACTIVITY_EXITING;
         this.finish();
     }
     
@@ -1445,6 +1446,7 @@ public class DroidGap extends PhonegapActivity {
 
                 // If not, then invoke behavior of super class
                 else {
+                    this.activityState = ACTIVITY_EXITING;
                     return super.onKeyDown(keyCode, event);
                 }
             }
@@ -1534,7 +1536,7 @@ public class DroidGap extends PhonegapActivity {
       * @param description  A String describing the error.
       * @param failingUrl   The url that failed to load. 
       */
-     public void onReceivedError(int errorCode, String description, String failingUrl) {
+     public void onReceivedError(final int errorCode, final String description, final String failingUrl) {
          final DroidGap me = this;
 
          // If errorUrl specified, then load it
@@ -1551,8 +1553,12 @@ public class DroidGap extends PhonegapActivity {
 
          // If not, then display error dialog
          else {
-             me.appView.setVisibility(View.GONE);
-             me.displayError("Application Error", description + " ("+failingUrl+")", "OK", true);
+             me.runOnUiThread(new Runnable() {
+                 public void run() {
+                     me.appView.setVisibility(View.GONE);
+                     me.displayError("Application Error", description + " ("+failingUrl+")", "OK", true);
+                 }
+             });
          }
      }
 
