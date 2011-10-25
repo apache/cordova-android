@@ -1442,6 +1442,7 @@ public class DroidGap extends PhonegapActivity {
 
                 // If not, then invoke behavior of super class
                 else {
+                    this.activityState = ACTIVITY_EXITING;
                     return super.onKeyDown(keyCode, event);
                 }
             }
