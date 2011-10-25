@@ -1027,6 +1027,9 @@ public class DroidGap extends PhonegapActivity {
          * If the client returns true, WebView will assume that the client will 
          * handle the prompt dialog and call the appropriate JsPromptResult method.
          * 
+         * Since we are hacking prompts for our own purposes, we should not be using them for 
+         * this purpose, perhaps we should hack console.log to do this instead!
+         * 
          * @param view
          * @param url
          * @param message
@@ -1157,14 +1160,15 @@ public class DroidGap extends PhonegapActivity {
         @Override
         public void onConsoleMessage(String message, int lineNumber, String sourceID)
         {       
-            LOG.d(TAG, "%s: Line %d : %s", sourceID, lineNumber, message);              
+            LOG.d(TAG, "%s: Line %d : %s", sourceID, lineNumber, message);
+            super.onConsoleMessage(message, lineNumber, sourceID);
         }
         
         @Override
         public boolean onConsoleMessage(ConsoleMessage consoleMessage)
         {       
             LOG.d(TAG, consoleMessage.message());
-            return true;
+            return super.onConsoleMessage(consoleMessage);
         }
 
         @Override
