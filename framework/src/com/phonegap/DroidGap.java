@@ -1531,7 +1531,7 @@ public class DroidGap extends PhonegapActivity {
       * @param description  A String describing the error.
       * @param failingUrl   The url that failed to load. 
       */
-     public void onReceivedError(int errorCode, String description, String failingUrl) {
+     public void onReceivedError(final int errorCode, final String description, final String failingUrl) {
          final DroidGap me = this;
 
          // If errorUrl specified, then load it
@@ -1548,8 +1548,12 @@ public class DroidGap extends PhonegapActivity {
 
          // If not, then display error dialog
          else {
-             me.appView.setVisibility(View.GONE);
-             me.displayError("Application Error", description + " ("+failingUrl+")", "OK", true);
+             me.runOnUiThread(new Runnable() {
+                 public void run() {
+                     me.appView.setVisibility(View.GONE);
+                     me.displayError("Application Error", description + " ("+failingUrl+")", "OK", true);
+                 }
+             });
          }
      }
 
