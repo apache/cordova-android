@@ -10,7 +10,7 @@ package com.phonegap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import android.app.Activity;
+import com.phonegap.api.LOG;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
 import java.util.HashMap;
@@ -86,7 +86,7 @@ public class App extends Plugin {
 	 * @throws JSONException 
 	 */
 	public void loadUrl(String url, JSONObject props) throws JSONException {
-		System.out.println("App.loadUrl("+url+","+props+")");
+		LOG.d("App", "App.loadUrl("+url+","+props+")");
 		int wait = 0;
 		boolean openExternal = false;
 		boolean clearHistory = false;
@@ -167,7 +167,7 @@ public class App extends Plugin {
      * @param override		T=override, F=cancel override
      */
     public void overrideBackbutton(boolean override) {
-    	System.out.println("WARNING: Back Button Default Behaviour will be overridden.  The backbutton event will be fired!");
+    	LOG.i("DroidGap", "WARNING: Back Button Default Behaviour will be overridden.  The backbutton event will be fired!");
     	((DroidGap)this.ctx).bound = override;
     }
 
