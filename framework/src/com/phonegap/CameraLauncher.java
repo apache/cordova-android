@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
+import com.phonegap.api.LOG;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -41,7 +42,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.util.Log;
 
 /**
  * This class launches the camera view, allows the user to take a picture, closes the camera view,
@@ -315,11 +315,11 @@ public class CameraLauncher extends Plugin {
                         try {
                             uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                         } catch (UnsupportedOperationException e) {
-                            System.out.println("Can't write to external media storage.");
+                            LOG.d(LOG_TAG, "Can't write to external media storage.");
                             try {
                                 uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
                             } catch (UnsupportedOperationException ex) {
-                                System.out.println("Can't write to internal media storage.");                           
+                                LOG.d(LOG_TAG, "Can't write to internal media storage.");                           
                                 this.failPicture("Error capturing image - no media storage found.");
                                 return;
                             }
