@@ -6,6 +6,8 @@
  * Copyright (c) 2010-2011, IBM Corporation
  */
 
+// Version 1.2.0
+
 if (typeof PhoneGap === "undefined") {
 
 /**
