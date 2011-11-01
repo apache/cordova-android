@@ -921,7 +921,7 @@ PhoneGap.JSCallback = function() {
 
             // If server is stopping
             else if (xmlhttp.status === 503) {
-                console.log("JSCallback Error: Service unavailable.  Stopping callbacks.");
+                console.log("JSCallback Server Closed: Stopping callbacks.");
             }
 
             // If request wasn't GET
