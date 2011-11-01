@@ -4,7 +4,7 @@ set -e
 VERSION=$(cat ./VERSION)
 
 # get the latest mobile-spec
-git clone git@github.com:phonegap/mobile-spec.git
+git clone git@github.com:callback/callback-test.git
 
 # clobber test if it exists
 if [ -e ./test ]
@@ -17,7 +17,10 @@ fi
 
 # kill the default app and replace it w/ mobile-spec
 rm -rf ./test/assets/www
-mv ./mobile-spec ./test/assets/www
+mv ./callback-test ./test/assets/www
+
+# copy in phonegap.js since www dir was replaced above
+cp ./framework/assets/www/phonegap-$VERSION.js ./test/assets/www/phonegap-$VERSION.js
 
 # build it, launch it and start logging on stdout
-cd ./test && ./bin/debug && ./bin/log
+cd ./test && ./phonegap/debug && ./phonegap/log
