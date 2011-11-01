@@ -1,7 +1,7 @@
-PhoneGap/Android
+PhoneGap Android
 ===
 
-PhoneGap/Android is an Android application library that allows for PhoneGap based projects to be built for the Android Platform. PhoneGap based applications are, at the core, an application written with web technology: HTML, CSS and JavaScript. 
+PhoneGap Android is an Android application library that allows for PhoneGap based projects to be built for the Android Platform. PhoneGap based applications are, at the core, an application written with web technology: HTML, CSS and JavaScript. 
 
 Requires
 ---
@@ -10,21 +10,21 @@ Requires
 - Apache ANT
 - Android SDK [http://developer.android.com](http://developer.android.com)
 
-PhoneGap/Android Developer Tools
+PhoneGap Android Developer Tools
 ---
 
 The PhoneGap developer tooling is split between general tooling and project level tooling. 
 
-Commands
+General Commands
 
-    ./bin/create [path package activity] ... create the ./exmaple app or a phonegap/android project
+    ./bin/create [path package activity] ... create the ./example app or a phonegap android project
     ./bin/bench ............................ generate a bench proj
     ./bin/autotest ......................... test the cli tools
     ./bin/test ............................. run mobile-spec
 
 Project Commands
 
-These commands live in a generated PhoneGap/Android project.
+These commands live in a generated PhoneGap Android project.
 
     ./phonegap/debug [path] ..................... install to first device
     ./phonegap/emulate .......................... start avd (emulator) named default
@@ -37,7 +37,7 @@ Start avd (emulator) named `default`:
 
     ./bin/emulate
 
-Create the exmaple project and build it to the first device:
+Create the example project and build it to the first device:
 
     ./bin/create
     cd example
@@ -47,15 +47,17 @@ Start adb logcat (console.log calls output here):
 
     ./phonegap/log
 
-Running the [phonegap/mobile-spec](http://github.com/phonegap/mobile-spec) tests:
+Running the [callback/callback-test](http://github.com/callback/callback-test) tests:
+---
 
     ./bin/test
 
-Create a new PhoneGap/Android Project
+Creating a new PhoneGap Android Project
+---
 
     ./bin/create ~/Desktop/myapp com.phonegap.special MyApp
 
-Importing a PhoneGap/Android Project into Eclipse
+Importing a PhoneGap Android Project into Eclipse
 ----
 
 1. File > New > Project...
