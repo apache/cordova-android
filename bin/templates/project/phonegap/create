@@ -17,7 +17,7 @@ MANIFEST_PATH=./AndroidManifest.xml
 android create project --target $TARGET --path . --package $PACKAGE --activity $ACTIVITY
 
 # copy all the phonegap scripts etc in there
-cp -R ./phonegap/templates/project/ .
+cp -R ./phonegap/templates/project/* .
 
 # copy in phonegap.js
 cp ./.phonegap/android/phonegap-$VERSION.js ./assets/www
@@ -29,8 +29,8 @@ cp ./.phonegap/android/phonegap-$VERSION.jar ./libs
 cat ./phonegap/templates/Activity.java > $ACTIVITY_PATH
 
 # interpolate the acivity name and package
-find "$ACTIVITY_PATH" | xargs grep '__ACTIVITY__' -sl | xargs -L1 sed -i "" "s/__ACTIVITY__/${ACTIVITY}/g"
-find "$ACTIVITY_PATH" | xargs grep '__ID__' -sl | xargs -L1 sed -i "" "s/__ID__/${PACKAGE}/g"
+find "$ACTIVITY_PATH" | xargs grep '__ACTIVITY__' -sl | xargs -L1 sed -i -e "s/__ACTIVITY__/${ACTIVITY}/g"
+find "$ACTIVITY_PATH" | xargs grep '__ID__' -sl | xargs -L1 sed -i -e "s/__ID__/${PACKAGE}/g"
 
-find "$MANIFEST_PATH" | xargs grep '__ACTIVITY__' -sl | xargs -L1 sed -i "" "s/__ACTIVITY__/${ACTIVITY}/g"
-find "$MANIFEST_PATH" | xargs grep '__PACKAGE__' -sl | xargs -L1 sed -i "" "s/__PACKAGE__/${PACKAGE}/g"
+find "$MANIFEST_PATH" | xargs grep '__ACTIVITY__' -sl | xargs -L1 sed -i -e "s/__ACTIVITY__/${ACTIVITY}/g"
+find "$MANIFEST_PATH" | xargs grep '__PACKAGE__' -sl | xargs -L1 sed -i -e "s/__PACKAGE__/${PACKAGE}/g"

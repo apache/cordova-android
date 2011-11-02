@@ -17,6 +17,8 @@
  *     under the License.
  */
 
+// Version 1.2.0
+
 if (typeof PhoneGap === "undefined") {
 
 /**
@@ -387,9 +389,6 @@ PhoneGap.Channel.join(function() {
         prompt("", "gap_init:");
 
         PhoneGap.onDeviceReady.fire();
-
-        // Fire the onresume event, since first one happens before JavaScript is loaded
-        PhoneGap.onResume.fire();
     }, PhoneGap.deviceReadyChannelsArray);
 
 }, [ PhoneGap.onDOMContentLoaded, PhoneGap.onNativeReady ]);
@@ -933,7 +932,7 @@ PhoneGap.JSCallback = function() {
 
             // If server is stopping
             else if (xmlhttp.status === 503) {
-                console.log("JSCallback Error: Service unavailable.  Stopping callbacks.");
+                console.log("JSCallback Server Closed: Stopping callbacks.");
             }
 
             // If request wasn't GET
