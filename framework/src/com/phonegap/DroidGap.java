@@ -730,7 +730,7 @@ public class DroidGap extends PhonegapActivity {
         }
 
         // Send pause event to JavaScript
-        this.appView.loadUrl("javascript:try{PhoneGap.onPause.fire();}catch(e){};"); 
+        this.appView.loadUrl("javascript:try{PhoneGap.fireDocumentEvent('pause');}catch(e){};");
 
         // Forward to plugins
         this.pluginManager.onPause(this.keepRunning);
@@ -771,7 +771,7 @@ public class DroidGap extends PhonegapActivity {
         }
 
         // Send resume event to JavaScript
-        this.appView.loadUrl("javascript:try{PhoneGap.onResume.fire();}catch(e){};");
+        this.appView.loadUrl("javascript:try{PhoneGap.fireDocumentEvent('resume');}catch(e){};");
 
         // Forward to plugins
         this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
