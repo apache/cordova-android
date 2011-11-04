@@ -8,7 +8,6 @@
     <plugin name="Media" value="com.phonegap.AudioHandler"/>
     <plugin name="Camera" value="com.phonegap.CameraLauncher"/>
     <plugin name="Contacts" value="com.phonegap.ContactManager"/>
-    <plugin name="Crypto" value="com.phonegap.CryptoHandler"/>
     <plugin name="File" value="com.phonegap.FileUtils"/>
     <plugin name="Network Status" value="com.phonegap.NetworkManager"/>
     <plugin name="Notification" value="com.phonegap.Notification"/>
