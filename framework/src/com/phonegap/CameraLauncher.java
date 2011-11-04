@@ -169,8 +169,10 @@ public class CameraLauncher extends Plugin {
         File photo = null;
         if (encodingType == JPEG) {
             photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.jpg");
-        } else {
+        } else if (encodingType == PNG) {
             photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.png");            
+        } else {
+            throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
         return photo;
     }
