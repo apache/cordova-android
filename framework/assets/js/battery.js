@@ -49,35 +49,33 @@ Battery.prototype.eventHandler = function(eventType, handler, add) {
         
         // Register the event listener in the proper array
         if (eventType === "batterystatus") {
-            var pos = me._batteryListener.indexOf(handler);
-            if (pos === -1) {
-            	me._batteryListener.push(handler);
+            if (me._batteryListener.indexOf(handler) === -1) {
+                me._batteryListener.push(handler);
             }
         } else if (eventType === "batterylow") {
-            var pos = me._lowListener.indexOf(handler);
-            if (pos === -1) {
-            	me._lowListener.push(handler);
+            if (me._lowListener.indexOf(handler) === -1) {
+                me._lowListener.push(handler);
             }
         } else if (eventType === "batterycritical") {
-            var pos = me._criticalListener.indexOf(handler);
-            if (pos === -1) {
-            	me._criticalListener.push(handler);
+            if (me._criticalListener.indexOf(handler) === -1) {
+                me._criticalListener.push(handler);
             }
         }
     } else {
+        var pos = -1;
         // Remove the event listener from the proper array
         if (eventType === "batterystatus") {
-            var pos = me._batteryListener.indexOf(handler);
+            pos = me._batteryListener.indexOf(handler);
             if (pos > -1) {
                 me._batteryListener.splice(pos, 1);        
             }
         } else if (eventType === "batterylow") {
-            var pos = me._lowListener.indexOf(handler);
+            pos = me._lowListener.indexOf(handler);
             if (pos > -1) {
                 me._lowListener.splice(pos, 1);        
             }
         } else if (eventType === "batterycritical") {
-            var pos = me._criticalListener.indexOf(handler);
+            pos = me._criticalListener.indexOf(handler);
             if (pos > -1) {
                 me._criticalListener.splice(pos, 1);        
             }
@@ -98,13 +96,14 @@ Battery.prototype.eventHandler = function(eventType, handler, add) {
 Battery.prototype._status = function(info) {
 	if (info) {
 		var me = this;
-		if (me._level != info.level || me._isPlugged != info.isPlugged) {
+        var level = info.level;
+		if (me._level !== level || me._isPlugged !== info.isPlugged) {
 			// Fire batterystatus event
 			PhoneGap.fireWindowEvent("batterystatus", info);
 
 			// Fire low battery event
-			if (info.level == 20 || info.level == 5) {
-				if (info.level == 20) {
+			if (level === 20 || level === 5) {
+				if (level === 20) {
 					PhoneGap.fireWindowEvent("batterylow", info);
 				}
 				else {
@@ -112,7 +111,7 @@ Battery.prototype._status = function(info) {
 				}
 			}
 		}
-		me._level = info.level;
+		me._level = level;
 		me._isPlugged = info.isPlugged;	
 	}
 };

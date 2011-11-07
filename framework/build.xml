@@ -130,8 +130,8 @@
         
       <!-- Create uncompressed JS file -->
       <concat destfile="assets/www/phonegap-${version}.js">
-        <fileset dir="assets/js" includes="phonegap.js.base" />
-        <fileset dir="assets/js" includes="*.js" />
+        <filelist dir="assets/js" files="phonegap.js.base,device.js"/>
+        <fileset dir="assets/js" includes="*.js" excludes="phonegap.js.base,device.js"/>
       </concat>
 
       <!-- update project files to reference phonegap-x.x.x.min.js -->

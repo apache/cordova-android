@@ -226,7 +226,7 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
             media.errorCallback({"code":value});
         }
     }
-    else if (msg == Media.MEDIA_POSITION) {
+    else if (msg === Media.MEDIA_POSITION) {
         media._position = value;
     }
 };

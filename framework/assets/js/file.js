@@ -385,7 +385,7 @@ FileWriter.prototype.abort = function() {
     this.readyState = FileWriter.DONE;
 
     // If write end callback
-    if (typeof this.onwriteend == "function") {
+    if (typeof this.onwriteend === "function") {
         this.onwriteend({"type":"writeend", "target":this});
     }
 };
@@ -843,14 +843,14 @@ FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
         var writer = new FileWriter(filePointer);
     
         if (writer.fileName === null || writer.fileName === "") {
-            if (typeof errorCallback == "function") {
+            if (typeof errorCallback === "function") {
                 errorCallback({
                     "code": FileError.INVALID_STATE_ERR
                 });
             }
         }
     
-        if (typeof successCallback == "function") {
+        if (typeof successCallback === "function") {
             successCallback(writer);
         }       
     }, errorCallback);
@@ -885,7 +885,7 @@ LocalFileSystem.APPLICATION = 3;
  */
 LocalFileSystem.prototype.requestFileSystem = function(type, size, successCallback, errorCallback) {
     if (type < 0 || type > 3) {
-        if (typeof errorCallback == "function") {
+        if (typeof errorCallback === "function") {
             errorCallback({
                 "code": FileError.SYNTAX_ERR
             });
@@ -993,8 +993,14 @@ LocalFileSystem.prototype._castDate = function(pluginResult) {
 PhoneGap.addConstructor(function() {
     var pgLocalFileSystem = new LocalFileSystem();
     // Needed for cast methods
-    if(typeof window.localFileSystem == "undefined") window.localFileSystem  = pgLocalFileSystem;
-    if(typeof window.requestFileSystem == "undefined") window.requestFileSystem  = pgLocalFileSystem.requestFileSystem;
-    if(typeof window.resolveLocalFileSystemURI == "undefined") window.resolveLocalFileSystemURI = pgLocalFileSystem.resolveLocalFileSystemURI;
+    if (typeof window.localFileSystem === "undefined") {
+        window.localFileSystem = pgLocalFileSystem;
+    }
+    if (typeof window.requestFileSystem === "undefined") {
+        window.requestFileSystem = pgLocalFileSystem.requestFileSystem;
+    }
+    if (typeof window.resolveLocalFileSystemURI === "undefined") {
+        window.resolveLocalFileSystemURI = pgLocalFileSystem.resolveLocalFileSystemURI;
+    }
 });
 }

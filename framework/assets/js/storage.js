@@ -428,7 +428,7 @@ PhoneGap.addConstructor(function() {
             else {
                 return db;
             }
-        }
+        };
     }
     
     if (typeof window.localStorage === "undefined") {

@@ -124,7 +124,7 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         options.quality = 80;
     }
     if (options.maxResolution === null || typeof options.maxResolution === "undefined") {
-    	options.maxResolution = 0;
+        options.maxResolution = 0;
     }
     if (options.destinationType === null || typeof options.destinationType === "undefined") {
         options.destinationType = Camera.DestinationType.DATA_URL;
@@ -141,7 +141,7 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     if (options.targetWidth === null || typeof options.targetWidth === "undefined") {
         options.targetWidth = -1;
     } 
-    else if (typeof options.targetWidth == "string") {
+    else if (typeof options.targetWidth === "string") {
         var width = new Number(options.targetWidth);
         if (isNaN(width) === false) {
             options.targetWidth = width.valueOf();
@@ -150,7 +150,7 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
     if (options.targetHeight === null || typeof options.targetHeight === "undefined") {
         options.targetHeight = -1;
     } 
-    else if (typeof options.targetHeight == "string") {
+    else if (typeof options.targetHeight === "string") {
         var height = new Number(options.targetHeight);
         if (isNaN(height) === false) {
             options.targetHeight = height.valueOf();

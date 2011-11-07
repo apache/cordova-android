@@ -35,7 +35,7 @@ var Connection = function() {
     this.getInfo(
         function(type) {
             // Need to send events if we are on or offline
-            if (type == "none") {
+            if (type === "none") {
                 // set a timer if still offline at the end of timer send the offline event
                 me._timer = setTimeout(function(){
                     me.type = type;
@@ -44,7 +44,7 @@ var Connection = function() {
                     }, me.timeout);
             } else {
                 // If there is a current offline event pending clear it
-                if (me._timer != null) {
+                if (me._timer !== null) {
                     clearTimeout(me._timer);
                     me._timer = null;
                 }
@@ -91,7 +91,7 @@ Connection.prototype.getInfo = function(successCallback, errorCallback) {
 
 PhoneGap.addConstructor(function() {
     if (typeof navigator.network === "undefined") {
-        navigator.network = new Object();
+        navigator.network = {};
     }
     if (typeof navigator.network.connection === "undefined") {
         navigator.network.connection = new Connection();

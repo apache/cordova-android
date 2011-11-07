@@ -386,7 +386,7 @@ PhoneGap.m_window_addEventListener = window.addEventListener;
  */
 PhoneGap.addWindowEventHandler = function(event, callback) {
     PhoneGap.windowEventHandler[event] = callback;
-}
+};
 
 /**
  * Add a custom document event handler.
@@ -396,7 +396,7 @@ PhoneGap.addWindowEventHandler = function(event, callback) {
  */
 PhoneGap.addDocumentEventHandler = function(event, callback) {
     PhoneGap.documentEventHandler[event] = callback;
-}
+};
 
 /**
  * Intercept adding document event listeners and handle our own

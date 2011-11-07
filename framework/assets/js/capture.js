@@ -192,9 +192,6 @@ var CaptureAudioOptions = function(){
 };
 
 PhoneGap.addConstructor(function(){
-	if (typeof navigator.device === "undefined") {
-		navigator.device = window.device = new Device();
-	}
 	if (typeof navigator.device.capture === "undefined") {
 		navigator.device.capture = window.device.capture = new Capture();
 	}
