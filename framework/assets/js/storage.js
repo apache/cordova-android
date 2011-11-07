@@ -1,9 +1,20 @@
 /*
- * PhoneGap is available under *either* the terms of the modified BSD license *or* the
- * MIT License (2008). See http://opensource.org/licenses/alphabetical for full text.
+ *     Licensed to the Apache Software Foundation (ASF) under one
+ *     or more contributor license agreements.  See the NOTICE file
+ *     distributed with this work for additional information
+ *     regarding copyright ownership.  The ASF licenses this file
+ *     to you under the Apache License, Version 2.0 (the
+ *     "License"); you may not use this file except in compliance
+ *     with the License.  You may obtain a copy of the License at
  *
- * Copyright (c) 2005-2010, Nitobi Software Inc.
- * Copyright (c) 2010-2011, IBM Corporation
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing,
+ *     software distributed under the License is distributed on an
+ *     "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *     KIND, either express or implied.  See the License for the
+ *     specific language governing permissions and limitations
+ *     under the License.
  */
 
 /*
@@ -311,83 +322,83 @@ var DroidDB_openDatabase = function(name, version, display_name, size) {
  * @constructor
  */
 var CupcakeLocalStorage = function() {
-		try {
+    try {
 
-			this.db = openDatabase('localStorage', '1.0', 'localStorage', 2621440);
-			var storage = {};
-			this.length = 0;
-			function setLength (length) {
-				this.length = length;
-				localStorage.length = length;
-			}
-			this.db.transaction(
-				function (transaction) {
-				    var i;
-					transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
-					transaction.executeSql('SELECT * FROM storage', [], function(tx, result) {
-						for(var i = 0; i < result.rows.length; i++) {
-							storage[result.rows.item(i)['id']] =  result.rows.item(i)['body'];
-						}
-						setLength(result.rows.length);
-						PhoneGap.initializationComplete("cupcakeStorage");
-					});
+      this.db = openDatabase('localStorage', '1.0', 'localStorage', 2621440);
+      var storage = {};
+      this.length = 0;
+      function setLength (length) {
+        this.length = length;
+        localStorage.length = length;
+      }
+      this.db.transaction(
+        function (transaction) {
+            var i;
+          transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
+          transaction.executeSql('SELECT * FROM storage', [], function(tx, result) {
+            for(var i = 0; i < result.rows.length; i++) {
+              storage[result.rows.item(i)['id']] =  result.rows.item(i)['body'];
+            }
+            setLength(result.rows.length);
+            PhoneGap.initializationComplete("cupcakeStorage");
+          });
 
-				},
-				function (err) {
-					alert(err.message);
-				}
-			);
-			this.setItem = function(key, val) {
-				if (typeof(storage[key])=='undefined') {
-					this.length++;
-				}
-				storage[key] = val;
-				this.db.transaction(
-					function (transaction) {
-						transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
-						transaction.executeSql('REPLACE INTO storage (id, body) values(?,?)', [key,val]);
-					}
-				);
-			};
-			this.getItem = function(key) {
-				return storage[key];
-			};
-			this.removeItem = function(key) {
-				delete storage[key];
-				this.length--;
-				this.db.transaction(
-					function (transaction) {
-						transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
-						transaction.executeSql('DELETE FROM storage where id=?', [key]);
-					}
-				);
-			};
-			this.clear = function() {
-				storage = {};
-				this.length = 0;
-				this.db.transaction(
-					function (transaction) {
-						transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
-						transaction.executeSql('DELETE FROM storage', []);
-					}
-				);
-			};
-			this.key = function(index) {
-				var i = 0;
-				for (var j in storage) {
-					if (i==index) {
-						return j;
-					} else {
-						i++;
-					}
-				}
-				return null;
-			};
+        },
+        function (err) {
+          alert(err.message);
+        }
+      );
+      this.setItem = function(key, val) {
+        if (typeof(storage[key])=='undefined') {
+          this.length++;
+        }
+        storage[key] = val;
+        this.db.transaction(
+          function (transaction) {
+            transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
+            transaction.executeSql('REPLACE INTO storage (id, body) values(?,?)', [key,val]);
+          }
+        );
+      };
+      this.getItem = function(key) {
+        return storage[key];
+      };
+      this.removeItem = function(key) {
+        delete storage[key];
+        this.length--;
+        this.db.transaction(
+          function (transaction) {
+            transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
+            transaction.executeSql('DELETE FROM storage where id=?', [key]);
+          }
+        );
+      };
+      this.clear = function() {
+        storage = {};
+        this.length = 0;
+        this.db.transaction(
+          function (transaction) {
+            transaction.executeSql('CREATE TABLE IF NOT EXISTS storage (id NVARCHAR(40) PRIMARY KEY, body NVARCHAR(255))');
+            transaction.executeSql('DELETE FROM storage', []);
+          }
+        );
+      };
+      this.key = function(index) {
+        var i = 0;
+        for (var j in storage) {
+          if (i==index) {
+            return j;
+          } else {
+            i++;
+          }
+        }
+        return null;
+      };
 
-		} catch(e) {
-			alert("Database error "+e+".");
-		    return;
-		}
+    } catch(e) {
+      alert("Database error "+e+".");
+        return;
+    }
 };
 
 PhoneGap.addConstructor(function() {
