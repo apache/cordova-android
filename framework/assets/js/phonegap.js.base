@@ -50,21 +50,12 @@ if (typeof PhoneGap === "undefined") {
  *      window.onunload
  */
 
-if (typeof(DeviceInfo) !== 'object') {
-    var DeviceInfo = {};
-}
-
 /**
  * This represents the PhoneGap API itself, and provides a global namespace for accessing
  * information about the state of PhoneGap.
  * @class
  */
 var PhoneGap = {
-    queue: {
-        ready: true,
-        commands: [],
-        timer: null
-    },
     documentEventHandler: {},   // Collection of custom document event handlers
     windowEventHandler: {}      // Collection of custom window event handlers
 };
@@ -205,11 +196,6 @@ PhoneGap.Channel.join = function(h, c) {
         h();
     }
 };
-
-/**
- * Boolean flag indicating if the PhoneGap API is available and initialized.
- */ // TODO: Remove this, it is unused here ... -jm
-PhoneGap.available = DeviceInfo.uuid !== undefined;
 
 /**
  * Add an initialization function to a queue that ensures it will run and initialize
@@ -736,58 +722,6 @@ PhoneGap.callbackError = function(callbackId, args) {
             delete PhoneGap.callbacks[callbackId];
         }
     }
-};
-
-
-/**
- * Internal function used to dispatch the request to PhoneGap.  It processes the
- * command queue and executes the next command on the list.  If one of the
- * arguments is a JavaScript object, it will be passed on the QueryString of the
- * url, which will be turned into a dictionary on the other end.
- * @private
- */
-// TODO: Is this used?
-PhoneGap.run_command = function() {
-    if (!PhoneGap.available || !PhoneGap.queue.ready) {
-        return;
-    }
-    PhoneGap.queue.ready = false;
-
-    var args = PhoneGap.queue.commands.shift();
-    if (PhoneGap.queue.commands.length === 0) {
-        clearInterval(PhoneGap.queue.timer);
-        PhoneGap.queue.timer = null;
-    }
-
-    var uri = [];
-    var dict = null;
-    var i;
-    for (i = 1; i < args.length; i++) {
-        var arg = args[i];
-        if (arg === undefined || arg === null) {
-            arg = '';
-        }
-        if (typeof(arg) === 'object') {
-            dict = arg;
-        } else {
-            uri.push(encodeURIComponent(arg));
-        }
-    }
-    var url = "gap://" + args[0] + "/" + uri.join("/");
-    if (dict !== null) {
-        var name;
-        var query_args = [];
-        for (name in dict) {
-            if (dict.hasOwnProperty(name) && (typeof (name) === 'string')) {
-                query_args.push(encodeURIComponent(name) + "=" + encodeURIComponent(dict[name]));
-            }
-        }
-        if (query_args.length > 0) {
-            url += "?" + query_args.join("&");
-        }
-    }
-    document.location = url;
-
 };
 
 PhoneGap.JSCallbackPort = null;
