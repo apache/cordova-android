@@ -22,17 +22,27 @@ import java.util.TimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.phonegap.api.LOG;
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.provider.Settings;
+import android.telephony.TelephonyManager;
 
 public class Device extends Plugin {
-	
+    public static final String TAG = "Device";
+
     public static String phonegapVersion = "1.2.0";             // PhoneGap version
 	public static String platform = "Android";					// Device OS
 	public static String uuid;									// Device UUID
     
+    BroadcastReceiver telephonyReceiver = null;
+
     /**
      * Constructor.
      */
@@ -48,6 +58,7 @@ public class Device extends Plugin {
 	public void setContext(PhonegapActivity ctx) {
 		super.setContext(ctx);
         Device.uuid = getUuid();
+        this.initTelephonyReceiver();
 	}
 
 	/**
@@ -93,11 +104,57 @@ public class Device extends Plugin {
 		}
 		return false;
 	}
+    
+    /**
+     * Unregister receiver.
+     */
+    public void onDestroy() {
+        this.ctx.unregisterReceiver(this.telephonyReceiver);
+    }
 
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
-		
+    
+    /**
+     * Listen for telephony events: RINGING, OFFHOOK and IDLE
+     * Send these events to all plugins using
+     *      DroidGap.onMessage("telephone", "ringing" | "offhook" | "idle")
+     */
+    private void initTelephonyReceiver() {
+        IntentFilter intentFilter = new IntentFilter() ;
+        intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+        final PhonegapActivity myctx = this.ctx;
+        this.telephonyReceiver = new BroadcastReceiver() {
+            
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                
+                // If state has changed
+                if ((intent != null) && intent.getAction().equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
+                    if (intent.hasExtra(TelephonyManager.EXTRA_STATE)) {
+                        String extraData = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+                        if (extraData.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
+                            LOG.i(TAG, "Telephone RINGING");
+                            myctx.onMessage("telephone", "ringing");
+                        }
+                        else if (extraData.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
+                            LOG.i(TAG, "Telephone OFFHOOK");
+                            myctx.onMessage("telephone", "offhook");
+                        }
+                        else if (extraData.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
+                            LOG.i(TAG, "Telephone IDLE");
+                            myctx.onMessage("telephone", "idle");
+                        }
+                    }
+                }
+            }
+        };
+        
+        // Register the receiver
+        this.ctx.registerReceiver(this.telephonyReceiver, intentFilter);
+    }
+
 	/**
 	 * Get the OS name.
 	 * 

@@ -318,7 +318,23 @@ public final class PluginManager {
     		plugin.onDestroy();
     	}
     }
-    
+
+    /**
+     * Send a message to all plugins. 
+     * 
+     * @param id            The message id
+     * @param data          The message data
+     */
+    public void onMessage(String id, Object data) {
+        java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
+        java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
+        while(it.hasNext()) {
+            Entry<String,IPlugin> entry = it.next();
+            IPlugin plugin = entry.getValue();
+            plugin.onMessage(id, data);
+        }
+    }
+
     /**
      * Called when the activity receives a new intent. 
      */    

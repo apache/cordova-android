@@ -44,11 +44,11 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     private static final String LOG_TAG = "AudioPlayer";
 
     // AudioPlayer states
-	private static int MEDIA_NONE = 0;
-	private static int MEDIA_STARTING = 1;
-	private static int MEDIA_RUNNING = 2;
-	private static int MEDIA_PAUSED = 3;
-	private static int MEDIA_STOPPED = 4;
+	public static int MEDIA_NONE = 0;
+	public static int MEDIA_STARTING = 1;
+	public static int MEDIA_RUNNING = 2;
+	public static int MEDIA_PAUSED = 3;
+	public static int MEDIA_STOPPED = 4;
 	
 	// AudioPlayer message ids
 	private static int MEDIA_STATE = 1;
@@ -428,6 +428,15 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		}
 		
 		this.state = state;
+	}
+	
+	/**
+	 * Get the audio state.
+	 * 
+	 * @return int
+	 */
+	public int getState() {
+	    return this.state;
 	}
 
 	/**

@@ -22,9 +22,11 @@ import android.content.Context;
 import android.media.AudioManager;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
+import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import com.phonegap.api.LOG;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -41,13 +43,16 @@ import java.util.Map.Entry;
  */
 public class AudioHandler extends Plugin {
 
+    public static String TAG = "AudioHandler";
 	HashMap<String,AudioPlayer> players;	// Audio player object
+	ArrayList<AudioPlayer> pausedForPhone;     // Audio players that were paused when phone call came in
 	
 	/**
 	 * Constructor.
 	 */
 	public AudioHandler() {
 		this.players = new HashMap<String,AudioPlayer>();
+		this.pausedForPhone = new ArrayList<AudioPlayer>();
 	}
 
 	/**
@@ -134,6 +139,44 @@ public class AudioHandler extends Plugin {
 		}
         this.players.clear();
 	}
+	
+    /**
+     * Called when a message is sent to plugin. 
+     * 
+     * @param id            The message id
+     * @param data          The message data
+     */
+    public void onMessage(String id, Object data) {
+        
+        // If phone message
+        if (id.equals("telephone")) {
+            
+            // If phone ringing, then pause playing
+            if ("ringing".equals(data) || "offhook".equals(data)) {
+                
+                // Get all audio players and pause then
+                java.util.Set<Entry<String,AudioPlayer>> s = this.players.entrySet();
+                java.util.Iterator<Entry<String,AudioPlayer>> it = s.iterator();
+                while (it.hasNext()) {
+                    Entry<String,AudioPlayer> entry = it.next();
+                    AudioPlayer audio = entry.getValue();
+                    if (audio.getState() == AudioPlayer.MEDIA_RUNNING) {
+                        this.pausedForPhone.add(audio);
+                        audio.pausePlaying();
+                    }
+                }
+            }
+            
+            // If phone idle, then resume playing those players we paused
+            else if ("idle".equals(data)) {
+                for (int i=0; i<this.pausedForPhone.size(); i++) {
+                    AudioPlayer audio = this.pausedForPhone.get(i);
+                    audio.startPlaying(null);
+                }
+                this.pausedForPhone = new ArrayList<AudioPlayer>();
+            }
+        }
+    }
 
     //--------------------------------------------------------------------------
     // LOCAL METHODS

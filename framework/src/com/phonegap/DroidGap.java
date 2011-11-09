@@ -815,6 +815,18 @@ public class DroidGap extends PhonegapActivity {
     }
 
     /**
+     * Send a message to all plugins. 
+     * 
+     * @param id            The message id
+     * @param data          The message data
+     */
+    public void onMessage(String id, Object data) {
+        
+        // Forward to plugins
+        this.pluginManager.onMessage(id, data);
+    }
+
+    /**
      * Add a class that implements a service.
      * 
      * @param serviceType

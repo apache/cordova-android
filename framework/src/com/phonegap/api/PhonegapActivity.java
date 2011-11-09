@@ -65,4 +65,12 @@ public abstract class PhonegapActivity extends Activity {
      * @param url				The URL to load.
      */
     abstract public void loadUrl(String url);
+    
+    /**
+     * Send a message to all plugins. 
+     * 
+     * @param id            The message id
+     * @param data          The message data
+     */
+    abstract public void onMessage(String id, Object data);
 }

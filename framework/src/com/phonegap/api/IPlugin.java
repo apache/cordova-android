@@ -88,6 +88,14 @@ public interface IPlugin {
     void onDestroy();
 	
     /**
+     * Called when a message is sent to plugin. 
+     * 
+     * @param id            The message id
+     * @param data          The message data
+     */
+    public void onMessage(String id, Object data);
+
+    /**
      * Called when an activity you launched exits, giving you the requestCode you started it with,
      * the resultCode it returned, and any additional data from it. 
      * 

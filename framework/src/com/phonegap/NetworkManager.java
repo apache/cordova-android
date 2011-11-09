@@ -199,6 +199,9 @@ public class NetworkManager extends Plugin {
         PluginResult result = new PluginResult(PluginResult.Status.OK, type);
         result.setKeepCallback(true);
         this.success(result, this.connectionCallbackId);
+        
+        // Send to all plugins
+        this.ctx.onMessage("networkconnection", type);
     }
     
     /**
