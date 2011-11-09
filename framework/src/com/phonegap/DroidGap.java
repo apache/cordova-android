@@ -1450,7 +1450,11 @@ public class DroidGap extends PhonegapActivity {
             else {
 
                 // Go to previous page in webview if it is possible to go back
-                if (this.urls.size() > 1) {
+                if (this.appView.canGoBack()) {
+                    this.appView.goBack();  // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
+                    return true;
+                }
+                else if (this.urls.size() > 1) {
                     this.backHistory();
                     return true;
                 }
