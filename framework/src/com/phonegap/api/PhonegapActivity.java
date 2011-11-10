@@ -28,11 +28,15 @@ import android.content.Intent;
 public abstract class PhonegapActivity extends Activity {
 
     /**
+     * @deprecated
+     * Add services to res/xml/plugins.xml instead.
+     * 
      * Add a class that implements a service.
      * 
      * @param serviceType
      * @param className
      */
+    @Deprecated
     abstract public void addService(String serviceType, String className);
     
     /**

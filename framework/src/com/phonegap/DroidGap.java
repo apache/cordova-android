@@ -827,11 +827,15 @@ public class DroidGap extends PhonegapActivity {
     }
 
     /**
+     * @deprecated
+     * Add services to res/xml/plugins.xml instead.
+     * 
      * Add a class that implements a service.
      * 
      * @param serviceType
      * @param className
      */
+    @Deprecated
     public void addService(String serviceType, String className) {
         this.pluginManager.addService(serviceType, className);
     }
