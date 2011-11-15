@@ -568,6 +568,7 @@ public class DroidGap extends PhonegapActivity {
      */
     public void clearHistory() {
         this.urls.clear();
+        this.appView.clearHistory();
         
         // Leave current url on history stack
         if (this.url != null) {
