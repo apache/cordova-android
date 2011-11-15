@@ -90,6 +90,11 @@ public final class PluginManager {
 					pluginName = xml.getAttributeValue(null, "name");
 					//System.out.println("Plugin: "+name+" => "+value);
 					this.addService(pluginName, pluginClass);
+					
+					// Create plugin at load time if attribute "onload"
+					if ("true".equals(xml.getAttributeValue(null, "onload"))) {
+					    this.getPlugin(pluginName);
+					}
 				} else if (strNode.equals("url-filter")) {
 					this.urlMap.put(xml.getAttributeValue(null, "value"), pluginName);
 				}
