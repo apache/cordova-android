@@ -375,12 +375,7 @@ public class DroidGap extends PhonegapActivity {
         if (!url.startsWith("javascript:")) {
             LOG.d(TAG, "DroidGap.loadUrl(%s)", url);
         }
-        
-        // Init web view if not already done
-        if (this.appView == null) {
-            this.init();
-        }
-               
+
         this.url = url;
         if (this.baseUrl == null) {
             int i = url.lastIndexOf('/');
@@ -399,6 +394,11 @@ public class DroidGap extends PhonegapActivity {
         final DroidGap me = this;
         this.runOnUiThread(new Runnable() {
             public void run() {
+
+                // Init web view if not already done
+                if (me.appView == null) {
+                    me.init();
+                }
 
                 // Handle activity parameters
                 me.handleActivityParameters();
@@ -520,6 +520,9 @@ public class DroidGap extends PhonegapActivity {
         // Handle activity parameters
         this.runOnUiThread(new Runnable() {
             public void run() {
+                if (me.appView == null) {
+                    me.init();
+                }
                 me.handleActivityParameters();
             }
         });
