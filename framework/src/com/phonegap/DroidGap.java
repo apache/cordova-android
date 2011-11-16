@@ -51,6 +51,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -1499,7 +1501,7 @@ public class DroidGap extends PhonegapActivity {
         // If menu key
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
             this.appView.loadUrl("javascript:PhoneGap.fireDocumentEvent('menubutton');");
-            return true;
+            return super.onKeyDown(keyCode, event);
         }
 
         // If search key
@@ -1825,4 +1827,29 @@ public class DroidGap extends PhonegapActivity {
         return false;
     }
 
+    /* 
+     * Hook in DroidGap for menu plugins
+     * 
+     */
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        this.onMessage("onCreateOptionsMenu", menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        this.onMessage("onPrepareOptionsMenu", menu);
+        return super.onPrepareOptionsMenu(menu);
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        this.onMessage("onOptionsItemSelected", item);
+        return true;
+    }
 }
