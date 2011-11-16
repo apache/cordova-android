@@ -424,7 +424,7 @@ public class DroidGap extends PhonegapActivity {
                 
                 // If loadingDialog property, then show the App loading dialog for first page of app
                 String loading = null;
-                if (me.urls.size() == 0) {
+                if (me.urls.size() == 1) {
                 	loading = me.getStringProperty("loadingDialog", null);
                 }
                 else {
