@@ -404,7 +404,9 @@ public class CameraLauncher extends Plugin {
                                 bitmap.recycle();
                                 bitmap = null;
                                 
-                                this.success(new PluginResult(PluginResult.Status.OK, ("file://" + fileName)), this.callbackId);
+                                // The resized image is cached by the app in order to get around this and not have to delete you 
+                                // application cache I'm adding the current system time to the end of the file url.
+                                this.success(new PluginResult(PluginResult.Status.OK, ("file://" + fileName + "?" + System.currentTimeMillis())), this.callbackId);
                                 System.gc();
                             } catch (Exception e) {
                                 e.printStackTrace();
