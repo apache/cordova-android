@@ -136,15 +136,15 @@ public class Device extends Plugin {
                         String extraData = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
                         if (extraData.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
                             LOG.i(TAG, "Telephone RINGING");
-                            myctx.onMessage("telephone", "ringing");
+                            myctx.postMessage("telephone", "ringing");
                         }
                         else if (extraData.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
                             LOG.i(TAG, "Telephone OFFHOOK");
-                            myctx.onMessage("telephone", "offhook");
+                            myctx.postMessage("telephone", "offhook");
                         }
                         else if (extraData.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                             LOG.i(TAG, "Telephone IDLE");
-                            myctx.onMessage("telephone", "idle");
+                            myctx.postMessage("telephone", "idle");
                         }
                     }
                 }

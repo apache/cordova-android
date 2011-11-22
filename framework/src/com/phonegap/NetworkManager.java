@@ -201,7 +201,7 @@ public class NetworkManager extends Plugin {
         this.success(result, this.connectionCallbackId);
         
         // Send to all plugins
-        this.ctx.onMessage("networkconnection", type);
+        this.ctx.postMessage("networkconnection", type);
     }
     
     /**
