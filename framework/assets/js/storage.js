@@ -431,7 +431,7 @@ PhoneGap.addConstructor(function() {
         };
     }
     
-    if (typeof window.localStorage === "undefined") {
+    if ((typeof window.localStorage == "undefined") || (window.localStorage == null)) {
         navigator.localStorage = window.localStorage = new CupcakeLocalStorage();
         PhoneGap.waitForInitialization("cupcakeStorage");
     }
