@@ -130,13 +130,9 @@ public class AudioHandler extends Plugin {
 	 * Stop all audio players and recorders.
 	 */
 	public void onDestroy() {
-		java.util.Set<Entry<String,AudioPlayer>> s = this.players.entrySet();
-        java.util.Iterator<Entry<String,AudioPlayer>> it = s.iterator();
-        while(it.hasNext()) {
-            Entry<String,AudioPlayer> entry = it.next();
-            AudioPlayer audio = entry.getValue();
+        for (AudioPlayer audio : this.players.values()) {
             audio.destroy();
-		}
+        }
         this.players.clear();
 	}
 	
@@ -154,26 +150,22 @@ public class AudioHandler extends Plugin {
             // If phone ringing, then pause playing
             if ("ringing".equals(data) || "offhook".equals(data)) {
                 
-                // Get all audio players and pause then
-                java.util.Set<Entry<String,AudioPlayer>> s = this.players.entrySet();
-                java.util.Iterator<Entry<String,AudioPlayer>> it = s.iterator();
-                while (it.hasNext()) {
-                    Entry<String,AudioPlayer> entry = it.next();
-                    AudioPlayer audio = entry.getValue();
+                // Get all audio players and pause them
+                for (AudioPlayer audio : this.players.values()) {
                     if (audio.getState() == AudioPlayer.MEDIA_RUNNING) {
                         this.pausedForPhone.add(audio);
                         audio.pausePlaying();
                     }
                 }
+
             }
             
             // If phone idle, then resume playing those players we paused
             else if ("idle".equals(data)) {
-                for (int i=0; i<this.pausedForPhone.size(); i++) {
-                    AudioPlayer audio = this.pausedForPhone.get(i);
+                for (AudioPlayer audio : this.pausedForPhone) {
                     audio.startPlaying(null);
                 }
-                this.pausedForPhone = new ArrayList<AudioPlayer>();
+                this.pausedForPhone.clear();
             }
         }
     }
