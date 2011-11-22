@@ -76,5 +76,5 @@ public abstract class PhonegapActivity extends Activity {
      * @param id            The message id
      * @param data          The message data
      */
-    abstract public void onMessage(String id, Object data);
+    abstract public void postMessage(String id, Object data);
 }

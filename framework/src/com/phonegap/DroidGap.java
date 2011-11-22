@@ -840,10 +840,10 @@ public class DroidGap extends PhonegapActivity {
      * @param id            The message id
      * @param data          The message data
      */
-    public void onMessage(String id, Object data) {
+    public void postMessage(String id, Object data) {
         
         // Forward to plugins
-        this.pluginManager.onMessage(id, data);
+        this.pluginManager.postMessage(id, data);
     }
 
     /**
@@ -1835,21 +1835,21 @@ public class DroidGap extends PhonegapActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        this.onMessage("onCreateOptionsMenu", menu);
+        this.postMessage("onCreateOptionsMenu", menu);
         return super.onCreateOptionsMenu(menu);
     }
     
     @Override
     public boolean onPrepareOptionsMenu(Menu menu)
     {
-        this.onMessage("onPrepareOptionsMenu", menu);
+        this.postMessage("onPrepareOptionsMenu", menu);
         return super.onPrepareOptionsMenu(menu);
     }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        this.onMessage("onOptionsItemSelected", item);
+        this.postMessage("onOptionsItemSelected", item);
         return true;
     }
 }

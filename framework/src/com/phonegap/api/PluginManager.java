@@ -287,13 +287,9 @@ public final class PluginManager {
      * @param multitasking		Flag indicating if multitasking is turned on for app
      */
     public void onPause(boolean multitasking) {
-    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
-    	while(it.hasNext()) {
-    		Entry<String,IPlugin> entry = it.next();
-    		IPlugin plugin = entry.getValue();
-    		plugin.onPause(multitasking);
-    	}
+        for (IPlugin plugin : this.plugins.values()) {
+            plugin.onPause(multitasking);
+        }
     }
     
     /**
@@ -302,26 +298,18 @@ public final class PluginManager {
      * @param multitasking		Flag indicating if multitasking is turned on for app
      */
     public void onResume(boolean multitasking) {
-    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
-    	while(it.hasNext()) {
-    		Entry<String,IPlugin> entry = it.next();
-    		IPlugin plugin = entry.getValue();
-    		plugin.onResume(multitasking);
-    	}    	
+        for (IPlugin plugin : this.plugins.values()) {
+            plugin.onResume(multitasking);
+        }
     }
 
     /**
      * The final call you receive before your activity is destroyed. 
      */
     public void onDestroy() {
-    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
-    	while(it.hasNext()) {
-    		Entry<String,IPlugin> entry = it.next();
-    		IPlugin plugin = entry.getValue();
-    		plugin.onDestroy();
-    	}
+        for (IPlugin plugin : this.plugins.values()) {
+            plugin.onDestroy();
+        }
     }
 
     /**
@@ -330,12 +318,8 @@ public final class PluginManager {
      * @param id            The message id
      * @param data          The message data
      */
-    public void onMessage(String id, Object data) {
-        java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
-        java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
-        while(it.hasNext()) {
-            Entry<String,IPlugin> entry = it.next();
-            IPlugin plugin = entry.getValue();
+    public void postMessage(String id, Object data) {
+        for (IPlugin plugin : this.plugins.values()) {
             plugin.onMessage(id, data);
         }
     }
@@ -344,13 +328,9 @@ public final class PluginManager {
      * Called when the activity receives a new intent. 
      */    
     public void onNewIntent(Intent intent) {
-    	java.util.Set<Entry<String,IPlugin>> s = this.plugins.entrySet();
-    	java.util.Iterator<Entry<String,IPlugin>> it = s.iterator();
-    	while(it.hasNext()) {
-    		Entry<String,IPlugin> entry = it.next();
-    		IPlugin plugin = entry.getValue();
-    		plugin.onNewIntent(intent);
-    	}
+        for (IPlugin plugin : this.plugins.values()) {
+            plugin.onNewIntent(intent);
+        }
     }
 
     /**
