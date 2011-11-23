@@ -1603,10 +1603,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             }
     } catch (RemoteException e) {
       Log.e(LOG_TAG, e.getMessage(), e);
-      newId = null;
     } catch (OperationApplicationException e) {
       Log.e(LOG_TAG, e.getMessage(), e);
-            newId = null;
     }
     return newId;
   }
