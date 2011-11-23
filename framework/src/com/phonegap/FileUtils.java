@@ -531,7 +531,7 @@ public class FileUtils extends Plugin {
 	 * @throws NoModificationAllowedException
 	 * @throws InvalidModificationException
 	 */
-	private JSONObject moveDirectory(File srcDir, File destinationDir) throws JSONException, FileExistsException, NoModificationAllowedException, InvalidModificationException {
+	private JSONObject moveDirectory(File srcDir, File destinationDir) throws JSONException, InvalidModificationException {
 		// Renaming a file to an existing directory should fail
 		if (destinationDir.exists() && destinationDir.isFile()) {
 			throw new InvalidModificationException("Can't rename a file to a directory");
