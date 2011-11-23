@@ -18,7 +18,6 @@
 */
 package com.phonegap;
 
-import java.io.EOFException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
