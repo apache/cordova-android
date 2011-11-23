@@ -280,7 +280,7 @@ public class DroidGap extends PhonegapActivity {
         this.appView.setWebChromeClient(new GapClient(DroidGap.this));
         this.setWebViewClient(this.appView, new GapViewClient(this));
 
-        this.appView.setInitialScale(100);
+        this.appView.setInitialScale(0);
         this.appView.setVerticalScrollBarEnabled(false);
         this.appView.requestFocusFromTouch();
 
