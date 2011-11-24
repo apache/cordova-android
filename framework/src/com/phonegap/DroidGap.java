@@ -1592,7 +1592,7 @@ public class DroidGap extends PhonegapActivity {
              // Load URL on UI thread
              me.runOnUiThread(new Runnable() {
                  public void run() {
-                     me.showWebPage(errorUrl, true, true, null); 
+                     me.showWebPage(errorUrl, false, true, null); 
                  }
              });
          }
