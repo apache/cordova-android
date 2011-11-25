@@ -2,4 +2,5 @@
 <phonegap>
     <access origin="http://127.0.0.1*"/>
     <log level="DEBUG"/>
+    <render legacy="true" />
 </phonegap>
