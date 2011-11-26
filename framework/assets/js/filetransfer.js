@@ -84,6 +84,17 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
 };
 
 /**
+ * Downloads a file form a given URL and saves it to the specified directory.
+ * @param sourceUrl {String}          URL of the server to receive the file
+ * @param targetFile {String}         Full path of the file on the device
+ * @param successCallback (Function}  Callback to be invoked when upload has completed
+ * @param errorCallback {Function}    Callback to be invoked upon error
+ */
+FileTransfer.prototype.download = function(sourceUrl, targetFile, successCallback, errorCallback) {
+    PhoneGap.exec(successCallback, errorCallback, 'FileTransfer', 'download', [targetFile, sourceUrl]);
+};
+
+/**
  * Options to customize the HTTP request used to upload files.
  * @constructor
  * @param fileKey {String}   Name of file request parameter.
