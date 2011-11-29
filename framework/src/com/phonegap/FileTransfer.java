@@ -405,14 +405,9 @@ public class FileTransfer extends Plugin {
             Log.d(LOG_TAG, "Saved file: " + filePath);
 
             // create FileEntry object
-            JSONObject entry = new JSONObject();
+            FileUtils fileUtil = new FileUtils();
 
-            entry.put("isFile", file.isFile());
-            entry.put("isDirectory", file.isDirectory());
-            entry.put("name", file.getName());
-            entry.put("fullPath", file.getAbsolutePath());
-
-            return entry;
+            return fileUtil.getEntry(file);
         } catch (Exception e) {
             Log.d(LOG_TAG, e.getMessage(), e);
             throw new IOException("Error while downloading");
