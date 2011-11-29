@@ -99,9 +99,9 @@ public class FileTransfer extends Plugin {
                 Log.d(LOG_TAG, "****** About to return a result from upload");
                 return new PluginResult(PluginResult.Status.OK, r.toJSONObject());
             } else if (action.equals("download")) {
-                String r = download(file, server);
+                JSONObject r = download(file, server);
                 Log.d(LOG_TAG, "****** About to return a result from download");
-                return new PluginResult(PluginResult.Status.OK, r);
+                return new PluginResult(PluginResult.Status.OK, r, "window.localFileSystem._castEntry");
             } else {
                 return new PluginResult(PluginResult.Status.INVALID_ACTION);
             }
@@ -371,13 +371,16 @@ public class FileTransfer extends Plugin {
      *
      * @param server        URL of the server to receive the file
      * @param file      	Full path of the file on the file system
-     * @return String 		containing the path to the downloaded file
+     * @return JSONObject 	the downloaded file
      */
-    public String download(String filePath, String sourceUrl) throws IOException {
+    public JSONObject download(String filePath, String sourceUrl) throws IOException {
         try {
             File file = new File(filePath);
+
+            // create needed directories
             file.getParentFile().mkdirs();
 
+            // connect to server
             URL url = new URL(sourceUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -388,23 +391,32 @@ public class FileTransfer extends Plugin {
 
             InputStream inputStream = connection.getInputStream();
             byte[] buffer = new byte[1024];
-            int len1 = 0;
+            int bytesRead = 0;
 
             FileOutputStream outputStream = new FileOutputStream(file);
 
-            while ( (len1 = inputStream.read(buffer)) > 0 ) {
-                outputStream.write(buffer,0, len1);
+            // write bytes to file
+            while ( (bytesRead = inputStream.read(buffer)) > 0 ) {
+                outputStream.write(buffer,0, bytesRead);
             }
 
             outputStream.close();
 
             Log.d(LOG_TAG, "Saved file: " + filePath);
-        } catch (IOException e) {
+
+            // create FileEntry object
+            JSONObject entry = new JSONObject();
+
+            entry.put("isFile", file.isFile());
+            entry.put("isDirectory", file.isDirectory());
+            entry.put("name", file.getName());
+            entry.put("fullPath", file.getAbsolutePath());
+
+            return entry;
+        } catch (Exception e) {
             Log.d(LOG_TAG, e.getMessage(), e);
             throw new IOException("Error while downloading");
         }
-
-        return filePath;
     }
 
     /**
