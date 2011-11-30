@@ -71,15 +71,15 @@ public class FileTransfer extends Plugin {
     */
     @Override
     public PluginResult execute(String action, JSONArray args, String callbackId) {
-        String file = null;
-        String server = null;
+        String source = null;
+        String target = null;
         try {
-            file = args.getString(0);
-            server = args.getString(1);
+            source = args.getString(0);
+            target = args.getString(1);
         }
         catch (JSONException e) {
-            Log.d(LOG_TAG, "Missing filename or server name");
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing filename or server name");
+            Log.d(LOG_TAG, "Missing source or target");
+            return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing source or target");
         }
 
         try {
@@ -94,12 +94,12 @@ public class FileTransfer extends Plugin {
                 mimeType = getArgument(args, 4, "image/jpeg");
                 JSONObject params = args.optJSONObject(5);
                 boolean trustEveryone = args.optBoolean(6);
-                boolean chunkedMode = args.getBoolean(7);
-                FileUploadResult r = upload(file, server, fileKey, fileName, mimeType, params, trustEveryone, chunkedMode);
+                boolean chunkedMode = args.optBoolean(7);
+                FileUploadResult r = upload(source, target, fileKey, fileName, mimeType, params, trustEveryone, chunkedMode);
                 Log.d(LOG_TAG, "****** About to return a result from upload");
                 return new PluginResult(PluginResult.Status.OK, r.toJSONObject());
             } else if (action.equals("download")) {
-                JSONObject r = download(file, server);
+                JSONObject r = download(source, target);
                 Log.d(LOG_TAG, "****** About to return a result from download");
                 return new PluginResult(PluginResult.Status.OK, r, "window.localFileSystem._castEntry");
             } else {
@@ -107,20 +107,20 @@ public class FileTransfer extends Plugin {
             }
         } catch (FileNotFoundException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
-            JSONObject error = createFileUploadError(FILE_NOT_FOUND_ERR);
+            JSONObject error = createFileTransferError(FILE_NOT_FOUND_ERR, source, target);
             return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
         } catch (IllegalArgumentException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
-            JSONObject error = createFileUploadError(INVALID_URL_ERR);
+            JSONObject error = createFileTransferError(INVALID_URL_ERR, source, target);
             return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
         } catch (SSLException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             Log.d(LOG_TAG, "Got my ssl exception!!!");
-            JSONObject error = createFileUploadError(CONNECTION_ERR);
+            JSONObject error = createFileTransferError(CONNECTION_ERR, source, target);
             return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
         } catch (IOException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
-            JSONObject error = createFileUploadError(CONNECTION_ERR);
+            JSONObject error = createFileTransferError(CONNECTION_ERR, source, target);
             return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -177,11 +177,13 @@ public class FileTransfer extends Plugin {
      * @param errorCode 	the error
      * @return JSONObject containing the error
      */
-    private JSONObject createFileUploadError(int errorCode) {
+    private JSONObject createFileTransferError(int errorCode, String source, String target) {
         JSONObject error = null;
         try {
             error = new JSONObject();
             error.put("code", errorCode);
+            error.put("source", source);
+            error.put("target", target);
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
@@ -369,19 +371,19 @@ public class FileTransfer extends Plugin {
     /**
      * Downloads a file form a given URL and saves it to the specified directory.
      *
-     * @param server        URL of the server to receive the file
-     * @param file      	Full path of the file on the file system
+     * @param source        URL of the server to receive the file
+     * @param target      	Full path of the file on the file system
      * @return JSONObject 	the downloaded file
      */
-    public JSONObject download(String filePath, String sourceUrl) throws IOException {
+    public JSONObject download(String source, String target) throws IOException {
         try {
-            File file = new File(filePath);
+            File file = new File(target);
 
             // create needed directories
             file.getParentFile().mkdirs();
 
             // connect to server
-            URL url = new URL(sourceUrl);
+            URL url = new URL(source);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setDoOutput(true);
@@ -402,7 +404,7 @@ public class FileTransfer extends Plugin {
 
             outputStream.close();
 
-            Log.d(LOG_TAG, "Saved file: " + filePath);
+            Log.d(LOG_TAG, "Saved file: " + target);
 
             // create FileEntry object
             FileUtils fileUtil = new FileUtils();
