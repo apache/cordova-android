@@ -322,14 +322,13 @@ public class FileUtils extends Plugin {
      * @param newName for the file directory to be called, if null use existing file name
      * @param move if false do a copy, if true do a move
      * @return a Entry object
-     * @throws FileExistsException
      * @throws NoModificationAllowedException
      * @throws IOException
      * @throws InvalidModificationException
      * @throws EncodingException
      * @throws JSONException
      */
-    private JSONObject transferTo(String fileName, JSONObject newParent, String newName, boolean move) throws JSONException, FileExistsException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException {
+    private JSONObject transferTo(String fileName, JSONObject newParent, String newName, boolean move) throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException {
         // Check for invalid file name
         if (newName != null && newName.contains(":")) {
             throw new EncodingException("Bad file name");
