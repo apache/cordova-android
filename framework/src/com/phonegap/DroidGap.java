@@ -1695,14 +1695,18 @@ public class DroidGap extends PhonegapActivity {
                 // If the height as gotten bigger then we will assume the soft keyboard has 
                 // gone away.
                 else if (height > oldHeight) {
-                    LOG.v(TAG, "Throw hide keyboard event");
-                    callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('hidekeyboard');");
+                    if (callbackServer != null) {
+                        LOG.v(TAG, "Throw hide keyboard event");
+                        callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('hidekeyboard');");
+                    }
                 } 
                 // If the height as gotten smaller then we will assume the soft keyboard has 
                 // been displayed.
                 else if (height < oldHeight) {
-                    LOG.v(TAG, "Throw show keyboard event");
-                    callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('showkeyboard');");
+                    if (callbackServer != null) {
+                        LOG.v(TAG, "Throw show keyboard event");
+                        callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('showkeyboard');");
+                    }
                 }
 
                 // Update the old height for the next event
