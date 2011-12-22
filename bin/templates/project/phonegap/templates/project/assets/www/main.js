@@ -119,6 +119,25 @@ function check_network() {
     confirm('Connection type:\n ' + states[networkState]);
 }
 
+var watchID = null;
+
+function updateHeading(h) {
+    document.getElementById('h').innerHTML = h.magneticHeading;
+}
+
+function toggleCompass() {
+    if (watchID !== null) {
+        navigator.compass.clearWatch(watchID);
+        watchID = null;
+        updateHeading({ magneticHeading : "Off"});
+    } else {        
+        var options = { frequency: 1000 };
+        watchID = navigator.compass.watchHeading(updateHeading, function(e) {
+            alert('Compass Error: ' + e.code);
+        }, options);
+    }
+}
+
 function init() {
     // the next line makes it impossible to see Contacts on the HTC Evo since it
     // doesn't have a scroll button
