@@ -155,6 +155,35 @@
       <jar jarfile="phonegap-${version}.jar" basedir="bin/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
     </target>
 
+    <!-- tests for Java files -->
+    <property name="test.dir" location="test/com/phonegap" />
+
+    <path id="test.classpath">
+        <!-- requires both junit and phonegap -->
+        <pathelement location="libs/junit-4.10.jar" />
+        <pathelement location="phonegap-${version}.jar" />
+        <pathelement location="${test.dir}" />
+    </path>
+
+    <target name="compile-test">
+        <javac srcdir="${test.dir}" >
+            <classpath refid="test.classpath" />
+        </javac>
+    </target>
+
+    <target name="test" depends="jar, compile-test">
+        <junit showoutput="true">
+            <classpath refid="test.classpath" />
+            <formatter type="brief" usefile="false" />
+            <batchtest fork="yes">
+                <fileset dir="${test.dir}">
+                    <include name="*Test.java" />
+                    <include name="**/*Test.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
     <target name="phonegap_debug" depends="build-javascript, debug">
     </target>
 
