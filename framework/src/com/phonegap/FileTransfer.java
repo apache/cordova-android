@@ -429,7 +429,12 @@ public class FileTransfer extends Plugin {
             return ctx.getContentResolver().openInputStream(uri);
         }
         else if (path.startsWith("file://")) {
-            return new FileInputStream(path.substring(7));
+            int question = path.indexOf("?");
+            if (question == -1) {
+                return new FileInputStream(path.substring(7));
+            } else {
+                return new FileInputStream(path.substring(7, question));
+            }
         }
         else {
             return new FileInputStream(path);
