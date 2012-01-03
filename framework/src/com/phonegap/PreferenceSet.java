@@ -30,4 +30,14 @@ public class PreferenceSet {
 
         return null;
     }
+
+    public boolean prefMatches(String prefName, String prefValue) {
+        String value = pref(prefName);
+
+        if (value == null) {
+            return false;
+        } else {
+            return value.equals(prefValue);
+        }
+    }
 }

@@ -329,7 +329,7 @@ public class DroidGap extends PhonegapActivity {
 
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 
-        if (preferences.pref("fullscreen").equals("true")) {
+        if (preferences.prefMatches("fullscreen","true")) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
@@ -1901,7 +1901,8 @@ public class DroidGap extends PhonegapActivity {
                     String value = xml.getAttributeValue(null, "value");
                     String readonlyString = xml.getAttributeValue(null, "readonly");
 
-                    boolean readonly = (readonlyString.equals("true"));
+                    boolean readonly = (readonlyString != null &&
+                                        readonlyString.equals("true"));
 
                     LOG.i("PhoneGapLog", "Found preference for %s", name);
 

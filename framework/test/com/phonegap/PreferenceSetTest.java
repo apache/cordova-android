@@ -38,4 +38,18 @@ public class PreferenceSetTest {
             // return null if the preference is not defined
             assertEquals(null, preferences.pref("antigravity"));
         }
+
+    @Test
+        public void testUnsetPreferenceChecking() {
+            PreferenceSet emptySet = new PreferenceSet();
+            boolean value = emptySet.prefMatches("fullscreen", "true");
+            assertEquals(false, value);
+        }
+
+    @Test
+        public void testSetPreferenceChecking() {
+            preferences.add(screen);
+            boolean value = preferences.prefMatches("fullscreen", "true");
+            assertEquals(true, value);
+        }
 }
