@@ -18,17 +18,22 @@
 */
 package com.phonegap;
 
+import java.io.File;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
+
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.*;
 
 /**
- * This class implements the HTML5 database support for Android 1.X devices. It
- * is not used for Android 2.X, since HTML5 database is built in to the browser.
+ * This class implements the HTML5 database support to work around a bug for 
+ * Android 3.0 devices. It is not used for other versions of Android, since 
+ * HTML5 database is built in to the browser.
  */
 public class Storage extends Plugin {
 
@@ -64,11 +69,7 @@ public class Storage extends Plugin {
 		String result = "";
 
 		try {
-			// TODO: Do we want to allow a user to do this, since they could get
-			// to other app databases?
-			if (action.equals("setStorage")) {
-				this.setStorage(args.getString(0));
-			} else if (action.equals("openDatabase")) {
+			if (action.equals("openDatabase")) {
 				this.openDatabase(args.getString(0), args.getString(1),
 						args.getString(2), args.getLong(3));
 			} else if (action.equals("executeSql")) {
@@ -119,21 +120,6 @@ public class Storage extends Plugin {
 	// --------------------------------------------------------------------------
 
 	/**
-	 * Set the application package for the database. Each application saves its
-	 * database files in a directory with the application package as part of the
-	 * file name.
-	 * 
-	 * For example, application "com.phonegap.demo.Demo" would save its database
-	 * files in "/data/data/com.phonegap.demo/databases/" directory.
-	 * 
-	 * @param appPackage
-	 *            The application package.
-	 */
-	public void setStorage(String appPackage) {
-		this.path = "/data/data/" + appPackage + "/databases/";
-	}
-
-	/**
 	 * Open database.
 	 * 
 	 * @param db
@@ -155,12 +141,10 @@ public class Storage extends Plugin {
 
 		// If no database path, generate from application package
 		if (this.path == null) {
-			Package pack = this.ctx.getClass().getPackage();
-			String appPackage = pack.getName();
-			this.setStorage(appPackage);
+			this.path = this.ctx.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
 		}
 
-		this.dbName = this.path + db + ".db";
+		this.dbName = this.path + File.pathSeparator + db + ".db";
 		this.myDb = SQLiteDatabase.openOrCreateDatabase(this.dbName, null);
 	}
 
@@ -249,9 +233,7 @@ public class Storage extends Plugin {
 		}
 
 		// Let JavaScript know that there are no more rows
-		this.sendJavascript("droiddb.completeQuery('" + tx_id + "', " + result
-				+ ");");
-
+		this.sendJavascript("droiddb.completeQuery('" + tx_id + "', " + result + ");");
 	}
 
 }
