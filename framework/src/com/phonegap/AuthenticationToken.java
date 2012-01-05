@@ -1,49 +1,51 @@
 package com.phonegap;
 
 /**
- * The Class AuthenticationToken defines the principal and credentials to be used for authenticating a web resource
+ * The Class AuthenticationToken defines the userName and password to be used for authenticating a web resource
  */
 public class AuthenticationToken {
-    private String principal;
-    private String credentials;
+    private String userName;
+    private String password;
     
     /**
-     * Gets the principal.
+     * Gets the user name.
      * 
-     * @return the principal
+     * @return the user name
      */
-    public String getPrincipal() {
-        return principal;
+    public String getUserName() {
+        return userName;
     }
     
     /**
-     * Sets the principal.
+     * Sets the user name.
      * 
-     * @param principal
-     *            the new principal
+     * @param userName
+     *            the new user name
      */
-    public void setPrincipal(String principal) {
-        this.principal = principal;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
     
     /**
-     * Gets the credentials.
+     * Gets the password.
      * 
-     * @return the credentials
+     * @return the password
      */
-    public String getCredentials() {
-        return credentials;
+    public String getPassword() {
+        return password;
     }
     
     /**
-     * Sets the credentials.
+     * Sets the password.
      * 
-     * @param credentials
-     *            the new credentials
+     * @param password
+     *            the new password
      */
-    public void setCredentials(String credentials) {
-        this.credentials = credentials;
+    public void setPassword(String password) {
+        this.password = password;
     }
+    
+    
     
     
 }

@@ -1452,7 +1452,7 @@ public class DroidGap extends PhonegapActivity {
             AuthenticationToken token = getAuthenticationToken(host,realm);
             
             if(token != null) {
-                handler.proceed(token.getPrincipal(), token.getCredentials());
+                handler.proceed(token.getUserName(), token.getPassword());
             }
         }
 
