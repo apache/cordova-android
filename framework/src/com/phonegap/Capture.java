@@ -49,6 +49,13 @@ public class Capture extends Plugin {
     private static final int CAPTURE_IMAGE = 1;     // Constant for capture image
     private static final int CAPTURE_VIDEO = 2;     // Constant for capture video
     private static final String LOG_TAG = "Capture";
+    
+    private static final int CAPTURE_INTERNAL_ERR = 0;
+    private static final int CAPTURE_APPLICATION_BUSY = 1;
+    private static final int CAPTURE_INVALID_ARGUMENT = 2;
+    private static final int CAPTURE_NO_MEDIA_FILES = 3;
+    private static final int CAPTURE_NOT_SUPPORTED = 20;
+    
     private String callbackId;                      // The ID of the callback to be invoked with our result
     private long limit;                             // the number of pics/vids/clips to take
     private double duration;                        // optional duration parameter for video recording
@@ -260,7 +267,7 @@ public class Capture extends Plugin {
                             uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
                         } catch (UnsupportedOperationException ex) {
                             LOG.d(LOG_TAG, "Can't write to internal media storage.");                           
-                            this.fail("Error capturing image - no media storage found.");
+                            this.fail(createErrorObject(CAPTURE_INTERNAL_ERR, "Error capturing image - no media storage found."));
                             return;
                         }
                     }
@@ -290,7 +297,7 @@ public class Capture extends Plugin {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    this.fail("Error capturing image.");
+                    this.fail(createErrorObject(CAPTURE_INTERNAL_ERR, "Error capturing image."));
                 }
             } else if (requestCode == CAPTURE_VIDEO) {
                 // Get the uri of the video clip
@@ -315,7 +322,7 @@ public class Capture extends Plugin {
             }
             // user canceled the action
             else {
-                this.fail("Canceled.");
+                this.fail(createErrorObject(CAPTURE_NO_MEDIA_FILES, "Canceled."));
             }
         }
         // If something else
@@ -326,7 +333,7 @@ public class Capture extends Plugin {
             }
             // something bad happened
             else {
-                this.fail("Did not complete!");
+                this.fail(createErrorObject(CAPTURE_NO_MEDIA_FILES, "Did not complete!"));
             }
         }
     }
@@ -369,13 +376,24 @@ public class Capture extends Plugin {
         
         return obj;
     }
+    
+    private JSONObject createErrorObject(int code, String message) {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("code", code);
+            obj.put("message", message);
+        } catch (JSONException e) {
+            // This will never happen
+        }
+        return obj;
+    }
 
     /**
      * Send error message to JavaScript.
      * 
      * @param err
      */
-    public void fail(String err) {
+    public void fail(JSONObject err) {
         this.error(new PluginResult(PluginResult.Status.ERROR, err), this.callbackId);
     }
 }

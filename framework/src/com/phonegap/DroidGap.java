@@ -19,7 +19,6 @@
 package com.phonegap;
 
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -30,7 +29,6 @@ import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -43,12 +41,10 @@ import android.content.res.Configuration;
 import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -277,8 +273,6 @@ public class DroidGap extends PhonegapActivity {
                 ViewGroup.LayoutParams.FILL_PARENT, 
                 1.0F));
 
-        WebViewReflect.checkCompatibility();
-
         this.appView.setWebChromeClient(new GapClient(DroidGap.this));
         this.setWebViewClient(this.appView, new GapViewClient(this));
 
@@ -313,10 +307,10 @@ public class DroidGap extends PhonegapActivity {
         settings.setDatabasePath(databasePath);
 
         // Enable DOM storage
-        WebViewReflect.setDomStorage(settings);
+        settings.setDomStorageEnabled(true);
         
         // Enable built-in geolocation
-        WebViewReflect.setGeolocationEnabled(settings, true);
+        settings.setGeolocationEnabled(true);
 
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
@@ -325,7 +319,6 @@ public class DroidGap extends PhonegapActivity {
         
         // Clear cancel flag
         this.cancelLoadUrl = false;
-
     }
     
     /**
@@ -1716,14 +1709,18 @@ public class DroidGap extends PhonegapActivity {
                 // If the height as gotten bigger then we will assume the soft keyboard has 
                 // gone away.
                 else if (height > oldHeight) {
-                    LOG.v(TAG, "Throw hide keyboard event");
-                    callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('hidekeyboard');");
+                    if (callbackServer != null) {
+                        LOG.v(TAG, "Throw hide keyboard event");
+                        callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('hidekeyboard');");
+                    }
                 } 
                 // If the height as gotten smaller then we will assume the soft keyboard has 
                 // been displayed.
                 else if (height < oldHeight) {
-                    LOG.v(TAG, "Throw show keyboard event");
-                    callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('showkeyboard');");
+                    if (callbackServer != null) {
+                        LOG.v(TAG, "Throw show keyboard event");
+                        callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('showkeyboard');");
+                    }
                 }
 
                 // Update the old height for the next event

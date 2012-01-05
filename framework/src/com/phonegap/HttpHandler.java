@@ -18,8 +18,8 @@
 */
 package com.phonegap;
 
-import java.io.EOFException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.http.HttpEntity;
@@ -56,27 +56,25 @@ public class HttpHandler {
 		return entity;
 	}
 	
-	private void writeToDisk(HttpEntity entity, String file) throws EOFException
+	private void writeToDisk(HttpEntity entity, String file) throws IllegalStateException, IOException
 	/**
 	 * writes a HTTP entity to the specified filename and location on disk
 	 */
 	{  
 		int i=0;
 		String FilePath="/sdcard/" + file;
-		try {
-			InputStream in = entity.getContent();
-			byte buff[] = new byte[1024];    
-			FileOutputStream out=
-				new FileOutputStream(FilePath);
-			do {
-				int numread = in.read(buff);
-				if (numread <= 0)
-                   	break;
-				out.write(buff, 0, numread);
-				i++;
-			} while (true);
-			out.flush();
-			out.close();	
-		} catch (Exception e) { e.printStackTrace(); }
+		InputStream in = entity.getContent();
+		byte buff[] = new byte[1024];    
+		FileOutputStream out=
+			new FileOutputStream(FilePath);
+		do {
+			int numread = in.read(buff);
+			if (numread <= 0)
+				break;
+			out.write(buff, 0, numread);
+			i++;
+		} while (true);
+		out.flush();
+		out.close();	
 	}
 }

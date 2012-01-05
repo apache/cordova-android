@@ -4,8 +4,8 @@
     <meta name="viewport" content="width=320; user-scalable=no" />
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>PhoneGap</title>
-	  <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title" charset="utf-8">
-	  <script type="text/javascript" charset="utf-8" src="phonegap-1.2.0.js"></script>
+	  <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title">
+	  <script type="text/javascript" charset="utf-8" src="phonegap-1.3.0.js"></script>
 	  <script type="text/javascript" charset="utf-8" src="main.js"></script>
 
   </head>
@@ -29,8 +29,12 @@
     <a href="#" class="btn large" onclick="beep();">Beep</a>
     <a href="#" class="btn large" onclick="vibrate();">Vibrate</a>
     <a href="#" class="btn large" onclick="show_pic();">Get a Picture</a>
-    <a href="#" class="btn large" onclick="get_contacts();">Get Phone's Contacts</a>
-    <a href="#" class="btn large" onclick="check_network();">Check Network</a>
+    <a href="#" class="btn large" onclick="get_contacts();return false;">Get Phone's Contacts</a>
+    <a href="#" class="btn large" onclick="check_network();return false;">Check Network</a>
+    <dl>
+	<dt>Compass Heading:</dt><dd id="h">Off</dd>
+    </dl>
+    <a href="#" class="btn large" onclick="toggleCompass();return false;">Toggle Compass</a>
     <div id="viewport" class="viewport" style="display: none;">
       <img style="width:60px;height:60px" id="test_img" src="" />
     </div>

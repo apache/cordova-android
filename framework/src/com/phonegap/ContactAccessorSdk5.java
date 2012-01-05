@@ -1054,7 +1054,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
       if (organizations != null) {
         for (int i=0; i<organizations.length(); i++) {
           JSONObject org = (JSONObject)organizations.get(i);
-          String orgId = getJsonString(org, "id");;
+          String orgId = getJsonString(org, "id");
           // This is a new organization so do a DB insert
           if (orgId==null) {
             ContentValues contentValues = new ContentValues();
@@ -1094,7 +1094,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
       if (ims != null) {
         for (int i=0; i<ims.length(); i++) {
           JSONObject im = (JSONObject)ims.get(i);
-          String imId = getJsonString(im, "id");;
+          String imId = getJsonString(im, "id");
           // This is a new IM so do a DB insert
           if (imId==null) {
             ContentValues contentValues = new ContentValues();
@@ -1150,7 +1150,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
       if (websites != null) {
         for (int i=0; i<websites.length(); i++) {
           JSONObject website = (JSONObject)websites.get(i);
-          String websiteId = getJsonString(website, "id");;
+          String websiteId = getJsonString(website, "id");
           // This is a new website so do a DB insert
           if (websiteId==null) {
             ContentValues contentValues = new ContentValues();
@@ -1603,10 +1603,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             }
     } catch (RemoteException e) {
       Log.e(LOG_TAG, e.getMessage(), e);
-      newId = null;
     } catch (OperationApplicationException e) {
       Log.e(LOG_TAG, e.getMessage(), e);
-            newId = null;
     }
     return newId;
   }
