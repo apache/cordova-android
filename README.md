@@ -4,7 +4,7 @@ Cordova Android
 Cordova Android is an Android application library that allows for Cordova based projects to be built for the Android Platform. Cordova based applications are, at the core, an application written with web technology: HTML, CSS and JavaScript. 
 
 Apache Cordova is an effort undergoing incubation at The Apache
-Software Foundation (ASF), sponsored by the name of Apache Incubator.
+Software Foundation (ASF), sponsored by the Apache Incubator project.
 Incubation is required of all newly accepted projects until a further
 review indicates that the infrastructure, communications, and decision
 making process have stabilized in a manner consistent with other
