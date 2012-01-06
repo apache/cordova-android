@@ -819,50 +819,49 @@ public class ContactAccessorSdk5 extends ContactAccessor {
   public String save(JSONObject contact) {
     AccountManager mgr = AccountManager.get(mApp);
     Account[] accounts = mgr.getAccounts();
-    Account account = null;
+    String accountName = null;
+    String accountType = null;
 
-    if (accounts.length == 1)
-      account = accounts[0];
-    else if (accounts.length > 1) {
-      for(Account a : accounts){
-        if(a.type.contains("eas")&& a.name.matches(EMAIL_REGEXP)) /*Exchange ActiveSync*/
-        {
-          account = a;
-          break;
-        }
-      } 
-      if(account == null){
-        for(Account a : accounts){
-          if(a.type.contains("com.google") && a.name.matches(EMAIL_REGEXP)) /*Google sync provider*/
-          {
-            account = a;
-            break;
-          }
-        }
-      }
-      if(account == null){
-        for(Account a : accounts){
-          if(a.name.matches(EMAIL_REGEXP)) /*Last resort, just look for an email address...*/
-          {
-            account = a;
-            break;
-          }
-        } 
-      }
+    if (accounts.length == 1) {
+        accountName = accounts[0].name;
+        accountType = accounts[0].type;
     }
-    
-    if(account == null) {
-      return null;
+    else if (accounts.length > 1) {
+        for(Account a : accounts) {
+            if(a.type.contains("eas")&& a.name.matches(EMAIL_REGEXP)) /*Exchange ActiveSync*/ {
+                accountName = a.name;
+                accountType = a.type;
+                break;
+            }
+        } 
+        if(accountName == null){
+            for(Account a : accounts){
+                if(a.type.contains("com.google") && a.name.matches(EMAIL_REGEXP)) /*Google sync provider*/ {
+                    accountName = a.name;
+                    accountType = a.type;
+                    break;
+                }
+            }
+        }
+        if(accountName == null){
+            for(Account a : accounts){
+                if(a.name.matches(EMAIL_REGEXP)) /*Last resort, just look for an email address...*/ {
+                    accountName = a.name;
+                    accountType = a.type;
+                    break;
+                }
+            }
+        }
     }
 
     String id = getJsonString(contact, "id");
     // Create new contact
     if (id == null) {
-      return createNewContact(contact, account);
+      return createNewContact(contact, accountType, accountName);
     }
     // Modify existing contact
     else {
-      return modifyContact(id, contact, account);
+      return modifyContact(id, contact, accountType, accountName);
     }
   }
 
@@ -873,7 +872,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
    * @param contact the contact to be saved
    * @param account the account to be saved under
    */
-  private String modifyContact(String id, JSONObject contact, Account account) {
+  private String modifyContact(String id, JSONObject contact, String accountType, String accountName) {
     // Get the RAW_CONTACT_ID which is needed to insert new values in an already existing contact.
     // But not needed to update existing values.
     int rawId = (new Integer(getJsonString(contact,"rawId"))).intValue();
@@ -883,8 +882,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     
     //Add contact type
     ops.add(ContentProviderOperation.newUpdate(ContactsContract.RawContacts.CONTENT_URI)
-            .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, account.type)
-            .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, account.name)
+            .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, accountType)
+            .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, accountName)
             .build());
     
     // Modify name
@@ -1427,14 +1426,14 @@ public class ContactAccessorSdk5 extends ContactAccessor {
    * @param contact the contact to be saved
    * @param account the account to be saved under
    */
-  private String createNewContact(JSONObject contact, Account account) {
+  private String createNewContact(JSONObject contact, String accountType, String accountName) {
     // Create a list of attributes to add to the contact database
     ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 
     //Add contact type
     ops.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
-            .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, account.type)
-            .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, account.name)
+            .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, accountType)
+            .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, accountName)
             .build());
 
     // Add name
