@@ -18,16 +18,18 @@
 */
 package com.phonegap;
 
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Stack;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.Iterator;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -55,6 +57,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions.Callback;
+import android.webkit.HttpAuthHandler;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
@@ -67,11 +70,10 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import com.phonegap.api.IPlugin;
 import com.phonegap.api.LOG;
 import com.phonegap.api.PhonegapActivity;
-import com.phonegap.api.IPlugin;
 import com.phonegap.api.PluginManager;
-import 	org.xmlpull.v1.XmlPullParserException;
 
 /**
  * This class is the main Android activity that represents the PhoneGap
@@ -199,6 +201,9 @@ public class DroidGap extends PhonegapActivity {
     // (this is not the color for the webview, which is set in HTML)
     private int backgroundColor = Color.BLACK;
     
+    /** The authorization tokens. */
+    private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
+    
     /*
      * The variables below are used to cache some of the activity properties.
      */
@@ -217,6 +222,88 @@ public class DroidGap extends PhonegapActivity {
 
     private boolean classicRender;
 
+    /**
+     * Sets the authentication token.
+     * 
+     * @param authenticationToken
+     *            the authentication token
+     * @param host
+     *            the host
+     * @param realm
+     *            the realm
+     */
+    public void setAuthenticationToken(AuthenticationToken authenticationToken, String host, String realm) {
+        
+        if(host == null) {
+            host = "";
+        }
+        
+        if(realm == null) {
+            realm = "";
+        }
+        
+        authenticationTokens.put(host.concat(realm), authenticationToken);
+    }
+    
+    /**
+     * Removes the authentication token.
+     * 
+     * @param host
+     *            the host
+     * @param realm
+     *            the realm
+     * @return the authentication token or null if did not exist
+     */
+    public AuthenticationToken removeAuthenticationToken(String host, String realm) {
+        return authenticationTokens.remove(host.concat(realm));
+    }
+    
+    /**
+     * Gets the authentication token.
+     * 
+     * In order it tries:
+     * 1- host + realm
+     * 2- host
+     * 3- realm
+     * 4- no host, no realm
+     * 
+     * @param host
+     *            the host
+     * @param realm
+     *            the realm
+     * @return the authentication token
+     */
+    public AuthenticationToken getAuthenticationToken(String host, String realm) {
+        AuthenticationToken token = null;
+        
+        token = authenticationTokens.get(host.concat(realm));
+        
+        if(token == null) {
+            // try with just the host
+            token = authenticationTokens.get(host);
+            
+            // Try the realm
+            if(token == null) {
+                token = authenticationTokens.get(realm);
+            }
+            
+            // if no host found, just query for default
+            if(token == null) {      
+                token = authenticationTokens.get("");
+            }
+        }
+        
+        return token;
+    }
+    
+    /**
+     * Clear all authentication tokens.
+     */
+    public void clearAuthenticationTokens() {
+        authenticationTokens.clear();
+    }
+    
+    
     /** 
      * Called when the activity is first created. 
      * 
@@ -364,15 +451,15 @@ public class DroidGap extends PhonegapActivity {
      * @param url
      */
     public void loadUrl(String url) {
-    	
-    	// If first page of app, then set URL to load to be the one passed in
-    	if (this.initUrl == null || (this.urls.size() > 0)) {
-    		this.loadUrlIntoView(url);
-    	}
-    	// Otherwise use the URL specified in the activity's extras bundle
-    	else {
-    		this.loadUrlIntoView(this.initUrl);
-    	}
+        
+        // If first page of app, then set URL to load to be the one passed in
+        if (this.initUrl == null || (this.urls.size() > 0)) {
+            this.loadUrlIntoView(url);
+        }
+        // Otherwise use the URL specified in the activity's extras bundle
+        else {
+            this.loadUrlIntoView(this.initUrl);
+        }
     }
     
     /**
@@ -434,10 +521,10 @@ public class DroidGap extends PhonegapActivity {
                 // If loadingDialog property, then show the App loading dialog for first page of app
                 String loading = null;
                 if (me.urls.size() == 1) {
-                	loading = me.getStringProperty("loadingDialog", null);
+                    loading = me.getStringProperty("loadingDialog", null);
                 }
                 else {
-                	loading = me.getStringProperty("loadingPageDialog", null);                	
+                    loading = me.getStringProperty("loadingPageDialog", null);                  
                 }
                 if (loading != null) {
 
@@ -493,15 +580,15 @@ public class DroidGap extends PhonegapActivity {
      * @param time              The number of ms to wait before loading webview
      */
     public void loadUrl(final String url, int time) {
-    	
-    	// If first page of app, then set URL to load to be the one passed in
-    	if (this.initUrl == null || (this.urls.size() > 0)) {
-    		this.loadUrlIntoView(url, time);
-    	}
-    	// Otherwise use the URL specified in the activity's extras bundle
-    	else {
-    		this.loadUrlIntoView(this.initUrl);
-    	}
+        
+        // If first page of app, then set URL to load to be the one passed in
+        if (this.initUrl == null || (this.urls.size() > 0)) {
+            this.loadUrlIntoView(url, time);
+        }
+        // Otherwise use the URL specified in the activity's extras bundle
+        else {
+            this.loadUrlIntoView(this.initUrl);
+        }
     }
 
     /**
@@ -515,14 +602,14 @@ public class DroidGap extends PhonegapActivity {
 
         // Clear cancel flag
         this.cancelLoadUrl = false;
-    	
-    	// If not first page of app, then load immediately
-        if (this.urls.size() > 0) {
-    		this.loadUrlIntoView(url);
-    	}
         
-    	if (!url.startsWith("javascript:")) {
-    	    LOG.d(TAG, "DroidGap.loadUrl(%s, %d)", url, time);
+        // If not first page of app, then load immediately
+        if (this.urls.size() > 0) {
+            this.loadUrlIntoView(url);
+        }
+        
+        if (!url.startsWith("javascript:")) {
+            LOG.d(TAG, "DroidGap.loadUrl(%s, %d)", url, time);
         }
         final DroidGap me = this;
 
@@ -1358,6 +1445,32 @@ public class DroidGap extends PhonegapActivity {
             return true;
         }
         
+        /**
+         * On received http auth request.
+         * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination 
+         * 
+         * @param view
+         *            the view
+         * @param handler
+         *            the handler
+         * @param host
+         *            the host
+         * @param realm
+         *            the realm
+         */
+        @Override
+        public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host,
+                String realm) {
+           
+            // get the authentication token
+            AuthenticationToken token = getAuthenticationToken(host,realm);
+            
+            if(token != null) {
+                handler.proceed(token.getUserName(), token.getPassword());
+            }
+        }
+
+        
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
 
@@ -1732,7 +1845,7 @@ public class DroidGap extends PhonegapActivity {
     /**
      * Load PhoneGap configuration from res/xml/phonegap.xml.
      * Approved list of URLs that can be loaded into DroidGap
-     * 		<access origin="http://server regexp" subdomains="true" />
+     *      <access origin="http://server regexp" subdomains="true" />
      * Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
      *      <log level="DEBUG" />
      */

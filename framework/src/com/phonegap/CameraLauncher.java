@@ -101,7 +101,7 @@ public class CameraLauncher extends Plugin {
         try {
             if (action.equals("takePicture")) {
                 int srcType = CAMERA;
-                int destType = DATA_URL;
+                int destType = FILE_URI;
                 this.targetHeight = 0;
                 this.targetWidth = 0;
                 this.encodingType = JPEG;
