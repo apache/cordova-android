@@ -215,6 +215,8 @@ public class DroidGap extends PhonegapActivity {
     // when another application (activity) is started.
     protected boolean keepRunning = true;
 
+    private boolean classicRender;
+
     /** 
      * Called when the activity is first created. 
      * 
@@ -274,7 +276,19 @@ public class DroidGap extends PhonegapActivity {
         this.appView.setWebChromeClient(new GapClient(DroidGap.this));
         this.setWebViewClient(this.appView, new GapViewClient(this));
 
-        this.appView.setInitialScale(0);
+        //14 is Ice Cream Sandwich!
+        if(android.os.Build.VERSION.SDK_INT < 14 && this.classicRender)
+        {
+            //This hack fixes legacy PhoneGap apps
+            //We should be using real pixels, not pretend pixels
+            final float scale = getResources().getDisplayMetrics().density;
+            int initialScale = (int) (scale * 100);
+            this.appView.setInitialScale(initialScale);
+        }
+        else
+        {
+            this.appView.setInitialScale(0);
+        }
         this.appView.setVerticalScrollBarEnabled(false);
         this.appView.requestFocusFromTouch();
 
@@ -1746,6 +1760,14 @@ public class DroidGap extends PhonegapActivity {
                     if (level != null) {
                         LOG.setLogLevel(level);
                     }
+                }
+                else if(strNode.equals("render")) {
+                    String enabled = xml.getAttributeValue(null, "enabled");
+                    if(enabled != null)
+                    {
+                        this.classicRender = enabled.equals("true");
+                    }
+                    
                 }
             }
             try {
