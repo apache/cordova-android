@@ -75,6 +75,9 @@ import com.phonegap.api.LOG;
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.PluginManager;
 
+import com.phonegap.PreferenceNode;
+import com.phonegap.PreferenceSet;
+
 /**
  * This class is the main Android activity that represents the PhoneGap
  * application.  It should be extended by the user to load the specific
@@ -220,6 +223,9 @@ public class DroidGap extends PhonegapActivity {
     // when another application (activity) is started.
     protected boolean keepRunning = true;
 
+    // preferences read from phonegap.xml
+    protected PreferenceSet preferences;
+
     private boolean classicRender;
 
     /**
@@ -311,6 +317,8 @@ public class DroidGap extends PhonegapActivity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        preferences = new PreferenceSet();
+
         LOG.d(TAG, "DroidGap.onCreate()");
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -1880,7 +1888,17 @@ public class DroidGap extends PhonegapActivity {
                     {
                         this.classicRender = enabled.equals("true");
                     }
-                    
+                }
+                else if (strNode.equals("preference")) {
+                    String name = xml.getAttributeValue(null, "name");
+                    String value = xml.getAttributeValue(null, "value");
+                    String readonlyString = xml.getAttributeValue(null, "readonly");
+
+                    boolean readonly = (readonlyString.equals("true"));
+
+                    LOG.i("PhoneGapLog", "Found preference for %s", name);
+
+                    preferences.add(new PreferenceNode(name, value, readonly));
                 }
             }
             try {
