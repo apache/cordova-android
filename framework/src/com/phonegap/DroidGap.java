@@ -75,6 +75,9 @@ import com.phonegap.api.LOG;
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.PluginManager;
 
+import com.phonegap.PreferenceNode;
+import com.phonegap.PreferenceSet;
+
 /**
  * This class is the main Android activity that represents the PhoneGap
  * application.  It should be extended by the user to load the specific
@@ -220,6 +223,9 @@ public class DroidGap extends PhonegapActivity {
     // when another application (activity) is started.
     protected boolean keepRunning = true;
 
+    // preferences read from phonegap.xml
+    protected PreferenceSet preferences;
+
     private boolean classicRender;
 
     /**
@@ -311,13 +317,27 @@ public class DroidGap extends PhonegapActivity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        preferences = new PreferenceSet();
+
+        // Load PhoneGap configuration:
+        //      white list of allowed URLs
+        //      debug setting
+        this.loadConfiguration();
+
         LOG.d(TAG, "DroidGap.onCreate()");
         super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
 
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+
+        if (preferences.prefMatches("fullscreen","true")) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+        }
+
+        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
         Display display = getWindowManager().getDefaultDisplay(); 
         int width = display.getWidth();
         int height = display.getHeight();
@@ -327,11 +347,6 @@ public class DroidGap extends PhonegapActivity {
         root.setBackgroundColor(this.backgroundColor);
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
                 ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
-        
-        // Load PhoneGap configuration:
-        //      white list of allowed URLs
-        //      debug setting
-        this.loadConfiguration();
 
         // If url was passed in to intent, then init webview, which will load the url
         Bundle bundle = this.getIntent().getExtras();
@@ -1880,7 +1895,18 @@ public class DroidGap extends PhonegapActivity {
                     {
                         this.classicRender = enabled.equals("true");
                     }
-                    
+                }
+                else if (strNode.equals("preference")) {
+                    String name = xml.getAttributeValue(null, "name");
+                    String value = xml.getAttributeValue(null, "value");
+                    String readonlyString = xml.getAttributeValue(null, "readonly");
+
+                    boolean readonly = (readonlyString != null &&
+                                        readonlyString.equals("true"));
+
+                    LOG.i("PhoneGapLog", "Found preference for %s", name);
+
+                    preferences.add(new PreferenceNode(name, value, readonly));
                 }
             }
             try {
