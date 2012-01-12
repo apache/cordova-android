@@ -101,7 +101,7 @@ public class FileUtils extends Plugin {
                     return new PluginResult(status, b);
                 }
                 else if (action.equals("getFreeDiskSpace")) {
-                    long l = DirectoryManager.getFreeDiskSpace();
+                    long l = DirectoryManager.getFreeDiskSpace(false);
                     return new PluginResult(status, l);
                 }
                 else if (action.equals("testFileExists")) {
@@ -131,7 +131,7 @@ public class FileUtils extends Plugin {
                 else if (action.equals("requestFileSystem")) {
                     long size = args.optLong(1);
                     if (size != 0) {
-                        if (size > (DirectoryManager.getFreeDiskSpace()*1024)) {
+                        if (size > (DirectoryManager.getFreeDiskSpace(true)*1024)) {
                             JSONObject error = new JSONObject().put("code", FileUtils.QUOTA_EXCEEDED_ERR);
                             return new PluginResult(PluginResult.Status.ERROR, error);
                         }
@@ -793,34 +793,29 @@ public class FileUtils extends Plugin {
     private JSONObject requestFileSystem(int type) throws IOException, JSONException {
         JSONObject fs = new JSONObject();
         if (type == TEMPORARY) {
+            File fp;
+            fs.put("name", "temporary");
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                fs.put("name", "temporary");
                 fs.put("root", getEntry(Environment.getExternalStorageDirectory().getAbsolutePath() +
                         "/Android/data/" + ctx.getPackageName() + "/cache/"));
 
                 // Create the cache dir if it doesn't exist.
-                File fp = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
+                fp = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
                     "/Android/data/" + ctx.getPackageName() + "/cache/");
-                fp.mkdirs();
             } else {
-                throw new IOException("SD Card not mounted");
+                fs.put("root", getEntry("/data/data/" + ctx.getPackageName() + "/cache/"));
+                // Create the cache dir if it doesn't exist.
+                fp = new File("/data/data/" + ctx.getPackageName() + "/cache/");
             }
+            fp.mkdirs();
         }
         else if (type == PERSISTENT) {
+            fs.put("name", "persistent");
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                fs.put("name", "persistent");
                 fs.put("root", getEntry(Environment.getExternalStorageDirectory()));
             } else {
-                throw new IOException("SD Card not mounted");
+                fs.put("root", getEntry("/data/data/" + ctx.getPackageName()));
             }
-        }
-        else if (type == RESOURCE) {
-            fs.put("name", "resource");
-
-        }
-        else if (type == APPLICATION) {
-            fs.put("name", "application");
-
         }
         else {
             throw new IOException("No filesystem of type requested");

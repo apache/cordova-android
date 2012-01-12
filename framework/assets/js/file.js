@@ -928,11 +928,9 @@ LocalFileSystem.prototype._castFS = function(pluginResult) {
 LocalFileSystem.prototype._castEntry = function(pluginResult) {
     var entry = null;
     if (pluginResult.message.isDirectory) {
-        console.log("This is a dir");
         entry = new DirectoryEntry();
     }
     else if (pluginResult.message.isFile) {
-        console.log("This is a file");
         entry = new FileEntry();
     }
     entry.isDirectory = pluginResult.message.isDirectory;
@@ -956,11 +954,9 @@ LocalFileSystem.prototype._castEntries = function(pluginResult) {
 LocalFileSystem.prototype._createEntry = function(castMe) {
     var entry = null;
     if (castMe.isDirectory) {
-        console.log("This is a dir");
         entry = new DirectoryEntry();
     }
     else if (castMe.isFile) {
-        console.log("This is a file");
         entry = new FileEntry();
     }
     entry.isDirectory = castMe.isDirectory;
