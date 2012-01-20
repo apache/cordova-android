@@ -127,7 +127,7 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         options.maxResolution = 0;
     }
     if (options.destinationType === null || typeof options.destinationType === "undefined") {
-        options.destinationType = Camera.DestinationType.DATA_URL;
+        options.destinationType = Camera.DestinationType.FILE_URI;
     }
     if (options.sourceType === null || typeof options.sourceType === "undefined") {
         options.sourceType = Camera.PictureSourceType.CAMERA;

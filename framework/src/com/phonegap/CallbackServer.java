@@ -314,9 +314,10 @@ public class CallbackServer implements Runnable {
 	 * @return int
 	 */
 	public int getSize() {
-		int size = this.javascript.size();
-		//System.out.println("getSize() = " + size);
-		return size;
+	    synchronized(this) {
+	        int size = this.javascript.size();
+	        return size;
+	    }
 	}
 	
 	/**
@@ -325,17 +326,16 @@ public class CallbackServer implements Runnable {
 	 * @return String
 	 */
 	public String getJavascript() {
-		if (this.javascript.size() == 0) {
-			return null;
-		}
-		String statement = this.javascript.remove(0);
-		//System.out.println("CallbackServer.getJavascript() = " + statement);
-		if (this.javascript.size() == 0) {
-			synchronized (this) { 
-				this.empty = true;
-			}
-		}
-		return statement;
+	    synchronized(this) {
+	        if (this.javascript.size() == 0) {
+	            return null;
+	        }
+	        String statement = this.javascript.remove(0);
+	        if (this.javascript.size() == 0) { 
+	            this.empty = true;
+	        }
+	        return statement;
+	    }
 	}
 	
 	/**
@@ -344,12 +344,11 @@ public class CallbackServer implements Runnable {
 	 * @param statement
 	 */
 	public void sendJavascript(String statement) {
-		//System.out.println("CallbackServer.sendJavascript("+statement+")");
-		this.javascript.add(statement);
-		synchronized (this) { 
-			this.empty = false;
-			this.notify();
-		}
+	    synchronized (this) { 
+	        this.javascript.add(statement);
+	        this.empty = false;
+	        this.notify();
+	    }
 	}
 	
 	/* The Following code has been modified from original implementation of URLEncoder */

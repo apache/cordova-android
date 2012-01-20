@@ -1,7 +1,16 @@
-PhoneGap Android
+Cordova Android
 ===
 
-PhoneGap Android is an Android application library that allows for PhoneGap based projects to be built for the Android Platform. PhoneGap based applications are, at the core, an application written with web technology: HTML, CSS and JavaScript. 
+Cordova Android is an Android application library that allows for Cordova based projects to be built for the Android Platform. Cordova based applications are, at the core, an application written with web technology: HTML, CSS and JavaScript. 
+
+Apache Cordova is an effort undergoing incubation at The Apache
+Software Foundation (ASF), sponsored by the Apache Incubator project.
+Incubation is required of all newly accepted projects until a further
+review indicates that the infrastructure, communications, and decision
+making process have stabilized in a manner consistent with other
+successful ASF projects. While incubation status is not necessarily
+a reflection of the completeness or stability of the code, it does
+indicate that the project has yet to be fully endorsed by the ASF.
 
 Requires
 ---
@@ -10,21 +19,21 @@ Requires
 - Apache ANT
 - Android SDK [http://developer.android.com](http://developer.android.com)
 
-PhoneGap Android Developer Tools
+Cordova Android Developer Tools
 ---
 
-The PhoneGap developer tooling is split between general tooling and project level tooling. 
+The Cordova developer tooling is split between general tooling and project level tooling. 
 
 General Commands
 
-    ./bin/create [path package activity] ... create the ./example app or a phonegap android project
+    ./bin/create [path package activity] ... create the ./example app or a cordova android project
     ./bin/bench ............................ generate a bench proj
     ./bin/autotest ......................... test the cli tools
     ./bin/test ............................. run mobile-spec
 
 Project Commands
 
-These commands live in a generated PhoneGap Android project.
+These commands live in a generated Cordova Android project.
 
     ./phonegap/debug [path] ..................... install to first device
     ./phonegap/emulate .......................... start avd (emulator) named default
@@ -52,12 +61,12 @@ Running the [callback/callback-test](http://github.com/callback/callback-test) t
 
     ./bin/test
 
-Creating a new PhoneGap Android Project
+Creating a new Cordova Android Project
 ---
 
     ./bin/create ~/Desktop/myapp com.phonegap.special MyApp
 
-Importing a PhoneGap Android Project into Eclipse
+Importing a Cordova Android Project into Eclipse
 ----
 
 1. File > New > Project...
