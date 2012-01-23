@@ -20,8 +20,7 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         super(context);     
         screenWidth = width;
         screenHeight = height;
-        if(context.getClass().getSimpleName().equals("DroidGap"))
-            app = (DroidGap) app;
+        app = (DroidGap) context;
     }
 
     @Override
@@ -30,9 +29,7 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
      * gets smaller fire a show keyboard event and when height gets bigger fire 
      * a hide keyboard event.
      * 
-     * Note: We are using callbackServer.sendJavascript() instead of 
-     * this.appView.loadUrl() as changing the URL of the app would cause the 
-     * soft keyboard to go away.
+     * Note: We are using app.postMessage so that this is more compatible with the API
      * 
      * @param widthMeasureSpec
      * @param heightMeasureSpec
@@ -43,10 +40,11 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         LOG.v(TAG, "We are in our onMeasure method");
 
         // Get the current height of the visible part of the screen.
-        // This height will not included the status bar.
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
+        // This height will not included the status bar.\
+        int width, height;
 
+        height = MeasureSpec.getSize(heightMeasureSpec);
+        width = MeasureSpec.getSize(widthMeasureSpec);
         LOG.v(TAG, "Old Height = %d", oldHeight);
         LOG.v(TAG, "Height = %d", height);             
         LOG.v(TAG, "Old Width = %d", oldWidth);
@@ -76,12 +74,6 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         else if (height < oldHeight) {
             if(app != null)
                 app.postMessage("keyboardVisible", null);
-            /*
-            if (callbackServer != null) {
-                LOG.v(TAG, "Throw show keyboard event");
-                callbackServer.sendJavascript("PhoneGap.fireDocumentEvent('showkeyboard');");
-            }
-            */
         }
 
         // Update the old height for the next event
