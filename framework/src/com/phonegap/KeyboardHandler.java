@@ -19,7 +19,6 @@ public class KeyboardHandler extends Plugin {
         return null;
     }
 
-    @Override
     public void onMessage(String id, Object data)
     {
         if(id.equals("keyboardHidden"))

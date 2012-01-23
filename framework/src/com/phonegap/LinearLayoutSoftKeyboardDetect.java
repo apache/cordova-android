@@ -67,13 +67,13 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         // gone away.
         else if (height > oldHeight) {
             if(app != null)
-                app.postMessage("hideKeyboard", null);
+                app.sendJavascript("PhoneGap.fireDocumentEvent('hidekeyboard');");
         } 
         // If the height as gotten smaller then we will assume the soft keyboard has 
         // been displayed.
         else if (height < oldHeight) {
             if(app != null)
-                app.postMessage("keyboardVisible", null);
+                app.sendJavascript("PhoneGap.fireDocumentEvent('showkeyboard');");
         }
 
         // Update the old height for the next event
