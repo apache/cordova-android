@@ -54,7 +54,7 @@ import com.phonegap.api.PluginResult;
 
 public class FileTransfer extends Plugin {
 
-    private static final String LOG_TAG = "FileUploader";
+    private static final String LOG_TAG = "FileTransfer";
     private static final String LINE_START = "--";
     private static final String LINE_END = "\r\n";
     private static final String BOUNDRY =  "*****";
@@ -386,7 +386,6 @@ public class FileTransfer extends Plugin {
             URL url = new URL(source);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            connection.setDoOutput(true);
             connection.connect();
 
             Log.d(LOG_TAG, "Download file:" + url);
