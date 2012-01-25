@@ -84,11 +84,11 @@ public class PluginResult {
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
-		return "Cordova.callbackSuccess('"+callbackId+"',"+this.getJSONString()+");";
+		return "require('cordova').callbackSuccess('"+callbackId+"',"+this.getJSONString()+");";
 	}
 	
 	public String toErrorCallbackString(String callbackId) {
-		return "Cordova.callbackError('"+callbackId+"', " + this.getJSONString()+ ");";
+		return "require('cordova').callbackError('"+callbackId+"', " + this.getJSONString()+ ");";
 	}
 	
 	public static String[] StatusMessages = new String[] {
