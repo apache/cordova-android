@@ -59,6 +59,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
      * Constructor.
      */
     public CompassListener() {
+        this.heading = 0.0;
         this.timeStamp = 0;
         this.setStatus(CompassListener.STOPPED);
     }
@@ -99,10 +100,10 @@ public class CompassListener extends Plugin implements SensorEventListener {
             }
             else if (action.equals("getHeading")) {
                 // If not running, then this is an async call, so don't worry about waiting
-                if (this.status != RUNNING) {
+                if (this.status != CompassListener.RUNNING) {
                     int r = this.start();
-                    if (r == ERROR_FAILED_TO_START) {
-                        return new PluginResult(PluginResult.Status.IO_EXCEPTION, ERROR_FAILED_TO_START);
+                    if (r == CompassListener.ERROR_FAILED_TO_START) {
+                        return new PluginResult(PluginResult.Status.IO_EXCEPTION, CompassListener.ERROR_FAILED_TO_START);
                     }
                     // Wait until running
                     long timeout = 2000;
@@ -115,10 +116,9 @@ public class CompassListener extends Plugin implements SensorEventListener {
                         }
                     }
                     if (timeout == 0) {
-                        return new PluginResult(PluginResult.Status.IO_EXCEPTION, AccelListener.ERROR_FAILED_TO_START);                     
+                        return new PluginResult(PluginResult.Status.IO_EXCEPTION, CompassListener.ERROR_FAILED_TO_START);                     
                     }
                 }
-                //float f = this.getHeading();
                 return new PluginResult(status, getCompassHeading());
             }
             else if (action.equals("setTimeout")) {
@@ -127,6 +127,9 @@ public class CompassListener extends Plugin implements SensorEventListener {
             else if (action.equals("getTimeout")) {
                 long l = this.getTimeout();
                 return new PluginResult(status, l);
+            } else {
+                // Unsupported action
+                return new PluginResult(PluginResult.Status.INVALID_ACTION);
             }
             return new PluginResult(status, result);
         } catch (JSONException e) {
@@ -147,7 +150,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
         }
         else if (action.equals("getHeading")) {
             // Can only return value if RUNNING
-            if (this.status == RUNNING) {
+            if (this.status == CompassListener.RUNNING) {
                 return true;
             }
         }
@@ -180,11 +183,11 @@ public class CompassListener extends Plugin implements SensorEventListener {
             return this.status;
         }
 
-        // Get accelerometer from sensor manager
+        // Get compass sensor from sensor manager
         List<Sensor> list = this.sensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
 
         // If found, then register as listener
-        if (list.size() > 0) {
+        if (list != null && list.size() > 0) {
             this.mSensor = list.get(0);
             this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_NORMAL);
             this.lastAccessTime = System.currentTimeMillis();

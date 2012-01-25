@@ -148,7 +148,10 @@ public class AccelListener extends Plugin implements SensorEventListener {
 			else if (action.equals("getTimeout")) {
 				float f = this.getTimeout();
 				return new PluginResult(status, f);
-			}
+			} else {
+        // Unsupported action
+        return new PluginResult(PluginResult.Status.INVALID_ACTION);
+      }
 			return new PluginResult(status, result);
 		} catch (JSONException e) {
 			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
@@ -167,7 +170,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
 		}
 		else if (action.equals("getAcceleration")) {
 			// Can only return value if RUNNING
-			if (this.status == RUNNING) {
+			if (this.status == AccelListener.RUNNING) {
 				return true;
 			}
 		}
