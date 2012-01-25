@@ -59,7 +59,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
      * Constructor.
      */
     public CompassListener() {
-        this.heading = 0.0;
+        this.heading = 0;
         this.timeStamp = 0;
         this.setStatus(CompassListener.STOPPED);
     }
