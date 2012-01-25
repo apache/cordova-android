@@ -19,6 +19,16 @@ Requires
 - Apache ANT
 - Android SDK [http://developer.android.com](http://developer.android.com)
 
+
+Building
+---
+
+To create your phonegap.jar, run in the framework directory:
+
+    android update project -p . -t android-15
+    ant jar
+
+
 Cordova Android Developer Tools
 ---
 
