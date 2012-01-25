@@ -847,7 +847,7 @@ public class DroidGap extends CordovaInterface {
         }
 
         // Send pause event to JavaScript
-        this.appView.loadUrl("javascript:try{Cordova.fireDocumentEvent('pause');}catch(e){};");
+        this.appView.loadUrl("javascript:try{require('cordova/channel').onPause.fire();}catch(e){console.log('exception firing pause event from native');};");
 
         // Forward to plugins
         this.pluginManager.onPause(this.keepRunning);
@@ -888,7 +888,7 @@ public class DroidGap extends CordovaInterface {
         }
 
         // Send resume event to JavaScript
-        this.appView.loadUrl("javascript:try{Cordova.fireDocumentEvent('resume');}catch(e){};");
+        this.appView.loadUrl("javascript:try{require('cordova/channel').onResume.fire();}catch(e){console.log('exception firing resume event from native');};");
 
         // Forward to plugins
         this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
@@ -918,7 +918,7 @@ public class DroidGap extends CordovaInterface {
 
 
             // Send destroy event to JavaScript
-            this.appView.loadUrl("javascript:try{Cordova.onDestroy.fire();}catch(e){};");
+            this.appView.loadUrl("javascript:try{require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
 
             // Load blank page so that JavaScript onunload is called
             this.appView.loadUrl("about:blank");
@@ -1080,7 +1080,7 @@ public class DroidGap extends CordovaInterface {
 
             // If back key is bound, then send event to JavaScript
             if (this.bound) {
-                this.appView.loadUrl("javascript:Cordova.fireDocumentEvent('backbutton');");
+                this.appView.loadUrl("javascript:require('cordova').fireDocumentEvent('backbutton');");
                 return true;
             }
 
@@ -1102,13 +1102,13 @@ public class DroidGap extends CordovaInterface {
 
         // If menu key
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
-            this.appView.loadUrl("javascript:Cordova.fireDocumentEvent('menubutton');");
+            this.appView.loadUrl("javascript:require('cordova').fireDocumentEvent('menubutton');");
             return super.onKeyDown(keyCode, event);
         }
 
         // If search key
         else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-            this.appView.loadUrl("javascript:Cordova.fireDocumentEvent('searchbutton');");
+            this.appView.loadUrl("javascript:require('cordova').fireDocumentEvent('searchbutton');");
             return true;
         }
 
