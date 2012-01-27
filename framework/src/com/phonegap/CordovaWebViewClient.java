@@ -27,6 +27,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
@@ -40,6 +41,7 @@ public class CordovaWebViewClient extends WebViewClient {
     
     private static final String TAG = "Cordova";
     DroidGap ctx;
+    private boolean doClearHistory = false;
 
     /**
      * Constructor.
@@ -185,6 +187,7 @@ public class CordovaWebViewClient extends WebViewClient {
         // Clear history so history.back() doesn't do anything.  
         // So we can reinit() native side CallbackServer & PluginManager.
         view.clearHistory(); 
+        this.doClearHistory = true;
     }
     
     /**
@@ -196,6 +199,17 @@ public class CordovaWebViewClient extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
+
+        /**
+         * Because of a timing issue we need to clear this history in onPageFinished as well as 
+         * onPageStarted. However we only want to do this if the doClearHistory boolean is set to 
+         * true. You see when you load a url with a # in it which is common in jQuery applications
+         * onPageStared is not called. Clearing the history at that point would break jQuery apps.
+         */
+        if (this.doClearHistory) {
+            view.clearHistory();
+            this.doClearHistory = false;
+        }
 
         // Clear timeout flag
         this.ctx.loadUrlTimeout++;
