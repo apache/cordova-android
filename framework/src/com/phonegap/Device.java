@@ -37,7 +37,7 @@ import android.telephony.TelephonyManager;
 public class Device extends Plugin {
     public static final String TAG = "Device";
 
-    public static String phonegapVersion = "1.4.0rc1";             // PhoneGap version
+    public static String phonegapVersion = "1.4.0";             // PhoneGap version
 	public static String platform = "Android";					// Device OS
 	public static String uuid;									// Device UUID
     
