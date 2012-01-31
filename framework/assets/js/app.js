@@ -76,19 +76,6 @@ App.prototype.backHistory = function() {
 };
 
 /**
- * Override the default behavior of the Android back button.
- * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.
- *
- * Note: The user should not have to call this method.  Instead, when the user
- *       registers for the "backbutton" event, this is automatically done.
- *
- * @param override		T=override, F=cancel override
- */
-App.prototype.overrideBackbutton = function(override) {
-    PhoneGap.exec(null, null, "App", "overrideBackbutton", [override]);
-};
-
-/**
  * Exit and terminate the application.
  */
 App.prototype.exitApp = function() {
