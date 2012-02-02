@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("camera")) {
-PhoneGap.addResource("camera");
+if (!Cordova.hasResource("camera")) {
+Cordova.addResource("camera");
 
 /**
  * This class provides access to the device camera.
@@ -157,10 +157,10 @@ Camera.prototype.getPicture = function(successCallback, errorCallback, options) 
         }
     }
     
-    PhoneGap.exec(successCallback, errorCallback, "Camera", "takePicture", [options]);
+    Cordova.exec(successCallback, errorCallback, "Camera", "takePicture", [options]);
 };
 
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     if (typeof navigator.camera === "undefined") {
         navigator.camera = new Camera();
     }

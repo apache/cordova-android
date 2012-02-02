@@ -23,8 +23,8 @@
  * most manufacturers ship with Android 1.5 and do not do OTA Updates, this is required
  */
 
-if (!PhoneGap.hasResource("storage")) {
-PhoneGap.addResource("storage");
+if (!Cordova.hasResource("storage")) {
+Cordova.addResource("storage");
 
 /**
  * SQL result set object
@@ -153,7 +153,7 @@ DroidDB.prototype.fail = function(reason, id) {
 var DroidDB_Query = function(tx) {
 
     // Set the id of the query
-    this.id = PhoneGap.createUUID();
+    this.id = Cordova.createUUID();
 
     // Add this query to the queue
     droiddb.queryQueue[this.id] = this;
@@ -181,7 +181,7 @@ var DroidDB_Query = function(tx) {
 var DroidDB_Tx = function() {
 
     // Set the id of the transaction
-    this.id = PhoneGap.createUUID();
+    this.id = Cordova.createUUID();
 
     // Callbacks
     this.successCallback = null;
@@ -266,7 +266,7 @@ DroidDB_Tx.prototype.executeSql = function(sql, params, successCallback, errorCa
     query.errorCallback = errorCallback;
 
     // Call native code
-    PhoneGap.exec(null, null, "Storage", "executeSql", [sql, params, query.id]);
+    Cordova.exec(null, null, "Storage", "executeSql", [sql, params, query.id]);
 };
 
 var DatabaseShell = function() {
@@ -308,7 +308,7 @@ DatabaseShell.prototype.transaction = function(process, errorCallback, successCa
  * @return                  Database object
  */
 var DroidDB_openDatabase = function(name, version, display_name, size) {
-    PhoneGap.exec(null, null, "Storage", "openDatabase", [name, version, display_name, size]);
+    Cordova.exec(null, null, "Storage", "openDatabase", [name, version, display_name, size]);
     var db = new DatabaseShell();
     return db;
 };
@@ -340,7 +340,7 @@ var CupcakeLocalStorage = function() {
               storage[result.rows.item(i)['id']] =  result.rows.item(i)['body'];
             }
             setLength(result.rows.length);
-            PhoneGap.initializationComplete("cupcakeStorage");
+            Cordova.initializationComplete("cupcakeStorage");
           });
 
         },
@@ -401,7 +401,7 @@ var CupcakeLocalStorage = function() {
     }
 };
 
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     var setupDroidDB = function() {
         navigator.openDatabase = window.openDatabase = DroidDB_openDatabase;
         window.droiddb = new DroidDB();
@@ -433,7 +433,7 @@ PhoneGap.addConstructor(function() {
     
     if ((typeof window.localStorage == "undefined") || (window.localStorage == null)) {
         navigator.localStorage = window.localStorage = new CupcakeLocalStorage();
-        PhoneGap.waitForInitialization("cupcakeStorage");
+        Cordova.waitForInitialization("cupcakeStorage");
     }
 });
 }

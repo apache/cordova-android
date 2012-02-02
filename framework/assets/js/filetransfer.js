@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("filetransfer")) {
-PhoneGap.addResource("filetransfer");
+if (!Cordova.hasResource("filetransfer")) {
+Cordova.addResource("filetransfer");
 
 /**
  * FileTransfer uploads a file to a remote server.
@@ -80,7 +80,7 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
         }
     }
 
-    PhoneGap.exec(successCallback, errorCallback, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, debug, chunkedMode]);
+    Cordova.exec(successCallback, errorCallback, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, debug, chunkedMode]);
 };
 
 /**
@@ -91,7 +91,7 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
  * @param errorCallback {Function}    Callback to be invoked upon error
  */
 FileTransfer.prototype.download = function(source, target, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, 'FileTransfer', 'download', [source, target]);
+    Cordova.exec(successCallback, errorCallback, 'FileTransfer', 'download', [source, target]);
 };
 
 /**

@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("notification")) {
-PhoneGap.addResource("notification");
+if (!Cordova.hasResource("notification")) {
+Cordova.addResource("notification");
 
 /**
  * This class provides access to notifications on the device.
@@ -38,7 +38,7 @@ var Notification = function() {
 Notification.prototype.alert = function(message, completeCallback, title, buttonLabel) {
     var _title = (title || "Alert");
     var _buttonLabel = (buttonLabel || "OK");
-    PhoneGap.exec(completeCallback, null, "Notification", "alert", [message,_title,_buttonLabel]);
+    Cordova.exec(completeCallback, null, "Notification", "alert", [message,_title,_buttonLabel]);
 };
 
 /**
@@ -53,21 +53,21 @@ Notification.prototype.alert = function(message, completeCallback, title, button
 Notification.prototype.confirm = function(message, resultCallback, title, buttonLabels) {
     var _title = (title || "Confirm");
     var _buttonLabels = (buttonLabels || "OK,Cancel");
-    PhoneGap.exec(resultCallback, null, "Notification", "confirm", [message,_title,_buttonLabels]);
+    Cordova.exec(resultCallback, null, "Notification", "confirm", [message,_title,_buttonLabels]);
 };
 
 /**
  * Start spinning the activity indicator on the statusbar
  */
 Notification.prototype.activityStart = function() {
-    PhoneGap.exec(null, null, "Notification", "activityStart", ["Busy","Please wait..."]);
+    Cordova.exec(null, null, "Notification", "activityStart", ["Busy","Please wait..."]);
 };
 
 /**
  * Stop spinning the activity indicator on the statusbar, if it's currently spinning
  */
 Notification.prototype.activityStop = function() {
-    PhoneGap.exec(null, null, "Notification", "activityStop", []);
+    Cordova.exec(null, null, "Notification", "activityStop", []);
 };
 
 /**
@@ -77,7 +77,7 @@ Notification.prototype.activityStop = function() {
  * @param {String} message      Message to display in the dialog.
  */
 Notification.prototype.progressStart = function(title, message) {
-    PhoneGap.exec(null, null, "Notification", "progressStart", [title, message]);
+    Cordova.exec(null, null, "Notification", "progressStart", [title, message]);
 };
 
 /**
@@ -86,14 +86,14 @@ Notification.prototype.progressStart = function(title, message) {
  * @param {Number} value         0-100
  */
 Notification.prototype.progressValue = function(value) {
-    PhoneGap.exec(null, null, "Notification", "progressValue", [value]);
+    Cordova.exec(null, null, "Notification", "progressValue", [value]);
 };
 
 /**
  * Close the progress dialog.
  */
 Notification.prototype.progressStop = function() {
-    PhoneGap.exec(null, null, "Notification", "progressStop", []);
+    Cordova.exec(null, null, "Notification", "progressStop", []);
 };
 
 /**
@@ -112,7 +112,7 @@ Notification.prototype.blink = function(count, colour) {
  * @param {Integer} mills       The number of milliseconds to vibrate for.
  */
 Notification.prototype.vibrate = function(mills) {
-    PhoneGap.exec(null, null, "Notification", "vibrate", [mills]);
+    Cordova.exec(null, null, "Notification", "vibrate", [mills]);
 };
 
 /**
@@ -122,10 +122,10 @@ Notification.prototype.vibrate = function(mills) {
  * @param {Integer} count       The number of beeps.
  */
 Notification.prototype.beep = function(count) {
-    PhoneGap.exec(null, null, "Notification", "beep", [count]);
+    Cordova.exec(null, null, "Notification", "beep", [count]);
 };
 
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     if (typeof navigator.notification === "undefined") {
         navigator.notification = new Notification();
     }

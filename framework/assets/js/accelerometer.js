@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("accelerometer")) {
-PhoneGap.addResource("accelerometer");
+if (!Cordova.hasResource("accelerometer")) {
+Cordova.addResource("accelerometer");
 
 /** @constructor */
 var Acceleration = function(x, y, z) {
@@ -69,7 +69,7 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
     }
 
     // Get acceleration
-    PhoneGap.exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
+    Cordova.exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
 };
 
 /**
@@ -98,18 +98,18 @@ Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallb
     }
 
     // Make sure accelerometer timeout > frequency + 10 sec
-    PhoneGap.exec(
+    Cordova.exec(
         function(timeout) {
             if (timeout < (frequency + 10000)) {
-                PhoneGap.exec(null, null, "Accelerometer", "setTimeout", [frequency + 10000]);
+                Cordova.exec(null, null, "Accelerometer", "setTimeout", [frequency + 10000]);
             }
         },
         function(e) { }, "Accelerometer", "getTimeout", []);
 
     // Start watch timer
-    var id = PhoneGap.createUUID();
+    var id = Cordova.createUUID();
     navigator.accelerometer.timers[id] = setInterval(function() {
-        PhoneGap.exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
+        Cordova.exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
     }, (frequency ? frequency : 1));
 
     return id;
@@ -129,7 +129,7 @@ Accelerometer.prototype.clearWatch = function(id) {
     }
 };
 
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     if (typeof navigator.accelerometer === "undefined") {
         navigator.accelerometer = new Accelerometer();
     }

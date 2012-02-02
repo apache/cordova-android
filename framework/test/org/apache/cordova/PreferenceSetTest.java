@@ -1,0 +1,55 @@
+import org.junit.*;
+import static org.junit.Assert.*;
+
+import org.apache.cordova.PreferenceNode;
+import org.apache.cordova.PreferenceSet;
+
+public class PreferenceSetTest {
+    private PreferenceSet preferences;
+    private PreferenceNode screen;
+
+    @Before
+        public void setUp() {
+            preferences = new PreferenceSet();
+            screen = new PreferenceNode("fullscreen", "true", false);
+        }
+
+    @Test
+        public void testAddition() {
+            preferences.add(screen);
+            assertEquals(1, preferences.size());
+        }
+
+    @Test
+        public void testClear() {
+            preferences.add(screen);
+            preferences.clear();
+            assertEquals(0, preferences.size());
+        }
+
+    @Test
+        public void testPreferenceRetrieval() {
+            preferences.add(screen);
+            assertEquals("true", preferences.pref("fullscreen"));
+        }
+
+    @Test
+        public void testNoPreferenceRetrieval() {
+            // return null if the preference is not defined
+            assertEquals(null, preferences.pref("antigravity"));
+        }
+
+    @Test
+        public void testUnsetPreferenceChecking() {
+            PreferenceSet emptySet = new PreferenceSet();
+            boolean value = emptySet.prefMatches("fullscreen", "true");
+            assertEquals(false, value);
+        }
+
+    @Test
+        public void testSetPreferenceChecking() {
+            preferences.add(screen);
+            boolean value = preferences.prefMatches("fullscreen", "true");
+            assertEquals(true, value);
+        }
+}

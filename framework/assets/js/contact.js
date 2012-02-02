@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("contact")) {
-PhoneGap.addResource("contact");
+if (!Cordova.hasResource("contact")) {
+Cordova.addResource("contact");
 
 /**
 * Contains information about a single contact.
@@ -89,7 +89,7 @@ Contact.prototype.remove = function(successCB, errorCB) {
         errorCB(errorObj);
     }
     else {
-        PhoneGap.exec(successCB, errorCB, "Contacts", "remove", [this.id]);
+        Cordova.exec(successCB, errorCB, "Contacts", "remove", [this.id]);
     }
 };
 
@@ -99,7 +99,7 @@ Contact.prototype.remove = function(successCB, errorCB) {
 * @return copy of this Contact
 */
 Contact.prototype.clone = function() {
-    var clonedContact = PhoneGap.clone(this);
+    var clonedContact = Cordova.clone(this);
     var i;
     clonedContact.id = null;
     clonedContact.rawId = null;
@@ -153,7 +153,7 @@ Contact.prototype.clone = function() {
 * @param errorCB error callback
 */
 Contact.prototype.save = function(successCB, errorCB) {
-    PhoneGap.exec(successCB, errorCB, "Contacts", "save", [this]);
+    Cordova.exec(successCB, errorCB, "Contacts", "save", [this]);
 };
 
 /**
@@ -259,7 +259,7 @@ Contacts.prototype.find = function(fields, successCB, errorCB, options) {
             errorCB({"code": ContactError.INVALID_ARGUMENT_ERROR});
         }
     } else {
-        PhoneGap.exec(successCB, errorCB, "Contacts", "search", [fields, options]);        
+        Cordova.exec(successCB, errorCB, "Contacts", "search", [fields, options]);        
     }
 };
 
@@ -313,7 +313,7 @@ var ContactFindOptions = function(filter, multiple) {
 /**
  * Add the contact interface into the browser.
  */
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     if(typeof navigator.contacts === "undefined") {
         navigator.contacts = new Contacts();
     }

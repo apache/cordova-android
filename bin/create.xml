@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="PhoneGap" default="create" basedir="../">
+<project name="cordova" default="create" basedir="../">
 
 	<property name="project.path" value="${basedir}/example"/>
-	<property name="package" value="com.phonegap.example"/>
-	<property name="activity" value="PhoneGapExample"/>
+	<property name="package" value="org.apache.cordova.example"/>
+	<property name="activity" value="cordovaExample"/>
 
 	<target name="create">
 
@@ -50,7 +50,7 @@
 			<arg line="update project --target ${target} --path ${basedir}/framework"/>
 		</exec>
 
-		<!-- compile phonegap.js and phonegap.jar -->
+		<!-- compile cordova.js and cordova.jar -->
 		<!--	// if you see an error about "Unable to resolve target" then you may need to 
 				// update your android tools or install an additional Android platform version -->
 		<ant antfile="${basedir}/framework/build.xml" useNativeBasedir="true" inheritAll="false" />
@@ -60,11 +60,11 @@
 			<fileset dir="${basedir}/bin/templates/project"/>
 		</copy>
 
-		<!-- copy in phonegap.js -->
-		<copy file="${basedir}/framework/assets/www/phonegap-${version}.js" todir="${project.path}/assets/www/" />
+		<!-- copy in cordova.js -->
+		<copy file="${basedir}/framework/assets/www/cordova-${version}.js" todir="${project.path}/assets/www/" />
 
-		<!-- copy in phonegap.jar -->
-		<copy file="${basedir}/framework/phonegap-${version}.jar" todir="${project.path}/libs/" />
+		<!-- copy in cordova.jar -->
+		<copy file="${basedir}/framework/cordova-${version}.jar" todir="${project.path}/libs/" />
 
 		<!-- copy in default activity -->
 		<copy file="${basedir}/bin/templates/Activity.java" tofile="${activity.path}" overwrite="true" />

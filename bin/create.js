@@ -1,5 +1,5 @@
 /*
- * create a phonegap/android project
+ * create a cordova/android project
  *
  * USAGE
  *  ./create [path package activity]
@@ -26,7 +26,7 @@ function exec(s) {
 }
 
 var args = WScript.Arguments, PROJECT_PATH="example", 
-    PACKAGE="com.phonegap.example", ACTIVITY="PhoneGapExample",
+    PACKAGE="org.apache.cordova.example", ACTIVITY="cordovaExample",
     shell=WScript.CreateObject("WScript.Shell");
 
 if (args.Count() == 3) {
@@ -54,10 +54,10 @@ fi
 // create the project
 exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --package '+PACKAGE+' --activity '+ACTIVITY);
 
-// update the phonegap framework project to a target that exists on this machine
+// update the cordova framework project to a target that exists on this machine
 exec('android.bat update project --target '+TARGET+' --path framework');
 
-// compile phonegap.js and phonegap.jar
+// compile cordova.js and cordova.jar
 // if you see an error about "Unable to resolve target" then you may need to 
 // update your android tools or install an additional Android platform version
 exec('ant.bat -f framework\\build.xml jar');
@@ -65,11 +65,11 @@ exec('ant.bat -f framework\\build.xml jar');
 // copy in the project template
 exec('cmd /c xcopy bin\\templates\\project '+PROJECT_PATH+' /S /Y');
 
-// copy in phonegap.js
-exec('cmd /c copy framework\\assets\\www\\phonegap-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\phonegap-'+VERSION+'.js /Y');
+// copy in cordova.js
+exec('cmd /c copy framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
 
-// copy in phonegap.jar
-exec('cmd /c copy framework\\phonegap-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\phonegap-'+VERSION+'.jar /Y');
+// copy in cordova.jar
+exec('cmd /c copy framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
 
 // copy in default activity
 exec('cmd /c copy bin\\templates\\Activity.java '+ACTIVITY_PATH+' /Y');

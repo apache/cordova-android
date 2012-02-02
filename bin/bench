@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Creates an app in `./bench` that posts results to http://phonegap-bench.heroku.com with current PhoneGap/Android sha.
+# Creates an app in `./bench` that posts results to http://cordova-bench.heroku.com with current cordova/Android sha.
 #
 # USAGE
 #   ./bin/bench
@@ -13,17 +13,17 @@ then
 fi
 
 # create a benching app
-./bin/create ./bench com.phonegap.bench PhoneGapBench
+./bin/create ./bench org.apache.cordova.bench cordovaBench
 
 # grab the latest bench www code
-git clone git@github.com:brianleroux/phonegap-bench.git
+git clone git@github.com:brianleroux/cordova-bench.git
 
 # copy it into the app
-cat ./phonegap-bench/www/index.html > ./bench/assets/www/index.html
-#cat ~/Desktop/phonegap-bench/www/index.html > ./bench/assets/www/index.html
+cat ./cordova-bench/www/index.html > ./bench/assets/www/index.html
+#cat ~/Desktop/cordova-bench/www/index.html > ./bench/assets/www/index.html
 
 # clean up
-rm -rf ./phonegap-bench
+rm -rf ./cordova-bench
 
 # launch to the first device found
 ./bin/debug ./bench

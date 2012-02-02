@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("capture")) {
-PhoneGap.addResource("capture");
+if (!Cordova.hasResource("capture")) {
+Cordova.addResource("capture");
 	
 /**
  * Represents a single file.
@@ -44,7 +44,7 @@ var MediaFile = function(name, fullPath, type, lastModifiedDate, size){
  * @param {Function} errorCB
  */
 MediaFile.prototype.getFormatData = function(successCallback, errorCallback){
-	PhoneGap.exec(successCallback, errorCallback, "Capture", "getFormatData", [this.fullPath, this.type]);
+	Cordova.exec(successCallback, errorCallback, "Capture", "getFormatData", [this.fullPath, this.type]);
 };
 
 /**
@@ -95,7 +95,7 @@ var Capture = function(){
  * @param {CaptureAudioOptions} options
  */
 Capture.prototype.captureAudio = function(successCallback, errorCallback, options){
-	PhoneGap.exec(successCallback, errorCallback, "Capture", "captureAudio", [options]);
+	Cordova.exec(successCallback, errorCallback, "Capture", "captureAudio", [options]);
 };
 
 /**
@@ -106,7 +106,7 @@ Capture.prototype.captureAudio = function(successCallback, errorCallback, option
  * @param {CaptureImageOptions} options
  */
 Capture.prototype.captureImage = function(successCallback, errorCallback, options){
-	PhoneGap.exec(successCallback, errorCallback, "Capture", "captureImage", [options]);
+	Cordova.exec(successCallback, errorCallback, "Capture", "captureImage", [options]);
 };
 
 /**
@@ -140,7 +140,7 @@ Capture.prototype._castMediaFile = function(pluginResult){
  * @param {CaptureVideoOptions} options
  */
 Capture.prototype.captureVideo = function(successCallback, errorCallback, options){
-	PhoneGap.exec(successCallback, errorCallback, "Capture", "captureVideo", [options]);
+	Cordova.exec(successCallback, errorCallback, "Capture", "captureVideo", [options]);
 };
 
 /**
@@ -191,7 +191,7 @@ var CaptureAudioOptions = function(){
 	this.mode = null;
 };
 
-PhoneGap.addConstructor(function(){
+Cordova.addConstructor(function(){
 	if (typeof navigator.device.capture === "undefined") {
 		navigator.device.capture = window.device.capture = new Capture();
 	}

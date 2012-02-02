@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("app")) {
-PhoneGap.addResource("app");
+if (!Cordova.hasResource("app")) {
+Cordova.addResource("app");
 (function() {
 
 /**
@@ -31,7 +31,7 @@ var App = function() {};
  * Clear the resource cache.
  */
 App.prototype.clearCache = function() {
-    PhoneGap.exec(null, null, "App", "clearCache", []);
+    Cordova.exec(null, null, "App", "clearCache", []);
 };
 
 /**
@@ -49,14 +49,14 @@ App.prototype.clearCache = function() {
  *      navigator.app.loadUrl("http://server/myapp/index.html", {wait:2000, loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
  */
 App.prototype.loadUrl = function(url, props) {
-    PhoneGap.exec(null, null, "App", "loadUrl", [url, props]);
+    Cordova.exec(null, null, "App", "loadUrl", [url, props]);
 };
 
 /**
  * Cancel loadUrl that is waiting to be loaded.
  */
 App.prototype.cancelLoadUrl = function() {
-    PhoneGap.exec(null, null, "App", "cancelLoadUrl", []);
+    Cordova.exec(null, null, "App", "cancelLoadUrl", []);
 };
 
 /**
@@ -64,7 +64,7 @@ App.prototype.cancelLoadUrl = function() {
  * Instead of BACK button loading the previous web page, it will exit the app.
  */
 App.prototype.clearHistory = function() {
-    PhoneGap.exec(null, null, "App", "clearHistory", []);
+    Cordova.exec(null, null, "App", "clearHistory", []);
 };
 
 /**
@@ -72,17 +72,17 @@ App.prototype.clearHistory = function() {
  * This is the same as pressing the backbutton on Android device.
  */
 App.prototype.backHistory = function() {
-    PhoneGap.exec(null, null, "App", "backHistory", []);
+    Cordova.exec(null, null, "App", "backHistory", []);
 };
 
 /**
  * Exit and terminate the application.
  */
 App.prototype.exitApp = function() {
-	return PhoneGap.exec(null, null, "App", "exitApp", []);
+	return Cordova.exec(null, null, "App", "exitApp", []);
 };
 
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     navigator.app = new App();
 });
 }());

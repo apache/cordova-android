@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("position")) {
-PhoneGap.addResource("position");
+if (!Cordova.hasResource("position")) {
+Cordova.addResource("position");
 
 /**
  * This class contains position information.

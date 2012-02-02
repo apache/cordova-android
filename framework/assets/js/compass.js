@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("compass")) {
-PhoneGap.addResource("compass");
+if (!Cordova.hasResource("compass")) {
+Cordova.addResource("compass");
 
 var CompassError = function(){
     this.code = null;
@@ -75,7 +75,7 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
     }
 
     // Get heading
-    PhoneGap.exec(successCallback, errorCallback, "Compass", "getHeading", []);
+    Cordova.exec(successCallback, errorCallback, "Compass", "getHeading", []);
 };
 
 /**
@@ -104,19 +104,19 @@ Compass.prototype.watchHeading= function(successCallback, errorCallback, options
     }
 
     // Make sure compass timeout > frequency + 10 sec
-    PhoneGap.exec(
+    Cordova.exec(
         function(timeout) {
             if (timeout < (frequency + 10000)) {
-                PhoneGap.exec(null, null, "Compass", "setTimeout", [frequency + 10000]);
+                Cordova.exec(null, null, "Compass", "setTimeout", [frequency + 10000]);
             }
         },
         function(e) { }, "Compass", "getTimeout", []);
 
     // Start watch timer to get headings
-    var id = PhoneGap.createUUID();
+    var id = Cordova.createUUID();
     navigator.compass.timers[id] = setInterval(
         function() {
-            PhoneGap.exec(successCallback, errorCallback, "Compass", "getHeading", []);
+            Cordova.exec(successCallback, errorCallback, "Compass", "getHeading", []);
         }, (frequency ? frequency : 1));
 
     return id;
@@ -145,7 +145,7 @@ Compass.prototype._castDate = function(pluginResult) {
     return pluginResult;
 };
 
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     if (typeof navigator.compass === "undefined") {
         navigator.compass = new Compass();
     }
