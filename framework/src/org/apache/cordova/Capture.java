@@ -42,6 +42,7 @@ import android.util.Log;
 public class Capture extends Plugin {
 
     private static final String VIDEO_3GPP = "video/3gpp";
+    private static final String VIDEO_MP4  = "video/mp4";
     private static final String AUDIO_3GPP = "audio/3gpp";
     private static final String IMAGE_JPEG = "image/jpeg";
     
@@ -128,7 +129,7 @@ public class Capture extends Plugin {
             else if (mimeType.endsWith(AUDIO_3GPP)) {
                 obj = getAudioVideoData(filePath, obj, false);
             }
-            else if (mimeType.equals(VIDEO_3GPP)) {
+            else if (mimeType.equals(VIDEO_3GPP) || mimeType.equals(VIDEO_MP4)) {
                 obj = getAudioVideoData(filePath, obj, true);
             }
         }
@@ -167,7 +168,7 @@ public class Capture extends Plugin {
         try {
             player.setDataSource(filePath);
             player.prepare();
-            obj.put("duration", player.getDuration());
+            obj.put("duration", player.getDuration()/1000);
             if (video) {
                 obj.put("height", player.getVideoHeight());
                 obj.put("width", player.getVideoWidth());
