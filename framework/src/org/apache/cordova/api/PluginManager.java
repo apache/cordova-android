@@ -37,7 +37,7 @@ import android.webkit.WebView;
  * Calling native plugin code can be done by calling PluginManager.exec(...)
  * from JavaScript.
  */
-public final class PluginManager {
+public class PluginManager {
 
 	private HashMap<String, IPlugin> plugins = new HashMap<String,IPlugin>();
 	private HashMap<String, String> services = new HashMap<String,String>();
