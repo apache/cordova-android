@@ -1617,9 +1617,20 @@ public class ContactAccessorSdk5 extends ContactAccessor {
    * @param id the unique ID of the contact to remove
    */
   public boolean remove(String id) {
-      int result = mApp.getContentResolver().delete(ContactsContract.Data.CONTENT_URI, 
-          ContactsContract.Data.CONTACT_ID + " = ?", 
-          new String[] {id});     
+        int result = 0;
+        Cursor cursor = mApp.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, 
+                                                        null,
+                                                        ContactsContract.Contacts._ID + " = ?",
+                                                        new String[] {id}, null);
+        if(cursor.getCount() == 1) {
+            cursor.moveToFirst();
+            String lookupKey = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.LOOKUP_KEY));
+            Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey);
+            result = mApp.getContentResolver().delete(uri, null, null);
+        } else {
+          Log.d(LOG_TAG, "Could not find contact with ID");
+        }
+
       return (result > 0) ? true : false;
   } 
 
