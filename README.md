@@ -23,7 +23,7 @@ Requires
 Building
 ---
 
-To create your phonegap.jar, run in the framework directory:
+To create your cordova.jar, run in the framework directory:
 
     android update project -p . -t android-15
     ant jar
@@ -45,9 +45,9 @@ Project Commands
 
 These commands live in a generated Cordova Android project.
 
-    ./phonegap/debug [path] ..................... install to first device
-    ./phonegap/emulate .......................... start avd (emulator) named default
-    ./phonegap/log .............................. starts logcat
+    ./cordovap/debug [path] ..................... install to first device
+    ./cordova/emulate .......................... start avd (emulator) named default
+    ./cordova/log .............................. starts logcat
 
 Running the Example Project
 ---
@@ -60,11 +60,11 @@ Create the example project and build it to the first device:
 
     ./bin/create
     cd example
-    ./phonegap/debug
+    ./cordova/debug
 
 Start adb logcat (console.log calls output here):
 
-    ./phonegap/log
+    ./cordova/log
 
 Running the [callback/callback-test](http://github.com/callback/callback-test) tests:
 ---
@@ -82,7 +82,7 @@ Importing a Cordova Android Project into Eclipse
 1. File > New > Project...
 2. Android > Android Project
 3. Create project from existing source (point to the generated app found in tmp/android)
-4. Right click on libs/phonegap.jar and add to build path
+4. Right click on libs/cordova.jar and add to build path
 5. Right click on the project root: Run as > Run Configurations
 6. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
 

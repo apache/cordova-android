@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("battery")) {
-PhoneGap.addResource("battery");
+if (!Cordova.hasResource("battery")) {
+Cordova.addResource("battery");
 
 /**
  * This class contains information about the current battery status.
@@ -44,7 +44,7 @@ Battery.prototype.eventHandler = function(eventType, handler, add) {
     if (add) {
         // If there are no current registered event listeners start the battery listener on native side.
         if (me._batteryListener.length === 0 && me._lowListener.length === 0 && me._criticalListener.length === 0) {
-            PhoneGap.exec(me._status, me._error, "Battery", "start", []);
+            Cordova.exec(me._status, me._error, "Battery", "start", []);
         }
         
         // Register the event listener in the proper array
@@ -83,7 +83,7 @@ Battery.prototype.eventHandler = function(eventType, handler, add) {
         
         // If there are no more registered event listeners stop the battery listener on native side.
         if (me._batteryListener.length === 0 && me._lowListener.length === 0 && me._criticalListener.length === 0) {
-            PhoneGap.exec(null, null, "Battery", "stop", []);
+            Cordova.exec(null, null, "Battery", "stop", []);
         }
     }
 };
@@ -99,15 +99,15 @@ Battery.prototype._status = function(info) {
         var level = info.level;
 		if (me._level !== level || me._isPlugged !== info.isPlugged) {
 			// Fire batterystatus event
-			PhoneGap.fireWindowEvent("batterystatus", info);
+			Cordova.fireWindowEvent("batterystatus", info);
 
 			// Fire low battery event
 			if (level === 20 || level === 5) {
 				if (level === 20) {
-					PhoneGap.fireWindowEvent("batterylow", info);
+					Cordova.fireWindowEvent("batterylow", info);
 				}
 				else {
-					PhoneGap.fireWindowEvent("batterycritical", info);
+					Cordova.fireWindowEvent("batterycritical", info);
 				}
 			}
 		}
@@ -123,12 +123,12 @@ Battery.prototype._error = function(e) {
     console.log("Error initializing Battery: " + e);
 };
 
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     if (typeof navigator.battery === "undefined") {
         navigator.battery = new Battery();
-        PhoneGap.addWindowEventHandler("batterystatus", navigator.battery.eventHandler);
-        PhoneGap.addWindowEventHandler("batterylow", navigator.battery.eventHandler);
-        PhoneGap.addWindowEventHandler("batterycritical", navigator.battery.eventHandler);
+        Cordova.addWindowEventHandler("batterystatus", navigator.battery.eventHandler);
+        Cordova.addWindowEventHandler("batterylow", navigator.battery.eventHandler);
+        Cordova.addWindowEventHandler("batterycritical", navigator.battery.eventHandler);
     }
 });
 }

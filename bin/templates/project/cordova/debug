@@ -1,0 +1,9 @@
+#! /bin/sh
+
+. ./.cordova/config
+
+# if there are no devices listed then emulate
+
+
+ant debug install
+adb shell am start -n $PACKAGE/$PACKAGE.$ACTIVITY

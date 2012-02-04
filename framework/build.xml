@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="PhoneGap" default="jar">
+<project name="Cordova" default="jar">
 
     <!-- LOAD VERSION -->
     <loadfile property="version" srcFile="../VERSION">
@@ -95,12 +95,12 @@
         <delete dir="assets/lib"/>
         <mkdir dir="assets/lib"/>
         <echo file="assets/lib/lint.js">var alert=function(){},device={},Element={},debug={};</echo>
-        <concat destfile="assets/lib/phonegap-lint.js" append="true">
+        <concat destfile="assets/lib/cordova-lint.js" append="true">
             <fileset dir="assets/lib">
                 <include name="lint.js" />
             </fileset>
             <fileset dir="assets/www">
-                <include name="phonegap-${version}.js" />
+                <include name="cordova-${version}.js" />
             </fileset>
         </concat>
 
@@ -111,57 +111,57 @@
             <arg value="${basedir}/util/js.jar"/>
             <arg value="org.mozilla.javascript.tools.shell.Main"/>
             <arg value="${basedir}/util/jslint.js"/>
-            <arg value="${basedir}/js/lib/phonegap-lint.js"/>
+            <arg value="${basedir}/js/lib/cordova-lint.js"/>
         </exec>
         <exec executable="java" os="Mac OS X">
             <arg value="-cp"/>
             <arg value="../util/js.jar"/>
             <arg value="org.mozilla.javascript.tools.shell.Main"/>
             <arg value="../util/jslint.js"/>
-            <arg value="assets/lib/phonegap-lint.js"/>
+            <arg value="assets/lib/cordova-lint.js"/>
         </exec>
     </target>
 
-    <!-- Combine JavaScript files into one phonegap-uncompressed.js file. -->
+    <!-- Combine JavaScript files into one cordova-uncompressed.js file. -->
     <target name="build-javascript">
         
       <!-- Clean up existing files -->
-      <!--<delete file="assets/www/phonegap_${version}.js"/>-->
+      <!--<delete file="assets/www/cordova_${version}.js"/>-->
         
       <!-- Create uncompressed JS file -->
-      <concat destfile="assets/www/phonegap-${version}.js">
-        <filelist dir="assets/js" files="phonegap.js.base,device.js"/>
-        <fileset dir="assets/js" includes="*.js" excludes="phonegap.js.base,device.js"/>
+      <concat destfile="assets/www/cordova-${version}.js">
+        <filelist dir="assets/js" files="cordova.js.base,device.js"/>
+        <fileset dir="assets/js" includes="*.js" excludes="cordova.js.base,device.js"/>
       </concat>
 
-      <!-- update project files to reference phonegap-x.x.x.min.js -->
-      <replaceregexp match="phonegap(.*)\.js" replace="phonegap-${version}.js" byline="true">
+      <!-- update project files to reference cordova-x.x.x.min.js -->
+      <replaceregexp match="cordova(.*)\.js" replace="cordova-${version}.js" byline="true">
          <fileset file="assets/www/index.html" /> 
          <!-- <fileset file="../bin/templates/project/assets/www/index.html" /> -->
       </replaceregexp>
       <!-- This is sketchy, but it works, ${dblQuote} does not -->
-      <replaceregexp match="phonegapVersion = [\u0022].*[\u0022];" replace='phonegapVersion = ${dblQuote}${version}${dblQuote};' byline="true">
-        <fileset file="src/com/phonegap/Device.java" />
+      <replaceregexp match="cordovaVersion = [\u0022].*[\u0022];" replace='cordovaVersion = ${dblQuote}${version}${dblQuote};' byline="true">
+        <fileset file="src/org/apache/cordova/Device.java" />
       </replaceregexp>
         
       <!-- Delete temp file -->
-      <!--<delete file="assets/www/phonegap-tmp.js"/>-->
+      <!--<delete file="assets/www/cordova-tmp.js"/>-->
     </target>
 
-    <!-- Build PhoneGap jar file that includes all native code, and PhoneGap JS file
+    <!-- Build Cordova jar file that includes all native code, and Cordova JS file
          that includes all JavaScript code.
     -->
     <target name="jar" depends="build-javascript, -compile">
-      <jar jarfile="phonegap-${version}.jar" basedir="bin/classes" excludes="com/phonegap/R.class,com/phonegap/R$*.class"/>
+      <jar jarfile="cordova-${version}.jar" basedir="bin/classes" excludes="org/apache/cordova/R.class,org/apache/cordova/R$*.class"/>
     </target>
 
     <!-- tests for Java files -->
-    <property name="test.dir" location="test/com/phonegap" />
+    <property name="test.dir" location="test/org/apache/cordova" />
 
     <path id="test.classpath">
-        <!-- requires both junit and phonegap -->
+        <!-- requires both junit and cordova -->
         <pathelement location="libs/junit-4.10.jar" />
-        <pathelement location="phonegap-${version}.jar" />
+        <pathelement location="cordova-${version}.jar" />
         <pathelement location="${test.dir}" />
     </path>
 
@@ -184,10 +184,10 @@
         </junit>
     </target>
 
-    <target name="phonegap_debug" depends="build-javascript, debug">
+    <target name="cordova_debug" depends="build-javascript, debug">
     </target>
 
-    <target name="phonegap_release" depends="build-javascript, release">
+    <target name="cordova_release" depends="build-javascript, release">
     </target>
 
 </project>

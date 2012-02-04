@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("file")) {
-PhoneGap.addResource("file");
+if (!Cordova.hasResource("file")) {
+Cordova.addResource("file");
 
 /**
  * This class provides some useful information about a file.
@@ -162,7 +162,7 @@ FileReader.prototype.readAsText = function(file, encoding) {
     var me = this;
 
     // Read file
-    PhoneGap.exec(
+    Cordova.exec(
         // Success callback
         function(r) {
             var evt;
@@ -241,7 +241,7 @@ FileReader.prototype.readAsDataURL = function(file) {
     var me = this;
 
     // Read file
-    PhoneGap.exec(
+    Cordova.exec(
         // Success callback
         function(r) {
             var evt;
@@ -412,7 +412,7 @@ FileWriter.prototype.write = function(text) {
     }
 
     // Write file
-    PhoneGap.exec(
+    Cordova.exec(
         // Success callback
         function(r) {
             var evt;
@@ -523,7 +523,7 @@ FileWriter.prototype.truncate = function(size) {
     }
 
     // Write file
-    PhoneGap.exec(
+    Cordova.exec(
         // Success callback
         function(r) {
             var evt;
@@ -624,7 +624,7 @@ var DirectoryReader = function(fullPath){
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryReader.prototype.readEntries = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "readEntries", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "readEntries", [this.fullPath]);
 };
 
 /**
@@ -654,7 +654,7 @@ var DirectoryEntry = function() {
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.copyTo = function(parent, newName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
+    Cordova.exec(successCallback, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
 };
 
 /**
@@ -664,7 +664,7 @@ DirectoryEntry.prototype.copyTo = function(parent, newName, successCallback, err
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getMetadata = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "getMetadata", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "getMetadata", [this.fullPath]);
 };
 
 /**
@@ -674,7 +674,7 @@ DirectoryEntry.prototype.getMetadata = function(successCallback, errorCallback) 
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getParent = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
 };
 
 /**
@@ -686,7 +686,7 @@ DirectoryEntry.prototype.getParent = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.moveTo = function(parent, newName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
+    Cordova.exec(successCallback, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
 };
 
 /**
@@ -696,7 +696,7 @@ DirectoryEntry.prototype.moveTo = function(parent, newName, successCallback, err
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.remove = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "remove", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "remove", [this.fullPath]);
 };
 
 /**
@@ -725,7 +725,7 @@ DirectoryEntry.prototype.createReader = function(successCallback, errorCallback)
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getDirectory = function(path, options, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "getDirectory", [this.fullPath, path, options]);
+    Cordova.exec(successCallback, errorCallback, "File", "getDirectory", [this.fullPath, path, options]);
 };
 
 /**
@@ -737,7 +737,7 @@ DirectoryEntry.prototype.getDirectory = function(path, options, successCallback,
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getFile = function(path, options, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "getFile", [this.fullPath, path, options]);
+    Cordova.exec(successCallback, errorCallback, "File", "getFile", [this.fullPath, path, options]);
 };
 
 /**
@@ -747,7 +747,7 @@ DirectoryEntry.prototype.getFile = function(path, options, successCallback, erro
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "removeRecursively", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "removeRecursively", [this.fullPath]);
 };
 
 /**
@@ -777,7 +777,7 @@ var FileEntry = function() {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.copyTo = function(parent, newName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
+    Cordova.exec(successCallback, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
 };
 
 /**
@@ -787,7 +787,7 @@ FileEntry.prototype.copyTo = function(parent, newName, successCallback, errorCal
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.getMetadata = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "getMetadata", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "getMetadata", [this.fullPath]);
 };
 
 /**
@@ -797,7 +797,7 @@ FileEntry.prototype.getMetadata = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.getParent = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
 };
 
 /**
@@ -809,7 +809,7 @@ FileEntry.prototype.getParent = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.moveTo = function(parent, newName, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
+    Cordova.exec(successCallback, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
 };
 
 /**
@@ -819,7 +819,7 @@ FileEntry.prototype.moveTo = function(parent, newName, successCallback, errorCal
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.remove = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "remove", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "remove", [this.fullPath]);
 };
 
 /**
@@ -863,7 +863,7 @@ FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.file = function(successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "getFileMetadata", [this.fullPath]);
+    Cordova.exec(successCallback, errorCallback, "File", "getFileMetadata", [this.fullPath]);
 };
 
 /** @constructor */
@@ -892,7 +892,7 @@ LocalFileSystem.prototype.requestFileSystem = function(type, size, successCallba
         }
     }
     else {
-        PhoneGap.exec(successCallback, errorCallback, "File", "requestFileSystem", [type, size]);
+        Cordova.exec(successCallback, errorCallback, "File", "requestFileSystem", [type, size]);
     }
 };
 
@@ -903,7 +903,7 @@ LocalFileSystem.prototype.requestFileSystem = function(type, size, successCallba
  * @param {Function} errorCallback is called with a FileError
  */
 LocalFileSystem.prototype.resolveLocalFileSystemURI = function(uri, successCallback, errorCallback) {
-    PhoneGap.exec(successCallback, errorCallback, "File", "resolveLocalFileSystemURI", [uri]);
+    Cordova.exec(successCallback, errorCallback, "File", "resolveLocalFileSystemURI", [uri]);
 };
 
 /**
@@ -986,7 +986,7 @@ LocalFileSystem.prototype._castDate = function(pluginResult) {
 /**
  * Add the FileSystem interface into the browser.
  */
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     var pgLocalFileSystem = new LocalFileSystem();
     // Needed for cast methods
     if (typeof window.localFileSystem === "undefined") {

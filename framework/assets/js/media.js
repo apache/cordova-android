@@ -17,8 +17,8 @@
  *     under the License.
  */
 
-if (!PhoneGap.hasResource("media")) {
-PhoneGap.addResource("media");
+if (!Cordova.hasResource("media")) {
+Cordova.addResource("media");
 
 /**
  * This class provides access to the device media, interfaces to both sound and video
@@ -60,8 +60,8 @@ var Media = function(src, successCallback, errorCallback, statusCallback, positi
         return;
     }
 
-    this.id = PhoneGap.createUUID();
-    PhoneGap.mediaObjects[this.id] = this;
+    this.id = Cordova.createUUID();
+    Cordova.mediaObjects[this.id] = this;
     this.src = src;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
@@ -105,28 +105,28 @@ MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
  * Start or resume playing audio file.
  */
 Media.prototype.play = function() {
-    PhoneGap.exec(null, null, "Media", "startPlayingAudio", [this.id, this.src]);
+    Cordova.exec(null, null, "Media", "startPlayingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop playing audio file.
  */
 Media.prototype.stop = function() {
-    return PhoneGap.exec(null, null, "Media", "stopPlayingAudio", [this.id]);
+    return Cordova.exec(null, null, "Media", "stopPlayingAudio", [this.id]);
 };
 
 /**
  * Seek or jump to a new time in the track..
  */
 Media.prototype.seekTo = function(milliseconds) {
-    PhoneGap.exec(null, null, "Media", "seekToAudio", [this.id, milliseconds]);
+    Cordova.exec(null, null, "Media", "seekToAudio", [this.id, milliseconds]);
 };
 
 /**
  * Pause playing audio file.
  */
 Media.prototype.pause = function() {
-    PhoneGap.exec(null, null, "Media", "pausePlayingAudio", [this.id]);
+    Cordova.exec(null, null, "Media", "pausePlayingAudio", [this.id]);
 };
 
 /**
@@ -143,49 +143,49 @@ Media.prototype.getDuration = function() {
  * Get position of audio.
  */
 Media.prototype.getCurrentPosition = function(success, fail) {
-    PhoneGap.exec(success, fail, "Media", "getCurrentPositionAudio", [this.id]);
+    Cordova.exec(success, fail, "Media", "getCurrentPositionAudio", [this.id]);
 };
 
 /**
  * Start recording audio file.
  */
 Media.prototype.startRecord = function() {
-    PhoneGap.exec(null, null, "Media", "startRecordingAudio", [this.id, this.src]);
+    Cordova.exec(null, null, "Media", "startRecordingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop recording audio file.
  */
 Media.prototype.stopRecord = function() {
-    PhoneGap.exec(null, null, "Media", "stopRecordingAudio", [this.id]);
+    Cordova.exec(null, null, "Media", "stopRecordingAudio", [this.id]);
 };
 
 /**
  * Release the resources.
  */
 Media.prototype.release = function() {
-    PhoneGap.exec(null, null, "Media", "release", [this.id]);
+    Cordova.exec(null, null, "Media", "release", [this.id]);
 };
 
 /**
  * Adjust the volume.
  */
 Media.prototype.setVolume = function(volume) {
-    PhoneGap.exec(null, null, "Media", "setVolume", [this.id, volume]);
+    Cordova.exec(null, null, "Media", "setVolume", [this.id, volume]);
 };
 
 /**
  * List of media objects.
  * PRIVATE
  */
-PhoneGap.mediaObjects = {};
+Cordova.mediaObjects = {};
 
 /**
  * Object that receives native callbacks.
  * PRIVATE
  * @constructor
  */
-PhoneGap.Media = function() {};
+Cordova.Media = function() {};
 
 /**
  * Get the media object.
@@ -193,8 +193,8 @@ PhoneGap.Media = function() {};
  *
  * @param id            The media object id (string)
  */
-PhoneGap.Media.getMediaObject = function(id) {
-    return PhoneGap.mediaObjects[id];
+Cordova.Media.getMediaObject = function(id) {
+    return Cordova.mediaObjects[id];
 };
 
 /**
@@ -205,8 +205,8 @@ PhoneGap.Media.getMediaObject = function(id) {
  * @param status        The status code (int)
  * @param msg           The status message (string)
  */
-PhoneGap.Media.onStatus = function(id, msg, value) {
-    var media = PhoneGap.mediaObjects[id];
+Cordova.Media.onStatus = function(id, msg, value) {
+    var media = Cordova.mediaObjects[id];
     // If state update
     if (msg === Media.MEDIA_STATE) {
         if (value === Media.MEDIA_STOPPED) {

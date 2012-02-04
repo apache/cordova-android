@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# create a phonegap/android project
+# create a cordova/android project
 # 
 # USAGE
 #   ./create [path package activity]
@@ -8,8 +8,8 @@
 set -e
 
 PROJECT_PATH=${1:-"./example"}
-PACKAGE=${2:-"com.phonegap.example"}
-ACTIVITY=${3:-"PhoneGapExample"}
+PACKAGE=${2:-"org.apache.cordova.example"}
+ACTIVITY=${3:-"cordovaExample"}
 TARGET=$(android list targets | grep 'id: ' | sed 's/id: \([0-9]*\).*/\1/g' | tail -1)
 VERSION=$(cat ./VERSION)
 
@@ -19,23 +19,23 @@ then
     rm -rf $PROJECT_PATH
 fi
 
-# update the phonegap-android framework for the desired target
+# update the cordova-android framework for the desired target
 android update project --target $TARGET --path ./framework
 
-# compile phonegap.js and phonegap.jar
+# compile cordova.js and cordova.jar
 cd ./framework && ant jar && cd ../
 
 # copy all the bin scripts etc in there
 cp -R ./bin/templates/project/ $PROJECT_PATH
 
-# copy in phonegap.js
-cp ./framework/assets/www/phonegap-$VERSION.js $PROJECT_PATH/.phonegap/android/phonegap-$VERSION.js
+# copy in cordova.js
+cp ./framework/assets/www/cordova-$VERSION.js $PROJECT_PATH/.cordova/android/cordova-$VERSION.js
 
-# copy in phonegap.jar
-cp ./framework/phonegap-$VERSION.jar $PROJECT_PATH/.phonegap/android/phonegap-$VERSION.jar
+# copy in cordova.jar
+cp ./framework/cordova-$VERSION.jar $PROJECT_PATH/.cordova/android/cordova-$VERSION.jar
 
 # app properties
-cat > $PROJECT_PATH/.phonegap/config <<eom
+cat > $PROJECT_PATH/.cordova/config <<eom
 VERSION=$VERSION
 PROJECT_PATH=$PROJECT_PATH
 PACKAGE=$PACKAGE
@@ -43,4 +43,4 @@ ACTIVITY=$ACTIVITY
 TARGET=$TARGET
 eom
 
-(cd $PROJECT_PATH && ./phonegap/create)
+(cd $PROJECT_PATH && ./cordova/create)

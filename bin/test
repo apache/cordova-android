@@ -13,14 +13,14 @@ then
 fi
 
 # generate a working proj
-./bin/create ./test com.phonegap.test PhoneGapTest
+./bin/create ./test org.apache.cordova.test CordovaTest
 
 # kill the default app and replace it w/ mobile-spec
 rm -rf ./test/assets/www
 mv ./callback-test ./test/assets/www
 
-# copy in phonegap.js since www dir was replaced above
-cp ./framework/assets/www/phonegap-$VERSION.js ./test/assets/www/phonegap-$VERSION.js
+# copy in cordova.js since www dir was replaced above
+cp ./framework/assets/www/cordova-$VERSION.js ./test/assets/www/cordova-$VERSION.js
 
 # build it, launch it and start logging on stdout
-cd ./test && ./phonegap/debug && ./phonegap/log
+cd ./test && ./cordova/debug && ./cordova/log

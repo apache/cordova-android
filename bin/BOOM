@@ -1,4 +1,4 @@
 #! /bin/sh
 
 ./bin/create
-cd ./example && ./phonegap/debug && ./phonegap/log
+cd ./example && ./cordova/debug && ./cordova/log

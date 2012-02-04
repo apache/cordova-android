@@ -18,8 +18,8 @@
  */
 
 
-if (!PhoneGap.hasResource("network")) {
-PhoneGap.addResource("network");
+if (!Cordova.hasResource("network")) {
+Cordova.addResource("network");
 
 /**
  * This class contains information about the current network Connection.
@@ -39,7 +39,7 @@ var Connection = function() {
                 // set a timer if still offline at the end of timer send the offline event
                 me._timer = setTimeout(function(){
                     me.type = type;
-                    PhoneGap.fireDocumentEvent('offline');
+                    Cordova.fireDocumentEvent('offline');
                     me._timer = null;
                     }, me.timeout);
             } else {
@@ -49,21 +49,21 @@ var Connection = function() {
                     me._timer = null;
                 }
                 me.type = type;
-                PhoneGap.fireDocumentEvent('online');
+                Cordova.fireDocumentEvent('online');
             }
             
             // should only fire this once
             if (me._firstRun) {
                 me._firstRun = false;
-                PhoneGap.onPhoneGapConnectionReady.fire();
+                Cordova.onCordovaConnectionReady.fire();
             }            
         },
         function(e) {
-            // If we can't get the network info we should still tell PhoneGap
+            // If we can't get the network info we should still tell Cordova
             // to fire the deviceready event.
             if (me._firstRun) {
                 me._firstRun = false;
-                PhoneGap.onPhoneGapConnectionReady.fire();
+                Cordova.onCordovaConnectionReady.fire();
             }            
             console.log("Error initializing Network Connection: " + e);
         });
@@ -85,11 +85,11 @@ Connection.NONE = "none";
  */
 Connection.prototype.getInfo = function(successCallback, errorCallback) {
     // Get info
-    PhoneGap.exec(successCallback, errorCallback, "Network Status", "getConnectionInfo", []);
+    Cordova.exec(successCallback, errorCallback, "Network Status", "getConnectionInfo", []);
 };
 
 
-PhoneGap.addConstructor(function() {
+Cordova.addConstructor(function() {
     if (typeof navigator.network === "undefined") {
         navigator.network = {};
     }
