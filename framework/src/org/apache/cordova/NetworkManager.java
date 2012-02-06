@@ -18,7 +18,7 @@
 */
 package org.apache.cordova;
 
-import org.apache.cordova.api.CordovaActivity;
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
@@ -87,7 +87,7 @@ public class NetworkManager extends Plugin {
      * 
      * @param ctx The context of the main Activity.
      */
-    public void setContext(CordovaActivity ctx) {
+    public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
         this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);        
         this.connectionCallbackId = null;

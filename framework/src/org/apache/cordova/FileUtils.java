@@ -25,7 +25,7 @@ import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.cordova.api.CordovaActivity;
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.apache.cordova.file.EncodingException;
@@ -1014,7 +1014,7 @@ public class FileUtils extends Plugin {
      * @param ctx the current applicaiton context
      * @return the full path to the file
      */
-    protected static String getRealPathFromURI(Uri contentUri, CordovaActivity ctx) {
+    protected static String getRealPathFromURI(Uri contentUri, CordovaInterface ctx) {
         String[] proj = { _DATA };
         Cursor cursor = ctx.managedQuery(contentUri, proj, null, null, null);
         int column_index = cursor.getColumnIndexOrThrow(_DATA);

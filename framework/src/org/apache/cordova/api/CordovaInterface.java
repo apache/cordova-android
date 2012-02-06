@@ -25,7 +25,7 @@ import android.content.Intent;
  * The Cordova activity abstract class that is extended by DroidGap.
  * It is used to isolate plugin development, and remove dependency on entire Cordova library.
  */
-public abstract class CordovaActivity extends Activity {
+public abstract class CordovaInterface extends Activity {
 
     /**
      * @deprecated

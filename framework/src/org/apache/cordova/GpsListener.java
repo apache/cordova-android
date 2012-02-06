@@ -19,7 +19,7 @@
 
 package org.apache.cordova;
 
-import org.apache.cordova.api.CordovaActivity;
+import org.apache.cordova.api.CordovaInterface;
 
 import android.content.Context;
 import android.location.Location;
@@ -33,7 +33,7 @@ import android.os.Bundle;
  */
 public class GpsListener implements LocationListener {
 	
-	private CordovaActivity mCtx;				// CordovaActivity object
+	private CordovaInterface mCtx;				// CordovaActivity object
 	
 	private LocationManager mLocMan;			// Location manager object
 	private GeoListener owner;					// Geolistener object (parent)
@@ -49,7 +49,7 @@ public class GpsListener implements LocationListener {
 	 * @param interval
 	 * @param m
 	 */
-	public GpsListener(CordovaActivity ctx, int interval, GeoListener m) {
+	public GpsListener(CordovaInterface ctx, int interval, GeoListener m) {
 		this.owner = m;
 		this.mCtx = ctx;
 		this.mLocMan = (LocationManager) this.mCtx.getSystemService(Context.LOCATION_SERVICE);

@@ -22,5 +22,5 @@ package com.phonegap.api;
  * The Cordova activity abstract class that is extended by DroidGap.
  * It is used to isolate plugin development, and remove dependency on entire Cordova library.
  */
-public abstract class PhonegapActivity extends org.apache.cordova.api.CordovaActivity {
+public abstract class PhonegapActivity extends org.apache.cordova.api.CordovaInterface {
 }

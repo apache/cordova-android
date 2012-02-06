@@ -53,7 +53,7 @@ public interface IPlugin {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	void setContext(CordovaActivity ctx);
+	void setContext(CordovaInterface ctx);
 
 	/**
 	 * Sets the main View of the application, this is the WebView within which 

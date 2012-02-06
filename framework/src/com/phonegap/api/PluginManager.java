@@ -17,7 +17,7 @@
 */
 package com.phonegap.api;
 
-import org.apache.cordova.api.CordovaActivity;
+import org.apache.cordova.api.CordovaInterface;
 
 import android.webkit.WebView;
 
@@ -29,7 +29,7 @@ import android.webkit.WebView;
  */
 public class PluginManager extends org.apache.cordova.api.PluginManager {
 
-    public PluginManager(WebView app, CordovaActivity ctx) {
+    public PluginManager(WebView app, CordovaInterface ctx) {
         super(app, ctx);
     }
 }

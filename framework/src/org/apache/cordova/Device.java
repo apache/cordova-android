@@ -21,7 +21,7 @@ package org.apache.cordova;
 import java.util.TimeZone;
 
 import org.apache.cordova.api.LOG;
-import org.apache.cordova.api.CordovaActivity;
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
@@ -56,7 +56,7 @@ public class Device extends Plugin {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(CordovaActivity ctx) {
+	public void setContext(CordovaInterface ctx) {
 		super.setContext(ctx);
         Device.uuid = getUuid();
         this.initTelephonyReceiver();
@@ -125,7 +125,7 @@ public class Device extends Plugin {
     private void initTelephonyReceiver() {
         IntentFilter intentFilter = new IntentFilter() ;
         intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        final CordovaActivity myctx = this.ctx;
+        final CordovaInterface myctx = this.ctx;
         this.telephonyReceiver = new BroadcastReceiver() {
             
             @Override

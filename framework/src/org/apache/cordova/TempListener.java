@@ -20,7 +20,7 @@ package org.apache.cordova;
 
 import java.util.List;
 
-import org.apache.cordova.api.CordovaActivity;
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
@@ -49,7 +49,7 @@ public class TempListener extends Plugin implements SensorEventListener {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(CordovaActivity ctx) {
+	public void setContext(CordovaInterface ctx) {
 		super.setContext(ctx);
         this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
 	}

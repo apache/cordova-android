@@ -31,7 +31,7 @@ import org.apache.cordova.PreferenceNode;
 import org.apache.cordova.PreferenceSet;
 import org.apache.cordova.api.IPlugin;
 import org.apache.cordova.api.LOG;
-import org.apache.cordova.api.CordovaActivity;
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.PluginManager;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -159,7 +159,7 @@ import android.widget.LinearLayout;
  *          ...
  *      </plugins>
  */
-public class DroidGap extends CordovaActivity {
+public class DroidGap extends CordovaInterface {
     public static String TAG = "DroidGap";
     
     // The webview for our app
