@@ -183,6 +183,8 @@ public class CordovaWebViewClient extends WebViewClient {
     
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
+        Log.d("CordovaWebViewClient", "I got a page started for = " + url);
+        Log.d("CordovaWebViewClient", "can go back " + view.canGoBack());
 
         // Clear history so history.back() doesn't do anything.  
         // So we can reinit() native side CallbackServer & PluginManager.
@@ -198,6 +200,7 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     @Override
     public void onPageFinished(WebView view, String url) {
+        Log.d("CordovaWebViewClient", "I got a page finished for = " + url);
         super.onPageFinished(view, url);
 
         /**

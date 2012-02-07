@@ -55,6 +55,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -671,6 +672,12 @@ public class DroidGap extends Activity implements CordovaInterface {
      * Clear web history in this web view.
      */
     public void clearHistory() {
+        Log.d("DroidGap", "*****************");
+        Log.d("DroidGap", "*****************");
+        Log.d("DroidGap", "*****************");
+        Log.d("DroidGap", "In DroidGap clearHistory");
+        Log.d("DroidGap", "The size of urls is = " + this.urls.size());
+        
         this.urls.clear();
         this.appView.clearHistory();
         
