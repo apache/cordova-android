@@ -27,7 +27,6 @@ public class PluginResult {
 	private final int status;
 	private final String message;
 	private boolean keepCallback = false;
-	private String cast = null;
 	
 	public PluginResult(Status status) {
 		this.status = status.ordinal();
@@ -37,18 +36,6 @@ public class PluginResult {
 	public PluginResult(Status status, String message) {
 		this.status = status.ordinal();
 		this.message = JSONObject.quote(message);
-	}
-
-	public PluginResult(Status status, JSONArray message, String cast) {
-		this.status = status.ordinal();
-		this.message = message.toString();
-		this.cast = cast;
-	}
-
-	public PluginResult(Status status, JSONObject message, String cast) {
-		this.status = status.ordinal();
-		this.message = message.toString();
-		this.cast = cast;
 	}
 
 	public PluginResult(Status status, JSONArray message) {
@@ -97,15 +84,7 @@ public class PluginResult {
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
-		StringBuffer buf = new StringBuffer("");
-		if (cast != null) {
-			buf.append("var temp = "+cast+"("+this.getJSONString() + ");\n");
-			buf.append("Cordova.callbackSuccess('"+callbackId+"',temp);");
-		}
-		else {
-			buf.append("Cordova.callbackSuccess('"+callbackId+"',"+this.getJSONString()+");");			
-		}
-		return buf.toString();
+		return "Cordova.callbackSuccess('"+callbackId+"',"+this.getJSONString()+");";
 	}
 	
 	public String toErrorCallbackString(String callbackId) {

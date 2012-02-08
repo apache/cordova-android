@@ -95,7 +95,7 @@ var Capture = function(){
  * @param {CaptureAudioOptions} options
  */
 Capture.prototype.captureAudio = function(successCallback, errorCallback, options){
-	Cordova.exec(successCallback, errorCallback, "Capture", "captureAudio", [options]);
+    navigator.device.capture._capture("captureAudio", successCallback, errorCallback, options);
 };
 
 /**
@@ -106,30 +106,7 @@ Capture.prototype.captureAudio = function(successCallback, errorCallback, option
  * @param {CaptureImageOptions} options
  */
 Capture.prototype.captureImage = function(successCallback, errorCallback, options){
-	Cordova.exec(successCallback, errorCallback, "Capture", "captureImage", [options]);
-};
-
-/**
- * Launch camera application for taking image(s).
- *
- * @param {Function} successCB
- * @param {Function} errorCB
- * @param {CaptureImageOptions} options
- */
-Capture.prototype._castMediaFile = function(pluginResult){
-	var mediaFiles = [];
-	var i;
-	for (i = 0; i < pluginResult.message.length; i++) {
-		var mediaFile = new MediaFile();
-		mediaFile.name = pluginResult.message[i].name;
-		mediaFile.fullPath = pluginResult.message[i].fullPath;
-		mediaFile.type = pluginResult.message[i].type;
-		mediaFile.lastModifiedDate = pluginResult.message[i].lastModifiedDate;
-		mediaFile.size = pluginResult.message[i].size;
-		mediaFiles.push(mediaFile);
-	}
-	pluginResult.message = mediaFiles;
-	return pluginResult;
+    navigator.device.capture._capture("captureImage", successCallback, errorCallback, options);
 };
 
 /**
@@ -140,8 +117,35 @@ Capture.prototype._castMediaFile = function(pluginResult){
  * @param {CaptureVideoOptions} options
  */
 Capture.prototype.captureVideo = function(successCallback, errorCallback, options){
-	Cordova.exec(successCallback, errorCallback, "Capture", "captureVideo", [options]);
+    navigator.device.capture._capture("captureVideo", successCallback, errorCallback, options);
 };
+
+/**
+ * Launches the correct capture.
+ *
+ * @param (DOMString} type 
+ * @param {Function} successCB
+ * @param {Function} errorCB
+ * @param {CaptureVideoOptions} options
+ */
+Capture.prototype._capture = function(type, successCallback, errorCallback, options){
+    var win = function(result) {
+        var mediaFiles = [];
+        var i;
+        for (i = 0; i < pluginResult.message.length; i++) {
+            var mediaFile = new MediaFile();
+            mediaFile.name = pluginResult.message[i].name;
+            mediaFile.fullPath = pluginResult.message[i].fullPath;
+            mediaFile.type = pluginResult.message[i].type;
+            mediaFile.lastModifiedDate = pluginResult.message[i].lastModifiedDate;
+            mediaFile.size = pluginResult.message[i].size;
+            mediaFiles.push(mediaFile);
+        }
+        successCallback(mediaFiles);
+    };
+    Cordova.exec(win, errorCallback, "Capture", type, [options]);
+};
+
 
 /**
  * Encapsulates a set of parameters that the capture device supports.

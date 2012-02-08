@@ -624,7 +624,25 @@ var DirectoryReader = function(fullPath){
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryReader.prototype.readEntries = function(successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "readEntries", [this.fullPath]);
+    var win = function(result) {
+        var retVal = [];
+        for (var i=0; i<result.length; i++) {
+            var entry = null;
+            if (result[i].isDirectory) {
+                entry = new DirectoryEntry();
+            }
+            else if (result[i].isFile) {
+                entry = new FileEntry();
+            }
+            entry.isDirectory = result[i].isDirectory;
+            entry.isFile = result[i].isFile;
+            entry.name = result[i].name;
+            entry.fullPath = result[i].fullPath;
+            retVal.push(entry);
+        }
+        successCallback(retVal);
+    };
+    Cordova.exec(win, errorCallback, "File", "readEntries", [this.fullPath]);
 };
 
 /**
@@ -654,7 +672,21 @@ var DirectoryEntry = function() {
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.copyTo = function(parent, newName, successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
+    var win = function(result) {
+        var entry = null;
+        if (result.isDirectory) {
+            entry = new DirectoryEntry();
+        }
+        else if (result.isFile) {
+            entry = new FileEntry();
+        }
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
 };
 
 /**
@@ -664,7 +696,11 @@ DirectoryEntry.prototype.copyTo = function(parent, newName, successCallback, err
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getMetadata = function(successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "getMetadata", [this.fullPath]);
+    var win = function(result) {
+        result.modificationTime = new Date(result.modificationTime);
+        successCallback(result);
+    };
+    Cordova.exec(win, errorCallback, "File", "getMetadata", [this.fullPath]);
 };
 
 /**
@@ -674,7 +710,16 @@ DirectoryEntry.prototype.getMetadata = function(successCallback, errorCallback) 
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getParent = function(successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
+    var win = function(result) {
+        var entry = null;
+        entry = new DirectoryEntry();
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, "File", "getParent", [this.fullPath]);
 };
 
 /**
@@ -686,7 +731,21 @@ DirectoryEntry.prototype.getParent = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.moveTo = function(parent, newName, successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
+    var win = function(result) {
+        var entry = null;
+        if (result.isDirectory) {
+            entry = new DirectoryEntry();
+        }
+        else if (result.isFile) {
+            entry = new FileEntry();
+        }
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
 };
 
 /**
@@ -725,7 +784,16 @@ DirectoryEntry.prototype.createReader = function(successCallback, errorCallback)
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getDirectory = function(path, options, successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "getDirectory", [this.fullPath, path, options]);
+    var win = function(result) {
+        var entry = null;
+        entry = new DirectoryEntry();
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, "File", "getDirectory", [this.fullPath, path, options]);
 };
 
 /**
@@ -737,7 +805,16 @@ DirectoryEntry.prototype.getDirectory = function(path, options, successCallback,
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getFile = function(path, options, successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "getFile", [this.fullPath, path, options]);
+    var win = function(result) {
+        var entry = null;
+        entry = new FileEntry();
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, "File", "getFile", [this.fullPath, path, options]);
 };
 
 /**
@@ -777,7 +854,21 @@ var FileEntry = function() {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.copyTo = function(parent, newName, successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
+    var win = function(result) {
+        var entry = null;
+        if (result.isDirectory) {
+            entry = new DirectoryEntry();
+        }
+        else if (result.isFile) {
+            entry = new FileEntry();
+        }
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, "File", "copyTo", [this.fullPath, parent, newName]);
 };
 
 /**
@@ -787,7 +878,11 @@ FileEntry.prototype.copyTo = function(parent, newName, successCallback, errorCal
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.getMetadata = function(successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "getMetadata", [this.fullPath]);
+    var win = function(result) {
+        result.modificationTime = new Date(result.modificationTime);
+        successCallback(result);
+    };
+    Cordova.exec(win, errorCallback, "File", "getMetadata", [this.fullPath]);
 };
 
 /**
@@ -797,7 +892,16 @@ FileEntry.prototype.getMetadata = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.getParent = function(successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
+    var win = function(result) {
+        var entry = null;
+        entry = new DirectoryEntry();
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, "File", "getParent", [this.fullPath]);
 };
 
 /**
@@ -809,7 +913,21 @@ FileEntry.prototype.getParent = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.moveTo = function(parent, newName, successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
+    var win = function(result) {
+        var entry = null;
+        if (result.isDirectory) {
+            entry = new DirectoryEntry();
+        }
+        else if (result.isFile) {
+            entry = new FileEntry();
+        }
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, "File", "moveTo", [this.fullPath, parent, newName]);
 };
 
 /**
@@ -863,7 +981,16 @@ FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.file = function(successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "getFileMetadata", [this.fullPath]);
+    var win = function(result) {
+        var file = new File();
+        file.size = result.size;
+        file.type = result.type;
+        file.name = result.name;
+        file.fullPath = result.fullPath;
+        file.lastModifiedDate = new Date(result.lastModifiedDate);
+        successCallback(file);
+    };
+    Cordova.exec(win, errorCallback, "File", "getFileMetadata", [this.fullPath]);
 };
 
 /** @constructor */
@@ -892,7 +1019,20 @@ LocalFileSystem.prototype.requestFileSystem = function(type, size, successCallba
         }
     }
     else {
-        Cordova.exec(successCallback, errorCallback, "File", "requestFileSystem", [type, size]);
+        var win = function(result){
+            console.log("in win of requestFileSystem");
+            console.log("Result: " + JSON.stringify(result));
+            var entry = null;
+            entry = new DirectoryEntry();
+            entry.isDirectory = result.root.isDirectory;
+            entry.isFile = result.root.isFile;
+            entry.name = result.root.name;
+            entry.fullPath = result.root.fullPath;
+            result.root = entry;
+            successCallback(result);
+        };
+        console.log("about to call requestFileSystem");
+        Cordova.exec(win, errorCallback, "File", "requestFileSystem", [type, size]);
     }
 };
 
@@ -903,84 +1043,24 @@ LocalFileSystem.prototype.requestFileSystem = function(type, size, successCallba
  * @param {Function} errorCallback is called with a FileError
  */
 LocalFileSystem.prototype.resolveLocalFileSystemURI = function(uri, successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, "File", "resolveLocalFileSystemURI", [uri]);
-};
-
-/**
-* This function returns and array of contacts.  It is required as we need to convert raw
-* JSON objects into concrete Contact objects.  Currently this method is called after
-* navigator.service.contacts.find but before the find methods success call back.
-*
-* @param a JSON Objects that need to be converted to DirectoryEntry or FileEntry objects.
-* @returns an entry
-*/
-LocalFileSystem.prototype._castFS = function(pluginResult) {
-    var entry = null;
-    entry = new DirectoryEntry();
-    entry.isDirectory = pluginResult.message.root.isDirectory;
-    entry.isFile = pluginResult.message.root.isFile;
-    entry.name = pluginResult.message.root.name;
-    entry.fullPath = pluginResult.message.root.fullPath;
-    pluginResult.message.root = entry;
-    return pluginResult;
-};
-
-LocalFileSystem.prototype._castEntry = function(pluginResult) {
-    var entry = null;
-    if (pluginResult.message.isDirectory) {
-        entry = new DirectoryEntry();
-    }
-    else if (pluginResult.message.isFile) {
-        entry = new FileEntry();
-    }
-    entry.isDirectory = pluginResult.message.isDirectory;
-    entry.isFile = pluginResult.message.isFile;
-    entry.name = pluginResult.message.name;
-    entry.fullPath = pluginResult.message.fullPath;
-    pluginResult.message = entry;
-    return pluginResult;
-};
-
-LocalFileSystem.prototype._castEntries = function(pluginResult) {
-    var entries = pluginResult.message;
-    var retVal = [];
-    for (var i=0; i<entries.length; i++) {
-        retVal.push(window.localFileSystem._createEntry(entries[i]));
-    }
-    pluginResult.message = retVal;
-    return pluginResult;
-};
-
-LocalFileSystem.prototype._createEntry = function(castMe) {
-    var entry = null;
-    if (castMe.isDirectory) {
-        entry = new DirectoryEntry();
-    }
-    else if (castMe.isFile) {
-        entry = new FileEntry();
-    }
-    entry.isDirectory = castMe.isDirectory;
-    entry.isFile = castMe.isFile;
-    entry.name = castMe.name;
-    entry.fullPath = castMe.fullPath;
-    return entry;
-};
-
-LocalFileSystem.prototype._castDate = function(pluginResult) {
-    if (pluginResult.message.modificationTime) {
-        var modTime = new Date(pluginResult.message.modificationTime);
-        pluginResult.message.modificationTime = modTime;
-    }
-    else if (pluginResult.message.lastModifiedDate) {
-        var file = new File();
-        file.size = pluginResult.message.size;
-        file.type = pluginResult.message.type;
-        file.name = pluginResult.message.name;
-        file.fullPath = pluginResult.message.fullPath;
-        file.lastModifiedDate = new Date(pluginResult.message.lastModifiedDate);
-        pluginResult.message = file;
-    }
-    return pluginResult;
+    var win = function(result) {
+        console.log("in win of resolveLocalFileSystemURI");
+        console.log("Result: " + JSON.stringify(result));
+        var entry = null;
+        if (result.isDirectory) {
+            entry = new DirectoryEntry();
+        }
+        else if (result.isFile) {
+            entry = new FileEntry();
+        }
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    console.log("about to call resolveLocalFileSystemURI");
+    Cordova.exec(win, errorCallback, "File", "resolveLocalFileSystemURI", [uri]);
 };
 
 /**

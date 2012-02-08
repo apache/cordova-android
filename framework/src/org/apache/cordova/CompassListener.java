@@ -119,7 +119,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
                     }
                 }
                 //float f = this.getHeading();
-                return new PluginResult(status, getCompassHeading(), "navigator.compass._castDate");
+                return new PluginResult(status, getCompassHeading());
             }
             else if (action.equals("setTimeout")) {
                 this.setTimeout(args.getLong(0));

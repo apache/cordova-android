@@ -31,14 +31,6 @@ public class PluginResult extends org.apache.cordova.api.PluginResult {
 		super(status, message);
 	}
 
-	public PluginResult(Status status, JSONArray message, String cast) {
-        super(status, message, cast);
-	}
-
-	public PluginResult(Status status, JSONObject message, String cast) {
-        super(status, message, cast);
-	}
-
 	public PluginResult(Status status, JSONArray message) {
         super(status, message);
 	}
