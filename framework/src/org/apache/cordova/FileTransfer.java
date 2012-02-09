@@ -280,10 +280,10 @@ public class FileTransfer extends Plugin {
         // Handle the other headers
         try {
           JSONObject headers = params.getJSONObject("headers");
-          for (Iterator iter = params.keys(); iter.hasNext();)
+          for (Iterator iter = headers.keys(); iter.hasNext();)
           {
             String headerKey = iter.next().toString();
-            conn.setRequestProperty(headerKey, params.getString(headerKey));
+            conn.setRequestProperty(headerKey, headers.getString(headerKey));
           }
         } catch (JSONException e1) {
           // No headers to be manipulated!
