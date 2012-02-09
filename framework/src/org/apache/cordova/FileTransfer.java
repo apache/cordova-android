@@ -276,7 +276,19 @@ public class FileTransfer extends Plugin {
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
         conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+BOUNDRY);
-
+        
+        // Handle the other headers
+        try {
+          JSONObject headers = params.getJSONObject("headers");
+          for (Iterator iter = params.keys(); iter.hasNext();)
+          {
+            String headerKey = iter.next().toString();
+            conn.setRequestProperty(headerKey, params.getString(headerKey));
+          }
+        } catch (JSONException e1) {
+          // No headers to be manipulated!
+        }
+        
         // Set the cookies on the response
         String cookie = CookieManager.getInstance().getCookie(server);
         if (cookie != null) {
@@ -294,11 +306,14 @@ public class FileTransfer extends Plugin {
         try {
             for (Iterator iter = params.keys(); iter.hasNext();) {
                 Object key = iter.next();
-                dos.writeBytes(LINE_START + BOUNDRY + LINE_END);
-                dos.writeBytes("Content-Disposition: form-data; name=\"" +  key.toString() + "\";");
-                dos.writeBytes(LINE_END + LINE_END);
-                dos.write(params.getString(key.toString()).getBytes());
-                dos.writeBytes(LINE_END);
+                if(key.toString() != "headers")
+                {
+                  dos.writeBytes(LINE_START + BOUNDRY + LINE_END);
+                  dos.writeBytes("Content-Disposition: form-data; name=\"" +  key.toString() + "\";");
+                  dos.writeBytes(LINE_END + LINE_END);
+                  dos.write(params.getString(key.toString()).getBytes());
+                  dos.writeBytes(LINE_END);
+                }
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
