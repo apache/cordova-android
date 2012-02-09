@@ -73,9 +73,17 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
         console.log("Compass Error: errorCallback is not a function");
         return;
     }
+    
+    var win = function(result) {
+        if (result.timestamp) {
+            var timestamp = new Date(result.timestamp);
+            result.timestamp = timestamp;
+        }
+        successCallback(result);   
+    };
 
     // Get heading
-    Cordova.exec(successCallback, errorCallback, "Compass", "getHeading", []);
+    Cordova.exec(win, errorCallback, "Compass", "getHeading", []);
 };
 
 /**
@@ -116,7 +124,14 @@ Compass.prototype.watchHeading= function(successCallback, errorCallback, options
     var id = Cordova.createUUID();
     navigator.compass.timers[id] = setInterval(
         function() {
-            Cordova.exec(successCallback, errorCallback, "Compass", "getHeading", []);
+            var win = function(result) {
+                if (result.timestamp) {
+                    var timestamp = new Date(result.timestamp);
+                    result.timestamp = timestamp;
+                }
+                successCallback(result);   
+            };
+            Cordova.exec(win, errorCallback, "Compass", "getHeading", []);
         }, (frequency ? frequency : 1));
 
     return id;

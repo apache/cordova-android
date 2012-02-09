@@ -137,31 +137,31 @@ public class FileUtils extends Plugin {
                         }
                     }
                     JSONObject obj = requestFileSystem(args.getInt(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castFS");
+                    return new PluginResult(status, obj);
                 }
                 else if (action.equals("resolveLocalFileSystemURI")) {
                     JSONObject obj = resolveLocalFileSystemURI(args.getString(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castEntry");
+                    return new PluginResult(status, obj);
                 }
                 else if (action.equals("getMetadata")) {
                     JSONObject obj = getMetadata(args.getString(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castDate");
+                    return new PluginResult(status, obj);
                 }
                 else if (action.equals("getFileMetadata")) {
                     JSONObject obj = getFileMetadata(args.getString(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castDate");
+                    return new PluginResult(status, obj);
                 }
                 else if (action.equals("getParent")) {
                     JSONObject obj = getParent(args.getString(0));
-                    return new PluginResult(status, obj, "window.localFileSystem._castEntry");
+                    return new PluginResult(status, obj);
                 }
                 else if (action.equals("getDirectory")) {
                     JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), true);
-                    return new PluginResult(status, obj, "window.localFileSystem._castEntry");
+                    return new PluginResult(status, obj);
                 }
                 else if (action.equals("getFile")) {
                     JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), false);
-                    return new PluginResult(status, obj, "window.localFileSystem._castEntry");
+                    return new PluginResult(status, obj);
                 }
                 else if (action.equals("remove")) {
                     boolean success;
@@ -187,15 +187,15 @@ public class FileUtils extends Plugin {
                 }
                 else if (action.equals("moveTo")) {
                     JSONObject entry = transferTo(args.getString(0), args.getJSONObject(1), args.optString(2), true);
-                    return new PluginResult(status, entry, "window.localFileSystem._castEntry");
+                    return new PluginResult(status, entry);
                 }
                 else if (action.equals("copyTo")) {
                     JSONObject entry = transferTo(args.getString(0), args.getJSONObject(1), args.optString(2), false);
-                    return new PluginResult(status, entry, "window.localFileSystem._castEntry");
+                    return new PluginResult(status, entry);
                 }
                 else if (action.equals("readEntries")) {
                     JSONArray entries = readEntries(args.getString(0));
-                    return new PluginResult(status, entries, "window.localFileSystem._castEntries");
+                    return new PluginResult(status, entries);
                 }
                 return new PluginResult(status, result);
             } catch (FileNotFoundException e) {

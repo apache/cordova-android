@@ -91,7 +91,21 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
  * @param errorCallback {Function}    Callback to be invoked upon error
  */
 FileTransfer.prototype.download = function(source, target, successCallback, errorCallback) {
-    Cordova.exec(successCallback, errorCallback, 'FileTransfer', 'download', [source, target]);
+    var win = function(result) {
+        var entry = null;
+        if (result.isDirectory) {
+            entry = new DirectoryEntry();
+        }
+        else if (result.isFile) {
+            entry = new FileEntry();
+        }
+        entry.isDirectory = result.isDirectory;
+        entry.isFile = result.isFile;
+        entry.name = result.name;
+        entry.fullPath = result.fullPath;
+        successCallback(entry);   
+    };
+    Cordova.exec(win, errorCallback, 'FileTransfer', 'download', [source, target]);
 };
 
 /**

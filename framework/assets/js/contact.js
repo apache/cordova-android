@@ -259,7 +259,14 @@ Contacts.prototype.find = function(fields, successCB, errorCB, options) {
             errorCB({"code": ContactError.INVALID_ARGUMENT_ERROR});
         }
     } else {
-        Cordova.exec(successCB, errorCB, "Contacts", "search", [fields, options]);        
+        var win = function(result) {
+            var cs = [];
+            for (var i = 0, l = result.length; i < l; i++) {
+                cs.push(navigator.contacts.create(result[i]));
+            }
+            successCB(cs);
+        };
+        Cordova.exec(win, errorCB, "Contacts", "search", [fields, options]);        
     }
 };
 
@@ -279,24 +286,6 @@ Contacts.prototype.create = function(properties) {
         }
     }
     return contact;
-};
-
-/**
-* This function returns and array of contacts.  It is required as we need to convert raw
-* JSON objects into concrete Contact objects.  Currently this method is called after
-* navigator.contacts.find but before the find methods success call back.
-*
-* @param jsonArray an array of JSON Objects that need to be converted to Contact objects.
-* @returns an array of Contact objects
-*/
-Contacts.prototype.cast = function(pluginResult) {
-	var contacts = [];
-	var i;
-	for (i=0; i<pluginResult.message.length; i++) {
-		contacts.push(navigator.contacts.create(pluginResult.message[i]));
-	}
-	pluginResult.message = contacts;
-	return pluginResult;
 };
 
 /**

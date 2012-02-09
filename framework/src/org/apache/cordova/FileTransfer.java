@@ -101,7 +101,7 @@ public class FileTransfer extends Plugin {
             } else if (action.equals("download")) {
                 JSONObject r = download(source, target);
                 Log.d(LOG_TAG, "****** About to return a result from download");
-                return new PluginResult(PluginResult.Status.OK, r, "window.localFileSystem._castEntry");
+                return new PluginResult(PluginResult.Status.OK, r);
             } else {
                 return new PluginResult(PluginResult.Status.INVALID_ACTION);
             }
