@@ -33,8 +33,6 @@ import org.apache.cordova.api.IPlugin;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.PluginManager;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
@@ -43,17 +41,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.XmlResourceParser;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.net.http.SslError;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -64,19 +57,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.ConsoleMessage;
-import android.webkit.GeolocationPermissions.Callback;
-import android.webkit.HttpAuthHandler;
-import android.webkit.JsPromptResult;
-import android.webkit.JsResult;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
-import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 
 
@@ -228,8 +212,6 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     // preferences read from cordova.xml
     protected PreferenceSet preferences;
-
-    private boolean classicRender;
 
     /**
      * Sets the authentication token.
@@ -1370,7 +1352,31 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
         return false;
     }
-
+    
+    /*
+     * URL stack manipulators
+     */
+    
+    /** 
+     * Returns the top url on the stack without removing it from 
+     * the stack.
+     */
+    public String peekAtUrlStack() {
+        if (urls.size() > 0) {
+            return urls.peek();
+        }
+        return "";
+    }
+    
+    /**
+     * Add a url to the stack
+     * 
+     * @param url
+     */
+    public void pushUrl(String url) {
+        urls.push(url);
+    }
+    
     /* 
      * Hook in DroidGap for menu plugins
      * 

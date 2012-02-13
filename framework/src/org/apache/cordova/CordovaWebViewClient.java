@@ -183,9 +183,6 @@ public class CordovaWebViewClient extends WebViewClient {
     
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
-        Log.d("CordovaWebViewClient", "I got a page started for = " + url);
-        Log.d("CordovaWebViewClient", "can go back " + view.canGoBack());
-
         // Clear history so history.back() doesn't do anything.  
         // So we can reinit() native side CallbackServer & PluginManager.
         view.clearHistory(); 
@@ -200,7 +197,6 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     @Override
     public void onPageFinished(WebView view, String url) {
-        Log.d("CordovaWebViewClient", "I got a page finished for = " + url);
         super.onPageFinished(view, url);
 
         /**
@@ -294,6 +290,17 @@ public class CordovaWebViewClient extends WebViewClient {
         } catch (NameNotFoundException e) {
             // When it doubt, lock it out!
             super.onReceivedSslError(view, handler, error);
+        }
+    }
+
+    @Override
+    public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+        /* 
+         * If you do a document.location.href the url does not get pushed on the stack
+         * so we do a check here to see if the url should be pushed.
+         */
+        if (!this.ctx.peekAtUrlStack().equals(url)) {
+            this.ctx.pushUrl(url);
         }
     }
 }
