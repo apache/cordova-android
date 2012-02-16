@@ -199,32 +199,23 @@ public class FileUtils extends Plugin {
                 }
                 return new PluginResult(status, result);
             } catch (FileNotFoundException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.NOT_FOUND_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_FOUND_ERR);
             } catch (FileExistsException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.PATH_EXISTS_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.PATH_EXISTS_ERR);
             } catch (NoModificationAllowedException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
             } catch (JSONException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
             } catch (InvalidModificationException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.INVALID_MODIFICATION_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.INVALID_MODIFICATION_ERR);
             } catch (MalformedURLException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.ENCODING_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.ENCODING_ERR);
             } catch (IOException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.INVALID_MODIFICATION_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.INVALID_MODIFICATION_ERR);
             } catch (EncodingException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.ENCODING_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.ENCODING_ERR);
             } catch (TypeMismatchException e) {
-                JSONObject error = new JSONObject().put("code", FileUtils.TYPE_MISMATCH_ERR);
-                return new PluginResult(PluginResult.Status.ERROR, error);
+                return new PluginResult(PluginResult.Status.ERROR, FileUtils.TYPE_MISMATCH_ERR);
             }
         } catch (JSONException e) {
             e.printStackTrace();
