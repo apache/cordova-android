@@ -95,131 +95,126 @@ public class FileUtils extends Plugin {
         //System.out.println("FileUtils.execute("+action+")");
 
         try {
-            try {
-                if (action.equals("testSaveLocationExists")) {
-                    boolean b = DirectoryManager.testSaveLocationExists();
-                    return new PluginResult(status, b);
-                }
-                else if (action.equals("getFreeDiskSpace")) {
-                    long l = DirectoryManager.getFreeDiskSpace(false);
-                    return new PluginResult(status, l);
-                }
-                else if (action.equals("testFileExists")) {
-                    boolean b = DirectoryManager.testFileExists(args.getString(0));
-                    return new PluginResult(status, b);
-                }
-                else if (action.equals("testDirectoryExists")) {
-                    boolean b = DirectoryManager.testFileExists(args.getString(0));
-                    return new PluginResult(status, b);
-                }
-                else if (action.equals("readAsText")) {
-                    String s = this.readAsText(args.getString(0), args.getString(1));
-                    return new PluginResult(status, s);
-                }
-                else if (action.equals("readAsDataURL")) {
-                    String s = this.readAsDataURL(args.getString(0));
-                    return new PluginResult(status, s);
-                }
-                else if (action.equals("write")) {
-                    long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
-                    return new PluginResult(status, fileSize);
-                }
-                else if (action.equals("truncate")) {
-                    long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
-                    return new PluginResult(status, fileSize);
-                }
-                else if (action.equals("requestFileSystem")) {
-                    long size = args.optLong(1);
-                    if (size != 0) {
-                        if (size > (DirectoryManager.getFreeDiskSpace(true)*1024)) {
-                            JSONObject error = new JSONObject().put("code", FileUtils.QUOTA_EXCEEDED_ERR);
-                            return new PluginResult(PluginResult.Status.ERROR, error);
-                        }
-                    }
-                    JSONObject obj = requestFileSystem(args.getInt(0));
-                    return new PluginResult(status, obj);
-                }
-                else if (action.equals("resolveLocalFileSystemURI")) {
-                    JSONObject obj = resolveLocalFileSystemURI(args.getString(0));
-                    return new PluginResult(status, obj);
-                }
-                else if (action.equals("getMetadata")) {
-                    JSONObject obj = getMetadata(args.getString(0));
-                    return new PluginResult(status, obj);
-                }
-                else if (action.equals("getFileMetadata")) {
-                    JSONObject obj = getFileMetadata(args.getString(0));
-                    return new PluginResult(status, obj);
-                }
-                else if (action.equals("getParent")) {
-                    JSONObject obj = getParent(args.getString(0));
-                    return new PluginResult(status, obj);
-                }
-                else if (action.equals("getDirectory")) {
-                    JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), true);
-                    return new PluginResult(status, obj);
-                }
-                else if (action.equals("getFile")) {
-                    JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), false);
-                    return new PluginResult(status, obj);
-                }
-                else if (action.equals("remove")) {
-                    boolean success;
-
-                    success = remove(args.getString(0));
-
-                    if (success) {
-                        notifyDelete(args.getString(0));
-                        return new PluginResult(status);
-                    } else {
-                        JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                        return new PluginResult(PluginResult.Status.ERROR, error);
-                    }
-                }
-                else if (action.equals("removeRecursively")) {
-                    boolean success = removeRecursively(args.getString(0));
-                    if (success) {
-                        return new PluginResult(status);
-                    } else {
-                        JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                        return new PluginResult(PluginResult.Status.ERROR, error);
-                    }
-                }
-                else if (action.equals("moveTo")) {
-                    JSONObject entry = transferTo(args.getString(0), args.getJSONObject(1), args.optString(2), true);
-                    return new PluginResult(status, entry);
-                }
-                else if (action.equals("copyTo")) {
-                    JSONObject entry = transferTo(args.getString(0), args.getJSONObject(1), args.optString(2), false);
-                    return new PluginResult(status, entry);
-                }
-                else if (action.equals("readEntries")) {
-                    JSONArray entries = readEntries(args.getString(0));
-                    return new PluginResult(status, entries);
-                }
-                return new PluginResult(status, result);
-            } catch (FileNotFoundException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_FOUND_ERR);
-            } catch (FileExistsException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.PATH_EXISTS_ERR);
-            } catch (NoModificationAllowedException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-            } catch (JSONException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-            } catch (InvalidModificationException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.INVALID_MODIFICATION_ERR);
-            } catch (MalformedURLException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.ENCODING_ERR);
-            } catch (IOException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.INVALID_MODIFICATION_ERR);
-            } catch (EncodingException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.ENCODING_ERR);
-            } catch (TypeMismatchException e) {
-                return new PluginResult(PluginResult.Status.ERROR, FileUtils.TYPE_MISMATCH_ERR);
+            if (action.equals("testSaveLocationExists")) {
+                boolean b = DirectoryManager.testSaveLocationExists();
+                return new PluginResult(status, b);
             }
+            else if (action.equals("getFreeDiskSpace")) {
+                long l = DirectoryManager.getFreeDiskSpace(false);
+                return new PluginResult(status, l);
+            }
+            else if (action.equals("testFileExists")) {
+                boolean b = DirectoryManager.testFileExists(args.getString(0));
+                return new PluginResult(status, b);
+            }
+            else if (action.equals("testDirectoryExists")) {
+                boolean b = DirectoryManager.testFileExists(args.getString(0));
+                return new PluginResult(status, b);
+            }
+            else if (action.equals("readAsText")) {
+                String s = this.readAsText(args.getString(0), args.getString(1));
+                return new PluginResult(status, s);
+            }
+            else if (action.equals("readAsDataURL")) {
+                String s = this.readAsDataURL(args.getString(0));
+                return new PluginResult(status, s);
+            }
+            else if (action.equals("write")) {
+                long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
+                return new PluginResult(status, fileSize);
+            }
+            else if (action.equals("truncate")) {
+                long fileSize = this.truncateFile(args.getString(0), args.getLong(1));
+                return new PluginResult(status, fileSize);
+            }
+            else if (action.equals("requestFileSystem")) {
+                long size = args.optLong(1);
+                if (size != 0) {
+                    if (size > (DirectoryManager.getFreeDiskSpace(true)*1024)) {
+                        JSONObject error = new JSONObject().put("code", FileUtils.QUOTA_EXCEEDED_ERR);
+                        return new PluginResult(PluginResult.Status.ERROR, error);
+                    }
+                }
+                JSONObject obj = requestFileSystem(args.getInt(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("resolveLocalFileSystemURI")) {
+                JSONObject obj = resolveLocalFileSystemURI(args.getString(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getMetadata")) {
+                JSONObject obj = getMetadata(args.getString(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getFileMetadata")) {
+                JSONObject obj = getFileMetadata(args.getString(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getParent")) {
+                JSONObject obj = getParent(args.getString(0));
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getDirectory")) {
+                JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), true);
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("getFile")) {
+                JSONObject obj = getFile(args.getString(0), args.getString(1), args.optJSONObject(2), false);
+                return new PluginResult(status, obj);
+            }
+            else if (action.equals("remove")) {
+                boolean success;
+
+                success = remove(args.getString(0));
+
+                if (success) {
+                    notifyDelete(args.getString(0));
+                    return new PluginResult(status);
+                } else {
+                    JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+                    return new PluginResult(PluginResult.Status.ERROR, error);
+                }
+            }
+            else if (action.equals("removeRecursively")) {
+                boolean success = removeRecursively(args.getString(0));
+                if (success) {
+                    return new PluginResult(status);
+                } else {
+                    JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+                    return new PluginResult(PluginResult.Status.ERROR, error);
+                }
+            }
+            else if (action.equals("moveTo")) {
+                JSONObject entry = transferTo(args.getString(0), args.getJSONObject(1), args.optString(2), true);
+                return new PluginResult(status, entry);
+            }
+            else if (action.equals("copyTo")) {
+                JSONObject entry = transferTo(args.getString(0), args.getJSONObject(1), args.optString(2), false);
+                return new PluginResult(status, entry);
+            }
+            else if (action.equals("readEntries")) {
+                JSONArray entries = readEntries(args.getString(0));
+                return new PluginResult(status, entries);
+            }
+            return new PluginResult(status, result);
+        } catch (FileNotFoundException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.NOT_FOUND_ERR);
+        } catch (FileExistsException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.PATH_EXISTS_ERR);
+        } catch (NoModificationAllowedException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
         } catch (JSONException e) {
-            e.printStackTrace();
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
+        } catch (InvalidModificationException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.INVALID_MODIFICATION_ERR);
+        } catch (MalformedURLException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.ENCODING_ERR);
+        } catch (IOException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.INVALID_MODIFICATION_ERR);
+        } catch (EncodingException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.ENCODING_ERR);
+        } catch (TypeMismatchException e) {
+            return new PluginResult(PluginResult.Status.ERROR, FileUtils.TYPE_MISMATCH_ERR);
         }
     }
 
