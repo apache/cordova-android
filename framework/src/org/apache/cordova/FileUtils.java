@@ -687,6 +687,9 @@ public class FileUtils extends Plugin {
         if (fileName.startsWith("/")) {
             fp = new File(fileName);
         } else {
+            if (dirPath.startsWith("file://")) {
+                dirPath = dirPath.substring(7);
+            }
             fp = new File(dirPath + File.separator + fileName);
         }
         return fp;
@@ -819,7 +822,7 @@ public class FileUtils extends Plugin {
         entry.put("isFile", file.isFile());
         entry.put("isDirectory", file.isDirectory());
         entry.put("name", file.getName());
-        entry.put("fullPath", file.getAbsolutePath());
+        entry.put("fullPath", "file://" + file.getAbsolutePath());
         // I can't add the next thing it as it would be an infinite loop
         //entry.put("filesystem", null);
 
