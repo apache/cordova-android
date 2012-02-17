@@ -555,6 +555,10 @@ public class FileUtils extends Plugin {
      * @throws FileExistsException
      */
     private boolean removeRecursively(String filePath) throws FileExistsException {
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.substring(7);
+        }
+
         File fp = new File(filePath);
 
         // You can't delete the root directory.
@@ -596,6 +600,10 @@ public class FileUtils extends Plugin {
      * @throws InvalidModificationException
      */
     private boolean remove(String filePath) throws NoModificationAllowedException, InvalidModificationException {
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.substring(7);
+        }
+
         File fp = new File(filePath);
 
         // You can't delete the root directory.
