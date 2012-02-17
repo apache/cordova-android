@@ -92,6 +92,7 @@
 
 
     <target name="check-javascript" depends="build-javascript">
+        <!--
         <delete dir="assets/lib"/>
         <mkdir dir="assets/lib"/>
         <echo file="assets/lib/lint.js">var alert=function(){},device={},Element={},debug={};</echo>
@@ -120,6 +121,7 @@
             <arg value="../util/jslint.js"/>
             <arg value="assets/lib/cordova-lint.js"/>
         </exec>
+        -->
     </target>
 
     <!-- Combine JavaScript files into one cordova-uncompressed.js file. -->
@@ -130,8 +132,11 @@
         
       <!-- Create uncompressed JS file -->
       <concat destfile="assets/www/cordova-${version}.js">
+        <filelist dir="assets/js" files="cordova.android.js"/>
+        <!-- 
         <filelist dir="assets/js" files="cordova.js.base,device.js"/>
         <fileset dir="assets/js" includes="*.js" excludes="cordova.js.base,device.js"/>
+        -->
       </concat>
 
       <!-- update project files to reference cordova-x.x.x.min.js -->
