@@ -932,8 +932,8 @@ public class FileUtils extends Plugin {
      */
     public String readAsDataURL(String filename) throws FileNotFoundException, IOException {
         byte[] bytes = new byte[1000];
-           BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
-           ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int numRead = 0;
         while ((numRead = bis.read(bytes, 0, 1000)) >= 0) {
             bos.write(bytes, 0, numRead);
@@ -975,20 +975,24 @@ public class FileUtils extends Plugin {
      */
     /**/
     public long write(String filename, String data, int offset) throws FileNotFoundException, IOException {
+        if (filename.startsWith("file://")) {
+            filename = filename.substring(7);
+        }
+
         boolean append = false;
         if (offset > 0) {
             this.truncateFile(filename, offset);
             append = true;
         }
 
-           byte [] rawData = data.getBytes();
-           ByteArrayInputStream in = new ByteArrayInputStream(rawData);
-           FileOutputStream out = new FileOutputStream(filename, append);
-           byte buff[] = new byte[rawData.length];
-           in.read(buff, 0, buff.length);
-           out.write(buff, 0, rawData.length);
-           out.flush();
-           out.close();
+       byte [] rawData = data.getBytes();
+       ByteArrayInputStream in = new ByteArrayInputStream(rawData);
+       FileOutputStream out = new FileOutputStream(filename, append);
+       byte buff[] = new byte[rawData.length];
+       in.read(buff, 0, buff.length);
+       out.write(buff, 0, rawData.length);
+       out.flush();
+       out.close();
 
         return data.length();
     }
@@ -1001,6 +1005,10 @@ public class FileUtils extends Plugin {
      * @throws FileNotFoundException, IOException
      */
     private long truncateFile(String filename, long size) throws FileNotFoundException, IOException {
+        if (filename.startsWith("file://")) {
+            filename = filename.substring(7);
+        }
+
         RandomAccessFile raf = new RandomAccessFile(filename, "rw");
 
         if (raf.length() >= size) {
