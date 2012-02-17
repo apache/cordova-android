@@ -712,6 +712,10 @@ public class FileUtils extends Plugin {
      * @throws JSONException
      */
     private JSONObject getParent(String filePath) throws JSONException {
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.substring(7);
+        }
+
         if (atRootDirectory(filePath)) {
             return getEntry(filePath);
         }
@@ -726,8 +730,13 @@ public class FileUtils extends Plugin {
      * @return true if we are at the root, false otherwise.
      */
     private boolean atRootDirectory(String filePath) {
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.substring(7);
+        }
+
         if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + ctx.getPackageName() + "/cache") ||
-                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath())) {
+                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) || 
+                filePath.equals("/data/data/" + ctx.getPackageName() + "/")) {
             return true;
         }
         return false;
@@ -742,6 +751,10 @@ public class FileUtils extends Plugin {
      * @throws JSONException
      */
     private JSONObject getMetadata(String filePath) throws FileNotFoundException, JSONException {
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.substring(7);
+        }
+
         File file = new File(filePath);
 
         if (!file.exists()) {
@@ -766,6 +779,7 @@ public class FileUtils extends Plugin {
         if (filePath.startsWith("file://")) {
             filePath = filePath.substring(7);
         }
+
         File file = new File(filePath);
 
         if (!file.exists()) {
@@ -811,7 +825,7 @@ public class FileUtils extends Plugin {
         }
         else if (type == PERSISTENT) {
             fs.put("name", "persistent");
-            fs.put("root", "file:///data/data/" + ctx.getPackageName());
+            fs.put("root", "file:///data/data/" + ctx.getPackageName() + "/");
         }
         else {
             throw new IOException("No filesystem of type requested");
