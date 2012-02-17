@@ -755,6 +755,9 @@ public class FileUtils extends Plugin {
      * @throws JSONException
      */
     private JSONObject getFileMetadata(String filePath) throws FileNotFoundException, JSONException {
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.substring(7);
+        }
         File file = new File(filePath);
 
         if (!file.exists()) {
