@@ -914,8 +914,8 @@ public class FileUtils extends Plugin {
      */
     public String readAsText(String filename, String encoding) throws FileNotFoundException, IOException {
         byte[] bytes = new byte[1000];
-           BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
-           ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int numRead = 0;
         while ((numRead = bis.read(bytes, 0, 1000)) >= 0) {
             bos.write(bytes, 0, numRead);
@@ -1025,6 +1025,9 @@ public class FileUtils extends Plugin {
             return ctx.getContentResolver().openInputStream(uri);
         }
         else {
+            if (path.startsWith("file://")) {
+                path = path.substring(7);
+            }
             return new FileInputStream(path);
         }
     }
