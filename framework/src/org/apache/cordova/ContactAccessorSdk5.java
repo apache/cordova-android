@@ -43,6 +43,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
@@ -121,8 +122,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     /**
      * Create an contact accessor.
      */
-    public ContactAccessorSdk5(WebView view, Activity app) {
-    mApp = app;
+  public ContactAccessorSdk5(WebView view, Context context) {
+    mApp = context;
     mView = view;
   }
   

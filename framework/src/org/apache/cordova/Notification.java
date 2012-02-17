@@ -143,7 +143,7 @@ public class Notification extends Plugin {
 	 */
 	public void beep(long count) {
 		Uri ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-		Ringtone notification = RingtoneManager.getRingtone(this.ctx, ringtone);
+		Ringtone notification = RingtoneManager.getRingtone(this.ctx.getContext(), ringtone);
 		
 		// If phone is not set to silent mode
 		if (notification != null) {
@@ -190,7 +190,7 @@ public class Notification extends Plugin {
 		Runnable runnable = new Runnable() {
 			public void run() {
 		
-				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
+				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx.getContext());
 				dlg.setMessage(message);
 				dlg.setTitle(title);
 				dlg.setCancelable(false);
@@ -226,7 +226,7 @@ public class Notification extends Plugin {
 
 		Runnable runnable = new Runnable() {
 			public void run() {
-				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
+				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx.getContext());
 				dlg.setMessage(message);
 				dlg.setTitle(title);
 				dlg.setCancelable(false);
@@ -287,7 +287,7 @@ public class Notification extends Plugin {
 		final CordovaInterface ctx = this.ctx;
 		Runnable runnable = new Runnable() {
 			public void run() {
-				notification.spinnerDialog = ProgressDialog.show(ctx, title , message, true, true, 
+				notification.spinnerDialog = ProgressDialog.show(ctx.getContext(), title , message, true, true, 
 					new DialogInterface.OnCancelListener() { 
 						public void onCancel(DialogInterface dialog) {
 							notification.spinnerDialog = null;
@@ -323,7 +323,7 @@ public class Notification extends Plugin {
 		final CordovaInterface ctx = this.ctx;
 		Runnable runnable = new Runnable() {
 			public void run() {
-				notification.progressDialog = new ProgressDialog(ctx);
+				notification.progressDialog = new ProgressDialog(ctx.getContext());
 				notification.progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 				notification.progressDialog.setTitle(title);
 				notification.progressDialog.setMessage(message);

@@ -179,9 +179,9 @@ public class CameraLauncher extends Plugin {
     private File createCaptureFile(int encodingType) {
         File photo = null;
         if (encodingType == JPEG) {
-            photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.jpg");
+            photo = new File(DirectoryManager.getTempDirectoryPath(ctx.getContext()),  "Pic.jpg");
         } else if (encodingType == PNG) {
-            photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.png");            
+            photo = new File(DirectoryManager.getTempDirectoryPath(ctx.getContext()),  "Pic.png");            
         } else {
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
@@ -285,7 +285,7 @@ public class CameraLauncher extends Plugin {
                     // Create an ExifHelper to save the exif data that is lost during compression
                     ExifHelper exif = new ExifHelper();
                     if (this.encodingType == JPEG) {
-                        exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx) + "/Pic.jpg");
+                        exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/Pic.jpg");
                         exif.readExifData();
                     }
 
@@ -398,7 +398,7 @@ public class CameraLauncher extends Plugin {
                                 Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
                                 bitmap = scaleBitmap(bitmap);
     
-                                String fileName = DirectoryManager.getTempDirectoryPath(ctx) + "/resize.jpg";
+                                String fileName = DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/resize.jpg";
                                 OutputStream os = new FileOutputStream(fileName);                         
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
                                 os.close();

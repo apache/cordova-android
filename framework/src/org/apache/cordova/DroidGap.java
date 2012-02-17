@@ -37,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -47,6 +48,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.XmlResourceParser;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.AudioManager;
@@ -159,7 +161,7 @@ import android.widget.LinearLayout;
  *          ...
  *      </plugins>
  */
-public class DroidGap extends CordovaInterface {
+public class DroidGap extends Activity implements CordovaInterface {
     public static String TAG = "DroidGap";
     
     // The webview for our app
@@ -1171,7 +1173,6 @@ public class DroidGap extends CordovaInterface {
          }        
      }
 
-     @Override
      public void setActivityResultCallback(IPlugin plugin) {
          this.activityResultCallback = plugin;
      }
@@ -1387,5 +1388,24 @@ public class DroidGap extends CordovaInterface {
     {
         this.postMessage("onOptionsItemSelected", item);
         return true;
+    }
+
+    public Context getContext() {
+      return this;
+    }
+
+    public Cursor managedQuery(Uri parse, String[] strings, Object object,
+        Object object2, Object object3) {
+      return this.managedQuery(parse, strings, object, object2, object3);
+    }
+
+    public void bindBackButton(boolean override) {
+      // TODO Auto-generated method stub
+      
+    }
+
+    public boolean isBackButtonBound() {
+      // TODO Auto-generated method stub
+      return false;
     }
 }
