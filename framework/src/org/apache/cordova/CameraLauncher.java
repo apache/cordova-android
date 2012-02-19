@@ -108,16 +108,12 @@ public class CameraLauncher extends Plugin {
                 this.mediaType = PICTURE;
                 this.mQuality = 80;
 
-                JSONObject options = args.optJSONObject(0);
-                if (options != null) {
-                    srcType = options.getInt("sourceType");
-                    destType = options.getInt("destinationType");
-                    this.targetHeight = options.getInt("targetHeight");
-                    this.targetWidth = options.getInt("targetWidth");
-                    this.encodingType = options.getInt("encodingType");
-                    this.mediaType = options.getInt("mediaType");
-                    this.mQuality = options.getInt("quality");
-                }
+                this.mQuality = args.getInt(0);
+                destType = args.getInt(1);
+                srcType = args.getInt(2);
+                this.targetWidth = args.getInt(3);
+                this.targetHeight = args.getInt(4);
+                this.encodingType = args.getInt(5);
                 
                 if (srcType == CAMERA) {
                     this.takePicture(destType, encodingType);
