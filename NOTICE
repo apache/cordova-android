@@ -3,10 +3,3 @@ Copyright 2011 The Apache Software Foundation
 
 This product includes software developed by
 The Apache Software Foundation (http://www.apache.org)
-
-This product also includes the following third-party components:
-
-  * Junit (framework/libs/junit-4.10.jar) (http://junit.sourceforge.net)
-  
-    Licensed under the Common Public License
-    http://junit.sourceforge.net/cpl-v10.html
