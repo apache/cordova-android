@@ -908,7 +908,9 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.appView.loadUrl("about:blank");
 
             // Forward to plugins
-            this.pluginManager.onDestroy();
+            if (this.pluginManager != null) {
+                this.pluginManager.onDestroy();
+            }
         }
         else {
             this.endActivity();
@@ -924,7 +926,9 @@ public class DroidGap extends Activity implements CordovaInterface {
     public void postMessage(String id, Object data) {
         
         // Forward to plugins
-        this.pluginManager.postMessage(id, data);
+        if (this.pluginManager != null) {
+            this.pluginManager.postMessage(id, data);
+        }
     }
 
     /**
