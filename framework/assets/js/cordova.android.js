@@ -188,9 +188,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2011 Adobe
-   Copyright 2011 IBM Corporation
-   Copyright 2011 RIM
+   Copyright [yyyy] [name of copyright owner]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -204,7 +202,98 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
+==============================================================
+This product also include the following software:
+==============================================================
 
+--------------------------------------------------------------
+jasmine from GitHub
+
+   https://github.com/pivotal/jasmine
+
+MIT-style license
+
+license available from:
+
+   https://github.com/pivotal/jasmine/blob/master/MIT.LICENSE
+   
+-----------------------------
+
+Copyright (c) 2008-2011 Pivotal Labs
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+--------------------------------------------------------------
+commonjs tests from the commonjs organization at GitHub
+
+   https://github.com/commonjs/commonjs
+
+MIT-style license
+
+license available from:
+
+   https://github.com/commonjs/commonjs/blob/master/docs/license.html.markdown
+
+contributor list available from:
+
+   https://github.com/commonjs/commonjs/blob/master/docs/contributors.html.markdown
+
+-----------------------------
+
+Copyright 2009 Kevin Dangoor
+Copyright 2009 Ihab Awad
+Copyright 2009 Ash Berlin
+Copyright 2009 Aristid Breitkreuz
+Copyright 2009 Kevin Dangoor
+Copyright 2009 Daniel Friesen
+Copyright 2009 Wes Garland
+Copyright 2009 Kris Kowal
+Copyright 2009 Dean Landolt
+Copyright 2009 Peter Michaux
+Copyright 2009 George Moschovitis
+Copyright 2009 Michael O'Brien
+Copyright 2009 Tom Robinson
+Copyright 2009 Hannes Wallnoefer
+Copyright 2009 Mike Wilson
+Copyright 2009 Ondrej Zara
+Copyright 2009 Chris Zumbrunn
+Copyright 2009 Kris Zyp
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
 */
 var require,
@@ -919,7 +1008,7 @@ module.exports = {
     } else {
       // Defined, but some Android devices will throw a SECURITY_ERR -
       // so we wrap the whole thing in a try-catch and shim in our own
-      // if shit hits the fan.
+      // if the device has Android bug 16175.
       var originalOpenDatabase = window.openDatabase;
       window.openDatabase = function(name, version, desc, size) {
           var db = null;
@@ -970,6 +1059,9 @@ module.exports = {
     },
     File: { // exists natively on Android WebView, override
       path: "cordova/plugin/File"
+    },
+    FileError: { //exists natively on Android WebView on Android 4.x
+      path: "cordova/plugin/FileError"
     }
   }
 };
@@ -1088,7 +1180,7 @@ function include(parent, objects, clobber) {
           var result = obj.path ? require(obj.path) : {};
 
           if (clobber) {
-              // Set the value if it doesn't exist or if an override is specified.
+              // Clobber if it doesn't exist or if an override is specified.
               if (typeof parent[key] === 'undefined' || typeof obj.path !== 'undefined') {
                   parent[key] = result;
               }
@@ -2229,7 +2321,7 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
         }
         successCallback(retVal);
     };
-    exec(win, errorCallback, "File", "readEntries", [this.fullPath]);
+    exec(win, errorCallback, "File", "readEntries", [this.path]);
 };
 
 module.exports = DirectoryReader;
@@ -2383,17 +2475,21 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
 
 /**
  * Return a URL that can be used to identify this entry.
- * 
- * @param mimeType
- *            {DOMString} for a FileEntry, the mime type to be used to
- *            interpret the file, when loaded through this URI.
- * @param successCallback
- *            {Function} called with the new Entry object
- * @param errorCallback
- *            {Function} called with a FileError
  */
-Entry.prototype.toURL = function(mimeType, successCallback, errorCallback) {
+Entry.prototype.toURL = function() {
     // fullPath attribute contains the full URL
+    return this.fullPath;
+};
+
+/**
+ * Returns a URI that can be used to identify this entry.
+ *
+ * @param {DOMString} mimeType for a FileEntry, the mime type to be used to interpret the file, when loaded through this URI.
+ * @return uri
+ */
+Entry.prototype.toURI = function(mimeType) {
+    console.log("DEPRECATED: Update your code to use 'toURL'");
+    // fullPath attribute contains the full URI
     return this.fullPath;
 };
 
