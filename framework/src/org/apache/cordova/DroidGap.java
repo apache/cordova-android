@@ -1404,11 +1404,6 @@ public class DroidGap extends Activity implements CordovaInterface {
       return this;
     }
 
-    public Cursor managedQuery(Uri parse, String[] strings, Object object,
-        Object object2, Object object3) {
-      return this.managedQuery(parse, strings, object, object2, object3);
-    }
-
     public void bindBackButton(boolean override) {
       // TODO Auto-generated method stub
       
@@ -1418,4 +1413,6 @@ public class DroidGap extends Activity implements CordovaInterface {
       // TODO Auto-generated method stub
       return false;
     }
+
+
 }

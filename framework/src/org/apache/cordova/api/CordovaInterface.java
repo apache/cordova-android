@@ -115,9 +115,9 @@ public interface CordovaInterface {
 
     public abstract void unregisterReceiver(BroadcastReceiver receiver);
 
-    public abstract Cursor managedQuery(Uri parse, String[] strings,
-            Object object, Object object2, Object object3);
-
+    public abstract Cursor managedQuery(Uri uri, String[] projection, String selection,
+        String[] selectionArgs, String sortOrder);
+    
     public abstract void runOnUiThread(Runnable runnable);
 
     public abstract AssetManager getAssets();
