@@ -2264,7 +2264,10 @@ DirectoryEntry.prototype.getDirectory = function(path, options, successCallback,
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCallback) {
-    exec(successCallback, errorCallback, "File", "removeRecursively", [this.fullPath]);
+    var fail = function(code) {
+        errorCallback(new FileError(code));
+    };
+    exec(successCallback, fail, "File", "removeRecursively", [this.fullPath]);
 };
 
 /**
@@ -2326,7 +2329,10 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
         }
         successCallback(retVal);
     };
-    exec(win, errorCallback, "File", "readEntries", [this.path]);
+    var fail = function(code) {
+        errorCallback(new FileError(code));
+    };
+    exec(win, fail, "File", "readEntries", [this.path]);
 };
 
 module.exports = DirectoryReader;
@@ -2373,8 +2379,10 @@ Entry.prototype.getMetadata = function(successCallback, errorCallback) {
       var metadata = new Metadata(lastModified);
       successCallback(metadata);
   };
-
-  exec(success, errorCallback, "File", "getMetadata", [this.fullPath]);
+  var fail = function(code) {
+      errorCallback(new FileError(code));
+  };
+  exec(success, fail, "File", "getMetadata", [this.fullPath]);
 };
 
 /**
@@ -2520,7 +2528,10 @@ Entry.prototype.remove = function(successCallback, errorCallback) {
  * @param errorCallback {Function} called with a FileError
  */
 Entry.prototype.getParent = function(successCallback, errorCallback) {
-    exec(successCallback, errorCallback, "File", "getParent", [this.fullPath]);
+    var fail = function(code) {
+        errorCallback(new FileError(code));
+    };
+    exec(successCallback, fail, "File", "getParent", [this.fullPath]);
 };
 
 module.exports = Entry;
@@ -3740,7 +3751,6 @@ var NetworkConnection = function () {
                 if (info === "none") {
                     // set a timer if still offline at the end of timer send the offline event
                     me._timer = setTimeout(function(){
-                        me.type = type;
                         cordova.fireWindowEvent("offline");
                         me._timer = null;
                         }, me.timeout);
@@ -3957,7 +3967,10 @@ var requestFileSystem = function(type, size, successCallback, errorCallback) {
         errorCallback(new FileError(FileError.NOT_FOUND_ERR));
       }
     };
-    exec(success, errorCallback, "File", "requestFileSystem", [type, size]);
+    var fail = function(e) {
+        errorCallback(new FileError(e));
+    };   
+    exec(success, fail, "File", "requestFileSystem", [type, size]);
   }
 };
 
