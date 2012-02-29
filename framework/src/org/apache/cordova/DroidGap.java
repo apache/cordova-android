@@ -145,7 +145,7 @@ import android.widget.LinearLayout;
  *          ...
  *      </plugins>
  */
-public class DroidGap extends Activity implements CordovaInterface {
+public class DroidGap extends CordovaInterface {
     public static String TAG = "DroidGap";
     
     // The webview for our app
@@ -1403,16 +1403,5 @@ public class DroidGap extends Activity implements CordovaInterface {
     public Context getContext() {
       return this;
     }
-
-    public void bindBackButton(boolean override) {
-      // TODO Auto-generated method stub
-      
-    }
-
-    public boolean isBackButtonBound() {
-      // TODO Auto-generated method stub
-      return false;
-    }
-
 
 }
