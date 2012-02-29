@@ -356,7 +356,8 @@ define('cordova/channel', function(require, exports, module) {
  */
 var Channel = function(type, opts) {
         this.type = type;
-        this.handlers = [];
+        this.handlers = {};
+        this.numHandlers = 0;
         this.guid = 0;
         this.fired = false;
         this.enabled = true;
@@ -401,7 +402,7 @@ var Channel = function(type, opts) {
  */
 Channel.prototype.subscribe = function(f, c, g) {
     // need a function to call
-    if (f === null) { return; }
+    if (f === null || f === undefined) { return; }
 
     var func = f;
     if (typeof c == "object" && f instanceof Function) { func = utils.close(c, f); }
@@ -410,6 +411,7 @@ Channel.prototype.subscribe = function(f, c, g) {
     func.observer_guid = g;
     f.observer_guid = g;
     this.handlers[g] = func;
+    this.numHandlers++;
     if (this.events.onSubscribe) this.events.onSubscribe.call(this);
     return g;
 };
@@ -419,6 +421,9 @@ Channel.prototype.subscribe = function(f, c, g) {
  * auto-unsubscribes itself.
  */
 Channel.prototype.subscribeOnce = function(f, c) {
+    // need a function to call
+    if (f === null || f === undefined) { return; }
+
     var g = null;
     var _this = this;
     var m = function() {
@@ -438,9 +443,13 @@ Channel.prototype.subscribeOnce = function(f, c) {
  * Unsubscribes the function with the given guid from the channel.
  */
 Channel.prototype.unsubscribe = function(g) {
+    // need a function to unsubscribe
+    if (g === null || g === undefined) { return; }
+
     if (g instanceof Function) { g = g.observer_guid; }
     this.handlers[g] = null;
     delete this.handlers[g];
+    this.numHandlers--;
     if (this.events.onUnsubscribe) this.events.onUnsubscribe.call(this);
 };
 
@@ -975,13 +984,13 @@ module.exports = {
     var backButtonChannel = cordova.addDocumentEventHandler('backbutton', {
       onSubscribe:function() {
         // If we just attached the first handler, let native know we need to override the back button.
-        if (this.handlers.length === 1) {
+        if (this.numHandlers === 1) {
           exec(null, null, "App", "overrideBackbutton", [true]);
         }
       },
       onUnsubscribe:function() {
         // If we just detached the last handler, let native know we no longer override the back button.
-        if (this.handlers.length === 0) {
+        if (this.numHandlers === 0) {
           exec(null, null, "App", "overrideBackbutton", [false]);
         }
       }
@@ -1341,13 +1350,9 @@ var cordova = require('cordova'),
     exec = require('cordova/exec');
 
 function handlers() {
-  var count = function (a) {
-          return a.filter(function (v) {return !!v;}).length;
-      }; 
-
-  return count(module.exports.channels.batterystatus.handlers) + 
-         count(module.exports.channels.batterylow.handlers) +
-         count(module.exports.channels.batterycritical.handlers);
+  return battery.channels.batterystatus.numHandlers + 
+         battery.channels.batterylow.numHandlers +
+         battery.channels.batterycritical.numHandlers;
 }
 
 var Battery = function() {
@@ -1370,7 +1375,7 @@ var Battery = function() {
  * appropriately (and hopefully save on battery life!).
  */
 Battery.prototype.onSubscribe = function() {
-  var me = module.exports; // TODO: i dont like this reference
+  var me = battery;
   // If we just registered the first handler, make sure native listener is started.
   if (handlers() === 1) {
     exec(me._status, me._error, "Battery", "start", []);
@@ -1378,10 +1383,8 @@ Battery.prototype.onSubscribe = function() {
 };
 
 Battery.prototype.onUnsubscribe = function() {
-  var me = module.exports,
-      empty = function (a) {
-          return a.filter(function (v, i) {return v && !!i;});
-      }; 
+  var me = battery;
+
   // If we just unregistered the last handler, make sure native listener is stopped.
   if (handlers() === 0) {
       exec(null, null, "Battery", "stop", []);
@@ -1395,7 +1398,7 @@ Battery.prototype.onUnsubscribe = function() {
  */
 Battery.prototype._status = function(info) {
 	if (info) {
-		var me = module.exports;//TODO: can we eliminate this global ref?
+		var me = battery;
     var level = info.level;
 		if (me._level !== level || me._isPlugged !== info.isPlugged) {
 			// Fire batterystatus event
@@ -1423,7 +1426,9 @@ Battery.prototype._error = function(e) {
     console.log("Error initializing Battery: " + e);
 };
 
-module.exports = new Battery();
+var battery = new Battery();
+
+module.exports = battery;
 
 });
 
@@ -3403,11 +3408,6 @@ var LocalFileSystem = function() {
 
 };
 
-// Non-standard function
-LocalFileSystem.prototype.isFileSystemRoot = function(path) {
-    return exec(null, null, "File", "isFileSystemRoot", [path]);
-};
-
 LocalFileSystem.TEMPORARY = 0; //temporary, with no guarantee of persistence
 LocalFileSystem.PERSISTENT = 1; //persistent
 
@@ -3450,12 +3450,6 @@ var Media = function(src, successCallback, errorCallback, statusCallback) {
     // statusCallback optional
     if (statusCallback && (typeof statusCallback !== "function")) {
         console.log("Media Error: statusCallback is not a function");
-        return;
-    }
-
-    // statusCallback optional
-    if (positionCallback && (typeof positionCallback !== "function")) {
-        console.log("Media Error: positionCallback is not a function");
         return;
     }
 
@@ -3571,6 +3565,40 @@ Media.prototype.release = function() {
  */
 Media.prototype.setVolume = function(volume) {
     exec(null, null, "Media", "setVolume", [this.id, volume]);
+};
+
+/**
+ * Audio has status update.
+ * PRIVATE
+ *
+ * @param id            The media object id (string)
+ * @param status        The status code (int)
+ * @param msg           The status message (string)
+ */
+Media.onStatus = function(id, msg, value) {
+    var media = mediaObjects[id];
+    // If state update
+    if (msg === Media.MEDIA_STATE) {
+        if (value === Media.MEDIA_STOPPED) {
+            if (media.successCallback) {
+                media.successCallback();
+            }
+        }
+        if (media.statusCallback) {
+            media.statusCallback(value);
+        }
+    }
+    else if (msg === Media.MEDIA_DURATION) {
+        media._duration = value;
+    }
+    else if (msg === Media.MEDIA_ERROR) {
+        if (media.errorCallback) {
+            media.errorCallback({"code":value});
+        }
+    }
+    else if (msg === Media.MEDIA_POSITION) {
+        media._position = value;
+    }
 };
 
 module.exports = Media;
@@ -3700,15 +3728,29 @@ var exec = require('cordova/exec'),
 var NetworkConnection = function () {
         this.type = null;
         this._firstRun = true;
+        this._timer = null;
+        this.timeout = 500;
 
         var me = this,
             channel = require('cordova/channel');
 
         this.getInfo(
             function (info) {
-                me.type = info.type;
-                if (typeof info.event !== "undefined") {
-                    cordova.fireWindowEvent(info.event);
+                me.type = info;
+                if (info === "none") {
+                    // set a timer if still offline at the end of timer send the offline event
+                    me._timer = setTimeout(function(){
+                        me.type = type;
+                        cordova.fireWindowEvent("offline");
+                        me._timer = null;
+                        }, me.timeout);
+                } else {
+                    // If there is a current offline event pending clear it
+                    if (me._timer !== null) {
+                        clearTimeout(me._timer);
+                        me._timer = null;
+                    }
+                    cordova.fireWindowEvent("online");
                 }
 
                 // should only fire this once
