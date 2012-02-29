@@ -1029,8 +1029,6 @@ module.exports = {
           }
 
           if (db === null) {
-            // TOOD: this is wrong
-              setupDroidDB();
               return storage.openDatabase(name, version, desc, size);
           }
           else {
