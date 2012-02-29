@@ -2216,7 +2216,7 @@ var utils = require('cordova/utils'),
 
 /**
  * An interface representing a directory on the file system.
- * 
+ *
  * {boolean} isFile always false (readonly)
  * {boolean} isDirectory always true (readonly)
  * {DOMString} name of the directory, excluding the path leading to it (readonly)
@@ -2245,11 +2245,11 @@ DirectoryEntry.prototype.createReader = function() {
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getDirectory = function(path, options, successCallback, errorCallback) {
-    var win = function(result) {
+    var win = typeof successCallback !== 'function' ? null : function(result) {
         var entry = new DirectoryEntry(result.name, result.fullPath);
         successCallback(entry);
     };
-    var fail = function(code) {
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
     exec(win, fail, "File", "getDirectory", [this.fullPath, path, options]);
@@ -2262,7 +2262,7 @@ DirectoryEntry.prototype.getDirectory = function(path, options, successCallback,
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCallback) {
-    var fail = function(code) {
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
     exec(successCallback, fail, "File", "removeRecursively", [this.fullPath]);
@@ -2277,12 +2277,12 @@ DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCall
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.getFile = function(path, options, successCallback, errorCallback) {
-    var win = function(result) {
+    var win = typeof successCallback !== 'function' ? null : function(result) {
         var FileEntry = require('cordova/plugin/FileEntry');
         var entry = new FileEntry(result.name, result.fullPath);
         successCallback(entry);
     };
-    var fail = function(code) {
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
     exec(win, fail, "File", "getFile", [this.fullPath, path, options]);
@@ -2309,7 +2309,7 @@ function DirectoryReader(path) {
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryReader.prototype.readEntries = function(successCallback, errorCallback) {
-    var win = function(result) {
+    var win = typeof successCallback !== 'function' ? null : function(result) {
         var retVal = [];
         for (var i=0; i<result.length; i++) {
             var entry = null;
@@ -2327,7 +2327,7 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
         }
         successCallback(retVal);
     };
-    var fail = function(code) {
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
     exec(win, fail, "File", "readEntries", [this.path]);
@@ -2344,7 +2344,7 @@ var exec = require('cordova/exec'),
 
 /**
  * Represents a file or directory on the local file system.
- * 
+ *
  * @param isFile
  *            {boolean} true if Entry is a file (readonly)
  * @param isDirectory
@@ -2366,26 +2366,27 @@ function Entry(isFile, isDirectory, name, fullPath, fileSystem) {
 
 /**
  * Look up the metadata of the entry.
- * 
+ *
  * @param successCallback
  *            {Function} is called with a Metadata object
  * @param errorCallback
  *            {Function} is called with a FileError
  */
 Entry.prototype.getMetadata = function(successCallback, errorCallback) {
-  var success = function(lastModified) {
+  var success = typeof successCallback !== 'function' ? null : function(lastModified) {
       var metadata = new Metadata(lastModified);
       successCallback(metadata);
   };
-  var fail = function(code) {
+  var fail = typeof errorCallback !== 'function' ? null : function(code) {
       errorCallback(new FileError(code));
   };
+
   exec(success, fail, "File", "getMetadata", [this.fullPath]);
 };
 
 /**
  * Move a file or directory to a new location.
- * 
+ *
  * @param parent
  *            {DirectoryEntry} the directory to which to move this entry
  * @param newName
@@ -2396,39 +2397,38 @@ Entry.prototype.getMetadata = function(successCallback, errorCallback) {
  *            {Function} called with a FileError
  */
 Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallback) {
+    var fail = function(code) {
+        if (typeof errorCallback === 'function') {
+            errorCallback(new FileError(code));
+        }
+    };
     // user must specify parent Entry
     if (!parent) {
-        errorCallback(new FileError(FileError.NOT_FOUND_ERR));
+        fail(FileError.NOT_FOUND_ERR);
         return;
     }
     // source path
     var srcPath = this.fullPath,
         // entry name
         name = newName || this.name,
-        // destination path
-        dstPath,
         success = function(entry) {
-            var result; 
-
             if (entry) {
-                // create appropriate Entry object
-                result = (entry.isDirectory) ? new (require('cordova/plugin/DirectoryEntry'))(entry.name, entry.fullPath) : new (require('cordova/plugin/FileEntry'))(entry.name, entry.fullPath);
-                try {
-                    successCallback(result);
+                if (typeof successCallback === 'function') {
+                    // create appropriate Entry object
+                    var result = (entry.isDirectory) ? new (require('cordova/plugin/DirectoryEntry'))(entry.name, entry.fullPath) : new (require('cordova/plugin/FileEntry'))(entry.name, entry.fullPath);
+                    try {
+                        successCallback(result);
+                    }
+                    catch (e) {
+                        console.log('Error invoking callback: ' + e);
+                    }
                 }
-                catch (e) {
-                    console.log('Error invoking callback: ' + e);
-                }
-            } 
+            }
             else {
                 // no Entry object returned
-                errorCallback(new FileError(FileError.NOT_FOUND_ERR));
+                fail(FileError.NOT_FOUND_ERR);
             }
-        },
-        fail = function(code) {
-            errorCallback(new FileError(code));
         };
-
 
     // copy
     exec(success, fail, "File", "moveTo", [srcPath, parent.fullPath, name]);
@@ -2436,10 +2436,10 @@ Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallbac
 
 /**
  * Copy a directory to a different location.
- * 
- * @param parent 
+ *
+ * @param parent
  *            {DirectoryEntry} the directory to which to copy the entry
- * @param newName 
+ * @param newName
  *            {DOMString} new name of the entry, defaults to the current name
  * @param successCallback
  *            {Function} called with the new Entry object
@@ -2447,9 +2447,15 @@ Entry.prototype.moveTo = function(parent, newName, successCallback, errorCallbac
  *            {Function} called with a FileError
  */
 Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallback) {
+    var fail = function(code) {
+        if (typeof errorCallback === 'function') {
+            errorCallback(new FileError(code));
+        }
+    };
+
     // user must specify parent Entry
     if (!parent) {
-        errorCallback(new FileError(FileError.NOT_FOUND_ERR));
+        fail(FileError.NOT_FOUND_ERR);
         return;
     }
 
@@ -2459,25 +2465,22 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
         name = newName || this.name,
         // success callback
         success = function(entry) {
-            var result; 
-
             if (entry) {
-                // create appropriate Entry object
-                result = (entry.isDirectory) ? new (require('cordova/plugin/DirectoryEntry'))(entry.name, entry.fullPath) : new (require('cordova/plugin/FileEntry'))(entry.name, entry.fullPath);
-                try {
-                    successCallback(result);
-                }
-                catch (e) {
-                    console.log('Error invoking callback: ' + e);
+                if (typeof successCallback === 'function') {
+                    // create appropriate Entry object
+                    var result = (entry.isDirectory) ? new (require('cordova/plugin/DirectoryEntry'))(entry.name, entry.fullPath) : new (require('cordova/plugin/FileEntry'))(entry.name, entry.fullPath);
+                    try {
+                        successCallback(result);
+                    }
+                    catch (e) {
+                        console.log('Error invoking callback: ' + e);
+                    }
                 }
             }
             else {
                 // no Entry object returned
-                errorCallback(new FileError(FileError.NOT_FOUND_ERR));
+                fail(FileError.NOT_FOUND_ERR);
             }
-        },
-        fail = function(code) {
-            errorCallback(new FileError(code));
         };
 
     // copy
@@ -2508,13 +2511,13 @@ Entry.prototype.toURI = function(mimeType) {
  * Remove a file or directory. It is an error to attempt to delete a
  * directory that is not empty. It is an error to attempt to delete a
  * root directory of a file system.
- * 
+ *
  * @param successCallback {Function} called with no parameters
  * @param errorCallback {Function} called with a FileError
  */
 Entry.prototype.remove = function(successCallback, errorCallback) {
-    var fail = function(code) {
-      errorCallback(new FileError(code));
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
+        errorCallback(new FileError(code));
     };
     exec(successCallback, fail, "File", "remove", [this.fullPath]);
 };
@@ -2526,7 +2529,7 @@ Entry.prototype.remove = function(successCallback, errorCallback) {
  * @param errorCallback {Function} called with a FileError
  */
 Entry.prototype.getParent = function(successCallback, errorCallback) {
-    var fail = function(code) {
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
     exec(successCallback, fail, "File", "getParent", [this.fullPath]);
@@ -2568,7 +2571,7 @@ var utils = require('cordova/utils'),
 
 /**
  * An interface representing a file on the file system.
- * 
+ *
  * {boolean} isFile always true (readonly)
  * {boolean} isDirectory always false (readonly)
  * {DOMString} name of the file, excluding the path leading to it (readonly)
@@ -2610,12 +2613,12 @@ FileEntry.prototype.createWriter = function(successCallback, errorCallback) {
  * @param {Function} errorCallback is called with a FileError
  */
 FileEntry.prototype.file = function(successCallback, errorCallback) {
-    var win = function(f) {
+    var win = typeof successCallback !== 'function' ? null : function(f) {
         var file = new File(f.name, f.fullPath, f.type, f.lastModifiedDate, f.size);
         successCallback(file);
     };
-    var fail = function(e) {
-        errorCallback(new FileError(e));
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
+        errorCallback(new FileError(code));
     };
     exec(win, fail, "File", "getFileMetadata", [this.fullPath]);
 };
@@ -2857,7 +2860,6 @@ FileReader.prototype.readAsDataURL = function(file) {
         },
         // Error callback
         function(e) {
-            var evt;
             // If DONE (cancelled), then don't do anything
             if (me.readyState === FileReader.DONE) {
                 return;
@@ -2920,7 +2922,7 @@ var DirectoryEntry = require('cordova/plugin/DirectoryEntry');
 var FileSystem = function(name, root) {
     this.name = name || null;
     if (root) {
-        this.root = new DirectoryEntry(name, root);
+        this.root = new DirectoryEntry(root.name, root.fullPath);
     }
 };
 
@@ -3149,7 +3151,6 @@ FileWriter.prototype.write = function(text) {
     exec(
         // Success callback
         function(r) {
-            var evt;
             // If DONE (cancelled), then don't do anything
             if (me.readyState === FileWriter.DONE) {
                 return;
@@ -3948,28 +3949,31 @@ var FileError = require('cordova/plugin/FileError'),
  * @param errorCallback  invoked if error occurs retrieving file system
  */
 var requestFileSystem = function(type, size, successCallback, errorCallback) {
-  if (type < 0 || type > 3) {
-    if (typeof errorCallback === "function") {
-      errorCallback(new FileError(FileError.SYNTAX_ERR));
-    }
-  } else {
-    // if successful, return a FileSystem object
-    var success = function(file_system) {
-      if (file_system) {
-        // grab the name and root from the file system object
-        var result = new FileSystem(file_system.name, file_system.root);
-        successCallback(result);
-      } 
-      else {
-        // no FileSystem object returned
-        errorCallback(new FileError(FileError.NOT_FOUND_ERR));
-      }
+    var fail = function(code) {
+        if (typeof errorCallback === 'function') {
+            errorCallback(new FileError(code));
+        }
     };
-    var fail = function(e) {
-        errorCallback(new FileError(e));
-    };   
-    exec(success, fail, "File", "requestFileSystem", [type, size]);
-  }
+
+    if (type < 0 || type > 3) {
+        fail(FileError.SYNTAX_ERR);
+    } else {
+        // if successful, return a FileSystem object
+        var success = function(file_system) {
+            if (file_system) {
+                if (typeof successCallback === 'function') {
+                    // grab the name and root from the file system object
+                    var result = new FileSystem(file_system.name, file_system.root);
+                    successCallback(result);
+                }
+            }
+            else {
+                // no FileSystem object returned
+                fail(FileError.NOT_FOUND_ERR);
+            }
+        };
+        exec(success, fail, "File", "requestFileSystem", [type, size]);
+    }
 };
 
 module.exports = requestFileSystem;
@@ -3983,27 +3987,31 @@ var DirectoryEntry = require('cordova/plugin/DirectoryEntry'),
 
 /**
  * Look up file system Entry referred to by local URI.
- * @param {DOMString} uri  URI referring to a local file or directory 
+ * @param {DOMString} uri  URI referring to a local file or directory
  * @param successCallback  invoked with Entry object corresponding to URI
  * @param errorCallback    invoked if error occurs retrieving file system entry
  */
 module.exports = function(uri, successCallback, errorCallback) {
     // error callback
     var fail = function(error) {
-        errorCallback(new FileError(error));
+        if (typeof errorCallback === 'function') {
+            errorCallback(new FileError(error));
+        }
     };
     // if successful, return either a file or directory entry
     var success = function(entry) {
         var result;
 
         if (entry) {
-            // create appropriate Entry object
-            result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath) : new FileEntry(entry.name, entry.fullPath);
-            try {
-                successCallback(result);
-            }
-            catch (e) {
-                console.log('Error invoking callback: ' + e);
+            if (typeof successCallback === 'function') {
+                // create appropriate Entry object
+                result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath) : new FileEntry(entry.name, entry.fullPath);
+                try {
+                    successCallback(result);
+                }
+                catch (e) {
+                    console.log('Error invoking callback: ' + e);
+                }
             }
         }
         else {
