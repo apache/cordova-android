@@ -131,8 +131,7 @@ public class FileUtils extends Plugin {
                 long size = args.optLong(1);
                 if (size != 0) {
                     if (size > (DirectoryManager.getFreeDiskSpace(true)*1024)) {
-                        JSONObject error = new JSONObject().put("code", FileUtils.QUOTA_EXCEEDED_ERR);
-                        return new PluginResult(PluginResult.Status.ERROR, error);
+                        return new PluginResult(PluginResult.Status.ERROR, FileUtils.QUOTA_EXCEEDED_ERR);
                     }
                 }
                 JSONObject obj = requestFileSystem(args.getInt(0));
@@ -171,8 +170,7 @@ public class FileUtils extends Plugin {
                     notifyDelete(args.getString(0));
                     return new PluginResult(status);
                 } else {
-                    JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                    return new PluginResult(PluginResult.Status.ERROR, error);
+                    return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
                 }
             }
             else if (action.equals("removeRecursively")) {
@@ -180,8 +178,7 @@ public class FileUtils extends Plugin {
                 if (success) {
                     return new PluginResult(status);
                 } else {
-                    JSONObject error = new JSONObject().put("code", FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-                    return new PluginResult(PluginResult.Status.ERROR, error);
+                    return new PluginResult(PluginResult.Status.ERROR, FileUtils.NO_MODIFICATION_ALLOWED_ERR);
                 }
             }
             else if (action.equals("moveTo")) {
