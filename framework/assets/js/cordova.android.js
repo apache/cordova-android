@@ -1067,6 +1067,9 @@ module.exports = {
     File: { // exists natively on Android WebView, override
       path: "cordova/plugin/File"
     },
+    FileReader: { // exists natively on Android WebView, override
+      path: "cordova/plugin/FileReader"
+    },
     FileError: { //exists natively on Android WebView on Android 4.x
       path: "cordova/plugin/FileError"
     }
@@ -1435,78 +1438,85 @@ define('cordova/plugin/Camera', function(require, exports, module) {
 var exec = require('cordova/exec'),
     Camera = require('cordova/plugin/CameraConstants');
 
-module.exports = {
-    /**
-     * Gets a picture from source defined by "options.sourceType", and returns the
-     * image as defined by the "options.destinationType" option.
+var cameraExport = {};
 
-     * The defaults are sourceType=CAMERA and destinationType=FILE_URL.
-     *
-     * @param {Function} successCallback
-     * @param {Function} errorCallback
-     * @param {Object} options
-     */
-    getPicture: function (successCallback, errorCallback, options) {
+// Tack on the Camera Constants to the base camera plugin.
+for (var key in Camera) {
+    cameraExport[key] = Camera[key];
+}
 
-        // successCallback required
-        if (typeof successCallback != "function") {
-            console.log("Camera Error: successCallback is not a function");
-            return;
-        }
+/**
+ * Gets a picture from source defined by "options.sourceType", and returns the
+ * image as defined by the "options.destinationType" option.
 
-        // errorCallback optional
-        if (errorCallback && (typeof errorCallback != "function")) {
-            console.log("Camera Error: errorCallback is not a function");
-            return;
-        }
-
-        if (options && typeof options.quality == "number") {
-            quality = options.quality;
-        } else if (options && typeof options.quality == "string") {
-            var qlity = parseInt(options.quality, 10);
-            if (isNaN(qlity) === false) {
-                quality = qlity.valueOf();
-            }
-        }
-
-        var destinationType = Camera.DestinationType.FILE_URL;
-        if (options.destinationType) {
-            destinationType = options.destinationType;
-        }
-
-        var sourceType = Camera.PictureSourceType.CAMERA;
-        if (typeof options.sourceType == "number") {
-            sourceType = options.sourceType;
-        }
-
-        var targetWidth = -1;
-        if (typeof options.targetWidth == "number") {
-            targetWidth = options.targetWidth;
-        } else if (typeof options.targetWidth == "string") {
-            var width = parseInt(options.targetWidth, 10);
-            if (isNaN(width) === false) {
-                targetWidth = width.valueOf();
-            }
-        }
-
-        var targetHeight = -1;
-        if (typeof options.targetHeight == "number") {
-            targetHeight = options.targetHeight;
-        } else if (typeof options.targetHeight == "string") {
-            var height = parseInt(options.targetHeight, 10);
-            if (isNaN(height) === false) {
-                targetHeight = height.valueOf();
-            }
-        }
-
-        var encodingType = Camera.EncodingType.JPEG;
-        if (typeof options.encodingType == "number") {
-            encodingType = options.encodingType;
-        }
-
-        exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType]);
+ * The defaults are sourceType=CAMERA and destinationType=FILE_URL.
+ *
+ * @param {Function} successCallback
+ * @param {Function} errorCallback
+ * @param {Object} options
+ */
+cameraExport.getPicture = function(successCallback, errorCallback, options) {
+    // successCallback required
+    if (typeof successCallback != "function") {
+        console.log("Camera Error: successCallback is not a function");
+        return;
     }
-};
+
+    // errorCallback optional
+    if (errorCallback && (typeof errorCallback != "function")) {
+        console.log("Camera Error: errorCallback is not a function");
+        return;
+    }
+
+
+    if (options && typeof options.quality == "number") {
+        quality = options.quality;
+    } else if (options && typeof options.quality == "string") {
+        var qlity = parseInt(options.quality, 10);
+        if (isNaN(qlity) === false) {
+            quality = qlity.valueOf();
+        }
+    }
+
+    var destinationType = Camera.DestinationType.FILE_URL;
+    if (typeof options.destinationType == "number") {
+        destinationType = options.destinationType;
+    }
+
+    var sourceType = Camera.PictureSourceType.CAMERA;
+    if (typeof options.sourceType == "number") {
+        sourceType = options.sourceType;
+    }
+
+    var targetWidth = -1;
+    if (typeof options.targetWidth == "number") {
+        targetWidth = options.targetWidth;
+    } else if (typeof options.targetWidth == "string") {
+        var width = parseInt(options.targetWidth, 10);
+        if (isNaN(width) === false) {
+            targetWidth = width.valueOf();
+        }
+    }
+
+    var targetHeight = -1;
+    if (typeof options.targetHeight == "number") {
+        targetHeight = options.targetHeight;
+    } else if (typeof options.targetHeight == "string") {
+        var height = parseInt(options.targetHeight, 10);
+        if (isNaN(height) === false) {
+            targetHeight = height.valueOf();
+        }
+    }
+
+    var encodingType = Camera.EncodingType.JPEG;
+    if (typeof options.encodingType == "number") {
+        encodingType = options.encodingType;
+    }
+
+    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType]);
+}
+
+module.exports = cameraExport;
 
 });
 
