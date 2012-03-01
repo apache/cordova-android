@@ -143,7 +143,7 @@
     </target>
 
     <!-- Combine JavaScript files into one cordova-uncompressed.js file. -->
-    <target name="build-javascript">
+    <target name="build-javascript" depends="clean">
         
       <!-- Clean up existing files -->
       <!--<delete file="assets/www/cordova_${version}.js"/>-->
