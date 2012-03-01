@@ -815,27 +815,31 @@ public class FileUtils extends Plugin {
             File fp;
             fs.put("name", "temporary");
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                fs.put("root", "file://" + Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        "/Android/data/" + ctx.getPackageName() + "/cache/");
-
-                // Create the cache dir if it doesn't exist.
                 fp = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
                     "/Android/data/" + ctx.getPackageName() + "/cache/");
-            } else {
-                fs.put("root", "file:///data/data/" + ctx.getPackageName() + "/cache/");
                 // Create the cache dir if it doesn't exist.
+                fp.mkdirs();
+                fs.put("root", getEntry(Environment.getExternalStorageDirectory().getAbsolutePath() +
+                        "/Android/data/" + ctx.getPackageName() + "/cache/"));
+            } else {
                 fp = new File("/data/data/" + ctx.getPackageName() + "/cache/");
+                // Create the cache dir if it doesn't exist.
+                fp.mkdirs();
+                fs.put("root", getEntry("/data/data/" + ctx.getPackageName() + "/cache/"));
             }
-            fp.mkdirs();
         }
         else if (type == PERSISTENT) {
             fs.put("name", "persistent");
-            fs.put("root", "file:///data/data/" + ctx.getPackageName());
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                fs.put("root", getEntry(Environment.getExternalStorageDirectory()));
+            } else {
+                fs.put("root", getEntry("/data/data/" + ctx.getPackageName()));
+            }
         }
         else {
             throw new IOException("No filesystem of type requested");
         }
-
+ 
         return fs;
     }
 
