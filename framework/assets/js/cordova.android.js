@@ -188,9 +188,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2011 Adobe
-   Copyright 2011 IBM Corporation
-   Copyright 2011 RIM
+   Copyright [yyyy] [name of copyright owner]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -204,7 +202,98 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
+==============================================================
+This product also include the following software:
+==============================================================
 
+--------------------------------------------------------------
+jasmine from GitHub
+
+   https://github.com/pivotal/jasmine
+
+MIT-style license
+
+license available from:
+
+   https://github.com/pivotal/jasmine/blob/master/MIT.LICENSE
+   
+-----------------------------
+
+Copyright (c) 2008-2011 Pivotal Labs
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+--------------------------------------------------------------
+commonjs tests from the commonjs organization at GitHub
+
+   https://github.com/commonjs/commonjs
+
+MIT-style license
+
+license available from:
+
+   https://github.com/commonjs/commonjs/blob/master/docs/license.html.markdown
+
+contributor list available from:
+
+   https://github.com/commonjs/commonjs/blob/master/docs/contributors.html.markdown
+
+-----------------------------
+
+Copyright 2009 Kevin Dangoor
+Copyright 2009 Ihab Awad
+Copyright 2009 Ash Berlin
+Copyright 2009 Aristid Breitkreuz
+Copyright 2009 Kevin Dangoor
+Copyright 2009 Daniel Friesen
+Copyright 2009 Wes Garland
+Copyright 2009 Kris Kowal
+Copyright 2009 Dean Landolt
+Copyright 2009 Peter Michaux
+Copyright 2009 George Moschovitis
+Copyright 2009 Michael O'Brien
+Copyright 2009 Tom Robinson
+Copyright 2009 Hannes Wallnoefer
+Copyright 2009 Mike Wilson
+Copyright 2009 Ondrej Zara
+Copyright 2009 Chris Zumbrunn
+Copyright 2009 Kris Zyp
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
 */
 var require,
@@ -267,7 +356,8 @@ define('cordova/channel', function(require, exports, module) {
  */
 var Channel = function(type, opts) {
         this.type = type;
-        this.handlers = [];
+        this.handlers = {};
+        this.numHandlers = 0;
         this.guid = 0;
         this.fired = false;
         this.enabled = true;
@@ -312,7 +402,7 @@ var Channel = function(type, opts) {
  */
 Channel.prototype.subscribe = function(f, c, g) {
     // need a function to call
-    if (f === null) { return; }
+    if (f === null || f === undefined) { return; }
 
     var func = f;
     if (typeof c == "object" && f instanceof Function) { func = utils.close(c, f); }
@@ -321,6 +411,7 @@ Channel.prototype.subscribe = function(f, c, g) {
     func.observer_guid = g;
     f.observer_guid = g;
     this.handlers[g] = func;
+    this.numHandlers++;
     if (this.events.onSubscribe) this.events.onSubscribe.call(this);
     return g;
 };
@@ -330,6 +421,9 @@ Channel.prototype.subscribe = function(f, c, g) {
  * auto-unsubscribes itself.
  */
 Channel.prototype.subscribeOnce = function(f, c) {
+    // need a function to call
+    if (f === null || f === undefined) { return; }
+
     var g = null;
     var _this = this;
     var m = function() {
@@ -349,9 +443,13 @@ Channel.prototype.subscribeOnce = function(f, c) {
  * Unsubscribes the function with the given guid from the channel.
  */
 Channel.prototype.unsubscribe = function(g) {
+    // need a function to unsubscribe
+    if (g === null || g === undefined) { return; }
+
     if (g instanceof Function) { g = g.observer_guid; }
     this.handlers[g] = null;
     delete this.handlers[g];
+    this.numHandlers--;
     if (this.events.onUnsubscribe) this.events.onUnsubscribe.call(this);
 };
 
@@ -434,7 +532,7 @@ window.addEventListener = function(evt, handler, capture) {
   }
 };
 
-document.removeEventListener = function(evt, handler) {
+document.removeEventListener = function(evt, handler, capture) {
   var e = evt.toLowerCase();
   // If unsubcribing from an event that is handled by a plugin
   if (typeof documentEventHandlers[e] != "undefined") {
@@ -886,13 +984,13 @@ module.exports = {
     var backButtonChannel = cordova.addDocumentEventHandler('backbutton', {
       onSubscribe:function() {
         // If we just attached the first handler, let native know we need to override the back button.
-        if (this.handlers.length === 1) {
+        if (this.numHandlers === 1) {
           exec(null, null, "App", "overrideBackbutton", [true]);
         }
       },
       onUnsubscribe:function() {
         // If we just detached the last handler, let native know we no longer override the back button.
-        if (this.handlers.length === 0) {
+        if (this.numHandlers === 0) {
           exec(null, null, "App", "overrideBackbutton", [false]);
         }
       }
@@ -919,7 +1017,7 @@ module.exports = {
     } else {
       // Defined, but some Android devices will throw a SECURITY_ERR -
       // so we wrap the whole thing in a try-catch and shim in our own
-      // because Google broke it in the name of security.
+      // if the device has Android bug 16175.
       var originalOpenDatabase = window.openDatabase;
       window.openDatabase = function(name, version, desc, size) {
           var db = null;
@@ -1089,7 +1187,7 @@ function include(parent, objects, clobber) {
           var result = obj.path ? require(obj.path) : {};
 
           if (clobber) {
-              // Set the value if it doesn't exist or if an override is specified.
+              // Clobber if it doesn't exist or if an override is specified.
               if (typeof parent[key] === 'undefined' || typeof obj.path !== 'undefined') {
                   parent[key] = result;
               }
@@ -1250,13 +1348,9 @@ var cordova = require('cordova'),
     exec = require('cordova/exec');
 
 function handlers() {
-  var count = function (a) {
-          return a.filter(function (v) {return !!v;}).length;
-      }; 
-
-  return count(module.exports.channels.batterystatus.handlers) + 
-         count(module.exports.channels.batterylow.handlers) +
-         count(module.exports.channels.batterycritical.handlers);
+  return battery.channels.batterystatus.numHandlers + 
+         battery.channels.batterylow.numHandlers +
+         battery.channels.batterycritical.numHandlers;
 }
 
 var Battery = function() {
@@ -1279,7 +1373,7 @@ var Battery = function() {
  * appropriately (and hopefully save on battery life!).
  */
 Battery.prototype.onSubscribe = function() {
-  var me = module.exports; // TODO: i dont like this reference
+  var me = battery;
   // If we just registered the first handler, make sure native listener is started.
   if (handlers() === 1) {
     exec(me._status, me._error, "Battery", "start", []);
@@ -1287,10 +1381,8 @@ Battery.prototype.onSubscribe = function() {
 };
 
 Battery.prototype.onUnsubscribe = function() {
-  var me = module.exports,
-      empty = function (a) {
-          return a.filter(function (v, i) {return v && !!i;});
-      }; 
+  var me = battery;
+
   // If we just unregistered the last handler, make sure native listener is stopped.
   if (handlers() === 0) {
       exec(null, null, "Battery", "stop", []);
@@ -1304,7 +1396,7 @@ Battery.prototype.onUnsubscribe = function() {
  */
 Battery.prototype._status = function(info) {
 	if (info) {
-		var me = module.exports;//TODO: can we eliminate this global ref?
+		var me = battery;
     var level = info.level;
 		if (me._level !== level || me._isPlugged !== info.isPlugged) {
 			// Fire batterystatus event
@@ -1332,7 +1424,9 @@ Battery.prototype._error = function(e) {
     console.log("Error initializing Battery: " + e);
 };
 
-module.exports = new Battery();
+var battery = new Battery();
+
+module.exports = battery;
 
 });
 
@@ -2168,7 +2262,7 @@ DirectoryEntry.prototype.getDirectory = function(path, options, successCallback,
  * @param {Function} errorCallback is called with a FileError
  */
 DirectoryEntry.prototype.removeRecursively = function(successCallback, errorCallback) {
-   var fail = typeof errorCallback !== 'function' ? null : function(code) {
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
     exec(successCallback, fail, "File", "removeRecursively", [this.fullPath]);
@@ -2233,7 +2327,7 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
         }
         successCallback(retVal);
     };
-   var fail = typeof errorCallback !== 'function' ? null : function(code) {
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
     exec(win, fail, "File", "readEntries", [this.path]);
@@ -2283,7 +2377,7 @@ Entry.prototype.getMetadata = function(successCallback, errorCallback) {
       var metadata = new Metadata(lastModified);
       successCallback(metadata);
   };
- var fail = typeof errorCallback !== 'function' ? null : function(code) {
+  var fail = typeof errorCallback !== 'function' ? null : function(code) {
       errorCallback(new FileError(code));
   };
 
@@ -2395,17 +2489,21 @@ Entry.prototype.copyTo = function(parent, newName, successCallback, errorCallbac
 
 /**
  * Return a URL that can be used to identify this entry.
- * 
- * @param mimeType
- *            {DOMString} for a FileEntry, the mime type to be used to
- *            interpret the file, when loaded through this URI.
- * @param successCallback
- *            {Function} called with the new Entry object
- * @param errorCallback
- *            {Function} called with a FileError
  */
-Entry.prototype.toURL = function(mimeType, successCallback, errorCallback) {
+Entry.prototype.toURL = function() {
     // fullPath attribute contains the full URL
+    return this.fullPath;
+};
+
+/**
+ * Returns a URI that can be used to identify this entry.
+ *
+ * @param {DOMString} mimeType for a FileEntry, the mime type to be used to interpret the file, when loaded through this URI.
+ * @return uri
+ */
+Entry.prototype.toURI = function(mimeType) {
+    console.log("DEPRECATED: Update your code to use 'toURL'");
+    // fullPath attribute contains the full URI
     return this.fullPath;
 };
 
@@ -2431,7 +2529,7 @@ Entry.prototype.remove = function(successCallback, errorCallback) {
  * @param errorCallback {Function} called with a FileError
  */
 Entry.prototype.getParent = function(successCallback, errorCallback) {
-   var fail = typeof errorCallback !== 'function' ? null : function(code) {
+    var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
     exec(successCallback, fail, "File", "getParent", [this.fullPath]);
@@ -3320,11 +3418,6 @@ var LocalFileSystem = function() {
 
 };
 
-// Non-standard function
-LocalFileSystem.prototype.isFileSystemRoot = function(path) {
-    return exec(null, null, "File", "isFileSystemRoot", [path]);
-};
-
 LocalFileSystem.TEMPORARY = 0; //temporary, with no guarantee of persistence
 LocalFileSystem.PERSISTENT = 1; //persistent
 
@@ -3367,12 +3460,6 @@ var Media = function(src, successCallback, errorCallback, statusCallback) {
     // statusCallback optional
     if (statusCallback && (typeof statusCallback !== "function")) {
         console.log("Media Error: statusCallback is not a function");
-        return;
-    }
-
-    // statusCallback optional
-    if (positionCallback && (typeof positionCallback !== "function")) {
-        console.log("Media Error: positionCallback is not a function");
         return;
     }
 
@@ -3488,6 +3575,40 @@ Media.prototype.release = function() {
  */
 Media.prototype.setVolume = function(volume) {
     exec(null, null, "Media", "setVolume", [this.id, volume]);
+};
+
+/**
+ * Audio has status update.
+ * PRIVATE
+ *
+ * @param id            The media object id (string)
+ * @param status        The status code (int)
+ * @param msg           The status message (string)
+ */
+Media.onStatus = function(id, msg, value) {
+    var media = mediaObjects[id];
+    // If state update
+    if (msg === Media.MEDIA_STATE) {
+        if (value === Media.MEDIA_STOPPED) {
+            if (media.successCallback) {
+                media.successCallback();
+            }
+        }
+        if (media.statusCallback) {
+            media.statusCallback(value);
+        }
+    }
+    else if (msg === Media.MEDIA_DURATION) {
+        media._duration = value;
+    }
+    else if (msg === Media.MEDIA_ERROR) {
+        if (media.errorCallback) {
+            media.errorCallback({"code":value});
+        }
+    }
+    else if (msg === Media.MEDIA_POSITION) {
+        media._position = value;
+    }
 };
 
 module.exports = Media;
@@ -3617,15 +3738,28 @@ var exec = require('cordova/exec'),
 var NetworkConnection = function () {
         this.type = null;
         this._firstRun = true;
+        this._timer = null;
+        this.timeout = 500;
 
         var me = this,
             channel = require('cordova/channel');
 
         this.getInfo(
             function (info) {
-                me.type = info.type;
-                if (typeof info.event !== "undefined") {
-                    cordova.fireWindowEvent(info.event);
+                me.type = info;
+                if (info === "none") {
+                    // set a timer if still offline at the end of timer send the offline event
+                    me._timer = setTimeout(function(){
+                        cordova.fireWindowEvent("offline");
+                        me._timer = null;
+                        }, me.timeout);
+                } else {
+                    // If there is a current offline event pending clear it
+                    if (me._timer !== null) {
+                        clearTimeout(me._timer);
+                        me._timer = null;
+                    }
+                    cordova.fireWindowEvent("online");
                 }
 
                 // should only fire this once
@@ -3820,6 +3954,7 @@ var requestFileSystem = function(type, size, successCallback, errorCallback) {
             errorCallback(new FileError(code));
         }
     };
+
     if (type < 0 || type > 3) {
         fail(FileError.SYNTAX_ERR);
     } else {
