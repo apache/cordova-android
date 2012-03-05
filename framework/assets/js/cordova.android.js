@@ -604,6 +604,15 @@ var cordova = {
     shuttingDown:false,
     UsePolling:false,
     // END TODO
+
+    // TODO: iOS only
+    // This queue holds the currently executing command and all pending
+    // commands executed with cordova.exec().
+    commandQueue:[],
+    // Indicates if we're currently in the middle of flushing the command
+    // queue on the native side.
+    commandQueueFlushing:false,
+    // END TODO
     /**
      * Plugin callback mechanism.
      */
@@ -672,8 +681,41 @@ var cordova = {
                 delete cordova.callbacks[callbackId];
             }
         }
+    },
+    
+    addPlugin: function(name, obj) {
+        if (!window.plugins[name]) {
+            window.plugins[name] = obj;
+        }
+        else {
+            console.log("Error: Plugin "+name+" already exists.");
+        }
+    },
+    
+    addConstructor: function(func) {
+        channel.onCordovaReady.subscribeOnce(function() {
+            try {
+                func();
+            } catch(e) {
+                console.log("Failed to run constructor: " + e);
+            }
+        });
     }
 };
+
+/** 
+ * Legacy variable for plugin support
+ */
+if (!window.PhoneGap) {
+    window.PhoneGap = cordova;
+}
+
+/**
+ * Plugins object
+ */
+if (!window.plugins) {
+    window.plugins = {};
+}
 
 module.exports = cordova;
 
@@ -835,7 +877,7 @@ module.exports = {
             path: 'cordova/plugin/CompassHeading'
         },
         CompassError:{
-            path: 'cordova/plugin/CompassConstants'
+            path: 'cordova/plugin/CompassError'
         },
         ConfigurationData: {
             path: 'cordova/plugin/ConfigurationData'
@@ -1289,7 +1331,7 @@ var accelerometer = {
     watchAcceleration: function(successCallback, errorCallback, options) {
 
         // Default interval (10 sec)
-        var frequency = (options !== undefined)? options.frequency : 10000;
+        var frequency = (options !== undefined && options.frequency !== undefined)? options.frequency : 10000;
 
         // successCallback required
         if (typeof successCallback !== "function") {
@@ -1303,7 +1345,6 @@ var accelerometer = {
             return;
         }
 
-        // TODO: srsly wtf is this
         // Make sure accelerometer timeout > frequency + 10 sec
         exec(
             function(timeout) {
@@ -1468,7 +1509,7 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
         return;
     }
 
-
+    var quality = 50;
     if (options && typeof options.quality == "number") {
         quality = options.quality;
     } else if (options && typeof options.quality == "string") {
@@ -1512,6 +1553,8 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
     if (typeof options.encodingType == "number") {
         encodingType = options.encodingType;
     }
+    // TODO: parse MediaType
+    // TODO: enable allow edit?
 
     exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType]);
 }
@@ -1695,6 +1738,8 @@ module.exports = CaptureVideoOptions;
 define('cordova/plugin/compass', function(require, exports, module) {
 var exec = require('cordova/exec'),
     utils = require('cordova/utils'),
+    CompassHeading = require('cordova/plugin/CompassHeading'),
+    CompassError = require('cordova/plugin/CompassError'),
     timers = {},
     compass = {
         /**
@@ -1719,15 +1764,16 @@ var exec = require('cordova/exec'),
             }
 
             var win = function(result) {
-                if (result.timestamp) {
-                    var timestamp = new Date(result.timestamp);
-                    result.timestamp = timestamp;
-                }
-                successCallback(result);   
+                var ch = new CompassHeading(result.magneticHeading, result.trueHeading, result.headingAccuracy, result.timestamp);
+                successCallback(ch);
             };
+            var fail = function(code) {
+                var ce = new CompassError(code);
+                errorCallback(ce);
+            }
             
             // Get heading
-            exec(win, errorCallback, "Compass", "getHeading", []);
+            exec(win, fail, "Compass", "getHeading", []);
         },
 
         /**
@@ -1758,14 +1804,16 @@ var exec = require('cordova/exec'),
             // Start watch timer to get headings
             var id = utils.createUUID();
             var win = function(result) {
-                if (result.timestamp) {
-                    var timestamp = new Date(result.timestamp);
-                    result.timestamp = timestamp;
-                }
-                successCallback(result);   
+                var ch = new CompassHeading(result.magneticHeading, result.trueHeading, result.headingAccuracy, result.timestamp);
+                successCallback(ch);
             };
+            var fail = function(code) {
+                var ce = new CompassError(code);
+                errorCallback(ce);
+            };
+
             timers[id] = window.setInterval(function() {
-                 exec(win, errorCallback, "Compass", "getHeading", []);
+                 exec(win, fail, "Compass", "getHeading", []);
             }, frequency);
 
             return id;
@@ -1782,26 +1830,40 @@ var exec = require('cordova/exec'),
               delete timers[id];
             }
         }
+        // TODO: add the filter-based iOS-only methods
     };
 
 module.exports = compass;
 
 });
 
-define('cordova/plugin/CompassConstants', function(require, exports, module) {
-module.exports = {
-  COMPASS_INTERNAL_ERR:0,
-  COMPASS_NOT_SUPPORTED:20
+define('cordova/plugin/CompassError', function(require, exports, module) {
+/**
+ *  CompassError.
+ *  An error code assigned by an implementation when an error has occured
+ * @constructor
+ */
+var CompassError = function(err) {
+    this.code = (typeof err != 'undefined' ? err : null);
 };
+
+/**
+ * Error codes
+ */
+CompassError.COMPASS_INTERNAL_ERR = 0;
+CompassError.COMPASS_NOT_SUPPORTED = 20;
+
+module.exports = CompassError;
+
 
 });
 
 define('cordova/plugin/CompassHeading', function(require, exports, module) {
-var CompassHeading = function() {
-  this.magneticHeading = null;
-  this.trueHeading = null;
-  this.headingAccuracy = null;
-  this.timestamp = new Date();
+var CompassHeading = function(magneticHeading, trueHeading, headingAccuracy, timestamp) {
+  this.magneticHeading = magneticHeading !== undefined ? magneticHeading :  null;
+  this.trueHeading = trueHeading !== undefined ? trueHeading : null;
+  this.headingAccuracy = headingAccuracy !== undefined ? headingAccuracy : null;
+  this.timestamp = timestamp !== undefined ? new Date(timestamp) : new Date();
 };
 
 module.exports = CompassHeading;
@@ -3743,7 +3805,8 @@ module.exports = Metadata;
 
 define('cordova/plugin/network', function(require, exports, module) {
 var exec = require('cordova/exec'),
-    cordova = require('cordova');
+    cordova = require('cordova'),
+    channel = require('cordova/channel');
 
 var NetworkConnection = function () {
         this.type = null;
@@ -3751,8 +3814,7 @@ var NetworkConnection = function () {
         this._timer = null;
         this.timeout = 500;
 
-        var me = this,
-            channel = require('cordova/channel');
+        var me = this;
 
         this.getInfo(
             function (info) {
