@@ -1068,7 +1068,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
             // If back key is bound, then send event to JavaScript
             if (this.bound) {
-                this.appView.loadUrl("javascript:cordova.require('cordova').fireDocumentEvent('backbutton');");
+                this.appView.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
                 return true;
             }
 
@@ -1090,13 +1090,13 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // If menu key
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
-            this.appView.loadUrl("javascript:cordova.require('cordova').fireDocumentEvent('menubutton');");
+            this.appView.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
             return super.onKeyDown(keyCode, event);
         }
 
         // If search key
         else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-            this.appView.loadUrl("javascript:cordova.require('cordova').fireDocumentEvent('searchbutton');");
+            this.appView.loadUrl("javascript:cordova.fireDocumentEvent('searchbutton');");
             return true;
         }
 
