@@ -296,6 +296,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
+(function() {
 var require,
     define;
 
@@ -566,6 +567,8 @@ function createEvent(type, data) {
 }
 
 var cordova = {
+    define:define,
+    require:require,
     /**
      * Methods to add/remove your own addEventListener hijacking on document + window.
      */
@@ -1750,7 +1753,7 @@ var exec = require('cordova/exec'),
          * getting the heading data.
          * @param {CompassOptions} options The options for getting the heading data (not used).
          */
-        getCurrentHeading:function(successCallback, errorCallback, options) {
+        getCurrentHeading:function(successCallback, errorCallback) {
             // successCallback required
             if (typeof successCallback !== "function") {
               console.log("Compass Error: successCallback is not a function");
@@ -1803,17 +1806,9 @@ var exec = require('cordova/exec'),
 
             // Start watch timer to get headings
             var id = utils.createUUID();
-            var win = function(result) {
-                var ch = new CompassHeading(result.magneticHeading, result.trueHeading, result.headingAccuracy, result.timestamp);
-                successCallback(ch);
-            };
-            var fail = function(code) {
-                var ce = new CompassError(code);
-                errorCallback(ce);
-            };
 
             timers[id] = window.setInterval(function() {
-                 exec(win, fail, "Compass", "getHeading", []);
+                compass.getCurrentHeading(successCallback, errorCallback);
             }, frequency);
 
             return id;
@@ -1844,26 +1839,22 @@ define('cordova/plugin/CompassError', function(require, exports, module) {
  * @constructor
  */
 var CompassError = function(err) {
-    this.code = (typeof err != 'undefined' ? err : null);
+    this.code = (err !== undefined ? err : null);
 };
 
-/**
- * Error codes
- */
 CompassError.COMPASS_INTERNAL_ERR = 0;
 CompassError.COMPASS_NOT_SUPPORTED = 20;
 
 module.exports = CompassError;
 
-
 });
 
 define('cordova/plugin/CompassHeading', function(require, exports, module) {
 var CompassHeading = function(magneticHeading, trueHeading, headingAccuracy, timestamp) {
-  this.magneticHeading = magneticHeading !== undefined ? magneticHeading :  null;
-  this.trueHeading = trueHeading !== undefined ? trueHeading : null;
-  this.headingAccuracy = headingAccuracy !== undefined ? headingAccuracy : null;
-  this.timestamp = timestamp !== undefined ? new Date(timestamp) : new Date();
+  this.magneticHeading = (magneticHeading !== undefined ? magneticHeading : null);
+  this.trueHeading = (trueHeading !== undefined ? trueHeading : null);
+  this.headingAccuracy = (headingAccuracy !== undefined ? headingAccuracy : null);
+  this.timestamp = (timestamp !== undefined ? new Date(timestamp) : new Date());
 };
 
 module.exports = CompassHeading;
@@ -3405,7 +3396,8 @@ module.exports = Flags;
 define('cordova/plugin/geolocation', function(require, exports, module) {
 var utils = require('cordova/utils'),
     exec = require('cordova/exec'),
-    PositionError = require('cordova/plugin/PositionError');
+    PositionError = require('cordova/plugin/PositionError'),
+    Position = require('cordova/plugin/Position');
 
 var timers = {};   // list of timers in use
 
@@ -3418,13 +3410,13 @@ function parseParameters(options) {
     };
 
     if (options) {
-        if (typeof options.maximumAge !== "undefined") {
+        if (options.maximumAge !== undefined) {
             opt.maximumAge = options.maximumAge;
         }
-        if (typeof options.enableHighAccuracy !== "undefined") {
+        if (options.enableHighAccuracy !== undefined) {
             opt.enableHighAccuracy = options.enableHighAccuracy;
         }
-        if (typeof options.timeout !== "undefined") {
+        if (options.timeout !== undefined) {
             opt.timeout = options.timeout;
         }
     }
@@ -3442,7 +3434,26 @@ var geolocation = {
    */
     getCurrentPosition:function(successCallback, errorCallback, options) {
         options = parseParameters(options);
-        exec(successCallback, errorCallback, "Geolocation", "getLocation", [options.enableHighAccuracy, options.timeout, options.maximumAge]); 
+
+        var win = function(p) {
+            successCallback(new Position(
+                {
+                    latitude:p.latitude,
+                    longitude:p.longitude,
+                    altitude:p.altitude,
+                    accuracy:p.accuracy,
+                    heading:p.heading,
+                    velocity:p.velocity,
+                    altitudeAccuracy:p.altitudeAccuracy
+                },
+                p.timestamp || new Date()
+            ));
+        };
+        var fail = function(e) {
+            errorCallback(new PositionError(e.code, e.message));
+        };
+
+        exec(win, fail, "Geolocation", "getLocation", [options.enableHighAccuracy, options.timeout, options.maximumAge]); 
     },
     /**
      * Asynchronously watches the geolocation for changes to geolocation.  When a change occurs,
@@ -3455,9 +3466,10 @@ var geolocation = {
      */
     watchPosition:function(successCallback, errorCallback, options) {
         options = parseParameters(options);
+
         var id = utils.createUUID();
         timers[id] = window.setInterval(function() {
-            exec(successCallback, errorCallback, "Geolocation", "getLocation", [options.enableHighAccuracy, options.timeout, options.maximumAge]);
+            geolocation.getCurrentPosition(successCallback, errorCallback, options);
         }, options.timeout);
 
         return id;
@@ -3822,7 +3834,7 @@ var NetworkConnection = function () {
                 if (info === "none") {
                     // set a timer if still offline at the end of timer send the offline event
                     me._timer = setTimeout(function(){
-                        cordova.fireWindowEvent("offline");
+                        cordova.fireDocumentEvent("offline");
                         me._timer = null;
                         }, me.timeout);
                 } else {
@@ -3831,7 +3843,7 @@ var NetworkConnection = function () {
                         clearTimeout(me._timer);
                         me._timer = null;
                     }
-                    cordova.fireWindowEvent("online");
+                    cordova.fireDocumentEvent("online");
                 }
 
                 // should only fire this once
@@ -3928,8 +3940,10 @@ module.exports = {
 
 
 define('cordova/plugin/Position', function(require, exports, module) {
+var Coordinates = require('cordova/plugin/Coordinates');
+
 var Position = function(coords, timestamp) {
-	this.coords = coords;
+	this.coords = new Coordinates(coords.latitude, coords.longitude, coords.altitude, coords.accuracy, coords.heading, coords.velocity, coords.altitudeAccuracy);
 	this.timestamp = (timestamp !== undefined) ? timestamp : new Date().getTime();
 };
 
@@ -4839,3 +4853,4 @@ window.cordova = require('cordova');
 
 }(window));
 
+})();
