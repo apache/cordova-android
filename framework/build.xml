@@ -108,40 +108,6 @@
     -->
    <import file="${sdk.dir}/tools/ant/build.xml" />
 
-
-    <target name="check-javascript" depends="build-javascript">
-        <!--
-        <delete dir="assets/lib"/>
-        <mkdir dir="assets/lib"/>
-        <echo file="assets/lib/lint.js">var alert=function(){},device={},Element={},debug={};</echo>
-        <concat destfile="assets/lib/cordova-lint.js" append="true">
-            <fileset dir="assets/lib">
-                <include name="lint.js" />
-            </fileset>
-            <fileset dir="assets/www">
-                <include name="cordova-${version}.js" />
-            </fileset>
-        </concat>
-
-        <exec executable="cmd" os="Windows 7">
-            <arg value="/c"/>
-            <arg value="java"/>
-            <arg value="-cp"/>
-            <arg value="${basedir}/util/js.jar"/>
-            <arg value="org.mozilla.javascript.tools.shell.Main"/>
-            <arg value="${basedir}/util/jslint.js"/>
-            <arg value="${basedir}/js/lib/cordova-lint.js"/>
-        </exec>
-        <exec executable="java" os="Mac OS X">
-            <arg value="-cp"/>
-            <arg value="../util/js.jar"/>
-            <arg value="org.mozilla.javascript.tools.shell.Main"/>
-            <arg value="../util/jslint.js"/>
-            <arg value="assets/lib/cordova-lint.js"/>
-        </exec>
-        -->
-    </target>
-
     <!-- Combine JavaScript files into one cordova-uncompressed.js file. -->
     <target name="build-javascript" depends="clean">
         
@@ -151,24 +117,17 @@
       <!-- Create uncompressed JS file -->
       <concat destfile="assets/www/cordova-${version}.js">
         <filelist dir="assets/js" files="cordova.android.js"/>
-        <!-- 
-        <filelist dir="assets/js" files="cordova.js.base,device.js"/>
-        <fileset dir="assets/js" includes="*.js" excludes="cordova.js.base,device.js"/>
-        -->
       </concat>
 
       <!-- update project files to reference cordova-x.x.x.min.js -->
       <replaceregexp match="cordova(.*)\.js" replace="cordova-${version}.js" byline="true">
          <fileset file="assets/www/index.html" /> 
-         <!-- <fileset file="../bin/templates/project/assets/www/index.html" /> -->
       </replaceregexp>
+
       <!-- This is sketchy, but it works, ${dblQuote} does not -->
       <replaceregexp match="cordovaVersion = [\u0022].*[\u0022];" replace='cordovaVersion = ${dblQuote}${version}${dblQuote};' byline="true">
         <fileset file="src/org/apache/cordova/Device.java" />
       </replaceregexp>
-        
-      <!-- Delete temp file -->
-      <!--<delete file="assets/www/cordova-tmp.js"/>-->
     </target>
 
     <!-- Build Cordova jar file that includes all native code, and Cordova JS file
