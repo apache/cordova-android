@@ -39,6 +39,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -272,19 +273,24 @@ public class CameraLauncher extends Plugin {
         // Get src and dest types from request code
         int srcType = (requestCode/16) - 1;
         int destType = (requestCode % 16) - 1;
+     int rotate = 0;
         
+     // Create an ExifHelper to save the exif data that is lost during compression
+     ExifHelper exif = new ExifHelper();
+     try {
+         if (this.encodingType == JPEG) {
+            exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/Pic.jpg");
+            exif.readExifData();
+         }
+     } catch (IOException e) {
+         e.printStackTrace();
+     }
+
         // If CAMERA
         if (srcType == CAMERA) {
             // If image available
             if (resultCode == Activity.RESULT_OK) {
                 try {
-                    // Create an ExifHelper to save the exif data that is lost during compression
-                    ExifHelper exif = new ExifHelper();
-                    if (this.encodingType == JPEG) {
-                        exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/Pic.jpg");
-                        exif.readExifData();
-                    }
-
                     // Read in bitmap of captured image
                     Bitmap bitmap;
                     try {
@@ -375,6 +381,20 @@ public class CameraLauncher extends Plugin {
                     if (destType == DATA_URL) {
                         try {
                             Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+                 String[] cols = { MediaStore.Images.Media.ORIENTATION };
+                 Cursor cursor = this.ctx.getContentResolver().query(intent.getData(), 
+                                         cols, 
+                                         null, null, null);
+                 if (cursor != null) {
+                 cursor.moveToPosition(0);
+                 rotate = cursor.getInt(0);
+                 cursor.close();
+                 }
+                 if (rotate != 0) {
+                 Matrix matrix = new Matrix();
+                 matrix.setRotate(rotate);
+                 bitmap = bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                 }
                             bitmap = scaleBitmap(bitmap);
                             this.processPicture(bitmap);
                             bitmap.recycle();
@@ -399,6 +419,12 @@ public class CameraLauncher extends Plugin {
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
                                 os.close();
     
+                                // Restore exif data to file
+                                if (this.encodingType == JPEG) {
+                                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.ctx));
+                                    exif.writeExifData();
+                                }
+
                                 bitmap.recycle();
                                 bitmap = null;
                                 

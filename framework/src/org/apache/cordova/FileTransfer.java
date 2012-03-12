@@ -320,7 +320,10 @@ public class FileTransfer extends Plugin {
         }
 
         dos.writeBytes(LINE_START + BOUNDRY + LINE_END);
-        dos.writeBytes("Content-Disposition: form-data; name=\"" + fileKey + "\";" + " filename=\"" + fileName +"\"" + LINE_END);
+        dos.writeBytes("Content-Disposition: form-data; name=\"" + fileKey + "\";" + " filename=\"");
+        //We don't want to chagne encoding, we just want this to write for all Unicode.
+        dos.write(fileName.getBytes("UTF-8"));
+        dos.writeBytes("\"" + LINE_END);
         dos.writeBytes("Content-Type: " + mimeType + LINE_END);
         dos.writeBytes(LINE_END);
 
