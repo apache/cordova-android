@@ -225,7 +225,7 @@ public class FileTransfer extends Plugin {
         FileUploadResult result = new FileUploadResult();
 
         // Get a input stream of the file on the phone
-        InputStream fileInputStream = getPathFromUri(file);
+        FileInputStream fileInputStream = (FileInputStream) getPathFromUri(file);
 
         HttpURLConnection conn = null;
         DataOutputStream dos = null;
@@ -276,7 +276,7 @@ public class FileTransfer extends Plugin {
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
         conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+BOUNDRY);
-        
+
         // Handle the other headers
         try {
           JSONObject headers = params.getJSONObject("headers");
@@ -294,38 +294,54 @@ public class FileTransfer extends Plugin {
         if (cookie != null) {
             conn.setRequestProperty("Cookie", cookie);
         }
+        
 
-        // Should set this up as an option
-        if (chunkedMode) {
-            conn.setChunkedStreamingMode(maxBufferSize);
-        }
-
-        dos = new DataOutputStream( conn.getOutputStream() );
-
-        // Send any extra parameters
+        /*
+         * Store the non-file portions of the multipart data as a string, so that we can add it 
+         * to the contentSize, since it is part of the body of the HTTP request.
+         */
+        String extraParams = "";
         try {
             for (Iterator iter = params.keys(); iter.hasNext();) {
                 Object key = iter.next();
                 if(key.toString() != "headers")
                 {
-                  dos.writeBytes(LINE_START + BOUNDRY + LINE_END);
-                  dos.writeBytes("Content-Disposition: form-data; name=\"" +  key.toString() + "\";");
-                  dos.writeBytes(LINE_END + LINE_END);
-                  dos.write(params.getString(key.toString()).getBytes());
-                  dos.writeBytes(LINE_END);
+                  extraParams += LINE_START + BOUNDRY + LINE_END;
+                  extraParams += "Content-Disposition: form-data; name=\"" +  key.toString() + "\";";
+                  extraParams += LINE_END + LINE_END;
+                  extraParams += params.getString(key.toString());
+                  extraParams += LINE_END;
                 }
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
+        
+        extraParams += LINE_START + BOUNDRY + LINE_END;
+        extraParams += "Content-Disposition: form-data; name=\"" + fileKey + "\";" + " filename=\"";
+        
+        String midParams = "\"" + LINE_END + "Content-Type: " + mimeType + LINE_END + LINE_END;
+        String tailParams = LINE_END + LINE_START + BOUNDRY + LINE_START + LINE_END;
+        
+        // Should set this up as an option
+        if (chunkedMode) {
+            conn.setChunkedStreamingMode(maxBufferSize);
+        }
+        else
+        {
+          int stringLength = extraParams.length() + midParams.length() + tailParams.length() + fileName.getBytes("UTF-8").length;
+          Log.d(LOG_TAG, "String Length: " + stringLength);
+          int fixedLength = (int) fileInputStream.getChannel().size() + stringLength;
+          Log.d(LOG_TAG, "Content Length: " + fixedLength);
+          conn.setFixedLengthStreamingMode(fixedLength);
+        }
+        
 
-        dos.writeBytes(LINE_START + BOUNDRY + LINE_END);
-        dos.writeBytes("Content-Disposition: form-data; name=\"" + fileKey + "\";" + " filename=\"");
+        dos = new DataOutputStream( conn.getOutputStream() );
+        dos.writeBytes(extraParams);
         //We don't want to chagne encoding, we just want this to write for all Unicode.
         dos.write(fileName.getBytes("UTF-8"));
-        dos.writeBytes("\"" + LINE_END);
-        dos.writeBytes("Content-Type: " + mimeType + LINE_END);
-        dos.writeBytes(LINE_END);
+        dos.writeBytes(midParams);
 
         // create a buffer of maximum size
         bytesAvailable = fileInputStream.available();
@@ -346,8 +362,7 @@ public class FileTransfer extends Plugin {
         }
 
         // send multipart form data necesssary after file data...
-        dos.writeBytes(LINE_END);
-        dos.writeBytes(LINE_START + BOUNDRY + LINE_START + LINE_END);
+        dos.writeBytes(tailParams);
 
         // close streams
         fileInputStream.close();
