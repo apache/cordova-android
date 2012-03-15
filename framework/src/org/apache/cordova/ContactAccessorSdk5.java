@@ -1649,71 +1649,73 @@ public class ContactAccessorSdk5 extends ContactAccessor {
    */
   private int getPhoneType(String string) {
     int type = ContactsContract.CommonDataKinds.Phone.TYPE_OTHER;
-    if ("home".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_HOME;
-    }
-    else if ("mobile".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE;
-    }
-    else if ("work".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_WORK;
-    }
-    else if ("work fax".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK;
-    }
-    else if ("home fax".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_FAX_HOME;
-    }
-    else if ("fax".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK;
-    }
-    else if ("pager".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_PAGER;
-    }
-    else if ("other".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_OTHER;
-    }
-    else if ("car".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_CAR;
-    }
-    else if ("company main".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_COMPANY_MAIN;
-    }
-    else if ("isdn".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_ISDN;
-    }
-    else if ("main".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_MAIN;
-    }
-    else if ("other fax".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_OTHER_FAX;
-    }
-    else if ("radio".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_RADIO;
-    }
-    else if ("telex".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_TELEX;
-    }
-    else if ("work mobile".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_WORK_MOBILE;
-    }
-    else if ("work pager".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_WORK_PAGER;
-    }
-    else if ("assistant".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_ASSISTANT;
-    }
-    else if ("mms".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_MMS;
-    }
-    else if ("callback".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_CALLBACK;
-    }
-    else if ("tty ttd".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_TTY_TDD;
-    }
-    else if ("custom".equals(string.toLowerCase())) {
-      return ContactsContract.CommonDataKinds.Phone.TYPE_CUSTOM;
+    if (string != null) {
+    	if ("home".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_HOME;
+    	}
+    	else if ("mobile".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE;
+    	}
+    	else if ("work".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_WORK;
+    	}
+    	else if ("work fax".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK;
+    	}
+    	else if ("home fax".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_FAX_HOME;
+    	}
+    	else if ("fax".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK;
+    	}
+    	else if ("pager".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_PAGER;
+    	}
+    	else if ("other".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_OTHER;
+    	}
+    	else if ("car".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_CAR;
+    	}
+    	else if ("company main".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_COMPANY_MAIN;
+    	}
+    	else if ("isdn".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_ISDN;
+    	}
+    	else if ("main".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_MAIN;
+    	}
+    	else if ("other fax".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_OTHER_FAX;
+    	}
+    	else if ("radio".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_RADIO;
+    	}
+    	else if ("telex".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_TELEX;
+    	}
+    	else if ("work mobile".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_WORK_MOBILE;
+    	}
+    	else if ("work pager".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_WORK_PAGER;
+    	}
+    	else if ("assistant".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_ASSISTANT;
+    	}
+    	else if ("mms".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_MMS;
+    	}
+    	else if ("callback".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_CALLBACK;
+    	}
+    	else if ("tty ttd".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_TTY_TDD;
+    	}
+    	else if ("custom".equals(string.toLowerCase())) {
+    		return ContactsContract.CommonDataKinds.Phone.TYPE_CUSTOM;
+    	}
     }
     return type;
   }
