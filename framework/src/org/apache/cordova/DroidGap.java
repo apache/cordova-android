@@ -952,7 +952,9 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param message
      */
     public void sendJavascript(String statement) {
-        this.callbackServer.sendJavascript(statement);
+        //We need to check for the null case on the Kindle Fire beacuse it changes the width and height on load
+        if(this.callbackServer != null)
+          this.callbackServer.sendJavascript(statement);
     }
 
     /**
