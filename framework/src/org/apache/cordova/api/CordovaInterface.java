@@ -141,5 +141,7 @@ public interface CordovaInterface {
             boolean clearHistory, HashMap<String, Object> params);
 
     public abstract Context getApplicationContext();
+
+    public abstract boolean isUrlWhiteListed(String source);
  
 }

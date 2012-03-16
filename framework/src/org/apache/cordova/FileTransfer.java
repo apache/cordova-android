@@ -416,32 +416,39 @@ public class FileTransfer extends Plugin {
             file.getParentFile().mkdirs();
 
             // connect to server
-            URL url = new URL(source);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.connect();
+            if(this.ctx.isUrlWhiteListed(source))
+            {
+              URL url = new URL(source);
+              HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+              connection.setRequestMethod("GET");
+              connection.connect();
 
-            Log.d(LOG_TAG, "Download file:" + url);
+              Log.d(LOG_TAG, "Download file:" + url);
 
-            InputStream inputStream = connection.getInputStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead = 0;
+              InputStream inputStream = connection.getInputStream();
+              byte[] buffer = new byte[1024];
+              int bytesRead = 0;
 
-            FileOutputStream outputStream = new FileOutputStream(file);
+              FileOutputStream outputStream = new FileOutputStream(file);
 
-            // write bytes to file
-            while ( (bytesRead = inputStream.read(buffer)) > 0 ) {
+              // write bytes to file
+              while ( (bytesRead = inputStream.read(buffer)) > 0 ) {
                 outputStream.write(buffer,0, bytesRead);
+              }
+
+              outputStream.close();
+
+              Log.d(LOG_TAG, "Saved file: " + target);
+
+              // create FileEntry object
+              FileUtils fileUtil = new FileUtils();
+
+              return fileUtil.getEntry(file);
             }
-
-            outputStream.close();
-
-            Log.d(LOG_TAG, "Saved file: " + target);
-
-            // create FileEntry object
-            FileUtils fileUtil = new FileUtils();
-
-            return fileUtil.getEntry(file);
+            else
+            {
+              throw new IOException("Error: Unable to connect to domain");
+            }
         } catch (Exception e) {
             Log.d(LOG_TAG, e.getMessage(), e);
             throw new IOException("Error while downloading");

@@ -1333,7 +1333,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param url
      * @return
      */
-    boolean isUrlWhiteListed(String url) {
+    public boolean isUrlWhiteListed(String url) {
 
         // Check to see if we have matched url previously
         if (whiteListCache.get(url) != null) {
