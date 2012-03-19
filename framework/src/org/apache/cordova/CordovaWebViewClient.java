@@ -64,7 +64,7 @@ public class CordovaWebViewClient extends WebViewClient {
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         
         // First give any plugins the chance to handle the url themselves
-        if (this.ctx.pluginManager.onOverrideUrlLoading(url)) {
+        if ((this.ctx.pluginManager != null) && this.ctx.pluginManager.onOverrideUrlLoading(url)) {
         }
         
         // If dialing phone (tel:5551212)
