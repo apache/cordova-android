@@ -94,7 +94,7 @@ public class FileTransfer extends Plugin {
                 mimeType = getArgument(args, 4, "image/jpeg");
                 JSONObject params = args.optJSONObject(5);
                 boolean trustEveryone = args.optBoolean(6);
-                boolean chunkedMode = args.optBoolean(7);
+                boolean chunkedMode = args.optBoolean(7) || args.isNull(7); //Always use chunked mode unless set to false as per API
                 FileUploadResult r = upload(source, target, fileKey, fileName, mimeType, params, trustEveryone, chunkedMode);
                 Log.d(LOG_TAG, "****** About to return a result from upload");
                 return new PluginResult(PluginResult.Status.OK, r.toJSONObject());
