@@ -218,6 +218,7 @@ public class CordovaWebViewClient extends WebViewClient {
         // from the JS side when the JS gets to that code.
         if (!url.equals("about:blank")) {
             ctx.appView.loadUrl("javascript:try{ cordova.require('cordova/channel').onNativeReady.fire();}catch(e){_nativeReady = true;}");
+            this.ctx.postMessage("onNativeReady", null);
         }
 
         // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
