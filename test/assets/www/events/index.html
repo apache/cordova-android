@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,height=device-height,user-scalable=no,maximum-scale=1.0,initial-scale=1.0" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"> <!-- ISO-8859-1 -->
+    <title>PhoneGap</title>
+    <link rel="stylesheet" href="../master.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <script type="text/javascript" charset="utf-8" src="../phonegap.js"></script>      
+
+      
+<script type="text/javascript" charset="utf-8">
+
+    var deviceReady = false;
+
+    function interceptBackbutton() {
+    	eventOutput("Back button intercepted");
+    }
+    function interceptMenubutton() {
+    	eventOutput("Menu button intercepted");
+    }
+    function interceptSearchbutton() {
+    	eventOutput("Search button intercepted");
+    }
+    
+    var eventOutput = function(s) {
+        var el = document.getElementById("results");
+        el.innerHTML = el.innerHTML + s + "<br>";
+    };
+
+    
+    /**
+     * Function called when page has finished loading.
+     */
+    function init() {
+        document.addEventListener("deviceready", function() {
+                deviceReady = true;
+                console.log("Device="+device.platform+" "+device.version);
+                eventOutput("deviceready event: "+device.platform+" "+device.version);
+            }, false);
+        window.setTimeout(function() {
+        	if (!deviceReady) {
+        		alert("Error: PhoneGap did not initialize.  Demo will not run correctly.");
+        	}
+        },1000);
+        document.addEventListener("resume", function() {eventOutput("resume event");}, false);
+        document.addEventListener("pause", function() {eventOutput("pause event");}, false);
+        window.addEventListener("online", function() {eventOutput("online event");});  
+        window.addEventListener("offline", function() {eventOutput("offline event");});  
+
+    }
+
+</script>
+
+  </head>
+  <body onload="init();" id="stage" class="theme">
+  
+    <h1>Events</h1>
+    <div id="info">
+        <b>Results:</b><br>
+        <span id="results"></span>
+    </div>
+
+    <h2>Action</h2>
+    <a href="javascript:" class="btn large" onclick="document.addEventListener('backbutton', interceptBackbutton, false);">Intercept backbutton</a>
+    <a href="javascript:" class="btn large" onclick="document.removeEventListener('backbutton', interceptBackbutton, false);">Stop intercept of backbutton</a>
+    <a href="javascript:" class="btn large" onclick="document.addEventListener('menubutton', interceptMenubutton, false);">Intercept menubutton</a>
+    <a href="javascript:" class="btn large" onclick="document.removeEventListener('menubutton', interceptMenubutton, false);">Stop intercept of menubutton</a>
+    <a href="javascript:" class="btn large" onclick="document.addEventListener('searchbutton', interceptSearchbutton, false);">Intercept searchbutton</a>
+    <a href="javascript:" class="btn large" onclick="document.removeEventListener('searchbutton', interceptSearchbutton, false);">Stop intercept of searchbutton</a>
+    <h2>&nbsp</h2><a href="javascript:" class="backBtn" onclick="backHome();">Back</a>
+  </body>
+</html>      

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="lib" path="libs/android_library.jar"/>
+	<classpathentry kind="lib" path="libs/android_webdriver_library.jar"/>
+	<classpathentry kind="lib" path="libs/android.jar"/>
+	<classpathentry kind="lib" path="libs/base.jar"/>
+	<classpathentry kind="lib" path="libs/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="libs/guava-10.0.1.jar"/>
+	<classpathentry kind="lib" path="libs/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="libs/logging.jar"/>
+	<classpathentry kind="lib" path="libs/cordova-1.4.1.jar"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>
