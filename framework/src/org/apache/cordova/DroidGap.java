@@ -1078,9 +1078,9 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param event
      */
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (this.appView == null) {
-            return super.onKeyDown(keyCode, event);
+            return super.onKeyUp(keyCode, event);
         }
 
         // If back key
@@ -1103,7 +1103,7 @@ public class DroidGap extends Activity implements CordovaInterface {
                 // If not, then invoke behavior of super class
                 else {
                     this.activityState = ACTIVITY_EXITING;
-                    return super.onKeyDown(keyCode, event);
+                    return super.onKeyUp(keyCode, event);
                 }
             }
         }
@@ -1111,7 +1111,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         // If menu key
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
             this.appView.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
-            return super.onKeyDown(keyCode, event);
+            return super.onKeyUp(keyCode, event);
         }
 
         // If search key
