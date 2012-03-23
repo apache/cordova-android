@@ -150,7 +150,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     public static String TAG = "DroidGap";
     
     // The webview for our app
-    protected WebView appView;
+    protected CordovaWebView appView;
     protected WebViewClient webViewClient;
     private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
     private HashMap<String, Boolean> whiteListCache = new HashMap<String,Boolean>();
@@ -349,7 +349,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * Create and initialize web container with default web view objects.
      */
     public void init() {
-    	this.init(new WebView(DroidGap.this), new CordovaWebViewClient(this), new CordovaChromeClient(DroidGap.this));
+    	this.init(new CordovaWebView(DroidGap.this), new CordovaWebViewClient(this), new CordovaChromeClient(DroidGap.this));
     }
     
     /**
@@ -359,7 +359,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param webViewClient
      * @param webChromeClient
      */
-    public void init(WebView webView, WebViewClient webViewClient, WebChromeClient webChromeClient) {
+    public void init(CordovaWebView webView, WebViewClient webViewClient, WebChromeClient webChromeClient) {
         LOG.d(TAG, "DroidGap.init()");
         
         // Set up web container
