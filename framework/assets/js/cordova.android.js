@@ -1,302 +1,25 @@
 /*
-
-                                 Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
-
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-
-   1. Definitions.
-
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
-
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
-
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
-
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
-
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
-
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
-
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
-
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
-
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
-
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
-
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
-
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
-
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
-
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
-
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
-
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
-
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
-
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
-
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
-
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
-
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
-
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
-
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
-
-   END OF TERMS AND CONDITIONS
-
-   APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-   Copyright [yyyy] [name of copyright owner]
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
-==============================================================
-This product also include the following software:
-==============================================================
-
---------------------------------------------------------------
-jasmine from GitHub
-
-   https://github.com/pivotal/jasmine
-
-MIT-style license
-
-license available from:
-
-   https://github.com/pivotal/jasmine/blob/master/MIT.LICENSE
-   
------------------------------
-
-Copyright (c) 2008-2011 Pivotal Labs
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
---------------------------------------------------------------
-commonjs tests from the commonjs organization at GitHub
-
-   https://github.com/commonjs/commonjs
-
-MIT-style license
-
-license available from:
-
-   https://github.com/commonjs/commonjs/blob/master/docs/license.html.markdown
-
-contributor list available from:
-
-   https://github.com/commonjs/commonjs/blob/master/docs/contributors.html.markdown
-
------------------------------
-
-Copyright 2009 Kevin Dangoor
-Copyright 2009 Ihab Awad
-Copyright 2009 Ash Berlin
-Copyright 2009 Aristid Breitkreuz
-Copyright 2009 Kevin Dangoor
-Copyright 2009 Daniel Friesen
-Copyright 2009 Wes Garland
-Copyright 2009 Kris Kowal
-Copyright 2009 Dean Landolt
-Copyright 2009 Peter Michaux
-Copyright 2009 George Moschovitis
-Copyright 2009 Michael O'Brien
-Copyright 2009 Tom Robinson
-Copyright 2009 Hannes Wallnoefer
-Copyright 2009 Mike Wilson
-Copyright 2009 Ondrej Zara
-Copyright 2009 Chris Zumbrunn
-Copyright 2009 Kris Zyp
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+ 
+     http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
 */
-(function() {
+
+;(function() {
+
+// file: lib/scripts/require.js
 var require,
     define;
 
@@ -316,7 +39,7 @@ var require,
             throw "module " + id + " not found";
         }
         return modules[id].factory ? build(modules[id]) : modules[id].exports;
-    }
+    };
 
     define = function (id, factory) {
         if (modules[id]) {
@@ -327,7 +50,7 @@ var require,
             id: id,
             factory: factory
         };
-    }
+    };
 
     define.remove = function (id) {
         delete modules[id];
@@ -341,154 +64,8 @@ if (typeof module === "object" && typeof require === "function") {
     module.exports.define = define;
 }
 
-define('cordova/channel', function(require, exports, module) {
-/**
- * Custom pub-sub channel that can have functions subscribed to it
- * @constructor
- * @param type  String the channel name
- * @param opts  Object options to pass into the channel, currently
- *                     supports:
- *                     onSubscribe: callback that fires when
- *                       something subscribes to the Channel. Sets
- *                       context to the Channel.
- *                     onUnsubscribe: callback that fires when
- *                       something unsubscribes to the Channel. Sets
- *                       context to the Channel.
- */
-var Channel = function(type, opts) {
-        this.type = type;
-        this.handlers = {};
-        this.numHandlers = 0;
-        this.guid = 0;
-        this.fired = false;
-        this.enabled = true;
-        this.events = {
-          onSubscribe:null,
-          onUnsubscribe:null
-        };
-        if (opts) {
-          if (opts.onSubscribe) this.events.onSubscribe = opts.onSubscribe;
-          if (opts.onUnsubscribe) this.events.onUnsubscribe = opts.onUnsubscribe;
-        }
-    },
-    channel = {
-        /**
-         * Calls the provided function only after all of the channels specified
-         * have been fired.
-         */
-        join: function (h, c) {
-            var i = c.length;
-            var len = i;
-            var f = function() {
-                if (!(--i)) h();
-            };
-            for (var j=0; j<len; j++) {
-                !c[j].fired?c[j].subscribeOnce(f):i--;
-            }
-            if (!i) h();
-        },
-        create: function (type, opts) {
-            channel[type] = new Channel(type, opts);
-            return channel[type];
-        }
-    },
-    utils = require('cordova/utils');
-
-/**
- * Subscribes the given function to the channel. Any time that 
- * Channel.fire is called so too will the function.
- * Optionally specify an execution context for the function
- * and a guid that can be used to stop subscribing to the channel.
- * Returns the guid.
- */
-Channel.prototype.subscribe = function(f, c, g) {
-    // need a function to call
-    if (f === null || f === undefined) { return; }
-
-    var func = f;
-    if (typeof c == "object" && f instanceof Function) { func = utils.close(c, f); }
-
-    g = g || func.observer_guid || f.observer_guid || this.guid++;
-    func.observer_guid = g;
-    f.observer_guid = g;
-    this.handlers[g] = func;
-    this.numHandlers++;
-    if (this.events.onSubscribe) this.events.onSubscribe.call(this);
-    return g;
-};
-
-/**
- * Like subscribe but the function is only called once and then it
- * auto-unsubscribes itself.
- */
-Channel.prototype.subscribeOnce = function(f, c) {
-    // need a function to call
-    if (f === null || f === undefined) { return; }
-
-    var g = null;
-    var _this = this;
-    var m = function() {
-        f.apply(c || null, arguments);
-        _this.unsubscribe(g);
-    };
-    if (this.fired) {
-        if (typeof c == "object" && f instanceof Function) { f = utils.close(c, f); }
-        f.apply(this, this.fireArgs);
-    } else {
-        g = this.subscribe(m);
-    }
-    return g;
-};
-
-/** 
- * Unsubscribes the function with the given guid from the channel.
- */
-Channel.prototype.unsubscribe = function(g) {
-    // need a function to unsubscribe
-    if (g === null || g === undefined) { return; }
-
-    if (g instanceof Function) { g = g.observer_guid; }
-    this.handlers[g] = null;
-    delete this.handlers[g];
-    this.numHandlers--;
-    if (this.events.onUnsubscribe) this.events.onUnsubscribe.call(this);
-};
-
-/** 
- * Calls all functions subscribed to this channel.
- */
-Channel.prototype.fire = function(e) {
-    if (this.enabled) {
-        var fail = false;
-        this.fired = true;
-        for (var item in this.handlers) {
-            var handler = this.handlers[item];
-            if (handler instanceof Function) {
-                var rv = (handler.apply(this, arguments)===false);
-                fail = fail || rv;
-            }
-        }
-        this.fireArgs = arguments;
-        return !fail;
-    }
-    return true;
-};
-
-//HACK: defining them here so they are ready super fast!
-channel.create('onDOMContentLoaded');
-channel.create('onNativeReady');
-channel.create('onCordovaReady');
-channel.create('onCordovaInfoReady');
-channel.create('onCordovaConnectionReady');
-channel.create('onResume');
-channel.create('onPause');
-channel.create('onDeviceReady');
-channel.create('onDestroy');
-
-module.exports = channel;
-
-});
-define('cordova', function(require, exports, module) {
+// file: lib/cordova.js
+define("cordova", function(require, exports, module) {
 var channel = require('cordova/channel');
 /**
  * Intercept calls to addEventListener + removeEventListener and handle deviceready,
@@ -722,93 +299,313 @@ if (!window.plugins) {
 
 module.exports = cordova;
 
-});
-define('cordova/exec', function(require, exports, module) {
+})
+
+// file: lib/common/builder.js
+define("cordova/builder", function(require, exports, module) {
+function each(objects, func, context) {
+    for (var prop in objects) {
+        if (objects.hasOwnProperty(prop)) {
+            func.apply(context, [objects[prop], prop]);
+        }
+    }
+}
+
+function include(parent, objects, clobber, merge) {
+    each(objects, function (obj, key) {
+        try {
+          var result = obj.path ? require(obj.path) : {};
+
+          if (clobber) {
+              // Clobber if it doesn't exist.
+              if (typeof parent[key] === 'undefined') {
+                  parent[key] = result;
+              } else if (typeof obj.path !== 'undefined') {
+                  // If merging, merge properties onto parent, otherwise, clobber.
+                  if (merge) {
+                      recursiveMerge(parent[key], result);
+                  } else {
+                      parent[key] = result;
+                  }
+              }
+              result = parent[key];
+          } else {
+            // Overwrite if not currently defined.
+            if (typeof parent[key] == 'undefined') {
+              parent[key] = result;
+            } else if (merge && typeof obj.path !== 'undefined') {
+              // If merging, merge parent onto result
+              recursiveMerge(result, parent[key]);
+              parent[key] = result;
+            } else {
+              // Set result to what already exists, so we can build children into it if they exist.
+              result = parent[key];
+            }
+          }
+
+          if (obj.children) {
+            include(result, obj.children, clobber, merge);
+          }
+        } catch(e) {
+          alert('Exception building cordova JS globals: ' + e + ' for key "' + key + '"');
+        }
+    });
+}
+
 /**
- * Execute a cordova command.  It is up to the native side whether this action
- * is synchronous or asynchronous.  The native side can return:
- *      Synchronous: PluginResult object as a JSON string
- *      Asynchrounous: Empty string ""
- * If async, the native side will cordova.callbackSuccess or cordova.callbackError,
- * depending upon the result of the action.
+ * Merge properties from one object onto another recursively.  Properties from
+ * the src object will overwrite existing target property.
  *
- * @param {Function} success    The success callback
- * @param {Function} fail       The fail callback
- * @param {String} service      The name of the service to use
- * @param {String} action       Action to be run in cordova
- * @param {String[]} [args]     Zero or more arguments to pass to the method
+ * @param target Object to merge properties into.
+ * @param src Object to merge properties from.
  */
-var cordova = require('cordova');
-
-module.exports = function(success, fail, service, action, args) {
-  try {
-    var callbackId = service + cordova.callbackId++;
-    if (success || fail) {
-        cordova.callbacks[callbackId] = {success:success, fail:fail};
-    }
-
-    var r = prompt(JSON.stringify(args), "gap:"+JSON.stringify([service, action, callbackId, true]));
-
-    // If a result was returned
-    if (r.length > 0) {
-        eval("var v="+r+";");
-
-        // If status is OK, then return value back to caller
-        if (v.status === cordova.callbackStatus.OK) {
-
-            // If there is a success callback, then call it now with
-            // returned value
-            if (success) {
-                try {
-                    success(v.message);
-                } catch (e) {
-                    console.log("Error in success callback: " + callbackId  + " = " + e);
-                }
-
-                // Clear callback if not expecting any more results
-                if (!v.keepCallback) {
-                    delete cordova.callbacks[callbackId];
-                }
+function recursiveMerge(target, src) {
+    for (var prop in src) {
+        if (src.hasOwnProperty(prop)) {
+            if (typeof target.prototype !== 'undefined' && target.prototype.constructor === target) {
+                // If the target object is a constructor override off prototype.
+                target.prototype[prop] = src[prop];
+            } else {
+                target[prop] = typeof src[prop] === 'object' ? recursiveMerge(
+                        target[prop], src[prop]) : src[prop];
             }
-            return v.message;
-        }
-
-        // If no result
-        else if (v.status === cordova.callbackStatus.NO_RESULT) {
-            // Clear callback if not expecting any more results
-            if (!v.keepCallback) {
-                delete cordova.callbacks[callbackId];
-            }
-        }
-
-        // If error, then display error
-        else {
-            console.log("Error: Status="+v.status+" Message="+v.message);
-
-            // If there is a fail callback, then call it now with returned value
-            if (fail) {
-                try {
-                    fail(v.message);
-                }
-                catch (e1) {
-                    console.log("Error in error callback: "+callbackId+" = "+e1);
-                }
-
-                // Clear callback if not expecting any more results
-                if (!v.keepCallback) {
-                    delete cordova.callbacks[callbackId];
-                }
-            }
-            return null;
         }
     }
-  } catch (e2) {
-    console.log("Error: "+e2);
-  }
+    return target;
+}
+
+module.exports = {
+    build: function (objects) {
+        return {
+            intoButDontClobber: function (target) {
+                include(target, objects, false, false);
+            },
+            intoAndClobber: function(target) {
+                include(target, objects, true, false);
+            },
+            intoAndMerge: function(target) {
+                include(target, objects, true, true);
+            }
+        };
+    }
 };
 
-});
-define('cordova/common', function(require, exports, module) {
+})
+
+// file: lib/common/channel.js
+define("cordova/channel", function(require, exports, module) {
+/**
+ * Custom pub-sub channel that can have functions subscribed to it
+ * @constructor
+ * @param type  String the channel name
+ * @param opts  Object options to pass into the channel, currently
+ *                     supports:
+ *                     onSubscribe: callback that fires when
+ *                       something subscribes to the Channel. Sets
+ *                       context to the Channel.
+ *                     onUnsubscribe: callback that fires when
+ *                       something unsubscribes to the Channel. Sets
+ *                       context to the Channel.
+ */
+var Channel = function(type, opts) {
+        this.type = type;
+        this.handlers = {};
+        this.numHandlers = 0;
+        this.guid = 0;
+        this.fired = false;
+        this.enabled = true;
+        this.events = {
+          onSubscribe:null,
+          onUnsubscribe:null
+        };
+        if (opts) {
+          if (opts.onSubscribe) this.events.onSubscribe = opts.onSubscribe;
+          if (opts.onUnsubscribe) this.events.onUnsubscribe = opts.onUnsubscribe;
+        }
+    },
+    channel = {
+        /**
+         * Calls the provided function only after all of the channels specified
+         * have been fired.
+         */
+        join: function (h, c) {
+            var i = c.length;
+            var len = i;
+            var f = function() {
+                if (!(--i)) h();
+            };
+            for (var j=0; j<len; j++) {
+                !c[j].fired?c[j].subscribeOnce(f):i--;
+            }
+            if (!i) h();
+        },
+        create: function (type, opts) {
+            channel[type] = new Channel(type, opts);
+            return channel[type];
+        },
+
+        /**
+         * cordova Channels that must fire before "deviceready" is fired.
+         */ 
+        deviceReadyChannelsArray: [],
+        deviceReadyChannelsMap: {},
+        
+        /**
+         * Indicate that a feature needs to be initialized before it is ready to be used.
+         * This holds up Cordova's "deviceready" event until the feature has been initialized
+         * and Cordova.initComplete(feature) is called.
+         *
+         * @param feature {String}     The unique feature name
+         */
+        waitForInitialization: function(feature) {
+            if (feature) {
+                var c = null;
+                if (this[feature]) {
+                    c = this[feature];
+                }
+                else {
+                    c = this.create(feature);
+                }
+                this.deviceReadyChannelsMap[feature] = c;
+                this.deviceReadyChannelsArray.push(c);
+            }
+        },
+
+        /**
+         * Indicate that initialization code has completed and the feature is ready to be used.
+         *
+         * @param feature {String}     The unique feature name
+         */
+        initializationComplete: function(feature) {
+            var c = this.deviceReadyChannelsMap[feature];
+            if (c) {
+                c.fire();
+            }
+        }
+    },
+    utils = require('cordova/utils');
+
+/**
+ * Subscribes the given function to the channel. Any time that 
+ * Channel.fire is called so too will the function.
+ * Optionally specify an execution context for the function
+ * and a guid that can be used to stop subscribing to the channel.
+ * Returns the guid.
+ */
+Channel.prototype.subscribe = function(f, c, g) {
+    // need a function to call
+    if (f === null || f === undefined) { return; }
+
+    var func = f;
+    if (typeof c == "object" && f instanceof Function) { func = utils.close(c, f); }
+
+    g = g || func.observer_guid || f.observer_guid || this.guid++;
+    func.observer_guid = g;
+    f.observer_guid = g;
+    this.handlers[g] = func;
+    this.numHandlers++;
+    if (this.events.onSubscribe) this.events.onSubscribe.call(this);
+    return g;
+};
+
+/**
+ * Like subscribe but the function is only called once and then it
+ * auto-unsubscribes itself.
+ */
+Channel.prototype.subscribeOnce = function(f, c) {
+    // need a function to call
+    if (f === null || f === undefined) { return; }
+
+    var g = null;
+    var _this = this;
+    var m = function() {
+        f.apply(c || null, arguments);
+        _this.unsubscribe(g);
+    };
+    if (this.fired) {
+        if (typeof c == "object" && f instanceof Function) { f = utils.close(c, f); }
+        f.apply(this, this.fireArgs);
+    } else {
+        g = this.subscribe(m);
+    }
+    return g;
+};
+
+/** 
+ * Unsubscribes the function with the given guid from the channel.
+ */
+Channel.prototype.unsubscribe = function(g) {
+    // need a function to unsubscribe
+    if (g === null || g === undefined) { return; }
+
+    if (g instanceof Function) { g = g.observer_guid; }
+    this.handlers[g] = null;
+    delete this.handlers[g];
+    this.numHandlers--;
+    if (this.events.onUnsubscribe) this.events.onUnsubscribe.call(this);
+};
+
+/** 
+ * Calls all functions subscribed to this channel.
+ */
+Channel.prototype.fire = function(e) {
+    if (this.enabled) {
+        var fail = false;
+        this.fired = true;
+        for (var item in this.handlers) {
+            var handler = this.handlers[item];
+            if (handler instanceof Function) {
+                var rv = (handler.apply(this, arguments)===false);
+                fail = fail || rv;
+            }
+        }
+        this.fireArgs = arguments;
+        return !fail;
+    }
+    return true;
+};
+
+//HACK: defining them here so they are ready super fast!
+
+// DOM event that is received when the web page is loaded and parsed.
+channel.create('onDOMContentLoaded');
+
+// Event to indicate the Cordova native side is ready.
+channel.create('onNativeReady');
+
+// Event to indicate that all Cordova JavaScript objects have been created
+// and it's time to run plugin constructors.
+channel.create('onCordovaReady');
+
+// Event to indicate that device properties are available
+channel.create('onCordovaInfoReady');
+
+// Event to indicate that the connection property has been set.
+channel.create('onCordovaConnectionReady');
+
+// Event to indicate that Cordova is ready
+channel.create('onDeviceReady');
+
+// Event to indicate a resume lifecycle event
+channel.create('onResume');
+
+// Event to indicate a pause lifecycle event
+channel.create('onPause');
+
+// Event to indicate a destroy lifecycle event
+channel.create('onDestroy');
+
+// Channels that must fire before "deviceready" is fired.
+channel.waitForInitialization('onCordovaReady');
+channel.waitForInitialization('onCordovaInfoReady');
+channel.waitForInitialization('onCordovaConnectionReady');
+
+module.exports = channel;
+
+})
+
+// file: lib/common/common.js
+define("cordova/common", function(require, exports, module) {
 module.exports = {
     objects: {
         cordova: {
@@ -990,291 +787,233 @@ module.exports = {
     }
 };
 
-});
-define('cordova/platform', function(require, exports, module) {
-module.exports = {
-  id: "android",
-  initialize:function() {
-    var channel = require("cordova/channel"),
-        cordova = require('cordova'),
-        callback = require('cordova/plugin/android/callback'),
-        polling = require('cordova/plugin/android/polling'),
-        exec = require('cordova/exec');
+})
 
-    channel.onDestroy.subscribe(function() {
-      cordova.shuttingDown = true;
-    });
+// file: lib/android/exec.js
+define("cordova/exec", function(require, exports, module) {
+/**
+ * Execute a cordova command.  It is up to the native side whether this action
+ * is synchronous or asynchronous.  The native side can return:
+ *      Synchronous: PluginResult object as a JSON string
+ *      Asynchrounous: Empty string ""
+ * If async, the native side will cordova.callbackSuccess or cordova.callbackError,
+ * depending upon the result of the action.
+ *
+ * @param {Function} success    The success callback
+ * @param {Function} fail       The fail callback
+ * @param {String} service      The name of the service to use
+ * @param {String} action       Action to be run in cordova
+ * @param {String[]} [args]     Zero or more arguments to pass to the method
+ */
+var cordova = require('cordova');
 
-    // Start listening for XHR callbacks
-    // Figure out which bridge approach will work on this Android
-    // device: polling or XHR-based callbacks
-    setTimeout(function() {
-      if (cordova.UsePolling) {
-        polling();
-      }
-      else {
-        var isPolling = prompt("usePolling", "gap_callbackServer:");
-        cordova.UsePolling = isPolling;
-        if (isPolling == "true") {
-          cordova.UsePolling = true;
-          polling();
-        } else {
-          cordova.UsePolling = false;
-          callback();
-        }
-      }
-    }, 1);
-
-    // Inject a listener for the backbutton on the document.
-    var backButtonChannel = cordova.addDocumentEventHandler('backbutton', {
-      onSubscribe:function() {
-        // If we just attached the first handler, let native know we need to override the back button.
-        if (this.numHandlers === 1) {
-          exec(null, null, "App", "overrideBackbutton", [true]);
-        }
-      },
-      onUnsubscribe:function() {
-        // If we just detached the last handler, let native know we no longer override the back button.
-        if (this.numHandlers === 0) {
-          exec(null, null, "App", "overrideBackbutton", [false]);
-        }
-      }
-    });
-
-    // Add hardware MENU and SEARCH button handlers
-    cordova.addDocumentEventHandler('menubutton');
-    cordova.addDocumentEventHandler('searchbutton');
-
-    // Let native code know we are all done on the JS side.
-    // Native code will then un-hide the WebView.
-    channel.join(function() {
-      prompt("", "gap_init:");
-    }, [channel.onCordovaReady]);
-
-    // Figure out if we need to shim-in localStorage and WebSQL
-    // support from the native side.
-    var storage = require('cordova/plugin/android/storage');
-
-    // First patch WebSQL if necessary
-    if (typeof window.openDatabase == 'undefined') {
-      // Not defined, create an openDatabase function for all to use!
-      window.openDatabase = storage.openDatabase;
-    } else {
-      // Defined, but some Android devices will throw a SECURITY_ERR -
-      // so we wrap the whole thing in a try-catch and shim in our own
-      // if the device has Android bug 16175.
-      var originalOpenDatabase = window.openDatabase;
-      window.openDatabase = function(name, version, desc, size) {
-          var db = null;
-          try {
-              db = originalOpenDatabase(name, version, desc, size);
-          } 
-          catch (ex) {
-              db = null;
-          }
-
-          if (db === null) {
-              return storage.openDatabase(name, version, desc, size);
-          }
-          else {
-              return db;
-          }
-        
-      };
+module.exports = function(success, fail, service, action, args) {
+  try {
+    var callbackId = service + cordova.callbackId++;
+    if (success || fail) {
+        cordova.callbacks[callbackId] = {success:success, fail:fail};
     }
 
-    // Patch localStorage if necessary
-    if (typeof window.localStorage == 'undefined' || window.localStorage === null) {
-        window.localStorage = new storage.CupCakeLocalStorage();
-    }
-  },
-  objects: {
-    cordova: {
-      children: {
-        JSCallback:{
-          path:"cordova/plugin/android/callback"
-        },
-        JSCallbackPolling:{
-          path:"cordova/plugin/android/polling"
+    var r = prompt(JSON.stringify(args), "gap:"+JSON.stringify([service, action, callbackId, true]));
+
+    // If a result was returned
+    if (r.length > 0) {
+        eval("var v="+r+";");
+
+        // If status is OK, then return value back to caller
+        if (v.status === cordova.callbackStatus.OK) {
+
+            // If there is a success callback, then call it now with
+            // returned value
+            if (success) {
+                try {
+                    success(v.message);
+                } catch (e) {
+                    console.log("Error in success callback: " + callbackId  + " = " + e);
+                }
+
+                // Clear callback if not expecting any more results
+                if (!v.keepCallback) {
+                    delete cordova.callbacks[callbackId];
+                }
+            }
+            return v.message;
         }
-      }
-    },
-    navigator: {
-      children: {
-        app:{
-          path: "cordova/plugin/android/app"
+
+        // If no result
+        else if (v.status === cordova.callbackStatus.NO_RESULT) {
+            // Clear callback if not expecting any more results
+            if (!v.keepCallback) {
+                delete cordova.callbacks[callbackId];
+            }
         }
-      }
-    },
-    device:{
-      path: "cordova/plugin/android/device"
-    },
-    File: { // exists natively on Android WebView, override
-      path: "cordova/plugin/File"
-    },
-    FileReader: { // exists natively on Android WebView, override
-      path: "cordova/plugin/FileReader"
-    },
-    FileError: { //exists natively on Android WebView on Android 4.x
-      path: "cordova/plugin/FileError"
+
+        // If error, then display error
+        else {
+            console.log("Error: Status="+v.status+" Message="+v.message);
+
+            // If there is a fail callback, then call it now with returned value
+            if (fail) {
+                try {
+                    fail(v.message);
+                }
+                catch (e1) {
+                    console.log("Error in error callback: "+callbackId+" = "+e1);
+                }
+
+                // Clear callback if not expecting any more results
+                if (!v.keepCallback) {
+                    delete cordova.callbacks[callbackId];
+                }
+            }
+            return null;
+        }
     }
+  } catch (e2) {
+    console.log("Error: "+e2);
   }
 };
 
-});
-define('cordova/utils', function(require, exports, module) {
-function UUIDcreatePart(length) {
-    var uuidpart = "";
-    for (var i=0; i<length; i++) {
-        var uuidchar = parseInt((Math.random() * 256), 10).toString(16);
-        if (uuidchar.length == 1) {
-            uuidchar = "0" + uuidchar;
-        }
-        uuidpart += uuidchar;
-    }
-    return uuidpart;
-}
+})
 
-var _self = {
-    /**
-     * Does a deep clone of the object.
-     */
-    clone: function(obj) {
-        if(!obj) { 
-            return obj;
-        }
-        
-        var retVal, i;
-        
-        if(obj instanceof Array){
-            retVal = [];
-            for(i = 0; i < obj.length; ++i){
-                retVal.push(_self.clone(obj[i]));
-            }
-            return retVal;
-        }
-        
-        if (obj instanceof Function) {
-            return obj;
-        }
-        
-        if(!(obj instanceof Object)){
-            return obj;
-        }
-        
-        if(obj instanceof Date){
-            return obj;
-        }
-
-        retVal = {};
-        for(i in obj){
-            if(!(i in retVal) || retVal[i] != obj[i]) {
-                retVal[i] = _self.clone(obj[i]);
-            }
-        }
-        return retVal;
-    },
-
-    close: function(context, func, params) {
-        if (typeof params === 'undefined') {
-            return function() {
-                return func.apply(context, arguments);
-            };
-        } else {
-            return function() {
-                return func.apply(context, params);
-            };
-        }
-    },
-
-    /**
-     * Create a UUID
-     */
-    createUUID: function() {
-        return UUIDcreatePart(4) + '-' +
-            UUIDcreatePart(2) + '-' +
-            UUIDcreatePart(2) + '-' +
-            UUIDcreatePart(2) + '-' +
-            UUIDcreatePart(6);
-    },
-
-    /**
-     * Extends a child object from a parent object using classical inheritance
-     * pattern.
-     */
-    extend: (function() {
-        // proxy used to establish prototype chain
-        var F = function() {}; 
-        // extend Child from Parent
-        return function(Child, Parent) {
-            F.prototype = Parent.prototype;
-            Child.prototype = new F();
-            Child.__super__ = Parent.prototype;
-            Child.prototype.constructor = Child;
-        };
-    }())
-
-};
-
-module.exports = _self;
-
-});
-
-define('cordova/builder', function(require, exports, module) {
-function each(objects, func, context) {
-    for (var prop in objects) {
-        if (objects.hasOwnProperty(prop)) {
-            func.apply(context, [objects[prop], prop]);
-        }
-    }
-}
-
-function include(parent, objects, clobber) {
-    each(objects, function (obj, key) {
-        try {
-          var result = obj.path ? require(obj.path) : {};
-
-          if (clobber) {
-              // Clobber if it doesn't exist or if an override is specified.
-              if (typeof parent[key] === 'undefined' || typeof obj.path !== 'undefined') {
-                  parent[key] = result;
-              }
-              result = parent[key];
-          } else {
-            // Don't clobber if something already exists there
-            if (typeof parent[key] == 'undefined') {
-              parent[key] = result;
-            } else {
-              // Set result to what already exists, so we can build children into it if they exist.
-              result = parent[key];
-            }
-          }
-
-          if (obj.children) {
-            include(result, obj.children, clobber);
-          }
-        } catch(e) {
-          alert('Exception building cordova JS globals: ' + e + ' for key "' + key + '"');
-        }
-    });
-}
-
+// file: lib/android/platform.js
+define("cordova/platform", function(require, exports, module) {
 module.exports = {
-    build: function (objects) {
-        return {
-            intoButDontClobber: function (target) {
-               include(target, objects, false);
-            },
-            intoAndClobberTheFOutOf: function(target) {
-              include(target, objects, true);
+    id: "android",
+    initialize:function() {
+        var channel = require("cordova/channel"),
+            cordova = require('cordova'),
+            callback = require('cordova/plugin/android/callback'),
+            polling = require('cordova/plugin/android/polling'),
+            exec = require('cordova/exec');
+
+        channel.onDestroy.subscribe(function() {
+            cordova.shuttingDown = true;
+        });
+
+        // Start listening for XHR callbacks
+        // Figure out which bridge approach will work on this Android
+        // device: polling or XHR-based callbacks
+        setTimeout(function() {
+            if (cordova.UsePolling) {
+                polling();
             }
-        };
+            else {
+                var isPolling = prompt("usePolling", "gap_callbackServer:");
+                cordova.UsePolling = isPolling;
+                if (isPolling == "true") {
+                    cordova.UsePolling = true;
+                    polling();
+                } else {
+                    cordova.UsePolling = false;
+                    callback();
+                }
+            }
+        }, 1);
+
+        // Inject a listener for the backbutton on the document.
+        var backButtonChannel = cordova.addDocumentEventHandler('backbutton', {
+            onSubscribe:function() {
+                // If we just attached the first handler, let native know we need to override the back button.
+                if (this.numHandlers === 1) {
+                    exec(null, null, "App", "overrideBackbutton", [true]);
+                }
+            },
+            onUnsubscribe:function() {
+                // If we just detached the last handler, let native know we no longer override the back button.
+                if (this.numHandlers === 0) {
+                    exec(null, null, "App", "overrideBackbutton", [false]);
+                }
+            }
+        });
+
+        // Add hardware MENU and SEARCH button handlers
+        cordova.addDocumentEventHandler('menubutton');
+        cordova.addDocumentEventHandler('searchbutton');
+
+        // Figure out if we need to shim-in localStorage and WebSQL
+        // support from the native side.
+        var storage = require('cordova/plugin/android/storage');
+
+        // First patch WebSQL if necessary
+        if (typeof window.openDatabase == 'undefined') {
+            // Not defined, create an openDatabase function for all to use!
+            window.openDatabase = storage.openDatabase;
+        } else {
+            // Defined, but some Android devices will throw a SECURITY_ERR -
+            // so we wrap the whole thing in a try-catch and shim in our own
+            // if the device has Android bug 16175.
+            var originalOpenDatabase = window.openDatabase;
+            window.openDatabase = function(name, version, desc, size) {
+                var db = null;
+                try {
+                    db = originalOpenDatabase(name, version, desc, size);
+                } 
+                catch (ex) {
+                    db = null;
+                }
+
+                if (db === null) {
+                    return storage.openDatabase(name, version, desc, size);
+                }
+                else {
+                    return db;
+                }
+              
+            };
+        }
+
+        // Patch localStorage if necessary
+        if (typeof window.localStorage == 'undefined' || window.localStorage === null) {
+            window.localStorage = new storage.CupCakeLocalStorage();
+        }
+
+        // Let native code know we are all done on the JS side.
+        // Native code will then un-hide the WebView.
+        channel.join(function() {
+            prompt("", "gap_init:");
+        }, [channel.onCordovaReady]);
+    },
+    objects: {
+        cordova: {
+            children: {
+                JSCallback:{
+                    path:"cordova/plugin/android/callback"
+                },
+                JSCallbackPolling:{
+                    path:"cordova/plugin/android/polling"
+                }
+            }
+        },
+        navigator: {
+            children: {
+                app:{
+                    path: "cordova/plugin/android/app"
+                }
+            }
+        },
+        device:{
+            path: "cordova/plugin/android/device"
+        },
+        File: { // exists natively on Android WebView, override
+            path: "cordova/plugin/File"
+        },
+        FileReader: { // exists natively on Android WebView, override
+            path: "cordova/plugin/FileReader"
+        },
+        FileError: { //exists natively on Android WebView on Android 4.x
+            path: "cordova/plugin/FileError"
+        },
+        MediaError: { // exists natively on Android WebView on Android 4.x
+            path: "cordova/plugin/MediaError"
+        }
     }
 };
 
-});
+})
 
-define('cordova/plugin/Acceleration', function(require, exports, module) {
+// file: lib/common/plugin/Acceleration.js
+define("cordova/plugin/Acceleration", function(require, exports, module) {
 var Acceleration = function(x, y, z) {
   this.x = x;
   this.y = y;
@@ -1284,201 +1023,10 @@ var Acceleration = function(x, y, z) {
 
 module.exports = Acceleration;
 
-});
+})
 
-define('cordova/plugin/accelerometer', function(require, exports, module) {
-/**
- * This class provides access to device accelerometer data.
- * @constructor
- */
-var utils = require("cordova/utils"),
-    exec = require("cordova/exec");
-
-// Local singleton variables.
-var timers = {};
-
-var accelerometer = {
-    /**
-     * Asynchronously aquires the current acceleration.
-     *
-     * @param {Function} successCallback    The function to call when the acceleration data is available
-     * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
-     * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
-     */
-    getCurrentAcceleration: function(successCallback, errorCallback, options) {
-
-        // successCallback required
-        if (typeof successCallback !== "function") {
-            console.log("Accelerometer Error: successCallback is not a function");
-            return;
-        }
-
-        // errorCallback optional
-        if (errorCallback && (typeof errorCallback !== "function")) {
-            console.log("Accelerometer Error: errorCallback is not a function");
-            return;
-        }
-
-        // Get acceleration
-        exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
-    },
-
-    /**
-     * Asynchronously aquires the acceleration repeatedly at a given interval.
-     *
-     * @param {Function} successCallback    The function to call each time the acceleration data is available
-     * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
-     * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
-     * @return String                       The watch id that must be passed to #clearWatch to stop watching.
-     */
-    watchAcceleration: function(successCallback, errorCallback, options) {
-
-        // Default interval (10 sec)
-        var frequency = (options !== undefined && options.frequency !== undefined)? options.frequency : 10000;
-
-        // successCallback required
-        if (typeof successCallback !== "function") {
-            console.log("Accelerometer Error: successCallback is not a function");
-            return;
-        }
-
-        // errorCallback optional
-        if (errorCallback && (typeof errorCallback !== "function")) {
-            console.log("Accelerometer Error: errorCallback is not a function");
-            return;
-        }
-
-        // Make sure accelerometer timeout > frequency + 10 sec
-        exec(
-            function(timeout) {
-                if (timeout < (frequency + 10000)) {
-                    exec(null, null, "Accelerometer", "setTimeout", [frequency + 10000]);
-                }
-            },
-            function(e) { }, "Accelerometer", "getTimeout", []);
-
-        // Start watch timer
-        var id = utils.createUUID();
-        timers[id] = window.setInterval(function() {
-            exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
-        }, (frequency ? frequency : 1));
-
-        return id;
-    },
-
-    /**
-     * Clears the specified accelerometer watch.
-     *
-     * @param {String} id       The id of the watch returned from #watchAcceleration.
-     */
-    clearWatch: function(id) {
-
-        // Stop javascript timer & remove from timer list
-        if (id && timers[id] !== undefined) {
-            window.clearInterval(timers[id]);
-            delete timers[id];
-        }
-    }
-};
-
-module.exports = accelerometer;
-
-});
-
-
-define('cordova/plugin/battery', function(require, exports, module) {
-/**
- * This class contains information about the current battery status.
- * @constructor
- */
-var cordova = require('cordova'),
-    exec = require('cordova/exec');
-
-function handlers() {
-  return battery.channels.batterystatus.numHandlers + 
-         battery.channels.batterylow.numHandlers +
-         battery.channels.batterycritical.numHandlers;
-}
-
-var Battery = function() {
-    this._level = null;
-    this._isPlugged = null;
-    // Create new event handlers on the window (returns a channel instance)
-    var subscriptionEvents = {
-      onSubscribe:this.onSubscribe,
-      onUnsubscribe:this.onUnsubscribe
-    };
-    this.channels = {
-      batterystatus:cordova.addWindowEventHandler("batterystatus", subscriptionEvents),
-      batterylow:cordova.addWindowEventHandler("batterylow", subscriptionEvents),
-      batterycritical:cordova.addWindowEventHandler("batterycritical", subscriptionEvents)
-    };
-};
-/**
- * Event handlers for when callbacks get registered for the battery.
- * Keep track of how many handlers we have so we can start and stop the native battery listener
- * appropriately (and hopefully save on battery life!).
- */
-Battery.prototype.onSubscribe = function() {
-  var me = battery;
-  // If we just registered the first handler, make sure native listener is started.
-  if (handlers() === 1) {
-    exec(me._status, me._error, "Battery", "start", []);
-  }
-};
-
-Battery.prototype.onUnsubscribe = function() {
-  var me = battery;
-
-  // If we just unregistered the last handler, make sure native listener is stopped.
-  if (handlers() === 0) {
-      exec(null, null, "Battery", "stop", []);
-  }
-};
-
-/**
- * Callback for battery status
- * 
- * @param {Object} info			keys: level, isPlugged
- */
-Battery.prototype._status = function(info) {
-	if (info) {
-		var me = battery;
-    var level = info.level;
-		if (me._level !== level || me._isPlugged !== info.isPlugged) {
-			// Fire batterystatus event
-			cordova.fireWindowEvent("batterystatus", info);
-
-			// Fire low battery event
-			if (level === 20 || level === 5) {
-				if (level === 20) {
-					cordova.fireWindowEvent("batterylow", info);
-				}
-				else {
-					cordova.fireWindowEvent("batterycritical", info);
-				}
-			}
-		}
-		me._level = level;
-		me._isPlugged = info.isPlugged;	
-	}
-};
-
-/**
- * Error callback for battery start
- */
-Battery.prototype._error = function(e) {
-    console.log("Error initializing Battery: " + e);
-};
-
-var battery = new Battery();
-
-module.exports = battery;
-
-});
-
-
-define('cordova/plugin/Camera', function(require, exports, module) {
+// file: lib/common/plugin/Camera.js
+define("cordova/plugin/Camera", function(require, exports, module) {
 var exec = require('cordova/exec'),
     Camera = require('cordova/plugin/CameraConstants');
 
@@ -1522,7 +1070,7 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
         }
     }
 
-    var destinationType = Camera.DestinationType.FILE_URL;
+    var destinationType = Camera.DestinationType.FILE_URI;
     if (typeof options.destinationType == "number") {
         destinationType = options.destinationType;
     }
@@ -1564,9 +1112,10 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
 
 module.exports = cameraExport;
 
-});
+})
 
-define('cordova/plugin/CameraConstants', function(require, exports, module) {
+// file: lib/common/plugin/CameraConstants.js
+define("cordova/plugin/CameraConstants", function(require, exports, module) {
 module.exports = {
   DestinationType:{
     DATA_URL: 0,         // Return base64 encoded string
@@ -1588,85 +1137,10 @@ module.exports = {
   }
 };
 
-});
+})
 
-define('cordova/plugin/capture', function(require, exports, module) {
-var exec = require('cordova/exec'),
-    MediaFile = require('cordova/plugin/MediaFile');
-
-/**
- * Launches a capture of different types.
- *
- * @param (DOMString} type 
- * @param {Function} successCB
- * @param {Function} errorCB
- * @param {CaptureVideoOptions} options
- */
-function _capture(type, successCallback, errorCallback, options) {
-    var win = function(pluginResult) {
-        var mediaFiles = [];
-        var i;
-        for (i = 0; i < pluginResult.length; i++) {
-            var mediaFile = new MediaFile();
-            mediaFile.name = pluginResult[i].name;
-            mediaFile.fullPath = pluginResult[i].fullPath;
-            mediaFile.type = pluginResult[i].type;
-            mediaFile.lastModifiedDate = pluginResult[i].lastModifiedDate;
-            mediaFile.size = pluginResult[i].size;
-            mediaFiles.push(mediaFile);
-        }
-        successCallback(mediaFiles);
-    };
-    exec(win, errorCallback, "Capture", type, [options]);
-}
-/**
- * The Capture interface exposes an interface to the camera and microphone of the hosting device.
- */
-function Capture() {
-	this.supportedAudioModes = [];
-	this.supportedImageModes = [];
-	this.supportedVideoModes = [];
-}
-
-/**
- * Launch audio recorder application for recording audio clip(s).
- *
- * @param {Function} successCB
- * @param {Function} errorCB
- * @param {CaptureAudioOptions} options
- */
-Capture.prototype.captureAudio = function(successCallback, errorCallback, options){
-    _capture("captureAudio", successCallback, errorCallback, options);
-};
-
-/**
- * Launch camera application for taking image(s).
- *
- * @param {Function} successCB
- * @param {Function} errorCB
- * @param {CaptureImageOptions} options
- */
-Capture.prototype.captureImage = function(successCallback, errorCallback, options){
-    _capture("captureImage", successCallback, errorCallback, options);
-};
-
-/**
- * Launch device camera application for recording video(s).
- *
- * @param {Function} successCB
- * @param {Function} errorCB
- * @param {CaptureVideoOptions} options
- */
-Capture.prototype.captureVideo = function(successCallback, errorCallback, options){
-    _capture("captureVideo", successCallback, errorCallback, options);
-};
-
-
-module.exports = new Capture();
-
-});
-
-define('cordova/plugin/CaptureAudioOptions', function(require, exports, module) {
+// file: lib/common/plugin/CaptureAudioOptions.js
+define("cordova/plugin/CaptureAudioOptions", function(require, exports, module) {
 /**
  * Encapsulates all audio capture operation configuration options.
  */
@@ -1681,9 +1155,10 @@ var CaptureAudioOptions = function(){
 
 module.exports = CaptureAudioOptions;
 
-});
+})
 
-define('cordova/plugin/CaptureError', function(require, exports, module) {
+// file: lib/common/plugin/CaptureError.js
+define("cordova/plugin/CaptureError", function(require, exports, module) {
 /**
  * The CaptureError interface encapsulates all errors in the Capture API.
  */
@@ -1704,9 +1179,10 @@ CaptureError.CAPTURE_NOT_SUPPORTED = 20;
 
 module.exports = CaptureError;
 
-});
+})
 
-define('cordova/plugin/CaptureImageOptions', function(require, exports, module) {
+// file: lib/common/plugin/CaptureImageOptions.js
+define("cordova/plugin/CaptureImageOptions", function(require, exports, module) {
 /**
  * Encapsulates all image capture operation configuration options.
  */
@@ -1719,9 +1195,10 @@ var CaptureImageOptions = function(){
 
 module.exports = CaptureImageOptions;
 
-});
+})
 
-define('cordova/plugin/CaptureVideoOptions', function(require, exports, module) {
+// file: lib/common/plugin/CaptureVideoOptions.js
+define("cordova/plugin/CaptureVideoOptions", function(require, exports, module) {
 /**
  * Encapsulates all video capture operation configuration options.
  */
@@ -1736,103 +1213,10 @@ var CaptureVideoOptions = function(){
 
 module.exports = CaptureVideoOptions;
 
-});
+})
 
-define('cordova/plugin/compass', function(require, exports, module) {
-var exec = require('cordova/exec'),
-    utils = require('cordova/utils'),
-    CompassHeading = require('cordova/plugin/CompassHeading'),
-    CompassError = require('cordova/plugin/CompassError'),
-    timers = {},
-    compass = {
-        /**
-         * Asynchronously acquires the current heading.
-         * @param {Function} successCallback The function to call when the heading
-         * data is available
-         * @param {Function} errorCallback The function to call when there is an error 
-         * getting the heading data.
-         * @param {CompassOptions} options The options for getting the heading data (not used).
-         */
-        getCurrentHeading:function(successCallback, errorCallback) {
-            // successCallback required
-            if (typeof successCallback !== "function") {
-              console.log("Compass Error: successCallback is not a function");
-              return;
-            }
-
-            // errorCallback optional
-            if (errorCallback && (typeof errorCallback !== "function")) {
-              console.log("Compass Error: errorCallback is not a function");
-              return;
-            }
-
-            var win = function(result) {
-                var ch = new CompassHeading(result.magneticHeading, result.trueHeading, result.headingAccuracy, result.timestamp);
-                successCallback(ch);
-            };
-            var fail = function(code) {
-                var ce = new CompassError(code);
-                errorCallback(ce);
-            }
-            
-            // Get heading
-            exec(win, fail, "Compass", "getHeading", []);
-        },
-
-        /**
-         * Asynchronously acquires the heading repeatedly at a given interval.
-         * @param {Function} successCallback The function to call each time the heading
-         * data is available
-         * @param {Function} errorCallback The function to call when there is an error 
-         * getting the heading data.
-         * @param {HeadingOptions} options The options for getting the heading data
-         * such as timeout and the frequency of the watch.
-         */
-        watchHeading:function(successCallback, errorCallback, options) {
-            // Default interval (100 msec)
-            var frequency = (options !== undefined && options.frequency !== undefined) ? options.frequency : 100;
-
-            // successCallback required
-            if (typeof successCallback !== "function") {
-              console.log("Compass Error: successCallback is not a function");
-              return;
-            }
-
-            // errorCallback optional
-            if (errorCallback && (typeof errorCallback !== "function")) {
-              console.log("Compass Error: errorCallback is not a function");
-              return;
-            }
-
-            // Start watch timer to get headings
-            var id = utils.createUUID();
-
-            timers[id] = window.setInterval(function() {
-                compass.getCurrentHeading(successCallback, errorCallback);
-            }, frequency);
-
-            return id;
-        },
-
-        /**
-         * Clears the specified heading watch.
-         * @param {String} watchId The ID of the watch returned from #watchHeading.
-         */
-        clearWatch:function(id) {
-            // Stop javascript timer & remove from timer list
-            if (id && timers[id]) {
-              clearInterval(timers[id]);
-              delete timers[id];
-            }
-        }
-        // TODO: add the filter-based iOS-only methods
-    };
-
-module.exports = compass;
-
-});
-
-define('cordova/plugin/CompassError', function(require, exports, module) {
+// file: lib/common/plugin/CompassError.js
+define("cordova/plugin/CompassError", function(require, exports, module) {
 /**
  *  CompassError.
  *  An error code assigned by an implementation when an error has occured
@@ -1847,9 +1231,10 @@ CompassError.COMPASS_NOT_SUPPORTED = 20;
 
 module.exports = CompassError;
 
-});
+})
 
-define('cordova/plugin/CompassHeading', function(require, exports, module) {
+// file: lib/common/plugin/CompassHeading.js
+define("cordova/plugin/CompassHeading", function(require, exports, module) {
 var CompassHeading = function(magneticHeading, trueHeading, headingAccuracy, timestamp) {
   this.magneticHeading = (magneticHeading !== undefined ? magneticHeading : null);
   this.trueHeading = (trueHeading !== undefined ? trueHeading : null);
@@ -1859,9 +1244,10 @@ var CompassHeading = function(magneticHeading, trueHeading, headingAccuracy, tim
 
 module.exports = CompassHeading;
 
-});
+})
 
-define('cordova/plugin/ConfigurationData', function(require, exports, module) {
+// file: lib/common/plugin/ConfigurationData.js
+define("cordova/plugin/ConfigurationData", function(require, exports, module) {
 /**
  * Encapsulates a set of parameters that the capture device supports.
  */
@@ -1878,9 +1264,10 @@ function ConfigurationData() {
 
 module.exports = ConfigurationData;
 
-});
+})
 
-define('cordova/plugin/Connection', function(require, exports, module) {
+// file: lib/common/plugin/Connection.js
+define("cordova/plugin/Connection", function(require, exports, module) {
 /**
  * Network status
  */
@@ -1894,12 +1281,51 @@ module.exports = {
 		NONE: "none"
 };
 
-});
+})
 
-define('cordova/plugin/Contact', function(require, exports, module) {
+// file: lib/common/plugin/Contact.js
+define("cordova/plugin/Contact", function(require, exports, module) {
 var exec = require('cordova/exec'),
     ContactError = require('cordova/plugin/ContactError'),
     utils = require('cordova/utils');
+
+/**
+* Converts primitives into Complex Object
+* Currently only used for Date fields
+*/
+function convertIn(contact) {
+    var value = contact.birthday;
+    try {
+      contact.birthday = new Date(parseFloat(value));
+    } catch (exception){
+      console.log("Cordova Contact convertIn error: exception creating date.");
+    }
+    return contact;
+};
+
+/**
+* Converts Complex objects into primitives
+* Only conversion at present is for Dates.
+**/
+
+function convertOut(contact) {
+    var value = contact.birthday;
+    if (value != null) {
+        // try to make it a Date object if it is not already
+        if (!value instanceof Date){
+            try {
+                value = new Date(value);
+            } catch(exception){
+                value = null;
+            }
+        }
+        if (value instanceof Date){
+            value = value.valueOf(); // convert to milliseconds
+        }
+        contact.birthday = value;
+    }
+    return contact;
+};
 
 /**
 * Contains information about a single contact.
@@ -1926,16 +1352,16 @@ var Contact = function (id, displayName, name, nickname, phoneNumbers, emails, a
     this.displayName = displayName || null;
     this.name = name || null; // ContactName
     this.nickname = nickname || null;
-    this.phoneNumbers = phoneNumbers || []; // ContactField[]
-    this.emails = emails || []; // ContactField[]
-    this.addresses = addresses || []; // ContactAddress[]
-    this.ims = ims || []; // ContactField[]
-    this.organizations = organizations || []; // ContactOrganization[]
+    this.phoneNumbers = phoneNumbers || null; // ContactField[]
+    this.emails = emails || null; // ContactField[]
+    this.addresses = addresses || null; // ContactAddress[]
+    this.ims = ims || null; // ContactField[]
+    this.organizations = organizations || null; // ContactOrganization[]
     this.birthday = birthday || null;
     this.note = note || null;
-    this.photos = photos || []; // ContactField[]
-    this.categories = categories || []; // ContactField[]
-    this.urls = urls || []; // ContactField[]
+    this.photos = photos || null; // ContactField[]
+    this.categories = categories || null; // ContactField[]
+    this.urls = urls || null; // ContactField[]
 };
 
 /**
@@ -1944,12 +1370,14 @@ var Contact = function (id, displayName, name, nickname, phoneNumbers, emails, a
 * @param errorCB error callback
 */
 Contact.prototype.remove = function(successCB, errorCB) {
+    var fail = function(code) {
+        errorCB(new ContactError(code));
+    };
     if (this.id === null) {
-        var errorObj = new ContactError(ContactError.UNKNOWN_ERROR);
-        errorCB(errorObj);
+        fail(ContactError.UNKNOWN_ERROR);
     }
     else {
-        exec(successCB, errorCB, "Contacts", "remove", [this.id]);
+        exec(successCB, fail, "Contacts", "remove", [this.id]);
     }
 };
 
@@ -2013,15 +1441,32 @@ Contact.prototype.clone = function() {
 * @param errorCB error callback
 */
 Contact.prototype.save = function(successCB, errorCB) {
-    exec(successCB, errorCB, "Contacts", "save", [this]);
+  var fail = function(code) {
+      errorCB(new ContactError(code));
+  };
+	var success = function(result) {
+      if (result) {
+          if (typeof successCB === 'function') {
+              var fullContact = require('cordova/plugin/contacts').create(result);
+              successCB(convertIn(fullContact));
+          }
+      }
+      else {
+          // no Entry object returned
+          fail(ContactError.UNKNOWN_ERROR);
+      }
+  };
+	var dupContact = convertOut(utils.clone(this));
+	exec(success, fail, "Contacts", "save", [dupContact]);
 };
 
 
 module.exports = Contact;
 
-});
+})
 
-define('cordova/plugin/ContactAddress', function(require, exports, module) {
+// file: lib/common/plugin/ContactAddress.js
+define("cordova/plugin/ContactAddress", function(require, exports, module) {
 /**
 * Contact address.
 * @constructor
@@ -2048,9 +1493,10 @@ var ContactAddress = function(pref, type, formatted, streetAddress, locality, re
 
 module.exports = ContactAddress;
 
-});
+})
 
-define('cordova/plugin/ContactError', function(require, exports, module) {
+// file: lib/common/plugin/ContactError.js
+define("cordova/plugin/ContactError", function(require, exports, module) {
 /**
  *  ContactError.
  *  An error code assigned by an implementation when an error has occured
@@ -2073,9 +1519,10 @@ ContactError.PERMISSION_DENIED_ERROR = 20;
 
 module.exports = ContactError;
 
-});
+})
 
-define('cordova/plugin/ContactField', function(require, exports, module) {
+// file: lib/common/plugin/ContactField.js
+define("cordova/plugin/ContactField", function(require, exports, module) {
 /**
 * Generic contact field.
 * @constructor
@@ -2093,9 +1540,10 @@ var ContactField = function(type, value, pref) {
 
 module.exports = ContactField;
 
-});
+})
 
-define('cordova/plugin/ContactFindOptions', function(require, exports, module) {
+// file: lib/common/plugin/ContactFindOptions.js
+define("cordova/plugin/ContactFindOptions", function(require, exports, module) {
 /**
  * ContactFindOptions.
  * @constructor
@@ -2110,9 +1558,10 @@ var ContactFindOptions = function(filter, multiple) {
 
 module.exports = ContactFindOptions;
 
-});
+})
 
-define('cordova/plugin/ContactName', function(require, exports, module) {
+// file: lib/common/plugin/ContactName.js
+define("cordova/plugin/ContactName", function(require, exports, module) {
 /**
 * Contact name.
 * @constructor
@@ -2134,9 +1583,10 @@ var ContactName = function(formatted, familyName, givenName, middle, prefix, suf
 
 module.exports = ContactName;
 
-});
+})
 
-define('cordova/plugin/ContactOrganization', function(require, exports, module) {
+// file: lib/common/plugin/ContactOrganization.js
+define("cordova/plugin/ContactOrganization", function(require, exports, module) {
 /**
 * Contact organization.
 * @constructor
@@ -2161,70 +1611,10 @@ var ContactOrganization = function(pref, type, name, dept, title) {
 
 module.exports = ContactOrganization;
 
-});
+})
 
-define('cordova/plugin/contacts', function(require, exports, module) {
-var exec = require('cordova/exec'),
-    ContactError = require('cordova/plugin/ContactError'),
-    Contact = require('cordova/plugin/Contact');
-
-/**
-* Represents a group of Contacts.
-* @constructor
-*/
-var contacts = {
-    /**
-     * Returns an array of Contacts matching the search criteria.
-     * @param fields that should be searched
-     * @param successCB success callback
-     * @param errorCB error callback
-     * @param {ContactFindOptions} options that can be applied to contact searching
-     * @return array of Contacts matching search criteria
-     */
-    find:function(fields, successCB, errorCB, options) {
-        if (!successCB) {
-            throw new TypeError("You must specify a success callback for the find command.");
-        }
-        if (!fields || (fields instanceof Array && fields.length === 0)) {
-            if (typeof errorCB === "function") {
-                errorCB(new ContactError(ContactError.INVALID_ARGUMENT_ERROR));
-            }
-        } else {
-            var win = function(result) {
-                var cs = [];
-                for (var i = 0, l = result.length; i < l; i++) {
-                    cs.push(contacts.create(result[i]));
-                }
-                successCB(cs);
-            };
-            exec(win, errorCB, "Contacts", "search", [fields, options]);
-        }
-    },
-
-    /**
-     * This function creates a new contact, but it does not persist the contact
-     * to device storage. To persist the contact to device storage, invoke
-     * contact.save().
-     * @param properties an object who's properties will be examined to create a new Contact
-     * @returns new Contact object
-     */
-    create:function(properties) {
-        var i;
-        var contact = new Contact();
-        for (i in properties) {
-            if (typeof contact[i] !== 'undefined' && properties.hasOwnProperty(i)) {
-                contact[i] = properties[i];
-            }
-        }
-        return contact;
-    }
-};
-
-module.exports = contacts;
-
-});
-
-define('cordova/plugin/Coordinates', function(require, exports, module) {
+// file: lib/common/plugin/Coordinates.js
+define("cordova/plugin/Coordinates", function(require, exports, module) {
 /**
  * This class contains position information.
  * @param {Object} lat
@@ -2269,9 +1659,10 @@ var Coordinates = function(lat, lng, alt, acc, head, vel, altacc) {
 
 module.exports = Coordinates;
 
-});
+})
 
-define('cordova/plugin/DirectoryEntry', function(require, exports, module) {
+// file: lib/common/plugin/DirectoryEntry.js
+define("cordova/plugin/DirectoryEntry", function(require, exports, module) {
 var utils = require('cordova/utils'),
     exec = require('cordova/exec'),
     Entry = require('cordova/plugin/Entry'),
@@ -2353,9 +1744,10 @@ DirectoryEntry.prototype.getFile = function(path, options, successCallback, erro
 
 module.exports = DirectoryEntry;
 
-});
+})
 
-define('cordova/plugin/DirectoryReader', function(require, exports, module) {
+// file: lib/common/plugin/DirectoryReader.js
+define("cordova/plugin/DirectoryReader", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 /**
@@ -2398,9 +1790,10 @@ DirectoryReader.prototype.readEntries = function(successCallback, errorCallback)
 
 module.exports = DirectoryReader;
 
-});
+})
 
-define('cordova/plugin/Entry', function(require, exports, module) {
+// file: lib/common/plugin/Entry.js
+define("cordova/plugin/Entry", function(require, exports, module) {
 var exec = require('cordova/exec'),
     FileError = require('cordova/plugin/FileError'),
     Metadata = require('cordova/plugin/Metadata');
@@ -2600,9 +1993,10 @@ Entry.prototype.getParent = function(successCallback, errorCallback) {
 
 module.exports = Entry;
 
-});
+})
 
-define('cordova/plugin/File', function(require, exports, module) {
+// file: lib/common/plugin/File.js
+define("cordova/plugin/File", function(require, exports, module) {
 /**
  * Constructor.
  * name {DOMString} name of the file, without path information
@@ -2622,9 +2016,10 @@ var File = function(name, fullPath, type, lastModifiedDate, size){
 
 module.exports = File;
 
-});
+})
 
-define('cordova/plugin/FileEntry', function(require, exports, module) {
+// file: lib/common/plugin/FileEntry.js
+define("cordova/plugin/FileEntry", function(require, exports, module) {
 var utils = require('cordova/utils'),
     exec = require('cordova/exec'),
     Entry = require('cordova/plugin/Entry'),
@@ -2689,9 +2084,10 @@ FileEntry.prototype.file = function(successCallback, errorCallback) {
 
 module.exports = FileEntry;
 
-});
+})
 
-define('cordova/plugin/FileError', function(require, exports, module) {
+// file: lib/common/plugin/FileError.js
+define("cordova/plugin/FileError", function(require, exports, module) {
 /**
  * FileError
  */
@@ -2718,9 +2114,10 @@ FileError.PATH_EXISTS_ERR = 12;
 
 module.exports = FileError;
 
-});
+})
 
-define('cordova/plugin/FileReader', function(require, exports, module) {
+// file: lib/common/plugin/FileReader.js
+define("cordova/plugin/FileReader", function(require, exports, module) {
 var exec = require('cordova/exec'),
     FileError = require('cordova/plugin/FileError'),
     ProgressEvent = require('cordova/plugin/ProgressEvent');
@@ -2821,6 +2218,7 @@ FileReader.prototype.readAsText = function(file, encoding) {
             if (me.readyState === FileReader.DONE) {
                 return;
             }
+
             // Save result
             me.result = r;
 
@@ -2955,7 +2353,7 @@ FileReader.prototype.readAsDataURL = function(file) {
  */
 FileReader.prototype.readAsBinaryString = function(file) {
     // TODO - Can't return binary data to browser.
-    console.log('This method is not supported at this time.');
+    console.log('method "readAsBinaryString" is not supported at this time.');
 };
 
 /**
@@ -2970,9 +2368,10 @@ FileReader.prototype.readAsArrayBuffer = function(file) {
 
 module.exports = FileReader;
 
-});
+})
 
-define('cordova/plugin/FileSystem', function(require, exports, module) {
+// file: lib/common/plugin/FileSystem.js
+define("cordova/plugin/FileSystem", function(require, exports, module) {
 var DirectoryEntry = require('cordova/plugin/DirectoryEntry');
 
 /**
@@ -2991,9 +2390,10 @@ var FileSystem = function(name, root) {
 
 module.exports = FileSystem;
 
-});
+})
 
-define('cordova/plugin/FileTransfer', function(require, exports, module) {
+// file: lib/common/plugin/FileTransfer.js
+define("cordova/plugin/FileTransfer", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 /**
@@ -3063,9 +2463,10 @@ FileTransfer.prototype.download = function(source, target, successCallback, erro
 
 module.exports = FileTransfer;
 
-});
+})
 
-define('cordova/plugin/FileTransferError', function(require, exports, module) {
+// file: lib/common/plugin/FileTransferError.js
+define("cordova/plugin/FileTransferError", function(require, exports, module) {
 /**
  * FileTransferError
  * @constructor
@@ -3080,9 +2481,10 @@ FileTransferError.CONNECTION_ERR = 3;
 
 module.exports = FileTransferError;
 
-});
+})
 
-define('cordova/plugin/FileUploadOptions', function(require, exports, module) {
+// file: lib/common/plugin/FileUploadOptions.js
+define("cordova/plugin/FileUploadOptions", function(require, exports, module) {
 /**
  * Options to customize the HTTP request used to upload files.
  * @constructor
@@ -3100,9 +2502,10 @@ var FileUploadOptions = function(fileKey, fileName, mimeType, params) {
 
 module.exports = FileUploadOptions;
 
-});
+})
 
-define('cordova/plugin/FileUploadResult', function(require, exports, module) {
+// file: lib/common/plugin/FileUploadResult.js
+define("cordova/plugin/FileUploadResult", function(require, exports, module) {
 /**
  * FileUploadResult
  * @constructor
@@ -3115,9 +2518,10 @@ var FileUploadResult = function() {
 
 module.exports = FileUploadResult;
 
-});
+})
 
-define('cordova/plugin/FileWriter', function(require, exports, module) {
+// file: lib/common/plugin/FileWriter.js
+define("cordova/plugin/FileWriter", function(require, exports, module) {
 var exec = require('cordova/exec'),
     FileError = require('cordova/plugin/FileError');
     ProgressEvent = require('cordova/plugin/ProgressEvent');
@@ -3372,9 +2776,10 @@ FileWriter.prototype.truncate = function(size) {
 
 module.exports = FileWriter;
 
-});
+})
 
-define('cordova/plugin/Flags', function(require, exports, module) {
+// file: lib/common/plugin/Flags.js
+define("cordova/plugin/Flags", function(require, exports, module) {
 /**
  * Supplies arguments to methods that lookup or create files and directories.
  * 
@@ -3391,108 +2796,10 @@ function Flags(create, exclusive) {
 
 module.exports = Flags;
 
-});
+})
 
-define('cordova/plugin/geolocation', function(require, exports, module) {
-var utils = require('cordova/utils'),
-    exec = require('cordova/exec'),
-    PositionError = require('cordova/plugin/PositionError'),
-    Position = require('cordova/plugin/Position');
-
-var timers = {};   // list of timers in use
-
-// Returns default params, overrides if provided with values
-function parseParameters(options) {
-    var opt = {
-        maximumAge: 10000,
-        enableHighAccuracy: false,
-        timeout: 10000
-    };
-
-    if (options) {
-        if (options.maximumAge !== undefined) {
-            opt.maximumAge = options.maximumAge;
-        }
-        if (options.enableHighAccuracy !== undefined) {
-            opt.enableHighAccuracy = options.enableHighAccuracy;
-        }
-        if (options.timeout !== undefined) {
-            opt.timeout = options.timeout;
-        }
-    }
-
-    return opt;
-}
-
-var geolocation = {
-    /**
-   * Asynchronously aquires the current position.
-   *
-   * @param {Function} successCallback    The function to call when the position data is available
-   * @param {Function} errorCallback      The function to call when there is an error getting the heading position. (OPTIONAL)
-   * @param {PositionOptions} options     The options for getting the position data. (OPTIONAL)
-   */
-    getCurrentPosition:function(successCallback, errorCallback, options) {
-        options = parseParameters(options);
-
-        var win = function(p) {
-            successCallback(new Position(
-                {
-                    latitude:p.latitude,
-                    longitude:p.longitude,
-                    altitude:p.altitude,
-                    accuracy:p.accuracy,
-                    heading:p.heading,
-                    velocity:p.velocity,
-                    altitudeAccuracy:p.altitudeAccuracy
-                },
-                p.timestamp || new Date()
-            ));
-        };
-        var fail = function(e) {
-            errorCallback(new PositionError(e.code, e.message));
-        };
-
-        exec(win, fail, "Geolocation", "getLocation", [options.enableHighAccuracy, options.timeout, options.maximumAge]); 
-    },
-    /**
-     * Asynchronously watches the geolocation for changes to geolocation.  When a change occurs,
-     * the successCallback is called with the new location.
-     *
-     * @param {Function} successCallback    The function to call each time the location data is available
-     * @param {Function} errorCallback      The function to call when there is an error getting the location data. (OPTIONAL)
-     * @param {PositionOptions} options     The options for getting the location data such as frequency. (OPTIONAL)
-     * @return String                       The watch id that must be passed to #clearWatch to stop watching.
-     */
-    watchPosition:function(successCallback, errorCallback, options) {
-        options = parseParameters(options);
-
-        var id = utils.createUUID();
-        timers[id] = window.setInterval(function() {
-            geolocation.getCurrentPosition(successCallback, errorCallback, options);
-        }, options.timeout);
-
-        return id;
-    },
-    /**
-     * Clears the specified heading watch.
-     *
-     * @param {String} id       The ID of the watch returned from #watchPosition
-     */
-    clearWatch:function(id) {
-        if (id && timers[id] !== undefined) {
-            window.clearInterval(timers[id]);
-            delete timers[id];
-        }
-    }
-};
-
-module.exports = geolocation;
-
-});
-
-
-define('cordova/plugin/LocalFileSystem', function(require, exports, module) {
+// file: lib/common/plugin/LocalFileSystem.js
+define("cordova/plugin/LocalFileSystem", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 /**
@@ -3507,9 +2814,10 @@ LocalFileSystem.PERSISTENT = 1; //persistent
 
 module.exports = LocalFileSystem;
 
-});
+})
 
-define('cordova/plugin/Media', function(require, exports, module) {
+// file: lib/common/plugin/Media.js
+define("cordova/plugin/Media", function(require, exports, module) {
 var utils = require('cordova/utils'),
     exec = require('cordova/exec');
 
@@ -3580,8 +2888,8 @@ Media.get = function(id) {
 /**
  * Start or resume playing audio file.
  */
-Media.prototype.play = function() {
-    exec(this.successCallback, this.errorCallback, "Media", "startPlayingAudio", [this.id, this.src]);
+Media.prototype.play = function(options) {
+    exec(this.successCallback, this.errorCallback, "Media", "startPlayingAudio", [this.id, this.src, options]);
 };
 
 /**
@@ -3687,7 +2995,8 @@ Media.onStatus = function(id, msg, value) {
     }
     else if (msg === Media.MEDIA_ERROR) {
         if (media.errorCallback) {
-            media.errorCallback({"code":value});
+        	// value should be a MediaError object when msg == MEDIA_ERROR
+            media.errorCallback(value);
         }
     }
     else if (msg === Media.MEDIA_POSITION) {
@@ -3697,15 +3006,16 @@ Media.onStatus = function(id, msg, value) {
 
 module.exports = Media;
 
-});
+})
 
-define('cordova/plugin/MediaError', function(require, exports, module) {
+// file: lib/common/plugin/MediaError.js
+define("cordova/plugin/MediaError", function(require, exports, module) {
 /**
  * This class contains information about any Media errors.
  * @constructor
  */
 var MediaError = function(code, msg) {
-    this.code = code || null;
+    this.code = (code !== undefined ? code : null);
     this.message = msg || "";
 };
 
@@ -3717,9 +3027,10 @@ MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
 
 module.exports = MediaError;
 
-});
+})
 
-define('cordova/plugin/MediaFile', function(require, exports, module) {
+// file: lib/common/plugin/MediaFile.js
+define("cordova/plugin/MediaFile", function(require, exports, module) {
 var utils = require('cordova/utils'),
     exec = require('cordova/exec'),
     File = require('cordova/plugin/File'),
@@ -3777,9 +3088,10 @@ MediaFile.cast = function(pluginResult) {
 
 module.exports = MediaFile;
 
-});
+})
 
-define('cordova/plugin/MediaFileData', function(require, exports, module) {
+// file: lib/common/plugin/MediaFileData.js
+define("cordova/plugin/MediaFileData", function(require, exports, module) {
 /**
  * MediaFileData encapsulates format information of a media file.
  *
@@ -3799,9 +3111,10 @@ var MediaFileData = function(codecs, bitrate, height, width, duration){
 
 module.exports = MediaFileData;
 
-});
+})
 
-define('cordova/plugin/Metadata', function(require, exports, module) {
+// file: lib/common/plugin/Metadata.js
+define("cordova/plugin/Metadata", function(require, exports, module) {
 /**
  * Information about the state of the file or directory
  * 
@@ -3813,133 +3126,10 @@ var Metadata = function(time) {
 
 module.exports = Metadata;
 
-});
+})
 
-define('cordova/plugin/network', function(require, exports, module) {
-var exec = require('cordova/exec'),
-    cordova = require('cordova'),
-    channel = require('cordova/channel');
-
-var NetworkConnection = function () {
-        this.type = null;
-        this._firstRun = true;
-        this._timer = null;
-        this.timeout = 500;
-
-        var me = this;
-
-        this.getInfo(
-            function (info) {
-                me.type = info;
-                if (info === "none") {
-                    // set a timer if still offline at the end of timer send the offline event
-                    me._timer = setTimeout(function(){
-                        cordova.fireDocumentEvent("offline");
-                        me._timer = null;
-                        }, me.timeout);
-                } else {
-                    // If there is a current offline event pending clear it
-                    if (me._timer !== null) {
-                        clearTimeout(me._timer);
-                        me._timer = null;
-                    }
-                    cordova.fireDocumentEvent("online");
-                }
-
-                // should only fire this once
-                if (me._firstRun) {
-                    me._firstRun = false;
-                    channel.onCordovaConnectionReady.fire();
-                }
-            },
-            function (e) {
-                // If we can't get the network info we should still tell Cordova
-                // to fire the deviceready event.
-                if (me._firstRun) {
-                    me._firstRun = false;
-                    channel.onCordovaConnectionReady.fire();
-                }
-                console.log("Error initializing Network Connection: " + e);
-            });
-};
-
-/**
- * Get connection info
- *
- * @param {Function} successCallback The function to call when the Connection data is available
- * @param {Function} errorCallback The function to call when there is an error getting the Connection data. (OPTIONAL)
- */
-NetworkConnection.prototype.getInfo = function (successCallback, errorCallback) {
-    // Get info
-    exec(successCallback, errorCallback, "Network Status", "getConnectionInfo", []);
-};
-
-module.exports = new NetworkConnection();
-
-});
-
-define('cordova/plugin/notification', function(require, exports, module) {
-var exec = require('cordova/exec');
-
-/**
- * Provides access to notifications on the device.
- */
-
-module.exports = {
-
-    /**
-     * Open a native alert dialog, with a customizable title and button text.
-     *
-     * @param {String} message              Message to print in the body of the alert
-     * @param {Function} completeCallback   The callback that is called when user clicks on a button.
-     * @param {String} title                Title of the alert dialog (default: Alert)
-     * @param {String} buttonLabel          Label of the close button (default: OK)
-     */
-    alert: function(message, completeCallback, title, buttonLabel) {
-        var _title = (title || "Alert");
-        var _buttonLabel = (buttonLabel || "OK");
-        exec(completeCallback, null, "Notification", "alert", [message, _title, _buttonLabel]);
-    },
-
-    /**
-     * Open a native confirm dialog, with a customizable title and button text.
-     * The result that the user selects is returned to the result callback.
-     *
-     * @param {String} message              Message to print in the body of the alert
-     * @param {Function} resultCallback     The callback that is called when user clicks on a button.
-     * @param {String} title                Title of the alert dialog (default: Confirm)
-     * @param {String} buttonLabels         Comma separated list of the labels of the buttons (default: 'OK,Cancel')
-     */
-    confirm: function(message, resultCallback, title, buttonLabels) {
-        var _title = (title || "Confirm");
-        var _buttonLabels = (buttonLabels || "OK,Cancel");
-        exec(resultCallback, null, "Notification", "confirm", [message, _title, _buttonLabels]);
-    },
-
-    /**
-     * Causes the device to vibrate.
-     *
-     * @param {Integer} mills       The number of milliseconds to vibrate for.
-     */
-    vibrate: function(mills) {
-        exec(null, null, "Notification", "vibrate", [mills]);
-    },
-
-    /**
-     * Causes the device to beep.
-     * On Android, the default notification ringtone is played "count" times.
-     *
-     * @param {Integer} count       The number of beeps.
-     */
-    beep: function(count) {
-        exec(null, null, "Notification", "beep", [count]);
-    }
-};
-
-});
-
-
-define('cordova/plugin/Position', function(require, exports, module) {
+// file: lib/common/plugin/Position.js
+define("cordova/plugin/Position", function(require, exports, module) {
 var Coordinates = require('cordova/plugin/Coordinates');
 
 var Position = function(coords, timestamp) {
@@ -3949,9 +3139,10 @@ var Position = function(coords, timestamp) {
 
 module.exports = Position;
 
-});
+})
 
-define('cordova/plugin/PositionError', function(require, exports, module) {
+// file: lib/common/plugin/PositionError.js
+define("cordova/plugin/PositionError", function(require, exports, module) {
 /**
  * Position error object
  *
@@ -3970,9 +3161,10 @@ PositionError.TIMEOUT = 3;
 
 module.exports = PositionError;
 
-});
+})
 
-define('cordova/plugin/ProgressEvent', function(require, exports, module) {
+// file: lib/common/plugin/ProgressEvent.js
+define("cordova/plugin/ProgressEvent", function(require, exports, module) {
 // If ProgressEvent exists in global context, use it already, otherwise use our own polyfill
 // Feature test: See if we can instantiate a native ProgressEvent;
 // if so, use that approach,
@@ -4020,99 +3212,110 @@ var ProgressEvent = (function() {
 
 module.exports = ProgressEvent;
 
-});
+})
 
-define('cordova/plugin/requestFileSystem', function(require, exports, module) {
-var FileError = require('cordova/plugin/FileError'),
-    FileSystem = require('cordova/plugin/FileSystem'),
-    exec = require('cordova/exec');
-
+// file: lib/common/plugin/accelerometer.js
+define("cordova/plugin/accelerometer", function(require, exports, module) {
 /**
- * Request a file system in which to store application data.
- * @param type  local file system type
- * @param size  indicates how much storage space, in bytes, the application expects to need
- * @param successCallback  invoked with a FileSystem object
- * @param errorCallback  invoked if error occurs retrieving file system
+ * This class provides access to device accelerometer data.
+ * @constructor
  */
-var requestFileSystem = function(type, size, successCallback, errorCallback) {
-    var fail = function(code) {
-        if (typeof errorCallback === 'function') {
-            errorCallback(new FileError(code));
-        }
-    };
+var utils = require("cordova/utils"),
+    exec = require("cordova/exec");
 
-    if (type < 0 || type > 3) {
-        fail(FileError.SYNTAX_ERR);
-    } else {
-        // if successful, return a FileSystem object
-        var success = function(file_system) {
-            if (file_system) {
-                if (typeof successCallback === 'function') {
-                    // grab the name and root from the file system object
-                    var result = new FileSystem(file_system.name, file_system.root);
-                    successCallback(result);
+// Local singleton variables.
+var timers = {};
+
+var accelerometer = {
+    /**
+     * Asynchronously aquires the current acceleration.
+     *
+     * @param {Function} successCallback    The function to call when the acceleration data is available
+     * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
+     * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
+     */
+    getCurrentAcceleration: function(successCallback, errorCallback, options) {
+
+        // successCallback required
+        if (typeof successCallback !== "function") {
+            console.log("Accelerometer Error: successCallback is not a function");
+            return;
+        }
+
+        // errorCallback optional
+        if (errorCallback && (typeof errorCallback !== "function")) {
+            console.log("Accelerometer Error: errorCallback is not a function");
+            return;
+        }
+
+        // Get acceleration
+        exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
+    },
+
+    /**
+     * Asynchronously aquires the acceleration repeatedly at a given interval.
+     *
+     * @param {Function} successCallback    The function to call each time the acceleration data is available
+     * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
+     * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
+     * @return String                       The watch id that must be passed to #clearWatch to stop watching.
+     */
+    watchAcceleration: function(successCallback, errorCallback, options) {
+
+        // Default interval (10 sec)
+        var frequency = (options !== undefined && options.frequency !== undefined)? options.frequency : 10000;
+
+        // successCallback required
+        if (typeof successCallback !== "function") {
+            console.log("Accelerometer Error: successCallback is not a function");
+            return;
+        }
+
+        // errorCallback optional
+        if (errorCallback && (typeof errorCallback !== "function")) {
+            console.log("Accelerometer Error: errorCallback is not a function");
+            return;
+        }
+
+        // Make sure accelerometer timeout > frequency + 10 sec
+        exec(
+            function(timeout) {
+                if (timeout < (frequency + 10000)) {
+                    exec(null, null, "Accelerometer", "setTimeout", [frequency + 10000]);
                 }
-            }
-            else {
-                // no FileSystem object returned
-                fail(FileError.NOT_FOUND_ERR);
-            }
-        };
-        exec(success, fail, "File", "requestFileSystem", [type, size]);
+            },
+            function(e) { }, "Accelerometer", "getTimeout", []);
+
+        // Start watch timer
+        var id = utils.createUUID();
+        timers[id] = window.setInterval(function() {
+            exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
+        }, (frequency ? frequency : 1));
+
+        return id;
+    },
+
+    /**
+     * Clears the specified accelerometer watch.
+     *
+     * @param {String} id       The id of the watch returned from #watchAcceleration.
+     */
+    clearWatch: function(id) {
+
+        // Stop javascript timer & remove from timer list
+        if (id && timers[id] !== undefined) {
+            window.clearInterval(timers[id]);
+            delete timers[id];
+        }
     }
 };
 
-module.exports = requestFileSystem;
+module.exports = accelerometer;
 
-});
+})
 
-define('cordova/plugin/resolveLocalFileSystemURI', function(require, exports, module) {
-var DirectoryEntry = require('cordova/plugin/DirectoryEntry'),
-    FileEntry = require('cordova/plugin/FileEntry'),
-    exec = require('cordova/exec');
-
-/**
- * Look up file system Entry referred to by local URI.
- * @param {DOMString} uri  URI referring to a local file or directory
- * @param successCallback  invoked with Entry object corresponding to URI
- * @param errorCallback    invoked if error occurs retrieving file system entry
- */
-module.exports = function(uri, successCallback, errorCallback) {
-    // error callback
-    var fail = function(error) {
-        if (typeof errorCallback === 'function') {
-            errorCallback(new FileError(error));
-        }
-    };
-    // if successful, return either a file or directory entry
-    var success = function(entry) {
-        var result;
-
-        if (entry) {
-            if (typeof successCallback === 'function') {
-                // create appropriate Entry object
-                result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath) : new FileEntry(entry.name, entry.fullPath);
-                try {
-                    successCallback(result);
-                }
-                catch (e) {
-                    console.log('Error invoking callback: ' + e);
-                }
-            }
-        }
-        else {
-            // no Entry object returned
-            fail(FileError.NOT_FOUND_ERR);
-        }
-    };
-
-    exec(success, fail, "File", "resolveLocalFileSystemURI", [uri]);
-};
-
-});
-
-
-define('cordova/plugin/android/app', function(require, exports, module) {
+// file: lib/android/plugin/android/app.js
+define("cordova/plugin/android/app", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 module.exports = {
@@ -4185,9 +3388,10 @@ module.exports = {
   } 
 };
 
-});
+})
 
-define('cordova/plugin/android/callback', function(require, exports, module) {
+// file: lib/android/plugin/android/callback.js
+define("cordova/plugin/android/callback", function(require, exports, module) {
 var port = null,
     token = null,
     cordova = require('cordova'),
@@ -4274,9 +3478,10 @@ var port = null,
 
 module.exports = callback;
 
-});
+})
 
-define('cordova/plugin/android/device', function(require, exports, module) {
+// file: lib/android/plugin/android/device.js
+define("cordova/plugin/android/device", function(require, exports, module) {
 var channel = require('cordova/channel'),
     exec = require('cordova/exec');
 
@@ -4370,9 +3575,10 @@ Device.prototype.exitApp = function() {
 
 module.exports = new Device();
 
-});
+})
 
-define('cordova/plugin/android/polling', function(require, exports, module) {
+// file: lib/android/plugin/android/polling.js
+define("cordova/plugin/android/polling", function(require, exports, module) {
 var cordova = require('cordova'),
     period = 50,
     polling = function() {
@@ -4407,11 +3613,13 @@ var cordova = require('cordova'),
 
 module.exports = polling;
 
-});
+})
 
-define('cordova/plugin/android/storage', function(require, exports, module) {
+// file: lib/android/plugin/android/storage.js
+define("cordova/plugin/android/storage", function(require, exports, module) {
 var utils = require('cordova/utils'),
     exec = require('cordova/exec');
+    channel = require('cordova/channel');
 
 var queryQueue = {};
 
@@ -4699,6 +3907,8 @@ var DroidDB_openDatabase = function(name, version, display_name, size) {
  * @constructor
  */
 var CupcakeLocalStorage = function() {
+    channel.waitForInitialization("cupcakeStorage");
+
     try {
 
       this.db = openDatabase('localStorage', '1.0', 'localStorage', 2621440);
@@ -4717,6 +3927,7 @@ var CupcakeLocalStorage = function() {
               storage[result.rows.item(i)['id']] =  result.rows.item(i)['body'];
             }
             setLength(result.rows.length);
+            channel.initializationComplete("cupcakeStorage");
           });
 
         },
@@ -4784,15 +3995,754 @@ module.exports = {
   completeQuery:completeQuery
 };
 
-});
+})
+
+// file: lib/common/plugin/battery.js
+define("cordova/plugin/battery", function(require, exports, module) {
+/**
+ * This class contains information about the current battery status.
+ * @constructor
+ */
+var cordova = require('cordova'),
+    exec = require('cordova/exec');
+
+function handlers() {
+  return battery.channels.batterystatus.numHandlers + 
+         battery.channels.batterylow.numHandlers +
+         battery.channels.batterycritical.numHandlers;
+}
+
+var Battery = function() {
+    this._level = null;
+    this._isPlugged = null;
+    // Create new event handlers on the window (returns a channel instance)
+    var subscriptionEvents = {
+      onSubscribe:this.onSubscribe,
+      onUnsubscribe:this.onUnsubscribe
+    };
+    this.channels = {
+      batterystatus:cordova.addWindowEventHandler("batterystatus", subscriptionEvents),
+      batterylow:cordova.addWindowEventHandler("batterylow", subscriptionEvents),
+      batterycritical:cordova.addWindowEventHandler("batterycritical", subscriptionEvents)
+    };
+};
+/**
+ * Event handlers for when callbacks get registered for the battery.
+ * Keep track of how many handlers we have so we can start and stop the native battery listener
+ * appropriately (and hopefully save on battery life!).
+ */
+Battery.prototype.onSubscribe = function() {
+  var me = battery;
+  // If we just registered the first handler, make sure native listener is started.
+  if (handlers() === 1) {
+    exec(me._status, me._error, "Battery", "start", []);
+  }
+};
+
+Battery.prototype.onUnsubscribe = function() {
+  var me = battery;
+
+  // If we just unregistered the last handler, make sure native listener is stopped.
+  if (handlers() === 0) {
+      exec(null, null, "Battery", "stop", []);
+  }
+};
+
+/**
+ * Callback for battery status
+ * 
+ * @param {Object} info			keys: level, isPlugged
+ */
+Battery.prototype._status = function(info) {
+	if (info) {
+		var me = battery;
+    var level = info.level;
+		if (me._level !== level || me._isPlugged !== info.isPlugged) {
+			// Fire batterystatus event
+			cordova.fireWindowEvent("batterystatus", info);
+
+			// Fire low battery event
+			if (level === 20 || level === 5) {
+				if (level === 20) {
+					cordova.fireWindowEvent("batterylow", info);
+				}
+				else {
+					cordova.fireWindowEvent("batterycritical", info);
+				}
+			}
+		}
+		me._level = level;
+		me._isPlugged = info.isPlugged;	
+	}
+};
+
+/**
+ * Error callback for battery start
+ */
+Battery.prototype._error = function(e) {
+    console.log("Error initializing Battery: " + e);
+};
+
+var battery = new Battery();
+
+module.exports = battery;
+
+})
+
+// file: lib/common/plugin/capture.js
+define("cordova/plugin/capture", function(require, exports, module) {
+var exec = require('cordova/exec'),
+    MediaFile = require('cordova/plugin/MediaFile');
+
+/**
+ * Launches a capture of different types.
+ *
+ * @param (DOMString} type 
+ * @param {Function} successCB
+ * @param {Function} errorCB
+ * @param {CaptureVideoOptions} options
+ */
+function _capture(type, successCallback, errorCallback, options) {
+    var win = function(pluginResult) {
+        var mediaFiles = [];
+        var i;
+        for (i = 0; i < pluginResult.length; i++) {
+            var mediaFile = new MediaFile();
+            mediaFile.name = pluginResult[i].name;
+            mediaFile.fullPath = pluginResult[i].fullPath;
+            mediaFile.type = pluginResult[i].type;
+            mediaFile.lastModifiedDate = pluginResult[i].lastModifiedDate;
+            mediaFile.size = pluginResult[i].size;
+            mediaFiles.push(mediaFile);
+        }
+        successCallback(mediaFiles);
+    };
+    exec(win, errorCallback, "Capture", type, [options]);
+}
+/**
+ * The Capture interface exposes an interface to the camera and microphone of the hosting device.
+ */
+function Capture() {
+	this.supportedAudioModes = [];
+	this.supportedImageModes = [];
+	this.supportedVideoModes = [];
+}
+
+/**
+ * Launch audio recorder application for recording audio clip(s).
+ *
+ * @param {Function} successCB
+ * @param {Function} errorCB
+ * @param {CaptureAudioOptions} options
+ */
+Capture.prototype.captureAudio = function(successCallback, errorCallback, options){
+    _capture("captureAudio", successCallback, errorCallback, options);
+};
+
+/**
+ * Launch camera application for taking image(s).
+ *
+ * @param {Function} successCB
+ * @param {Function} errorCB
+ * @param {CaptureImageOptions} options
+ */
+Capture.prototype.captureImage = function(successCallback, errorCallback, options){
+    _capture("captureImage", successCallback, errorCallback, options);
+};
+
+/**
+ * Launch device camera application for recording video(s).
+ *
+ * @param {Function} successCB
+ * @param {Function} errorCB
+ * @param {CaptureVideoOptions} options
+ */
+Capture.prototype.captureVideo = function(successCallback, errorCallback, options){
+    _capture("captureVideo", successCallback, errorCallback, options);
+};
+
+
+module.exports = new Capture();
+
+})
+
+// file: lib/common/plugin/compass.js
+define("cordova/plugin/compass", function(require, exports, module) {
+var exec = require('cordova/exec'),
+    utils = require('cordova/utils'),
+    CompassHeading = require('cordova/plugin/CompassHeading'),
+    CompassError = require('cordova/plugin/CompassError'),
+    timers = {},
+    compass = {
+        /**
+         * Asynchronously acquires the current heading.
+         * @param {Function} successCallback The function to call when the heading
+         * data is available
+         * @param {Function} errorCallback The function to call when there is an error 
+         * getting the heading data.
+         * @param {CompassOptions} options The options for getting the heading data (not used).
+         */
+        getCurrentHeading:function(successCallback, errorCallback) {
+            // successCallback required
+            if (typeof successCallback !== "function") {
+              console.log("Compass Error: successCallback is not a function");
+              return;
+            }
+
+            // errorCallback optional
+            if (errorCallback && (typeof errorCallback !== "function")) {
+              console.log("Compass Error: errorCallback is not a function");
+              return;
+            }
+
+            var win = function(result) {
+                var ch = new CompassHeading(result.magneticHeading, result.trueHeading, result.headingAccuracy, result.timestamp);
+                successCallback(ch);
+            };
+            var fail = function(code) {
+                var ce = new CompassError(code);
+                errorCallback(ce);
+            }
+            
+            // Get heading
+            exec(win, fail, "Compass", "getHeading", []);
+        },
+
+        /**
+         * Asynchronously acquires the heading repeatedly at a given interval.
+         * @param {Function} successCallback The function to call each time the heading
+         * data is available
+         * @param {Function} errorCallback The function to call when there is an error 
+         * getting the heading data.
+         * @param {HeadingOptions} options The options for getting the heading data
+         * such as timeout and the frequency of the watch.
+         */
+        watchHeading:function(successCallback, errorCallback, options) {
+            // Default interval (100 msec)
+            var frequency = (options !== undefined && options.frequency !== undefined) ? options.frequency : 100;
+
+            // successCallback required
+            if (typeof successCallback !== "function") {
+              console.log("Compass Error: successCallback is not a function");
+              return;
+            }
+
+            // errorCallback optional
+            if (errorCallback && (typeof errorCallback !== "function")) {
+              console.log("Compass Error: errorCallback is not a function");
+              return;
+            }
+
+            // Start watch timer to get headings
+            var id = utils.createUUID();
+
+            timers[id] = window.setInterval(function() {
+                compass.getCurrentHeading(successCallback, errorCallback);
+            }, frequency);
+
+            return id;
+        },
+
+        /**
+         * Clears the specified heading watch.
+         * @param {String} watchId The ID of the watch returned from #watchHeading.
+         */
+        clearWatch:function(id) {
+            // Stop javascript timer & remove from timer list
+            if (id && timers[id]) {
+              clearInterval(timers[id]);
+              delete timers[id];
+            }
+        }
+        // TODO: add the filter-based iOS-only methods
+    };
+
+module.exports = compass;
+
+})
+
+// file: lib/common/plugin/contacts.js
+define("cordova/plugin/contacts", function(require, exports, module) {
+var exec = require('cordova/exec'),
+    ContactError = require('cordova/plugin/ContactError'),
+    Contact = require('cordova/plugin/Contact');
+
+/**
+* Represents a group of Contacts.
+* @constructor
+*/
+var contacts = {
+    /**
+     * Returns an array of Contacts matching the search criteria.
+     * @param fields that should be searched
+     * @param successCB success callback
+     * @param errorCB error callback
+     * @param {ContactFindOptions} options that can be applied to contact searching
+     * @return array of Contacts matching search criteria
+     */
+    find:function(fields, successCB, errorCB, options) {
+        if (!successCB) {
+            throw new TypeError("You must specify a success callback for the find command.");
+        }
+        if (!fields || (fields instanceof Array && fields.length === 0)) {
+            if (typeof errorCB === "function") {
+                errorCB(new ContactError(ContactError.INVALID_ARGUMENT_ERROR));
+            }
+        } else {
+            var win = function(result) {
+                var cs = [];
+                for (var i = 0, l = result.length; i < l; i++) {
+                    cs.push(contacts.create(result[i]));
+                }
+                successCB(cs);
+            };
+            exec(win, errorCB, "Contacts", "search", [fields, options]);
+        }
+    },
+
+    /**
+     * This function creates a new contact, but it does not persist the contact
+     * to device storage. To persist the contact to device storage, invoke
+     * contact.save().
+     * @param properties an object who's properties will be examined to create a new Contact
+     * @returns new Contact object
+     */
+    create:function(properties) {
+        var i;
+        var contact = new Contact();
+        for (i in properties) {
+            if (typeof contact[i] !== 'undefined' && properties.hasOwnProperty(i)) {
+                contact[i] = properties[i];
+            }
+        }
+        return contact;
+    }
+};
+
+module.exports = contacts;
+
+})
+
+// file: lib/common/plugin/geolocation.js
+define("cordova/plugin/geolocation", function(require, exports, module) {
+var utils = require('cordova/utils'),
+    exec = require('cordova/exec'),
+    PositionError = require('cordova/plugin/PositionError'),
+    Position = require('cordova/plugin/Position');
+
+var timers = {};   // list of timers in use
+
+// Returns default params, overrides if provided with values
+function parseParameters(options) {
+    var opt = {
+        maximumAge: 10000,
+        enableHighAccuracy: false,
+        timeout: 10000
+    };
+
+    if (options) {
+        if (options.maximumAge !== undefined) {
+            opt.maximumAge = options.maximumAge;
+        }
+        if (options.enableHighAccuracy !== undefined) {
+            opt.enableHighAccuracy = options.enableHighAccuracy;
+        }
+        if (options.timeout !== undefined) {
+            opt.timeout = options.timeout;
+        }
+    }
+
+    return opt;
+}
+
+var geolocation = {
+    /**
+   * Asynchronously aquires the current position.
+   *
+   * @param {Function} successCallback    The function to call when the position data is available
+   * @param {Function} errorCallback      The function to call when there is an error getting the heading position. (OPTIONAL)
+   * @param {PositionOptions} options     The options for getting the position data. (OPTIONAL)
+   */
+    getCurrentPosition:function(successCallback, errorCallback, options) {
+        options = parseParameters(options);
+
+        var win = function(p) {
+            successCallback(new Position(
+                {
+                    latitude:p.latitude,
+                    longitude:p.longitude,
+                    altitude:p.altitude,
+                    accuracy:p.accuracy,
+                    heading:p.heading,
+                    velocity:p.velocity,
+                    altitudeAccuracy:p.altitudeAccuracy
+                },
+                p.timestamp || new Date()
+            ));
+        };
+        var fail = function(e) {
+            errorCallback(new PositionError(e.code, e.message));
+        };
+
+        exec(win, fail, "Geolocation", "getLocation", [options.enableHighAccuracy, options.timeout, options.maximumAge]); 
+    },
+    /**
+     * Asynchronously watches the geolocation for changes to geolocation.  When a change occurs,
+     * the successCallback is called with the new location.
+     *
+     * @param {Function} successCallback    The function to call each time the location data is available
+     * @param {Function} errorCallback      The function to call when there is an error getting the location data. (OPTIONAL)
+     * @param {PositionOptions} options     The options for getting the location data such as frequency. (OPTIONAL)
+     * @return String                       The watch id that must be passed to #clearWatch to stop watching.
+     */
+    watchPosition:function(successCallback, errorCallback, options) {
+        options = parseParameters(options);
+
+        var id = utils.createUUID();
+        timers[id] = window.setInterval(function() {
+            geolocation.getCurrentPosition(successCallback, errorCallback, options);
+        }, options.timeout);
+
+        return id;
+    },
+    /**
+     * Clears the specified heading watch.
+     *
+     * @param {String} id       The ID of the watch returned from #watchPosition
+     */
+    clearWatch:function(id) {
+        if (id && timers[id] !== undefined) {
+            window.clearInterval(timers[id]);
+            delete timers[id];
+        }
+    }
+};
+
+module.exports = geolocation;
+
+})
+
+// file: lib/common/plugin/network.js
+define("cordova/plugin/network", function(require, exports, module) {
+var exec = require('cordova/exec'),
+    cordova = require('cordova'),
+    channel = require('cordova/channel');
+
+var NetworkConnection = function () {
+        this.type = null;
+        this._firstRun = true;
+        this._timer = null;
+        this.timeout = 500;
+
+        var me = this;
+
+        this.getInfo(
+            function (info) {
+                me.type = info;
+                if (info === "none") {
+                    // set a timer if still offline at the end of timer send the offline event
+                    me._timer = setTimeout(function(){
+                        cordova.fireDocumentEvent("offline");
+                        me._timer = null;
+                        }, me.timeout);
+                } else {
+                    // If there is a current offline event pending clear it
+                    if (me._timer !== null) {
+                        clearTimeout(me._timer);
+                        me._timer = null;
+                    }
+                    cordova.fireDocumentEvent("online");
+                }
+
+                // should only fire this once
+                if (me._firstRun) {
+                    me._firstRun = false;
+                    channel.onCordovaConnectionReady.fire();
+                }
+            },
+            function (e) {
+                // If we can't get the network info we should still tell Cordova
+                // to fire the deviceready event.
+                if (me._firstRun) {
+                    me._firstRun = false;
+                    channel.onCordovaConnectionReady.fire();
+                }
+                console.log("Error initializing Network Connection: " + e);
+            });
+};
+
+/**
+ * Get connection info
+ *
+ * @param {Function} successCallback The function to call when the Connection data is available
+ * @param {Function} errorCallback The function to call when there is an error getting the Connection data. (OPTIONAL)
+ */
+NetworkConnection.prototype.getInfo = function (successCallback, errorCallback) {
+    // Get info
+    exec(successCallback, errorCallback, "Network Status", "getConnectionInfo", []);
+};
+
+module.exports = new NetworkConnection();
+
+})
+
+// file: lib/common/plugin/notification.js
+define("cordova/plugin/notification", function(require, exports, module) {
+var exec = require('cordova/exec');
+
+/**
+ * Provides access to notifications on the device.
+ */
+
+module.exports = {
+
+    /**
+     * Open a native alert dialog, with a customizable title and button text.
+     *
+     * @param {String} message              Message to print in the body of the alert
+     * @param {Function} completeCallback   The callback that is called when user clicks on a button.
+     * @param {String} title                Title of the alert dialog (default: Alert)
+     * @param {String} buttonLabel          Label of the close button (default: OK)
+     */
+    alert: function(message, completeCallback, title, buttonLabel) {
+        var _title = (title || "Alert");
+        var _buttonLabel = (buttonLabel || "OK");
+        exec(completeCallback, null, "Notification", "alert", [message, _title, _buttonLabel]);
+    },
+
+    /**
+     * Open a native confirm dialog, with a customizable title and button text.
+     * The result that the user selects is returned to the result callback.
+     *
+     * @param {String} message              Message to print in the body of the alert
+     * @param {Function} resultCallback     The callback that is called when user clicks on a button.
+     * @param {String} title                Title of the alert dialog (default: Confirm)
+     * @param {String} buttonLabels         Comma separated list of the labels of the buttons (default: 'OK,Cancel')
+     */
+    confirm: function(message, resultCallback, title, buttonLabels) {
+        var _title = (title || "Confirm");
+        var _buttonLabels = (buttonLabels || "OK,Cancel");
+        exec(resultCallback, null, "Notification", "confirm", [message, _title, _buttonLabels]);
+    },
+
+    /**
+     * Causes the device to vibrate.
+     *
+     * @param {Integer} mills       The number of milliseconds to vibrate for.
+     */
+    vibrate: function(mills) {
+        exec(null, null, "Notification", "vibrate", [mills]);
+    },
+
+    /**
+     * Causes the device to beep.
+     * On Android, the default notification ringtone is played "count" times.
+     *
+     * @param {Integer} count       The number of beeps.
+     */
+    beep: function(count) {
+        exec(null, null, "Notification", "beep", [count]);
+    }
+};
+
+})
+
+// file: lib/common/plugin/requestFileSystem.js
+define("cordova/plugin/requestFileSystem", function(require, exports, module) {
+var FileError = require('cordova/plugin/FileError'),
+    FileSystem = require('cordova/plugin/FileSystem'),
+    exec = require('cordova/exec');
+
+/**
+ * Request a file system in which to store application data.
+ * @param type  local file system type
+ * @param size  indicates how much storage space, in bytes, the application expects to need
+ * @param successCallback  invoked with a FileSystem object
+ * @param errorCallback  invoked if error occurs retrieving file system
+ */
+var requestFileSystem = function(type, size, successCallback, errorCallback) {
+    var fail = function(code) {
+        if (typeof errorCallback === 'function') {
+            errorCallback(new FileError(code));
+        }
+    };
+
+    if (type < 0 || type > 3) {
+        fail(FileError.SYNTAX_ERR);
+    } else {
+        // if successful, return a FileSystem object
+        var success = function(file_system) {
+            if (file_system) {
+                if (typeof successCallback === 'function') {
+                    // grab the name and root from the file system object
+                    var result = new FileSystem(file_system.name, file_system.root);
+                    successCallback(result);
+                }
+            }
+            else {
+                // no FileSystem object returned
+                fail(FileError.NOT_FOUND_ERR);
+            }
+        };
+        exec(success, fail, "File", "requestFileSystem", [type, size]);
+    }
+};
+
+module.exports = requestFileSystem;
+
+})
+
+// file: lib/common/plugin/resolveLocalFileSystemURI.js
+define("cordova/plugin/resolveLocalFileSystemURI", function(require, exports, module) {
+var DirectoryEntry = require('cordova/plugin/DirectoryEntry'),
+    FileEntry = require('cordova/plugin/FileEntry'),
+    exec = require('cordova/exec');
+
+/**
+ * Look up file system Entry referred to by local URI.
+ * @param {DOMString} uri  URI referring to a local file or directory
+ * @param successCallback  invoked with Entry object corresponding to URI
+ * @param errorCallback    invoked if error occurs retrieving file system entry
+ */
+module.exports = function(uri, successCallback, errorCallback) {
+    // error callback
+    var fail = function(error) {
+        if (typeof errorCallback === 'function') {
+            errorCallback(new FileError(error));
+        }
+    };
+    // if successful, return either a file or directory entry
+    var success = function(entry) {
+        var result;
+
+        if (entry) {
+            if (typeof successCallback === 'function') {
+                // create appropriate Entry object
+                result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath) : new FileEntry(entry.name, entry.fullPath);
+                try {
+                    successCallback(result);
+                }
+                catch (e) {
+                    console.log('Error invoking callback: ' + e);
+                }
+            }
+        }
+        else {
+            // no Entry object returned
+            fail(FileError.NOT_FOUND_ERR);
+        }
+    };
+
+    exec(success, fail, "File", "resolveLocalFileSystemURI", [uri]);
+};
+
+})
+
+// file: lib/common/utils.js
+define("cordova/utils", function(require, exports, module) {
+function UUIDcreatePart(length) {
+    var uuidpart = "";
+    for (var i=0; i<length; i++) {
+        var uuidchar = parseInt((Math.random() * 256), 10).toString(16);
+        if (uuidchar.length == 1) {
+            uuidchar = "0" + uuidchar;
+        }
+        uuidpart += uuidchar;
+    }
+    return uuidpart;
+}
+
+var _self = {
+    /**
+     * Does a deep clone of the object.
+     */
+    clone: function(obj) {
+        if(!obj) { 
+            return obj;
+        }
+        
+        var retVal, i;
+        
+        if(obj instanceof Array){
+            retVal = [];
+            for(i = 0; i < obj.length; ++i){
+                retVal.push(_self.clone(obj[i]));
+            }
+            return retVal;
+        }
+        
+        if (obj instanceof Function) {
+            return obj;
+        }
+        
+        if(!(obj instanceof Object)){
+            return obj;
+        }
+        
+        if(obj instanceof Date){
+            return obj;
+        }
+
+        retVal = {};
+        for(i in obj){
+            if(!(i in retVal) || retVal[i] != obj[i]) {
+                retVal[i] = _self.clone(obj[i]);
+            }
+        }
+        return retVal;
+    },
+
+    close: function(context, func, params) {
+        if (typeof params === 'undefined') {
+            return function() {
+                return func.apply(context, arguments);
+            };
+        } else {
+            return function() {
+                return func.apply(context, params);
+            };
+        }
+    },
+
+    /**
+     * Create a UUID
+     */
+    createUUID: function() {
+        return UUIDcreatePart(4) + '-' +
+            UUIDcreatePart(2) + '-' +
+            UUIDcreatePart(2) + '-' +
+            UUIDcreatePart(2) + '-' +
+            UUIDcreatePart(6);
+    },
+
+    /**
+     * Extends a child object from a parent object using classical inheritance
+     * pattern.
+     */
+    extend: (function() {
+        // proxy used to establish prototype chain
+        var F = function() {}; 
+        // extend Child from Parent
+        return function(Child, Parent) {
+            F.prototype = Parent.prototype;
+            Child.prototype = new F();
+            Child.__super__ = Parent.prototype;
+            Child.prototype.constructor = Child;
+        };
+    }())
+
+};
+
+module.exports = _self;
+
+})
+
+
 window.cordova = require('cordova');
+
+// file: lib/scripts/bootstrap.js
 (function (context) {
     var channel = require("cordova/channel"),
-        /**
-         * cordova Channels that must fire before "deviceready" is fired.
-         */ 
-        deviceReadyChannelsArray = [channel.onCordovaReady, channel.onCordovaInfoReady, channel.onCordovaConnectionReady],
-        deviceReadyChannelsMap = {},
         _self = {
             boot: function () {
                 //---------------
@@ -4801,7 +4751,7 @@ window.cordova = require('cordova');
 
                 /**
                  * Listen for DOMContentLoaded and notify our channel subscribers.
-                 */ 
+                 */
                 document.addEventListener('DOMContentLoaded', function() {
                     channel.onDOMContentLoaded.fire();
                 }, false);
@@ -4820,8 +4770,15 @@ window.cordova = require('cordova');
                     // Drop the common globals into the window object, but be nice and don't overwrite anything.
                     builder.build(base.objects).intoButDontClobber(window);
 
-                    // Drop the platform-specific globals into the window object and do it like a honey badger does it.
-                    builder.build(platform.objects).intoAndClobberTheFOutOf(window);
+                    // Drop the platform-specific globals into the window object
+                    // and clobber any existing object.
+                    builder.build(platform.objects).intoAndClobber(window);
+
+                    // Merge the platform-specific overrides/enhancements into
+                    // the window object.
+                    if (typeof platform.merges !== 'undefined') {
+                        builder.build(platform.merges).intoAndMerge(window);
+                    }
 
                     // Call the platform-specific initialization
                     platform.initialize();
@@ -4829,28 +4786,27 @@ window.cordova = require('cordova');
                     // Fire event to notify that all objects are created
                     channel.onCordovaReady.fire();
 
-                    // Fire onDeviceReady event once all constructors have run and 
+                    // Fire onDeviceReady event once all constructors have run and
                     // cordova info has been received from native side.
                     channel.join(function() {
                         channel.onDeviceReady.fire();
-                        
-                        // Fire the onresume event, since first one happens before JavaScript is loaded
-                        channel.onResume.fire();
-                    }, deviceReadyChannelsArray);
+                    }, channel.deviceReadyChannelsArray);
                     
                 }, [ channel.onDOMContentLoaded, channel.onNativeReady ]);
             }
         };
+        
     // boot up once native side is ready
-    channel.onNativeReady.subscribe(_self.boot);
+    channel.onNativeReady.subscribeOnce(_self.boot);
 
     // _nativeReady is global variable that the native side can set
-    // to signify that the native code is ready. It is a global since 
+    // to signify that the native code is ready. It is a global since
     // it may be called before any cordova JS is ready.
     if (window._nativeReady) {
-        channel.onNativeReady.fire(); 
+        channel.onNativeReady.fire();
     }
 
 }(window));
+
 
 })();
