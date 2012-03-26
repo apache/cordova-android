@@ -173,7 +173,8 @@ public class CordovaWebViewClient extends WebViewClient {
             String realm) {
        
         // get the authentication token
-        AuthenticationToken token = ctx.getAuthenticationToken(host,realm);
+        // Note: The WebView MUST be a CordoaWebView
+        AuthenticationToken token = ((CordovaWebView) view).getAuthenticationToken(host,realm);
         
         if(token != null) {
             handler.proceed(token.getUserName(), token.getPassword());
