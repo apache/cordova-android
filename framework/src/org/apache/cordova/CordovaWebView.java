@@ -14,7 +14,9 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.content.Context;
 import android.content.res.XmlResourceParser;
 import android.util.AttributeSet;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebSettings.LayoutAlgorithm;
 
 public class CordovaWebView extends WebView {
   
@@ -22,26 +24,61 @@ public class CordovaWebView extends WebView {
   
   /** The authorization tokens. */
   private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
-  
+  private Context mCtx;
   /** The whitelist **/
   private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
   private HashMap<String, Boolean> whiteListCache = new HashMap<String,Boolean>();
 
   public CordovaWebView(Context context) {
     super(context);
+    mCtx = context;
+    setup();
   }
   
   public CordovaWebView(Context context, AttributeSet attrs) {
     super(context, attrs);
+    mCtx = context;
+    setup();
   }
   
   public CordovaWebView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
+    mCtx = context;
+    setup();
   }
   
   public CordovaWebView(Context context, AttributeSet attrs, int defStyle,
       boolean privateBrowsing) {
     super(context, attrs, defStyle, privateBrowsing);
+    mCtx = context;
+    setup();
+  }
+  
+  private void setup()
+  {
+    this.setInitialScale(0);
+    this.setVerticalScrollBarEnabled(false);
+    this.requestFocusFromTouch();
+
+    // Enable JavaScript
+    WebSettings settings = this.getSettings();
+    settings.setJavaScriptEnabled(true);
+    settings.setJavaScriptCanOpenWindowsAutomatically(true);
+    settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
+    
+    //Set the nav dump for HTC
+    settings.setNavDump(true);
+
+    // Enable database
+    settings.setDatabaseEnabled(true);
+    String databasePath = mCtx.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath(); 
+    settings.setDatabasePath(databasePath);
+
+    // Enable DOM storage
+    settings.setDomStorageEnabled(true);
+    
+    // Enable built-in geolocation
+    settings.setGeolocationEnabled(true);
   }
   
   /**

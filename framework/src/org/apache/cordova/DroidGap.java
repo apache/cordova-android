@@ -288,30 +288,6 @@ public class DroidGap extends Activity implements CordovaInterface {
        	this.appView.setWebChromeClient(webChromeClient);
        	this.setWebViewClient(this.appView, webViewClient);
 
-        this.appView.setInitialScale(0);
-        this.appView.setVerticalScrollBarEnabled(false);
-        this.appView.requestFocusFromTouch();
-
-        // Enable JavaScript
-        WebSettings settings = this.appView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setJavaScriptCanOpenWindowsAutomatically(true);
-        settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
-        
-        //Set the nav dump for HTC
-        settings.setNavDump(true);
-
-        // Enable database
-        settings.setDatabaseEnabled(true);
-        String databasePath = this.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath(); 
-        settings.setDatabasePath(databasePath);
-
-        // Enable DOM storage
-        settings.setDomStorageEnabled(true);
-        
-        // Enable built-in geolocation
-        settings.setGeolocationEnabled(true);
-
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
         root.addView(this.appView);
@@ -321,7 +297,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.cancelLoadUrl = false;
         
         // Create plugin manager
-        this.pluginManager = new PluginManager(this.appView, this);        
+        this.pluginManager = new PluginManager(this.appView, this);
     }
     
     /**
