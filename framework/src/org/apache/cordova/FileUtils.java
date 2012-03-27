@@ -254,7 +254,12 @@ public class FileUtils extends Plugin {
             URL testUrl = new URL(decoded);
 
             if (decoded.startsWith("file://")) {
-                fp = new File(decoded.substring(7, decoded.length()));
+                int questionMark = decoded.indexOf("?");
+                if (questionMark < 0) {
+                    fp = new File(decoded.substring(7, decoded.length()));
+                } else {
+                    fp = new File(decoded.substring(7, questionMark));
+                }
             } else {
                 fp = new File(decoded);
             }
