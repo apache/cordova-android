@@ -262,8 +262,9 @@ var cordova = {
             }
         }
     },
-    
+    // TODO: remove in 2.0.
     addPlugin: function(name, obj) {
+        console.log("[DEPRECATION NOTICE] window.addPlugin and window.plugins will be removed in version 2.0.");
         if (!window.plugins[name]) {
             window.plugins[name] = obj;
         }
@@ -285,6 +286,7 @@ var cordova = {
 
 /** 
  * Legacy variable for plugin support
+ * TODO: remove in 2.0.
  */
 if (!window.PhoneGap) {
     window.PhoneGap = cordova;
@@ -292,6 +294,7 @@ if (!window.PhoneGap) {
 
 /**
  * Plugins object
+ * TODO: remove in 2.0.
  */
 if (!window.plugins) {
     window.plugins = {};
@@ -347,7 +350,7 @@ function include(parent, objects, clobber, merge) {
             include(result, obj.children, clobber, merge);
           }
         } catch(e) {
-          alert('Exception building cordova JS globals: ' + e + ' for key "' + key + '"');
+          utils.alert('Exception building cordova JS globals: ' + e + ' for key "' + key + '"');
         }
     });
 }
@@ -1006,6 +1009,15 @@ module.exports = {
         },
         MediaError: { // exists natively on Android WebView on Android 4.x
             path: "cordova/plugin/MediaError"
+        }
+    },
+    merges: {
+        navigator: {
+            children: {
+                notification: {
+                    path: 'cordova/plugin/android/notification'
+                }
+            }
         }
     }
 };
@@ -3483,6 +3495,7 @@ module.exports = callback;
 // file: lib/android/plugin/android/device.js
 define("cordova/plugin/android/device", function(require, exports, module) {
 var channel = require('cordova/channel'),
+    utils = require('cordova/utils'),
     exec = require('cordova/exec');
 
 /**
@@ -3511,8 +3524,7 @@ function Device() {
         },
         function(e) {
             me.available = false;
-            console.log("Error initializing Cordova: " + e);
-            alert("Error initializing Cordova: "+e);
+            utils.alert("[ERROR] Error initializing Cordova: " + e);
         });
 }
 
@@ -3575,6 +3587,63 @@ Device.prototype.exitApp = function() {
 
 module.exports = new Device();
 
+})
+
+// file: lib/android/plugin/android/notification.js
+define("cordova/plugin/android/notification", function(require, exports, module) {
+var exec = require('cordova/exec');
+
+/**
+ * Provides Android enhanced notification API.
+ */
+module.exports = {
+    activityStart : function(title, message) {
+        // If title and message not specified then mimic Android behavior of
+        // using default strings.
+        if (typeof title === "undefined" && typeof message == "undefined") {
+            title = "Busy";
+            message = 'Please wait...';
+        }
+
+        exec(null, null, 'Notification', 'activityStart', [ title, message ]);
+    },
+
+    /**
+     * Close an activity dialog
+     */
+    activityStop : function() {
+        exec(null, null, 'Notification', 'activityStop', []);
+    },
+
+    /**
+     * Display a progress dialog with progress bar that goes from 0 to 100.
+     *
+     * @param {String}
+     *            title Title of the progress dialog.
+     * @param {String}
+     *            message Message to display in the dialog.
+     */
+    progressStart : function(title, message) {
+        exec(null, null, 'Notification', 'progressStart', [ title, message ]);
+    },
+
+    /**
+     * Close the progress dialog.
+     */
+    progressStop : function() {
+        exec(null, null, 'Notification', 'progressStop', []);
+    },
+
+    /**
+     * Set the progress dialog value.
+     *
+     * @param {Number}
+     *            value 0-100
+     */
+    progressValue : function(value) {
+        exec(null, null, 'Notification', 'progressValue', [ value ]);
+    },
+};
 })
 
 // file: lib/android/plugin/android/polling.js
@@ -3932,7 +4001,7 @@ var CupcakeLocalStorage = function() {
 
         },
         function (err) {
-          alert(err.message);
+          utils.alert(err.message);
         }
       );
       this.setItem = function(key, val) {
@@ -3983,7 +4052,7 @@ var CupcakeLocalStorage = function() {
       };
 
     } catch(e) {
-      alert("Database error "+e+".");
+          utils.alert("Database error "+e+".");
         return;
     }
 };
@@ -4479,7 +4548,7 @@ var NetworkConnection = function () {
  */
 NetworkConnection.prototype.getInfo = function (successCallback, errorCallback) {
     // Get info
-    exec(successCallback, errorCallback, "Network Status", "getConnectionInfo", []);
+    exec(successCallback, errorCallback, "NetworkStatus", "getConnectionInfo", []);
 };
 
 module.exports = new NetworkConnection();
@@ -4729,8 +4798,18 @@ var _self = {
             Child.__super__ = Parent.prototype;
             Child.prototype.constructor = Child;
         };
-    }())
+    }()),
 
+    /**
+     * Alerts a message in any available way: alert or console.log.
+     */
+    alert:function(msg) {
+        if (alert) {
+            alert(msg);
+        } else if (console && console.log) {
+            console.log(msg);
+        }
+    }
 };
 
 module.exports = _self;
