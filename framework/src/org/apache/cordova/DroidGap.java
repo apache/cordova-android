@@ -156,7 +156,6 @@ public class DroidGap extends Activity implements CordovaInterface {
     protected LinearLayout root;
     public boolean bound = false;
     public CallbackServer callbackServer;
-    protected PluginManager pluginManager;
     protected boolean cancelLoadUrl = false;
     protected ProgressDialog spinnerDialog = null;
 
@@ -285,9 +284,6 @@ public class DroidGap extends Activity implements CordovaInterface {
                 ViewGroup.LayoutParams.FILL_PARENT, 
                 1.0F));
 
-       	this.appView.setWebChromeClient(webChromeClient);
-       	this.setWebViewClient(this.appView, webViewClient);
-
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
         root.addView(this.appView);
@@ -296,21 +292,8 @@ public class DroidGap extends Activity implements CordovaInterface {
         // Clear cancel flag
         this.cancelLoadUrl = false;
         
-        // Create plugin manager
-        this.pluginManager = new PluginManager(this.appView, this);
     }
     
-    /**
-     * Set the WebViewClient.
-     * 
-     * @param appView
-     * @param client
-     */
-    protected void setWebViewClient(WebView appView, WebViewClient client) {
-        this.webViewClient = client;
-        appView.setWebViewClient(client);
-    }
-
     /**
      * Look at activity parameters and process them.
      * This must be called from the main UI thread.
@@ -403,7 +386,7 @@ public class DroidGap extends Activity implements CordovaInterface {
                 else {
                     me.callbackServer.reinit(url);
                 }
-                me.pluginManager.init();
+                appView.pluginManager.init();
                 
                 // If loadingDialog property, then show the App loading dialog for first page of app
                 String loading = null;
@@ -734,9 +717,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.appView.loadUrl("javascript:try{cordova.require('cordova/channel').onPause.fire();}catch(e){console.log('exception firing pause event from native');};");
 
         // Forward to plugins
-        if (this.pluginManager != null) {
-        	this.pluginManager.onPause(this.keepRunning);
-        }
+        appView.pluginManager.onPause(this.keepRunning);
         
         // If app doesn't want to run in background
         if (!this.keepRunning) {
@@ -754,9 +735,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         super.onNewIntent(intent);
 
         //Forward to plugins
-        if (this.pluginManager != null) {
-        	this.pluginManager.onNewIntent(intent);
-        }
+        appView.pluginManager.onNewIntent(intent);
     }
     
     @Override
@@ -779,9 +758,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.appView.loadUrl("javascript:try{cordova.require('cordova/channel').onResume.fire();}catch(e){console.log('exception firing resume event from native');};");
 
         // Forward to plugins
-        if (this.pluginManager != null) {
-        	this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
-        }
+        appView.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
         
         // If app doesn't want to run in background
         if (!this.keepRunning || this.activityResultKeepRunning) {
@@ -814,9 +791,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.appView.loadUrl("about:blank");
 
             // Forward to plugins
-            if (this.pluginManager != null) {
-                this.pluginManager.onDestroy();
-            }
+            appView.pluginManager.onDestroy();
         }
         else {
             this.endActivity();
@@ -832,9 +807,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     public void postMessage(String id, Object data) {
         
         // Forward to plugins
-        if (this.pluginManager != null) {
-            this.pluginManager.postMessage(id, data);
-        }
+        appView.pluginManager.postMessage(id, data);
     }
 
     /**
@@ -848,9 +821,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     @Deprecated
     public void addService(String serviceType, String className) {
-        if (this.pluginManager != null) {
-        	this.pluginManager.addService(serviceType, className);
-        }
+        appView.pluginManager.addService(serviceType, className);
     }
     
     /**

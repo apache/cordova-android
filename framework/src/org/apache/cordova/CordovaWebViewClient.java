@@ -20,6 +20,7 @@ package org.apache.cordova;
 
 import org.apache.cordova.api.LOG;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -41,6 +42,7 @@ public class CordovaWebViewClient extends WebViewClient {
     
     private static final String TAG = "Cordova";
     DroidGap ctx;
+    CordovaWebView appView;
     private boolean doClearHistory = false;
 
     /**
@@ -50,6 +52,13 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     public CordovaWebViewClient(DroidGap ctx) {
         this.ctx = ctx;
+        appView = ctx.appView;
+    }
+    
+    public CordovaWebViewClient(Context ctx, CordovaWebView view)
+    {
+      this.ctx = (DroidGap) ctx;
+      appView = view;
     }
     
     /**
@@ -64,7 +73,7 @@ public class CordovaWebViewClient extends WebViewClient {
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         
         // First give any plugins the chance to handle the url themselves
-        if ((this.ctx.pluginManager != null) && this.ctx.pluginManager.onOverrideUrlLoading(url)) {
+        if ((appView.pluginManager != null) && appView.pluginManager.onOverrideUrlLoading(url)) {
         }
         
         // If dialing phone (tel:5551212)

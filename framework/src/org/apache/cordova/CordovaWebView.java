@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.cordova.api.LOG;
+import org.apache.cordova.api.PluginManager;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
@@ -24,10 +25,16 @@ public class CordovaWebView extends WebView {
   
   /** The authorization tokens. */
   private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
-  private Context mCtx;
+  
   /** The whitelist **/
   private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
   private HashMap<String, Boolean> whiteListCache = new HashMap<String,Boolean>();
+  protected PluginManager pluginManager;
+  
+  /** Actvities and other important classes **/
+  private Context mCtx;
+  private CordovaWebViewClient viewClient;
+  private CordovaChromeClient chromeClient;
 
   public CordovaWebView(Context context) {
     super(context);
@@ -73,12 +80,19 @@ public class CordovaWebView extends WebView {
     settings.setDatabaseEnabled(true);
     String databasePath = mCtx.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath(); 
     settings.setDatabasePath(databasePath);
-
+    
+    //Setup the WebChromeClient and WebViewClient
+    setWebViewClient(new CordovaWebViewClient(mCtx, this));
+    setWebChromeClient(new CordovaChromeClient(mCtx, this));
+    
     // Enable DOM storage
     settings.setDomStorageEnabled(true);
     
     // Enable built-in geolocation
     settings.setGeolocationEnabled(true);
+    
+    //Start up the plugin manager
+    this.pluginManager = new PluginManager(this, (DroidGap) mCtx);
   }
   
   /**

@@ -45,6 +45,7 @@ public class CordovaChromeClient extends WebChromeClient {
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
     private DroidGap ctx;
+    private CordovaWebView appView;
     
     /**
      * Constructor.
@@ -53,6 +54,13 @@ public class CordovaChromeClient extends WebChromeClient {
      */
     public CordovaChromeClient(Context ctx) {
         this.ctx = (DroidGap) ctx;
+        appView = this.ctx.appView;
+    }
+    
+    public CordovaChromeClient(Context ctx, CordovaWebView app)
+    {
+      this.ctx = (DroidGap) ctx;
+      appView = app;
     }
 
     /**
@@ -182,7 +190,7 @@ public class CordovaChromeClient extends WebChromeClient {
                 String action = array.getString(1);
                 String callbackId = array.getString(2);
                 boolean async = array.getBoolean(3);
-                String r = ctx.pluginManager.exec(service, action, callbackId, message, async);
+                String r = appView.pluginManager.exec(service, action, callbackId, message, async);
                 result.confirm(r);
             } catch (JSONException e) {
                 e.printStackTrace();
