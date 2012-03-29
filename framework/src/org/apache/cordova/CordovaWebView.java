@@ -33,13 +33,11 @@ public class CordovaWebView extends WebView {
   
   /** Actvities and other important classes **/
   private Context mCtx;
-  private CordovaWebViewClient viewClient;
-  private CordovaChromeClient chromeClient;
 
   public CordovaWebView(Context context) {
     super(context);
     mCtx = context;
-    setup();
+    //setup();
   }
   
   public CordovaWebView(Context context, AttributeSet attrs) {
@@ -61,7 +59,7 @@ public class CordovaWebView extends WebView {
     setup();
   }
   
-  private void setup()
+  public void setup()
   {
     this.setInitialScale(0);
     this.setVerticalScrollBarEnabled(false);

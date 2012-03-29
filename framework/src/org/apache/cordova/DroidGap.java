@@ -278,6 +278,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         //      white list of allowed URLs
         //      debug setting
         this.loadConfiguration();
+        this.appView.setup();
 
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.FILL_PARENT,
