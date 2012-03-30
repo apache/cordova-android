@@ -2901,7 +2901,7 @@ Media.get = function(id) {
  * Start or resume playing audio file.
  */
 Media.prototype.play = function(options) {
-    exec(this.successCallback, this.errorCallback, "Media", "startPlayingAudio", [this.id, this.src, options]);
+    exec(null, null, "Media", "startPlayingAudio", [this.id, this.src, options]);
 };
 
 /**
@@ -3512,8 +3512,9 @@ function Device() {
     this.cordova = null;
 
     var me = this;
-    this.getInfo(
-        function(info) {
+
+    channel.onCordovaReady.subscribeOnce(function() {
+        me.getInfo(function(info) {
             me.available = true;
             me.platform = info.platform;
             me.version = info.version;
@@ -3521,11 +3522,11 @@ function Device() {
             me.uuid = info.uuid;
             me.cordova = info.cordova;
             channel.onCordovaInfoReady.fire();
-        },
-        function(e) {
+        },function(e) {
             me.available = false;
             utils.alert("[ERROR] Error initializing Cordova: " + e);
         });
+    });
 }
 
 /**
@@ -4498,46 +4499,47 @@ var exec = require('cordova/exec'),
     channel = require('cordova/channel');
 
 var NetworkConnection = function () {
-        this.type = null;
-        this._firstRun = true;
-        this._timer = null;
-        this.timeout = 500;
+    this.type = null;
+    this._firstRun = true;
+    this._timer = null;
+    this.timeout = 500;
 
-        var me = this;
+    var me = this;
 
-        this.getInfo(
-            function (info) {
-                me.type = info;
-                if (info === "none") {
-                    // set a timer if still offline at the end of timer send the offline event
-                    me._timer = setTimeout(function(){
-                        cordova.fireDocumentEvent("offline");
-                        me._timer = null;
-                        }, me.timeout);
-                } else {
-                    // If there is a current offline event pending clear it
-                    if (me._timer !== null) {
-                        clearTimeout(me._timer);
-                        me._timer = null;
-                    }
-                    cordova.fireDocumentEvent("online");
+    channel.onCordovaReady.subscribeOnce(function() {
+        me.getInfo(function (info) {
+            me.type = info;
+            if (info === "none") {
+                // set a timer if still offline at the end of timer send the offline event
+                me._timer = setTimeout(function(){
+                    cordova.fireDocumentEvent("offline");
+                    me._timer = null;
+                    }, me.timeout);
+            } else {
+                // If there is a current offline event pending clear it
+                if (me._timer !== null) {
+                    clearTimeout(me._timer);
+                    me._timer = null;
                 }
+                cordova.fireDocumentEvent("online");
+            }
 
-                // should only fire this once
-                if (me._firstRun) {
-                    me._firstRun = false;
-                    channel.onCordovaConnectionReady.fire();
-                }
-            },
-            function (e) {
-                // If we can't get the network info we should still tell Cordova
-                // to fire the deviceready event.
-                if (me._firstRun) {
-                    me._firstRun = false;
-                    channel.onCordovaConnectionReady.fire();
-                }
-                console.log("Error initializing Network Connection: " + e);
-            });
+            // should only fire this once
+            if (me._firstRun) {
+                me._firstRun = false;
+                channel.onCordovaConnectionReady.fire();
+            }
+        },
+        function (e) {
+            // If we can't get the network info we should still tell Cordova
+            // to fire the deviceready event.
+            if (me._firstRun) {
+                me._firstRun = false;
+                channel.onCordovaConnectionReady.fire();
+            }
+            console.log("Error initializing Network Connection: " + e);
+        });
+    });
 };
 
 /**
