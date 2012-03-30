@@ -1,0 +1,26 @@
+<html> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<title>Backbutton</title> 
+<link rel="stylesheet" href="../master.css" type="text/css" media="screen" title="no title">
+<script type="text/javascript" charset="utf-8" src="../cordova.js"></script>
+<script type="text/javascript" charset="utf-8" src="../main.js"></script>
+
+<body onload="init();" id="stage" class="theme">
+    <h1>Cordova Android Tests</h1>
+    <div id="info">
+        <h4>Platform: <span id="platform"> &nbsp;</span>,   Version: <span id="version">&nbsp;</span></h4>
+        <h4>UUID: <span id="uuid"> &nbsp;</span>,   Name: <span id="name">&nbsp;</span></h4>
+        <h4>Width: <span id="width"> &nbsp;</span>,   Height: <span id="height">&nbsp;</span>, Color Depth: <span id="colorDepth"></span></h4>
+    </div>
+    <div id="info">
+        <h4>Page 3</h4>
+        Press the 3 buttons below.  You should stay on same page.<br>
+        Press "backbutton" 4 times.  This will go back to #test3, #test2, #test1, then return to previous Page 2.<br>
+        (NOTE: IS THIS CORRECT BEHAVIOR?)
+    </div>
+    <a href="sample3.html#test1" class="btn large">page3#test1</a>
+    <a href="sample3.html#test2" class="btn large">page3#test2</a>
+    <a href="sample3.html#test3" class="btn large">page3#test3</a>
+</body> 
+</html>
