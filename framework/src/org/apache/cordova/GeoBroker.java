@@ -43,9 +43,6 @@ public class GeoBroker extends Plugin {
      * Constructor.
      */
     public GeoBroker() {
-    	this.locationManager = (LocationManager) this.ctx.getSystemService(Context.LOCATION_SERVICE);
-    	this.networkListener = new NetworkListener(this.locationManager, this);
-    	this.gpsListener = new GPSListener(this.locationManager, this);
     }
 
     /**
@@ -57,6 +54,11 @@ public class GeoBroker extends Plugin {
      * @return 				A PluginResult object with a status and message.
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
+    	if (this.locationManager == null) {
+        	this.locationManager = (LocationManager) this.ctx.getSystemService(Context.LOCATION_SERVICE);
+        	this.networkListener = new NetworkListener(this.locationManager, this);
+        	this.gpsListener = new GPSListener(this.locationManager, this);
+    	}
         PluginResult.Status status = PluginResult.Status.NO_RESULT;
         String message = "";
         PluginResult result = new PluginResult(status, message);
@@ -69,7 +71,7 @@ public class GeoBroker extends Plugin {
             	Location last = this.locationManager.getLastKnownLocation((enableHighAccuracy ? LocationManager.GPS_PROVIDER : LocationManager.NETWORK_PROVIDER));
             	// Check if we can use lastKnownLocation to get a quick reading and use less battery
             	if ((System.currentTimeMillis() - last.getTime()) <= maximumAge) {
-            		result = new PluginResult(PluginResult.Status.OK, GeoBroker.returnLocationJSON(last));
+            		result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(last));
             	} else {
             		this.getCurrentLocation(callbackId, enableHighAccuracy);
             	}
@@ -132,19 +134,27 @@ public class GeoBroker extends Plugin {
         this.gpsListener = null;
     }
 
-    public static String returnLocationJSON(Location loc) {
-        return "{" + 
-      		  "'latitude':" + loc.getLatitude() + "," + 
-      		  "'longitude':" + loc.getLongitude() + "," + 
-      		  "'altitude':" + (loc.hasAltitude() ? loc.getAltitude() : "null") + "," + 
-      		  "'accuracy':" + loc.getAccuracy() + "," + 
-      		  "'heading':" + (loc.hasBearing() ? (loc.hasSpeed() ? loc.getBearing() : "NaN") : "null") + "," + 
-      		  "'speed':" + loc.getSpeed() + "," + 
-      		  "'timestamp':" + loc.getTime() + 
-      		"}"; 
+    public JSONObject returnLocationJSON(Location loc) {
+    	JSONObject o = new JSONObject();
+    	
+    	try {
+			o.put("latitude", loc.getLatitude());
+			o.put("longitude", loc.getLongitude());
+	    	o.put("altitude", (loc.hasAltitude() ? loc.getAltitude() : null));
+	  	  	o.put("accuracy", loc.getAccuracy());
+	  	  	o.put("heading", (loc.hasBearing() ? (loc.hasSpeed() ? loc.getBearing() : null) : null));
+	  	  	o.put("speed", loc.getSpeed()); 
+			o.put("timestamp", loc.getTime()); 
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	
+    	return o;
       }
       public void win(Location loc, String callbackId) {
-    	  PluginResult result = new PluginResult(PluginResult.Status.OK, GeoBroker.returnLocationJSON(loc));
+    	  PluginResult result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(loc));
     	  this.success(result, callbackId);
       }
       /**

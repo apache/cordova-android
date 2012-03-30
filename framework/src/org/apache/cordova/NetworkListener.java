@@ -28,11 +28,5 @@ import android.location.LocationManager;
 public class NetworkListener extends CordovaLocationListener {
 	public NetworkListener(LocationManager locationManager, GeoBroker m) {
 		super(locationManager, m, "[Cordova NetworkListener]");
-		if (this.locationManager.getProvider(LocationManager.NETWORK_PROVIDER) != null) {
-	        // If network provider, then create and start network listener
-            this.locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000, 10, this);
-        } else {
-        	this.fail(CordovaLocationListener.POSITION_UNAVAILABLE, "Network provider is not available.");
-        }
 	}
 }

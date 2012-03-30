@@ -28,12 +28,6 @@ import android.location.LocationManager;
 public class GPSListener extends CordovaLocationListener {
 	public GPSListener(LocationManager locationManager, GeoBroker m) {
 		super(locationManager, m, "[Cordova GPSListener]");
-		if (this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
-	        // If network provider, then create and start network listener
-            this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
-        } else {
-        	this.fail(CordovaLocationListener.POSITION_UNAVAILABLE, "GPS provider is not available.");
-        }
 	}
 
 	
@@ -42,7 +36,8 @@ public class GPSListener extends CordovaLocationListener {
 	 * 
 	 * @param interval
 	 */
-	public void start() {
+	@Override
+	protected void start() {
 		if (!this.running) {
 			if (this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
 				this.running = true;

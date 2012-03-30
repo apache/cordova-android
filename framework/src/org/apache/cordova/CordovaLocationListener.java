@@ -175,7 +175,7 @@ public class CordovaLocationListener implements LocationListener {
 	 * 
 	 * @param interval
 	 */
-	private void start() {
+	protected void start() {
 		if (!this.running) {
 			if (this.locationManager.getProvider(LocationManager.NETWORK_PROVIDER) != null) {
 				this.running = true;
