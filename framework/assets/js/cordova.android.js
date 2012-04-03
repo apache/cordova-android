@@ -1116,10 +1116,14 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
     if (typeof options.encodingType == "number") {
         encodingType = options.encodingType;
     }
-    // TODO: parse MediaType
+    
+    var mediaType = Camera.MediaType.PICTURE;
+    if (typeof options.mediaType == "number") {
+        mediaType = options.mediaType;
+    }
     // TODO: enable allow edit?
 
-    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType]);
+    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType]);
 }
 
 module.exports = cameraExport;
@@ -1997,10 +2001,15 @@ Entry.prototype.remove = function(successCallback, errorCallback) {
  * @param errorCallback {Function} called with a FileError
  */
 Entry.prototype.getParent = function(successCallback, errorCallback) {
+    var win = typeof successCallback !== 'function' ? null : function(result) {
+        var DirectoryEntry = require('cordova/plugin/DirectoryEntry');
+        var entry = new DirectoryEntry(result.name, result.fullPath);
+        successCallback(entry);
+    };
     var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
-    exec(successCallback, fail, "File", "getParent", [this.fullPath]);
+    exec(win, fail, "File", "getParent", [this.fullPath]);
 };
 
 module.exports = Entry;
