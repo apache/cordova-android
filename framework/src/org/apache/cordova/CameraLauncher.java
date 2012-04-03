@@ -31,8 +31,6 @@ import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -115,6 +113,7 @@ public class CameraLauncher extends Plugin {
                 this.targetWidth = args.getInt(3);
                 this.targetHeight = args.getInt(4);
                 this.encodingType = args.getInt(5);
+                this.mediaType = args.getInt(6);
                 
                 if (srcType == CAMERA) {
                     this.takePicture(destType, encodingType);
