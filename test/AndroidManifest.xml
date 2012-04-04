@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.apache.cordova.test"
-    android:versionCode="1"
-    android:versionName="1.0" >
-
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:windowSoftInputMode="adjustPan"
+      package="org.apache.cordova.test" android:versionName="1.1" android:versionCode="5">
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
         android:smallScreens="true"
+        android:xlargeScreens="true"
         android:resizeable="true"
         android:anyDensity="true"
         />
@@ -28,11 +26,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
-    
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
-    
-    
+   
     <uses-sdk android:minSdkVersion="3" />
 
     <instrumentation
@@ -53,6 +47,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="tests" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.SAMPLE_CODE" />
+            </intent-filter>
+        </activity> 
         <activity
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
@@ -92,7 +93,48 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
             </intent-filter>
+       <activity android:name="splashscreen" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
         </activity>
-    </application>
-
-</manifest>
+        <activity android:name="timeout" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="htmlnotfound" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="errorurl" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="userwebview" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="menus" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="loading" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="lifecycle" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="jqmtabbackbutton" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="backbuttonmultipage" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="whitelist" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="background" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="iframe" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="xhr" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        </application>
+    <uses-sdk android:minSdkVersion="5" />
+</manifest> 

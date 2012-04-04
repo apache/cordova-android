@@ -15,22 +15,20 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
-*/
-package com.phonegap.api;
+ */
+package org.apache.cordova.test;
 
-import org.apache.cordova.api.CordovaInterface;
-
+import android.os.Bundle;
 import android.webkit.WebView;
 
-/**
- * PluginManager is exposed to JavaScript in the Cordova WebView.
- * 
- * Calling native plugin code can be done by calling PluginManager.exec(...)
- * from JavaScript.
- */
-public class PluginManager extends org.apache.cordova.api.PluginManager {
+import org.apache.cordova.*;
 
-    public PluginManager(WebView app, CordovaInterface ctx) {
-        super(app, ctx);
+public class background extends DroidGap {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        //super.init(new FixWebView(this), new CordovaWebViewClient(this), new CordovaChromeClient(this));
+        super.setBooleanProperty("keepRunning", false);
+        super.loadUrl("file:///android_asset/www/background/index.html");
     }
 }

@@ -464,9 +464,11 @@ var Channel = function(type, opts) {
             if (feature) {
                 var c = null;
                 if (this[feature]) {
+                    console.log("fire: using same feature for "+feature);
                     c = this[feature];
                 }
                 else {
+                    console.log("fire: creating feature "+feature);
                     c = this.create(feature);
                 }
                 this.deviceReadyChannelsMap[feature] = c;
@@ -553,6 +555,7 @@ Channel.prototype.unsubscribe = function(g) {
  */
 Channel.prototype.fire = function(e) {
     if (this.enabled) {
+        console.log("Channel.fire("+this.type+")");
         var fail = false;
         this.fired = true;
         for (var item in this.handlers) {
@@ -596,6 +599,7 @@ channel.create('onResume');
 channel.create('onPause');
 
 // Event to indicate a destroy lifecycle event
+// TODO: is this correct?
 channel.create('onDestroy');
 
 // Channels that must fire before "deviceready" is fired.
@@ -1116,14 +1120,10 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
     if (typeof options.encodingType == "number") {
         encodingType = options.encodingType;
     }
-    
-    var mediaType = Camera.MediaType.PICTURE;
-    if (typeof options.mediaType == "number") {
-        mediaType = options.mediaType;
-    }
+    // TODO: parse MediaType
     // TODO: enable allow edit?
 
-    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType]);
+    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType]);
 }
 
 module.exports = cameraExport;
@@ -2001,15 +2001,10 @@ Entry.prototype.remove = function(successCallback, errorCallback) {
  * @param errorCallback {Function} called with a FileError
  */
 Entry.prototype.getParent = function(successCallback, errorCallback) {
-    var win = typeof successCallback !== 'function' ? null : function(result) {
-        var DirectoryEntry = require('cordova/plugin/DirectoryEntry');
-        var entry = new DirectoryEntry(result.name, result.fullPath);
-        successCallback(entry);
-    };
     var fail = typeof errorCallback !== 'function' ? null : function(code) {
         errorCallback(new FileError(code));
     };
-    exec(win, fail, "File", "getParent", [this.fullPath]);
+    exec(successCallback, fail, "File", "getParent", [this.fullPath]);
 };
 
 module.exports = Entry;
@@ -2910,7 +2905,7 @@ Media.get = function(id) {
  * Start or resume playing audio file.
  */
 Media.prototype.play = function(options) {
-    exec(null, null, "Media", "startPlayingAudio", [this.id, this.src, options]);
+    exec(this.successCallback, this.errorCallback, "Media", "startPlayingAudio", [this.id, this.src, options]);
 };
 
 /**

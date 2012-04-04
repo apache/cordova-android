@@ -16,21 +16,15 @@
        specific language governing permissions and limitations
        under the License.
 */
-package com.phonegap.api;
+package org.apache.cordova.test;
 
-import org.apache.cordova.api.CordovaInterface;
+import android.os.Bundle;
+import org.apache.cordova.*;
 
-import android.webkit.WebView;
-
-/**
- * PluginManager is exposed to JavaScript in the Cordova WebView.
- * 
- * Calling native plugin code can be done by calling PluginManager.exec(...)
- * from JavaScript.
- */
-public class PluginManager extends org.apache.cordova.api.PluginManager {
-
-    public PluginManager(WebView app, CordovaInterface ctx) {
-        super(app, ctx);
+public class lifecycle extends DroidGap {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        super.loadUrl("file:///android_asset/www/lifecycle/index.html");
     }
 }

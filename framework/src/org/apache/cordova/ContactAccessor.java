@@ -84,7 +84,8 @@ public abstract class ContactAccessor {
               map.put("displayName", true);
             }
             else if (key.startsWith("name")) {
-              map.put("name", true);
+                map.put("displayName", true);
+                map.put("name", true);
             }
             else if (key.startsWith("nickname")) {
               map.put("nickname", true);

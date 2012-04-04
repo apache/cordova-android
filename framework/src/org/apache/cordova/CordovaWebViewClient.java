@@ -239,6 +239,9 @@ public class CordovaWebViewClient extends WebViewClient {
                         Thread.sleep(2000);
                         ctx.runOnUiThread(new Runnable() {
                             public void run() {
+                                if (ctx.splashscreen != 0) {
+                                    ctx.root.setBackgroundResource(0);
+                                }
                                 ctx.appView.setVisibility(View.VISIBLE);
                                 ctx.spinnerStop();
                             }

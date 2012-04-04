@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta name="viewport" content="width=320; user-scalable=no" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Cordova Tests</title>
+	  <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title">
+	  <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="main.js"></script>
+	  <script>
+	  function startActivity(className) {
+	      cordova.exec(function() {console.log("Success");}, function(e) {console.log("Error: "+e);}, "Activity", "start", [className]);
+	  };
+	  
+	  localStorage.lifecyclestatus = "";
+	  localStorage.backgroundstatus = "";
+	  </script>
+
+  </head>
+  <body onload="init();" id="stage" class="theme">
+    <h1>Cordova Android Tests</h1>
+    <div id="info">
+        <h4>Platform: <span id="platform"> &nbsp;</span>,   Version: <span id="version">&nbsp;</span></h4>
+        <h4>UUID: <span id="uuid"> &nbsp;</span>,   Name: <span id="name">&nbsp;</span></h4>
+        <h4>Width: <span id="width"> &nbsp;</span>,   Height: <span id="height">&nbsp;
+                   </span>, Color Depth: <span id="colorDepth"></span></h4>
+        <h4>Cordova Version: <span id="cordova">&nbsp;</span></h4>
+     </div>
+    <div id="info">
+        <h4>Run each of the tests below:</h4>
+    </div>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.jqmtabbackbutton');">Backbutton jQM tab</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.backbuttonmultipage');">Backbutton with multiple pages</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.errorurl');">Error URL</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.htmlnotfound');">HTML not found</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.iframe');">IFrame</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.lifecycle');">Lifecycle</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.loading');">Loading indicator</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.menus');">Menus</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.background');">No multitasking</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.splashscreen');">Splash screen</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.timeout');">Load timeout</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.userwebview');">User WebView/Client/Chrome</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.whitelist');">Whitelist</button>
+    <button class="btn large" onclick="startActivity('org.apache.cordova.test.xhr');">XHR</button>
+  </body>
+</html>

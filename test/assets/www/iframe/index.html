@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta name="viewport" content="width=320; user-scalable=no" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Cordova Tests</title>
+      <link rel="stylesheet" href="../master.css" type="text/css" media="screen" title="no title">
+      <script type="text/javascript" charset="utf-8" src="../cordova.js"></script>
+      <script type="text/javascript" charset="utf-8" src="../main.js"></script>
+      <script>
+      function loadUrl(url) {
+    	  document.getElementById('iframe').src = url;
+      }</script>
+  </head>
+  <body onload="init();" id="stage" class="theme">
+    <h1>IFrame</h1>
+    <div id="info">
+        <h4>Platform: <span id="platform"> &nbsp;</span>,   Version: <span id="version">&nbsp;</span></h4>
+        <h4>UUID: <span id="uuid"> &nbsp;</span>,   Name: <span id="name">&nbsp;</span></h4>
+        <h4>Width: <span id="width"> &nbsp;</span>,   Height: <span id="height">&nbsp;
+                   </span>, Color Depth: <span id="colorDepth"></span></h4>
+    </div>
+    <div id="info">
+    Press the two buttons:<br>
+    1. Google Maps should display in iframe.<br>
+    2. Page 2 replaces current page.<br>
+    (NOTE: THIS BEHAVIOR IS WRONG - AND NEEDS TO BE FIXED IN FUTURE RELEASE.)
+    </div>
+    <iframe id="iframe" src="" width="90%" height="200px"></iframe>
+    <a href="javascript:" class="btn large" onclick="loadUrl('http://maps.google.com/maps?output=embed');">Google Maps</a>
+    <a href="javascript:" class="btn large" onclick="loadUrl('index2.html');">Page 2</a>
+  </body>
+</html>

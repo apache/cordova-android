@@ -16,21 +16,20 @@
        specific language governing permissions and limitations
        under the License.
 */
-package com.phonegap.api;
+package org.apache.cordova.test;
 
-import org.apache.cordova.api.CordovaInterface;
+import android.os.Bundle;
+import org.apache.cordova.*;
 
-import android.webkit.WebView;
+public class splashscreen extends DroidGap {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        super.init();
 
-/**
- * PluginManager is exposed to JavaScript in the Cordova WebView.
- * 
- * Calling native plugin code can be done by calling PluginManager.exec(...)
- * from JavaScript.
- */
-public class PluginManager extends org.apache.cordova.api.PluginManager {
+        // Show splashscreen
+        this.setIntegerProperty("splashscreen", R.drawable.sandy);
 
-    public PluginManager(WebView app, CordovaInterface ctx) {
-        super(app, ctx);
+        super.loadUrl("file:///android_asset/www/splashscreen/index.html", 2000);
     }
 }

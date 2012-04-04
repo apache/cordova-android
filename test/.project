@@ -3,7 +3,6 @@
 	<name>CordovaTest</name>
 	<comment></comment>
 	<projects>
-		<project>Phonegapdemo</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

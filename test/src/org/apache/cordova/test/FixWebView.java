@@ -16,21 +16,28 @@
        specific language governing permissions and limitations
        under the License.
 */
-package com.phonegap.api;
+package org.apache.cordova.test;
 
-import org.apache.cordova.api.CordovaInterface;
-
+import android.content.Context;
 import android.webkit.WebView;
 
-/**
- * PluginManager is exposed to JavaScript in the Cordova WebView.
- * 
- * Calling native plugin code can be done by calling PluginManager.exec(...)
- * from JavaScript.
- */
-public class PluginManager extends org.apache.cordova.api.PluginManager {
+public class FixWebView extends WebView {
 
-    public PluginManager(WebView app, CordovaInterface ctx) {
-        super(app, ctx);
+    public FixWebView(Context context) {
+        super(context);
     }
+
+    @Override
+    public void pauseTimers() {
+        // Do nothing
+    }
+
+    /**
+     * This method is with different signature in order to stop the timers while move application to background
+     * @param realPause
+     */
+    public void pauseTimers(@SuppressWarnings("unused") boolean realPause) {
+        super.pauseTimers();
+    }
+
 }
