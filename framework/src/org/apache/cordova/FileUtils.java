@@ -142,8 +142,7 @@ public class FileUtils extends Plugin {
                 return new PluginResult(status, obj);
             }
             else if (action.equals("getMetadata")) {
-                JSONObject obj = getMetadata(args.getString(0));
-                return new PluginResult(status, obj);
+                return new PluginResult(status, getMetadata(args.getString(0)));
             }
             else if (action.equals("getFileMetadata")) {
                 JSONObject obj = getFileMetadata(args.getString(0));
@@ -764,21 +763,17 @@ public class FileUtils extends Plugin {
      * Look up metadata about this entry.
      *
      * @param filePath to entry
-     * @return a Metadata object
+     * @return a long
      * @throws FileNotFoundException
-     * @throws JSONException
      */
-    private JSONObject getMetadata(String filePath) throws FileNotFoundException, JSONException {
+    private long getMetadata(String filePath) throws FileNotFoundException {
         File file = createFileObject(filePath);
 
         if (!file.exists()) {
             throw new FileNotFoundException("Failed to find file in getMetadata");
         }
 
-        JSONObject metadata = new JSONObject();
-        metadata.put("modificationTime", file.lastModified());
-
-        return metadata;
+        return file.lastModified();
     }
 
     /**
