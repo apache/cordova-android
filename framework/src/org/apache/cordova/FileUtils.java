@@ -973,23 +973,23 @@ public class FileUtils extends Plugin {
     /**/
     public long write(String filename, String data, int offset) throws FileNotFoundException, IOException {
         filename = stripFileProtocol(filename);
-
+        
         boolean append = false;
         if (offset > 0) {
             this.truncateFile(filename, offset);
             append = true;
         }
 
-       byte [] rawData = data.getBytes();
-       ByteArrayInputStream in = new ByteArrayInputStream(rawData);
-       FileOutputStream out = new FileOutputStream(filename, append);
-       byte buff[] = new byte[rawData.length];
-       in.read(buff, 0, buff.length);
-       out.write(buff, 0, rawData.length);
-       out.flush();
-       out.close();
+        byte [] rawData = data.getBytes();
+        ByteArrayInputStream in = new ByteArrayInputStream(rawData);
+        FileOutputStream out = new FileOutputStream(filename, append);
+        byte buff[] = new byte[rawData.length];
+        in.read(buff, 0, buff.length);
+        out.write(buff, 0, rawData.length);
+        out.flush();
+        out.close();
 
-        return data.length();
+        return rawData.length;
     }
 
     /**
