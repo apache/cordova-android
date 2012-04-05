@@ -116,7 +116,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public void startRecording(String file) {
 		if (this.mPlayer != null) {
 			Log.d(LOG_TAG, "AudioPlayer Error: Can't record in play mode.");
-			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");
+			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
 		}
 		
 		// Make sure we're not already recording
@@ -137,11 +137,11 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
+			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");			
 		}
 		else {
 		    Log.d(LOG_TAG, "AudioPlayer Error: Already recording.");
-			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
+			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");			
 		}
 	}
 	
@@ -183,7 +183,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public void startPlaying(String file) {
 		if (this.recorder != null) {
 		    Log.d(LOG_TAG, "AudioPlayer Error: Can't play in record mode.");
-			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");
+			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
 		}
 		
 		// If this is a new request to play audio, or stopped
@@ -228,7 +228,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			} 
 			catch (Exception e) { 
 				e.printStackTrace(); 
-				this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
+				this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");			
 			}
 		}
 
@@ -242,7 +242,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 			}
 			else {
 			    Log.d(LOG_TAG, "AudioPlayer Error: startPlaying() called during invalid state: "+this.state);
-				this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_ABORTED+");");			
+				this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");			
 			}
 		}
 	} 
@@ -270,7 +270,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		}
 		else {
 		    Log.d(LOG_TAG, "AudioPlayer Error: pausePlaying() called during invalid state: "+this.state);			
-			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_NONE_ACTIVE+");");			
+			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_NONE_ACTIVE+"});");			
 		}
 	}
 
@@ -284,7 +284,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		}
 		else {
 		    Log.d(LOG_TAG, "AudioPlayer Error: stopPlaying() called during invalid state: "+this.state);			
-			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+MEDIA_ERR_NONE_ACTIVE+");");			
+			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_NONE_ACTIVE+"});");			
 		}
 	}
 	
@@ -413,7 +413,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		this.mPlayer.release();
 		
 		// Send error notification to JavaScript
-		this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", "+arg1+");");
+		this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', { \"code\":"+arg1+"});");
 		return false;
 	}
 	
