@@ -215,9 +215,15 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 						android.content.res.AssetFileDescriptor fd = this.handler.ctx.getBaseContext().getAssets().openFd(f);
 						this.mPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
 					}
-					else {
-						this.mPlayer.setDataSource("/sdcard/" + file);
-					}
+                    else {
+                        File fp = new File(file);
+                        if (fp.exists()) {
+                            this.mPlayer.setDataSource(file);
+                        } 
+                        else {
+                            this.mPlayer.setDataSource("/sdcard/" + file);
+                        }
+                    }
 					this.setState(MEDIA_STARTING);
 					this.mPlayer.setOnPreparedListener(this);		
 					this.mPlayer.prepare();
