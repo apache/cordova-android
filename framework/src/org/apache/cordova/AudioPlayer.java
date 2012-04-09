@@ -28,6 +28,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -218,7 +219,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                     else {
                         File fp = new File(file);
                         if (fp.exists()) {
-                            this.mPlayer.setDataSource(file);
+                            FileInputStream fileInputStream = new FileInputStream(file);
+                            this.mPlayer.setDataSource(fileInputStream.getFD());
                         } 
                         else {
                             this.mPlayer.setDataSource("/sdcard/" + file);
