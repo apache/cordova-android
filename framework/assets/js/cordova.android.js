@@ -1,4 +1,4 @@
-// File generated at :: Mon Apr 09 2012 16:59:23 GMT-0700 (PDT)
+// File generated at :: Tue Apr 10 2012 11:22:35 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -416,40 +416,7 @@ module.exports = {
 // file: lib/common/channel.js
 define("cordova/channel", function(require, exports, module) {
 /**
- * Custom pub-sub "channel" that can have functions subscribed to it
- * This object is used to define and control firing of events for
- * cordova initialization.
- *
- * The order of events during page load and Cordova startup is as follows:
- *
- * onDOMContentLoaded         Internal event that is received when the web page is loaded and parsed.
- * onNativeReady              Internal event that indicates the Cordova native side is ready.
- * onCordovaReady             Internal event fired when all Cordova JavaScript objects have been created.
- * onCordovaInfoReady         Internal event fired when device properties are available.
- * onCordovaConnectionReady   Internal event fired when the connection property has been set.
- * onDeviceReady              User event fired to indicate that Cordova is ready
- * onResume                   User event fired to indicate a start/resume lifecycle event
- * onPause                    User event fired to indicate a pause lifecycle event
- * onDestroy                  Internal event fired when app is being destroyed (User should use window.onunload event, not this one).
- *
- * The only Cordova events that user code should register for are:
- *      deviceready           Cordova native code is initialized and Cordova APIs can be called from JavaScript
- *      pause                 App has moved to background
- *      resume                App has returned to foreground
- *
- * Listeners can be registered as:
- *      document.addEventListener("deviceready", myDeviceReadyListener, false);
- *      document.addEventListener("resume", myResumeListener, false);
- *      document.addEventListener("pause", myPauseListener, false);
- *
- * The DOM lifecycle events should be used for saving and restoring state
- *      window.onload
- *      window.onunload
- *
- */
-
-/**
- * Channel
+ * Custom pub-sub channel that can have functions subscribed to it
  * @constructor
  * @param type  String the channel name
  * @param opts  Object options to pass into the channel, currently
@@ -619,7 +586,8 @@ Channel.prototype.fire = function(e) {
     return true;
 };
 
-// defining them here so they are ready super fast!
+//HACK: defining them here so they are ready super fast!
+
 // DOM event that is received when the web page is loaded and parsed.
 channel.create('onDOMContentLoaded');
 
@@ -1076,11 +1044,11 @@ module.exports = {
 
 // file: lib/common/plugin/Acceleration.js
 define("cordova/plugin/Acceleration", function(require, exports, module) {
-var Acceleration = function(x, y, z, timestamp) {
+var Acceleration = function(x, y, z) {
   this.x = x;
   this.y = y;
   this.z = z;
-  this.timestamp = timestamp || (new Date()).getTime();
+  this.timestamp = new Date().getTime();
 };
 
 module.exports = Acceleration;
