@@ -43,13 +43,6 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<PhoneG
         String className = innerContainer.getClass().getSimpleName();
         assertTrue(className.equals("LinearLayoutSoftKeyboardDetect"));
     }
-    
-    public void testForPluginManager() {
-        CordovaWebView v = (CordovaWebView) testView;
-        PluginManager p = v.getPluginManager();
-        assertNotNull(p);
-        String className = p.getClass().getSimpleName();
-        assertTrue(className.equals("PluginManager"));
-    }
+
 
 }

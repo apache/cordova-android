@@ -15,7 +15,6 @@ public class PhoneGapViewTestActivity extends Activity {
         setContentView(R.layout.main);
         
         phoneGap = (CordovaWebView) findViewById(R.id.phoneGapView);
-        phoneGap.init();
         
         phoneGap.loadUrl("file:///android_asset/index.html");
         

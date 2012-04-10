@@ -4,7 +4,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
     
-    <com.phonegap.CordovaWebView
+    <org.apache.cordova.CordovaWebView
         android:id="@+id/phoneGapView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />

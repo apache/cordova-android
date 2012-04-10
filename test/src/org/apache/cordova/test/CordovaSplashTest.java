@@ -39,16 +39,4 @@ public class CordovaSplashTest extends ActivityInstrumentationTestCase2<PhoneGap
         assertTrue(className.equals("CordovaWebView"));
     }
     
-    public void testForPluginManager() {
-        CordovaWebView v = (CordovaWebView) testView;
-        PluginManager p = v.getPluginManager();
-        assertNotNull(p);
-        String className = p.getClass().getSimpleName();
-        assertTrue(className.equals("PluginManager"));
-    }
-
-    public void testBackButton() {
-        CordovaWebView v = (CordovaWebView) testView;
-        assertFalse(v.checkBackKey());
-    }
 }

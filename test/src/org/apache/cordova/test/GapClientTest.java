@@ -31,7 +31,6 @@ public class GapClientTest extends ActivityInstrumentationTestCase2<PhoneGapView
 		containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
 		innerContainer = (LinearLayout) containerView.getChildAt(0);
 		testView = innerContainer.getChildAt(0);
-		appCode = ((CordovaWebView) testView).getGapClient();
 		
 	}
 	
@@ -45,27 +44,5 @@ public class GapClientTest extends ActivityInstrumentationTestCase2<PhoneGapView
 	    assertTrue(className.equals("CordovaWebView"));
 	}
 	
-	public void testGetResources() {
-	    Resources ls = testActivity.getResources();
-	    Resources rs = appCode.getResources();
-	    assertTrue(ls.equals(rs));
-	}
 	
-	public void testGetPackageName() {
-	    String ls = testActivity.getPackageName();
-	    String rs = appCode.getPackageName();
-	    assertTrue(ls.equals(rs));
-	}
-	
-	public void testGetAssets() {
-	    AssetManager ls = testActivity.getAssets();
-	    AssetManager rs = testActivity.getAssets();
-	    assertTrue(ls.equals(rs));
-	}
-	
-	public void testGetBaseContext() {
-	    Context ls = testActivity.getBaseContext();
-	    Context rs = testActivity.getBaseContext();
-	    assertTrue(ls.equals(rs));
-	}
 }
