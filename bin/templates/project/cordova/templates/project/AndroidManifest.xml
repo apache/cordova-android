@@ -2,13 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:windowSoftInputMode="adjustPan"
       package="__PACKAGE__" android:versionName="1.1" android:versionCode="5">
     <supports-screens
-    	android:largeScreens="true"
-    	android:normalScreens="true"
-    	android:smallScreens="true"
-    	android:xlargeScreens="true"
-    	android:resizeable="true"
-    	android:anyDensity="true"
-    	/>
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true"
+        android:resizeable="true"
+        android:anyDensity="true"
+        />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -27,24 +27,17 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
 
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <application android:icon="@drawable/icon" android:label="@string/app_name"
-    	android:debuggable="true">
-		<activity android:name="__ACTIVITY__" android:label="@string/app_name" 
-				  android:configChanges="orientation|keyboardHidden">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-        </activity>
-        <activity android:name="org.apache.cordova.DroidGap" android:label="@string/app_name" 
-            	  android:configChanges="orientation|keyboardHidden">
-        	<intent-filter>
-        	</intent-filter>
+        android:debuggable="true">
+        <activity android:name="__ACTIVITY__" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 
-	<uses-sdk android:minSdkVersion="5" />
+    <uses-sdk android:minSdkVersion="5" />
 </manifest> 

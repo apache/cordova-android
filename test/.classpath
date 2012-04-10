@@ -12,6 +12,6 @@
 	<classpathentry kind="lib" path="libs/guava-10.0.1.jar"/>
 	<classpathentry kind="lib" path="libs/junit-4.10.jar"/>
 	<classpathentry kind="lib" path="libs/logging.jar"/>
-	<classpathentry kind="lib" path="libs/cordova-1.6.0rc1.jar"/>
+	<classpathentry kind="lib" path="libs/cordova-1.6.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
