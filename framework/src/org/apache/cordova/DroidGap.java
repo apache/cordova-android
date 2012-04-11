@@ -155,7 +155,6 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     protected LinearLayout root;
     public boolean bound = false;
-    public CallbackServer callbackServer;
     protected boolean cancelLoadUrl = false;
     protected ProgressDialog spinnerDialog = null;
 
@@ -379,12 +378,12 @@ public class DroidGap extends Activity implements CordovaInterface {
                 me.appView.clearHistory();
             
                 // Create callback server and plugin manager
-                if (me.callbackServer == null) {
-                    me.callbackServer = new CallbackServer();
-                    me.callbackServer.init(url);
+                if (appView.callbackServer == null) {
+                    appView.callbackServer = new CallbackServer();
+                    appView.callbackServer.init(url);
                 }
                 else {
-                    me.callbackServer.reinit(url);
+                    appView.callbackServer.reinit(url);
                 }
                 appView.pluginManager.init();
                 
@@ -832,8 +831,8 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     public void sendJavascript(String statement) {
         //We need to check for the null case on the Kindle Fire beacuse it changes the width and height on load
-        if(this.callbackServer != null)
-          this.callbackServer.sendJavascript(statement);
+        if(this.appView.callbackServer != null)
+          appView.callbackServer.sendJavascript(statement);
     }
 
     /**

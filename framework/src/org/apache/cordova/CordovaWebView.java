@@ -30,6 +30,8 @@ public class CordovaWebView extends WebView {
   private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
   private HashMap<String, Boolean> whiteListCache = new HashMap<String,Boolean>();
   protected PluginManager pluginManager;
+  public CallbackServer callbackServer;
+
   
   /** Actvities and other important classes **/
   private Context mCtx;

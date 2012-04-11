@@ -199,7 +199,7 @@ public class CordovaChromeClient extends WebChromeClient {
         
         // Polling for JavaScript messages 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-            String r = ctx.callbackServer.getJavascript();
+            String r = appView.callbackServer.getJavascript();
             result.confirm(r);
         }
         
@@ -207,16 +207,16 @@ public class CordovaChromeClient extends WebChromeClient {
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
             String r = "";
             if (message.equals("usePolling")) {
-                r = ""+ ctx.callbackServer.usePolling();
+                r = ""+ appView.callbackServer.usePolling();
             }
             else if (message.equals("restartServer")) {
-                ctx.callbackServer.restartServer();
+                appView.callbackServer.restartServer();
             }
             else if (message.equals("getPort")) {
-                r = Integer.toString(ctx.callbackServer.getPort());
+                r = Integer.toString(appView.callbackServer.getPort());
             }
             else if (message.equals("getToken")) {
-                r = ctx.callbackServer.getToken();
+                r = appView.callbackServer.getToken();
             }
             result.confirm(r);
         }
