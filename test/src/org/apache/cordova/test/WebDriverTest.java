@@ -27,14 +27,13 @@ public class WebDriverTest extends ActivityInstrumentationTestCase2<CordovaDrive
 	
 	protected void setUp() throws Exception{
 		super.setUp();
+		
 		testActivity = this.getActivity();
 		viewFactory = new CordovaViewFactory();
 		appCode = new CordovaChromeClient(testActivity);
 		viewHandler = new CordovaWebViewClient(testActivity);
 		testDriver = new AndroidWebDriver(testActivity, viewFactory, viewHandler, appCode);
 		testView = (CordovaWebView) testDriver.getWebView();
-		viewHandler.setCordovaView(testView);
-		appCode.testInit(testView);
 	}
 	
 	public void testPreconditions(){

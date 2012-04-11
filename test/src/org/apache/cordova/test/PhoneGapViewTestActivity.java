@@ -23,6 +23,6 @@ public class PhoneGapViewTestActivity extends Activity {
     public void onDestroy()
     {
         super.onDestroy();
-        phoneGap.onDestroy();
+        //phoneGap.onDestroy();
     }
 }

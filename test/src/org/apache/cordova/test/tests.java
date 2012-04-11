@@ -26,7 +26,7 @@ public class tests extends DroidGap {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.init();
-        super.pluginManager.addService("Activity", "org.apache.cordova.test.ActivityPlugin");
+        //super.pluginManager.addService("Activity", "org.apache.cordova.test.ActivityPlugin");
         super.loadUrl("file:///android_asset/www/index.html");
     }
 }

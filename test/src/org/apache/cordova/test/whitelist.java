@@ -28,7 +28,7 @@ public class whitelist extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.init(new WebView(this), new TestViewClient(this), new CordovaChromeClient(this));
+        super.init(new CordovaWebView(this), new TestViewClient(this), new CordovaChromeClient(this));
         super.loadUrl("file:///android_asset/www/whitelist/index.html");
     }
 
