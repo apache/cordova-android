@@ -1,5 +1,5 @@
 /*
-f       Licensed to the Apache Software Foundation (ASF) under one
+       Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
        distributed with this work for additional information
        regarding copyright ownership.  The ASF licenses this file
@@ -155,6 +155,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     protected LinearLayout root;
     public boolean bound = false;
+    public CallbackServer callbackServer;
     protected boolean cancelLoadUrl = false;
     protected ProgressDialog spinnerDialog = null;
 
@@ -277,7 +278,6 @@ public class DroidGap extends Activity implements CordovaInterface {
         //      white list of allowed URLs
         //      debug setting
         this.loadConfiguration();
-        this.appView.setup();
 
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.FILL_PARENT,
@@ -379,12 +379,12 @@ public class DroidGap extends Activity implements CordovaInterface {
                 me.appView.clearHistory();
             
                 // Create callback server and plugin manager
-                if (me.appView.callbackServer == null) {
-                    me.appView.callbackServer = new CallbackServer();
-                    me.appView.callbackServer.init(url);
+                if (me.callbackServer == null) {
+                    me.callbackServer = new CallbackServer();
+                    me.callbackServer.init(url);
                 }
                 else {
-                    me.appView.callbackServer.reinit(url);
+                    me.callbackServer.reinit(url);
                 }
                 appView.pluginManager.init();
                 
@@ -832,8 +832,8 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     public void sendJavascript(String statement) {
         //We need to check for the null case on the Kindle Fire beacuse it changes the width and height on load
-        if(this.appView.callbackServer != null)
-          this.appView.callbackServer.sendJavascript(statement);
+        if(this.callbackServer != null)
+          this.callbackServer.sendJavascript(statement);
     }
 
     /**

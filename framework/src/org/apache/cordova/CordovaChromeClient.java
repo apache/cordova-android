@@ -44,7 +44,7 @@ public class CordovaChromeClient extends WebChromeClient {
 
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    private Context ctx;
+    private DroidGap ctx;
     private CordovaWebView appView;
     
     /**
@@ -53,7 +53,8 @@ public class CordovaChromeClient extends WebChromeClient {
      * @param ctx
      */
     public CordovaChromeClient(Context ctx) {
-        this.ctx = ctx;
+        this.ctx = (DroidGap) ctx;
+        appView = this.ctx.appView;
     }
     
     public CordovaChromeClient(Context ctx, CordovaWebView app)
@@ -172,15 +173,10 @@ public class CordovaChromeClient extends WebChromeClient {
     @Override
     public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
         
-        if(appView == null)
-        {
-          appView = (CordovaWebView) view;
-        }
-        
         // Security check to make sure any requests are coming from the page initially
         // loaded in webview and not another loaded in an iframe.
         boolean reqOk = false;
-        if (url.startsWith("file://") || appView.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0 || ctx.isUrlWhiteListed(url)) {
             reqOk = true;
         }
         
@@ -203,9 +199,7 @@ public class CordovaChromeClient extends WebChromeClient {
         
         // Polling for JavaScript messages 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-            
-              
-            String r = appView.callbackServer.getJavascript();
+            String r = ctx.callbackServer.getJavascript();
             result.confirm(r);
         }
         
@@ -213,16 +207,16 @@ public class CordovaChromeClient extends WebChromeClient {
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
             String r = "";
             if (message.equals("usePolling")) {
-                r = ""+ appView.callbackServer.usePolling();
+                r = ""+ ctx.callbackServer.usePolling();
             }
             else if (message.equals("restartServer")) {
-                appView.callbackServer.restartServer();
+                ctx.callbackServer.restartServer();
             }
             else if (message.equals("getPort")) {
-                r = Integer.toString(appView.callbackServer.getPort());
+                r = Integer.toString(ctx.callbackServer.getPort());
             }
             else if (message.equals("getToken")) {
-                r = appView.callbackServer.getToken();
+                r = ctx.callbackServer.getToken();
             }
             result.confirm(r);
         }
@@ -230,11 +224,8 @@ public class CordovaChromeClient extends WebChromeClient {
         // Cordova JS has initialized, so show webview
         // (This solves white flash seen when rendering HTML)
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
-            if (ctx.getClass().equals(DroidGap.class) && ((DroidGap) ctx).splashscreen != 0) {
-                ((DroidGap) ctx).root.setBackgroundResource(0);
-                ((DroidGap) ctx).spinnerStop();
-            }
-            appView.setVisibility(View.VISIBLE);
+            ctx.appView.setVisibility(View.VISIBLE);
+            ctx.spinnerStop();
             result.confirm("OK");
         }
 

@@ -15,11 +15,9 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.content.Context;
 import android.content.res.XmlResourceParser;
 import android.util.AttributeSet;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
-import android.webkit.WebViewClient;
 
 public class CordovaWebView extends WebView {
   
@@ -32,8 +30,7 @@ public class CordovaWebView extends WebView {
   private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
   private HashMap<String, Boolean> whiteListCache = new HashMap<String,Boolean>();
   protected PluginManager pluginManager;
-  public CallbackServer callbackServer;
-
+  
   /** Actvities and other important classes **/
   private Context mCtx;
   private CordovaWebViewClient viewClient;
@@ -42,7 +39,7 @@ public class CordovaWebView extends WebView {
   public CordovaWebView(Context context) {
     super(context);
     mCtx = context;
-    //setup();
+    setup();
   }
   
   public CordovaWebView(Context context, AttributeSet attrs) {
@@ -64,7 +61,7 @@ public class CordovaWebView extends WebView {
     setup();
   }
   
-  public void setup()
+  private void setup()
   {
     this.setInitialScale(0);
     this.setVerticalScrollBarEnabled(false);
@@ -244,30 +241,6 @@ public class CordovaWebView extends WebView {
           }
       }
       return false;
-  }
-  
-  @Override
-  public void setWebViewClient(WebViewClient client) {
-    if(client.getClass().equals(CordovaWebView.class)) {
-      viewClient = (CordovaWebViewClient) client;
-      super.setWebViewClient(viewClient);
-    }
-    else
-    {
-      //This should throw an exception!
-    }
-  }
-  
-  @Override
-  public void setWebChromeClient(WebChromeClient client) {
-    if(client.getClass().equals(CordovaWebView.class)) {
-      chromeClient = (CordovaChromeClient) client;
-      super.setWebChromeClient(chromeClient);
-    }
-    else
-    {
-      //This should throw an exception!
-    }
   }
   
 }

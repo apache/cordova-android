@@ -20,7 +20,6 @@ package org.apache.cordova;
 
 import org.apache.cordova.api.LOG;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -42,8 +41,7 @@ import android.webkit.WebViewClient;
 public class CordovaWebViewClient extends WebViewClient {
     
     private static final String TAG = "Cordova";
-    Context ctx;
-    DroidGap droidGap;
+    DroidGap ctx;
     CordovaWebView appView;
     private boolean doClearHistory = false;
 
@@ -52,16 +50,14 @@ public class CordovaWebViewClient extends WebViewClient {
      * 
      * @param ctx
      */
-    public CordovaWebViewClient(Context ctx) {
+    public CordovaWebViewClient(DroidGap ctx) {
         this.ctx = ctx;
-        //appView = ctx.appView;
+        appView = ctx.appView;
     }
     
     public CordovaWebViewClient(Context ctx, CordovaWebView view)
     {
-      this.ctx =  ctx;
-      if(ctx.getClass().equals(DroidGap.class))
-        this.droidGap = (DroidGap) ctx;
+      this.ctx = (DroidGap) ctx;
       appView = view;
     }
     
@@ -150,9 +146,8 @@ public class CordovaWebViewClient extends WebViewClient {
 
             // If our app or file:, then load into a new Cordova webview container by starting a new instance of our activity.
             // Our app continues to run.  When BACK is pressed, our app is redisplayed.
-            //if (url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0 || ctx.isUrlWhiteListed(url)) {
-            if (url.startsWith("file://")  || appView.isUrlWhiteListed(url)) {
-                appView.loadUrl(url);
+            if (url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0 || ctx.isUrlWhiteListed(url)) {
+                this.ctx.loadUrl(url);
             }
 
             // If not our application, let default viewer handle
@@ -226,35 +221,28 @@ public class CordovaWebViewClient extends WebViewClient {
         }
 
         // Clear timeout flag
-        //this.ctx.loadUrlTimeout++;
+        this.ctx.loadUrlTimeout++;
 
         // Try firing the onNativeReady event in JS. If it fails because the JS is
         // not loaded yet then just set a flag so that the onNativeReady can be fired
         // from the JS side when the JS gets to that code.
         if (!url.equals("about:blank")) {
-            appView.loadUrl("javascript:try{ cordova.require('cordova/channel').onNativeReady.fire();}catch(e){_nativeReady = true;}");
-            //appView.postMessage("onNativeReady", null);
+            ctx.appView.loadUrl("javascript:try{ cordova.require('cordova/channel').onNativeReady.fire();}catch(e){_nativeReady = true;}");
+            this.ctx.postMessage("onNativeReady", null);
         }
 
         // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
-        if (appView.getVisibility() == View.INVISIBLE) {
+        if (ctx.appView.getVisibility() == View.INVISIBLE) {
             Thread t = new Thread(new Runnable() {
                 public void run() {
                     try {
                         Thread.sleep(2000);
-                        ((Activity) ctx).runOnUiThread(new Runnable() {
+                        ctx.runOnUiThread(new Runnable() {
                             public void run() {
-                                if(droidGap != null)
-                                {
-                                  if (droidGap.splashscreen != 0) {
-                                    droidGap.root.setBackgroundResource(0);
-                                  }
-                                  
-                                appView.setVisibility(View.VISIBLE);
-                                
-                                }
+                                ctx.appView.setVisibility(View.VISIBLE);
+                                ctx.spinnerStop();
                             }
-                       });
+                        });
                     } catch (InterruptedException e) {
                     }
                 }
@@ -265,11 +253,10 @@ public class CordovaWebViewClient extends WebViewClient {
 
         // Shutdown if blank loaded
         if (url.equals("about:blank")) {
-            if (appView.callbackServer != null) {
-                appView.callbackServer.destroy();
+            if (this.ctx.callbackServer != null) {
+                this.ctx.callbackServer.destroy();
             }
-            if(droidGap != null)
-              droidGap.endActivity();
+            this.ctx.endActivity();
         }
     }
     
@@ -286,17 +273,14 @@ public class CordovaWebViewClient extends WebViewClient {
     public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         LOG.d(TAG, "DroidGap: GapViewClient.onReceivedError: Error code=%s Description=%s URL=%s", errorCode, description, failingUrl);
 
-        if(droidGap != null)
-        {
-          // Clear timeout flag
-          this.droidGap.loadUrlTimeout++;
+        // Clear timeout flag
+        this.ctx.loadUrlTimeout++;
 
-          // Stop "app loading" spinner if showing
-          this.droidGap.spinnerStop();
+        // Stop "app loading" spinner if showing
+        this.ctx.spinnerStop();
 
-          // Handle error
-          this.droidGap.onReceivedError(errorCode, description, failingUrl);
-        }
+        // Handle error
+        this.ctx.onReceivedError(errorCode, description, failingUrl);
     }
     
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
@@ -326,9 +310,8 @@ public class CordovaWebViewClient extends WebViewClient {
          * If you do a document.location.href the url does not get pushed on the stack
          * so we do a check here to see if the url should be pushed.
          */
-        
-        if (this.droidGap != null && !this.droidGap.peekAtUrlStack().equals(url)) {
-            droidGap.pushUrl(url);
+        if (!this.ctx.peekAtUrlStack().equals(url)) {
+            this.ctx.pushUrl(url);
         }
     }
 }
