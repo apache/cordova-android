@@ -42,7 +42,7 @@ public class CordovaWebView extends WebView {
 
   //This is for the polyfil history 
   private String url;
-  private String baseUrl;
+  String baseUrl;
   private Stack<String> urls = new Stack<String>();
 
   protected int loadUrlTimeout;
@@ -274,8 +274,31 @@ public class CordovaWebView extends WebView {
   public void loadUrl(String url)
   {
     if (!url.startsWith("javascript:")) {
+      this.url = url;
+      if (this.baseUrl == null) {
+          int i = url.lastIndexOf('/');
+          if (i > 0) {
+              this.baseUrl = url.substring(0, i+1);
+          }
+          else {
+              this.baseUrl = this.url + "/";
+          }
+      }
+      
+
+      // Create callback server and plugin manager
+      if (callbackServer == null) {
+          callbackServer = new CallbackServer();
+          callbackServer.init(url);
+      }
+      else {
+          callbackServer.reinit(url);
+      }
+      pluginManager.init();
+      
      this.urls.push(url);
     }
+    
     
     super.loadUrl(url);
   }
@@ -286,5 +309,25 @@ public class CordovaWebView extends WebView {
 
   public void postMessage(String id, String data) {
     pluginManager.postMessage(id, data);
+  }
+
+  /** 
+   * Returns the top url on the stack without removing it from 
+   * the stack.
+   */
+  public String peekAtUrlStack() {
+      if (urls.size() > 0) {
+          return urls.peek();
+      }
+      return "";
+  }
+  
+  /**
+   * Add a url to the stack
+   * 
+   * @param url
+   */
+  public void pushUrl(String url) {
+      urls.push(url);
   }
 }

@@ -32,6 +32,8 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.view.Menu;
+import android.view.MenuItem;
 
 
 /**
@@ -64,13 +66,26 @@ public interface CordovaInterface {
      */
     public abstract void bindBackButton(boolean override);
 
-
     /**
      * A hook required to check if the Back Button is bound
      * @return
      */
     public abstract boolean isBackButtonBound();
 
+    /* 
+     * Hook in DroidGap for menu plugins
+     * (This is in the Android SDK, do we need this on the Interface?)
+     */
+    
+    public abstract boolean onCreateOptionsMenu(Menu menu);
+    
+    public abstract boolean onPrepareOptionsMenu(Menu menu);
+    
+    public abstract boolean onOptionsItemSelected(MenuItem item);
+    
+    
+    
+    
     /**
      * @deprecated
      * Add services to res/xml/plugins.xml instead.

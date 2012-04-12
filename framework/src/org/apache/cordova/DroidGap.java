@@ -346,16 +346,6 @@ public class DroidGap extends Activity implements CordovaInterface {
             LOG.d(TAG, "DroidGap.loadUrl(%s)", url);
         }
 
-        this.url = url;
-        if (this.baseUrl == null) {
-            int i = url.lastIndexOf('/');
-            if (i > 0) {
-                this.baseUrl = url.substring(0, i+1);
-            }
-            else {
-                this.baseUrl = this.url + "/";
-            }
-        }
         if (!url.startsWith("javascript:")) {
             LOG.d(TAG, "DroidGap: url=%s baseUrl=%s", url, baseUrl);
         }
@@ -370,24 +360,12 @@ public class DroidGap extends Activity implements CordovaInterface {
                     me.init();
                 }
 
-                // Handle activity parameters
+                // Handle activity parameters (TODO: Somehow abstract this)
                 me.handleActivityParameters();
 
-                // Track URLs loaded instead of using appView history
-                me.urls.push(url);
-                me.appView.clearHistory();
-            
-                // Create callback server and plugin manager
-                if (appView.callbackServer == null) {
-                    appView.callbackServer = new CallbackServer();
-                    appView.callbackServer.init(url);
-                }
-                else {
-                    appView.callbackServer.reinit(url);
-                }
-                appView.pluginManager.init();
-                
                 // If loadingDialog property, then show the App loading dialog for first page of app
+                // (This doesn't seem to actually do anything here)
+                /*
                 String loading = null;
                 if (me.urls.size() == 1) {
                     loading = me.getStringProperty("loadingDialog", null);
@@ -413,6 +391,7 @@ public class DroidGap extends Activity implements CordovaInterface {
                     }
                     me.spinnerStart(title, message);
                 }
+                */
 
                 // Create a timeout timer for loadUrl
                 final int currentLoadUrlTimeout = me.loadUrlTimeout;
@@ -1184,25 +1163,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * URL stack manipulators
      */
     
-    /** 
-     * Returns the top url on the stack without removing it from 
-     * the stack.
-     */
-    public String peekAtUrlStack() {
-        if (urls.size() > 0) {
-            return urls.peek();
-        }
-        return "";
-    }
     
-    /**
-     * Add a url to the stack
-     * 
-     * @param url
-     */
-    public void pushUrl(String url) {
-        urls.push(url);
-    }
     
     /* 
      * Hook in DroidGap for menu plugins

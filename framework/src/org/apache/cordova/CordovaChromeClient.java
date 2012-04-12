@@ -22,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -44,7 +45,7 @@ public class CordovaChromeClient extends WebChromeClient {
 
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    private DroidGap ctx;
+    private Activity ctx;
     private CordovaWebView appView;
     
     /**
@@ -53,16 +54,18 @@ public class CordovaChromeClient extends WebChromeClient {
      * @param ctx
      */
     public CordovaChromeClient(Context ctx) {
-        this.ctx = (DroidGap) ctx;
-        appView = this.ctx.appView;
+        this.ctx = (Activity) ctx;
+        //appView = this.ctx.appView;
     }
     
     public CordovaChromeClient(Context ctx, CordovaWebView app)
     {
-      this.ctx = (DroidGap) ctx;
+      this.ctx = (Activity) ctx;
       appView = app;
     }
 
+    
+    
     /**
      * Tell the client to display a javascript alert dialog.
      * 
@@ -176,7 +179,7 @@ public class CordovaChromeClient extends WebChromeClient {
         // Security check to make sure any requests are coming from the page initially
         // loaded in webview and not another loaded in an iframe.
         boolean reqOk = false;
-        if (url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0 || ctx.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.indexOf(appView.baseUrl) == 0 || appView.isUrlWhiteListed(url)) {
             reqOk = true;
         }
         
@@ -224,8 +227,8 @@ public class CordovaChromeClient extends WebChromeClient {
         // Cordova JS has initialized, so show webview
         // (This solves white flash seen when rendering HTML)
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
-            ctx.appView.setVisibility(View.VISIBLE);
-            ctx.spinnerStop();
+            appView.setVisibility(View.VISIBLE);
+            //ctx.spinnerStop();
             result.confirm("OK");
         }
 

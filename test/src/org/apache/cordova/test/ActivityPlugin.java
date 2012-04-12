@@ -69,7 +69,7 @@ public class ActivityPlugin extends Plugin {
 
     public void startActivity(String className) {
         try {
-            Intent intent = new Intent().setClass(this.ctx.getContext(), Class.forName(className));
+            Intent intent = new Intent().setClass(this.ctx, Class.forName(className));
             LOG.d(TAG, "Starting activity %s", className);
             this.ctx.startActivity(intent);
         } catch (ClassNotFoundException e) {
