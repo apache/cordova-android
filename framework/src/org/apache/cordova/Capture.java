@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -62,7 +64,16 @@ public class Capture extends Plugin {
     private double duration;                        // optional duration parameter for video recording
     private JSONArray results;                      // The array of results to be returned to the user
     private Uri imageUri;                           // Uri of captured image 
+    private CordovaInterface cordova;
 
+    public void setContext(Context mCtx)
+    {
+      if(CordovaInterface.class.isInstance(mCtx))
+        cordova = (CordovaInterface) mCtx;
+      else
+        LOG.d(LOG_TAG, "ERROR: You must use the CordovaInterface for this to work correctly. Please implement it in your activity");
+    }
+    
     @Override
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         this.callbackId = callbackId;
@@ -186,7 +197,7 @@ public class Capture extends Plugin {
     private void captureAudio() {
         Intent intent = new Intent(android.provider.MediaStore.Audio.Media.RECORD_SOUND_ACTION);
 
-        this.ctx.startActivityForResult((Plugin) this, intent, CAPTURE_AUDIO);
+        cordova.startActivityForResult((Plugin) this, intent, CAPTURE_AUDIO);
     }
 
     /**
@@ -196,11 +207,11 @@ public class Capture extends Plugin {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
         // Specify file so that large image is captured and returned
-        File photo = new File(DirectoryManager.getTempDirectoryPath(ctx.getContext()),  "Capture.jpg");
+        File photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Capture.jpg");
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
 
-        this.ctx.startActivityForResult((Plugin) this, intent, CAPTURE_IMAGE);
+        cordova.startActivityForResult((Plugin) this, intent, CAPTURE_IMAGE);
     }
 
     /**
@@ -211,7 +222,7 @@ public class Capture extends Plugin {
         // Introduced in API 8
         //intent.putExtra(android.provider.MediaStore.EXTRA_DURATION_LIMIT, duration);
         
-        this.ctx.startActivityForResult((Plugin) this, intent, CAPTURE_VIDEO);
+        cordova.startActivityForResult((Plugin) this, intent, CAPTURE_VIDEO);
     }
     
     /**
@@ -249,7 +260,7 @@ public class Capture extends Plugin {
                 try {
                     // Create an ExifHelper to save the exif data that is lost during compression
                     ExifHelper exif = new ExifHelper();
-                    exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/Capture.jpg");
+                    exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx) + "/Capture.jpg");
                     exif.readExifData();
                     
                     // Read in bitmap of captured image
@@ -283,7 +294,7 @@ public class Capture extends Plugin {
                     System.gc();
                     
                     // Restore exif data to file
-                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.ctx));
+                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, ((Activity) this.ctx)));
                     exif.writeExifData();
                     
                     // Add image to results
@@ -347,7 +358,7 @@ public class Capture extends Plugin {
      * @throws IOException 
      */
     private JSONObject createMediaFile(Uri data){
-        File fp = new File(FileUtils.getRealPathFromURI(data, this.ctx));
+        File fp = new File(FileUtils.getRealPathFromURI(data, ((Activity) this.ctx)));
         JSONObject obj = new JSONObject();
 
         try {       

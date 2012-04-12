@@ -30,7 +30,7 @@ import android.webkit.WebView;
  */
 public class PluginManager extends org.apache.cordova.api.PluginManager {
 
-    public PluginManager(WebView app, CordovaInterface ctx) {
+    public PluginManager(WebView app, CordovaInterface ctx) throws Exception {
         super(app, ctx);
     }
 }

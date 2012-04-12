@@ -25,6 +25,9 @@ import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.webkit.WebView;
+
 import java.util.HashMap;
 
 /**
@@ -195,4 +198,5 @@ public class App extends Plugin {
     public void exitApp() {
     	((DroidGap)this.ctx).endActivity();
     }
+
 }

@@ -213,7 +213,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 				else {
 					if (file.startsWith("/android_asset/")) {
 						String f = file.substring(15);
-						android.content.res.AssetFileDescriptor fd = this.handler.ctx.getBaseContext().getAssets().openFd(f);
+						android.content.res.AssetFileDescriptor fd = this.handler.ctx.getAssets().openFd(f);
 						this.mPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
 					}
                     else {

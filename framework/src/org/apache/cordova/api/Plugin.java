@@ -18,9 +18,11 @@
 */
 package org.apache.cordova.api;
 
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.content.Intent;
 import android.webkit.WebView;
 
@@ -32,8 +34,8 @@ import android.webkit.WebView;
 public abstract class Plugin implements IPlugin {
 
 	public String id;
-    public WebView webView;					// WebView object
-    public CordovaInterface ctx;			// CordovaActivity object
+    public CordovaWebView webView;					// WebView object
+    public Context ctx;			// CordovaActivity object
 
 	/**
 	 * Executes the request and returns PluginResult.
@@ -61,7 +63,7 @@ public abstract class Plugin implements IPlugin {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(CordovaInterface ctx) {
+	public void setContext(Context ctx) {
 		this.ctx = ctx;
 	}
 
@@ -71,7 +73,7 @@ public abstract class Plugin implements IPlugin {
 	 * 
 	 * @param webView The Cordova WebView
 	 */
-	public void setView(WebView webView) {
+	public void setView(CordovaWebView webView) {
 		this.webView = webView;
 	}
 	
@@ -141,7 +143,7 @@ public abstract class Plugin implements IPlugin {
      * @param statement
      */
     public void sendJavascript(String statement) {
-    	this.ctx.sendJavascript(statement);
+      webView.sendJavascript(statement);
     }
 
     /**
@@ -155,7 +157,7 @@ public abstract class Plugin implements IPlugin {
 	 * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(PluginResult pluginResult, String callbackId) {
-    	this.ctx.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
+      webView.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
     }
 
     /**
@@ -165,7 +167,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(JSONObject message, String callbackId) {
-    	this.ctx.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+      webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
     }
 
     /**
@@ -175,7 +177,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(String message, String callbackId) {
-    	this.ctx.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+      webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
     }
     
     /**
@@ -185,7 +187,7 @@ public abstract class Plugin implements IPlugin {
 	 * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(PluginResult pluginResult, String callbackId) {
-    	this.ctx.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
+      webView.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
     }
 
     /**
@@ -195,7 +197,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(JSONObject message, String callbackId) {
-    	this.ctx.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+      webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
     }
 
     /**
@@ -205,6 +207,6 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(String message, String callbackId) {
-    	this.ctx.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+      webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
     }
 }

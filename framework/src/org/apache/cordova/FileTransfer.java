@@ -416,7 +416,7 @@ public class FileTransfer extends Plugin {
             file.getParentFile().mkdirs();
 
             // connect to server
-            if(this.ctx.isUrlWhiteListed(source))
+            if(webView.isUrlWhiteListed(source))
             {
               URL url = new URL(source);
               HttpURLConnection connection = (HttpURLConnection) url.openConnection();

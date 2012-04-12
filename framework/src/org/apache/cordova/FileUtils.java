@@ -37,12 +37,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
+import android.app.Activity;
 
 
 /**
@@ -242,7 +244,7 @@ public class FileUtils extends Plugin {
 
         // Handle the special case where you get an Android content:// uri.
         if (decoded.startsWith("content:")) {
-            Cursor cursor = this.ctx.managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
+            Cursor cursor = ((Activity) this.ctx).managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
             // Note: MediaStore.Images/Audio/Video.Media.DATA is always "_data"
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
@@ -1035,12 +1037,12 @@ public class FileUtils extends Plugin {
      * Queries the media store to find out what the file path is for the Uri we supply
      *
      * @param contentUri the Uri of the audio/image/video
-     * @param ctx the current applicaiton context
+     * @param  ctx) the current applicaiton context
      * @return the full path to the file
      */
-    protected static String getRealPathFromURI(Uri contentUri, CordovaInterface ctx) {
+    protected static String getRealPathFromURI(Uri contentUri, Activity ctx) {
         String[] proj = { _DATA };
-        Cursor cursor = ctx.managedQuery(contentUri, proj, null, null, null);
+        Cursor cursor =  ctx.managedQuery(contentUri, proj, null, null, null);
         int column_index = cursor.getColumnIndexOrThrow(_DATA);
         cursor.moveToFirst();
         return cursor.getString(column_index);

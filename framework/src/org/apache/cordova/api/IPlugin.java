@@ -18,7 +18,10 @@
 */
 package org.apache.cordova.api;
 
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
+
+import android.content.Context;
 import android.content.Intent;
 import android.webkit.WebView;
 
@@ -53,7 +56,7 @@ public interface IPlugin {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	void setContext(CordovaInterface ctx);
+	void setContext(Context ctx);
 
 	/**
 	 * Sets the main View of the application, this is the WebView within which 
@@ -61,7 +64,7 @@ public interface IPlugin {
 	 * 
 	 * @param webView The Cordova WebView
 	 */
-	void setView(WebView webView);
+	void setView(CordovaWebView webView);
 
     /**
      * Called when the system is about to start resuming a previous activity. 

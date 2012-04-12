@@ -18,6 +18,9 @@
  */
 package org.apache.cordova.api;
 
+import org.apache.cordova.CordovaWebView;
+
+import android.content.Context;
 import android.webkit.WebView;
 
 /**
@@ -67,7 +70,7 @@ public class PluginEntry {
      * @return                      The plugin object
      */
     @SuppressWarnings("unchecked")
-    public IPlugin createPlugin(WebView webView, CordovaInterface ctx) {
+    public IPlugin createPlugin(CordovaWebView webView, Context ctx) {
         if (this.plugin != null) {
             return this.plugin;
         }

@@ -49,7 +49,7 @@ public class TempListener extends Plugin implements SensorEventListener {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(CordovaInterface ctx) {
+	public void setContext(Context ctx) {
 		super.setContext(ctx);
         this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
 	}

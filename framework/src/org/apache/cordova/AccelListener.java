@@ -72,10 +72,10 @@ public class AccelListener extends Plugin implements SensorEventListener {
 	 * 
 	 * @param ctx The context of the main Activity.
 	 */
-	public void setContext(CordovaInterface ctx) {
-		super.setContext(ctx);
+    
+    public void setContext(Context ctx) {
         this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
-	}
+    }
 
 	/**
 	 * Executes the request and returns PluginResult.

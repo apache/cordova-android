@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +19,7 @@ import android.util.AttributeSet;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
+import android.app.Activity;
 
 public class CordovaWebView extends WebView {
   
@@ -37,6 +39,15 @@ public class CordovaWebView extends WebView {
   private Context mCtx;
   private CordovaWebViewClient viewClient;
   private CordovaChromeClient chromeClient;
+
+  //This is for the polyfil history 
+  private String url;
+  private String baseUrl;
+  private Stack<String> urls = new Stack<String>();
+
+  protected int loadUrlTimeout;
+
+  protected long loadUrlTimeoutValue;
 
   public CordovaWebView(Context context) {
     super(context);
@@ -94,9 +105,23 @@ public class CordovaWebView extends WebView {
     settings.setGeolocationEnabled(true);
     
     //Start up the plugin manager
-    this.pluginManager = new PluginManager(this, (DroidGap) mCtx);
+    this.pluginManager = new PluginManager(this, mCtx);
   }
   
+  
+  //This sets it up so that we can save copies of the clients that we might need later.
+  public void setWebViewClient(CordovaWebViewClient client)
+  {
+    viewClient = client;
+    super.setWebViewClient(client);
+  }
+  
+  
+  public void setWebChromeClient(CordovaChromeClient client)
+  {
+    chromeClient = client;
+    super.setWebChromeClient(client);
+  }
   /**
    * Sets the authentication token.
    * 
@@ -245,4 +270,21 @@ public class CordovaWebView extends WebView {
       return false;
   }
   
+  @Override
+  public void loadUrl(String url)
+  {
+    if (!url.startsWith("javascript:")) {
+     this.urls.push(url);
+    }
+    
+    super.loadUrl(url);
+  }
+
+  public void sendJavascript(String statement) {
+    callbackServer.sendJavascript(statement);
+  }
+
+  public void postMessage(String id, String data) {
+    pluginManager.postMessage(id, data);
+  }
 }

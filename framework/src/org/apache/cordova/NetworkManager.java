@@ -87,7 +87,7 @@ public class NetworkManager extends Plugin {
      * 
      * @param ctx The context of the main Activity.
      */
-    public void setContext(CordovaInterface ctx) {
+    public void setContext(Context ctx) {
         super.setContext(ctx);
         this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);        
         this.connectionCallbackId = null;
@@ -201,7 +201,7 @@ public class NetworkManager extends Plugin {
         this.success(result, this.connectionCallbackId);
         
         // Send to all plugins
-        this.ctx.postMessage("networkconnection", type);
+        webView.postMessage("networkconnection", type);
     }
     
     /**

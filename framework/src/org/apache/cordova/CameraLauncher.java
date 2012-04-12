@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
@@ -34,6 +35,7 @@ import org.json.JSONException;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -78,12 +80,23 @@ public class CameraLauncher extends Plugin {
     public String callbackId;
     private int numPics;
     
+    //This should never be null!
+    private CordovaInterface cordova;
+    
     /**
      * Constructor.
      */
     public CameraLauncher() {
     }
 
+    public void setContext(Context mCtx) {
+      super.setContext(mCtx);
+      if(CordovaInterface.class.isInstance(mCtx))
+        cordova = (CordovaInterface) mCtx;
+      else
+        LOG.d(LOG_TAG, "ERROR: You must use the CordovaInterface for this to work correctly. Please implement it in your activity");
+    }
+    
     /**
      * Executes the request and returns PluginResult.
      * 
@@ -162,8 +175,11 @@ public class CameraLauncher extends Plugin {
         File photo = createCaptureFile(encodingType);
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
-
-        this.ctx.startActivityForResult((Plugin) this, intent, (CAMERA+1)*16 + returnType+1);
+        
+        if(cordova != null)
+          cordova.startActivityForResult((Plugin) this, intent, (CAMERA+1)*16 + returnType+1);
+        else
+          LOG.d(LOG_TAG, "ERROR: You must use the CordovaInterface for this to work correctly. Please implement it in your activity");
     }
 
     /**
@@ -175,9 +191,9 @@ public class CameraLauncher extends Plugin {
     private File createCaptureFile(int encodingType) {
         File photo = null;
         if (encodingType == JPEG) {
-            photo = new File(DirectoryManager.getTempDirectoryPath(ctx.getContext()),  "Pic.jpg");
+            photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.jpg");
         } else if (encodingType == PNG) {
-            photo = new File(DirectoryManager.getTempDirectoryPath(ctx.getContext()),  "Pic.png");            
+            photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Pic.png");            
         } else {
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
@@ -211,7 +227,7 @@ public class CameraLauncher extends Plugin {
         
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        this.ctx.startActivityForResult((Plugin) this, Intent.createChooser(intent,
+        cordova.startActivityForResult((Plugin) this, Intent.createChooser(intent,
                 new String(title)), (srcType+1)*16 + returnType + 1);
     }
 
@@ -278,7 +294,7 @@ public class CameraLauncher extends Plugin {
      ExifHelper exif = new ExifHelper();
      try {
          if (this.encodingType == JPEG) {
-            exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/Pic.jpg");
+            exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx) + "/Pic.jpg");
             exif.readExifData();
          }
      } catch (IOException e) {
@@ -335,7 +351,7 @@ public class CameraLauncher extends Plugin {
                         
                         // Restore exif data to file
                         if (this.encodingType == JPEG) {
-                            exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.ctx));
+                            exif.createOutFile(FileUtils.getRealPathFromURI(uri, ((Activity) this.ctx)));
                             exif.writeExifData();
                         }
 
@@ -413,14 +429,14 @@ public class CameraLauncher extends Plugin {
                                 Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
                                 bitmap = scaleBitmap(bitmap);
     
-                                String fileName = DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/resize.jpg";
+                                String fileName = DirectoryManager.getTempDirectoryPath(ctx) + "/resize.jpg";
                                 OutputStream os = new FileOutputStream(fileName);                         
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
                                 os.close();
     
                                 // Restore exif data to file
                                 if (this.encodingType == JPEG) {
-                                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.ctx));
+                                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, ((Activity) ctx)));
                                     exif.writeExifData();
                                 }
 

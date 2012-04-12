@@ -56,7 +56,7 @@ public class Device extends Plugin {
      * 
      * @param ctx The context of the main Activity.
      */
-    public void setContext(CordovaInterface ctx) {
+    public void setContext(Context ctx) {
         super.setContext(ctx);
         Device.uuid = getUuid();
         this.initTelephonyReceiver();
@@ -125,7 +125,7 @@ public class Device extends Plugin {
     private void initTelephonyReceiver() {
         IntentFilter intentFilter = new IntentFilter() ;
         intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        final CordovaInterface myctx = this.ctx;
+        final Context myctx = this.ctx;
         this.telephonyReceiver = new BroadcastReceiver() {
             
             @Override
@@ -137,15 +137,15 @@ public class Device extends Plugin {
                         String extraData = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
                         if (extraData.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
                             LOG.i(TAG, "Telephone RINGING");
-                            myctx.postMessage("telephone", "ringing");
+                            webView.postMessage("telephone", "ringing");
                         }
                         else if (extraData.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
                             LOG.i(TAG, "Telephone OFFHOOK");
-                            myctx.postMessage("telephone", "offhook");
+                            webView.postMessage("telephone", "offhook");
                         }
                         else if (extraData.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                             LOG.i(TAG, "Telephone IDLE");
-                            myctx.postMessage("telephone", "idle");
+                            webView.postMessage("telephone", "idle");
                         }
                     }
                 }

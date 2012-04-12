@@ -23,10 +23,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
 import android.webkit.WebView;
@@ -43,8 +45,8 @@ public class PluginManager {
     // List of service entries
     private final HashMap<String, PluginEntry> entries = new HashMap<String, PluginEntry>();
 
-    private final CordovaInterface ctx;
-    private final WebView app;
+    private final Context ctx;
+    private final CordovaWebView app;
 
     // Flag to track first time through
     private boolean firstRun;
@@ -59,11 +61,26 @@ public class PluginManager {
      * @param app
      * @param ctx
      */
-    public PluginManager(WebView app, CordovaInterface ctx) {
+    public PluginManager(CordovaWebView app, Context ctx) {
         this.ctx = ctx;
         this.app = app;
         this.firstRun = true;
     }
+
+
+    public PluginManager(WebView mApp, CordovaInterface mCtx) throws Exception {
+      this.ctx = mCtx.getContext();
+      if(CordovaWebView.class.isInstance(mApp))
+      {
+        this.app = (CordovaWebView) mApp;
+      }
+      else
+      {
+        //Throw an exception here
+        throw new Exception();
+      }
+    }
+
 
     /**
      * Init when loading a new HTML page into webview.
@@ -174,7 +191,7 @@ public class PluginManager {
         try {
             final JSONArray args = new JSONArray(jsonArgs);
             final IPlugin plugin = this.getPlugin(service);
-            final CordovaInterface ctx = this.ctx;
+            final Context ctx = this.ctx;
             if (plugin != null) {
                 runAsync = async && !plugin.isSynch(action);
                 if (runAsync) {
@@ -192,16 +209,16 @@ public class PluginManager {
 
                                 // Check the success (OK, NO_RESULT & !KEEP_CALLBACK)
                                 else if ((status == PluginResult.Status.OK.ordinal()) || (status == PluginResult.Status.NO_RESULT.ordinal())) {
-                                    ctx.sendJavascript(cr.toSuccessCallbackString(callbackId));
+                                    app.sendJavascript(cr.toSuccessCallbackString(callbackId));
                                 }
 
                                 // If error
                                 else {
-                                    ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
+                                    app.sendJavascript(cr.toErrorCallbackString(callbackId));
                                 }
                             } catch (Exception e) {
                                 PluginResult cr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
-                                ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
+                                app.sendJavascript(cr.toErrorCallbackString(callbackId));
                             }
                         }
                     });
@@ -226,7 +243,7 @@ public class PluginManager {
             if (cr == null) {
                 cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
             }
-            ctx.sendJavascript(cr.toErrorCallbackString(callbackId));
+            app.sendJavascript(cr.toErrorCallbackString(callbackId));
         }
         return (cr != null ? cr.getJSONString() : "{ status: 0, message: 'all good' }");
     }
