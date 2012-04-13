@@ -407,11 +407,10 @@ public class DroidGap extends Activity implements CordovaInterface {
 
                         // If timeout, then stop loading and handle error
                         if (me.loadUrlTimeout == currentLoadUrlTimeout) {
-                            /*
-                            me.appView.stopLoading();
-                            LOG.e(TAG, "DroidGap: TIMEOUT ERROR! - calling webViewClient");
-                            me.webViewClient.onReceivedError(me.appView, -6, "The connection to the server was unsuccessful.", url);
-                            */
+                           me.appView.stopLoading();
+                           LOG.e(TAG, "DroidGap: TIMEOUT ERROR! - calling webViewClient");
+                           //We need another mechanism for handling timeout errors, we can't use webViewClient.onReceivedError anymore.
+                           //me.webViewClient.onReceivedError(me.appView, -6, "The connection to the server was unsuccessful.", url);
                         }
                     }
                 };
