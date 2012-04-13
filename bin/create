@@ -34,6 +34,10 @@ cp ./framework/assets/www/cordova-$VERSION.js $PROJECT_PATH/.cordova/android/cor
 # copy in cordova.jar
 cp ./framework/cordova-$VERSION.jar $PROJECT_PATH/.cordova/android/cordova-$VERSION.jar
 
+# copy in res/xml
+cp ./framework/res/xml/cordova.xml $PROJECT_PATH/.cordova/android/cordova.xml
+cp ./framework/res/xml/plugins.xml $PROJECT_PATH/.cordova/android/plugins.xml
+
 # app properties
 cat > $PROJECT_PATH/.cordova/config <<eom
 VERSION=$VERSION
