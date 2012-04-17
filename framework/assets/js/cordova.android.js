@@ -1,6 +1,6 @@
-// commit 9451ff3c5517ba9ba4a2c062633686bb3a993f52
+// commit b2de4baa76a94ecb916619a536339ffee9ef6843
 
-// File generated at :: Thu Apr 12 2012 16:36:23 GMT-0700 (PDT)
+// File generated at :: Tue Apr 17 2012 12:19:35 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -1005,7 +1005,11 @@ module.exports = {
                     db = originalOpenDatabase(name, version, desc, size);
                 } 
                 catch (ex) {
-                    db = null;
+                    if (ex.code === 18) {
+                        db = null;
+                    } else {
+                        throw ex;
+                    }
                 }
 
                 if (db === null) {

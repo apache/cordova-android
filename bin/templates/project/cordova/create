@@ -25,6 +25,11 @@ cp ./.cordova/android/cordova-$VERSION.js ./assets/www
 # copy in cordova.jar
 cp ./.cordova/android/cordova-$VERSION.jar ./libs
 
+# copy in res/xml
+mkdir ./res/xml
+cp ./.cordova/android/cordova.xml ./res/xml
+cp ./.cordova/android/plugins.xml ./res/xml
+
 # copy in default activity
 cat ./cordova/templates/Activity.java > $ACTIVITY_PATH
 
