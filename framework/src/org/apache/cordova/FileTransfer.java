@@ -421,6 +421,14 @@ public class FileTransfer extends Plugin {
               URL url = new URL(source);
               HttpURLConnection connection = (HttpURLConnection) url.openConnection();
               connection.setRequestMethod("GET");
+              
+              //Add cookie support
+              String cookie = CookieManager.getInstance().getCookie(source);
+              if(cookie != null)
+              {
+                connection.setRequestProperty("cookie", cookie);
+              }
+              
               connection.connect();
 
               Log.d(LOG_TAG, "Download file:" + url);
