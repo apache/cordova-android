@@ -1071,8 +1071,25 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.finish();
     }
     
+    
+   /** 
+    * Called when the back key is pressed
+    * 
+    * (non-Javadoc)
+    * @see android.app.Activity#onBackPressed()
+    */
+   @Override
+   public void onBackPressed()
+   {
+     // If back key is bound, then send event to JavaScript
+     if (!(this.bound || this.backHistory())) {
+         this.activityState = ACTIVITY_EXITING;
+         super.onBackPressed();
+     }
+   }
+    
     /**
-     * Called when a key is pressed.
+     * Called when a key is de-pressed. (Key UP)
      * 
      * @param keyCode
      * @param event
@@ -1092,20 +1109,6 @@ public class DroidGap extends Activity implements CordovaInterface {
                 return true;
             }
 
-            // If not bound
-            else {
-
-                // Go to previous page in webview if it is possible to go back
-                if (this.backHistory()) {
-                    return true;
-                }
-
-                // If not, then invoke behavior of super class
-                else {
-                    this.activityState = ACTIVITY_EXITING;
-                    return super.onKeyUp(keyCode, event);
-                }
-            }
         }
 
         // If menu key
