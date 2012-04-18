@@ -410,7 +410,7 @@ public class FileTransfer extends Plugin {
      */
     public JSONObject download(String source, String target) throws IOException {
         try {
-            File file = new File(target);
+            File file = getFileFromPath(target);
 
             // create needed directories
             file.getParentFile().mkdirs();
@@ -488,4 +488,17 @@ public class FileTransfer extends Plugin {
         }
     }
 
+    /**
+     * Get a File object from the passed in path
+     * 
+     * @param path
+     * @return
+     */
+    private File getFileFromPath(String path) {
+        if (path.startsWith("file://")) {
+            return new File(path.substring(7));
+        } else {
+            return new File(path);
+        }
+    }
 }
