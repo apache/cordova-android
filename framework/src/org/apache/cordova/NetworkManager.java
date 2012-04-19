@@ -58,7 +58,7 @@ public class NetworkManager extends Plugin {
     public static final String LTE = "lte";
     public static final String UMB = "umb";
     public static final String HSPA_PLUS = "hspa+";
-    // return types
+    // return type
     public static final String TYPE_UNKNOWN = "unknown";
     public static final String TYPE_ETHERNET = "ethernet";
     public static final String TYPE_WIFI = "wifi";
@@ -123,6 +123,7 @@ public class NetworkManager extends Plugin {
             this.connectionCallbackId = callbackId;
             NetworkInfo info = sockMan.getActiveNetworkInfo();
             PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, this.getConnectionInfo(info));
+            pluginResult.setKeepCallback(true);
             return pluginResult;
         }
         
@@ -195,6 +196,7 @@ public class NetworkManager extends Plugin {
      */
     private void sendUpdate(String type) {
         PluginResult result = new PluginResult(PluginResult.Status.OK, type);
+        result.setKeepCallback(true);
         this.success(result, this.connectionCallbackId);
         
         // Send to all plugins
