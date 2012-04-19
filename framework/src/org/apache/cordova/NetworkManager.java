@@ -89,7 +89,7 @@ public class NetworkManager extends Plugin {
      */
     public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
-        this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);        
+        this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
         this.connectionCallbackId = null;
         
         // We need to listen to connectivity events to update navigator.connection
@@ -98,7 +98,7 @@ public class NetworkManager extends Plugin {
         if (this.receiver == null) {
             this.receiver = new BroadcastReceiver() {
                 @Override
-                public void onReceive(Context context, Intent intent) {                
+                public void onReceive(Context context, Intent intent) {
                     updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));                
                 }
             };
@@ -117,13 +117,12 @@ public class NetworkManager extends Plugin {
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         PluginResult.Status status = PluginResult.Status.INVALID_ACTION;
-        String result = "Unsupported Operation: " + action;    
+        String result = "Unsupported Operation: " + action;
         
         if (action.equals("getConnectionInfo")) {
             this.connectionCallbackId = callbackId;
             NetworkInfo info = sockMan.getActiveNetworkInfo();
             PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, this.getConnectionInfo(info));
-            pluginResult.setKeepCallback(true);
             return pluginResult;
         }
         
@@ -137,8 +136,7 @@ public class NetworkManager extends Plugin {
      * @return            T=returns value
      */
     public boolean isSynch(String action) {
-        // All methods take a while, so always use async
-        return false;
+        return true;
     }
     
     /**
@@ -182,7 +180,7 @@ public class NetworkManager extends Plugin {
             // If we are not connected to any network set type to none
             if (!info.isConnected()) {
                 type = TYPE_NONE;
-            }            
+            }
             else {
                 type = getType(info);
             }
@@ -197,7 +195,6 @@ public class NetworkManager extends Plugin {
      */
     private void sendUpdate(String type) {
         PluginResult result = new PluginResult(PluginResult.Status.OK, type);
-        result.setKeepCallback(true);
         this.success(result, this.connectionCallbackId);
         
         // Send to all plugins
@@ -212,7 +209,7 @@ public class NetworkManager extends Plugin {
      */
     private String getType(NetworkInfo info) {
         if (info != null) {
-            String type = info.getTypeName(); 
+            String type = info.getTypeName();
 
             if (type.toLowerCase().equals(WIFI)) {
                 return TYPE_WIFI;
