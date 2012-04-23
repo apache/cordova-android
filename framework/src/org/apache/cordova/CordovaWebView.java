@@ -37,7 +37,7 @@ public class CordovaWebView extends WebView {
   
   /** Actvities and other important classes **/
   private Context mCtx;
-  private CordovaWebViewClient viewClient;
+  CordovaWebViewClient viewClient;
   private CordovaChromeClient chromeClient;
 
   //This is for the polyfil history 
