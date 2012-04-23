@@ -64,7 +64,10 @@ public class CordovaChromeClient extends WebChromeClient {
       appView = app;
     }
 
-    
+    public void setWebView(CordovaWebView view)
+    {
+      appView = view;
+    }
     
     /**
      * Tell the client to display a javascript alert dialog.

@@ -531,30 +531,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
     }
     
-    /**
-     * Go to previous page in history.  (We manage our own history)
-     * 
-     * @return true if we went back, false if we are already at top
-     */
-    public boolean backHistory() {
-
-        // Check webview first to see if there is a history
-        // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
-        if (this.appView.canGoBack()) {
-            this.appView.goBack();  
-            return true;
-        }
-
-        // If our managed history has prev url
-        if (this.urls.size() > 1) {
-            this.urls.pop();                // Pop current url
-            String url = this.urls.pop();   // Pop prev url that we want to load, since it will be added back by loadUrl()
-            this.loadUrl(url);
-            return true;
-        }
-        
-        return false;
-    }
+    
 
     @Override
     /**
@@ -1206,6 +1183,10 @@ public class DroidGap extends Activity implements CordovaInterface {
     public boolean isBackButtonBound() {
       // TODO Auto-generated method stub
       return this.bound;
+    }
+
+    public boolean backHistory() {
+      return appView.backHistory();
     }
 
 }

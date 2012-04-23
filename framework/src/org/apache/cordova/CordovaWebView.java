@@ -270,6 +270,11 @@ public class CordovaWebView extends WebView {
       return false;
   }
   
+  /** 
+   * We override loadUrl so that we can track the back history
+   * @see android.webkit.WebView#loadUrl(java.lang.String)
+   */
+  
   @Override
   public void loadUrl(String url)
   {
@@ -283,24 +288,52 @@ public class CordovaWebView extends WebView {
           else {
               this.baseUrl = this.url + "/";
           }
-      }
-      
 
-      // Create callback server and plugin manager
-      if (callbackServer == null) {
-          callbackServer = new CallbackServer();
-          callbackServer.init(url);
+          // Create callback server and plugin manager
+          if (callbackServer == null) {
+            callbackServer = new CallbackServer();
+            callbackServer.init(url);
+          }
+          else {
+            callbackServer.reinit(url);
+          }
+          pluginManager.init();
+          
+          this.urls.push(url);
       }
-      else {
-          callbackServer.reinit(url);
-      }
-      pluginManager.init();
-      
-     this.urls.push(url);
     }
     
-    
     super.loadUrl(url);
+  }
+  
+  
+  public void loadUrl(final String url, final int time)
+  {
+    // If not first page of app, then load immediately
+    if (this.urls.size() > 0) {
+        this.loadUrl(url);
+    }
+    
+    if (!url.startsWith("javascript:")) {
+        LOG.d(TAG, "DroidGap.loadUrl(%s, %d)", url, time);
+    }
+
+    final CordovaWebView me = this;
+    Runnable runnable = new Runnable() {
+        public void run() {
+            try {
+                synchronized(this) {
+                    this.wait(time);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+              //I'm pretty sure this has to be on the UI thread
+              me.loadUrl(url);
+            }
+    };
+    Thread thread = new Thread(runnable);
+    thread.start();
   }
 
   public void sendJavascript(String statement) {
@@ -329,5 +362,30 @@ public class CordovaWebView extends WebView {
    */
   public void pushUrl(String url) {
       urls.push(url);
+  }
+
+  /**
+   * Go to previous page in history.  (We manage our own history)
+   * 
+   * @return true if we went back, false if we are already at top
+   */
+  public boolean backHistory() {
+
+      // Check webview first to see if there is a history
+      // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
+      if (this.canGoBack()) {
+          this.goBack();  
+          return true;
+      }
+
+      // If our managed history has prev url
+      if (this.urls.size() > 1) {
+          this.urls.pop();                // Pop current url
+          String url = this.urls.pop();   // Pop prev url that we want to load, since it will be added back by loadUrl()
+          loadUrl(url);
+          return true;
+      }
+      
+      return false;
   }
 }

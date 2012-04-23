@@ -61,6 +61,11 @@ public class CordovaWebViewClient extends WebViewClient {
       appView = view;
     }
     
+    public void setWebView(CordovaWebView view)
+    {
+      appView = view;
+    }
+    
     /**
      * Give the host application a chance to take over the control when a new url 
      * is about to be loaded in the current WebView.

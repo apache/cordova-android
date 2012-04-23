@@ -161,7 +161,7 @@ public class App extends Plugin {
      * Clear page history for the app.
      */
     public void clearHistory() {
-    	((DroidGap)this.ctx).clearHistory();
+        webView.clearHistory();
     }
     
     /**
@@ -169,7 +169,7 @@ public class App extends Plugin {
      * This is the same as pressing the backbutton on Android device.
      */
     public void backHistory() {
-        ((DroidGap)this.ctx).backHistory();
+        webView.backHistory();
     }
 
     /**

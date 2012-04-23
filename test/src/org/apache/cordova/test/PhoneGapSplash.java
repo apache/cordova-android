@@ -14,7 +14,7 @@ public class PhoneGapSplash extends Activity {
         setContentView(R.layout.main);
         
         phoneGap = (CordovaWebView) findViewById(R.id.phoneGapView);
-        //phoneGap.loadUrl("file:///android_asset/index.html", 5000);
+        phoneGap.loadUrl("file:///android_asset/index.html", 5000);
     }
     
     public void onDestroy()

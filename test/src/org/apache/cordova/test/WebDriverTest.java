@@ -34,6 +34,8 @@ public class WebDriverTest extends ActivityInstrumentationTestCase2<CordovaDrive
 		viewHandler = new CordovaWebViewClient(testActivity);
 		testDriver = new AndroidWebDriver(testActivity, viewFactory, viewHandler, appCode);
 		testView = (CordovaWebView) testDriver.getWebView();
+		viewHandler.setWebView(testView);
+		appCode.setWebView(testView);
 	}
 	
 	public void testPreconditions(){
