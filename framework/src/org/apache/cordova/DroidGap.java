@@ -918,31 +918,6 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.finish();
     }
     
-    
-   /** 
-    * Called when the back key is pressed
-    * 
-    * (non-Javadoc)
-    * @see android.app.Activity#onBackPressed()
-    */
-   /*
-   @Override
-   public void onBackPressed()
-   {
-       Log.d("BackPressed", "in onBackPressed"); 
-       Log.d("BackPressed", "bound = " + this.bound);
-       //Log.d("BackPressed", "backHistory = " + this.backHistory());
-       // If back key is bound, then send event to JavaScript
-
-     if (!(this.bound || this.backHistory())) {
-         Log.d("BackPressed", "exiting");
-         this.activityState = ACTIVITY_EXITING;
-         super.onBackPressed();
-     }
-   }
-  */
-
-    
     /**
      * Called when a key is de-pressed. (Key UP)
      * 
@@ -957,11 +932,8 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // If back key
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Log.d("BackButton", "I got an up from KEYCODE_BACK");
-
             // If back key is bound, then send event to JavaScript
             if (this.bound) {
-                Log.d("BackButton", "bound is true firing an event to JS");
                 this.appView.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
                 return true;
             } else {
@@ -990,7 +962,6 @@ public class DroidGap extends Activity implements CordovaInterface {
             return true;
         }
 
-        Log.d("BackPressed", "returning false");
         return false;
     }
 

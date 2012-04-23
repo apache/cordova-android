@@ -4,6 +4,6 @@
 
 # if there are no devices listed then emulate
 
-
+ant clean
 ant debug install
 adb shell am start -n $PACKAGE/$PACKAGE.$ACTIVITY

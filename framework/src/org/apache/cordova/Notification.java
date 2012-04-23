@@ -234,7 +234,7 @@ public class Notification extends Plugin {
 
         // First button
         if (fButtons.length > 0) {
-          dlg.setPositiveButton(fButtons[0],
+          dlg.setNegativeButton(fButtons[0],
               new AlertDialog.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
               dialog.dismiss();
@@ -256,7 +256,7 @@ public class Notification extends Plugin {
 
         // Third button
         if (fButtons.length > 2) {
-          dlg.setNegativeButton(fButtons[2],
+          dlg.setPositiveButton(fButtons[2],
               new AlertDialog.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
               dialog.dismiss();
