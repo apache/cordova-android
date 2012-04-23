@@ -37,18 +37,18 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.XmlResourceParser;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -434,9 +434,6 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // If spashscreen
         this.splashscreen = this.getIntegerProperty("splashscreen", 0);
-        if ((this.urls.size() == 0) && (this.splashscreen != 0)) {
-            root.setBackgroundResource(this.splashscreen);
-        }
 
         // If loadUrlTimeoutValue
         int timeout = this.getIntegerProperty("loadUrlTimeoutValue", 0);
@@ -609,38 +606,12 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (!url.startsWith("javascript:")) {
             LOG.d(TAG, "DroidGap.loadUrl(%s, %d)", url, time);
         }
-        final DroidGap me = this;
-
-        // Handle activity parameters
-        this.runOnUiThread(new Runnable() {
-            public void run() {
-                if (me.appView == null) {
-                    me.init();
-                }
-                me.handleActivityParameters();
-            }
-        });
-
-        Runnable runnable = new Runnable() {
-            public void run() {
-                try {
-                    synchronized(this) {
-                        this.wait(time);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (!me.cancelLoadUrl) {
-                    me.loadUrlIntoView(url);
-                }
-                else{
-                    me.cancelLoadUrl = false;
-                    LOG.d(TAG, "Aborting loadUrl(%s): Another URL was loaded before timer expired.", url);
-                }
-            }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
+        
+        this.handleActivityParameters();
+        if (this.splashscreen != 0) {
+            this.showSplashScreen(time);
+        }
+        this.loadUrlIntoView(url);
     }
     
     /**
@@ -1433,4 +1404,47 @@ public class DroidGap extends Activity implements CordovaInterface {
       return this.bound;
     }
 
+    protected Dialog splashDialog;
+    
+    /**
+     * Removes the Dialog that displays the splash screen
+     */
+    public void removeSplashScreen() {
+        if (splashDialog != null) {
+            splashDialog.dismiss();
+            splashDialog = null;
+        }
+    }
+     
+    /**
+     * Shows the splash screen over the full Activity
+     */
+    protected void showSplashScreen(int time) {
+        // Get reference to display
+        Display display = getWindowManager().getDefaultDisplay();
+        
+        // Create the layout for the dialog
+        LinearLayout root = new LinearLayout(this);
+        root.setMinimumHeight(display.getHeight());
+        root.setMinimumWidth(display.getWidth());
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(this.getIntegerProperty("backgroundColor", Color.BLACK));
+        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+                ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+        root.setBackgroundResource(this.splashscreen);
+
+        // Create and show the dialog
+        splashDialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);       
+        splashDialog.setContentView(root);
+        splashDialog.setCancelable(false);
+        splashDialog.show();
+     
+        // Set Runnable to remove splash screen just in case
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+          public void run() {
+            removeSplashScreen();
+          }
+        }, time);
+    }
 }
