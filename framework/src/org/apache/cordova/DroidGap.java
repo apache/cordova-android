@@ -238,8 +238,8 @@ public class DroidGap extends Activity implements CordovaInterface {
         root = new LinearLayoutSoftKeyboardDetect(this, width, height);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(this.backgroundColor);
-        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
-                ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 
+                ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
 
         // If url was passed in to intent, then init webview, which will load the url
         Bundle bundle = this.getIntent().getExtras();
@@ -280,8 +280,8 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.loadConfiguration();
 
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.FILL_PARENT,
-                ViewGroup.LayoutParams.FILL_PARENT, 
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT, 
                 1.0F));
 
         // Add web view but make it invisible while loading URL
@@ -366,7 +366,6 @@ public class DroidGap extends Activity implements CordovaInterface {
 
                 // If loadingDialog property, then show the App loading dialog for first page of app
                 // (This doesn't seem to actually do anything here)
-                /*
                 String loading = null;
                 if (me.urls.size() == 1) {
                     loading = me.getStringProperty("loadingDialog", null);
@@ -392,7 +391,6 @@ public class DroidGap extends Activity implements CordovaInterface {
                     }
                     me.spinnerStart(title, message);
                 }
-                */
 
                 // Create a timeout timer for loadUrl
                 final int currentLoadUrlTimeout = me.loadUrlTimeout;
@@ -800,64 +798,6 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Load the specified URL in the Cordova webview or a new browser instance.
-     * 
-     * NOTE: If openExternal is false, only URLs listed in whitelist can be loaded.
-     *
-     * @param url           The url to load.
-     * @param openExternal  Load url in browser instead of Cordova webview.
-     * @param clearHistory  Clear the history stack, so new page becomes top of history
-     * @param params        DroidGap parameters for new app
-     */
-    public void showWebPage(String url, boolean openExternal, boolean clearHistory, HashMap<String, Object> params) { //throws android.content.ActivityNotFoundException {
-        LOG.d(TAG, "showWebPage(%s, %b, %b, HashMap", url, openExternal, clearHistory);
-        
-        // If clearing history
-        if (clearHistory) {
-            this.clearHistory();
-        }
-        
-        // If loading into our webview
-        if (!openExternal) {
-            
-            // Make sure url is in whitelist
-            if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || isUrlWhiteListed(url)) {
-                // TODO: What about params?
-                
-                // Clear out current url from history, since it will be replacing it
-                if (clearHistory) {
-                    this.urls.clear();
-                }
-                
-                // Load new URL
-                this.loadUrl(url);
-            }
-            // Load in default viewer if not
-            else {
-                LOG.w(TAG, "showWebPage: Cannot load URL into webview since it is not in white list.  Loading into browser instead. (URL="+url+")");
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    this.startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    LOG.e(TAG, "Error loading url "+url, e);
-                }
-            }
-        }
-        
-        // Load in default view intent
-        else {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                this.startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error loading url "+url, e);
-            }
-        }
-    }
-    
-    /**
      * Show the spinner.  Must be called from the UI thread.
      * 
      * @param title         Title of the dialog
@@ -1187,6 +1127,11 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     public boolean backHistory() {
       return appView.backHistory();
+    }
+
+    public void showWebPage(String url, boolean openExternal,
+        boolean clearHistory, HashMap<String, Object> params) {
+      appView.showWebPage(url, openExternal, clearHistory, params);
     }
 
 }

@@ -14,7 +14,9 @@ import org.apache.cordova.api.PluginManager;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.XmlResourceParser;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -388,4 +390,65 @@ public class CordovaWebView extends WebView {
       
       return false;
   }
+  
+
+  /**
+   * Load the specified URL in the Cordova webview or a new browser instance.
+   * 
+   * NOTE: If openExternal is false, only URLs listed in whitelist can be loaded.
+   *
+   * @param url           The url to load.
+   * @param openExternal  Load url in browser instead of Cordova webview.
+   * @param clearHistory  Clear the history stack, so new page becomes top of history
+   * @param params        DroidGap parameters for new app
+   */
+  public void showWebPage(String url, boolean openExternal, boolean clearHistory, HashMap<String, Object> params) { //throws android.content.ActivityNotFoundException {
+      LOG.d(TAG, "showWebPage(%s, %b, %b, HashMap", url, openExternal, clearHistory);
+      
+      // If clearing history
+      if (clearHistory) {
+          this.clearHistory();
+      }
+      
+      // If loading into our webview
+      if (!openExternal) {
+          
+          // Make sure url is in whitelist
+          if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || isUrlWhiteListed(url)) {
+              // TODO: What about params?
+              
+              // Clear out current url from history, since it will be replacing it
+              if (clearHistory) {
+                  this.urls.clear();
+              }
+              
+              // Load new URL
+              this.loadUrl(url);
+          }
+          // Load in default viewer if not
+          else {
+              LOG.w(TAG, "showWebPage: Cannot load URL into webview since it is not in white list.  Loading into browser instead. (URL="+url+")");
+              try {
+                  Intent intent = new Intent(Intent.ACTION_VIEW);
+                  intent.setData(Uri.parse(url));
+                  mCtx.startActivity(intent);
+              } catch (android.content.ActivityNotFoundException e) {
+                  LOG.e(TAG, "Error loading url "+url, e);
+              }
+          }
+      }
+      
+      // Load in default view intent
+      else {
+          try {
+              Intent intent = new Intent(Intent.ACTION_VIEW);
+              intent.setData(Uri.parse(url));
+              mCtx.startActivity(intent);
+          } catch (android.content.ActivityNotFoundException e) {
+              LOG.e(TAG, "Error loading url "+url, e);
+          }
+      }
+  }
+  
+  
 }

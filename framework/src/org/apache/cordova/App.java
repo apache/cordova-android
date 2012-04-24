@@ -87,7 +87,7 @@ public class App extends Plugin {
 	 * Clear the resource cache.
 	 */
 	public void clearCache() {
-		((DroidGap)this.ctx).clearCache();
+	  webView.clearCache(true);	
 	}
 	
 	/**
@@ -147,11 +147,11 @@ public class App extends Plugin {
 				e.printStackTrace();
 			}
 		}
-		((DroidGap)this.ctx).showWebPage(url, openExternal, clearHistory, params);
+		webView.showWebPage(url, openExternal, clearHistory, params);
 	}
 
 	/**
-	 * Cancel loadUrl before it has been loaded.
+	 * Cancel loadUrl before it has been loaded (Only works on a CordovaInterface class)
 	 */
 	public void cancelLoadUrl() {
 		((DroidGap)this.ctx).cancelLoadUrl();
