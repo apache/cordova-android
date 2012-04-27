@@ -1004,7 +1004,7 @@ public class DroidGap extends Activity implements CordovaInterface {
                     String origin = xml.getAttributeValue(null, "origin");
                     String subdomains = xml.getAttributeValue(null, "subdomains");
                     if (origin != null) {
-                        this.appView.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                        appView.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
                     }
                 }
                 else if (strNode.equals("log")) {

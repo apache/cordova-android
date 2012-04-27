@@ -51,6 +51,9 @@ public class CordovaWebView extends WebView {
 
   protected long loadUrlTimeoutValue;
 
+  //preferences read from cordova.xml
+  protected PreferenceSet preferences;
+  
   public CordovaWebView(Context context) {
     super(context);
     mCtx = context;
@@ -450,5 +453,59 @@ public class CordovaWebView extends WebView {
       }
   }
   
+  /**
+   * Load Cordova configuration from res/xml/cordova.xml.
+   * Approved list of URLs that can be loaded into DroidGap
+   *      <access origin="http://server regexp" subdomains="true" />
+   * Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
+   *      <log level="DEBUG" />
+   */
+  private void loadConfiguration() {
+      int id = getResources().getIdentifier("cordova", "xml", mCtx.getPackageName());
+      if (id == 0) {
+          LOG.i("CordovaLog", "cordova.xml missing. Ignoring...");
+          return;
+      }
+      XmlResourceParser xml = getResources().getXml(id);
+      int eventType = -1;
+      while (eventType != XmlResourceParser.END_DOCUMENT) {
+          if (eventType == XmlResourceParser.START_TAG) {
+              String strNode = xml.getName();
+              if (strNode.equals("access")) {
+                  String origin = xml.getAttributeValue(null, "origin");
+                  String subdomains = xml.getAttributeValue(null, "subdomains");
+                  if (origin != null) {
+                      addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                  }
+              }
+              else if (strNode.equals("log")) {
+                  String level = xml.getAttributeValue(null, "level");
+                  LOG.i("CordovaLog", "Found log level %s", level);
+                  if (level != null) {
+                      LOG.setLogLevel(level);
+                  }
+              }
+              else if (strNode.equals("preference")) {
+                  String name = xml.getAttributeValue(null, "name");
+                  String value = xml.getAttributeValue(null, "value");
+                  String readonlyString = xml.getAttributeValue(null, "readonly");
+
+                  boolean readonly = (readonlyString != null &&
+                                      readonlyString.equals("true"));
+
+                  LOG.i("CordovaLog", "Found preference for %s", name);
+
+                  preferences.add(new PreferenceNode(name, value, readonly));
+              }
+          }
+          try {
+              eventType = xml.next();
+          } catch (XmlPullParserException e) {
+              e.printStackTrace();
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+      }
+  }
   
 }

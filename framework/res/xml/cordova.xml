@@ -30,7 +30,7 @@
 	<!-- <access origin=".*"/> Allow all domains, suggested development use only -->
 
     <log level="DEBUG"/>
-    <preference name="classicRender" value="true" />
+    <preference name="useWebkitHistory" value="false" />
 </cordova>
 
 
