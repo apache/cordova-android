@@ -1,6 +1,6 @@
-// commit cb7a4c7a4a680eccaef768a2e0c6e4631d39fcaf
+// commit 1c9ac3578a369dcb35b168c3e2d7ce2e89d45d12
 
-// File generated at :: Mon Apr 30 2012 13:28:32 GMT-0700 (PDT)
+// File generated at :: Tue May 01 2012 13:42:28 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -349,10 +349,10 @@ function deprecateFunctions(obj, objLabel) {
  * TODO: remove in 2.0.
  */
 if (!window.PhoneGap) {
-    window.PhoneGap = deprecateFunctions(cordova, 'PhoneGap');
+    window.PhoneGap = cordova;
 }
 if (!window.Cordova) {
-    window.Cordova = deprecateFunctions(cordova, 'Cordova');
+    window.Cordova = cordova;
 }
 
 /**
