@@ -203,7 +203,10 @@ public class DroidGap extends Activity implements CordovaInterface {
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
     protected boolean keepRunning = true;
-
+    
+    // Store the useBrowserHistory preference until we actually need it.
+    private boolean useBrowserHistory = false;
+    
     // preferences read from cordova.xml
     protected PreferenceSet preferences;
     
@@ -225,6 +228,8 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (preferences.prefMatches("fullscreen","true")) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else if(preferences.prefMatches("useBrowserHistory", "true")) {
+          useBrowserHistory = true;
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -286,6 +291,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
+        this.appView.useBrowserHistory = useBrowserHistory;
         root.addView(this.appView);
         setContentView(root);
         

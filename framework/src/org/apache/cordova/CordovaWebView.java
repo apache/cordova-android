@@ -47,6 +47,8 @@ public class CordovaWebView extends WebView {
   String baseUrl;
   private Stack<String> urls = new Stack<String>();
 
+  boolean useBrowserHistory = false;
+  
   protected int loadUrlTimeout;
 
   protected long loadUrlTimeoutValue;
@@ -304,7 +306,8 @@ public class CordovaWebView extends WebView {
           }
           pluginManager.init();
           
-          this.urls.push(url);
+          if(!useBrowserHistory)
+            this.urls.push(url);
       }
     }
     
@@ -315,7 +318,8 @@ public class CordovaWebView extends WebView {
   public void loadUrl(final String url, final int time)
   {
     // If not first page of app, then load immediately
-    if (this.urls.size() > 0) {
+    // Add support for browser history if we use it.
+    if (this.urls.size() > 0 || this.canGoBack()) {
         this.loadUrl(url);
     }
     

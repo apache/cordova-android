@@ -30,7 +30,7 @@
 	<!-- <access origin=".*"/> Allow all domains, suggested development use only -->
 
     <log level="DEBUG"/>
-    <preference name="useWebkitHistory" value="false" />
+    <preference name="useBrowserHistory" value="false" />
 </cordova>
 
 
