@@ -1,6 +1,6 @@
-// commit 017a948047e355ae0c2cdc8c4188ae57b115528a
+// commit 1c9ac3578a369dcb35b168c3e2d7ce2e89d45d12
 
-// File generated at :: Mon Apr 23 2012 11:36:23 GMT-0700 (PDT)
+// File generated at :: Tue May 01 2012 13:42:28 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -101,27 +101,27 @@ document.addEventListener = function(evt, handler, capture) {
     if (e == 'deviceready') {
         channel.onDeviceReady.subscribeOnce(handler);
     } else if (e == 'resume') {
-      channel.onResume.subscribe(handler);
-      // if subscribing listener after event has already fired, invoke the handler
-      if (channel.onResume.fired && handler instanceof Function) {
-          handler();
-      }
+        channel.onResume.subscribe(handler);
+        // if subscribing listener after event has already fired, invoke the handler
+        if (channel.onResume.fired && typeof handler == 'function') {
+            handler();
+        }
     } else if (e == 'pause') {
-      channel.onPause.subscribe(handler);
+        channel.onPause.subscribe(handler);
     } else if (typeof documentEventHandlers[e] != 'undefined') {
-      documentEventHandlers[e].subscribe(handler);
+        documentEventHandlers[e].subscribe(handler);
     } else {
-      m_document_addEventListener.call(document, evt, handler, capture);
+        m_document_addEventListener.call(document, evt, handler, capture);
     }
 };
 
 window.addEventListener = function(evt, handler, capture) {
-  var e = evt.toLowerCase();
-  if (typeof windowEventHandlers[e] != 'undefined') {
-    windowEventHandlers[e].subscribe(handler);
-  } else {
-    m_window_addEventListener.call(window, evt, handler, capture);
-  }
+    var e = evt.toLowerCase();
+    if (typeof windowEventHandlers[e] != 'undefined') {
+        windowEventHandlers[e].subscribe(handler);
+    } else {
+        m_window_addEventListener.call(window, evt, handler, capture);
+    }
 };
 
 document.removeEventListener = function(evt, handler, capture) {
@@ -140,30 +140,29 @@ document.removeEventListener = function(evt, handler, capture) {
 };
 
 window.removeEventListener = function(evt, handler, capture) {
-  var e = evt.toLowerCase();
-  // If unsubcribing from an event that is handled by a plugin
-  if (typeof windowEventHandlers[e] != "undefined") {
-    windowEventHandlers[e].unsubscribe(handler);
-  } else {
-    m_window_removeEventListener.call(window, evt, handler, capture);
-  }
+    var e = evt.toLowerCase();
+    // If unsubcribing from an event that is handled by a plugin
+    if (typeof windowEventHandlers[e] != "undefined") {
+        windowEventHandlers[e].unsubscribe(handler);
+    } else {
+        m_window_removeEventListener.call(window, evt, handler, capture);
+    }
 };
 
 function createEvent(type, data) {
-  var event = document.createEvent('Events');
-  event.initEvent(type, false, false);
-  if (data) {
-    for (var i in data) {
-      if (data.hasOwnProperty(i)) {
-        event[i] = data[i];
-      }
+    var event = document.createEvent('Events');
+    event.initEvent(type, false, false);
+    if (data) {
+        for (var i in data) {
+            if (data.hasOwnProperty(i)) {
+                event[i] = data[i];
+            }
+        }
     }
-  }
-  return event;
+    return event;
 }
 
-if(typeof window.console === "undefined")
-{
+if(typeof window.console === "undefined") {
     window.console = {
         log:function(){}
     };
@@ -176,16 +175,16 @@ var cordova = {
      * Methods to add/remove your own addEventListener hijacking on document + window.
      */
     addWindowEventHandler:function(event, opts) {
-      return (windowEventHandlers[event] = channel.create(event, opts));
+        return (windowEventHandlers[event] = channel.create(event, opts));
     },
     addDocumentEventHandler:function(event, opts) {
-      return (documentEventHandlers[event] = channel.create(event, opts));
+        return (documentEventHandlers[event] = channel.create(event, opts));
     },
     removeWindowEventHandler:function(event) {
-      delete windowEventHandlers[event];
+        delete windowEventHandlers[event];
     },
     removeDocumentEventHandler:function(event) {
-      delete documentEventHandlers[event];
+        delete documentEventHandlers[event];
     },
     /**
      * Retreive original event handlers that were replaced by Cordova
@@ -200,20 +199,20 @@ var cordova = {
      * Method to fire event from native code
      */
     fireDocumentEvent: function(type, data) {
-      var evt = createEvent(type, data);
-      if (typeof documentEventHandlers[type] != 'undefined') {
-        documentEventHandlers[type].fire(evt);
-      } else {
-        document.dispatchEvent(evt);
-      }
+        var evt = createEvent(type, data);
+        if (typeof documentEventHandlers[type] != 'undefined') {
+            documentEventHandlers[type].fire(evt);
+        } else {
+            document.dispatchEvent(evt);
+        }
     },
     fireWindowEvent: function(type, data) {
-      var evt = createEvent(type,data);
-      if (typeof windowEventHandlers[type] != 'undefined') {
-        windowEventHandlers[type].fire(evt);
-      } else {
-        window.dispatchEvent(evt);
-      }
+        var evt = createEvent(type,data);
+        if (typeof windowEventHandlers[type] != 'undefined') {
+            windowEventHandlers[type].fire(evt);
+        } else {
+            window.dispatchEvent(evt);
+        }
     },
     // TODO: this is Android only; think about how to do this better
     shuttingDown:false,
@@ -319,12 +318,41 @@ var cordova = {
     }
 };
 
+// Adds deprecation warnings to functions of an object (but only logs a message once)
+function deprecateFunctions(obj, objLabel) {
+    var newObj = {};
+    var logHash = {};
+    for (var i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            if (typeof obj[i] == 'function') {
+                newObj[i] = (function(prop){
+                    var oldFunk = obj[prop];
+                    var funkId = objLabel + '_' + prop;
+                    return function() {
+                        if (!logHash[funkId]) {
+                            console.log('[DEPRECATION NOTICE] The "' + objLabel + '" global will be removed in version 2.0, please use lowercase "cordova".');
+                            logHash[funkId] = true;
+                        }
+                        oldFunk.apply(obj, arguments);
+                    };
+                })(i);
+            } else {
+                newObj[i] = (function(prop) { return obj[prop]; })(i);
+            }
+        }
+    }
+    return newObj;
+}
+
 /**
  * Legacy variable for plugin support
  * TODO: remove in 2.0.
  */
 if (!window.PhoneGap) {
     window.PhoneGap = cordova;
+}
+if (!window.Cordova) {
+    window.Cordova = cordova;
 }
 
 /**
@@ -434,6 +462,8 @@ module.exports = {
 
 // file: lib/common/channel.js
 define("cordova/channel", function(require, exports, module) {
+var utils = require('cordova/utils');
+
 /**
  * Custom pub-sub "channel" that can have functions subscribed to it
  * This object is used to define and control firing of events for
@@ -481,21 +511,21 @@ define("cordova/channel", function(require, exports, module) {
  *                       context to the Channel.
  */
 var Channel = function(type, opts) {
-        this.type = type;
-        this.handlers = {};
-        this.numHandlers = 0;
-        this.guid = 0;
-        this.fired = false;
-        this.enabled = true;
-        this.events = {
-          onSubscribe:null,
-          onUnsubscribe:null
-        };
-        if (opts) {
-          if (opts.onSubscribe) this.events.onSubscribe = opts.onSubscribe;
-          if (opts.onUnsubscribe) this.events.onUnsubscribe = opts.onUnsubscribe;
-        }
-    },
+    this.type = type;
+    this.handlers = {};
+    this.numHandlers = 0;
+    this.guid = 0;
+    this.fired = false;
+    this.enabled = true;
+    this.events = {
+        onSubscribe:null,
+        onUnsubscribe:null
+    };
+    if (opts) {
+        if (opts.onSubscribe) this.events.onSubscribe = opts.onSubscribe;
+        if (opts.onUnsubscribe) this.events.onUnsubscribe = opts.onUnsubscribe;
+    }
+},
     channel = {
         /**
          * Calls the provided function only after all of the channels specified
@@ -555,8 +585,11 @@ var Channel = function(type, opts) {
                 c.fire();
             }
         }
-    },
-    utils = require('cordova/utils');
+    };
+
+function forceFunction(f) {
+    if (f === null || f === undefined || typeof f != 'function') throw "Function required as first argument!";
+}
 
 /**
  * Subscribes the given function to the channel. Any time that
@@ -567,10 +600,10 @@ var Channel = function(type, opts) {
  */
 Channel.prototype.subscribe = function(f, c, g) {
     // need a function to call
-    if (f === null || f === undefined) { return; }
+    forceFunction(f);
 
     var func = f;
-    if (typeof c == "object" && f instanceof Function) { func = utils.close(c, f); }
+    if (typeof c == "object") { func = utils.close(c, f); }
 
     g = g || func.observer_guid || f.observer_guid || this.guid++;
     func.observer_guid = g;
@@ -587,7 +620,7 @@ Channel.prototype.subscribe = function(f, c, g) {
  */
 Channel.prototype.subscribeOnce = function(f, c) {
     // need a function to call
-    if (f === null || f === undefined) { return; }
+    forceFunction(f);
 
     var g = null;
     var _this = this;
@@ -596,7 +629,7 @@ Channel.prototype.subscribeOnce = function(f, c) {
         _this.unsubscribe(g);
     };
     if (this.fired) {
-        if (typeof c == "object" && f instanceof Function) { f = utils.close(c, f); }
+        if (typeof c == "object") { f = utils.close(c, f); }
         f.apply(this, this.fireArgs);
     } else {
         g = this.subscribe(m);
@@ -609,9 +642,9 @@ Channel.prototype.subscribeOnce = function(f, c) {
  */
 Channel.prototype.unsubscribe = function(g) {
     // need a function to unsubscribe
-    if (g === null || g === undefined) { return; }
+    if (g === null || g === undefined) { throw "You must pass _something_ into Channel.unsubscribe"; }
 
-    if (g instanceof Function) { g = g.observer_guid; }
+    if (typeof g == 'function') { g = g.observer_guid; }
     this.handlers[g] = null;
     delete this.handlers[g];
     this.numHandlers--;
@@ -627,7 +660,7 @@ Channel.prototype.fire = function(e) {
         this.fired = true;
         for (var item in this.handlers) {
             var handler = this.handlers[item];
-            if (handler instanceof Function) {
+            if (typeof handler == 'function') {
                 var rv = (handler.apply(this, arguments)===false);
                 fail = fail || rv;
             }
@@ -673,6 +706,7 @@ channel.waitForInitialization('onCordovaInfoReady');
 channel.waitForInitialization('onCordovaConnectionReady');
 
 module.exports = channel;
+
 });
 
 // file: lib/common/common.js
@@ -1405,14 +1439,14 @@ function convertOut(contact) {
     var value = contact.birthday;
     if (value !== null) {
         // try to make it a Date object if it is not already
-        if (!value instanceof Date){
+        if (!utils.isDate(value)){
             try {
                 value = new Date(value);
             } catch(exception){
                 value = null;
             }
         }
-        if (value instanceof Date){
+        if (utils.isDate(value)){
             value = value.valueOf(); // convert to milliseconds
         }
         contact.birthday = value;
@@ -1555,6 +1589,7 @@ Contact.prototype.save = function(successCB, errorCB) {
 
 
 module.exports = Contact;
+
 });
 
 // file: lib/common/plugin/ContactAddress.js
@@ -1623,8 +1658,8 @@ define("cordova/plugin/ContactField", function(require, exports, module) {
 */
 var ContactField = function(type, value, pref) {
     this.id = null;
-    this.type = type || null;
-    this.value = value || null;
+    this.type = (type && type.toString()) || null;
+    this.value = (value && value.toString()) || null;
     this.pref = (typeof pref != 'undefined' ? pref : false);
 };
 
@@ -2509,7 +2544,7 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
         fileKey = options.fileKey;
         fileName = options.fileName;
         mimeType = options.mimeType;
-        if (options.chunkedMode !== null || typeof options.chunkedMode !== "undefined") {
+        if (options.chunkedMode !== null || typeof options.chunkedMode != "undefined") {
             chunkedMode = options.chunkedMode;
         }
         if (options.params) {
@@ -3125,7 +3160,7 @@ var utils = require('cordova/utils'),
  * size {Number} size of the file in bytes
  */
 var MediaFile = function(name, fullPath, type, lastModifiedDate, size){
-  MediaFile.__super__.constructor.apply(this, arguments);
+    MediaFile.__super__.constructor.apply(this, arguments);
 };
 
 utils.extend(MediaFile, File);
@@ -3140,10 +3175,11 @@ MediaFile.prototype.getFormatData = function(successCallback, errorCallback) {
     if (typeof this.fullPath === "undefined" || this.fullPath === null) {
         errorCallback(new CaptureError(CaptureError.CAPTURE_INVALID_ARGUMENT));
     } else {
-    exec(successCallback, errorCallback, "Capture", "getFormatData", [this.fullPath, this.type]);
+        exec(successCallback, errorCallback, "Capture", "getFormatData", [this.fullPath, this.type]);
     }
 };
 
+// TODO: can we axe this?
 /**
  * Casts a PluginResult message property  (array of objects) to an array of MediaFile objects
  * (used in Objective-C and Android)
@@ -3151,22 +3187,22 @@ MediaFile.prototype.getFormatData = function(successCallback, errorCallback) {
  * @param {PluginResult} pluginResult
  */
 MediaFile.cast = function(pluginResult) {
-  var mediaFiles = [];
-  var i;
-  for (i=0; i<pluginResult.message.length; i++) {
-    var mediaFile = new MediaFile();
-    mediaFile.name = pluginResult.message[i].name;
-    mediaFile.fullPath = pluginResult.message[i].fullPath;
-    mediaFile.type = pluginResult.message[i].type;
-    mediaFile.lastModifiedDate = pluginResult.message[i].lastModifiedDate;
-    mediaFile.size = pluginResult.message[i].size;
-    mediaFiles.push(mediaFile);
-  }
-  pluginResult.message = mediaFiles;
-  return pluginResult;
+    var mediaFiles = [];
+    for (var i=0; i<pluginResult.message.length; i++) {
+        var mediaFile = new MediaFile();
+        mediaFile.name = pluginResult.message[i].name;
+        mediaFile.fullPath = pluginResult.message[i].fullPath;
+        mediaFile.type = pluginResult.message[i].type;
+        mediaFile.lastModifiedDate = pluginResult.message[i].lastModifiedDate;
+        mediaFile.size = pluginResult.message[i].size;
+        mediaFiles.push(mediaFile);
+    }
+    pluginResult.message = mediaFiles;
+    return pluginResult;
 };
 
 module.exports = MediaFile;
+
 });
 
 // file: lib/common/plugin/MediaFileData.js
@@ -4401,6 +4437,7 @@ module.exports = compass;
 define("cordova/plugin/contacts", function(require, exports, module) {
 var exec = require('cordova/exec'),
     ContactError = require('cordova/plugin/ContactError'),
+    utils = require('cordova/utils'),
     Contact = require('cordova/plugin/Contact');
 
 /**
@@ -4420,7 +4457,7 @@ var contacts = {
         if (!successCB) {
             throw new TypeError("You must specify a success callback for the find command.");
         }
-        if (!fields || (fields instanceof Array && fields.length === 0)) {
+        if (!fields || (utils.isArray(fields) && fields.length === 0)) {
             if (typeof errorCB === "function") {
                 errorCB(new ContactError(ContactError.INVALID_ARGUMENT_ERROR));
             }
@@ -4456,6 +4493,7 @@ var contacts = {
 };
 
 module.exports = contacts;
+
 });
 
 // file: lib/common/plugin/geolocation.js
@@ -4786,34 +4824,28 @@ function UUIDcreatePart(length) {
 }
 
 var _self = {
+    isArray:function(a) {
+        return Object.prototype.toString.call(a) == '[object Array]';
+    },
+    isDate:function(d) {
+        return Object.prototype.toString.call(d) == '[object Date]';
+    },
     /**
      * Does a deep clone of the object.
      */
     clone: function(obj) {
-        if(!obj) {
+        if(!obj || typeof obj == 'function' || _self.isDate(obj) || typeof obj != 'object') {
             return obj;
         }
 
         var retVal, i;
 
-        if(obj instanceof Array){
+        if(_self.isArray(obj)){
             retVal = [];
             for(i = 0; i < obj.length; ++i){
                 retVal.push(_self.clone(obj[i]));
             }
             return retVal;
-        }
-
-        if (obj instanceof Function) {
-            return obj;
-        }
-
-        if(!(obj instanceof Object)){
-            return obj;
-        }
-
-        if(obj instanceof Date){
-            return obj;
         }
 
         retVal = {};
@@ -4826,7 +4858,7 @@ var _self = {
     },
 
     close: function(context, func, params) {
-        if (typeof params === 'undefined') {
+        if (typeof params == 'undefined') {
             return function() {
                 return func.apply(context, arguments);
             };
@@ -4877,6 +4909,7 @@ var _self = {
 };
 
 module.exports = _self;
+
 });
 
 
