@@ -34,6 +34,14 @@ Cordova Android Developer Tools
 
 The Cordova developer tooling is split between general tooling and project level tooling. 
 
+To enable the command-line tools available in the ./bin directory, make
+sure you have all of the dependencies installed. You will need
+[NodeJS](http://nodejs.org) (which should come with `npm`). To install
+the dependencies:
+
+    $ cd bin
+    $ npm install
+
 General Commands
 
     ./bin/create [path package activity] ... create the ./example app or a cordova android project
