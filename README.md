@@ -18,12 +18,15 @@ Requires
 - Java JDK 1.5
 - Apache ANT
 - Android SDK [http://developer.android.com](http://developer.android.com)
-
+- Apache Commons Codec [http://commons.apache.org/codec/](http://commons.apache.org/codec/)
 
 Building
 ---
 
-To create your cordova.jar, run in the framework directory:
+To create your cordova.jar, copy the commons codec:
+    mv commons-codec-1.6.jar framework/libs
+
+then run in the framework directory:
 
     android update project -p . -t android-15
     ant jar
