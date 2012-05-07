@@ -18,12 +18,15 @@ Requires
 - Java JDK 1.5
 - Apache ANT
 - Android SDK [http://developer.android.com](http://developer.android.com)
-
+- Apache Commons Codec [http://commons.apache.org/codec/](http://commons.apache.org/codec/)
 
 Building
 ---
 
-To create your cordova.jar, run in the framework directory:
+To create your cordova.jar, copy the commons codec:
+    mv commons-codec-1.6.jar framework/libs
+
+then run in the framework directory:
 
     android update project -p . -t android-15
     ant jar
@@ -33,6 +36,14 @@ Cordova Android Developer Tools
 ---
 
 The Cordova developer tooling is split between general tooling and project level tooling. 
+
+To enable the command-line tools available in the ./bin directory, make
+sure you have all of the dependencies installed. You will need
+[NodeJS](http://nodejs.org) (which should come with `npm`). To install
+the dependencies:
+
+    $ cd bin
+    $ npm install
 
 General Commands
 
