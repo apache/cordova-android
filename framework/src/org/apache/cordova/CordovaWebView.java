@@ -84,12 +84,16 @@ public class CordovaWebView extends WebView {
   public CordovaWebView(Context context, AttributeSet attrs) {
     super(context, attrs);
     mCtx = context;
+    preferences = new PreferenceSet();
+    loadConfiguration();
     setup();
   }
   
   public CordovaWebView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
     mCtx = context;
+    preferences = new PreferenceSet();
+    loadConfiguration();
     setup();
   }
   
@@ -97,6 +101,8 @@ public class CordovaWebView extends WebView {
       boolean privateBrowsing) {
     super(context, attrs, defStyle, privateBrowsing);
     mCtx = context;
+    preferences = new PreferenceSet();
+    loadConfiguration();
     setup();
   }
   
