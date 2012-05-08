@@ -225,16 +225,9 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 
-        if (preferences.prefMatches("fullscreen","true")) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else if(preferences.prefMatches("useBrowserHistory", "true")) {
-          useBrowserHistory = true;
-        } else {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        }
-
+        
         // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
         Display display = getWindowManager().getDefaultDisplay(); 
         int width = display.getWidth();
@@ -283,7 +276,11 @@ public class DroidGap extends Activity implements CordovaInterface {
         //      white list of allowed URLs
         //      debug setting
         this.loadConfiguration();
-
+        //Now we can check the preference
+        appView.useBrowserHistory = preferences.prefMatches("useBrowserHistory", "true");
+        
+        //
+        
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, 
@@ -291,7 +288,6 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
-        this.appView.useBrowserHistory = useBrowserHistory;
         root.addView(this.appView);
         setContentView(root);
         

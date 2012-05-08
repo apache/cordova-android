@@ -203,9 +203,12 @@ public class CordovaWebViewClient extends WebViewClient {
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         // Clear history so history.back() doesn't do anything.  
-        // So we can reinit() native side CallbackServer & PluginManager.
-        view.clearHistory(); 
-        this.doClearHistory = true;
+        // So we can reinit() native side CallbackServer & PluginManager.\
+        if(!appView.useBrowserHistory)
+        {
+          view.clearHistory(); 
+          this.doClearHistory = true;
+        }
     }
     
     /**
