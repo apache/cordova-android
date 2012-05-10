@@ -1,6 +1,6 @@
-// commit a5f0a62f9a9dc5fd7af95ec3d09b6b17c0b89b44
+// commit facaa38a0bd924aa15c14c372537c00382f1e593
 
-// File generated at :: Mon May 07 2012 16:20:11 GMT-0700 (PDT)
+// File generated at :: Thu May 10 2012 16:39:13 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -98,17 +98,7 @@ var documentEventHandlers = {},
 
 document.addEventListener = function(evt, handler, capture) {
     var e = evt.toLowerCase();
-    if (e == 'deviceready') {
-        channel.onDeviceReady.subscribeOnce(handler);
-    } else if (e == 'resume') {
-        channel.onResume.subscribe(handler);
-        // if subscribing listener after event has already fired, invoke the handler
-        if (channel.onResume.fired && typeof handler == 'function') {
-            handler();
-        }
-    } else if (e == 'pause') {
-        channel.onPause.subscribe(handler);
-    } else if (typeof documentEventHandlers[e] != 'undefined') {
+    if (typeof documentEventHandlers[e] != 'undefined') {
         documentEventHandlers[e].subscribe(handler);
     } else {
         m_document_addEventListener.call(document, evt, handler, capture);
@@ -126,13 +116,8 @@ window.addEventListener = function(evt, handler, capture) {
 
 document.removeEventListener = function(evt, handler, capture) {
     var e = evt.toLowerCase();
-    // Check for pause/resume events first.
-    if (e == 'resume') {
-        channel.onResume.unsubscribe(handler);
-    } else if (e == 'pause') {
-        channel.onPause.unsubscribe(handler);
     // If unsubcribing from an event that is handled by a plugin
-    } else if (typeof documentEventHandlers[e] != "undefined") {
+    if (typeof documentEventHandlers[e] != "undefined") {
         documentEventHandlers[e].unsubscribe(handler);
     } else {
         m_document_removeEventListener.call(document, evt, handler, capture);
@@ -317,6 +302,11 @@ var cordova = {
         });
     }
 };
+
+// Register pause, resume and deviceready channels as events on document.
+channel.onPause = cordova.addDocumentEventHandler('pause');
+channel.onResume = cordova.addDocumentEventHandler('resume');
+channel.onDeviceReady = cordova.addDocumentEventHandler('deviceready');
 
 // Adds deprecation warnings to functions of an object (but only logs a message once)
 function deprecateFunctions(obj, objLabel) {
@@ -645,10 +635,13 @@ Channel.prototype.unsubscribe = function(g) {
     if (g === null || g === undefined) { throw "You must pass _something_ into Channel.unsubscribe"; }
 
     if (typeof g == 'function') { g = g.observer_guid; }
-    this.handlers[g] = null;
-    delete this.handlers[g];
-    this.numHandlers--;
-    if (this.events.onUnsubscribe) this.events.onUnsubscribe.call(this);
+    var handler = this.handlers[g];
+    if (handler) {
+        this.handlers[g] = null;
+        delete this.handlers[g];
+        this.numHandlers--;
+        if (this.events.onUnsubscribe) this.events.onUnsubscribe.call(this);
+    }
 };
 
 /**
@@ -1145,6 +1138,7 @@ module.exports = {
         }
     }
 };
+
 });
 
 // file: lib/common/plugin/Acceleration.js
@@ -1984,6 +1978,21 @@ Entry.prototype.getMetadata = function(successCallback, errorCallback) {
   };
 
   exec(success, fail, "File", "getMetadata", [this.fullPath]);
+};
+
+/**
+ * Set the metadata of the entry.
+ *
+ * @param successCallback
+ *            {Function} is called with a Metadata object
+ * @param errorCallback
+ *            {Function} is called with a FileError
+ * @param metadataObject
+ *            {Object} keys and values to set
+ */
+Entry.prototype.setMetadata = function(successCallback, errorCallback, metadataObject) {
+
+  exec(successCallback, errorCallback, "File", "setMetadata", [this.fullPath, metadataObject]);
 };
 
 /**
