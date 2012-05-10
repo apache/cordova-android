@@ -227,14 +227,6 @@ public class CordovaChromeClient extends WebChromeClient {
             result.confirm(r);
         }
         
-        // Cordova JS has initialized, so show webview
-        // (This solves white flash seen when rendering HTML)
-        else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
-            appView.setVisibility(View.VISIBLE);
-            //ctx.spinnerStop();
-            result.confirm("OK");
-        }
-
         // Show dialog
         else {
             final JsPromptResult res = result;

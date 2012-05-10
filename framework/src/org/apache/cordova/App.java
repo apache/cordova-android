@@ -27,6 +27,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.webkit.WebView;
+import android.app.Activity;
+import android.view.View;
 
 import java.util.HashMap;
 
@@ -51,6 +53,14 @@ public class App extends Plugin {
         	if (action.equals("clearCache")) {
         		this.clearCache();
         	}
+          else if (action.equals("show")) {
+            final CordovaWebView wv = this.webView;
+            ((Activity)this.ctx).runOnUiThread(new Runnable() {
+                public void run() {
+                    wv.setVisibility(View.VISIBLE);
+                }
+            });
+          }
         	else if (action.equals("loadUrl")) {
             	this.loadUrl(args.getString(0), args.optJSONObject(1));
             }
