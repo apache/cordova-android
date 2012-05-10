@@ -97,7 +97,7 @@ public class CallbackServer implements Runnable {
 	 * Constructor.
 	 */
 	public CallbackServer() {
-		//System.out.println("CallbackServer()");
+		//Log.d(LOG_TAG, "CallbackServer()");
 		this.active = false;
 		this.empty = true;
 		this.port = 0;
@@ -113,7 +113,7 @@ public class CallbackServer implements Runnable {
 	 * @param url			The URL of the Cordova app being loaded
 	 */
 	public void init(String url) {
-		//System.out.println("CallbackServer.start("+url+")");
+		//Log.d(LOG_TAG, "CallbackServer.start("+url+")");
 		this.active = false;
 		this.empty = true;
 		this.port = 0;
@@ -175,7 +175,7 @@ public class CallbackServer implements Runnable {
 	 * Start the server on a new thread.
 	 */
 	public void startServer() {
-		//System.out.println("CallbackServer.startServer()");
+		//Log.d(LOG_TAG, "CallbackServer.startServer()");
 		this.active = false;
 		
 		// Start server on new thread
@@ -207,18 +207,18 @@ public class CallbackServer implements Runnable {
 			String request;
 			ServerSocket waitSocket = new ServerSocket(0);
 			this.port = waitSocket.getLocalPort();
-			//System.out.println("CallbackServer -- using port " +this.port);
+			//Log.d(LOG_TAG, "CallbackServer -- using port " +this.port);
 			this.token = java.util.UUID.randomUUID().toString();
-			//System.out.println("CallbackServer -- using token "+this.token);
+			//Log.d(LOG_TAG, "CallbackServer -- using token "+this.token);
 
 			 while (this.active) {
-				 //System.out.println("CallbackServer: Waiting for data on socket");
+				 //Log.d(LOG_TAG, "CallbackServer: Waiting for data on socket");
 				 Socket connection = waitSocket.accept();
 				 BufferedReader xhrReader = new BufferedReader(new InputStreamReader(connection.getInputStream()),40);
 				 DataOutputStream output = new DataOutputStream(connection.getOutputStream());
 				 request = xhrReader.readLine();
 				 String response = "";
-				 //System.out.println("CallbackServerRequest="+request);
+				 //Log.d(LOG_TAG, "CallbackServerRequest="+request);
 				 if (this.active && (request != null)) {
 					 if (request.contains("GET")) {
 						 
@@ -227,7 +227,7 @@ public class CallbackServer implements Runnable {
 						 
 						 // Must have security token
 						 if ((requestParts.length == 3) && (requestParts[1].substring(1).equals(this.token))) {
-							 //System.out.println("CallbackServer -- Processing GET request");
+							 //Log.d(LOG_TAG, "CallbackServer -- Processing GET request");
 
 							 // Wait until there is some data to send, or send empty data every 10 sec 
 							 // to prevent XHR timeout on the client 
@@ -235,7 +235,7 @@ public class CallbackServer implements Runnable {
 								 while (this.empty) { 
 									 try { 
 										 this.wait(10000); // prevent timeout from happening
-										 //System.out.println("CallbackServer>>> break <<<");
+										 //Log.d(LOG_TAG, "CallbackServer>>> break <<<");
 										 break;
 									 } 
 									 catch (Exception e) { }
@@ -247,11 +247,11 @@ public class CallbackServer implements Runnable {
 
 								 // If no data, then send 404 back to client before it times out
 								 if (this.empty) {
-									 //System.out.println("CallbackServer -- sending data 0");
+									 //Log.d(LOG_TAG, "CallbackServer -- sending data 0");
 									 response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
 								 }
 								 else {
-									 //System.out.println("CallbackServer -- sending item");
+									 //Log.d(LOG_TAG, "CallbackServer -- sending item");
 									 response = "HTTP/1.1 200 OK\r\n\r\n";
 									 String js = this.getJavascript();
 									 if (js != null) {
@@ -270,8 +270,8 @@ public class CallbackServer implements Runnable {
 					 else {
 						 response = "HTTP/1.1 400 Bad Request\r\n\r\n ";
 					 }
-					 //System.out.println("CallbackServer: response="+response);
-					 //System.out.println("CallbackServer: closing output");
+					 //Log.d(LOG_TAG, "CallbackServer: response="+response);
+					 //Log.d(LOG_TAG, "CallbackServer: closing output");
 					 output.writeBytes(response);
 					 output.flush();
 				 }
@@ -282,7 +282,7 @@ public class CallbackServer implements Runnable {
 			 e.printStackTrace();
 		 }
 		 this.active = false;
-		 //System.out.println("CallbackServer.startServer() - EXIT");
+		 //Log.d(LOG_TAG, "CallbackServer.startServer() - EXIT");
 	}
 		
 	/**
@@ -290,7 +290,7 @@ public class CallbackServer implements Runnable {
 	 * This stops the thread that the server is running on.
 	 */
 	public void stopServer() {
-		//System.out.println("CallbackServer.stopServer()");
+		//Log.d(LOG_TAG, "CallbackServer.stopServer()");
 		if (this.active) {
 			this.active = false;
 

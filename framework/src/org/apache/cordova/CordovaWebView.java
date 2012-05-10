@@ -321,14 +321,6 @@ public class CordovaWebView extends WebView {
               this.baseUrl = this.url + "/";
           }
 
-          // Create callback server and plugin manager
-          if (callbackServer == null) {
-            callbackServer = new CallbackServer();
-            callbackServer.init(url);
-          }
-          else {
-            callbackServer.reinit(url);
-          }
           pluginManager.init();
           
           if(!useBrowserHistory)

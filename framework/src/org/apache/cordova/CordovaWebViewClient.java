@@ -209,6 +209,14 @@ public class CordovaWebViewClient extends WebViewClient {
           view.clearHistory(); 
           this.doClearHistory = true;
         }
+        // Create callback server and plugin manager
+        if (appView.callbackServer == null) {
+          appView.callbackServer = new CallbackServer();
+          appView.callbackServer.init(url);
+        }
+        else {
+          appView.callbackServer.reinit(url);
+        }
     }
     
     /**
