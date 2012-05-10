@@ -336,6 +336,41 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
     }
     
+    /*
+     * Load the spinner
+     * 
+     */
+    void loadSpinner()
+    {
+      // If loadingDialog property, then show the App loading dialog for first page of app
+      // (This doesn't seem to actually do anything here)
+      String loading = null;
+      if (this.urls.size() == 1) {
+          loading = this.getStringProperty("loadingDialog", null);
+      }
+      else {
+          loading = this.getStringProperty("loadingPageDialog", null);                  
+      }
+      if (loading != null) {
+
+          String title = "";
+          String message = "Loading Application...";
+
+          if (loading.length() > 0) {
+              int comma = loading.indexOf(',');
+              if (comma > 0) {
+                  title = loading.substring(0, comma);
+                  message = loading.substring(comma+1);
+              }
+              else {
+                  title = "";
+                  message = loading;
+              }
+          }
+          this.spinnerStart(title, message);
+      }
+    }
+    
     /**
      * Load the url into the webview.
      * 
@@ -352,6 +387,15 @@ public class DroidGap extends Activity implements CordovaInterface {
         
         // Load URL on UI thread
         final DroidGap me = this;
+        
+        final Runnable loadError = new Runnable() {
+          public void run() {
+            me.appView.stopLoading();
+            LOG.e(TAG, "DroidGap: TIMEOUT ERROR! - calling webViewClient");
+            appView.viewClient.onReceivedError(me.appView, -6, "The connection to the server was unsuccessful.", url);
+          }
+        };
+        
         this.runOnUiThread(new Runnable() {
             public void run() {
 
@@ -362,34 +406,9 @@ public class DroidGap extends Activity implements CordovaInterface {
 
                 // Handle activity parameters (TODO: Somehow abstract this)
                 me.handleActivityParameters();
-
-                // If loadingDialog property, then show the App loading dialog for first page of app
-                // (This doesn't seem to actually do anything here)
-                String loading = null;
-                if (me.urls.size() == 1) {
-                    loading = me.getStringProperty("loadingDialog", null);
-                }
-                else {
-                    loading = me.getStringProperty("loadingPageDialog", null);                  
-                }
-                if (loading != null) {
-
-                    String title = "";
-                    String message = "Loading Application...";
-
-                    if (loading.length() > 0) {
-                        int comma = loading.indexOf(',');
-                        if (comma > 0) {
-                            title = loading.substring(0, comma);
-                            message = loading.substring(comma+1);
-                        }
-                        else {
-                            title = "";
-                            message = loading;
-                        }
-                    }
-                    me.spinnerStart(title, message);
-                }
+                
+                // Then load the spinner
+                me.loadSpinner();
 
                 // Create a timeout timer for loadUrl
                 final int currentLoadUrlTimeout = me.loadUrlTimeout;
@@ -405,15 +424,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
                         // If timeout, then stop loading and handle error
                         if (me.loadUrlTimeout == currentLoadUrlTimeout) {
-                           
-                           //TURTLES, TURTLES ALL THE WAY DOWN!!!!!
-                           me.runOnUiThread(new Runnable() {
-                             public void run() {
-                               me.appView.stopLoading();
-                               LOG.e(TAG, "DroidGap: TIMEOUT ERROR! - calling webViewClient");
-                               appView.viewClient.onReceivedError(me.appView, -6, "The connection to the server was unsuccessful.", url);
-                             };
-                           });
+                           me.runOnUiThread(loadError);
                            
                         }
                     }
