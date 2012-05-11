@@ -222,7 +222,7 @@ public class FileUtils extends Plugin {
      * @param filePath the path to check
      */
     private void notifyDelete(String filePath) {
-        String newFilePath = filePath.substring(7);
+        String newFilePath = stripFileProtocol(filePath);
         int result = this.ctx.getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 MediaStore.Images.Media.DATA + " = ?",
                 new String[] {newFilePath});
