@@ -29,4 +29,6 @@ public class errorurl extends DroidGap {
         this.setStringProperty("errorUrl", "file:///android_asset/www/htmlnotfound/error.html");
         super.loadUrl("file:///android_asset/www/htmlnotfound/index.html");
     }
+    
+    
 }
