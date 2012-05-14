@@ -54,6 +54,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
     private float x,y,z;						        // most recent acceleration values
     private long timestamp;					        // time of most recent value
     private int status;							        // status of listener
+    private int accuracy = SensorManager.SENSOR_STATUS_UNRELIABLE;
 
     private SensorManager sensorManager;    // Sensor manager
     private Sensor mSensor;						      // Acceleration sensor returned by sensor manager
@@ -184,7 +185,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
     	// If found, then register as listener
     	if ((list != null) && (list.size() > 0)) {
     		this.mSensor = list.get(0);
-    		this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_FASTEST);
+    		this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_UI);
     		this.setStatus(AccelListener.STARTING);
     	} else {
     		this.setStatus(AccelListener.ERROR_FAILED_TO_START);
@@ -217,6 +218,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
             this.sensorManager.unregisterListener(this);
         }
         this.setStatus(AccelListener.STOPPED);
+        this.accuracy = SensorManager.SENSOR_STATUS_UNRELIABLE;
     }
 
     /**
@@ -226,6 +228,17 @@ public class AccelListener extends Plugin implements SensorEventListener {
      * @param accuracy
      */
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    	// Only look at accelerometer events
+        if (sensor.getType() != Sensor.TYPE_ACCELEROMETER) {
+            return;
+        }
+        
+        // If not running, then just return
+        if (this.status == AccelListener.STOPPED) {
+            return;
+        }
+        Log.d("ACCEL", "accuracy is now " + accuracy);
+        this.accuracy = accuracy;
     }
 
     /**
@@ -246,16 +259,19 @@ public class AccelListener extends Plugin implements SensorEventListener {
         
         this.setStatus(AccelListener.RUNNING);
         
-        // Save time that event was received
-        this.timestamp = System.currentTimeMillis();
-        this.x = event.values[0];
-        this.y = event.values[1];
-        this.z = event.values[2];
+        if (this.accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
 
-        this.win();
-        
-        if (this.size() == 0) {
-        	this.stop();
+        	// Save time that event was received
+        	this.timestamp = System.currentTimeMillis();
+        	this.x = event.values[0];
+        	this.y = event.values[1];
+        	this.z = event.values[2];
+
+        	this.win();
+
+        	if (this.size() == 0) {
+        		this.stop();
+        	}
         }
     }
 
