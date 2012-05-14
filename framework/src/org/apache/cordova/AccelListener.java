@@ -237,6 +237,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
         if (this.status == AccelListener.STOPPED) {
             return;
         }
+        Log.d("ACCEL", "accuracy is now " + accuracy);
         this.accuracy = accuracy;
     }
 
