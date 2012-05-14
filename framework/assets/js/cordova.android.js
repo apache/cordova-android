@@ -1,6 +1,6 @@
-// commit facaa38a0bd924aa15c14c372537c00382f1e593
+// commit 7b6ae77e5030060e8e99fe0b79ddcf9d698bf375
 
-// File generated at :: Thu May 10 2012 16:39:13 GMT-0700 (PDT)
+// File generated at :: Mon May 14 2012 13:03:22 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -1144,13 +1144,14 @@ module.exports = {
 // file: lib/common/plugin/Acceleration.js
 define("cordova/plugin/Acceleration", function(require, exports, module) {
 var Acceleration = function(x, y, z, timestamp) {
-  this.x = x;
-  this.y = y;
-  this.z = z;
-  this.timestamp = timestamp || (new Date()).getTime();
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.timestamp = timestamp || (new Date()).getTime();
 };
 
 module.exports = Acceleration;
+
 });
 
 // file: lib/common/plugin/Camera.js
@@ -3369,10 +3370,15 @@ define("cordova/plugin/accelerometer", function(require, exports, module) {
  * @constructor
  */
 var utils = require("cordova/utils"),
-    exec = require("cordova/exec");
+    exec = require("cordova/exec"),
+    Acceleration = require('cordova/plugin/Acceleration');
 
-// Local singleton variables.
+
+// Keeps reference to watchAcceleration calls.
 var timers = {};
+
+// Last returned acceleration object from native
+var accel = null;
 
 var accelerometer = {
     /**
@@ -3383,21 +3389,18 @@ var accelerometer = {
      * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
      */
     getCurrentAcceleration: function(successCallback, errorCallback, options) {
-
         // successCallback required
         if (typeof successCallback !== "function") {
-            console.log("Accelerometer Error: successCallback is not a function");
-            return;
+            throw "getCurrentAcceleration must be called with at least a success callback function as first parameter.";
         }
 
-        // errorCallback optional
-        if (errorCallback && (typeof errorCallback !== "function")) {
-            console.log("Accelerometer Error: errorCallback is not a function");
-            return;
-        }
+        var win = function(a) {
+            accel = new Acceleration(a.x, a.y, a.z, a.timestamp);
+            successCallback(accel);
+        };
 
         // Get acceleration
-        exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
+        exec(win, errorCallback, "Accelerometer", "getAcceleration", []);
     },
 
     /**
@@ -3409,36 +3412,34 @@ var accelerometer = {
      * @return String                       The watch id that must be passed to #clearWatch to stop watching.
      */
     watchAcceleration: function(successCallback, errorCallback, options) {
-
         // Default interval (10 sec)
-        var frequency = (options !== undefined && options.frequency !== undefined)? options.frequency : 10000;
+        var frequency = (options && options.frequency && typeof options.frequency == 'number') ? options.frequency : 10000;
 
         // successCallback required
         if (typeof successCallback !== "function") {
-            console.log("Accelerometer Error: successCallback is not a function");
-            return;
+            throw "watchAcceleration must be called with at least a success callback function as first parameter.";
         }
 
-        // errorCallback optional
-        if (errorCallback && (typeof errorCallback !== "function")) {
-            console.log("Accelerometer Error: errorCallback is not a function");
-            return;
-        }
-
-        // Make sure accelerometer timeout > frequency + 10 sec
-        exec(
-            function(timeout) {
-                if (timeout < (frequency + 10000)) {
-                    exec(null, null, "Accelerometer", "setTimeout", [frequency + 10000]);
-                }
-            },
-            function(e) { }, "Accelerometer", "getTimeout", []);
-
-        // Start watch timer
+        // Keep reference to watch id, and report accel readings as often as defined in frequency
         var id = utils.createUUID();
         timers[id] = window.setInterval(function() {
-            exec(successCallback, errorCallback, "Accelerometer", "getAcceleration", []);
-        }, (frequency ? frequency : 1));
+            if (accel) {
+                successCallback(accel);
+            }
+        }, frequency);
+
+        // Success callback from native just updates the accel object.
+        var win = function(a) {
+            accel = new Acceleration(a.x, a.y, a.z, a.timestamp);
+        };
+
+        // Fail callback clears the watch and sends an error back.
+        var fail = function(err) {
+            accelerometer.clearWatch(id);
+            errorCallback(err);
+        };
+
+        exec(win, fail, "Accelerometer", "addWatch", [id, frequency]);
 
         return id;
     },
@@ -3449,16 +3450,17 @@ var accelerometer = {
      * @param {String} id       The id of the watch returned from #watchAcceleration.
      */
     clearWatch: function(id) {
-
         // Stop javascript timer & remove from timer list
-        if (id && timers[id] !== undefined) {
+        if (id && timers[id]) {
             window.clearInterval(timers[id]);
             delete timers[id];
+            exec(null, null, "Accelerometer", "clearWatch", [id]);
         }
     }
 };
 
 module.exports = accelerometer;
+
 });
 
 // file: lib/android/plugin/android/app.js
@@ -5172,7 +5174,7 @@ window.cordova = require('cordova');
                     // Fire onDeviceReady event once all constructors have run and
                     // cordova info has been received from native side.
                     channel.join(function() {
-                        channel.onDeviceReady.fire();
+                        require('cordova').fireDocumentEvent('deviceready');
                     }, channel.deviceReadyChannelsArray);
 
                 }, [ channel.onDOMContentLoaded, channel.onNativeReady ]);
@@ -5190,5 +5192,6 @@ window.cordova = require('cordova');
     }
 
 }(window));
+
 
 })();
