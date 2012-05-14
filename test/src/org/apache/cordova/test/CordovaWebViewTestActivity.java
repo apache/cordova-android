@@ -24,7 +24,7 @@ import org.apache.cordova.CordovaWebView;
 import android.app.Activity;
 import android.os.Bundle;
 
-public class PhoneGapViewTestActivity extends Activity {
+public class CordovaWebViewTestActivity extends Activity {
     
     CordovaWebView phoneGap;
     /** Called when the activity is first created. */

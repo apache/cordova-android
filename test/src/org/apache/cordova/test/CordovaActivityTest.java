@@ -26,9 +26,9 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-public class CordovaActivityTest extends ActivityInstrumentationTestCase2<PhoneGapActivity> {
+public class CordovaActivityTest extends ActivityInstrumentationTestCase2<CordovaActivity> {
 
-    private PhoneGapActivity testActivity;
+    private CordovaActivity testActivity;
     private FrameLayout containerView;
     private LinearLayout innerContainer;
     private CordovaWebView testView;
@@ -36,7 +36,7 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<PhoneG
     @SuppressWarnings("deprecation")
     public CordovaActivityTest()
     {
-        super("org.apache.cordova.test",PhoneGapActivity.class);
+        super("org.apache.cordova.test",CordovaActivity.class);
     }
     
     protected void setUp() throws Exception {

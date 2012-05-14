@@ -24,12 +24,18 @@ public class ErrorUrlTest extends ActivityInstrumentationTestCase2<errorurl> {
       containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
       innerContainer = (LinearLayout) containerView.getChildAt(0);
       testView = (CordovaWebView) innerContainer.getChildAt(0);
-      
   }
   
   public void testPreconditions(){
       assertNotNull(innerContainer);
       assertNotNull(testView);
+  }
+  
+  public void testUrl()
+  {
+    String good_url = "file:///android_asset/www/htmlnotfound/error.html";
+    String url = testView.getUrl();
+    assertTrue(url.equals(good_url));
   }
   
 }

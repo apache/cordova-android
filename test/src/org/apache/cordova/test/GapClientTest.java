@@ -31,9 +31,9 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-public class GapClientTest extends ActivityInstrumentationTestCase2<PhoneGapViewTestActivity> {
+public class GapClientTest extends ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
 	
-	private PhoneGapViewTestActivity testActivity;
+	private CordovaWebViewTestActivity testActivity;
 	private FrameLayout containerView;
 	private LinearLayout innerContainer;
 	private View testView;
@@ -41,7 +41,7 @@ public class GapClientTest extends ActivityInstrumentationTestCase2<PhoneGapView
 	private CordovaChromeClient appCode;
 
 	public GapClientTest() {
-		super("com.phonegap.test.activities",PhoneGapViewTestActivity.class);
+		super("com.phonegap.test.activities",CordovaWebViewTestActivity.class);
 	}
 	
 	protected void setUp() throws Exception{

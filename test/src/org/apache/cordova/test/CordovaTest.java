@@ -25,15 +25,15 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 
 public class CordovaTest extends
-    ActivityInstrumentationTestCase2<PhoneGapViewTestActivity> {
+    ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
 
   private static final long TIMEOUT = 1000;
-  private PhoneGapViewTestActivity testActivity;
+  private CordovaWebViewTestActivity testActivity;
   private View testView;
   private String rString;
 
   public CordovaTest() {
-    super("com.phonegap.test.activities", PhoneGapViewTestActivity.class);
+    super("com.phonegap.test.activities", CordovaWebViewTestActivity.class);
   }
 
   protected void setUp() throws Exception {

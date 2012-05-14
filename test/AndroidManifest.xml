@@ -59,7 +59,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".PhoneGapViewTestActivity" >
+            android:name=".CordovaWebViewTestActivity" >
             <intent-filter >
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -96,17 +96,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name="org.apache.cordova.test.PhoneGapSplash" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.SAMPLE_CODE" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:windowSoftInputMode="adjustPan"
-            android:label="@string/app_name" 
-            android:configChanges="orientation|keyboardHidden"
-            android:name="org.apache.cordova.test.PhoneGapActivity" >
+            android:name=".CordovaActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
