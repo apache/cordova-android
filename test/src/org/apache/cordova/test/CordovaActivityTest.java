@@ -33,9 +33,10 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<PhoneG
     private LinearLayout innerContainer;
     private CordovaWebView testView;
     
+    @SuppressWarnings("deprecation")
     public CordovaActivityTest()
     {
-        super("com.phonegap.test.activities",PhoneGapActivity.class);
+        super("org.apache.cordova.test",PhoneGapActivity.class);
     }
     
     protected void setUp() throws Exception {

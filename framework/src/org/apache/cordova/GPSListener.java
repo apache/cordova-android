@@ -16,19 +16,35 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
 
-import android.os.Bundle;
-import org.apache.cordova.*;
+package org.apache.cordova;
 
-public class errorurl extends DroidGap {
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        super.init();
-        this.setStringProperty("errorUrl", "file:///android_asset/www/htmlnotfound/error.html");
-        super.loadUrl("file:///android_asset/www/htmlnotfound/index.html");
-    }
-    
-    
+import android.location.LocationManager;
+
+/**
+ * This class handles requests for GPS location services.
+ *
+ */
+public class GPSListener extends CordovaLocationListener {
+	public GPSListener(LocationManager locationManager, GeoBroker m) {
+		super(locationManager, m, "[Cordova GPSListener]");
+	}
+
+	
+	/**
+	 * Start requesting location updates.
+	 * 
+	 * @param interval
+	 */
+	@Override
+	protected void start() {
+		if (!this.running) {
+			if (this.locationManager.getProvider(LocationManager.GPS_PROVIDER) != null) {
+				this.running = true;
+				this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
+			} else {
+				this.fail(CordovaLocationListener.POSITION_UNAVAILABLE, "GPS provider is not available.");
+			}
+		}
+	}
 }

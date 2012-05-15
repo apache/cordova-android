@@ -1,6 +1,6 @@
-// commit 9a080cc2704171a4169739b2c94ca55427b92f93
+// commit 55e46cecd73e06a4866f084ffa8513219ef68421
 
-// File generated at :: Thu May 10 2012 15:48:14 GMT-0700 (PDT)
+// File generated at :: Fri May 11 2012 10:34:50 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -98,17 +98,7 @@ var documentEventHandlers = {},
 
 document.addEventListener = function(evt, handler, capture) {
     var e = evt.toLowerCase();
-    if (e == 'deviceready') {
-        channel.onDeviceReady.subscribeOnce(handler);
-    } else if (e == 'resume') {
-        channel.onResume.subscribe(handler);
-        // if subscribing listener after event has already fired, invoke the handler
-        if (channel.onResume.fired && typeof handler == 'function') {
-            handler();
-        }
-    } else if (e == 'pause') {
-        channel.onPause.subscribe(handler);
-    } else if (typeof documentEventHandlers[e] != 'undefined') {
+    if (typeof documentEventHandlers[e] != 'undefined') {
         documentEventHandlers[e].subscribe(handler);
     } else {
         m_document_addEventListener.call(document, evt, handler, capture);
@@ -126,13 +116,8 @@ window.addEventListener = function(evt, handler, capture) {
 
 document.removeEventListener = function(evt, handler, capture) {
     var e = evt.toLowerCase();
-    // Check for pause/resume events first.
-    if (e == 'resume') {
-        channel.onResume.unsubscribe(handler);
-    } else if (e == 'pause') {
-        channel.onPause.unsubscribe(handler);
     // If unsubcribing from an event that is handled by a plugin
-    } else if (typeof documentEventHandlers[e] != "undefined") {
+    if (typeof documentEventHandlers[e] != "undefined") {
         documentEventHandlers[e].unsubscribe(handler);
     } else {
         m_document_removeEventListener.call(document, evt, handler, capture);
@@ -317,6 +302,11 @@ var cordova = {
         });
     }
 };
+
+// Register pause, resume and deviceready channels as events on document.
+channel.onPause = cordova.addDocumentEventHandler('pause');
+channel.onResume = cordova.addDocumentEventHandler('resume');
+channel.onDeviceReady = cordova.addDocumentEventHandler('deviceready');
 
 // Adds deprecation warnings to functions of an object (but only logs a message once)
 function deprecateFunctions(obj, objLabel) {
@@ -1101,7 +1091,7 @@ module.exports = {
         // Let native code know we are all done on the JS side.
         // Native code will then un-hide the WebView.
         channel.join(function() {
-            exec(function(){}, function(){}, 'App', 'show', []);
+            prompt("", "gap_init:");
         }, [channel.onCordovaReady]);
     },
     objects: {
@@ -5182,7 +5172,7 @@ window.cordova = require('cordova');
                     // Fire onDeviceReady event once all constructors have run and
                     // cordova info has been received from native side.
                     channel.join(function() {
-                        channel.onDeviceReady.fire();
+                        require('cordova').fireDocumentEvent('deviceready');
                     }, channel.deviceReadyChannelsArray);
 
                 }, [ channel.onDOMContentLoaded, channel.onNativeReady ]);
@@ -5200,5 +5190,6 @@ window.cordova = require('cordova');
     }
 
 }(window));
+
 
 })();

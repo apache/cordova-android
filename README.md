@@ -31,6 +31,7 @@ Building
 ---
 
 To create your cordova.jar, copy the commons codec:
+
     mv commons-codec-1.6.jar framework/libs
 
 then run in the framework directory:
