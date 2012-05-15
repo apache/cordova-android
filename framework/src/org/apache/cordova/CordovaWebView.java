@@ -92,6 +92,7 @@ public class CordovaWebView extends WebView {
     /**
      * Constructor.
      * 
+     * 
      * @param context
      * @param attrs
      */
@@ -105,7 +106,8 @@ public class CordovaWebView extends WebView {
       {
         Log.d(TAG, "Your activity must implement CordovaInterface to work");
       }
-
+      this.setWebChromeClient(new CordovaChromeClient(this.mCtx));
+      this.setWebViewClient(new CordovaWebViewClient(this.mCtx));
       this.loadConfiguration();
       this.setup();
     }
@@ -116,7 +118,7 @@ public class CordovaWebView extends WebView {
      * @param context
      * @param attrs
      * @param defStyle
-     * @throws CordovaException 
+     * 
      */
     public CordovaWebView(Context context, AttributeSet attrs, int defStyle)  {
         super(context, attrs, defStyle);
@@ -128,6 +130,8 @@ public class CordovaWebView extends WebView {
         {
           Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
+        this.setWebChromeClient(new CordovaChromeClient(this.mCtx));
+        this.setWebViewClient(new CordovaWebViewClient(this.mCtx));
         this.loadConfiguration();
         this.setup();
     }
@@ -150,6 +154,8 @@ public class CordovaWebView extends WebView {
         {
           Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
+        this.setWebChromeClient(new CordovaChromeClient(this.mCtx));
+        this.setWebViewClient(new CordovaWebViewClient(this.mCtx));
         this.loadConfiguration();
         this.setup();
     }
