@@ -38,6 +38,7 @@ import android.content.res.XmlResourceParser;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -73,24 +74,40 @@ public class CordovaWebView extends WebView {
      * 
      * @param context
      */
-    public CordovaWebView(CordovaInterface context) {
-        super(context.getActivity());
-        this.mCtx = context;
+    public CordovaWebView(Context context) {
+        super(context);
+        if(CordovaInterface.class.isInstance(context))
+        {
+          this.mCtx = (CordovaInterface) context;
+        }
+        else
+        {
+          Log.d(TAG, "Your activity must implement CordovaInterface to work");
+        }
         this.loadConfiguration();
         this.setup();
     }
 
+    
     /**
      * Constructor.
      * 
      * @param context
      * @param attrs
      */
-    public CordovaWebView(CordovaInterface context, AttributeSet attrs) {
-        super(context.getActivity(), attrs);
-        this.mCtx = context;
-        this.loadConfiguration();
-        this.setup();
+    public CordovaWebView(Context context, AttributeSet attrs) {
+      super(context, attrs);
+      if(CordovaInterface.class.isInstance(context))
+      {
+        this.mCtx = (CordovaInterface) context;
+      }          
+      else
+      {
+        Log.d(TAG, "Your activity must implement CordovaInterface to work");
+      }
+
+      this.loadConfiguration();
+      this.setup();
     }
 
     /**
@@ -99,10 +116,18 @@ public class CordovaWebView extends WebView {
      * @param context
      * @param attrs
      * @param defStyle
+     * @throws CordovaException 
      */
-    public CordovaWebView(CordovaInterface context, AttributeSet attrs, int defStyle) {
-        super(context.getActivity(), attrs, defStyle);
-        this.mCtx = context;
+    public CordovaWebView(Context context, AttributeSet attrs, int defStyle)  {
+        super(context, attrs, defStyle);
+        if(CordovaInterface.class.isInstance(context))
+        {
+          this.mCtx = (CordovaInterface) context;
+        }
+        else
+        {
+          Log.d(TAG, "Your activity must implement CordovaInterface to work");
+        }
         this.loadConfiguration();
         this.setup();
     }
@@ -115,9 +140,16 @@ public class CordovaWebView extends WebView {
      * @param defStyle
      * @param privateBrowsing
      */
-    public CordovaWebView(CordovaInterface context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
-        super(context.getActivity(), attrs, defStyle, privateBrowsing);
-        this.mCtx = context;
+    public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
+        super(context, attrs, defStyle, privateBrowsing);
+        if(CordovaInterface.class.isInstance(context))
+        {
+          this.mCtx = (CordovaInterface) context;
+        }
+        else
+        {
+          Log.d(TAG, "Your activity must implement CordovaInterface to work");
+        }
         this.loadConfiguration();
         this.setup();
     }
@@ -153,7 +185,12 @@ public class CordovaWebView extends WebView {
         settings.setGeolocationEnabled(true);
 
         //Start up the plugin manager
-        this.pluginManager = new PluginManager(this, this.mCtx);
+        try {
+          this.pluginManager = new PluginManager(this, mCtx);
+        } catch (Exception e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
     }
 
     /**
