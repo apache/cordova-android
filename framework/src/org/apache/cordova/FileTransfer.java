@@ -217,6 +217,7 @@ public class FileTransfer extends Plugin {
      * @param params        key:value pairs of user-defined parameters
      * @return FileUploadResult containing result of upload request
      */
+    @SuppressWarnings("deprecation")
     public FileUploadResult upload(String file, String server, final String fileKey, final String fileName,
             final String mimeType, JSONObject params, boolean trustEveryone, boolean chunkedMode) throws IOException, SSLException {
         // Create return object

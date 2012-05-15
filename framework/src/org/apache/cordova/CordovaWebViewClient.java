@@ -25,8 +25,6 @@ import org.apache.cordova.api.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-//import android.app.Activity;
-//import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -34,7 +32,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
-//import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
@@ -274,7 +271,6 @@ public class CordovaWebViewClient extends WebViewClient {
                         Thread.sleep(2000);
                         ctx.getActivity().runOnUiThread(new Runnable() {
                             public void run() {
-                                //appView.setVisibility(View.VISIBLE);
                                 appView.postMessage("spinner", "stop");
                             }
                         });
@@ -290,7 +286,6 @@ public class CordovaWebViewClient extends WebViewClient {
             if (this.appView.callbackServer != null) {
                 this.appView.callbackServer.destroy();
             }
-            //this.ctx.endActivity();
             this.ctx.getActivity().finish();
         }
     }
@@ -311,11 +306,7 @@ public class CordovaWebViewClient extends WebViewClient {
         // Clear timeout flag
         this.appView.loadUrlTimeout++;
 
-        // Stop "app loading" spinner if showing
-        //this.ctx.spinnerStop();
-
         // Handle error
-        //this.ctx.onReceivedError(errorCode, description, failingUrl);
         JSONObject data = new JSONObject();
         try {
             data.put("errorCode", errorCode);

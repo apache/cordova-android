@@ -21,11 +21,7 @@ package org.apache.cordova.api;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-//import android.content.Context;
 import android.content.Intent;
-
-//import android.webkit.WebView;
 
 /**
  * Plugin interface must be implemented by any plugin classes.
@@ -36,7 +32,7 @@ public abstract class Plugin implements IPlugin {
 
     public String id;
     public CordovaWebView webView;					// WebView object
-    public CordovaInterface ctx;			         // CordovaActivity object
+    public CordovaInterface ctx;			        // CordovaActivity object
 
     /**
      * Executes the request and returns PluginResult.

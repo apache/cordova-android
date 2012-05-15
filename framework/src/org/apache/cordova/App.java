@@ -25,11 +25,6 @@ import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-//import android.webkit.WebView;
-import android.app.Activity;
-import android.view.View;
-
 import java.util.HashMap;
 
 /**
@@ -59,12 +54,6 @@ public class App extends Plugin {
                         webView.postMessage("spinner", "stop");
                     }
                 });
-//                final CordovaWebView wv = this.webView;
-//                ((Activity) this.ctx).runOnUiThread(new Runnable() {
-//                    public void run() {
-//                        wv.setVisibility(View.VISIBLE);
-//                    }
-//                });
             }
             else if (action.equals("loadUrl")) {
                 this.loadUrl(args.getString(0), args.optJSONObject(1));
@@ -168,6 +157,7 @@ public class App extends Plugin {
     /**
      * Cancel loadUrl before it has been loaded (Only works on a CordovaInterface class)
      */
+    @Deprecated
     public void cancelLoadUrl() {
         this.ctx.cancelLoadUrl();
     }

@@ -70,7 +70,7 @@ public class HttpHandler {
      * writes a HTTP entity to the specified filename and location on disk
      */
     {
-        int i = 0;
+        //int i = 0;
         String FilePath = "/sdcard/" + file;
         InputStream in = entity.getContent();
         byte buff[] = new byte[1024];
@@ -81,7 +81,7 @@ public class HttpHandler {
             if (numread <= 0)
                 break;
             out.write(buff, 0, numread);
-            i++;
+            //i++;
         } while (true);
         out.flush();
         out.close();

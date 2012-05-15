@@ -24,8 +24,6 @@ import org.json.JSONArray;
 //import android.content.Context;
 import android.content.Intent;
 
-//import android.webkit.WebView;
-
 /**
  * Plugin interface must be implemented by any plugin classes.
  *

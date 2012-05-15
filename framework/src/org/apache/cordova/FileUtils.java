@@ -52,6 +52,7 @@ import android.webkit.MimeTypeMap;
  * Only files on the SD card can be accessed.
  */
 public class FileUtils extends Plugin {
+    @SuppressWarnings("unused")
     private static final String LOG_TAG = "FileUtils";
     private static final String _DATA = "_data";    // The column name where the file path is stored
 
@@ -222,7 +223,7 @@ public class FileUtils extends Plugin {
      * @param filePath the path to check
      */
     private void notifyDelete(String filePath) {
-        int result = this.ctx.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        this.ctx.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 MediaStore.Images.Media.DATA + " = ?",
                 new String[] { filePath });
     }
@@ -237,6 +238,7 @@ public class FileUtils extends Plugin {
      * @throws IOException if the user can't read the file
      * @throws JSONException
      */
+    @SuppressWarnings("deprecation")
     private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
         String decoded = URLDecoder.decode(url, "UTF-8");
 
@@ -1039,6 +1041,7 @@ public class FileUtils extends Plugin {
      * @param  ctx) the current applicaiton context
      * @return the full path to the file
      */
+    @SuppressWarnings("deprecation")
     protected static String getRealPathFromURI(Uri contentUri, CordovaInterface ctx) {
         String[] proj = { _DATA };
         Cursor cursor = ctx.getActivity().managedQuery(contentUri, proj, null, null, null);

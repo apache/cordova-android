@@ -65,20 +65,6 @@ public class PluginManager {
         this.firstRun = true;
     }
 
-    // Called by com.phonegap.api.PluginManager only
-//    public PluginManager(WebView mApp, CordovaInterface mCtx) throws Exception {
-//        this.ctx = mCtx; //mCtx.getContext();
-//        if (CordovaWebView.class.isInstance(mApp))
-//        {
-//            this.app = (CordovaWebView) mApp;
-//        }
-//        else
-//        {
-//            //Throw an exception here
-//            throw new Exception();
-//        }
-//    }
-
     /**
      * Init when loading a new HTML page into webview.
      */

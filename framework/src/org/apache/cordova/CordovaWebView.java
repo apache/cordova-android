@@ -22,7 +22,6 @@ package org.apache.cordova;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -47,9 +46,6 @@ public class CordovaWebView extends WebView {
 
     public static final String TAG = "CordovaWebView";
 
-    /** The authorization tokens. */
-    //private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
-
     /** The whitelist **/
     private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
     private HashMap<String, Boolean> whiteListCache = new HashMap<String, Boolean>();
@@ -59,6 +55,7 @@ public class CordovaWebView extends WebView {
     /** Actvities and other important classes **/
     private CordovaInterface mCtx;
     CordovaWebViewClient viewClient;
+    @SuppressWarnings("unused")
     private CordovaChromeClient chromeClient;
 
     //This is for the polyfil history 
@@ -71,12 +68,6 @@ public class CordovaWebView extends WebView {
     // Flag to track that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
 
-    // LoadUrl timeout value in msec (default of 20 sec)
-    //protected int loadUrlTimeoutValue = 20000;
-
-    //preferences read from cordova.xml
-    //protected PreferenceSet preferences;
-
     /**
      * Constructor.
      * 
@@ -85,7 +76,6 @@ public class CordovaWebView extends WebView {
     public CordovaWebView(CordovaInterface context) {
         super(context.getActivity());
         this.mCtx = context;
-        //preferences = new PreferenceSet();
         this.loadConfiguration();
         this.setup();
     }
@@ -99,7 +89,6 @@ public class CordovaWebView extends WebView {
     public CordovaWebView(CordovaInterface context, AttributeSet attrs) {
         super(context.getActivity(), attrs);
         this.mCtx = context;
-        //preferences = new PreferenceSet();
         this.loadConfiguration();
         this.setup();
     }
@@ -114,7 +103,6 @@ public class CordovaWebView extends WebView {
     public CordovaWebView(CordovaInterface context, AttributeSet attrs, int defStyle) {
         super(context.getActivity(), attrs, defStyle);
         this.mCtx = context;
-        //preferences = new PreferenceSet();
         this.loadConfiguration();
         this.setup();
     }
@@ -130,7 +118,6 @@ public class CordovaWebView extends WebView {
     public CordovaWebView(CordovaInterface context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
         super(context.getActivity(), attrs, defStyle, privateBrowsing);
         this.mCtx = context;
-        //preferences = new PreferenceSet();
         this.loadConfiguration();
         this.setup();
     }
@@ -138,6 +125,7 @@ public class CordovaWebView extends WebView {
     /**
      * Initialize webview.
      */
+    @SuppressWarnings("deprecation")
     private void setup() {
 
         this.setInitialScale(0);
@@ -157,10 +145,6 @@ public class CordovaWebView extends WebView {
         settings.setDatabaseEnabled(true);
         String databasePath = this.mCtx.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         settings.setDatabasePath(databasePath);
-
-        //Setup the WebChromeClient and WebViewClient
-        //setWebViewClient(new CordovaWebViewClient(mCtx, this));
-        //setWebChromeClient(new CordovaChromeClient(mCtx, this));
 
         // Enable DOM storage
         settings.setDomStorageEnabled(true);
@@ -588,15 +572,7 @@ public class CordovaWebView extends WebView {
                     String name = xml.getAttributeValue(null, "name");
                     String value = xml.getAttributeValue(null, "value");
 
-                    // TODO @bc Is preferences needed?  Just use Intent.putExtra?
-                    //String readonlyString = xml.getAttributeValue(null, "readonly");
-
-                    //boolean readonly = (readonlyString != null &&
-                    //        readonlyString.equals("true"));
-
                     LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
-
-                    //preferences.add(new PreferenceNode(name, value, readonly));
 
                     // Save preferences in Intent
                     this.mCtx.getActivity().getIntent().putExtra(name, value);
@@ -612,7 +588,6 @@ public class CordovaWebView extends WebView {
         }
 
         // Init preferences
-        //this.useBrowserHistory = preferences.prefMatches("useBrowserHistory", "true");
         if ("true".equals(this.getProperty("useBrowserHistory", "true"))) {
             this.useBrowserHistory = true;
         }
