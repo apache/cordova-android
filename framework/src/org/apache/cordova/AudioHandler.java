@@ -140,8 +140,9 @@ public class AudioHandler extends Plugin {
      * 
      * @param id            The message id
      * @param data          The message data
+     * @return              Object to stop propagation or null
      */
-    public void onMessage(String id, Object data) {
+    public Object onMessage(String id, Object data) {
 
         // If phone message
         if (id.equals("telephone")) {
@@ -167,6 +168,7 @@ public class AudioHandler extends Plugin {
                 this.pausedForPhone.clear();
             }
         }
+        return null;
     }
 
     //--------------------------------------------------------------------------

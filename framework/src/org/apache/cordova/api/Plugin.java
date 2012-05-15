@@ -107,8 +107,10 @@ public abstract class Plugin implements IPlugin {
      * 
      * @param id            The message id
      * @param data          The message data
+     * @return              Object to stop propagation or null
      */
-    public void onMessage(String id, Object data) {
+    public Object onMessage(String id, Object data) {
+        return null;
     }
 
     /**

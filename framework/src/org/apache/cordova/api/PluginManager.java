@@ -314,14 +314,22 @@ public class PluginManager {
      * 
      * @param id                The message id
      * @param data              The message data
+     * @return
      */
-    public void postMessage(String id, Object data) {
-        this.ctx.onMessage(id, data);
+    public Object postMessage(String id, Object data) {
+        Object obj = this.ctx.onMessage(id, data);
+        if (obj != null) {
+            return obj;
+        }
         for (PluginEntry entry : this.entries.values()) {
             if (entry.plugin != null) {
-                entry.plugin.onMessage(id, data);
+                obj = entry.plugin.onMessage(id, data);
+                if (obj != null) {
+                    return obj;
+                }
             }
         }
+        return null;
     }
 
     /**

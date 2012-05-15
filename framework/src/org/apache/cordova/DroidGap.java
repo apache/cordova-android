@@ -1050,8 +1050,9 @@ public class DroidGap extends Activity implements CordovaInterface {
      * 
      * @param id            The message id
      * @param data          The message data
+     * @return              Object or null
      */
-    public void onMessage(String id, Object data) {
+    public Object onMessage(String id, Object data) {
         LOG.d(TAG, "onMessage(" + id + "," + data + ")");
         if ("splashscreen".equals(id)) {
             if ("hide".equals(data.toString())) {
@@ -1079,6 +1080,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         else if ("exit".equals(id)) {
             this.endActivity();
         }
+        return null;
     }
 
 }
