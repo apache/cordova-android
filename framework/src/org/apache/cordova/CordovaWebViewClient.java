@@ -206,6 +206,15 @@ public class CordovaWebViewClient extends WebViewClient {
         }
     }
 
+    /**
+     * Notify the host application that a page has started loading. 
+     * This method is called once for each main frame load so a page with iframes or framesets will call onPageStarted 
+     * one time for the main frame. This also means that onPageStarted will not be called when the contents of an 
+     * embedded frame changes, i.e. clicking a link whose target is an iframe. 
+     * 
+     * @param view          The webview initiating the callback.
+     * @param url           The url of the page.
+     */
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         // Clear history so history.back() doesn't do anything.  
@@ -230,6 +239,7 @@ public class CordovaWebViewClient extends WebViewClient {
 
     /**
      * Notify the host application that a page has finished loading.
+     * This method is called only for main frame. When onPageFinished() is called, the rendering picture may not be updated yet.
      * 
      * @param view          The webview initiating the callback.
      * @param url           The url of the page.
@@ -319,6 +329,16 @@ public class CordovaWebViewClient extends WebViewClient {
         this.appView.postMessage("onReceivedError", data);
     }
 
+    /**
+     * Notify the host application that an SSL error occurred while loading a resource. 
+     * The host application must call either handler.cancel() or handler.proceed(). 
+     * Note that the decision may be retained for use in response to future SSL errors. 
+     * The default behavior is to cancel the load.
+     * 
+     * @param view          The WebView that is initiating the callback.
+     * @param handler       An SslErrorHandler object that will handle the user's response.
+     * @param error         The SSL error object.
+     */
     @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
 
@@ -341,6 +361,13 @@ public class CordovaWebViewClient extends WebViewClient {
         }
     }
 
+    /**
+     * Notify the host application to update its visited links database.
+     * 
+     * @param view          The WebView that is initiating the callback.
+     * @param url           The url being visited.
+     * @param isReload      True if this url is being reloaded.
+     */
     @Override
     public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
         /* 
