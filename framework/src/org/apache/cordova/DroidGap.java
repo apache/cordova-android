@@ -337,6 +337,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.init();
         }
 
+        // TODO @bc - background color doesn't work
         // If backgroundColor
         this.backgroundColor = this.getIntegerProperty("backgroundColor", Color.BLACK);
         LOG.e(TAG, "Setting background color=" + this.backgroundColor);
@@ -655,6 +656,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * The final call you receive before your activity is destroyed. 
      */
     public void onDestroy() {
+        LOG.d(TAG, "onDestroy()");
         super.onDestroy();
 
         if (this.appView != null) {
@@ -749,13 +751,6 @@ public class DroidGap extends Activity implements CordovaInterface {
      * End this activity by calling finish for activity
      */
     public void endActivity() {
-        this.finish();
-    }
-
-    /**
-     * Finish for Activity has been called.
-     */
-    public void finish() {
         this.activityState = ACTIVITY_EXITING;
         super.finish();
     }
@@ -902,21 +897,25 @@ public class DroidGap extends Activity implements CordovaInterface {
         final DroidGap me = this;
         me.runOnUiThread(new Runnable() {
             public void run() {
-                AlertDialog.Builder dlg = new AlertDialog.Builder(me);
-                dlg.setMessage(message);
-                dlg.setTitle(title);
-                dlg.setCancelable(false);
-                dlg.setPositiveButton(button,
-                        new AlertDialog.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                if (exit) {
-                                    me.endActivity();
+                try {
+                    AlertDialog.Builder dlg = new AlertDialog.Builder(me);
+                    dlg.setMessage(message);
+                    dlg.setTitle(title);
+                    dlg.setCancelable(false);
+                    dlg.setPositiveButton(button,
+                            new AlertDialog.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    if (exit) {
+                                        me.endActivity();
+                                    }
                                 }
-                            }
-                        });
-                dlg.create();
-                dlg.show();
+                            });
+                    dlg.create();
+                    dlg.show();
+                } catch (Exception e) {
+                    finish();
+                }
             }
         });
     }
@@ -1076,6 +1075,9 @@ public class DroidGap extends Activity implements CordovaInterface {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+        else if ("exit".equals(id)) {
+            this.endActivity();
         }
     }
 

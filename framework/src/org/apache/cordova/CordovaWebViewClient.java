@@ -237,6 +237,7 @@ public class CordovaWebViewClient extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
+        LOG.d(TAG, "onPageFinished(" + url + ")");
 
         /**
          * Because of a timing issue we need to clear this history in onPageFinished as well as 
@@ -286,7 +287,7 @@ public class CordovaWebViewClient extends WebViewClient {
             if (this.appView.callbackServer != null) {
                 this.appView.callbackServer.destroy();
             }
-            this.ctx.getActivity().finish();
+            appView.postMessage("exit", null);
         }
     }
 

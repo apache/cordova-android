@@ -201,7 +201,7 @@ public class App extends Plugin {
      * Exit the Android application.
      */
     public void exitApp() {
-        this.ctx.getActivity().finish();
+        this.webView.postMessage("exit", null);
     }
 
 }
