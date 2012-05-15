@@ -224,7 +224,7 @@ public class FileUtils extends Plugin {
      */
     private void notifyDelete(String filePath) {
         String newFilePath = stripFileProtocol(filePath);
-        int result = this.ctx.getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        int result = this.ctx.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             MediaStore.Images.Media.DATA + " = ?",
             new String[] { filePath });
     }
