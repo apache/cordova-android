@@ -17,17 +17,18 @@
        under the License.
 */
 package org.apache.cordova;
+
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-
-import android.app.Activity;
+//import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
+//import android.content.Context;
 import android.content.DialogInterface;
 import android.view.KeyEvent;
-import android.view.View;
+//import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
@@ -41,34 +42,41 @@ import android.widget.EditText;
  * This class is the WebChromeClient that implements callbacks for our web view.
  */
 public class CordovaChromeClient extends WebChromeClient {
-    
 
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    private Activity ctx;
+    private CordovaInterface ctx;
     private CordovaWebView appView;
-    
+
     /**
      * Constructor.
      * 
      * @param ctx
      */
-    public CordovaChromeClient(Context ctx) {
-        this.ctx = (Activity) ctx;
-        //appView = this.ctx.appView;
-    }
-    
-    public CordovaChromeClient(Context ctx, CordovaWebView app)
-    {
-      this.ctx = (Activity) ctx;
-      appView = app;
+    public CordovaChromeClient(CordovaInterface ctx) {
+        this.ctx = ctx;
     }
 
-    public void setWebView(CordovaWebView view)
-    {
-      appView = view;
+    /**
+     * Constructor.
+     * 
+     * @param ctx
+     * @param app
+     */
+    public CordovaChromeClient(CordovaInterface ctx, CordovaWebView app) {
+        this.ctx = ctx;
+        this.appView = app;
     }
-    
+
+    /**
+     * Constructor.
+     * 
+     * @param view
+     */
+    public void setWebView(CordovaWebView view) {
+        this.appView = view;
+    }
+
     /**
      * Tell the client to display a javascript alert dialog.
      * 
@@ -79,39 +87,39 @@ public class CordovaChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-        AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx.getActivity());
         dlg.setMessage(message);
         dlg.setTitle("Alert");
         //Don't let alerts break the back button
         dlg.setCancelable(true);
         dlg.setPositiveButton(android.R.string.ok,
-            new AlertDialog.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    result.confirm();
-                }
-            });
+                new AlertDialog.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        result.confirm();
+                    }
+                });
         dlg.setOnCancelListener(
-           new DialogInterface.OnCancelListener() {
-               public void onCancel(DialogInterface dialog) {
-                   result.confirm();
-                   }
-               });
+                new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        result.confirm();
+                    }
+                });
         dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {
             //DO NOTHING
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                if(keyCode == KeyEvent.KEYCODE_BACK)
+                if (keyCode == KeyEvent.KEYCODE_BACK)
                 {
                     result.confirm();
                     return false;
                 }
                 else
                     return true;
-                }
-            });
+            }
+        });
         dlg.create();
         dlg.show();
         return true;
-    }       
+    }
 
     /**
      * Tell the client to display a confirm dialog to the user.
@@ -123,40 +131,40 @@ public class CordovaChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-        AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx.getActivity());
         dlg.setMessage(message);
         dlg.setTitle("Confirm");
         dlg.setCancelable(true);
-        dlg.setPositiveButton(android.R.string.ok, 
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    result.confirm();
-                }
-            });
-        dlg.setNegativeButton(android.R.string.cancel, 
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    result.cancel();
-                }
-            });
+        dlg.setPositiveButton(android.R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        result.confirm();
+                    }
+                });
+        dlg.setNegativeButton(android.R.string.cancel,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        result.cancel();
+                    }
+                });
         dlg.setOnCancelListener(
-            new DialogInterface.OnCancelListener() {
-                public void onCancel(DialogInterface dialog) {
-                    result.cancel();
+                new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        result.cancel();
                     }
                 });
         dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {
             //DO NOTHING
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                if(keyCode == KeyEvent.KEYCODE_BACK)
+                if (keyCode == KeyEvent.KEYCODE_BACK)
                 {
                     result.cancel();
                     return false;
                 }
                 else
                     return true;
-                }
-            });
+            }
+        });
         dlg.create();
         dlg.show();
         return true;
@@ -178,14 +186,14 @@ public class CordovaChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-        
+
         // Security check to make sure any requests are coming from the page initially
         // loaded in webview and not another loaded in an iframe.
         boolean reqOk = false;
-        if (url.startsWith("file://") || url.indexOf(appView.baseUrl) == 0 || appView.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.indexOf(this.appView.baseUrl) == 0 || this.appView.isUrlWhiteListed(url)) {
             reqOk = true;
         }
-        
+
         // Calling PluginManager.exec() to call a native service using 
         // prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
         if (reqOk && defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
@@ -196,67 +204,72 @@ public class CordovaChromeClient extends WebChromeClient {
                 String action = array.getString(1);
                 String callbackId = array.getString(2);
                 boolean async = array.getBoolean(3);
-                String r = appView.pluginManager.exec(service, action, callbackId, message, async);
+                String r = this.appView.pluginManager.exec(service, action, callbackId, message, async);
                 result.confirm(r);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        
+
         // Polling for JavaScript messages 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-            String r = appView.callbackServer.getJavascript();
+            String r = this.appView.callbackServer.getJavascript();
             result.confirm(r);
         }
-        
+
+        // Do NO-OP so older code doesn't display dialog
+        else if (defaultValue.equals("gap_init:")) {
+            result.confirm("OK");
+        }
+
         // Calling into CallbackServer
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
             String r = "";
             if (message.equals("usePolling")) {
-                r = ""+ appView.callbackServer.usePolling();
+                r = "" + this.appView.callbackServer.usePolling();
             }
             else if (message.equals("restartServer")) {
-                appView.callbackServer.restartServer();
+                this.appView.callbackServer.restartServer();
             }
             else if (message.equals("getPort")) {
-                r = Integer.toString(appView.callbackServer.getPort());
+                r = Integer.toString(this.appView.callbackServer.getPort());
             }
             else if (message.equals("getToken")) {
-                r = appView.callbackServer.getToken();
+                r = this.appView.callbackServer.getToken();
             }
             result.confirm(r);
         }
-        
+
         // Show dialog
         else {
             final JsPromptResult res = result;
-            AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx);
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx.getActivity());
             dlg.setMessage(message);
-            final EditText input = new EditText(this.ctx);
+            final EditText input = new EditText(this.ctx.getActivity());
             if (defaultValue != null) {
                 input.setText(defaultValue);
             }
             dlg.setView(input);
             dlg.setCancelable(false);
-            dlg.setPositiveButton(android.R.string.ok, 
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    String usertext = input.getText().toString();
-                    res.confirm(usertext);
-                }
-            });
-            dlg.setNegativeButton(android.R.string.cancel, 
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    res.cancel();
-                }
-            });
+            dlg.setPositiveButton(android.R.string.ok,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            String usertext = input.getText().toString();
+                            res.confirm(usertext);
+                        }
+                    });
+            dlg.setNegativeButton(android.R.string.cancel,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            res.cancel();
+                        }
+                    });
             dlg.create();
             dlg.show();
         }
         return true;
     }
-    
+
     /**
      * Handle database quota exceeded notification.
      *
@@ -273,7 +286,7 @@ public class CordovaChromeClient extends WebChromeClient {
     {
         LOG.d(TAG, "DroidGap:  onExceededDatabaseQuota estimatedSize: %d  currentQuota: %d  totalUsedQuota: %d", estimatedSize, currentQuota, totalUsedQuota);
 
-        if( estimatedSize < MAX_QUOTA)
+        if (estimatedSize < MAX_QUOTA)
         {
             //increase for 1Mb
             long newQuota = estimatedSize;
@@ -289,17 +302,18 @@ public class CordovaChromeClient extends WebChromeClient {
     }
 
     // console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
+    @SuppressWarnings("deprecation")
     @Override
     public void onConsoleMessage(String message, int lineNumber, String sourceID)
-    {       
+    {
         LOG.d(TAG, "%s: Line %d : %s", sourceID, lineNumber, message);
         super.onConsoleMessage(message, lineNumber, sourceID);
     }
-    
+
     @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage)
-    {       
-        if(consoleMessage.message() != null)
+    {
+        if (consoleMessage.message() != null)
             LOG.d(TAG, consoleMessage.message());
         return super.onConsoleMessage(consoleMessage);
     }
@@ -315,6 +329,4 @@ public class CordovaChromeClient extends WebChromeClient {
         super.onGeolocationPermissionsShowPrompt(origin, callback);
         callback.invoke(origin, true, false);
     }
-
-
 }

@@ -51,13 +51,12 @@ import android.net.Uri;
 import android.util.Log;
 import android.webkit.CookieManager;
 
-
 public class FileTransfer extends Plugin {
 
     private static final String LOG_TAG = "FileTransfer";
     private static final String LINE_START = "--";
     private static final String LINE_END = "\r\n";
-    private static final String BOUNDRY =  "*****";
+    private static final String BOUNDRY = "*****";
 
     public static int FILE_NOT_FOUND_ERR = 1;
     public static int INVALID_URL_ERR = 2;
@@ -76,8 +75,7 @@ public class FileTransfer extends Plugin {
         try {
             source = args.getString(0);
             target = args.getString(1);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             Log.d(LOG_TAG, "Missing source or target");
             return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing source or target");
         }
@@ -151,11 +149,11 @@ public class FileTransfer extends Plugin {
             }
 
             public void checkClientTrusted(X509Certificate[] chain,
-                            String authType) throws CertificateException {
+                    String authType) throws CertificateException {
             }
 
             public void checkServerTrusted(X509Certificate[] chain,
-                            String authType) throws CertificateException {
+                    String authType) throws CertificateException {
             }
         } };
 
@@ -199,7 +197,7 @@ public class FileTransfer extends Plugin {
      */
     private String getArgument(JSONArray args, int position, String defaultString) {
         String arg = defaultString;
-        if(args.length() >= position) {
+        if (args.length() >= position) {
             arg = args.optString(position);
             if (arg == null || "null".equals(arg)) {
                 arg = defaultString;
@@ -219,6 +217,7 @@ public class FileTransfer extends Plugin {
      * @param params        key:value pairs of user-defined parameters
      * @return FileUploadResult containing result of upload request
      */
+    @SuppressWarnings("deprecation")
     public FileUploadResult upload(String file, String server, final String fileKey, final String fileName,
             final String mimeType, JSONObject params, boolean trustEveryone, boolean chunkedMode) throws IOException, SSLException {
         // Create return object
@@ -275,26 +274,26 @@ public class FileTransfer extends Plugin {
         // Use a post method.
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+BOUNDRY);
+        conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDRY);
 
         // Handle the other headers
         try {
-          JSONObject headers = params.getJSONObject("headers");
-          for (Iterator iter = headers.keys(); iter.hasNext();)
-          {
-            String headerKey = iter.next().toString();
-            conn.setRequestProperty(headerKey, headers.getString(headerKey));
-          }
+            JSONObject headers = params.getJSONObject("headers");
+            for (@SuppressWarnings("rawtypes")
+            Iterator iter = headers.keys(); iter.hasNext();)
+            {
+                String headerKey = iter.next().toString();
+                conn.setRequestProperty(headerKey, headers.getString(headerKey));
+            }
         } catch (JSONException e1) {
-          // No headers to be manipulated!
+            // No headers to be manipulated!
         }
-        
+
         // Set the cookies on the response
         String cookie = CookieManager.getInstance().getCookie(server);
         if (cookie != null) {
             conn.setRequestProperty("Cookie", cookie);
         }
-        
 
         /*
          * Store the non-file portions of the multipart data as a string, so that we can add it 
@@ -302,42 +301,42 @@ public class FileTransfer extends Plugin {
          */
         String extraParams = "";
         try {
-            for (Iterator iter = params.keys(); iter.hasNext();) {
+            for (@SuppressWarnings("rawtypes")
+            Iterator iter = params.keys(); iter.hasNext();) {
                 Object key = iter.next();
-                if(key.toString() != "headers")
+                if (key.toString() != "headers")
                 {
-                  extraParams += LINE_START + BOUNDRY + LINE_END;
-                  extraParams += "Content-Disposition: form-data; name=\"" +  key.toString() + "\";";
-                  extraParams += LINE_END + LINE_END;
-                  extraParams += params.getString(key.toString());
-                  extraParams += LINE_END;
+                    extraParams += LINE_START + BOUNDRY + LINE_END;
+                    extraParams += "Content-Disposition: form-data; name=\"" + key.toString() + "\";";
+                    extraParams += LINE_END + LINE_END;
+                    extraParams += params.getString(key.toString());
+                    extraParams += LINE_END;
                 }
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
-        
+
         extraParams += LINE_START + BOUNDRY + LINE_END;
         extraParams += "Content-Disposition: form-data; name=\"" + fileKey + "\";" + " filename=\"";
-        
+
         String midParams = "\"" + LINE_END + "Content-Type: " + mimeType + LINE_END + LINE_END;
         String tailParams = LINE_END + LINE_START + BOUNDRY + LINE_START + LINE_END;
-        
+
         // Should set this up as an option
         if (chunkedMode) {
             conn.setChunkedStreamingMode(maxBufferSize);
         }
         else
         {
-          int stringLength = extraParams.length() + midParams.length() + tailParams.length() + fileName.getBytes("UTF-8").length;
-          Log.d(LOG_TAG, "String Length: " + stringLength);
-          int fixedLength = (int) fileInputStream.getChannel().size() + stringLength;
-          Log.d(LOG_TAG, "Content Length: " + fixedLength);
-          conn.setFixedLengthStreamingMode(fixedLength);
+            int stringLength = extraParams.length() + midParams.length() + tailParams.length() + fileName.getBytes("UTF-8").length;
+            Log.d(LOG_TAG, "String Length: " + stringLength);
+            int fixedLength = (int) fileInputStream.getChannel().size() + stringLength;
+            Log.d(LOG_TAG, "Content Length: " + fixedLength);
+            conn.setFixedLengthStreamingMode(fixedLength);
         }
-        
 
-        dos = new DataOutputStream( conn.getOutputStream() );
+        dos = new DataOutputStream(conn.getOutputStream());
         dos.writeBytes(extraParams);
         //We don't want to chagne encoding, we just want this to write for all Unicode.
         dos.write(fileName.getBytes("UTF-8"));
@@ -373,13 +372,13 @@ public class FileTransfer extends Plugin {
         StringBuffer responseString = new StringBuffer("");
         DataInputStream inStream;
         try {
-            inStream = new DataInputStream ( conn.getInputStream() );
-        } catch(FileNotFoundException e) {
+            inStream = new DataInputStream(conn.getInputStream());
+        } catch (FileNotFoundException e) {
             throw new IOException("Received error from server");
         }
 
         String line;
-        while (( line = inStream.readLine()) != null) {
+        while ((line = inStream.readLine()) != null) {
             responseString.append(line);
         }
         Log.d(LOG_TAG, "got response from server");
@@ -394,7 +393,7 @@ public class FileTransfer extends Plugin {
 
         // Revert back to the proper verifier and socket factories
         if (trustEveryone && url.getProtocol().toLowerCase().equals("https")) {
-            ((HttpsURLConnection)conn).setHostnameVerifier(defaultHostnameVerifier);
+            ((HttpsURLConnection) conn).setHostnameVerifier(defaultHostnameVerifier);
             HttpsURLConnection.setDefaultSSLSocketFactory(defaultSSLSocketFactory);
         }
 
@@ -416,46 +415,46 @@ public class FileTransfer extends Plugin {
             file.getParentFile().mkdirs();
 
             // connect to server
-            if(webView.isUrlWhiteListed(source))
+            if (webView.isUrlWhiteListed(source))
             {
-              URL url = new URL(source);
-              HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-              connection.setRequestMethod("GET");
-              
-              //Add cookie support
-              String cookie = CookieManager.getInstance().getCookie(source);
-              if(cookie != null)
-              {
-                connection.setRequestProperty("cookie", cookie);
-              }
-              
-              connection.connect();
+                URL url = new URL(source);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
 
-              Log.d(LOG_TAG, "Download file:" + url);
+                //Add cookie support
+                String cookie = CookieManager.getInstance().getCookie(source);
+                if (cookie != null)
+                {
+                    connection.setRequestProperty("cookie", cookie);
+                }
 
-              InputStream inputStream = connection.getInputStream();
-              byte[] buffer = new byte[1024];
-              int bytesRead = 0;
+                connection.connect();
 
-              FileOutputStream outputStream = new FileOutputStream(file);
+                Log.d(LOG_TAG, "Download file:" + url);
 
-              // write bytes to file
-              while ( (bytesRead = inputStream.read(buffer)) > 0 ) {
-                outputStream.write(buffer,0, bytesRead);
-              }
+                InputStream inputStream = connection.getInputStream();
+                byte[] buffer = new byte[1024];
+                int bytesRead = 0;
 
-              outputStream.close();
+                FileOutputStream outputStream = new FileOutputStream(file);
 
-              Log.d(LOG_TAG, "Saved file: " + target);
+                // write bytes to file
+                while ((bytesRead = inputStream.read(buffer)) > 0) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
 
-              // create FileEntry object
-              FileUtils fileUtil = new FileUtils();
+                outputStream.close();
 
-              return fileUtil.getEntry(file);
+                Log.d(LOG_TAG, "Saved file: " + target);
+
+                // create FileEntry object
+                FileUtils fileUtil = new FileUtils();
+
+                return fileUtil.getEntry(file);
             }
             else
             {
-              throw new IOException("Error: Unable to connect to domain");
+                throw new IOException("Error: Unable to connect to domain");
             }
         } catch (Exception e) {
             Log.d(LOG_TAG, e.getMessage(), e);
@@ -473,7 +472,7 @@ public class FileTransfer extends Plugin {
     private InputStream getPathFromUri(String path) throws FileNotFoundException {
         if (path.startsWith("content:")) {
             Uri uri = Uri.parse(path);
-            return ctx.getContentResolver().openInputStream(uri);
+            return ctx.getActivity().getContentResolver().openInputStream(uri);
         }
         else if (path.startsWith("file://")) {
             int question = path.indexOf("?");

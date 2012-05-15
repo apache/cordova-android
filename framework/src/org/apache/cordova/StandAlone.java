@@ -18,18 +18,18 @@
 */
 package org.apache.cordova;
 
-import java.lang.reflect.Field;
+//import java.lang.reflect.Field;
 
-import android.app.Activity;
+//import android.app.Activity;
 import android.os.Bundle;
 
 public class StandAlone extends DroidGap {
-	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        super.loadUrl("file:///android_asset/www/index.html");                        
-    }		
-	
+
+        super.loadUrl("file:///android_asset/www/index.html");
+    }
+
 }

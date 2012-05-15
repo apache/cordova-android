@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
@@ -32,7 +31,6 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,47 +38,47 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
 
-
 public class Capture extends Plugin {
 
     private static final String VIDEO_3GPP = "video/3gpp";
-    private static final String VIDEO_MP4  = "video/mp4";
+    private static final String VIDEO_MP4 = "video/mp4";
     private static final String AUDIO_3GPP = "audio/3gpp";
     private static final String IMAGE_JPEG = "image/jpeg";
-    
+
     private static final int CAPTURE_AUDIO = 0;     // Constant for capture audio
     private static final int CAPTURE_IMAGE = 1;     // Constant for capture image
     private static final int CAPTURE_VIDEO = 2;     // Constant for capture video
     private static final String LOG_TAG = "Capture";
-    
+
     private static final int CAPTURE_INTERNAL_ERR = 0;
-    private static final int CAPTURE_APPLICATION_BUSY = 1;
-    private static final int CAPTURE_INVALID_ARGUMENT = 2;
+//    private static final int CAPTURE_APPLICATION_BUSY = 1;
+//    private static final int CAPTURE_INVALID_ARGUMENT = 2;
     private static final int CAPTURE_NO_MEDIA_FILES = 3;
-    private static final int CAPTURE_NOT_SUPPORTED = 20;
-    
+//    private static final int CAPTURE_NOT_SUPPORTED = 20;
+
     private String callbackId;                      // The ID of the callback to be invoked with our result
     private long limit;                             // the number of pics/vids/clips to take
     private double duration;                        // optional duration parameter for video recording
     private JSONArray results;                      // The array of results to be returned to the user
     private Uri imageUri;                           // Uri of captured image 
-    private CordovaInterface cordova;
 
-    public void setContext(Context mCtx)
-    {
-      if(CordovaInterface.class.isInstance(mCtx))
-        cordova = (CordovaInterface) mCtx;
-      else
-        LOG.d(LOG_TAG, "ERROR: You must use the CordovaInterface for this to work correctly. Please implement it in your activity");
-    }
-    
+    //private CordovaInterface cordova;
+
+//    public void setContext(Context mCtx)
+//    {
+//        if (CordovaInterface.class.isInstance(mCtx))
+//            cordova = (CordovaInterface) mCtx;
+//        else
+//            LOG.d(LOG_TAG, "ERROR: You must use the CordovaInterface for this to work correctly. Please implement it in your activity");
+//    }
+
     @Override
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         this.callbackId = callbackId;
         this.limit = 1;
         this.duration = 0.0f;
         this.results = new JSONArray();
-        
+
         JSONObject options = args.optJSONObject(0);
         if (options != null) {
             limit = options.optLong("limit", 1);
@@ -102,9 +100,9 @@ public class Capture extends Plugin {
             this.captureImage();
         }
         else if (action.equals("captureVideo")) {
-            this.captureVideo(duration);    
+            this.captureVideo(duration);
         }
-        
+
         PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
         r.setKeepCallback(true);
         return r;
@@ -133,7 +131,7 @@ public class Capture extends Plugin {
                 mimeType = FileUtils.getMimeType(filePath);
             }
             Log.d(LOG_TAG, "Mime type = " + mimeType);
-            
+
             if (mimeType.equals(IMAGE_JPEG) || filePath.endsWith(".jpg")) {
                 obj = getImageData(filePath, obj);
             }
@@ -143,8 +141,7 @@ public class Capture extends Plugin {
             else if (mimeType.equals(VIDEO_3GPP) || mimeType.equals(VIDEO_MP4)) {
                 obj = getAudioVideoData(filePath, obj, true);
             }
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             Log.d(LOG_TAG, "Error: setting media file data object");
         }
         return obj;
@@ -179,15 +176,14 @@ public class Capture extends Plugin {
         try {
             player.setDataSource(filePath);
             player.prepare();
-            obj.put("duration", player.getDuration()/1000);
+            obj.put("duration", player.getDuration() / 1000);
             if (video) {
                 obj.put("height", player.getVideoHeight());
                 obj.put("width", player.getVideoWidth());
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Log.d(LOG_TAG, "Error: loading video file");
-        } 
+        }
         return obj;
     }
 
@@ -197,7 +193,7 @@ public class Capture extends Plugin {
     private void captureAudio() {
         Intent intent = new Intent(android.provider.MediaStore.Audio.Media.RECORD_SOUND_ACTION);
 
-        cordova.startActivityForResult((Plugin) this, intent, CAPTURE_AUDIO);
+        this.ctx.startActivityForResult((Plugin) this, intent, CAPTURE_AUDIO);
     }
 
     /**
@@ -207,11 +203,11 @@ public class Capture extends Plugin {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
         // Specify file so that large image is captured and returned
-        File photo = new File(DirectoryManager.getTempDirectoryPath(ctx),  "Capture.jpg");
+        File photo = new File(DirectoryManager.getTempDirectoryPath(this.ctx.getActivity()), "Capture.jpg");
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
         this.imageUri = Uri.fromFile(photo);
 
-        cordova.startActivityForResult((Plugin) this, intent, CAPTURE_IMAGE);
+        this.ctx.startActivityForResult((Plugin) this, intent, CAPTURE_IMAGE);
     }
 
     /**
@@ -221,10 +217,10 @@ public class Capture extends Plugin {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
         // Introduced in API 8
         //intent.putExtra(android.provider.MediaStore.EXTRA_DURATION_LIMIT, duration);
-        
-        cordova.startActivityForResult((Plugin) this, intent, CAPTURE_VIDEO);
+
+        this.ctx.startActivityForResult((Plugin) this, intent, CAPTURE_VIDEO);
     }
-    
+
     /**
      * Called when the video view exits. 
      * 
@@ -260,11 +256,11 @@ public class Capture extends Plugin {
                 try {
                     // Create an ExifHelper to save the exif data that is lost during compression
                     ExifHelper exif = new ExifHelper();
-                    exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx) + "/Capture.jpg");
+                    exif.createInFile(DirectoryManager.getTempDirectoryPath(this.ctx.getActivity()) + "/Capture.jpg");
                     exif.readExifData();
-                    
+
                     // Read in bitmap of captured image
-                    Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getContentResolver(), imageUri);
+                    Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getActivity().getContentResolver(), imageUri);
 
                     // Create entry in media store for image
                     // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
@@ -272,34 +268,34 @@ public class Capture extends Plugin {
                     values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, IMAGE_JPEG);
                     Uri uri = null;
                     try {
-                        uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                        uri = this.ctx.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                     } catch (UnsupportedOperationException e) {
                         LOG.d(LOG_TAG, "Can't write to external media storage.");
                         try {
-                            uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
+                            uri = this.ctx.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
                         } catch (UnsupportedOperationException ex) {
-                            LOG.d(LOG_TAG, "Can't write to internal media storage.");                           
+                            LOG.d(LOG_TAG, "Can't write to internal media storage.");
                             this.fail(createErrorObject(CAPTURE_INTERNAL_ERR, "Error capturing image - no media storage found."));
                             return;
                         }
                     }
 
                     // Add compressed version of captured image to returned media store Uri
-                    OutputStream os  = this.ctx.getContentResolver().openOutputStream(uri);
+                    OutputStream os = this.ctx.getActivity().getContentResolver().openOutputStream(uri);
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
                     os.close();
 
                     bitmap.recycle();
                     bitmap = null;
                     System.gc();
-                    
+
                     // Restore exif data to file
-                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, ((Activity) this.ctx)));
+                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.ctx));
                     exif.writeExifData();
-                    
+
                     // Add image to results
                     results.put(createMediaFile(uri));
-                    
+
                     if (results.length() >= limit) {
                         // Send Uri back to JavaScript for viewing image
                         this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
@@ -330,7 +326,7 @@ public class Capture extends Plugin {
         else if (resultCode == Activity.RESULT_CANCELED) {
             // If we have partial results send them back to the user
             if (results.length() > 0) {
-                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);                
+                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
             }
             // user canceled the action
             else {
@@ -341,7 +337,7 @@ public class Capture extends Plugin {
         else {
             // If we have partial results send them back to the user
             if (results.length() > 0) {
-                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);                
+                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
             }
             // something bad happened
             else {
@@ -357,38 +353,38 @@ public class Capture extends Plugin {
      * @return a JSONObject that represents a File
      * @throws IOException 
      */
-    private JSONObject createMediaFile(Uri data){
-        File fp = new File(FileUtils.getRealPathFromURI(data, ((Activity) this.ctx)));
+    private JSONObject createMediaFile(Uri data) {
+        File fp = new File(FileUtils.getRealPathFromURI(data, this.ctx));
         JSONObject obj = new JSONObject();
 
-        try {       
+        try {
             // File properties
             obj.put("name", fp.getName());
             obj.put("fullPath", fp.getAbsolutePath());
-            
+
             // Because of an issue with MimeTypeMap.getMimeTypeFromExtension() all .3gpp files 
             // are reported as video/3gpp. I'm doing this hacky check of the URI to see if it 
             // is stored in the audio or video content store.
             if (fp.getAbsoluteFile().toString().endsWith(".3gp") || fp.getAbsoluteFile().toString().endsWith(".3gpp")) {
                 if (data.toString().contains("/audio/")) {
-                    obj.put("type", AUDIO_3GPP);                
+                    obj.put("type", AUDIO_3GPP);
                 } else {
-                    obj.put("type", VIDEO_3GPP);                
-                }               
+                    obj.put("type", VIDEO_3GPP);
+                }
             } else {
-                obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath()));                
+                obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath()));
             }
-            
+
             obj.put("lastModifiedDate", fp.lastModified());
             obj.put("size", fp.length());
         } catch (JSONException e) {
             // this will never happen
             e.printStackTrace();
         }
-        
+
         return obj;
     }
-    
+
     private JSONObject createErrorObject(int code, String message) {
         JSONObject obj = new JSONObject();
         try {

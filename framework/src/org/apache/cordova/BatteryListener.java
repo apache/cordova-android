@@ -24,7 +24,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,20 +31,20 @@ import android.content.IntentFilter;
 import android.util.Log;
 
 public class BatteryListener extends Plugin {
-    
+
     private static final String LOG_TAG = "BatteryManager";
 
     BroadcastReceiver receiver;
 
     private String batteryCallbackId = null;
-    
+
     /**
      * Constructor.
      */
     public BatteryListener() {
         this.receiver = null;
     }
-    
+
     /**
      * Executes the request and returns PluginResult.
      * 
@@ -56,43 +55,43 @@ public class BatteryListener extends Plugin {
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         PluginResult.Status status = PluginResult.Status.INVALID_ACTION;
-        String result = "Unsupported Operation: " + action; 
-                
+        String result = "Unsupported Operation: " + action;
+
         if (action.equals("start")) {
-        	if (this.batteryCallbackId != null) {
-        		return new PluginResult(PluginResult.Status.ERROR, "Battery listener already running.");
-        	}
+            if (this.batteryCallbackId != null) {
+                return new PluginResult(PluginResult.Status.ERROR, "Battery listener already running.");
+            }
             this.batteryCallbackId = callbackId;
 
             // We need to listen to power events to update battery status
-            IntentFilter intentFilter = new IntentFilter() ;
+            IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
             if (this.receiver == null) {
                 this.receiver = new BroadcastReceiver() {
                     @Override
-                    public void onReceive(Context context, Intent intent) { 
-                        updateBatteryInfo(intent);              
+                    public void onReceive(Context context, Intent intent) {
+                        updateBatteryInfo(intent);
                     }
                 };
-                ctx.registerReceiver(this.receiver, intentFilter);
+                ctx.getActivity().registerReceiver(this.receiver, intentFilter);
             }
 
             // Don't return any result now, since status results will be sent when events come in from broadcast receiver 
             PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
             pluginResult.setKeepCallback(true);
             return pluginResult;
-        } 
-        
+        }
+
         else if (action.equals("stop")) {
             removeBatteryListener();
             this.sendUpdate(new JSONObject(), false); // release status callback in JS side
             this.batteryCallbackId = null;
             return new PluginResult(PluginResult.Status.OK);
         }
-        
+
         return new PluginResult(status, result);
     }
-    
+
     /**
      * Stop battery receiver.
      */
@@ -106,7 +105,7 @@ public class BatteryListener extends Plugin {
     private void removeBatteryListener() {
         if (this.receiver != null) {
             try {
-                this.ctx.unregisterReceiver(this.receiver);
+                this.ctx.getActivity().unregisterReceiver(this.receiver);
                 this.receiver = null;
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Error unregistering battery receiver: " + e.getMessage(), e);
@@ -137,20 +136,20 @@ public class BatteryListener extends Plugin {
      * @param batteryIntent the current battery information
      * @return
      */
-    private void updateBatteryInfo(Intent batteryIntent) {    
+    private void updateBatteryInfo(Intent batteryIntent) {
         sendUpdate(this.getBatteryInfo(batteryIntent), true);
     }
-    
+
     /**
      * Create a new plugin result and send it back to JavaScript
      * 
      * @param connection the network info to set as navigator.connection
      */
     private void sendUpdate(JSONObject info, boolean keepCallback) {
-    	if (this.batteryCallbackId != null) {
-    		PluginResult result = new PluginResult(PluginResult.Status.OK, info);
-    		result.setKeepCallback(keepCallback);
-    		this.success(result, this.batteryCallbackId);
-    	}
+        if (this.batteryCallbackId != null) {
+            PluginResult result = new PluginResult(PluginResult.Status.OK, info);
+            result.setKeepCallback(keepCallback);
+            this.success(result, this.batteryCallbackId);
+        }
     }
 }

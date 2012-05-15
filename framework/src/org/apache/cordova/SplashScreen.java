@@ -31,7 +31,8 @@ public class SplashScreen extends Plugin {
         String result = "";
 
         if (action.equals("hide")) {
-            ((DroidGap)this.ctx).removeSplashScreen();
+            //((DroidGap)this.ctx).removeSplashScreen();
+            this.webView.postMessage("splashscreen", "hide");
         }
         else {
             status = PluginResult.Status.INVALID_ACTION;

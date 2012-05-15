@@ -27,7 +27,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -43,18 +42,18 @@ public class CompassListener extends Plugin implements SensorEventListener {
     public static int STARTING = 1;
     public static int RUNNING = 2;
     public static int ERROR_FAILED_TO_START = 3;
-    
+
     public long TIMEOUT = 30000;        // Timeout in msec to shut off listener
-    
+
     int status;                         // status of listener
     float heading;                      // most recent heading value
     long timeStamp;                     // time of most recent value
     long lastAccessTime;                // time the value was last retrieved
     int accuracy;                       // accuracy of the sensor
-    
+
     private SensorManager sensorManager;// Sensor manager
     Sensor mSensor;                     // Compass sensor returned by sensor manager
-    
+
     /**
      * Constructor.
      */
@@ -70,9 +69,9 @@ public class CompassListener extends Plugin implements SensorEventListener {
      * 
      * @param ctx The context of the main Activity.
      */
-    public void setContext(Context ctx) {
+    public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
-        this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
+        this.sensorManager = (SensorManager) ctx.getActivity().getSystemService(Context.SENSOR_SERVICE);
     }
 
     /**
@@ -85,8 +84,8 @@ public class CompassListener extends Plugin implements SensorEventListener {
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";     
-        
+        String result = "";
+
         try {
             if (action.equals("start")) {
                 this.start();
@@ -116,7 +115,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
                         }
                     }
                     if (timeout == 0) {
-                        return new PluginResult(PluginResult.Status.IO_EXCEPTION, CompassListener.ERROR_FAILED_TO_START);                     
+                        return new PluginResult(PluginResult.Status.IO_EXCEPTION, CompassListener.ERROR_FAILED_TO_START);
                     }
                 }
                 return new PluginResult(status, getCompassHeading());
@@ -159,7 +158,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
         }
         return false;
     }
-    
+
     /**
      * Called when listener is to be shut down and object is being destroyed.
      */
@@ -177,13 +176,14 @@ public class CompassListener extends Plugin implements SensorEventListener {
      * @return          status of listener
      */
     public int start() {
-        
+
         // If already starting or running, then just return
         if ((this.status == CompassListener.RUNNING) || (this.status == CompassListener.STARTING)) {
             return this.status;
         }
 
         // Get compass sensor from sensor manager
+        @SuppressWarnings("deprecation")
         List<Sensor> list = this.sensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
 
         // If found, then register as listener
@@ -198,10 +198,10 @@ public class CompassListener extends Plugin implements SensorEventListener {
         else {
             this.setStatus(CompassListener.ERROR_FAILED_TO_START);
         }
-        
+
         return this.status;
     }
-    
+
     /**
      * Stop listening to compass sensor.
      */
@@ -211,8 +211,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
         }
         this.setStatus(CompassListener.STOPPED);
     }
-    
-    
+
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // TODO Auto-generated method stub  
     }
@@ -237,7 +236,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
             this.stop();
         }
     }
-    
+
     /**
      * Get status of compass sensor.
      * 
@@ -246,7 +245,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
     public int getStatus() {
         return this.status;
     }
-    
+
     /**
      * Get the most recent compass heading.
      * 
@@ -256,7 +255,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
         this.lastAccessTime = System.currentTimeMillis();
         return this.heading;
     }
-    
+
     /**
      * Set the timeout to turn off compass sensor if getHeading() hasn't been called.
      * 
@@ -265,7 +264,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
     public void setTimeout(long timeout) {
         this.TIMEOUT = timeout;
     }
-    
+
     /**
      * Get the timeout to turn off compass sensor if getHeading() hasn't been called.
      * 
@@ -290,7 +289,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
      */
     private JSONObject getCompassHeading() {
         JSONObject obj = new JSONObject();
-        
+
         try {
             obj.put("magneticHeading", this.getHeading());
             obj.put("trueHeading", this.getHeading());
@@ -301,7 +300,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
         } catch (JSONException e) {
             // Should never happen
         }
-        
+
         return obj;
     }
 

@@ -41,7 +41,7 @@ public class Device extends Plugin {
     public static String cordovaVersion = "1.7.0";              // Cordova version
     public static String platform = "Android";                  // Device OS
     public static String uuid;                                  // Device UUID
-    
+
     BroadcastReceiver telephonyReceiver = null;
 
     /**
@@ -49,14 +49,14 @@ public class Device extends Plugin {
      */
     public Device() {
     }
-    
+
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
      * 
      * @param ctx The context of the main Activity.
      */
-    public void setContext(Context ctx) {
+    public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
         Device.uuid = getUuid();
         this.initTelephonyReceiver();
@@ -72,8 +72,8 @@ public class Device extends Plugin {
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";     
-    
+        String result = "";
+
         try {
             if (action.equals("getDeviceInfo")) {
                 JSONObject r = new JSONObject();
@@ -105,32 +105,32 @@ public class Device extends Plugin {
         }
         return false;
     }
-    
+
     /**
      * Unregister receiver.
      */
     public void onDestroy() {
-        this.ctx.unregisterReceiver(this.telephonyReceiver);
+        this.ctx.getActivity().unregisterReceiver(this.telephonyReceiver);
     }
 
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
-    
+
     /**
      * Listen for telephony events: RINGING, OFFHOOK and IDLE
      * Send these events to all plugins using
      *      DroidGap.onMessage("telephone", "ringing" | "offhook" | "idle")
      */
     private void initTelephonyReceiver() {
-        IntentFilter intentFilter = new IntentFilter() ;
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        final Context myctx = this.ctx;
+        //final CordovaInterface myctx = this.ctx;
         this.telephonyReceiver = new BroadcastReceiver() {
-            
+
             @Override
             public void onReceive(Context context, Intent intent) {
-                
+
                 // If state has changed
                 if ((intent != null) && intent.getAction().equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
                     if (intent.hasExtra(TelephonyManager.EXTRA_STATE)) {
@@ -151,9 +151,9 @@ public class Device extends Plugin {
                 }
             }
         };
-        
+
         // Register the receiver
-        this.ctx.registerReceiver(this.telephonyReceiver, intentFilter);
+        this.ctx.getActivity().registerReceiver(this.telephonyReceiver, intentFilter);
     }
 
     /**
@@ -164,14 +164,14 @@ public class Device extends Plugin {
     public String getPlatform() {
         return Device.platform;
     }
-    
+
     /**
      * Get the device's Universally Unique Identifier (UUID).
      * 
      * @return
      */
-    public String getUuid() {       
-        String uuid = Settings.Secure.getString(this.ctx.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+    public String getUuid() {
+        String uuid = Settings.Secure.getString(this.ctx.getActivity().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
         return uuid;
     }
 
@@ -182,18 +182,18 @@ public class Device extends Plugin {
      */
     public String getCordovaVersion() {
         return Device.cordovaVersion;
-    }   
-    
+    }
+
     public String getModel() {
         String model = android.os.Build.MODEL;
         return model;
     }
-    
+
     public String getProductName() {
         String productname = android.os.Build.PRODUCT;
         return productname;
     }
-    
+
     /**
      * Get the OS version.
      * 
@@ -203,17 +203,16 @@ public class Device extends Plugin {
         String osversion = android.os.Build.VERSION.RELEASE;
         return osversion;
     }
-    
+
     public String getSDKVersion() {
+        @SuppressWarnings("deprecation")
         String sdkversion = android.os.Build.VERSION.SDK;
         return sdkversion;
     }
-    
-    
-    public String getTimeZoneID() {
-       TimeZone tz = TimeZone.getDefault();
-        return(tz.getID());
-    } 
-    
-}
 
+    public String getTimeZoneID() {
+        TimeZone tz = TimeZone.getDefault();
+        return (tz.getID());
+    }
+
+}

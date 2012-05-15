@@ -23,7 +23,6 @@ import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -33,7 +32,7 @@ import android.net.NetworkInfo;
 import android.util.Log;
 
 public class NetworkManager extends Plugin {
-    
+
     public static int NOT_REACHABLE = 0;
     public static int REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
     public static int REACHABLE_VIA_WIFI_NETWORK = 2;
@@ -66,18 +65,18 @@ public class NetworkManager extends Plugin {
     public static final String TYPE_3G = "3g";
     public static final String TYPE_4G = "4g";
     public static final String TYPE_NONE = "none";
-    
+
     private static final String LOG_TAG = "NetworkManager";
 
     private String connectionCallbackId;
 
     ConnectivityManager sockMan;
     BroadcastReceiver receiver;
-    
+
     /**
      * Constructor.
      */
-    public NetworkManager()    {
+    public NetworkManager() {
         this.receiver = null;
     }
 
@@ -87,26 +86,27 @@ public class NetworkManager extends Plugin {
      * 
      * @param ctx The context of the main Activity.
      */
-    public void setContext(Context ctx) {
+    public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
-        this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+        this.sockMan = (ConnectivityManager) ctx.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         this.connectionCallbackId = null;
-        
+
         // We need to listen to connectivity events to update navigator.connection
-        IntentFilter intentFilter = new IntentFilter() ;
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         if (this.receiver == null) {
             this.receiver = new BroadcastReceiver() {
+                @SuppressWarnings("deprecation")
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));                
+                    updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));
                 }
             };
-            ctx.registerReceiver(this.receiver, intentFilter);
+            ctx.getActivity().registerReceiver(this.receiver, intentFilter);
         }
 
     }
-    
+
     /**
      * Executes the request and returns PluginResult.
      * 
@@ -118,7 +118,7 @@ public class NetworkManager extends Plugin {
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         PluginResult.Status status = PluginResult.Status.INVALID_ACTION;
         String result = "Unsupported Operation: " + action;
-        
+
         if (action.equals("getConnectionInfo")) {
             this.connectionCallbackId = callbackId;
             NetworkInfo info = sockMan.getActiveNetworkInfo();
@@ -126,7 +126,7 @@ public class NetworkManager extends Plugin {
             pluginResult.setKeepCallback(true);
             return pluginResult;
         }
-        
+
         return new PluginResult(status, result);
     }
 
@@ -139,14 +139,14 @@ public class NetworkManager extends Plugin {
     public boolean isSynch(String action) {
         return true;
     }
-    
+
     /**
      * Stop network receiver.
      */
     public void onDestroy() {
         if (this.receiver != null) {
             try {
-                this.ctx.unregisterReceiver(this.receiver);
+                this.ctx.getActivity().unregisterReceiver(this.receiver);
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Error unregistering network receiver: " + e.getMessage(), e);
             }
@@ -157,14 +157,13 @@ public class NetworkManager extends Plugin {
     // LOCAL METHODS
     //--------------------------------------------------------------------------
 
-
     /**
      * Updates the JavaScript side whenever the connection changes
      * 
      * @param info the current active network info
      * @return
      */
-    private void updateConnectionInfo(NetworkInfo info) {     
+    private void updateConnectionInfo(NetworkInfo info) {
         // send update to javascript "navigator.network.connection"
         sendUpdate(this.getConnectionInfo(info));
     }
@@ -188,7 +187,7 @@ public class NetworkManager extends Plugin {
         }
         return type;
     }
-    
+
     /**
      * Create a new plugin result and send it back to JavaScript
      * 
@@ -198,11 +197,11 @@ public class NetworkManager extends Plugin {
         PluginResult result = new PluginResult(PluginResult.Status.OK, type);
         result.setKeepCallback(true);
         this.success(result, this.connectionCallbackId);
-        
+
         // Send to all plugins
         webView.postMessage("networkconnection", type);
     }
-    
+
     /**
      * Determine the type of connection
      * 
@@ -218,13 +217,13 @@ public class NetworkManager extends Plugin {
             }
             else if (type.toLowerCase().equals(MOBILE)) {
                 type = info.getSubtypeName();
-                if (type.toLowerCase().equals(GSM) || 
+                if (type.toLowerCase().equals(GSM) ||
                         type.toLowerCase().equals(GPRS) ||
                         type.toLowerCase().equals(EDGE)) {
                     return TYPE_2G;
                 }
-                else if (type.toLowerCase().startsWith(CDMA) || 
-                        type.toLowerCase().equals(UMTS)  ||
+                else if (type.toLowerCase().startsWith(CDMA) ||
+                        type.toLowerCase().equals(UMTS) ||
                         type.toLowerCase().equals(ONEXRTT) ||
                         type.toLowerCase().equals(EHRPD) ||
                         type.toLowerCase().equals(HSUPA) ||
@@ -232,13 +231,13 @@ public class NetworkManager extends Plugin {
                         type.toLowerCase().equals(HSPA)) {
                     return TYPE_3G;
                 }
-                else if (type.toLowerCase().equals(LTE) || 
+                else if (type.toLowerCase().equals(LTE) ||
                         type.toLowerCase().equals(UMB) ||
                         type.toLowerCase().equals(HSPA_PLUS)) {
                     return TYPE_4G;
                 }
             }
-        } 
+        }
         else {
             return TYPE_NONE;
         }

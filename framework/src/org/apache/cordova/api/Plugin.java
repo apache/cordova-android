@@ -21,10 +21,7 @@ package org.apache.cordova.api;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import android.content.Context;
 import android.content.Intent;
-import android.webkit.WebView;
 
 /**
  * Plugin interface must be implemented by any plugin classes.
@@ -33,50 +30,50 @@ import android.webkit.WebView;
  */
 public abstract class Plugin implements IPlugin {
 
-	public String id;
+    public String id;
     public CordovaWebView webView;					// WebView object
-    public Context ctx;			// CordovaActivity object
+    public CordovaInterface ctx;			        // CordovaActivity object
 
-	/**
-	 * Executes the request and returns PluginResult.
-	 * 
-	 * @param action 		The action to execute.
-	 * @param args 			JSONArry of arguments for the plugin.
-	 * @param callbackId	The callback id used when calling back into JavaScript.
-	 * @return 				A PluginResult object with a status and message.
-	 */
-	public abstract PluginResult execute(String action, JSONArray args, String callbackId);
+    /**
+     * Executes the request and returns PluginResult.
+     * 
+     * @param action 		The action to execute.
+     * @param args 			JSONArry of arguments for the plugin.
+     * @param callbackId	The callback id used when calling back into JavaScript.
+     * @return 				A PluginResult object with a status and message.
+     */
+    public abstract PluginResult execute(String action, JSONArray args, String callbackId);
 
-	/**
-	 * Identifies if action to be executed returns a value and should be run synchronously.
-	 * 
-	 * @param action	The action to execute
-	 * @return			T=returns value
-	 */
-	public boolean isSynch(String action) {
-		return false;
-	}
+    /**
+     * Identifies if action to be executed returns a value and should be run synchronously.
+     * 
+     * @param action	The action to execute
+     * @return			T=returns value
+     */
+    public boolean isSynch(String action) {
+        return false;
+    }
 
-	/**
-	 * Sets the context of the Plugin. This can then be used to do things like
-	 * get file paths associated with the Activity.
-	 * 
-	 * @param ctx The context of the main Activity.
-	 */
-	public void setContext(Context ctx) {
-		this.ctx = ctx;
-	}
+    /**
+     * Sets the context of the Plugin. This can then be used to do things like
+     * get file paths associated with the Activity.
+     * 
+     * @param ctx The context of the main Activity.
+     */
+    public void setContext(CordovaInterface ctx) {
+        this.ctx = ctx;
+    }
 
-	/**
-	 * Sets the main View of the application, this is the WebView within which 
-	 * a Cordova app runs.
-	 * 
-	 * @param webView The Cordova WebView
-	 */
-	public void setView(CordovaWebView webView) {
-		this.webView = webView;
-	}
-	
+    /**
+     * Sets the main View of the application, this is the WebView within which 
+     * a Cordova app runs.
+     * 
+     * @param webView The Cordova WebView
+     */
+    public void setView(CordovaWebView webView) {
+        this.webView = webView;
+    }
+
     /**
      * Called when the system is about to start resuming a previous activity. 
      * 
@@ -92,26 +89,28 @@ public abstract class Plugin implements IPlugin {
      */
     public void onResume(boolean multitasking) {
     }
-    
+
     /**
      * Called when the activity receives a new intent. 
      */
     public void onNewIntent(Intent intent) {
     }
-    
+
     /**
      * The final call you receive before your activity is destroyed. 
      */
     public void onDestroy() {
     }
-	
+
     /**
      * Called when a message is sent to plugin. 
      * 
      * @param id            The message id
      * @param data          The message data
+     * @return              Object to stop propagation or null
      */
-    public void onMessage(String id, Object data) {
+    public Object onMessage(String id, Object data) {
+        return null;
     }
 
     /**
@@ -133,7 +132,7 @@ public abstract class Plugin implements IPlugin {
      * @return					Return true to prevent the URL from loading. Default is false.
      */
     public boolean onOverrideUrlLoading(String url) {
-    	return false;
+        return false;
     }
 
     /**
@@ -143,7 +142,7 @@ public abstract class Plugin implements IPlugin {
      * @param statement
      */
     public void sendJavascript(String statement) {
-      webView.sendJavascript(statement);
+        this.webView.sendJavascript(statement);
     }
 
     /**
@@ -154,10 +153,10 @@ public abstract class Plugin implements IPlugin {
      * call success(...) or error(...)
      * 
      * @param pluginResult		The result to return.
-	 * @param callbackId		The callback id used when calling back into JavaScript.
+     * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(PluginResult pluginResult, String callbackId) {
-      webView.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
+        this.webView.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
     }
 
     /**
@@ -167,7 +166,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(JSONObject message, String callbackId) {
-      webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+        this.webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
     }
 
     /**
@@ -177,17 +176,17 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(String message, String callbackId) {
-      webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+        this.webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
     }
-    
+
     /**
      * Call the JavaScript error callback for this plugin.
      * 
      * @param pluginResult		The result to return.
-	 * @param callbackId		The callback id used when calling back into JavaScript.
+     * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(PluginResult pluginResult, String callbackId) {
-      webView.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
+        this.webView.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
     }
 
     /**
@@ -197,7 +196,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(JSONObject message, String callbackId) {
-      webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+        this.webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
     }
 
     /**
@@ -207,6 +206,6 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(String message, String callbackId) {
-      webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+        this.webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
     }
 }

@@ -21,4 +21,8 @@ package org.apache.cordova;
 
 public class CordovaException extends Exception {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1373339564758328799L;
 }

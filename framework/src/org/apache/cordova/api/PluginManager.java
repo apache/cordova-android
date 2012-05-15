@@ -28,10 +28,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
-import android.webkit.WebView;
 
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
@@ -45,7 +43,7 @@ public class PluginManager {
     // List of service entries
     private final HashMap<String, PluginEntry> entries = new HashMap<String, PluginEntry>();
 
-    private final Context ctx;
+    private final CordovaInterface ctx;
     private final CordovaWebView app;
 
     // Flag to track first time through
@@ -61,26 +59,11 @@ public class PluginManager {
      * @param app
      * @param ctx
      */
-    public PluginManager(CordovaWebView app, Context ctx) {
+    public PluginManager(CordovaWebView app, CordovaInterface ctx) {
         this.ctx = ctx;
         this.app = app;
         this.firstRun = true;
     }
-
-
-    public PluginManager(WebView mApp, CordovaInterface mCtx) throws Exception {
-      this.ctx = mCtx.getContext();
-      if(CordovaWebView.class.isInstance(mApp))
-      {
-        this.app = (CordovaWebView) mApp;
-      }
-      else
-      {
-        //Throw an exception here
-        throw new Exception();
-      }
-    }
-
 
     /**
      * Init when loading a new HTML page into webview.
@@ -89,9 +72,9 @@ public class PluginManager {
         LOG.d(TAG, "init()");
 
         // If first time, then load plugins from plugins.xml file
-        if (firstRun) {
+        if (this.firstRun) {
             this.loadPlugins();
-            firstRun = false;
+            this.firstRun = false;
         }
 
         // Stop plugins on current HTML page and discard plugin objects
@@ -109,11 +92,11 @@ public class PluginManager {
      * Load plugins from res/xml/plugins.xml
      */
     public void loadPlugins() {
-        int id = ctx.getResources().getIdentifier("plugins", "xml", ctx.getPackageName());
+        int id = this.ctx.getActivity().getResources().getIdentifier("plugins", "xml", this.ctx.getActivity().getPackageName());
         if (id == 0) {
-            pluginConfigurationMissing();
+            this.pluginConfigurationMissing();
         }
-        XmlResourceParser xml = ctx.getResources().getXml(id);
+        XmlResourceParser xml = this.ctx.getActivity().getResources().getXml(id);
         int eventType = -1;
         String service = "", pluginClass = "";
         boolean onload = false;
@@ -184,14 +167,13 @@ public class PluginManager {
      * 
      * @return              JSON encoded string with a response message and status.
      */
-    @SuppressWarnings("unchecked")
     public String exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
         PluginResult cr = null;
         boolean runAsync = async;
         try {
             final JSONArray args = new JSONArray(jsonArgs);
             final IPlugin plugin = this.getPlugin(service);
-            final Context ctx = this.ctx;
+            //final CordovaInterface ctx = this.ctx;
             if (plugin != null) {
                 runAsync = async && !plugin.isSynch(action);
                 if (runAsync) {
@@ -257,7 +239,7 @@ public class PluginManager {
      * @return              IPlugin or null
      */
     private IPlugin getPlugin(String service) {
-        PluginEntry entry = entries.get(service);
+        PluginEntry entry = this.entries.get(service);
         if (entry == null) {
             return null;
         }
@@ -332,13 +314,22 @@ public class PluginManager {
      * 
      * @param id                The message id
      * @param data              The message data
+     * @return
      */
-    public void postMessage(String id, Object data) {
+    public Object postMessage(String id, Object data) {
+        Object obj = this.ctx.onMessage(id, data);
+        if (obj != null) {
+            return obj;
+        }
         for (PluginEntry entry : this.entries.values()) {
             if (entry.plugin != null) {
-                entry.plugin.onMessage(id, data);
+                obj = entry.plugin.onMessage(id, data);
+                if (obj != null) {
+                    return obj;
+                }
             }
         }
+        return null;
     }
 
     /**
