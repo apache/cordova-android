@@ -37,15 +37,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Context;
+//import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
+//import android.util.Log;
 import android.webkit.MimeTypeMap;
-import android.app.Activity;
 
+//import android.app.Activity;
 
 /**
  * This class provides SD card file and directory services to JavaScript.
@@ -132,7 +132,7 @@ public class FileUtils extends Plugin {
             else if (action.equals("requestFileSystem")) {
                 long size = args.optLong(1);
                 if (size != 0) {
-                    if (size > (DirectoryManager.getFreeDiskSpace(true)*1024)) {
+                    if (size > (DirectoryManager.getFreeDiskSpace(true) * 1024)) {
                         return new PluginResult(PluginResult.Status.ERROR, FileUtils.QUOTA_EXCEEDED_ERR);
                     }
                 }
@@ -222,9 +222,9 @@ public class FileUtils extends Plugin {
      * @param filePath the path to check
      */
     private void notifyDelete(String filePath) {
-        int result = this.ctx.getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        int result = this.ctx.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 MediaStore.Images.Media.DATA + " = ?",
-                new String[] {filePath});
+                new String[] { filePath });
     }
 
     /**
@@ -244,7 +244,7 @@ public class FileUtils extends Plugin {
 
         // Handle the special case where you get an Android content:// uri.
         if (decoded.startsWith("content:")) {
-            Cursor cursor = ((Activity) this.ctx).managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
+            Cursor cursor = this.ctx.getActivity().managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
             // Note: MediaStore.Images/Audio/Video.Media.DATA is always "_data"
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
@@ -295,7 +295,7 @@ public class FileUtils extends Plugin {
 
         if (fp.isDirectory()) {
             File[] files = fp.listFiles();
-            for (int i=0; i<files.length; i++) {
+            for (int i = 0; i < files.length; i++) {
                 entries.put(getEntry(files[i]));
             }
         }
@@ -320,7 +320,6 @@ public class FileUtils extends Plugin {
     private JSONObject transferTo(String fileName, String newParent, String newName, boolean move) throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException {
         fileName = stripFileProtocol(fileName);
         newParent = stripFileProtocol(newParent);
-
 
         // Check for invalid file name
         if (newName != null && newName.contains(":")) {
@@ -378,7 +377,7 @@ public class FileUtils extends Plugin {
         File destFile = null;
 
         // I know this looks weird but it is to work around a JSON bug.
-        if ("null".equals(newName) || "".equals(newName) ) {
+        if ("null".equals(newName) || "".equals(newName)) {
             newName = null;
         }
 
@@ -400,7 +399,7 @@ public class FileUtils extends Plugin {
      * @throws InvalidModificationException
      * @throws JSONException
      */
-    private JSONObject copyFile(File srcFile, File destFile) throws IOException, InvalidModificationException, JSONException  {
+    private JSONObject copyFile(File srcFile, File destFile) throws IOException, InvalidModificationException, JSONException {
         // Renaming a file to an existing directory should fail
         if (destFile.exists() && destFile.isDirectory()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -478,7 +477,7 @@ public class FileUtils extends Plugin {
         // This weird test is to determine if we are copying or moving a directory into itself.
         // Copy /sdcard/myDir to /sdcard/myDir-backup is okay but
         // Copy /sdcard/myDir to /sdcard/myDir/backup should thow an INVALID_MODIFICATION_ERR
-        if (dest.startsWith(src) && dest.indexOf(File.separator, src.length()-1) != -1) {
+        if (dest.startsWith(src) && dest.indexOf(File.separator, src.length() - 1) != -1) {
             return true;
         }
 
@@ -727,9 +726,9 @@ public class FileUtils extends Plugin {
     private boolean atRootDirectory(String filePath) {
         filePath = stripFileProtocol(filePath);
 
-        if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + ctx.getPackageName() + "/cache") ||
-                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) || 
-                filePath.equals("/data/data/" + ctx.getPackageName())) {
+        if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + ctx.getActivity().getPackageName() + "/cache") ||
+                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) ||
+                filePath.equals("/data/data/" + ctx.getActivity().getPackageName())) {
             return true;
         }
         return false;
@@ -747,7 +746,7 @@ public class FileUtils extends Plugin {
         }
         return filePath;
     }
-    
+
     /**
      * Create a File object from the passed in path
      * 
@@ -793,7 +792,7 @@ public class FileUtils extends Plugin {
             throw new FileNotFoundException("File: " + filePath + " does not exist.");
         }
 
-         JSONObject metadata = new JSONObject();
+        JSONObject metadata = new JSONObject();
         metadata.put("size", file.length());
         metadata.put("type", getMimeType(filePath));
         metadata.put("name", file.getName());
@@ -818,16 +817,16 @@ public class FileUtils extends Plugin {
             fs.put("name", "temporary");
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 fp = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                    "/Android/data/" + ctx.getPackageName() + "/cache/");
+                        "/Android/data/" + ctx.getActivity().getPackageName() + "/cache/");
                 // Create the cache dir if it doesn't exist.
                 fp.mkdirs();
                 fs.put("root", getEntry(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        "/Android/data/" + ctx.getPackageName() + "/cache/"));
+                        "/Android/data/" + ctx.getActivity().getPackageName() + "/cache/"));
             } else {
-                fp = new File("/data/data/" + ctx.getPackageName() + "/cache/");
+                fp = new File("/data/data/" + ctx.getActivity().getPackageName() + "/cache/");
                 // Create the cache dir if it doesn't exist.
                 fp.mkdirs();
-                fs.put("root", getEntry("/data/data/" + ctx.getPackageName() + "/cache/"));
+                fs.put("root", getEntry("/data/data/" + ctx.getActivity().getPackageName() + "/cache/"));
             }
         }
         else if (type == PERSISTENT) {
@@ -835,13 +834,13 @@ public class FileUtils extends Plugin {
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 fs.put("root", getEntry(Environment.getExternalStorageDirectory()));
             } else {
-                fs.put("root", getEntry("/data/data/" + ctx.getPackageName()));
+                fs.put("root", getEntry("/data/data/" + ctx.getActivity().getPackageName()));
             }
         }
         else {
             throw new IOException("No filesystem of type requested");
         }
- 
+
         return fs;
     }
 
@@ -942,7 +941,7 @@ public class FileUtils extends Plugin {
         String contentType = null;
         if (filename.startsWith("content:")) {
             Uri fileUri = Uri.parse(filename);
-            contentType = this.ctx.getContentResolver().getType(fileUri);
+            contentType = this.ctx.getActivity().getContentResolver().getType(fileUri);
         }
         else {
             contentType = getMimeType(filename);
@@ -961,7 +960,7 @@ public class FileUtils extends Plugin {
      */
     public static String getMimeType(String filename) {
         MimeTypeMap map = MimeTypeMap.getSingleton();
-        return map.getMimeTypeFromExtension(map.getFileExtensionFromUrl(filename));
+        return map.getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(filename));
     }
 
     /**
@@ -975,14 +974,14 @@ public class FileUtils extends Plugin {
     /**/
     public long write(String filename, String data, int offset) throws FileNotFoundException, IOException {
         filename = stripFileProtocol(filename);
-        
+
         boolean append = false;
         if (offset > 0) {
             this.truncateFile(filename, offset);
             append = true;
         }
 
-        byte [] rawData = data.getBytes();
+        byte[] rawData = data.getBytes();
         ByteArrayInputStream in = new ByteArrayInputStream(rawData);
         FileOutputStream out = new FileOutputStream(filename, append);
         byte buff[] = new byte[rawData.length];
@@ -1007,9 +1006,9 @@ public class FileUtils extends Plugin {
         RandomAccessFile raf = new RandomAccessFile(filename, "rw");
 
         if (raf.length() >= size) {
-               FileChannel channel = raf.getChannel();
-               channel.truncate(size);
-               return size;
+            FileChannel channel = raf.getChannel();
+            channel.truncate(size);
+            return size;
         }
 
         return raf.length();
@@ -1025,7 +1024,7 @@ public class FileUtils extends Plugin {
     private InputStream getPathFromUri(String path) throws FileNotFoundException {
         if (path.startsWith("content")) {
             Uri uri = Uri.parse(path);
-            return ctx.getContentResolver().openInputStream(uri);
+            return ctx.getActivity().getContentResolver().openInputStream(uri);
         }
         else {
             path = stripFileProtocol(path);
@@ -1040,9 +1039,9 @@ public class FileUtils extends Plugin {
      * @param  ctx) the current applicaiton context
      * @return the full path to the file
      */
-    protected static String getRealPathFromURI(Uri contentUri, Activity ctx) {
+    protected static String getRealPathFromURI(Uri contentUri, CordovaInterface ctx) {
         String[] proj = { _DATA };
-        Cursor cursor =  ctx.managedQuery(contentUri, proj, null, null, null);
+        Cursor cursor = ctx.getActivity().managedQuery(contentUri, proj, null, null, null);
         int column_index = cursor.getColumnIndexOrThrow(_DATA);
         cursor.moveToFirst();
         return cursor.getString(column_index);
