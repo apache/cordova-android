@@ -102,6 +102,14 @@ Importing a Cordova Android Project into Eclipse
 5. Right click on the project root: Run as > Run Configurations
 6. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
 
+Running Tests
+----
+1. Go into the test directory
+2. Run the following command: 
+
+    adb shell am instrument -w org.apache.cordova.test/android.test.InstrumentationTestRunner
+
+(Optional: Open the test project in Eclipse, right click on it and select Run as Android Test Project)
 
 Further Reading
 ---
