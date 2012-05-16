@@ -15,19 +15,26 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
- */
+*/
 package org.apache.cordova.test;
 
+import android.graphics.Color;
 import android.os.Bundle;
-
 import org.apache.cordova.*;
 
-public class background extends DroidGap {
+public class backgroundcolor extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //super.init(new FixWebView(this), new CordovaWebViewClient(this), new CordovaChromeClient(this));
-        super.setBooleanProperty("keepRunning", false);
-        super.loadUrl("file:///android_asset/www/background/index.html");
+
+        // Properties must be set before init() is called, since some are processed during init().
+
+        // backgroundColor can also be set in cordova.xml, but you must use the number equivalent of the color.  For example, Color.RED is
+        //      <preference name="backgroundColor" value="-65536" />
+        super.setIntegerProperty("backgroundColor", Color.GREEN);
+
+        super.init();
+        super.loadUrl("file:///android_asset/www/backgroundcolor/index.html");
     }
+
 }

@@ -39,6 +39,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -76,40 +77,38 @@ public class CordovaWebView extends WebView {
      */
     public CordovaWebView(Context context) {
         super(context);
-        if(CordovaInterface.class.isInstance(context))
+        if (CordovaInterface.class.isInstance(context))
         {
-          this.mCtx = (CordovaInterface) context;
+            this.mCtx = (CordovaInterface) context;
         }
         else
         {
-          Log.d(TAG, "Your activity must implement CordovaInterface to work");
+            Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
         this.loadConfiguration();
         this.setup();
     }
 
-    
     /**
      * Constructor.
-     * 
      * 
      * @param context
      * @param attrs
      */
     public CordovaWebView(Context context, AttributeSet attrs) {
-      super(context, attrs);
-      if(CordovaInterface.class.isInstance(context))
-      {
-        this.mCtx = (CordovaInterface) context;
-      }          
-      else
-      {
-        Log.d(TAG, "Your activity must implement CordovaInterface to work");
-      }
-      this.setWebChromeClient(new CordovaChromeClient(this.mCtx, this));
-      this.setWebViewClient(new CordovaWebViewClient(this.mCtx, this));
-      this.loadConfiguration();
-      this.setup();
+        super(context, attrs);
+        if (CordovaInterface.class.isInstance(context))
+        {
+            this.mCtx = (CordovaInterface) context;
+        }
+        else
+        {
+            Log.d(TAG, "Your activity must implement CordovaInterface to work");
+        }
+        this.setWebChromeClient(new CordovaChromeClient(this.mCtx, this));
+        this.setWebViewClient(new CordovaWebViewClient(this.mCtx, this));
+        this.loadConfiguration();
+        this.setup();
     }
 
     /**
@@ -120,15 +119,15 @@ public class CordovaWebView extends WebView {
      * @param defStyle
      * 
      */
-    public CordovaWebView(Context context, AttributeSet attrs, int defStyle)  {
+    public CordovaWebView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        if(CordovaInterface.class.isInstance(context))
+        if (CordovaInterface.class.isInstance(context))
         {
-          this.mCtx = (CordovaInterface) context;
+            this.mCtx = (CordovaInterface) context;
         }
         else
         {
-          Log.d(TAG, "Your activity must implement CordovaInterface to work");
+            Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
         this.setWebChromeClient(new CordovaChromeClient(this.mCtx, this));
         this.setWebViewClient(new CordovaWebViewClient(this.mCtx, this));
@@ -146,13 +145,13 @@ public class CordovaWebView extends WebView {
      */
     public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
         super(context, attrs, defStyle, privateBrowsing);
-        if(CordovaInterface.class.isInstance(context))
+        if (CordovaInterface.class.isInstance(context))
         {
-          this.mCtx = (CordovaInterface) context;
+            this.mCtx = (CordovaInterface) context;
         }
         else
         {
-          Log.d(TAG, "Your activity must implement CordovaInterface to work");
+            Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
         this.setWebChromeClient(new CordovaChromeClient(this.mCtx));
         this.setWebViewClient(new CordovaWebViewClient(this.mCtx));
@@ -192,10 +191,10 @@ public class CordovaWebView extends WebView {
 
         //Start up the plugin manager
         try {
-          this.pluginManager = new PluginManager(this, mCtx);
+            this.pluginManager = new PluginManager(this, this.mCtx);
         } catch (Exception e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -636,6 +635,11 @@ public class CordovaWebView extends WebView {
         }
         else {
             this.useBrowserHistory = false;
+        }
+
+        if ("true".equals(this.getProperty("fullscreen", "false"))) {
+            this.mCtx.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            this.mCtx.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
     }
 

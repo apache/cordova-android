@@ -250,15 +250,8 @@ public class DroidGap extends Activity implements CordovaInterface {
         super.onCreate(savedInstanceState);
 
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-
-        // TODO @bc - What about fullscreen?
-        //if (preferences.prefMatches("fullscreen", "true")) {
-        //    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-        //            WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        //} else {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        //}
 
         // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
         Display display = getWindowManager().getDefaultDisplay();
@@ -337,10 +330,8 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.init();
         }
 
-        // TODO @bc - background color doesn't work
-        // If backgroundColor
+        // Set backgroundColor
         this.backgroundColor = this.getIntegerProperty("backgroundColor", Color.BLACK);
-        LOG.e(TAG, "Setting background color=" + this.backgroundColor);
         this.root.setBackgroundColor(this.backgroundColor);
 
         // If keepRunning
@@ -464,7 +455,18 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (bundle == null) {
             return defaultValue;
         }
-        Boolean p = (Boolean) bundle.get(name);
+        Boolean p;
+        try {
+            p = (Boolean) bundle.get(name);
+        } catch (ClassCastException e) {
+            String s = bundle.get(name).toString();
+            if ("true".equals(s)) {
+                p = true;
+            }
+            else {
+                p = false;
+            }
+        }
         if (p == null) {
             return defaultValue;
         }
@@ -483,7 +485,12 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (bundle == null) {
             return defaultValue;
         }
-        Integer p = (Integer) bundle.get(name);
+        Integer p;
+        try {
+            p = (Integer) bundle.get(name);
+        } catch (ClassCastException e) {
+            p = Integer.parseInt(bundle.get(name).toString());
+        }
         if (p == null) {
             return defaultValue;
         }
@@ -521,7 +528,12 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (bundle == null) {
             return defaultValue;
         }
-        Double p = (Double) bundle.get(name);
+        Double p;
+        try {
+            p = (Double) bundle.get(name);
+        } catch (ClassCastException e) {
+            p = Double.parseDouble(bundle.get(name).toString());
+        }
         if (p == null) {
             return defaultValue;
         }

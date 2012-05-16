@@ -144,5 +144,14 @@
         <activity android:name="xhr" android:label="@string/app_name" 
                   android:configChanges="orientation|keyboardHidden">
         </activity>
+        <activity android:name="basicauth" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="fullscreen" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name="backgroundcolor" android:label="@string/app_name" 
+                  android:configChanges="orientation|keyboardHidden">
+        </activity>
         </application>
 </manifest> 

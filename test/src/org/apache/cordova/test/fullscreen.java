@@ -15,19 +15,25 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
- */
+*/
 package org.apache.cordova.test;
 
 import android.os.Bundle;
-
 import org.apache.cordova.*;
 
-public class background extends DroidGap {
+public class fullscreen extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //super.init(new FixWebView(this), new CordovaWebViewClient(this), new CordovaChromeClient(this));
-        super.setBooleanProperty("keepRunning", false);
-        super.loadUrl("file:///android_asset/www/background/index.html");
+
+        // Properties must be set before init() is called, since some are processed during init(). 
+
+        // fullscreen can also be set in cordova.xml.  For example, 
+        //      <preference name="fullscreen" value="true" />
+        super.setBooleanProperty("fullscreen", true);
+
+        super.init();
+        super.loadUrl("file:///android_asset/www/fullscreen/index.html");
     }
+
 }

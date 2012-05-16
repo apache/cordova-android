@@ -15,19 +15,29 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
- */
+*/
 package org.apache.cordova.test;
 
 import android.os.Bundle;
-
 import org.apache.cordova.*;
 
-public class background extends DroidGap {
+public class basicauth extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //super.init(new FixWebView(this), new CordovaWebViewClient(this), new CordovaChromeClient(this));
-        super.setBooleanProperty("keepRunning", false);
-        super.loadUrl("file:///android_asset/www/background/index.html");
+        super.init();
+
+        // LogCat: onReceivedHttpAuthRequest(browserspy.dk:80,BrowserSpy.dk - HTTP Password Test)
+        AuthenticationToken token = new AuthenticationToken();
+        token.setUserName("test");
+        token.setPassword("test");
+        super.setAuthenticationToken(token, "browserspy.dk:80", "BrowserSpy.dk - HTTP Password Test");
+
+        // Add web site to whitelist
+        super.appView.addWhiteListEntry("http://browserspy.dk*", true);
+
+        // Load test
+        super.loadUrl("file:///android_asset/www/basicauth/index.html");
     }
+
 }
