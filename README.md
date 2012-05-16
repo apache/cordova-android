@@ -22,9 +22,6 @@ Requires
 
 Test Requirements
 ---
-- Android WebDriver Library (included with SDK, copied from extras directory.
-- Android WebDriver - built from source from [http://code.google.com/p/selenium/](http://code.google.com/p/selenium/)
-- Google Guava - [https://code.google.com/p/guava-libraries/](https://code.google.com/p/guava-libraries/)
 - JUnit - [https://github.com/KentBeck/junit](https://github.com/KentBeck/junit)
  
 Building
