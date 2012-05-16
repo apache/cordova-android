@@ -19,10 +19,7 @@
 package org.apache.cordova.test;
 
 import android.os.Bundle;
-import android.webkit.WebView;
-
 import org.apache.cordova.*;
-import org.apache.cordova.api.LOG;
 
 public class basicauth extends DroidGap {
     @Override
