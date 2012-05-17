@@ -9,7 +9,6 @@ function exec(s, output) {
     WScript.Echo("Command exited with code " + o.Status);
 }
 function read(filename) {
-    WScript.Echo('Reading in ' + filename);
     var fso=WScript.CreateObject("Scripting.FileSystemObject");
     var f=fso.OpenTextFile(filename, 1);
     var s=f.ReadAll();
@@ -44,7 +43,7 @@ var MANIFEST_PATH=PWD+'\\AndroidManifest.xml';
 exec('android.bat create project --target ' + TARGET + ' --path ' + PWD + ' --package ' + PACKAGE + ' --activity ' + ACTIVITY);
 
 // copy in activity and other android assets
-exec('cmd /c xcopy ' + PWD + '\\cordova\\templates\project\* ' + PWD +' /Y /S');
+exec('cmd /c xcopy ' + PWD + '\\cordova\\templates\\project\\* ' + PWD +' /Y /S');
 
 // copy in cordova.js
 exec('cmd /c copy ' + PWD + '\\.cordova\\android\\cordova-' + VERSION + '.js ' + PWD + '\\assets\\www /Y');
@@ -67,4 +66,4 @@ replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, ACTIVITY);
 replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
 
-WScript.Echo('DONE!');
+WScript.Echo('Create completed successfully.');

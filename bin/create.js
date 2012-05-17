@@ -64,6 +64,9 @@ function fork(s) {
 var args = WScript.Arguments, PROJECT_PATH="example", 
     PACKAGE="org.apache.cordova.example", ACTIVITY="cordovaExample",
     shell=WScript.CreateObject("WScript.Shell");
+    
+// working dir
+var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
 
 if (args.Count() == 3) {
     WScript.Echo('Found expected arguments');
@@ -86,7 +89,7 @@ WScript.Echo("Activity path: " + ACTIVITY_PATH);
 WScript.Echo("Manifest path: " + MANIFEST_PATH);
 WScript.Echo("Cordova version: " + VERSION);
 
-// clobber any existing example
+// TODO: clobber any existing example
 
 /*
 if [ $# -eq 0 ]
@@ -101,13 +104,50 @@ exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --p
 // update the cordova framework project to a target that exists on this machine
 exec('android.bat update project --target '+TARGET+' --path framework');
 
+// pull down commons codec if necessary
+var fso = WScript.CreateObject('Scripting.FileSystemObject');
+if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
+  // We need the .jar
+  var url = 'http://mirror.symnds.com/software/Apache//commons/codec/binaries/commons-codec-1.6-bin.zip';
+  var savePath = ROOT + '\\framework\\libs\\commons-codec-1.6-bin.zip';
+  if (!fso.FileExists(savePath)) {
+    // We need the zip to get the jar
+    var xhr = WScript.CreateObject('MSXML2.XMLHTTP');
+    xhr.open('GET', url, false);
+    xhr.send();
+    if (xhr.status == 200) {
+      var stream = WScript.CreateObject('ADODB.Stream');
+      stream.Open();
+      stream.Type = 1;
+      stream.Write(xhr.ResponseBody);
+      stream.Position = 0;
+      stream.SaveToFile(savePath);
+      stream.Close();
+    } else {
+      WScript.Echo('Could not retrieve the commons-codec. Please download it yourself and put into the framework/libs directory. This process may fail now. Sorry.');
+    }
+  }
+  var app = WScript.CreateObject('Shell.Application');
+  var source = app.NameSpace(savePath).Items();
+  var target = app.NameSpace(ROOT + '\\framework\\libs');
+  target.CopyHere(source, 256);
+  
+  // Move the jar into libs
+  fso.MoveFile(ROOT + '\\framework\\libs\\commons-codec-1.6\\commons-codec-1.6.jar', ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
+  
+  // Clean up
+  fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6-bin.zip');
+  fso.DeleteFolder(ROOT + '\\framework\\libs\\commons-codec-1.6', true);
+}
+
+
 // compile cordova.js and cordova.jar
 // if you see an error about "Unable to resolve target" then you may need to 
 // update your android tools or install an additional Android platform version
 exec('ant.bat -f framework\\build.xml jar');
 
 // copy in the project template
-exec('cmd /c xcopy bin\\templates\\project '+PROJECT_PATH+' /S /Y');
+exec('cmd /c xcopy bin\\templates\\project\\* '+PROJECT_PATH+' /S /Y');
 
 // copy example www assets
 exec('cmd /c xcopy ' + PROJECT_PATH + '\\cordova\\assets ' + PROJECT_PATH + ' /S /Y');
