@@ -26,7 +26,6 @@ import org.apache.cordova.api.IPlugin;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 public class CordovaWebViewTestActivity extends Activity implements CordovaInterface {
 
@@ -48,7 +47,9 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
     public void onDestroy()
     {
         super.onDestroy();
-        //phoneGap.onDestroy();
+        if (phoneGap.pluginManager != null) {
+            phoneGap.pluginManager.onDestroy();
+        }
     }
 
     @Override
