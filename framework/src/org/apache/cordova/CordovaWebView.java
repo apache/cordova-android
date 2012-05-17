@@ -291,15 +291,21 @@ public class CordovaWebView extends WebView {
      */
     @Override
     public void loadUrl(String url) {
-        String initUrl = this.getProperty("url", null);
-
-        // If first page of app, then set URL to load to be the one passed in
-        if (initUrl == null || (this.urls.size() > 0)) {
-            this.loadUrlIntoView(url);
+        if (url.equals("about:blank") || url.startsWith("javascript:")) {
+            this.loadUrlNow(url);
         }
-        // Otherwise use the URL specified in the activity's extras bundle
         else {
-            this.loadUrlIntoView(initUrl);
+
+            String initUrl = this.getProperty("url", null);
+
+            // If first page of app, then set URL to load to be the one passed in
+            if (initUrl == null || (this.urls.size() > 0)) {
+                this.loadUrlIntoView(url);
+            }
+            // Otherwise use the URL specified in the activity's extras bundle
+            else {
+                this.loadUrlIntoView(initUrl);
+            }
         }
     }
 
@@ -329,74 +335,67 @@ public class CordovaWebView extends WebView {
      * @param url
      */
     public void loadUrlIntoView(final String url) {
-        if (!url.startsWith("javascript:")) {
-            LOG.d(TAG, ">>> loadUrl(" + url + ")");
+        LOG.d(TAG, ">>> loadUrl(" + url + ")");
 
-            this.url = url;
-            if (this.baseUrl == null) {
-                int i = url.lastIndexOf('/');
-                if (i > 0) {
-                    this.baseUrl = url.substring(0, i + 1);
-                }
-                else {
-                    this.baseUrl = this.url + "/";
-                }
-
-                this.pluginManager.init();
-
-                if (!this.useBrowserHistory) {
-                    this.urls.push(url);
-                }
+        this.url = url;
+        if (this.baseUrl == null) {
+            int i = url.lastIndexOf('/');
+            if (i > 0) {
+                this.baseUrl = url.substring(0, i + 1);
+            }
+            else {
+                this.baseUrl = this.url + "/";
             }
 
-            // Create a timeout timer for loadUrl
-            final CordovaWebView me = this;
-            final int currentLoadUrlTimeout = me.loadUrlTimeout;
-            final int loadUrlTimeoutValue = Integer.parseInt(this.getProperty("loadUrlTimeoutValue", "20000"));
+            this.pluginManager.init();
 
-            // Timeout error method
-            final Runnable loadError = new Runnable() {
-                public void run() {
-                    me.stopLoading();
-                    LOG.e(TAG, "CordovaWebView: TIMEOUT ERROR!");
-                    if (viewClient != null) {
-                        viewClient.onReceivedError(me, -6, "The connection to the server was unsuccessful.", url);
-                    }
-                }
-            };
-
-            // Timeout timer method
-            final Runnable timeoutCheck = new Runnable() {
-                public void run() {
-                    try {
-                        synchronized (this) {
-                            wait(loadUrlTimeoutValue);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    // If timeout, then stop loading and handle error
-                    if (me.loadUrlTimeout == currentLoadUrlTimeout) {
-                        me.mCtx.getActivity().runOnUiThread(loadError);
-                    }
-                }
-            };
-
-            // Load url
-            this.mCtx.getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    Thread thread = new Thread(timeoutCheck);
-                    thread.start();
-                    me.loadUrlNow(url);
-                }
-            });
+            if (!this.useBrowserHistory) {
+                this.urls.push(url);
+            }
         }
 
-        // If Javascript, then just load it now
-        else {
-            super.loadUrl(url);
-        }
+        // Create a timeout timer for loadUrl
+        final CordovaWebView me = this;
+        final int currentLoadUrlTimeout = me.loadUrlTimeout;
+        final int loadUrlTimeoutValue = Integer.parseInt(this.getProperty("loadUrlTimeoutValue", "20000"));
+
+        // Timeout error method
+        final Runnable loadError = new Runnable() {
+            public void run() {
+                me.stopLoading();
+                LOG.e(TAG, "CordovaWebView: TIMEOUT ERROR!");
+                if (viewClient != null) {
+                    viewClient.onReceivedError(me, -6, "The connection to the server was unsuccessful.", url);
+                }
+            }
+        };
+
+        // Timeout timer method
+        final Runnable timeoutCheck = new Runnable() {
+            public void run() {
+                try {
+                    synchronized (this) {
+                        wait(loadUrlTimeoutValue);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                // If timeout, then stop loading and handle error
+                if (me.loadUrlTimeout == currentLoadUrlTimeout) {
+                    me.mCtx.getActivity().runOnUiThread(loadError);
+                }
+            }
+        };
+
+        // Load url
+        this.mCtx.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                Thread thread = new Thread(timeoutCheck);
+                thread.start();
+                me.loadUrlNow(url);
+            }
+        });
     }
 
     /**
