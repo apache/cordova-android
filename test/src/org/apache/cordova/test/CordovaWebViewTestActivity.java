@@ -20,28 +20,76 @@
 package org.apache.cordova.test;
 
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.api.CordovaInterface;
+import org.apache.cordova.api.IPlugin;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
-public class CordovaWebViewTestActivity extends Activity {
-    
+public class CordovaWebViewTestActivity extends Activity implements CordovaInterface {
+
     CordovaWebView phoneGap;
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.main);
-        
+
         phoneGap = (CordovaWebView) findViewById(R.id.phoneGapView);
-        
+
         phoneGap.loadUrl("file:///android_asset/www/index.html");
-        
+
     }
-    
+
     public void onDestroy()
     {
         super.onDestroy();
         //phoneGap.onDestroy();
+    }
+
+    @Override
+    public void startActivityForResult(IPlugin command, Intent intent, int requestCode) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void setActivityResultCallback(IPlugin plugin) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void bindBackButton(boolean override) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public boolean isBackButtonBound() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public Activity getActivity() {
+        // TODO Auto-generated method stub
+        return this;
+    }
+
+    @Override
+    public void cancelLoadUrl() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Object onMessage(String id, Object data) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
