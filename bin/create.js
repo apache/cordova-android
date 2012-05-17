@@ -25,8 +25,9 @@
  */
 
 function read(filename) {
+    WScript.Echo('Reading in ' + filename);
     var fso=WScript.CreateObject("Scripting.FileSystemObject");
-    var f=fso.OpenTextFile(filename, 1, true);
+    var f=fso.OpenTextFile(filename, 1);
     var s=f.ReadAll();
     f.Close();
     return s;
@@ -40,8 +41,24 @@ function write(filename, contents) {
 function replaceInFile(filename, regexp, replacement) {
     write(filename, read(filename).replace(regexp, replacement));
 }
-function exec(s) {
+function exec(s, output) {
+    WScript.Echo('Executing ' + s);
     var o=shell.Exec(s);
+    while (o.Status == 0) {
+        WScript.Sleep(100);
+    }
+    WScript.Echo("Command exited with code " + o.Status);
+}
+
+function fork(s) {
+    WScript.Echo('Executing ' + s);
+    var o=shell.Exec(s);
+    while (o.Status != 1) {
+        WScript.Sleep(100);
+    }
+    WScript.Echo(o.StdOut.ReadAll());
+    WScript.Echo(o.StdErr.ReadAll());
+    WScript.Echo("Command exited with code " + o.Status);
 }
 
 var args = WScript.Arguments, PROJECT_PATH="example", 
@@ -60,6 +77,14 @@ var ACTIVITY_PATH=PROJECT_PATH+'\\src\\'+PACKAGE_AS_PATH+'\\'+ACTIVITY+'.java';
 var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
 var TARGET=shell.Exec('android.bat list targets').StdOut.ReadAll().match(/id:\s([0-9]).*/)[1];
 var VERSION=read('VERSION').replace(/\r\n/,'').replace(/\n/,'');
+
+WScript.Echo("Project path: " + PROJECT_PATH);
+WScript.Echo("Package: " + PACKAGE);
+WScript.Echo("Activity: " + ACTIVITY);
+WScript.Echo("Package as path: " + PACKAGE_AS_PATH);
+WScript.Echo("Activity path: " + ACTIVITY_PATH);
+WScript.Echo("Manifest path: " + MANIFEST_PATH);
+WScript.Echo("Cordova version: " + VERSION);
 
 // clobber any existing example
 
@@ -84,24 +109,26 @@ exec('ant.bat -f framework\\build.xml jar');
 // copy in the project template
 exec('cmd /c xcopy bin\\templates\\project '+PROJECT_PATH+' /S /Y');
 
+// copy example www assets
+exec('cmd /c xcopy ' + PROJECT_PATH + '\\cordova\\assets ' + PROJECT_PATH + ' /S /Y');
+
 // copy in cordova.js
-exec('cmd /c copy framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
+exec('cmd /c copy framework\\assets\\js\\cordova.android.js '+PROJECT_PATH+'\\.cordova\\android\\cordova-'+VERSION+'.js /Y');
 
 // copy in cordova.jar
-exec('cmd /c copy framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
+exec('cmd /c copy framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\.cordova\\android\\cordova-'+VERSION+'.jar /Y');
 
-// copy in default activity
-exec('cmd /c copy bin\\templates\\Activity.java '+ACTIVITY_PATH+' /Y');
+// copy in xml
+exec('cmd /c copy framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\.cordova\\android\\cordova.xml /Y');
+exec('cmd /c copy framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\.cordova\\android\\plugins.xml /Y');
 
-// interpolate the activity name and package
-replaceInFile(ACTIVITY_PATH, /__ACTIVITY__/, ACTIVITY);
-replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
+// write out config file
+write(PROJECT_PATH + '\\.cordova\\config',
+  'VERSION=' + VERSION + '\r\n' +
+  'PROJECT_PATH=' + PROJECT_PATH + '\r\n' +
+  'PACKAGE=' + PACKAGE + '\r\n' +
+  'ACTIVITY=' + ACTIVITY + '\r\n' +
+  'TARGET=' + TARGET);
 
-replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, ACTIVITY);
-replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
-
-/*
-# leave the id for launching
-touch $PROJECT_PATH/package-activity
-echo $PACKAGE/$PACKAGE.$ACTIVITY >  $PROJECT_PATH/package-activity 
-*/
+// run project-specific create process
+fork('cscript.exe ' + PROJECT_PATH + '\\cordova\\create.js');
