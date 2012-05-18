@@ -136,7 +136,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
     private int start() {
     	// If already starting or running, then just return
     	if ((this.status == AccelListener.RUNNING) || (this.status == AccelListener.STARTING)) {
-    		return this.status;
+          return this.status;
     	}
     	
     	this.setStatus(AccelListener.STARTING);
@@ -146,28 +146,28 @@ public class AccelListener extends Plugin implements SensorEventListener {
 
     	// If found, then register as listener
     	if ((list != null) && (list.size() > 0)) {
-    		this.mSensor = list.get(0);
-    		this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_UI);
-    		this.setStatus(AccelListener.STARTING);
+          this.mSensor = list.get(0);
+          this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_UI);
+          this.setStatus(AccelListener.STARTING);
     	} else {
-    		this.setStatus(AccelListener.ERROR_FAILED_TO_START);
-    		this.fail(AccelListener.ERROR_FAILED_TO_START, "No sensors found to register accelerometer listening to.");
-    		return this.status;
+          this.setStatus(AccelListener.ERROR_FAILED_TO_START);
+          this.fail(AccelListener.ERROR_FAILED_TO_START, "No sensors found to register accelerometer listening to.");
+          return this.status;
     	}
     	
     	// Wait until running
     	long timeout = 2000;
     	while ((this.status == STARTING) && (timeout > 0)) {
-    		timeout = timeout - 100;
-    		try {
-    			Thread.sleep(100);
-    		} catch (InterruptedException e) {
-    			e.printStackTrace();
-    		}
+          timeout = timeout - 100;
+          try {
+              Thread.sleep(100);
+          } catch (InterruptedException e) {
+              e.printStackTrace();
+          }
     	}
     	if (timeout == 0) {
-    		this.setStatus(AccelListener.ERROR_FAILED_TO_START);
-    		this.fail(AccelListener.ERROR_FAILED_TO_START, "Accelerometer could not be started.");
+          this.setStatus(AccelListener.ERROR_FAILED_TO_START);
+          this.fail(AccelListener.ERROR_FAILED_TO_START, "Accelerometer could not be started.");
     	}
     	return this.status;
     }
@@ -222,13 +222,13 @@ public class AccelListener extends Plugin implements SensorEventListener {
         
         if (this.accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
 
-        	// Save time that event was received
-        	this.timestamp = System.currentTimeMillis();
-        	this.x = event.values[0];
-        	this.y = event.values[1];
-        	this.z = event.values[2];
+            // Save time that event was received
+            this.timestamp = System.currentTimeMillis();
+            this.x = event.values[0];
+            this.y = event.values[1];
+            this.z = event.values[2];
 
-        	this.win();
+            this.win();
         }
     }
 
