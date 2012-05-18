@@ -58,9 +58,8 @@ public class AccelListener extends Plugin implements SensorEventListener {
 
     private SensorManager sensorManager;    // Sensor manager
     private Sensor mSensor;						      // Acceleration sensor returned by sensor manager
-    
-    private HashMap<String, String> watches = new HashMap<String, String>();
-    private List<String> callbacks = new ArrayList<String>();
+
+    private String callbackId;              // Keeps track of the single "start" callback ID passed in from JS
 
     /**
      * Create an accelerometer listener.
@@ -93,62 +92,28 @@ public class AccelListener extends Plugin implements SensorEventListener {
      * @return 				A PluginResult object with a status and message.
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
-    	PluginResult.Status status = PluginResult.Status.NO_RESULT;
-    	String message = "";
-    	PluginResult result = new PluginResult(status, message);
-    	result.setKeepCallback(true);	
-    	try {
-    		if (action.equals("getAcceleration")) {
-    			if (this.status != AccelListener.RUNNING) {
-    				// If not running, then this is an async call, so don't worry about waiting
-    				// We drop the callback onto our stack, call start, and let start and the sensor callback fire off the callback down the road
-    				this.callbacks.add(callbackId);
-    				this.start();
-    			} else {
-    				return new PluginResult(PluginResult.Status.OK, this.getAccelerationJSON());
-    			}
-    		}
-    		else if (action.equals("addWatch")) {
-    			String watchId = args.getString(0);
-    			this.watches.put(watchId, callbackId);
-    			if (this.status != AccelListener.RUNNING) {
-    				this.start();
-    			}
-    		}
-    		else if (action.equals("clearWatch")) {
-    			String watchId = args.getString(0);
-    			if (this.watches.containsKey(watchId)) {
-    				this.watches.remove(watchId);
-    				if (this.size() == 0) {
-    					this.stop();
-    				}
-    			}
-    			return new PluginResult(PluginResult.Status.OK);
-    		} else {
-    			// Unsupported action
-    			return new PluginResult(PluginResult.Status.INVALID_ACTION);
-    		}
-    	} catch (JSONException e) {
-    		return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
-    	}
-    	return result;
-    }
+        PluginResult.Status status = PluginResult.Status.NO_RESULT;
+        String message = "";
+        PluginResult result = new PluginResult(status, message);
+        result.setKeepCallback(true);	
 
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
-     * @param action	The action to execute
-     * @return			T=returns value
-     */
-    public boolean isSynch(String action) {
-    	if (action.equals("getAcceleration") && this.status == AccelListener.RUNNING) {
-    		return true;
-    	} else if (action.equals("addWatch") && this.status == AccelListener.RUNNING) {
-        	return true;
-        } else if (action.equals("clearWatch")) {
-            return true;
+        if (action.equals("start")) {
+            this.callbackId = callbackId;
+            if (this.status != AccelListener.RUNNING) {
+                // If not running, then this is an async call, so don't worry about waiting
+                // We drop the callback onto our stack, call start, and let start and the sensor callback fire off the callback down the road
+                this.start();
+            }
         }
-        return false;
+        else if (action.equals("stop")) {
+            if (this.status == AccelListener.RUNNING) {
+                this.stop();
+            }
+        } else {
+          // Unsupported action
+            return new PluginResult(PluginResult.Status.INVALID_ACTION);
+        }
+        return result;
     }
     
     /**
@@ -162,10 +127,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
-
-    private int size() {
-    	return this.watches.size() + this.callbacks.size();
-    }
+    //
     /**
      * Start listening for acceleration sensor.
      * 
@@ -267,74 +229,47 @@ public class AccelListener extends Plugin implements SensorEventListener {
         	this.z = event.values[2];
 
         	this.win();
-
-        	if (this.size() == 0) {
-        		this.stop();
-        	}
         }
     }
 
+    // Sends an error back to JS
     private void fail(int code, String message) {
-    	// Error object
-    	JSONObject errorObj = new JSONObject();
-    	try {
-			errorObj.put("code", code);
-	    	errorObj.put("message", message);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	PluginResult err = new PluginResult(PluginResult.Status.ERROR, errorObj);
-    	
-        for (String callbackId: this.callbacks)
-        {
-        	this.error(err, callbackId);
+        // Error object
+        JSONObject errorObj = new JSONObject();
+        try {
+            errorObj.put("code", code);
+            errorObj.put("message", message);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-        this.callbacks.clear();
-        
+        PluginResult err = new PluginResult(PluginResult.Status.ERROR, errorObj);
         err.setKeepCallback(true);
-        
-        Iterator it = this.watches.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry)it.next();
-            this.error(err, (String)pairs.getValue());
-        }
+
+        this.error(err, this.callbackId);
     }
     
     private void win() {
-    	// Success return object
-    	PluginResult result = new PluginResult(PluginResult.Status.OK, this.getAccelerationJSON());
-    	
-    	for (String callbackId: this.callbacks)
-        {
-        	this.success(result, callbackId);
-        }
-        this.callbacks.clear();
-        
+        // Success return object
+        PluginResult result = new PluginResult(PluginResult.Status.OK, this.getAccelerationJSON());
         result.setKeepCallback(true);
-        
-        Iterator it = this.watches.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry)it.next();
-            this.success(result, (String)pairs.getValue());
-        }
+
+        this.success(result, this.callbackId);
     }
 
-	private void setStatus(int status) {
+    private void setStatus(int status) {
         this.status = status;
     }
 	
-	private JSONObject getAccelerationJSON() {
-		JSONObject r = new JSONObject();
-		try {
-			r.put("x", this.x);
-			r.put("y", this.y);
-			r.put("z", this.z);
-			r.put("timestamp", this.timestamp);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return r;
-	}
+    private JSONObject getAccelerationJSON() {
+        JSONObject r = new JSONObject();
+        try {
+            r.put("x", this.x);
+            r.put("y", this.y);
+            r.put("z", this.z);
+            r.put("timestamp", this.timestamp);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return r;
+    }
 }
