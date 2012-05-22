@@ -1090,13 +1090,13 @@ public class DroidGap extends Activity implements CordovaInterface {
         // If volumedown key
         else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
-            return super.onKeyUp(keyCode, event);
+            return true;
         }
 
         // If volumeup key
         else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
-            return super.onKeyUp(keyCode, event);
+            return true;
         }
 
         return false;
