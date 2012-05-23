@@ -1,1 +1,1 @@
-cscript create.js
+cscript bin\create.js %*

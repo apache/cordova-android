@@ -813,7 +813,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
 
         // Send pause event to JavaScript
-        this.appView.loadUrl("javascript:try{cordova.require('cordova/channel').onPause.fire();}catch(e){console.log('exception firing pause event from native');};");
+        this.appView.loadUrl("javascript:try{cordova.fireDocumentEvent('pause');}catch(e){console.log('exception firing pause event from native');};");
 
         // Forward to plugins
         if (this.pluginManager != null) {
@@ -858,7 +858,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
 
         // Send resume event to JavaScript
-        this.appView.loadUrl("javascript:try{cordova.require('cordova/channel').onResume.fire();}catch(e){console.log('exception firing resume event from native');};");
+        this.appView.loadUrl("javascript:try{cordova.fireDocumentEvent('resume');}catch(e){console.log('exception firing resume event from native');};");
 
         // Forward to plugins
         if (this.pluginManager != null) {
