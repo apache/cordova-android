@@ -63,6 +63,9 @@ public class App extends Plugin {
         	else if (action.equals("overrideBackbutton")) {
             	this.overrideBackbutton(args.getBoolean(0));
             }
+            else if (action.equals("overrideButton")) {
+                this.overrideButton(args.getString(0), args.getBoolean(1));
+            }
         	else if (action.equals("isBackbuttonOverridden")) {
             	boolean b = this.isBackbuttonOverridden();
             	return new PluginResult(status, b);
@@ -180,6 +183,17 @@ public class App extends Plugin {
     	((DroidGap)this.ctx).bound = override;
     }
 
+    /**
+     * Override the default behavior of the Android volume buttons.
+     * If overridden, when the volume button is pressed, the "volume[up|down]button" JavaScript event will be fired.
+     *
+     * @param button        volumeup, volumedown
+     * @param override      T=override, F=cancel override
+     */
+    public void overrideButton(String button, boolean override) {
+        LOG.i("DroidGap", "WARNING: Volume Button Default Behaviour will be overridden.  The volume event will be fired!");
+        ((DroidGap)this.ctx).bindButton(button, override);
+    }
     /**
      * Return whether the Android back button is overridden by the user.
      * 

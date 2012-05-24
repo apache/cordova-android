@@ -158,6 +158,8 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     protected LinearLayout root;
     public boolean bound = false;
+    public boolean volumeupBound = false;
+    public boolean volumedownBound = false;
     public CallbackServer callbackServer;
     protected PluginManager pluginManager;
     protected boolean cancelLoadUrl = false;
@@ -1087,18 +1089,38 @@ public class DroidGap extends Activity implements CordovaInterface {
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * Called when a key is pressed. (Key DOWN)
+     *
+     * @param keyCode
+     * @param event
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (this.appView == null) {
+            return super.onKeyDown(keyCode, event);
+        }
+
         // If volumedown key
-        else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
-            return true;
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            if (this.volumedownBound==true) {
+                // only override default behaviour is event bound
+                this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
+                return true;
+            }
         }
 
         // If volumeup key
         else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
-            return true;
+            if (this.volumeupBound==true) {
+                // only override default behaviour is event bound
+                this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
+                return true;
+            }
         }
-
         return false;
     }
 
@@ -1414,6 +1436,16 @@ public class DroidGap extends Activity implements CordovaInterface {
     public boolean isBackButtonBound() {
       // TODO Auto-generated method stub
       return this.bound;
+    }
+
+    public void bindButton(String button, boolean override) {
+      // TODO Auto-generated method stub
+      if (button.compareTo("volumeup")==0) {
+        this.volumeupBound = override;
+      }
+      else if (button.compareTo("volumedown")==0) {
+        this.volumedownBound = override;
+      }
     }
 
     protected Dialog splashDialog;

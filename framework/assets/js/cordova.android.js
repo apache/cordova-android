@@ -639,6 +639,9 @@ Channel.prototype.unsubscribe = function(g) {
     if (handler) {
         this.handlers[g] = null;
         delete this.handlers[g];
+    }
+    // useful when same handler has been set multiple times and already deleted
+    if (this.numHandlers > 0) {
         this.numHandlers--;
         if (this.events.onUnsubscribe) this.events.onUnsubscribe.call(this);
     }
@@ -1046,6 +1049,28 @@ module.exports = {
         // Add hardware MENU and SEARCH button handlers
         cordova.addDocumentEventHandler('menubutton');
         cordova.addDocumentEventHandler('searchbutton');
+
+        function bindButtonChannel(buttonName) {
+            // generic button bind used for volumeup/volumedown buttons
+            return cordova.addDocumentEventHandler(buttonName + 'button', {
+                onSubscribe:function() {
+                    // If we just attached the first handler, let native know we need to override the button.
+                    if (this.numHandlers === 1) {
+                        exec(null, null, "App", "overrideButton", [buttonName, true]);
+                    }
+                },
+                onUnsubscribe:function() {
+                    // If we just detached the last handler, let native know we no longer override the volumeup button.
+                    if (this.numHandlers === 0) {
+                        exec(null, null, "App", "overrideButton", [buttonName, false]);
+                    }
+                }
+            });
+
+        }
+        // Inject a listener for the volume buttons on the document.
+        var volumeUpButtonChannel = bindButtonChannel('volumeup');
+        var volumeDownButtonChannel = bindButtonChannel('volumedown');
 
         // Figure out if we need to shim-in localStorage and WebSQL
         // support from the native side.
@@ -3584,6 +3609,20 @@ module.exports = {
    */
   overrideBackbutton:function(override) {
     exec(null, null, "App", "overrideBackbutton", [override]);
+  },
+
+  /**
+   * Override the default behavior of the Android volume button.
+   * If overridden, when the volume button is pressed, the "volume[up|down]button" JavaScript event will be fired.
+   *
+   * Note: The user should not have to call this method.  Instead, when the user
+   *       registers for the "volume[up|down]button" event, this is automatically done.
+   *
+   * @param button          volumeup, volumedown
+   * @param override        T=override, F=cancel override
+   */
+  overrideButton:function(button, override) {
+    exec(null, null, "App", "overrideButton", [button, override]);
   },
 
   /**
