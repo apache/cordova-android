@@ -175,7 +175,7 @@ public class Storage extends Plugin {
 			System.out.println("Storage.executeSql(): Error=" +  ex.getMessage());
 			
 			// Send error message back to JavaScript
-			this.sendJavascript("cordova.require('cordova/plugin/android/storage').fail('" + ex.getMessage() + "','" + tx_id + "');");
+			this.sendJavascript("cordova.require('cordova/plugin/android/storage').failQuery('" + ex.getMessage() + "','" + tx_id + "');");
 		}
 	}
 
