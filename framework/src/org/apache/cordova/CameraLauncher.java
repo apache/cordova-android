@@ -274,8 +274,10 @@ public class CameraLauncher extends Plugin {
                 newWidth = (newHeight * origWidth) / origHeight;
             }
         }
-
-        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+        
+        Bitmap retval = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+        bitmap.recycle();
+        return retval;
     }
 
     /**

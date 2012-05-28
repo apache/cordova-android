@@ -42,7 +42,7 @@ public class Storage extends Plugin {
     private static final String CREATE = "create";
     private static final String DROP = "drop";
     private static final String TRUNCATE = "truncate";
-
+    
     SQLiteDatabase myDb = null; // Database object
     String path = null; // Database path
     String dbName = null; // Database name
@@ -141,7 +141,7 @@ public class Storage extends Plugin {
 
         // If no database path, generate from application package
         if (this.path == null) {
-            this.path = this.ctx.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
+            this.path = this.ctx.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         }
 
         this.dbName = this.path + File.pathSeparator + db + ".db";
@@ -163,18 +163,19 @@ public class Storage extends Plugin {
             if (isDDL(query)) {
                 this.myDb.execSQL(query);
                 this.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', '');");
-            }
+            } 
             else {
                 Cursor myCursor = this.myDb.rawQuery(query, params);
                 this.processResults(myCursor, tx_id);
                 myCursor.close();
             }
-        } catch (SQLiteException ex) {
+        } 
+        catch (SQLiteException ex) {
             ex.printStackTrace();
-            System.out.println("Storage.executeSql(): Error=" + ex.getMessage());
-
+            System.out.println("Storage.executeSql(): Error=" +  ex.getMessage());
+            
             // Send error message back to JavaScript
-            this.sendJavascript("cordova.require('cordova/plugin/android/storage').fail('" + ex.getMessage() + "','" + tx_id + "');");
+            this.sendJavascript("cordova.require('cordova/plugin/android/storage').failQuery('" + ex.getMessage() + "','" + tx_id + "');");
         }
     }
 

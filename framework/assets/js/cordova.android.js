@@ -1,6 +1,6 @@
-// commit 68eebbca4a3691fed773d7599dd77c0030beabe6
+// commit 95f199e1c207dc89b84e79a9a7b27d6a3cc8fe14
 
-// File generated at :: Thu May 24 2012 09:30:21 GMT-0700 (PDT)
+// File generated at :: Thu May 24 2012 21:36:17 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -5380,10 +5380,16 @@ module.exports = function(uri, successCallback, errorCallback) {
             errorCallback(new FileError(error));
         }
     };
+    // sanity check for 'not:valid:filename'
+    if(!uri || uri.split(":").length > 2) {
+        setTimeout( function() {
+            fail(FileError.ENCODING_ERR);
+        },0);
+        return;
+    }
     // if successful, return either a file or directory entry
     var success = function(entry) {
         var result;
-
         if (entry) {
             if (typeof successCallback === 'function') {
                 // create appropriate Entry object
@@ -5418,6 +5424,68 @@ var splashscreen = {
 };
 
 module.exports = splashscreen;
+});
+
+// file: lib/common/plugin/widget.js
+define("cordova/plugin/widget", function(require, exports, module) {
+var exec = require('cordova/exec'),
+    cordova = require('cordova'),
+    channel = require('cordova/channel');
+
+var Widget = function () {
+    this.author = null;
+    this.description = null;
+    this.name = null;
+    this.shortName = null;
+    this.version = null;
+    this.id = null;
+    this.authorEmail = null;
+    this.authorHref = null;
+    this._firstRun = true;
+
+    var me = this;
+
+    channel.onCordovaReady.subscribeOnce(function() {
+        me.getInfo(function (info) {
+            me.author = info.author;
+            me.description = info.description;
+            me.name = info.name;
+            me.shortName = info.shortName;
+            me.version = info.version;
+            me.id = info.id;
+            me.authorEmail = info.authorEmail;
+            me.authorHref = info.authorHref;
+
+            // should only fire this once
+            if (me._firstRun) {
+                me._firstRun = false;
+                channel.onCordovaAppInfoReady.fire();
+            }
+        },
+        function (e) {
+            // If we can't get the network info we should still tell Cordova
+            // to fire the deviceready event.
+            if (me._firstRun) {
+                me._firstRun = false;
+                channel.onCordovaAppInfoReady.fire();
+            }
+            console.log("Error initializing Widget: " + e);
+        });
+    });
+};
+
+/**
+ * Get connection info
+ *
+ * @param {Function} successCallback The function to call when the Connection data is available
+ * @param {Function} errorCallback The function to call when there is an error getting the Connection data. (OPTIONAL)
+ */
+Widget.prototype.getInfo = function (successCallback, errorCallback) {
+    // Get info
+    exec(successCallback, errorCallback, "Widget", "getApplicationInfo", []);
+};
+
+module.exports = new Widget();
 });
 
 // file: lib/common/utils.js
