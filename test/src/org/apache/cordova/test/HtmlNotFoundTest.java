@@ -8,7 +8,7 @@ import android.widget.LinearLayout;
 
 public class HtmlNotFoundTest extends ActivityInstrumentationTestCase2<htmlnotfound> {
 
-  
+  private int TIMEOUT = 1000;
   private htmlnotfound testActivity;
   private FrameLayout containerView;
   private LinearLayout innerContainer;
@@ -27,15 +27,26 @@ public class HtmlNotFoundTest extends ActivityInstrumentationTestCase2<htmlnotfo
     testView = (CordovaWebView) innerContainer.getChildAt(0);
 }
 
-public void testPreconditions(){
+  public void testPreconditions(){
     assertNotNull(innerContainer);
     assertNotNull(testView);
-}
+  }
 
-public void testUrl()
-{
-  String good_url = "file:///android_asset/www/htmlnotfound/error.html";
-  String url = testView.getUrl();
-  assertFalse(url.equals(good_url));
-}
+  public void testUrl()
+  {
+      sleep();
+      String good_url = "file:///android_asset/www/htmlnotfound/error.html";
+      String url = testView.getUrl();
+      assertNotNull(url);
+      assertFalse(url.equals(good_url));
+  }
+
+  private void sleep() {
+      try {
+        Thread.sleep(TIMEOUT);
+      } catch (InterruptedException e) {
+        fail("Unexpected Timeout");
+      }
+    }
+
 }

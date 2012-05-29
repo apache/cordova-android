@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 
 public class ErrorUrlTest extends ActivityInstrumentationTestCase2<errorurl> {
 
+  private int TIMEOUT = 1000;
   errorurl testActivity;
   private FrameLayout containerView;
   private LinearLayout innerContainer;
@@ -33,9 +34,21 @@ public class ErrorUrlTest extends ActivityInstrumentationTestCase2<errorurl> {
   
   public void testUrl()
   {
+    sleep();
     String good_url = "file:///android_asset/www/htmlnotfound/error.html";
     String url = testView.getUrl();
+    assertNotNull(url);
     assertTrue(url.equals(good_url));
   }
+  
+
+  private void sleep() {
+      try {
+        Thread.sleep(TIMEOUT);
+      } catch (InterruptedException e) {
+        fail("Unexpected Timeout");
+      }
+    }
+
   
 }
