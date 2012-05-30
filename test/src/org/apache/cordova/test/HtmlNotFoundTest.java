@@ -25,7 +25,7 @@ public class HtmlNotFoundTest extends ActivityInstrumentationTestCase2<htmlnotfo
     containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
     innerContainer = (LinearLayout) containerView.getChildAt(0);
     testView = (CordovaWebView) innerContainer.getChildAt(0);
-}
+  }
 
   public void testPreconditions(){
     assertNotNull(innerContainer);
