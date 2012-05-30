@@ -437,14 +437,14 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                 contact.put("ims", ims);
             }
             if (websites.length() > 0) {
-                contact.put("websites", websites);
+                contact.put("urls", websites);
             }
             if (photos.length() > 0) {
                 contact.put("photos", photos);
             }
     }
     catch (JSONException e) {
-      Log.e(LOG_TAG,e.getMessage(),e);
+        Log.e(LOG_TAG,e.getMessage(),e);
     }
     return contact;
   }
