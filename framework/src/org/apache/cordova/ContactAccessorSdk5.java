@@ -437,7 +437,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                 contact.put("ims", ims);
             }
             if (websites.length() > 0) {
-                contact.put("websites", websites);
+                contact.put("urls", websites);
             }
             if (photos.length() > 0) {
                 contact.put("photos", photos);
@@ -447,20 +447,25 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         }
         return contact;
     }
+    catch (JSONException e) {
+        Log.e(LOG_TAG,e.getMessage(),e);
+    }
+    return contact;
+  }
 
-    /**
-     * Take the search criteria passed into the method and create a SQL WHERE clause.
-     * @param fields the properties to search against
-     * @param searchTerm the string to search for
-     * @return an object containing the selection and selection args
-     */
-    private WhereOptions buildWhereClause(JSONArray fields, String searchTerm) {
+  /**
+   * Take the search criteria passed into the method and create a SQL WHERE clause.
+   * @param fields the properties to search against
+   * @param searchTerm the string to search for
+   * @return an object containing the selection and selection args
+   */
+  private WhereOptions buildWhereClause(JSONArray fields, String searchTerm) {
 
-        ArrayList<String> where = new ArrayList<String>();
-        ArrayList<String> whereArgs = new ArrayList<String>();
-
-        WhereOptions options = new WhereOptions();
-
+    ArrayList<String> where = new ArrayList<String>();
+    ArrayList<String> whereArgs = new ArrayList<String>();
+    
+    WhereOptions options = new WhereOptions();
+        
         /*
          * Special case where the user wants all fields returned
          */
