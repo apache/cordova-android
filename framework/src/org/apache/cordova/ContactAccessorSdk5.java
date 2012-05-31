@@ -447,12 +447,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         }
         return contact;
     }
-    catch (JSONException e) {
-        Log.e(LOG_TAG,e.getMessage(),e);
-    }
-    return contact;
-  }
-
+    
   /**
    * Take the search criteria passed into the method and create a SQL WHERE clause.
    * @param fields the properties to search against
