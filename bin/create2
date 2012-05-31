@@ -1,0 +1,107 @@
+#! /bin/sh
+#       Licensed to the Apache Software Foundation (ASF) under one
+#       or more contributor license agreements.  See the NOTICE file
+#       distributed with this work for additional information
+#       regarding copyright ownership.  The ASF licenses this file
+#       to you under the Apache License, Version 2.0 (the
+#       "License"); you may not use this file except in compliance
+#       with the License.  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#       Unless required by applicable law or agreed to in writing,
+#       software distributed under the License is distributed on an
+#       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#       KIND, either express or implied.  See the License for the
+#       specific language governing permissions and limitations
+#       under the License.
+#
+# create a cordova/android project
+# 
+# USAGE
+#   ./create [path package activity]
+#
+set -e
+
+if [ -n "$1" ] && [ "$1" == "-h" ]
+then
+    echo 'usage: create path package activity'
+    echo "Make sure the Android SDK tools folder is in your PATH!"
+    exit 0
+fi
+
+# we do not want the script to silently fail
+trap "An error occurred :-(" ERR
+
+BUILD_PATH=$( cd "$( dirname "$0" )/.." && pwd )
+ANDROID_BIN=$( which android )
+
+PROJECT_PATH=${1:-"./example"}
+PACKAGE=${2:-"org.apache.cordova.example"}
+ACTIVITY=${3:-"cordovaExample"}
+
+# clobber any existing example
+if [ -d $PROJECT_PATH ]
+then
+    echo "Project already exists! Delete and recreate"
+    exit 1
+fi
+
+PACKAGE_AS_PATH=$(echo $PACKAGE | sed 's/\./\//g')
+ACTIVITY_PATH=$PROJECT_PATH/src/$PACKAGE_AS_PATH/$ACTIVITY.java
+MANIFEST_PATH=$PROJECT_PATH/AndroidManifest.xml
+
+TARGET=$($ANDROID_BIN list targets | grep id: | tail -1 | cut -f 2 -d ' ' )
+VERSION=$(cat $BUILD_PATH/VERSION)
+
+
+# update the cordova-android framework for the desired target
+$ANDROID_BIN update project --target $TARGET --path $BUILD_PATH/framework &> /dev/null
+
+if [ ! -e $BUILD_PATH/framework/libs/commons-codec-1.6.jar ]; then
+    # Use curl to get the jar (TODO: Support Apache Mirrors)
+    echo "Downloading common-codecs-1.6 ..."
+    curl -OL http://mirror.symnds.com/software/Apache//commons/codec/binaries/commons-codec-1.6-bin.zip &> /dev/null
+    unzip commons-codec-1.6-bin.zip &> /dev/null
+    mkdir -p $BUILD_PATH/framework/libs
+    cp commons-codec-1.6/commons-codec-1.6.jar $BUILD_PATH/framework/libs
+    # cleanup yo
+    rm commons-codec-1.6-bin.zip && rm -rf commons-codec-1.6
+fi
+
+# compile cordova.js and cordova.jar
+echo "Building cordova-$VERSION.jar and cordova-$VERSION.js ..."
+(cd $BUILD_PATH/framework && ant jar &> /dev/null )
+
+# create new android project
+echo "Creating a new cordova android project ..."
+$ANDROID_BIN create project --target $TARGET --path $PROJECT_PATH --package $PACKAGE --activity $ACTIVITY &> /dev/null
+
+# copy project template
+echo "Copying assets and resources ..."
+cp -r $BUILD_PATH/bin/templates2/project/assets $PROJECT_PATH
+cp -r $BUILD_PATH/bin/templates2/project/res $PROJECT_PATH
+
+# copy cordova.js, cordova.jar and res/xml
+echo "Setting up config and plugins list ..."
+cp -r $BUILD_PATH/framework/res/xml $PROJECT_PATH/res
+
+echo "Adding cordova-$VERSION.js and cordova-$VERSION.jar ..."
+cp $BUILD_PATH/framework/assets/www/cordova-$VERSION.js $PROJECT_PATH/assets/www/cordova-$VERSION.js
+cp $BUILD_PATH/framework/cordova-$VERSION.jar $PROJECT_PATH/libs/cordova-$VERSION.jar
+
+# interpolate the activity name and package
+echo "Updating Activity and AndroidManifest ..."
+cp $BUILD_PATH/bin/templates2/project/Activity.java $ACTIVITY_PATH
+sed -i '' -e "s/__ACTIVITY__/${ACTIVITY}/g" $ACTIVITY_PATH
+sed -i '' -e "s/__ID__/${PACKAGE}/g" $ACTIVITY_PATH
+
+cp $BUILD_PATH/bin/templates2/project/AndroidManifest.xml $MANIFEST_PATH
+sed -i '' -e "s/__ACTIVITY__/${ACTIVITY}/g" $MANIFEST_PATH
+sed -i '' -e "s/__PACKAGE__/${PACKAGE}/g" $MANIFEST_PATH
+
+# cleanup
+rm $BUILD_PATH/framework/libs/commons-codec-1.6.jar
+rmdir $BUILD_PATH/framework/libs
+rm $BUILD_PATH/framework/assets/www/cordova-$VERSION.js
+rm $BUILD_PATH/framework/cordova-$VERSION.jar
