@@ -30,11 +30,8 @@ then
     exit 0
 fi
 
-# we do not want the script to silently fail
-trap "An error occurred :-(" ERR
-
 BUILD_PATH=$( cd "$( dirname "$0" )/.." && pwd )
-ANDROID_BIN=$( which android )
+VERSION=$(cat $BUILD_PATH/VERSION)
 
 PROJECT_PATH=${1:-"./example"}
 PACKAGE=${2:-"org.apache.cordova.example"}
@@ -47,13 +44,30 @@ then
     exit 1
 fi
 
+# cleanup after exit and/or on error
+function on_exit {
+    echo "Cleaning up ..."
+    [ -f $BUILD_PATH/framework/libs/commons-codec-1.6.jar ] && rm $BUILD_PATH/framework/libs/commons-codec-1.6.jar
+    [ -d $BUILD_PATH/framework/libs ] && rmdir $BUILD_PATH/framework/libs
+    [ -f $BUILD_PATH/framework/assets/www/cordova-$VERSION.js ] && rm $BUILD_PATH/framework/assets/www/cordova-$VERSION.js
+    [ -f $BUILD_PATH/framework/cordova-$VERSION.jar ] && rm $BUILD_PATH/framework/cordova-$VERSION.jar
+}
+
+function on_error {
+    echo "An error occured. Deleting project..."
+    [ -d $PROJECT_PATH ] && rm -rf $PROJECT_PATH
+}
+
+# we do not want the script to silently fail
+trap on_error ERR
+trap on_exit EXIT
+
+ANDROID_BIN=$( which android )
 PACKAGE_AS_PATH=$(echo $PACKAGE | sed 's/\./\//g')
 ACTIVITY_PATH=$PROJECT_PATH/src/$PACKAGE_AS_PATH/$ACTIVITY.java
 MANIFEST_PATH=$PROJECT_PATH/AndroidManifest.xml
 
 TARGET=$($ANDROID_BIN list targets | grep id: | tail -1 | cut -f 2 -d ' ' )
-VERSION=$(cat $BUILD_PATH/VERSION)
-
 
 # update the cordova-android framework for the desired target
 $ANDROID_BIN update project --target $TARGET --path $BUILD_PATH/framework &> /dev/null
@@ -99,9 +113,3 @@ sed -i '' -e "s/__ID__/${PACKAGE}/g" $ACTIVITY_PATH
 cp $BUILD_PATH/bin/templates2/project/AndroidManifest.xml $MANIFEST_PATH
 sed -i '' -e "s/__ACTIVITY__/${ACTIVITY}/g" $MANIFEST_PATH
 sed -i '' -e "s/__PACKAGE__/${PACKAGE}/g" $MANIFEST_PATH
-
-# cleanup
-rm $BUILD_PATH/framework/libs/commons-codec-1.6.jar
-rmdir $BUILD_PATH/framework/libs
-rm $BUILD_PATH/framework/assets/www/cordova-$VERSION.js
-rm $BUILD_PATH/framework/cordova-$VERSION.jar
