@@ -25,7 +25,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -111,7 +114,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
       dbMap.put("organizations.name", ContactsContract.CommonDataKinds.Organization.COMPANY);
       dbMap.put("organizations.department", ContactsContract.CommonDataKinds.Organization.DEPARTMENT);
       dbMap.put("organizations.title", ContactsContract.CommonDataKinds.Organization.TITLE);
-      dbMap.put("birthday", ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE);
+      dbMap.put("birthday", ContactsContract.CommonDataKinds.Event.START_DATE);
       dbMap.put("note", ContactsContract.CommonDataKinds.Note.NOTE);
       dbMap.put("photos.value", ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
       //dbMap.put("categories.value", null);
@@ -437,14 +440,14 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                 contact.put("ims", ims);
             }
             if (websites.length() > 0) {
-                contact.put("websites", websites);
+                contact.put("urls", websites);
             }
             if (photos.length() > 0) {
                 contact.put("photos", photos);
             }
     }
     catch (JSONException e) {
-      Log.e(LOG_TAG,e.getMessage(),e);
+        Log.e(LOG_TAG,e.getMessage(),e);
     }
     return contact;
   }
@@ -579,10 +582,24 @@ public class ContactAccessorSdk5 extends ContactAccessor {
           whereArgs.add(searchTerm);
           whereArgs.add(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
         }
-//        else if (key.startsWith("birthday")) {
-//          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
-//              + ContactsContract.Data.MIMETYPE + " = ? )");                 
-//        }
+        else if (key.startsWith("birthday")) {
+            try {
+                SimpleDateFormat format = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
+                Date searchDate = format.parse(searchTerm.substring(1, searchTerm.length()-1));
+                // Have to subtract one from the month as JavaScript's January is 01
+                // while Java's January is 00.
+                searchDate.setMonth(searchDate.getMonth()-1);
+                SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd");
+                
+                where.add("(" + dbMap.get(key) + " = ? AND " 
+                    + ContactsContract.Data.MIMETYPE + " = ? )");                 
+                whereArgs.add(newFormat.format(searchDate));
+                whereArgs.add(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE);
+            }
+            catch (ParseException e) {
+                Log.d(LOG_TAG, "Bad romance format");
+            }
+        }
         else if (key.startsWith("note")) {
           where.add("(" + dbMap.get(key) + " LIKE ? AND " 
               + ContactsContract.Data.MIMETYPE + " = ? )");       
@@ -1149,7 +1166,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     // Modify urls  
     JSONArray websites = null;
     try {
-      websites = contact.getJSONArray("websites");
+      websites = contact.getJSONArray("urls");
       if (websites != null) {
         for (int i=0; i<websites.length(); i++) {
           JSONObject website = (JSONObject)websites.get(i);

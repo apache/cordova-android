@@ -353,7 +353,7 @@ public class Capture extends Plugin {
         try {       
             // File properties
             obj.put("name", fp.getName());
-            obj.put("fullPath", fp.getAbsolutePath());
+            obj.put("fullPath", "file://" + fp.getAbsolutePath());
             
             // Because of an issue with MimeTypeMap.getMimeTypeFromExtension() all .3gpp files 
             // are reported as video/3gpp. I'm doing this hacky check of the URI to see if it 
