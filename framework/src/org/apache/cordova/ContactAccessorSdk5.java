@@ -1166,7 +1166,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     // Modify urls  
     JSONArray websites = null;
     try {
-      websites = contact.getJSONArray("websites");
+      websites = contact.getJSONArray("urls");
       if (websites != null) {
         for (int i=0; i<websites.length(); i++) {
           JSONObject website = (JSONObject)websites.get(i);
