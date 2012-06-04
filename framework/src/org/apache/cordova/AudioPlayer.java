@@ -85,7 +85,11 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public AudioPlayer(AudioHandler handler, String id) {
 		this.handler = handler;
 		this.id = id;
-        this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
+        } else {
+            this.tempFile = "/data/data/" + handler.ctx.getPackageName() + "/cache/tmprecording.mp3";
+        }
 	}	
 
 	/**
@@ -151,11 +155,16 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	 * 
 	 * @param file
 	 */
-	public void moveFile(String file) {
-		
+	public void moveFile(String file) {	
 		/* this is a hack to save the file as the specified name */
 		File f = new File(this.tempFile);
-		f.renameTo(new File("/sdcard/" + file));
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            f.renameTo(new File(Environment.getExternalStorageDirectory().getAbsolutePath() 
+                    + File.separator + file));
+        } else {
+            f.renameTo(new File("/data/data/" + handler.ctx.getPackageName() + "/cache/" + file));
+        }
+		
 	}
 	
     /**
