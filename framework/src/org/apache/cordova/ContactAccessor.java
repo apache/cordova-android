@@ -18,8 +18,7 @@ package org.apache.cordova;
 
 import java.util.HashMap;
 
-//import android.app.Activity;
-//import android.content.Context;
+import android.content.Context;
 import android.util.Log;
 import android.webkit.WebView;
 
@@ -48,19 +47,19 @@ public abstract class ContactAccessor {
      * @param map created by running buildPopulationSet.
      * @return true if the key data is required
      */
-    protected boolean isRequired(String key, HashMap<String, Boolean> map) {
+    protected boolean isRequired(String key, HashMap<String,Boolean> map) {
         Boolean retVal = map.get(key);
         return (retVal == null) ? false : retVal.booleanValue();
     }
-
+    
     /**
      * Create a hash map of what data needs to be populated in the Contact object
      * @param fields the list of fields to populate
      * @return the hash map of required data
      */
-    protected HashMap<String, Boolean> buildPopulationSet(JSONArray fields) {
-        HashMap<String, Boolean> map = new HashMap<String, Boolean>();
-
+    protected HashMap<String,Boolean> buildPopulationSet(JSONArray fields) {
+        HashMap<String,Boolean> map = new HashMap<String,Boolean>();
+    
         String key;
         try {
             if (fields.length() == 1 && fields.getString(0).equals("*")) {
@@ -77,9 +76,9 @@ public abstract class ContactAccessor {
                 map.put("urls", true);
                 map.put("photos", true);
                 map.put("categories", true);
-            }
+           } 
             else {
-                for (int i = 0; i < fields.length(); i++) {
+                for (int i=0; i<fields.length(); i++) {
                     key = fields.getString(i);
                     if (key.startsWith("displayName")) {
                         map.put("displayName", true);
@@ -123,12 +122,13 @@ public abstract class ContactAccessor {
                     }
                 }
             }
-        } catch (JSONException e) {
+       }
+        catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
         return map;
     }
-
+  
     /**
      * Convenience method to get a string from a JSON object.  Saves a 
      * lot of try/catch writing.
@@ -148,9 +148,10 @@ public abstract class ContactAccessor {
                     value = null;
                 }
             }
-        } catch (JSONException e) {
+       }
+        catch (JSONException e) {
             Log.d(LOG_TAG, "Could not get = " + e.getMessage());
-        }
+        }   
         return value;
     }
 
@@ -176,25 +177,21 @@ public abstract class ContactAccessor {
      */
     public abstract boolean remove(String id);
 
-    /**
+   /**
      * A class that represents the where clause to be used in the database query 
      */
     class WhereOptions {
         private String where;
         private String[] whereArgs;
-
         public void setWhere(String where) {
             this.where = where;
         }
-
         public String getWhere() {
             return where;
         }
-
         public void setWhereArgs(String[] whereArgs) {
             this.whereArgs = whereArgs;
         }
-
         public String[] getWhereArgs() {
             return whereArgs;
         }

@@ -25,7 +25,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -85,39 +88,39 @@ public class ContactAccessorSdk5 extends ContactAccessor {
      */
     private static final Map<String, String> dbMap = new HashMap<String, String>();
     static {
-        dbMap.put("id", ContactsContract.Data.CONTACT_ID);
-        dbMap.put("displayName", ContactsContract.Contacts.DISPLAY_NAME);
-        dbMap.put("name", ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME);
-        dbMap.put("name.formatted", ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME);
-        dbMap.put("name.familyName", ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME);
-        dbMap.put("name.givenName", ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME);
-        dbMap.put("name.middleName", ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME);
-        dbMap.put("name.honorificPrefix", ContactsContract.CommonDataKinds.StructuredName.PREFIX);
-        dbMap.put("name.honorificSuffix", ContactsContract.CommonDataKinds.StructuredName.SUFFIX);
-        dbMap.put("nickname", ContactsContract.CommonDataKinds.Nickname.NAME);
-        dbMap.put("phoneNumbers", ContactsContract.CommonDataKinds.Phone.NUMBER);
-        dbMap.put("phoneNumbers.value", ContactsContract.CommonDataKinds.Phone.NUMBER);
-        dbMap.put("emails", ContactsContract.CommonDataKinds.Email.DATA);
-        dbMap.put("emails.value", ContactsContract.CommonDataKinds.Email.DATA);
-        dbMap.put("addresses", ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS);
-        dbMap.put("addresses.formatted", ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS);
-        dbMap.put("addresses.streetAddress", ContactsContract.CommonDataKinds.StructuredPostal.STREET);
-        dbMap.put("addresses.locality", ContactsContract.CommonDataKinds.StructuredPostal.CITY);
-        dbMap.put("addresses.region", ContactsContract.CommonDataKinds.StructuredPostal.REGION);
-        dbMap.put("addresses.postalCode", ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE);
-        dbMap.put("addresses.country", ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY);
-        dbMap.put("ims", ContactsContract.CommonDataKinds.Im.DATA);
-        dbMap.put("ims.value", ContactsContract.CommonDataKinds.Im.DATA);
-        dbMap.put("organizations", ContactsContract.CommonDataKinds.Organization.COMPANY);
-        dbMap.put("organizations.name", ContactsContract.CommonDataKinds.Organization.COMPANY);
-        dbMap.put("organizations.department", ContactsContract.CommonDataKinds.Organization.DEPARTMENT);
-        dbMap.put("organizations.title", ContactsContract.CommonDataKinds.Organization.TITLE);
-        dbMap.put("birthday", ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE);
-        dbMap.put("note", ContactsContract.CommonDataKinds.Note.NOTE);
-        dbMap.put("photos.value", ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
-        //dbMap.put("categories.value", null);
-        dbMap.put("urls", ContactsContract.CommonDataKinds.Website.URL);
-        dbMap.put("urls.value", ContactsContract.CommonDataKinds.Website.URL);
+      dbMap.put("id", ContactsContract.Data.CONTACT_ID);
+      dbMap.put("displayName", ContactsContract.Contacts.DISPLAY_NAME);
+      dbMap.put("name", ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME);
+      dbMap.put("name.formatted", ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME);
+      dbMap.put("name.familyName", ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME);
+      dbMap.put("name.givenName", ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME);
+      dbMap.put("name.middleName", ContactsContract.CommonDataKinds.StructuredName.MIDDLE_NAME);
+      dbMap.put("name.honorificPrefix", ContactsContract.CommonDataKinds.StructuredName.PREFIX);
+      dbMap.put("name.honorificSuffix", ContactsContract.CommonDataKinds.StructuredName.SUFFIX);
+      dbMap.put("nickname", ContactsContract.CommonDataKinds.Nickname.NAME);
+      dbMap.put("phoneNumbers", ContactsContract.CommonDataKinds.Phone.NUMBER);
+      dbMap.put("phoneNumbers.value", ContactsContract.CommonDataKinds.Phone.NUMBER);
+      dbMap.put("emails", ContactsContract.CommonDataKinds.Email.DATA);
+      dbMap.put("emails.value", ContactsContract.CommonDataKinds.Email.DATA);
+      dbMap.put("addresses", ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS);
+      dbMap.put("addresses.formatted", ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS);
+      dbMap.put("addresses.streetAddress", ContactsContract.CommonDataKinds.StructuredPostal.STREET);
+      dbMap.put("addresses.locality", ContactsContract.CommonDataKinds.StructuredPostal.CITY);
+      dbMap.put("addresses.region", ContactsContract.CommonDataKinds.StructuredPostal.REGION);
+      dbMap.put("addresses.postalCode", ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE);
+      dbMap.put("addresses.country", ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY);
+      dbMap.put("ims", ContactsContract.CommonDataKinds.Im.DATA);
+      dbMap.put("ims.value", ContactsContract.CommonDataKinds.Im.DATA);
+      dbMap.put("organizations", ContactsContract.CommonDataKinds.Organization.COMPANY);
+      dbMap.put("organizations.name", ContactsContract.CommonDataKinds.Organization.COMPANY);
+      dbMap.put("organizations.department", ContactsContract.CommonDataKinds.Organization.DEPARTMENT);
+      dbMap.put("organizations.title", ContactsContract.CommonDataKinds.Organization.TITLE);
+      dbMap.put("birthday", ContactsContract.CommonDataKinds.Event.START_DATE);
+      dbMap.put("note", ContactsContract.CommonDataKinds.Note.NOTE);
+      dbMap.put("photos.value", ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
+      //dbMap.put("categories.value", null);
+      dbMap.put("urls", ContactsContract.CommonDataKinds.Website.URL);
+      dbMap.put("urls.value", ContactsContract.CommonDataKinds.Website.URL);
     }
 
     /**
@@ -536,67 +539,71 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                     where.add("(" + dbMap.get(key) + " LIKE ? )");
                     whereArgs.add(searchTerm);
                 }
-                else if (key.startsWith("name")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
-                }
-                else if (key.startsWith("nickname")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE);
-                }
-                else if (key.startsWith("phoneNumbers")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
-                }
-                else if (key.startsWith("emails")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-                }
-                else if (key.startsWith("addresses")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
-                }
-                else if (key.startsWith("ims")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE);
-                }
-                else if (key.startsWith("organizations")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
-                }
-                //        else if (key.startsWith("birthday")) {
-//          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
-//              + ContactsContract.Data.MIMETYPE + " = ? )");                 
-//        }
-                else if (key.startsWith("note")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE);
-                }
-                else if (key.startsWith("urls")) {
-                    where.add("(" + dbMap.get(key) + " LIKE ? AND "
-                            + ContactsContract.Data.MIMETYPE + " = ? )");
-                    whereArgs.add(searchTerm);
-                    whereArgs.add(ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-                }
+        else if (key.startsWith("name")) {
+          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+              + ContactsContract.Data.MIMETYPE + " = ? )");
+          whereArgs.add(searchTerm);
+          whereArgs.add(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
+        }
+        else if (key.startsWith("nickname")) {
+          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+              + ContactsContract.Data.MIMETYPE + " = ? )");       
+          whereArgs.add(searchTerm);
+          whereArgs.add(ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE);
+        }
+        else if (key.startsWith("phoneNumbers")) {
+          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+              + ContactsContract.Data.MIMETYPE + " = ? )");       
+          whereArgs.add(searchTerm);
+          whereArgs.add(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+        }
+        else if (key.startsWith("emails")) {
+          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+              + ContactsContract.Data.MIMETYPE + " = ? )");       
+          whereArgs.add(searchTerm);
+          whereArgs.add(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        }
+        else if (key.startsWith("addresses")) {
+          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+              + ContactsContract.Data.MIMETYPE + " = ? )");       
+          whereArgs.add(searchTerm);
+          whereArgs.add(ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
+        }
+        else if (key.startsWith("ims")) {
+          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+              + ContactsContract.Data.MIMETYPE + " = ? )");       
+          whereArgs.add(searchTerm);
+          whereArgs.add(ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE);
+        }
+        else if (key.startsWith("organizations")) {
+          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+              + ContactsContract.Data.MIMETYPE + " = ? )");       
+          whereArgs.add(searchTerm);
+          whereArgs.add(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
+        }
+        else if (key.startsWith("birthday")) {
+            try {
+                SimpleDateFormat format = new SimpleDateFormat("EEEE, MMMM dd, yyyy");
+                Date searchDate = format.parse(searchTerm.substring(1, searchTerm.length()-1));
+                // Have to subtract one from the month as JavaScript's January is 01
+                // while Java's January is 00.
+                searchDate.setMonth(searchDate.getMonth()-1);
+                SimpleDateFormat newFormat = new SimpleDateFormat("yyyy-MM-dd");
+                
+                where.add("(" + dbMap.get(key) + " = ? AND " 
+                    + ContactsContract.Data.MIMETYPE + " = ? )");                 
+                whereArgs.add(newFormat.format(searchDate));
+                whereArgs.add(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE);
             }
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
+            catch (ParseException e) {
+                Log.d(LOG_TAG, "Bad romance format");
+            }
+        }
+        else if (key.startsWith("note")) {
+          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
+              + ContactsContract.Data.MIMETYPE + " = ? )");       
+          whereArgs.add(searchTerm);
+          whereArgs.add(ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE);
         }
 
         // Creating the where string
@@ -1128,18 +1135,47 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             Log.d(LOG_TAG, "Could not get emails");
         }
 
-        // Modify note
-        String note = getJsonString(contact, "note");
-        ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " +
-                        ContactsContract.Data.MIMETYPE + "=?",
-                        new String[] { id, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE })
-                .withValue(ContactsContract.CommonDataKinds.Note.NOTE, note)
-                .build());
+    // Modify note
+    String note = getJsonString(contact, "note");
+    ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+        .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + 
+            ContactsContract.Data.MIMETYPE + "=?", 
+            new String[]{id,ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE})
+            .withValue(ContactsContract.CommonDataKinds.Note.NOTE, note)
+        .build());
 
-        // Modify nickname
-        String nickname = getJsonString(contact, "nickname");
-        if (nickname != null) {
+    // Modify nickname
+    String nickname = getJsonString(contact, "nickname");
+    if (nickname != null) {
+      ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+          .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " + 
+              ContactsContract.Data.MIMETYPE + "=?", 
+              new String[]{id,ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE})
+              .withValue(ContactsContract.CommonDataKinds.Nickname.NAME, nickname)
+              .build());
+    }
+      
+    // Modify urls  
+    JSONArray websites = null;
+    try {
+      websites = contact.getJSONArray("urls");
+      if (websites != null) {
+        for (int i=0; i<websites.length(); i++) {
+          JSONObject website = (JSONObject)websites.get(i);
+          String websiteId = getJsonString(website, "id");
+          // This is a new website so do a DB insert
+          if (websiteId==null) {
+            ContentValues contentValues = new ContentValues();
+              contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+              contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+              contentValues.put(ContactsContract.CommonDataKinds.Website.DATA, getJsonString(website, "value"));
+                contentValues.put(ContactsContract.CommonDataKinds.Website.TYPE, getContactType(getJsonString(website, "type")));
+
+              ops.add(ContentProviderOperation.newInsert(
+                      ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());            
+          }
+          // This is an existing website so do a DB update
+          else {
             ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
                     .withSelection(ContactsContract.Data.CONTACT_ID + "=? AND " +
                             ContactsContract.Data.MIMETYPE + "=?",

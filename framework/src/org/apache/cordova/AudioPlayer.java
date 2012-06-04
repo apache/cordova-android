@@ -37,8 +37,8 @@ import java.io.IOException;
  * Only one file can be played or recorded per class instance.
  * 
  * Local audio files must reside in one of two places:
- * 		android_asset: 		file name must start with /android_asset/sound.mp3
- * 		sdcard:				file name is just sound.mp3
+ *      android_asset:      file name must start with /android_asset/sound.mp3
+ *      sdcard:             file name is just sound.mp3
  */
 public class AudioPlayer implements OnCompletionListener, OnPreparedListener, OnErrorListener {
 
@@ -56,43 +56,47 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     private static int MEDIA_DURATION = 2;
     private static int MEDIA_POSITION = 3;
     private static int MEDIA_ERROR = 9;
-
+    
     // Media error codes
-    private static int MEDIA_ERR_NONE_ACTIVE = 0;
-    private static int MEDIA_ERR_ABORTED = 1;
-//    private static int MEDIA_ERR_NETWORK = 2;
-//    private static int MEDIA_ERR_DECODE = 3;
-//    private static int MEDIA_ERR_NONE_SUPPORTED = 4;
+    private static int MEDIA_ERR_NONE_ACTIVE    = 0;
+    private static int MEDIA_ERR_ABORTED        = 1;
+    private static int MEDIA_ERR_NETWORK        = 2;
+    private static int MEDIA_ERR_DECODE         = 3;
+    private static int MEDIA_ERR_NONE_SUPPORTED = 4;
+    
+    private AudioHandler handler;                   // The AudioHandler object
+    private String id;                              // The id of this player (used to identify Media object in JavaScript)
+    private int state = MEDIA_NONE;                 // State of recording or playback
+    private String audioFile = null;                // File name to play or record to
+    private float duration = -1;                    // Duration of audio
 
-    private AudioHandler handler;					// The AudioHandler object
-    private String id;								// The id of this player (used to identify Media object in JavaScript)
-    private int state = MEDIA_NONE;					// State of recording or playback
-    private String audioFile = null;				// File name to play or record to
-    private float duration = -1;					// Duration of audio
-
-    private MediaRecorder recorder = null;			// Audio recording object
-    private String tempFile = null;					// Temporary recording file name
-
-    private MediaPlayer mPlayer = null;				// Audio player object
+    private MediaRecorder recorder = null;          // Audio recording object
+    private String tempFile = null;                 // Temporary recording file name
+    
+    private MediaPlayer mPlayer = null;             // Audio player object
     private boolean prepareOnly = false;
 
     /**
      * Constructor.
      * 
-     * @param handler			The audio handler object
-     * @param id				The id of this audio player
+     * @param handler           The audio handler object
+     * @param id                The id of this audio player
      */
     public AudioPlayer(AudioHandler handler, String id) {
         this.handler = handler;
         this.id = id;
-        this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
-    }
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
+        } else {
+            this.tempFile = "/data/data/" + handler.ctx.getPackageName() + "/cache/tmprecording.mp3";
+        }
+    }   
 
     /**
      * Destroy player and stop audio playing or recording.
      */
     public void destroy() {
-
+        
         // Stop any play or record
         if (this.mPlayer != null) {
             if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
@@ -112,14 +116,14 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     /**
      * Start recording the specified file.
      * 
-     * @param file				The name of the file
+     * @param file              The name of the file
      */
     public void startRecording(String file) {
         if (this.mPlayer != null) {
             Log.d(LOG_TAG, "AudioPlayer Error: Can't record in play mode.");
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
         }
-
+        
         // Make sure we're not already recording
         else if (this.recorder == null) {
             this.audioFile = file;
@@ -138,26 +142,31 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");            
         }
         else {
             Log.d(LOG_TAG, "AudioPlayer Error: Already recording.");
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");            
         }
     }
-
+    
     /**
      * Save temporary recorded file to specified name
      * 
      * @param file
      */
-    public void moveFile(String file) {
-
+    public void moveFile(String file) { 
         /* this is a hack to save the file as the specified name */
         File f = new File(this.tempFile);
-        f.renameTo(new File("/sdcard/" + file));
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            f.renameTo(new File(Environment.getExternalStorageDirectory().getAbsolutePath() 
+                    + File.separator + file));
+        } else {
+            f.renameTo(new File("/data/data/" + handler.ctx.getPackageName() + "/cache/" + file));
+        }
+        
     }
-
+    
     /**
      * Stop recording and save to the file specified when recording started.
      */
@@ -178,7 +187,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     /**
      * Start or resume playing audio file.
      * 
-     * @param file				The name of the audio file.
+     * @param file              The name of the audio file.
      */
     public void startPlaying(String file) {
         if (this.recorder != null) {
@@ -297,7 +306,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     /**
      * Callback to be invoked when playback of a media source has completed.
      * 
-     * @param mPlayer			The MediaPlayer that reached the end of the file 
+     * @param mPlayer           The MediaPlayer that reached the end of the file 
      */
     public void onCompletion(MediaPlayer mPlayer) {
         this.setState(MEDIA_STOPPED);
@@ -306,7 +315,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     /**
      * Get current position of playback.
      * 
-     * @return 					position in msec or -1 if not playing
+     * @return                  position in msec or -1 if not playing
      */
     public long getCurrentPosition() {
         if ((this.state == MEDIA_RUNNING) || (this.state == MEDIA_PAUSED)) {
@@ -323,8 +332,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      * Determine if playback file is streaming or local.
      * It is streaming if file name starts with "http://"
      * 
-     * @param file				The file name
-     * @return					T=streaming, F=local
+     * @param file              The file name
+     * @return                  T=streaming, F=local
      */
     public boolean isStreaming(String file) {
         if (file.contains("http://") || file.contains("https://")) {
@@ -338,10 +347,10 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     /**
       * Get the duration of the audio file.
       * 
-      * @param file				The name of the audio file.
-      * @return					The duration in msec.
-      * 							-1=can't be determined
-      * 							-2=not allowed
+      * @param file             The name of the audio file.
+      * @return                 The duration in msec.
+      *                             -1=can't be determined
+      *                             -2=not allowed
       */
     public float getDuration(String file) {
 
@@ -369,7 +378,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     /**
      * Callback to be invoked when the media source is ready for playback. 
      * 
-     * @param mPlayer			The MediaPlayer that is ready for playback 
+     * @param mPlayer           The MediaPlayer that is ready for playback 
      */
     public void onPrepared(MediaPlayer mPlayer) {
         // Listen for playback completion
@@ -407,9 +416,9 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      * Callback to be invoked when there has been an error during an asynchronous operation
      *  (other errors will throw exceptions at method call time).
      *  
-     * @param mPlayer			the MediaPlayer the error pertains to
-     * @param arg1				the type of error that has occurred: (MEDIA_ERROR_UNKNOWN, MEDIA_ERROR_SERVER_DIED)
-     * @param arg2				an extra code, specific to the error.
+     * @param mPlayer           the MediaPlayer the error pertains to
+     * @param arg1              the type of error that has occurred: (MEDIA_ERROR_UNKNOWN, MEDIA_ERROR_SERVER_DIED)
+     * @param arg2              an extra code, specific to the error.
      */
     public boolean onError(MediaPlayer mPlayer, int arg1, int arg2) {
         Log.d(LOG_TAG, "AudioPlayer.onError(" + arg1 + ", " + arg2 + ")");
