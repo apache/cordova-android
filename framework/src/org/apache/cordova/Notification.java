@@ -36,11 +36,11 @@ import android.os.Vibrator;
  * This class provides access to notifications on the device.
  */
 public class Notification extends Plugin {
-  
+
   public int confirmResult = -1;
   public ProgressDialog spinnerDialog = null;
-  public ProgressDialog progressDialog = null;  
-  
+  public ProgressDialog progressDialog = null;
+
   /**
    * Constructor.
    */
@@ -49,7 +49,7 @@ public class Notification extends Plugin {
 
   /**
    * Executes the request and returns PluginResult.
-   * 
+   *
    * @param action    The action to execute.
    * @param args      JSONArry of arguments for the plugin.
    * @param callbackId  The callback id used when calling back into JavaScript.
@@ -57,8 +57,8 @@ public class Notification extends Plugin {
    */
   public PluginResult execute(String action, JSONArray args, String callbackId) {
     PluginResult.Status status = PluginResult.Status.OK;
-    String result = "";   
-    
+    String result = "";
+
     try {
       if (action.equals("beep")) {
         this.beep(args.getLong(0));
@@ -101,7 +101,7 @@ public class Notification extends Plugin {
 
   /**
    * Identifies if action to be executed returns a value and should be run synchronously.
-   * 
+   *
    * @param action  The action to execute
    * @return      T=returns value
    */
@@ -138,13 +138,13 @@ public class Notification extends Plugin {
 
   /**
    * Beep plays the default notification ringtone.
-   * 
+   *
    * @param count     Number of times to play notification
    */
   public void beep(long count) {
     Uri ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
     Ringtone notification = RingtoneManager.getRingtone(this.ctx.getContext(), ringtone);
-    
+
     // If phone is not set to silent mode
     if (notification != null) {
       for (long i = 0; i < count; ++i) {
@@ -160,10 +160,10 @@ public class Notification extends Plugin {
       }
     }
   }
-  
+
   /**
    * Vibrates the device for the specified amount of time.
-   * 
+   *
    * @param time      Time to vibrate in ms.
    */
   public void vibrate(long time){
@@ -174,22 +174,22 @@ public class Notification extends Plugin {
         Vibrator vibrator = (Vibrator) this.ctx.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(time);
   }
-  
+
   /**
    * Builds and shows a native Android alert with given Strings
    * @param message     The message the alert should display
    * @param title     The title of the alert
-   * @param buttonLabel   The label of the button 
+   * @param buttonLabel   The label of the button
    * @param callbackId  The callback id
    */
   public synchronized void alert(final String message, final String title, final String buttonLabel, final String callbackId) {
 
     final CordovaInterface ctx = this.ctx;
     final Notification notification = this;
-    
+
     Runnable runnable = new Runnable() {
       public void run() {
-    
+
         AlertDialog.Builder dlg = new AlertDialog.Builder(ctx.getContext());
         dlg.setMessage(message);
         dlg.setTitle(title);
@@ -212,7 +212,7 @@ public class Notification extends Plugin {
    * Builds and shows a native Android confirm dialog with given title, message, buttons.
    * This dialog only shows up to 3 buttons.  Any labels after that will be ignored.
    * The index of the button pressed will be returned to the JavaScript callback identified by callbackId.
-   * 
+   *
    * @param message     The message the dialog should display
    * @param title     The title of the dialog
    * @param buttonLabels  A comma separated list of button labels (Up to 3 buttons)
@@ -244,7 +244,7 @@ public class Notification extends Plugin {
 
         // Second button
         if (fButtons.length > 1) {
-          dlg.setNeutralButton(fButtons[1], 
+          dlg.setNeutralButton(fButtons[1],
               new AlertDialog.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
               dialog.dismiss();
@@ -274,7 +274,7 @@ public class Notification extends Plugin {
 
   /**
    * Show the spinner.
-   * 
+   *
    * @param title     Title of the dialog
    * @param message   The message of the dialog
    */
@@ -287,8 +287,8 @@ public class Notification extends Plugin {
     final CordovaInterface ctx = this.ctx;
     Runnable runnable = new Runnable() {
       public void run() {
-        notification.spinnerDialog = ProgressDialog.show(ctx.getContext(), title , message, true, true, 
-          new DialogInterface.OnCancelListener() { 
+        notification.spinnerDialog = ProgressDialog.show(ctx.getContext(), title , message, true, true,
+          new DialogInterface.OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
               notification.spinnerDialog = null;
             }
@@ -297,7 +297,7 @@ public class Notification extends Plugin {
       };
     this.ctx.runOnUiThread(runnable);
   }
-  
+
   /**
    * Stop spinner.
    */
@@ -310,7 +310,7 @@ public class Notification extends Plugin {
 
   /**
    * Show the progress dialog.
-   * 
+   *
    * @param title     Title of the dialog
    * @param message   The message of the dialog
    */
@@ -331,7 +331,7 @@ public class Notification extends Plugin {
         notification.progressDialog.setMax(100);
         notification.progressDialog.setProgress(0);
         notification.progressDialog.setOnCancelListener(
-          new DialogInterface.OnCancelListener() { 
+          new DialogInterface.OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
               notification.progressDialog = null;
             }
@@ -341,18 +341,18 @@ public class Notification extends Plugin {
     };
     this.ctx.runOnUiThread(runnable);
   }
-  
+
   /**
    * Set value of progress bar.
-   * 
+   *
    * @param value     0-100
    */
   public synchronized void progressValue(int value) {
     if (this.progressDialog != null) {
       this.progressDialog.setProgress(value);
-    }   
+    }
   }
-  
+
   /**
    * Stop progress dialog.
    */

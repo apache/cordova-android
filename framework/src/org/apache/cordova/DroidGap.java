@@ -70,29 +70,29 @@ import android.widget.LinearLayout;
  * This class is the main Android activity that represents the Cordova
  * application.  It should be extended by the user to load the specific
  * html file that contains the application.
- * 
+ *
  * As an example:
- * 
+ *
  *     package org.apache.cordova.examples;
  *     import android.app.Activity;
  *     import android.os.Bundle;
  *     import org.apache.cordova.*;
- *     
+ *
  *     public class Examples extends DroidGap {
  *       @Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
- *                  
+ *
  *         // Set properties for activity
  *         super.setStringProperty("loadingDialog", "Title,Message"); // show loading dialog
  *         super.setStringProperty("errorUrl", "file:///android_asset/www/error.html"); // if error loading file in super.loadUrl().
  *
  *         // Initialize activity
  *         super.init();
- *         
+ *
  *         // Clear cache if you want
  *         super.appView.clearCache(true);
- *         
+ *
  *         // Load your application
  *         super.setIntegerProperty("splashscreen", R.drawable.splash); // load splash.jpg image from the resource drawable directory
  *         super.loadUrl("file:///android_asset/www/index.html", 3000); // show splash screen 3 sec before loading app
@@ -100,15 +100,15 @@ import android.widget.LinearLayout;
  *     }
  *
  * Properties: The application can be configured using the following properties:
- * 
- *      // Display a native loading dialog when loading app.  Format for value = "Title,Message".  
+ *
+ *      // Display a native loading dialog when loading app.  Format for value = "Title,Message".
  *      // (String - default=null)
  *      super.setStringProperty("loadingDialog", "Wait,Loading Demo...");
- * 
- *      // Display a native loading dialog when loading sub-pages.  Format for value = "Title,Message".  
+ *
+ *      // Display a native loading dialog when loading sub-pages.  Format for value = "Title,Message".
  *      // (String - default=null)
  *      super.setStringProperty("loadingPageDialog", "Loading page...");
- *  
+ *
  *      // Load a splash screen image from the resource drawable directory.
  *      // (Integer - default=0)
  *      super.setIntegerProperty("splashscreen", R.drawable.splash);
@@ -116,21 +116,21 @@ import android.widget.LinearLayout;
  *      // Set the background color.
  *      // (Integer - default=0 or BLACK)
  *      super.setIntegerProperty("backgroundColor", Color.WHITE);
- * 
+ *
  *      // Time in msec to wait before triggering a timeout error when loading
  *      // with super.loadUrl().  (Integer - default=20000)
  *      super.setIntegerProperty("loadUrlTimeoutValue", 60000);
- * 
- *      // URL to load if there's an error loading specified URL with loadUrl().  
+ *
+ *      // URL to load if there's an error loading specified URL with loadUrl().
  *      // Should be a local URL starting with file://. (String - default=null)
  *      super.setStringProperty("errorUrl", "file:///android_asset/www/error.html");
- * 
+ *
  *      // Enable app to keep running in background. (Boolean - default=true)
  *      super.setBooleanProperty("keepRunning", false);
- *      
+ *
  * Cordova.xml configuration:
  *      Cordova uses a configuration file at res/xml/cordova.xml to specify the following settings.
- *      
+ *
  *      Approved list of URLs that can be loaded into DroidGap
  *          <access origin="http://server regexp" subdomains="true" />
  *      Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
@@ -141,7 +141,7 @@ import android.widget.LinearLayout;
  *      Before using a new plugin, a new element must be added to the file.
  *          name attribute is the service name passed to Cordova.exec() in JavaScript
  *          value attribute is the Java class name to call.
- *      
+ *
  *      <plugins>
  *          <plugin name="App" value="org.apache.cordova.App"/>
  *          ...
@@ -149,7 +149,7 @@ import android.widget.LinearLayout;
  */
 public class DroidGap extends Activity implements CordovaInterface {
     public static String TAG = "DroidGap";
-    
+
     // The webview for our app
     protected WebView appView;
     protected WebViewClient webViewClient;
@@ -167,15 +167,15 @@ public class DroidGap extends Activity implements CordovaInterface {
     // ie http://server/path/index.html#abc?query
     private String url = null;
     private Stack<String> urls = new Stack<String>();
-    
+
     // Url was specified from extras (activity was started programmatically)
     private String initUrl = null;
-    
+
     private static int ACTIVITY_STARTING = 0;
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
     private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
-    
+
     // The base of the initial URL for our app.
     // Does not include file name.  Ends with /
     // ie http://server/path/
@@ -187,14 +187,14 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     // Flag indicates that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
-    
-    // Default background color for activity 
+
+    // Default background color for activity
     // (this is not the color for the webview, which is set in HTML)
     private int backgroundColor = Color.BLACK;
-    
+
     /** The authorization tokens. */
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
-    
+
     /*
      * The variables below are used to cache some of the activity properties.
      */
@@ -205,7 +205,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     // LoadUrl timeout value in msec (default of 20 sec)
     protected int loadUrlTimeoutValue = 20000;
-    
+
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
@@ -216,7 +216,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Sets the authentication token.
-     * 
+     *
      * @param authenticationToken
      *            the authentication token
      * @param host
@@ -225,21 +225,21 @@ public class DroidGap extends Activity implements CordovaInterface {
      *            the realm
      */
     public void setAuthenticationToken(AuthenticationToken authenticationToken, String host, String realm) {
-        
+
         if(host == null) {
             host = "";
         }
-        
+
         if(realm == null) {
             realm = "";
         }
-        
+
         authenticationTokens.put(host.concat(realm), authenticationToken);
     }
-    
+
     /**
      * Removes the authentication token.
-     * 
+     *
      * @param host
      *            the host
      * @param realm
@@ -249,16 +249,16 @@ public class DroidGap extends Activity implements CordovaInterface {
     public AuthenticationToken removeAuthenticationToken(String host, String realm) {
         return authenticationTokens.remove(host.concat(realm));
     }
-    
+
     /**
      * Gets the authentication token.
-     * 
+     *
      * In order it tries:
      * 1- host + realm
      * 2- host
      * 3- realm
      * 4- no host, no realm
-     * 
+     *
      * @param host
      *            the host
      * @param realm
@@ -267,38 +267,38 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     public AuthenticationToken getAuthenticationToken(String host, String realm) {
         AuthenticationToken token = null;
-        
+
         token = authenticationTokens.get(host.concat(realm));
-        
+
         if(token == null) {
             // try with just the host
             token = authenticationTokens.get(host);
-            
+
             // Try the realm
             if(token == null) {
                 token = authenticationTokens.get(realm);
             }
-            
+
             // if no host found, just query for default
-            if(token == null) {      
+            if(token == null) {
                 token = authenticationTokens.get("");
             }
         }
-        
+
         return token;
     }
-    
+
     /**
      * Clear all authentication tokens.
      */
     public void clearAuthenticationTokens() {
         authenticationTokens.clear();
     }
-    
-    
-    /** 
-     * Called when the activity is first created. 
-     * 
+
+
+    /**
+     * Called when the activity is first created.
+     *
      * @param savedInstanceState
      */
     @Override
@@ -324,14 +324,14 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
 
         // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
-        Display display = getWindowManager().getDefaultDisplay(); 
+        Display display = getWindowManager().getDefaultDisplay();
         int width = display.getWidth();
         int height = display.getHeight();
-        
+
         root = new LinearLayoutSoftKeyboardDetect(this, width, height);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(this.backgroundColor);
-        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
                 ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
 
         // If url was passed in to intent, then init webview, which will load the url
@@ -345,35 +345,35 @@ public class DroidGap extends Activity implements CordovaInterface {
         // Setup the hardware volume controls to handle volume control
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
-    
+
     /**
      * Create and initialize web container with default web view objects.
      */
     public void init() {
-    	this.init(new WebView(DroidGap.this), new CordovaWebViewClient(this), new CordovaChromeClient(DroidGap.this));
+        this.init(new WebView(DroidGap.this), new CordovaWebViewClient(this), new CordovaChromeClient(DroidGap.this));
     }
-    
+
     /**
      * Initialize web container with web view objects.
-     * 
+     *
      * @param webView
      * @param webViewClient
      * @param webChromeClient
      */
     public void init(WebView webView, WebViewClient webViewClient, WebChromeClient webChromeClient) {
         LOG.d(TAG, "DroidGap.init()");
-        
+
         // Set up web container
-       	this.appView = webView;
+           this.appView = webView;
         this.appView.setId(100);
 
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.FILL_PARENT,
-                ViewGroup.LayoutParams.FILL_PARENT, 
+                ViewGroup.LayoutParams.FILL_PARENT,
                 1.0F));
 
-       	this.appView.setWebChromeClient(webChromeClient);
-       	this.setWebViewClient(this.appView, webViewClient);
+           this.appView.setWebChromeClient(webChromeClient);
+           this.setWebViewClient(this.appView, webViewClient);
 
         this.appView.setInitialScale(0);
         this.appView.setVerticalScrollBarEnabled(false);
@@ -384,18 +384,18 @@ public class DroidGap extends Activity implements CordovaInterface {
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
-        
+
         //Set the nav dump for HTC
         settings.setNavDump(true);
 
         // Enable database
         settings.setDatabaseEnabled(true);
-        String databasePath = this.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath(); 
+        String databasePath = this.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         settings.setDatabasePath(databasePath);
 
         // Enable DOM storage
         settings.setDomStorageEnabled(true);
-        
+
         // Enable built-in geolocation
         settings.setGeolocationEnabled(true);
 
@@ -403,17 +403,17 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.appView.setVisibility(View.INVISIBLE);
         root.addView(this.appView);
         setContentView(root);
-        
+
         // Clear cancel flag
         this.cancelLoadUrl = false;
-        
+
         // Create plugin manager
-        this.pluginManager = new PluginManager(this.appView, this);        
+        this.pluginManager = new PluginManager(this.appView, this);
     }
-    
+
     /**
      * Set the WebViewClient.
-     * 
+     *
      * @param appView
      * @param client
      */
@@ -440,18 +440,18 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (timeout > 0) {
             this.loadUrlTimeoutValue = timeout;
         }
-        
+
         // If keepRunning
         this.keepRunning = this.getBooleanProperty("keepRunning", true);
     }
-    
+
     /**
      * Load the url into the webview.
-     * 
+     *
      * @param url
      */
     public void loadUrl(String url) {
-        
+
         // If first page of app, then set URL to load to be the one passed in
         if (this.initUrl == null || (this.urls.size() > 0)) {
             this.loadUrlIntoView(url);
@@ -461,10 +461,10 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.loadUrlIntoView(this.initUrl);
         }
     }
-    
+
     /**
      * Load the url into the webview.
-     * 
+     *
      * @param url
      */
     private void loadUrlIntoView(final String url) {
@@ -485,7 +485,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (!url.startsWith("javascript:")) {
             LOG.d(TAG, "DroidGap: url=%s baseUrl=%s", url, baseUrl);
         }
-        
+
         // Load URL on UI thread
         final DroidGap me = this;
         this.runOnUiThread(new Runnable() {
@@ -502,7 +502,7 @@ public class DroidGap extends Activity implements CordovaInterface {
                 // Track URLs loaded instead of using appView history
                 me.urls.push(url);
                 me.appView.clearHistory();
-            
+
                 // Create callback server and plugin manager
                 if (me.callbackServer == null) {
                     me.callbackServer = new CallbackServer();
@@ -512,14 +512,14 @@ public class DroidGap extends Activity implements CordovaInterface {
                     me.callbackServer.reinit(url);
                 }
                 me.pluginManager.init();
-                
+
                 // If loadingDialog property, then show the App loading dialog for first page of app
                 String loading = null;
                 if (me.urls.size() == 1) {
                     loading = me.getStringProperty("loadingDialog", null);
                 }
                 else {
-                    loading = me.getStringProperty("loadingPageDialog", null);                  
+                    loading = me.getStringProperty("loadingPageDialog", null);
                 }
                 if (loading != null) {
 
@@ -566,16 +566,16 @@ public class DroidGap extends Activity implements CordovaInterface {
             }
         });
     }
-    
+
     /**
      * Load the url into the webview after waiting for period of time.
      * This is used to display the splashscreen for certain amount of time.
-     * 
+     *
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
     public void loadUrl(final String url, int time) {
-        
+
         // If first page of app, then set URL to load to be the one passed in
         if (this.initUrl == null || (this.urls.size() > 0)) {
             this.loadUrlIntoView(url, time);
@@ -589,7 +589,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     /**
      * Load the url into the webview after waiting for period of time.
      * This is used to display the splashscreen for certain amount of time.
-     * 
+     *
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
@@ -597,30 +597,30 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Clear cancel flag
         this.cancelLoadUrl = false;
-        
+
         // If not first page of app, then load immediately
         if (this.urls.size() > 0) {
             this.loadUrlIntoView(url);
         }
-        
+
         if (!url.startsWith("javascript:")) {
             LOG.d(TAG, "DroidGap.loadUrl(%s, %d)", url, time);
         }
-        
+
         this.handleActivityParameters();
         if (this.splashscreen != 0) {
             this.showSplashScreen(time);
         }
         this.loadUrlIntoView(url);
     }
-    
+
     /**
      * Cancel loadUrl before it has been loaded.
      */
     public void cancelLoadUrl() {
         this.cancelLoadUrl = true;
     }
-    
+
     /**
      * Clear the resource cache.
      */
@@ -637,16 +637,16 @@ public class DroidGap extends Activity implements CordovaInterface {
     public void clearHistory() {
         this.urls.clear();
         this.appView.clearHistory();
-        
+
         // Leave current url on history stack
         if (this.url != null) {
             this.urls.push(this.url);
         }
     }
-    
+
     /**
      * Go to previous page in history.  (We manage our own history)
-     * 
+     *
      * @return true if we went back, false if we are already at top
      */
     public boolean backHistory() {
@@ -654,7 +654,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         // Check webview first to see if there is a history
         // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
         if (this.appView.canGoBack()) {
-            this.appView.goBack();  
+            this.appView.goBack();
             return true;
         }
 
@@ -665,24 +665,24 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.loadUrl(url);
             return true;
         }
-        
+
         return false;
     }
 
     @Override
     /**
-     * Called by the system when the device configuration changes while your activity is running. 
-     * 
+     * Called by the system when the device configuration changes while your activity is running.
+     *
      * @param Configuration newConfig
      */
     public void onConfigurationChanged(Configuration newConfig) {
         //don't reload the current page when the orientation is changed
         super.onConfigurationChanged(newConfig);
     }
-    
+
     /**
      * Get boolean property for activity.
-     * 
+     *
      * @param name
      * @param defaultValue
      * @return
@@ -701,7 +701,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Get int property for activity.
-     * 
+     *
      * @param name
      * @param defaultValue
      * @return
@@ -720,7 +720,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Get string property for activity.
-     * 
+     *
      * @param name
      * @param defaultValue
      * @return
@@ -739,7 +739,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Get double property for activity.
-     * 
+     *
      * @param name
      * @param defaultValue
      * @return
@@ -758,27 +758,27 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Set boolean property on activity.
-     * 
+     *
      * @param name
      * @param value
      */
     public void setBooleanProperty(String name, boolean value) {
         this.getIntent().putExtra(name, value);
     }
-    
+
     /**
      * Set int property on activity.
-     * 
+     *
      * @param name
      * @param value
      */
     public void setIntegerProperty(String name, int value) {
         this.getIntent().putExtra(name, value);
     }
-    
+
     /**
      * Set string property on activity.
-     * 
+     *
      * @param name
      * @param value
      */
@@ -788,7 +788,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Set double property on activity.
-     * 
+     *
      * @param name
      * @param value
      */
@@ -798,11 +798,11 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     @Override
     /**
-     * Called when the system is about to start resuming a previous activity. 
+     * Called when the system is about to start resuming a previous activity.
      */
     protected void onPause() {
         super.onPause();
-        
+
         // Don't process pause if shutting down, since onDestroy() will be called
         if (this.activityState == ACTIVITY_EXITING) {
             return;
@@ -817,9 +817,9 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Forward to plugins
         if (this.pluginManager != null) {
-        	this.pluginManager.onPause(this.keepRunning);
+            this.pluginManager.onPause(this.keepRunning);
         }
-        
+
         // If app doesn't want to run in background
         if (!this.keepRunning) {
 
@@ -837,17 +837,17 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         //Forward to plugins
         if (this.pluginManager != null) {
-        	this.pluginManager.onNewIntent(intent);
+            this.pluginManager.onNewIntent(intent);
         }
     }
-    
+
     @Override
     /**
-     * Called when the activity will start interacting with the user. 
+     * Called when the activity will start interacting with the user.
      */
     protected void onResume() {
         super.onResume();
-        
+
         if (this.activityState == ACTIVITY_STARTING) {
             this.activityState = ACTIVITY_RUNNING;
             return;
@@ -862,9 +862,9 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Forward to plugins
         if (this.pluginManager != null) {
-        	this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
+            this.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
         }
-        
+
         // If app doesn't want to run in background
         if (!this.keepRunning || this.activityResultKeepRunning) {
 
@@ -878,14 +878,14 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.appView.resumeTimers();
         }
     }
-    
+
     @Override
     /**
-     * The final call you receive before your activity is destroyed. 
+     * The final call you receive before your activity is destroyed.
      */
     public void onDestroy() {
         super.onDestroy();
-        
+
         if (this.appView != null) {
 
 
@@ -906,13 +906,13 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Send a message to all plugins. 
-     * 
+     * Send a message to all plugins.
+     *
      * @param id            The message id
      * @param data          The message data
      */
     public void postMessage(String id, Object data) {
-        
+
         // Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.postMessage(id, data);
@@ -922,23 +922,23 @@ public class DroidGap extends Activity implements CordovaInterface {
     /**
      * @deprecated
      * Add services to res/xml/plugins.xml instead.
-     * 
+     *
      * Add a class that implements a service.
-     * 
+     *
      * @param serviceType
      * @param className
      */
     @Deprecated
     public void addService(String serviceType, String className) {
         if (this.pluginManager != null) {
-        	this.pluginManager.addService(serviceType, className);
+            this.pluginManager.addService(serviceType, className);
         }
     }
-    
+
     /**
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)
-     * 
+     *
      * @param message
      */
     public void sendJavascript(String statement) {
@@ -949,7 +949,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Load the specified URL in the Cordova webview or a new browser instance.
-     * 
+     *
      * NOTE: If openExternal is false, only URLs listed in whitelist can be loaded.
      *
      * @param url           The url to load.
@@ -959,24 +959,24 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     public void showWebPage(String url, boolean openExternal, boolean clearHistory, HashMap<String, Object> params) { //throws android.content.ActivityNotFoundException {
         LOG.d(TAG, "showWebPage(%s, %b, %b, HashMap", url, openExternal, clearHistory);
-        
+
         // If clearing history
         if (clearHistory) {
             this.clearHistory();
         }
-        
+
         // If loading into our webview
         if (!openExternal) {
-            
+
             // Make sure url is in whitelist
             if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || isUrlWhiteListed(url)) {
                 // TODO: What about params?
-                
+
                 // Clear out current url from history, since it will be replacing it
                 if (clearHistory) {
                     this.urls.clear();
                 }
-                
+
                 // Load new URL
                 this.loadUrl(url);
             }
@@ -992,7 +992,7 @@ public class DroidGap extends Activity implements CordovaInterface {
                 }
             }
         }
-        
+
         // Load in default view intent
         else {
             try {
@@ -1004,10 +1004,10 @@ public class DroidGap extends Activity implements CordovaInterface {
             }
         }
     }
-    
+
     /**
      * Show the spinner.  Must be called from the UI thread.
-     * 
+     *
      * @param title         Title of the dialog
      * @param message       The message of the dialog
      */
@@ -1017,8 +1017,8 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.spinnerDialog = null;
         }
         final DroidGap me = this;
-        this.spinnerDialog = ProgressDialog.show(DroidGap.this, title , message, true, true, 
-                new DialogInterface.OnCancelListener() { 
+        this.spinnerDialog = ProgressDialog.show(DroidGap.this, title , message, true, true,
+                new DialogInterface.OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
                 me.spinnerDialog = null;
             }
@@ -1034,7 +1034,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.spinnerDialog = null;
         }
     }
-    
+
     /**
      * End this activity by calling finish for activity
      */
@@ -1042,10 +1042,10 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.activityState = ACTIVITY_EXITING;
         this.finish();
     }
-    
+
     /**
      * Called when a key is de-pressed. (Key UP)
-     * 
+     *
      * @param keyCode
      * @param event
      */
@@ -1091,14 +1091,14 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Any calls to Activity.startActivityForResult must use method below, so 
-     * the result can be routed to them correctly.  
-     * 
+     * Any calls to Activity.startActivityForResult must use method below, so
+     * the result can be routed to them correctly.
+     *
      * This is done to eliminate the need to modify DroidGap.java to receive activity results.
-     * 
+     *
      * @param intent            The intent to start
      * @param requestCode       Identifies who to send the result to
-     * 
+     *
      * @throws RuntimeException
      */
     @Override
@@ -1108,9 +1108,9 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Launch an activity for which you would like a result when it finished. When this activity exits, 
+     * Launch an activity for which you would like a result when it finished. When this activity exits,
      * your onActivityResult() method will be called.
-     *  
+     *
      * @param command           The command object
      * @param intent            The intent to start
      * @param requestCode       The request code that is passed to callback to identify the activity
@@ -1118,12 +1118,12 @@ public class DroidGap extends Activity implements CordovaInterface {
     public void startActivityForResult(IPlugin command, Intent intent, int requestCode) {
         this.activityResultCallback = command;
         this.activityResultKeepRunning = this.keepRunning;
-        
+
         // If multitasking turned on, then disable it for activities that return results
         if (command != null) {
             this.keepRunning = false;
         }
-        
+
         // Start activity
         super.startActivityForResult(intent, requestCode);
     }
@@ -1131,9 +1131,9 @@ public class DroidGap extends Activity implements CordovaInterface {
      @Override
     /**
      * Called when an activity you launched exits, giving you the requestCode you started it with,
-     * the resultCode it returned, and any additional data from it. 
-     * 
-     * @param requestCode       The request code originally supplied to startActivityForResult(), 
+     * the resultCode it returned, and any additional data from it.
+     *
+     * @param requestCode       The request code originally supplied to startActivityForResult(),
      *                          allowing you to identify who this result came from.
      * @param resultCode        The integer result code returned by the child activity through its setResult().
      * @param data              An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
@@ -1143,7 +1143,7 @@ public class DroidGap extends Activity implements CordovaInterface {
          IPlugin callback = this.activityResultCallback;
          if (callback != null) {
              callback.onActivityResult(requestCode, resultCode, intent);
-         }        
+         }
      }
 
      public void setActivityResultCallback(IPlugin plugin) {
@@ -1151,12 +1151,12 @@ public class DroidGap extends Activity implements CordovaInterface {
      }
 
      /**
-      * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
+      * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable).
       * The errorCode parameter corresponds to one of the ERROR_* constants.
       *
       * @param errorCode    The error code corresponding to an ERROR_* value.
       * @param description  A String describing the error.
-      * @param failingUrl   The url that failed to load. 
+      * @param failingUrl   The url that failed to load.
       */
      public void onReceivedError(final int errorCode, final String description, final String failingUrl) {
          final DroidGap me = this;
@@ -1168,7 +1168,7 @@ public class DroidGap extends Activity implements CordovaInterface {
              // Load URL on UI thread
              me.runOnUiThread(new Runnable() {
                  public void run() {
-                     me.showWebPage(errorUrl, false, true, null); 
+                     me.showWebPage(errorUrl, false, true, null);
                  }
              });
          }
@@ -1189,7 +1189,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
      /**
       * Display an error dialog and optionally exit application.
-      * 
+      *
       * @param title
       * @param message
       * @param button
@@ -1217,8 +1217,8 @@ public class DroidGap extends Activity implements CordovaInterface {
              }
          });
      }
-     
-     
+
+
     /**
      * Load Cordova configuration from res/xml/cordova.xml.
      * Approved list of URLs that can be loaded into DroidGap
@@ -1276,7 +1276,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Add entry to approved list of URLs (whitelist)
-     * 
+     *
      * @param origin        URL regular expression to allow
      * @param subdomains    T=include all subdomains under origin
      */
@@ -1305,7 +1305,7 @@ public class DroidGap extends Activity implements CordovaInterface {
                 whiteList.add(Pattern.compile("^https?://"+origin));
               }
               LOG.d(TAG, "Origin to allow: %s", origin);
-          }    
+          }
         }
       } catch(Exception e) {
         LOG.d(TAG, "Failed to add origin %s", origin);
@@ -1314,7 +1314,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Determine if URL is in approved list of URLs to load.
-     * 
+     *
      * @param url
      * @return
      */
@@ -1339,13 +1339,13 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
         return false;
     }
-    
+
     /*
      * URL stack manipulators
      */
-    
-    /** 
-     * Returns the top url on the stack without removing it from 
+
+    /**
+     * Returns the top url on the stack without removing it from
      * the stack.
      */
     public String peekAtUrlStack() {
@@ -1354,38 +1354,35 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
         return "";
     }
-    
+
     /**
      * Add a url to the stack
-     * 
+     *
      * @param url
      */
     public void pushUrl(String url) {
         urls.push(url);
     }
-    
-    /* 
+
+    /*
      * Hook in DroidGap for menu plugins
-     * 
+     *
      */
-    
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         this.postMessage("onCreateOptionsMenu", menu);
         return super.onCreateOptionsMenu(menu);
     }
-    
+
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu)
-    {
+    public boolean onPrepareOptionsMenu(Menu menu) {
         this.postMessage("onPrepareOptionsMenu", menu);
         return super.onPrepareOptionsMenu(menu);
     }
-    
+
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
+    public boolean onOptionsItemSelected(MenuItem item) {
         this.postMessage("onOptionsItemSelected", item);
         return true;
     }
@@ -1405,7 +1402,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     protected Dialog splashDialog;
-    
+
     /**
      * Removes the Dialog that displays the splash screen
      */
@@ -1415,36 +1412,36 @@ public class DroidGap extends Activity implements CordovaInterface {
             splashDialog = null;
         }
     }
-     
+
     /**
      * Shows the splash screen over the full Activity
      */
     protected void showSplashScreen(int time) {
         // Get reference to display
         Display display = getWindowManager().getDefaultDisplay();
-        
+
         // Create the layout for the dialog
         LinearLayout root = new LinearLayout(this);
         root.setMinimumHeight(display.getHeight());
         root.setMinimumWidth(display.getWidth());
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(this.getIntegerProperty("backgroundColor", Color.BLACK));
-        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, 
+        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
                 ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
         root.setBackgroundResource(this.splashscreen);
 
         // Create and show the dialog
-        splashDialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);       
+        splashDialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
         splashDialog.setContentView(root);
         splashDialog.setCancelable(false);
         splashDialog.show();
-     
+
         // Set Runnable to remove splash screen just in case
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
-          public void run() {
-            removeSplashScreen();
-          }
+            public void run() {
+                removeSplashScreen();
+            }
         }, time);
     }
 }

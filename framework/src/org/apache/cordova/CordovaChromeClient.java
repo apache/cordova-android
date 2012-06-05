@@ -40,15 +40,15 @@ import android.widget.EditText;
  * This class is the WebChromeClient that implements callbacks for our web view.
  */
 public class CordovaChromeClient extends WebChromeClient {
-    
+
 
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
     private DroidGap ctx;
-    
+
     /**
      * Constructor.
-     * 
+     *
      * @param ctx
      */
     public CordovaChromeClient(Context ctx) {
@@ -57,7 +57,7 @@ public class CordovaChromeClient extends WebChromeClient {
 
     /**
      * Tell the client to display a javascript alert dialog.
-     * 
+     *
      * @param view
      * @param url
      * @param message
@@ -97,11 +97,11 @@ public class CordovaChromeClient extends WebChromeClient {
         dlg.create();
         dlg.show();
         return true;
-    }       
+    }
 
     /**
      * Tell the client to display a confirm dialog to the user.
-     * 
+     *
      * @param view
      * @param url
      * @param message
@@ -113,13 +113,13 @@ public class CordovaChromeClient extends WebChromeClient {
         dlg.setMessage(message);
         dlg.setTitle("Confirm");
         dlg.setCancelable(true);
-        dlg.setPositiveButton(android.R.string.ok, 
+        dlg.setPositiveButton(android.R.string.ok,
             new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     result.confirm();
                 }
             });
-        dlg.setNegativeButton(android.R.string.cancel, 
+        dlg.setNegativeButton(android.R.string.cancel,
             new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     result.cancel();
@@ -149,13 +149,13 @@ public class CordovaChromeClient extends WebChromeClient {
     }
 
     /**
-     * Tell the client to display a prompt dialog to the user. 
-     * If the client returns true, WebView will assume that the client will 
+     * Tell the client to display a prompt dialog to the user.
+     * If the client returns true, WebView will assume that the client will
      * handle the prompt dialog and call the appropriate JsPromptResult method.
-     * 
-     * Since we are hacking prompts for our own purposes, we should not be using them for 
+     *
+     * Since we are hacking prompts for our own purposes, we should not be using them for
      * this purpose, perhaps we should hack console.log to do this instead!
-     * 
+     *
      * @param view
      * @param url
      * @param message
@@ -164,15 +164,15 @@ public class CordovaChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-        
+
         // Security check to make sure any requests are coming from the page initially
         // loaded in webview and not another loaded in an iframe.
         boolean reqOk = false;
         if (url.startsWith("file://") || url.indexOf(this.ctx.baseUrl) == 0 || ctx.isUrlWhiteListed(url)) {
             reqOk = true;
         }
-        
-        // Calling PluginManager.exec() to call a native service using 
+
+        // Calling PluginManager.exec() to call a native service using
         // prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
         if (reqOk && defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
             JSONArray array;
@@ -188,13 +188,13 @@ public class CordovaChromeClient extends WebChromeClient {
                 e.printStackTrace();
             }
         }
-        
-        // Polling for JavaScript messages 
+
+        // Polling for JavaScript messages
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
             String r = ctx.callbackServer.getJavascript();
             result.confirm(r);
         }
-        
+
         // Calling into CallbackServer
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
             String r = "";
@@ -212,7 +212,7 @@ public class CordovaChromeClient extends WebChromeClient {
             }
             result.confirm(r);
         }
-        
+
         // Cordova JS has initialized, so show webview
         // (This solves white flash seen when rendering HTML)
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_init:")) {
@@ -235,14 +235,14 @@ public class CordovaChromeClient extends WebChromeClient {
             }
             dlg.setView(input);
             dlg.setCancelable(false);
-            dlg.setPositiveButton(android.R.string.ok, 
+            dlg.setPositiveButton(android.R.string.ok,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                     String usertext = input.getText().toString();
                     res.confirm(usertext);
                 }
             });
-            dlg.setNegativeButton(android.R.string.cancel, 
+            dlg.setNegativeButton(android.R.string.cancel,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                     res.cancel();
@@ -253,7 +253,7 @@ public class CordovaChromeClient extends WebChromeClient {
         }
         return true;
     }
-    
+
     /**
      * Handle database quota exceeded notification.
      *
@@ -288,14 +288,14 @@ public class CordovaChromeClient extends WebChromeClient {
     // console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
     @Override
     public void onConsoleMessage(String message, int lineNumber, String sourceID)
-    {       
+    {
         LOG.d(TAG, "%s: Line %d : %s", sourceID, lineNumber, message);
         super.onConsoleMessage(message, lineNumber, sourceID);
     }
-    
+
     @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage)
-    {       
+    {
         if(consoleMessage.message() != null)
             LOG.d(TAG, consoleMessage.message());
         return super.onConsoleMessage(consoleMessage);
@@ -303,8 +303,8 @@ public class CordovaChromeClient extends WebChromeClient {
 
     @Override
     /**
-     * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin. 
-     * 
+     * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin.
+     *
      * @param origin
      * @param callback
      */

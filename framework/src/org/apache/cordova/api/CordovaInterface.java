@@ -20,8 +20,6 @@ package org.apache.cordova.api;
 
 import java.util.HashMap;
 
-import android.app.Activity;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -30,7 +28,6 @@ import android.content.IntentFilter;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.hardware.SensorManager;
 import android.net.Uri;
 
 
@@ -43,62 +40,62 @@ public interface CordovaInterface {
     /**
      * @deprecated
      * Add services to res/xml/plugins.xml instead.
-     * 
+     *
      * Add a class that implements a service.
-     * 
+     *
      * @param serviceType
      * @param className
      */
     @Deprecated
     abstract public void addService(String serviceType, String className);
-    
+
     /**
      * Send JavaScript statement back to JavaScript.
-     * 
+     *
      * @param message
      */
     abstract public void sendJavascript(String statement);
 
     /**
-     * Launch an activity for which you would like a result when it finished. When this activity exits, 
+     * Launch an activity for which you would like a result when it finished. When this activity exits,
      * your onActivityResult() method will be called.
-     *  
+     *
      * @param command			The command object
      * @param intent			The intent to start
      * @param requestCode		The request code that is passed to callback to identify the activity
      */
     abstract public void startActivityForResult(IPlugin command, Intent intent, int requestCode);
-    
+
     /**
-     * Launch an activity for which you would not like a result when it finished. 
-     *  
+     * Launch an activity for which you would not like a result when it finished.
+     *
      * @param intent            The intent to start
      */
     abstract public void startActivity(Intent intent);
-    
+
     /**
      * Set the plugin to be called when a sub-activity exits.
-     * 
+     *
      * @param plugin			The plugin on which onActivityResult is to be called
      */
     abstract public void setActivityResultCallback(IPlugin plugin);
 
     /**
      * Load the specified URL in the Cordova webview.
-     * 
+     *
      * @param url				The URL to load.
      */
     abstract public void loadUrl(String url);
-    
+
     /**
-     * Send a message to all plugins. 
-     * 
+     * Send a message to all plugins.
+     *
      * @param id            The message id
      * @param data          The message data
      */
     abstract public void postMessage(String id, Object data);
-    
-    
+
+
     public abstract Resources getResources();
 
     public abstract String getPackageName();
@@ -106,7 +103,7 @@ public interface CordovaInterface {
     public abstract Object getSystemService(String service);
 
     public abstract Context getContext();
-    
+
     public abstract Context getBaseContext();
 
     public abstract Intent registerReceiver(BroadcastReceiver receiver,
@@ -118,7 +115,7 @@ public interface CordovaInterface {
 
     public abstract Cursor managedQuery(Uri uri, String[] projection, String selection,
         String[] selectionArgs, String sortOrder);
-    
+
     public abstract void runOnUiThread(Runnable runnable);
 
     public abstract AssetManager getAssets();
@@ -143,5 +140,5 @@ public interface CordovaInterface {
     public abstract Context getApplicationContext();
 
     public abstract boolean isUrlWhiteListed(String source);
- 
+
 }

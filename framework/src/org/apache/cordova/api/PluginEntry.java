@@ -43,13 +43,13 @@ public class PluginEntry {
     public IPlugin plugin = null;
 
     /**
-     * Flag that indicates the plugin object should be created when PluginManager is initialized. 
+     * Flag that indicates the plugin object should be created when PluginManager is initialized.
      */
     public boolean onload = false;
 
     /**
      * Constructor
-     * 
+     *
      * @param service               The name of the service
      * @param pluginClass           The plugin class name
      * @param onload                Create plugin object when HTML page is loaded
@@ -63,7 +63,7 @@ public class PluginEntry {
     /**
      * Create plugin object.
      * If plugin is already created, then just return it.
-     * 
+     *
      * @return                      The plugin object
      */
     @SuppressWarnings("unchecked")
@@ -88,7 +88,7 @@ public class PluginEntry {
 
     /**
      * Get the class.
-     * 
+     *
      * @param clazz
      * @return
      * @throws ClassNotFoundException
@@ -105,7 +105,7 @@ public class PluginEntry {
     /**
      * Get the interfaces that a class implements and see if it implements the
      * org.apache.cordova.api.Plugin interface.
-     * 
+     *
      * @param c                     The class to check the interfaces of.
      * @return                      Boolean indicating if the class implements org.apache.cordova.api.Plugin
      */

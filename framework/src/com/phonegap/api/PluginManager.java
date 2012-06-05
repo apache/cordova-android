@@ -24,7 +24,7 @@ import android.webkit.WebView;
 
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
- * 
+ *
  * Calling native plugin code can be done by calling PluginManager.exec(...)
  * from JavaScript.
  */

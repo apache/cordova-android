@@ -43,18 +43,18 @@ public class CompassListener extends Plugin implements SensorEventListener {
     public static int STARTING = 1;
     public static int RUNNING = 2;
     public static int ERROR_FAILED_TO_START = 3;
-    
+
     public long TIMEOUT = 30000;        // Timeout in msec to shut off listener
-    
+
     int status;                         // status of listener
     float heading;                      // most recent heading value
     long timeStamp;                     // time of most recent value
     long lastAccessTime;                // time the value was last retrieved
     int accuracy;                       // accuracy of the sensor
-    
+
     private SensorManager sensorManager;// Sensor manager
     Sensor mSensor;                     // Compass sensor returned by sensor manager
-    
+
     /**
      * Constructor.
      */
@@ -67,7 +67,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
-     * 
+     *
      * @param ctx The context of the main Activity.
      */
     public void setContext(CordovaInterface ctx) {
@@ -77,7 +77,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action        The action to execute.
      * @param args          JSONArry of arguments for the plugin.
      * @param callbackId    The callback id used when calling back into JavaScript.
@@ -85,8 +85,8 @@ public class CompassListener extends Plugin implements SensorEventListener {
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";     
-        
+        String result = "";
+
         try {
             if (action.equals("start")) {
                 this.start();
@@ -116,7 +116,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
                         }
                     }
                     if (timeout == 0) {
-                        return new PluginResult(PluginResult.Status.IO_EXCEPTION, CompassListener.ERROR_FAILED_TO_START);                     
+                        return new PluginResult(PluginResult.Status.IO_EXCEPTION, CompassListener.ERROR_FAILED_TO_START);
                     }
                 }
                 return new PluginResult(status, getCompassHeading());
@@ -140,7 +140,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
+     *
      * @param action    The action to execute
      * @return          T=returns value
      */
@@ -159,7 +159,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
         }
         return false;
     }
-    
+
     /**
      * Called when listener is to be shut down and object is being destroyed.
      */
@@ -173,11 +173,11 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Start listening for compass sensor.
-     * 
+     *
      * @return          status of listener
      */
     public int start() {
-        
+
         // If already starting or running, then just return
         if ((this.status == CompassListener.RUNNING) || (this.status == CompassListener.STARTING)) {
             return this.status;
@@ -198,10 +198,10 @@ public class CompassListener extends Plugin implements SensorEventListener {
         else {
             this.setStatus(CompassListener.ERROR_FAILED_TO_START);
         }
-        
+
         return this.status;
     }
-    
+
     /**
      * Stop listening to compass sensor.
      */
@@ -211,15 +211,15 @@ public class CompassListener extends Plugin implements SensorEventListener {
         }
         this.setStatus(CompassListener.STOPPED);
     }
-    
-    
+
+
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // TODO Auto-generated method stub  
+        // TODO Auto-generated method stub
     }
 
     /**
      * Sensor listener event.
-     * 
+     *
      * @param SensorEvent event
      */
     public void onSensorChanged(SensorEvent event) {
@@ -237,38 +237,38 @@ public class CompassListener extends Plugin implements SensorEventListener {
             this.stop();
         }
     }
-    
+
     /**
      * Get status of compass sensor.
-     * 
+     *
      * @return          status
      */
     public int getStatus() {
         return this.status;
     }
-    
+
     /**
      * Get the most recent compass heading.
-     * 
+     *
      * @return          heading
      */
     public float getHeading() {
         this.lastAccessTime = System.currentTimeMillis();
         return this.heading;
     }
-    
+
     /**
      * Set the timeout to turn off compass sensor if getHeading() hasn't been called.
-     * 
+     *
      * @param timeout       Timeout in msec.
      */
     public void setTimeout(long timeout) {
         this.TIMEOUT = timeout;
     }
-    
+
     /**
      * Get the timeout to turn off compass sensor if getHeading() hasn't been called.
-     * 
+     *
      * @return timeout in msec
      */
     public long getTimeout() {
@@ -285,23 +285,23 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Create the CompassHeading JSON object to be returned to JavaScript
-     * 
+     *
      * @return a compass heading
      */
     private JSONObject getCompassHeading() {
         JSONObject obj = new JSONObject();
-        
+
         try {
             obj.put("magneticHeading", this.getHeading());
             obj.put("trueHeading", this.getHeading());
-            // Since the magnetic and true heading are always the same our and accuracy 
+            // Since the magnetic and true heading are always the same our and accuracy
             // is defined as the difference between true and magnetic always return zero
             obj.put("headingAccuracy", 0);
             obj.put("timestamp", this.timeStamp);
         } catch (JSONException e) {
             // Should never happen
         }
-        
+
         return obj;
     }
 

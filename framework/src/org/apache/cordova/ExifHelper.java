@@ -41,31 +41,31 @@ public class ExifHelper {
     private String make = null;
     private String model = null;
     private String orientation = null;
-    private String whiteBalance = null;    
-    
+    private String whiteBalance = null;
+
     private ExifInterface inFile = null;
     private ExifInterface outFile = null;
-    
+
     /**
      * The file before it is compressed
-     * 
-     * @param filePath 
+     *
+     * @param filePath
      * @throws IOException
      */
     public void createInFile(String filePath) throws IOException {
         this.inFile = new ExifInterface(filePath);
     }
-    
-    /** 
+
+    /**
      * The file after it has been compressed
-     * 
+     *
      * @param filePath
      * @throws IOException
      */
     public void createOutFile(String filePath) throws IOException {
         this.outFile = new ExifInterface(filePath);
     }
-    
+
     /**
      * Reads all the EXIF data from the input file.
      */
@@ -88,12 +88,12 @@ public class ExifHelper {
         this.make = inFile.getAttribute(ExifInterface.TAG_MAKE);
         this.model = inFile.getAttribute(ExifInterface.TAG_MODEL);
         this.orientation = inFile.getAttribute(ExifInterface.TAG_ORIENTATION);
-        this.whiteBalance = inFile.getAttribute(ExifInterface.TAG_WHITE_BALANCE);        
+        this.whiteBalance = inFile.getAttribute(ExifInterface.TAG_WHITE_BALANCE);
     }
-    
+
     /**
      * Writes the previously stored EXIF data to the output file.
-     * 
+     *
      * @throws IOException
      */
     public void writeExifData() throws IOException {
@@ -101,7 +101,7 @@ public class ExifHelper {
         if (this.outFile == null) {
             return;
         }
-        
+
         if (this.aperature != null) {
             this.outFile.setAttribute(ExifInterface.TAG_APERTURE, this.aperature);
         }
@@ -159,7 +159,7 @@ public class ExifHelper {
         if (this.whiteBalance != null) {
             this.outFile.setAttribute(ExifInterface.TAG_WHITE_BALANCE, this.whiteBalance);
         }
-        
+
         this.outFile.saveAttributes();
     }
 }

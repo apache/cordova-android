@@ -41,7 +41,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 
@@ -727,7 +726,7 @@ public class FileUtils extends Plugin {
         filePath = stripFileProtocol(filePath);
 
         if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + ctx.getPackageName() + "/cache") ||
-                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) || 
+                filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) ||
                 filePath.equals("/data/data/" + ctx.getPackageName())) {
             return true;
         }
@@ -736,7 +735,7 @@ public class FileUtils extends Plugin {
 
     /**
      * This method removes the "file://" from the passed in filePath
-     * 
+     *
      * @param filePath to be checked.
      * @return
      */
@@ -746,10 +745,10 @@ public class FileUtils extends Plugin {
         }
         return filePath;
     }
-    
+
     /**
      * Create a File object from the passed in path
-     * 
+     *
      * @param filePath
      * @return
      */
@@ -840,7 +839,7 @@ public class FileUtils extends Plugin {
         else {
             throw new IOException("No filesystem of type requested");
         }
- 
+
         return fs;
     }
 
@@ -974,7 +973,7 @@ public class FileUtils extends Plugin {
     /**/
     public long write(String filename, String data, int offset) throws FileNotFoundException, IOException {
         filename = stripFileProtocol(filename);
-        
+
         boolean append = false;
         if (offset > 0) {
             this.truncateFile(filename, offset);

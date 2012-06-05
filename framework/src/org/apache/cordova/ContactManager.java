@@ -46,7 +46,7 @@ public class ContactManager extends Plugin {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action    The action to execute.
      * @param args      JSONArry of arguments for the plugin.
      * @param callbackId  The callback id used when calling back into JavaScript.
@@ -57,7 +57,7 @@ public class ContactManager extends Plugin {
         String result = "";
 
         /**
-         * Check to see if we are on an Android 1.X device.  If we are return an error as we 
+         * Check to see if we are on an Android 1.X device.  If we are return an error as we
          * do not support this as of Cordova 1.0.
          */
         if (android.os.Build.VERSION.RELEASE.startsWith("1.")) {

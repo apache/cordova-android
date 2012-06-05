@@ -45,23 +45,23 @@ public class Capture extends Plugin {
     private static final String VIDEO_MP4  = "video/mp4";
     private static final String AUDIO_3GPP = "audio/3gpp";
     private static final String IMAGE_JPEG = "image/jpeg";
-    
+
     private static final int CAPTURE_AUDIO = 0;     // Constant for capture audio
     private static final int CAPTURE_IMAGE = 1;     // Constant for capture image
     private static final int CAPTURE_VIDEO = 2;     // Constant for capture video
     private static final String LOG_TAG = "Capture";
-    
+
     private static final int CAPTURE_INTERNAL_ERR = 0;
     private static final int CAPTURE_APPLICATION_BUSY = 1;
     private static final int CAPTURE_INVALID_ARGUMENT = 2;
     private static final int CAPTURE_NO_MEDIA_FILES = 3;
     private static final int CAPTURE_NOT_SUPPORTED = 20;
-    
+
     private String callbackId;                      // The ID of the callback to be invoked with our result
     private long limit;                             // the number of pics/vids/clips to take
     private double duration;                        // optional duration parameter for video recording
     private JSONArray results;                      // The array of results to be returned to the user
-    private Uri imageUri;                           // Uri of captured image 
+    private Uri imageUri;                           // Uri of captured image
 
     @Override
     public PluginResult execute(String action, JSONArray args, String callbackId) {
@@ -69,7 +69,7 @@ public class Capture extends Plugin {
         this.limit = 1;
         this.duration = 0.0f;
         this.results = new JSONArray();
-        
+
         JSONObject options = args.optJSONObject(0);
         if (options != null) {
             limit = options.optLong("limit", 1);
@@ -91,9 +91,9 @@ public class Capture extends Plugin {
             this.captureImage();
         }
         else if (action.equals("captureVideo")) {
-            this.captureVideo(duration);    
+            this.captureVideo(duration);
         }
-        
+
         PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
         r.setKeepCallback(true);
         return r;
@@ -101,7 +101,7 @@ public class Capture extends Plugin {
 
     /**
      * Provides the media data file data depending on it's mime type
-     * 
+     *
      * @param filePath path to the file
      * @param mimeType of the file
      * @return a MediaFileData object
@@ -122,7 +122,7 @@ public class Capture extends Plugin {
                 mimeType = FileUtils.getMimeType(filePath);
             }
             Log.d(LOG_TAG, "Mime type = " + mimeType);
-            
+
             if (mimeType.equals(IMAGE_JPEG) || filePath.endsWith(".jpg")) {
                 obj = getImageData(filePath, obj);
             }
@@ -141,7 +141,7 @@ public class Capture extends Plugin {
 
     /**
      * Get the Image specific attributes
-     * 
+     *
      * @param filePath path to the file
      * @param obj represents the Media File Data
      * @return a JSONObject that represents the Media File Data
@@ -157,7 +157,7 @@ public class Capture extends Plugin {
 
     /**
      * Get the Image specific attributes
-     * 
+     *
      * @param filePath path to the file
      * @param obj represents the Media File Data
      * @param video if true get video attributes as well
@@ -177,7 +177,7 @@ public class Capture extends Plugin {
         }
         catch (IOException e) {
             Log.d(LOG_TAG, "Error: loading video file");
-        } 
+        }
         return obj;
     }
 
@@ -211,18 +211,18 @@ public class Capture extends Plugin {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
         // Introduced in API 8
         //intent.putExtra(android.provider.MediaStore.EXTRA_DURATION_LIMIT, duration);
-        
+
         this.ctx.startActivityForResult((Plugin) this, intent, CAPTURE_VIDEO);
     }
-    
+
     /**
-     * Called when the video view exits. 
-     * 
-     * @param requestCode       The request code originally supplied to startActivityForResult(), 
+     * Called when the video view exits.
+     *
+     * @param requestCode       The request code originally supplied to startActivityForResult(),
      *                          allowing you to identify who this result came from.
      * @param resultCode        The integer result code returned by the child activity through its setResult().
      * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
-     * @throws JSONException 
+     * @throws JSONException
      */
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
@@ -252,7 +252,7 @@ public class Capture extends Plugin {
                     ExifHelper exif = new ExifHelper();
                     exif.createInFile(DirectoryManager.getTempDirectoryPath(ctx.getContext()) + "/Capture.jpg");
                     exif.readExifData();
-                    
+
                     // Read in bitmap of captured image
                     Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getContentResolver(), imageUri);
 
@@ -268,7 +268,7 @@ public class Capture extends Plugin {
                         try {
                             uri = this.ctx.getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
                         } catch (UnsupportedOperationException ex) {
-                            LOG.d(LOG_TAG, "Can't write to internal media storage.");                           
+                            LOG.d(LOG_TAG, "Can't write to internal media storage.");
                             this.fail(createErrorObject(CAPTURE_INTERNAL_ERR, "Error capturing image - no media storage found."));
                             return;
                         }
@@ -282,14 +282,14 @@ public class Capture extends Plugin {
                     bitmap.recycle();
                     bitmap = null;
                     System.gc();
-                    
+
                     // Restore exif data to file
                     exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.ctx));
                     exif.writeExifData();
-                    
+
                     // Add image to results
                     results.put(createMediaFile(uri));
-                    
+
                     if (results.length() >= limit) {
                         // Send Uri back to JavaScript for viewing image
                         this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
@@ -320,7 +320,7 @@ public class Capture extends Plugin {
         else if (resultCode == Activity.RESULT_CANCELED) {
             // If we have partial results send them back to the user
             if (results.length() > 0) {
-                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);                
+                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
             }
             // user canceled the action
             else {
@@ -331,7 +331,7 @@ public class Capture extends Plugin {
         else {
             // If we have partial results send them back to the user
             if (results.length() > 0) {
-                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);                
+                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
             }
             // something bad happened
             else {
@@ -342,43 +342,43 @@ public class Capture extends Plugin {
 
     /**
      * Creates a JSONObject that represents a File from the Uri
-     *  
+     *
      * @param data the Uri of the audio/image/video
      * @return a JSONObject that represents a File
-     * @throws IOException 
+     * @throws IOException
      */
     private JSONObject createMediaFile(Uri data){
         File fp = new File(FileUtils.getRealPathFromURI(data, this.ctx));
         JSONObject obj = new JSONObject();
 
-        try {       
+        try {
             // File properties
             obj.put("name", fp.getName());
             obj.put("fullPath", "file://" + fp.getAbsolutePath());
-            
-            // Because of an issue with MimeTypeMap.getMimeTypeFromExtension() all .3gpp files 
-            // are reported as video/3gpp. I'm doing this hacky check of the URI to see if it 
+
+            // Because of an issue with MimeTypeMap.getMimeTypeFromExtension() all .3gpp files
+            // are reported as video/3gpp. I'm doing this hacky check of the URI to see if it
             // is stored in the audio or video content store.
             if (fp.getAbsoluteFile().toString().endsWith(".3gp") || fp.getAbsoluteFile().toString().endsWith(".3gpp")) {
                 if (data.toString().contains("/audio/")) {
-                    obj.put("type", AUDIO_3GPP);                
+                    obj.put("type", AUDIO_3GPP);
                 } else {
-                    obj.put("type", VIDEO_3GPP);                
-                }               
+                    obj.put("type", VIDEO_3GPP);
+                }
             } else {
-                obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath()));                
+                obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath()));
             }
-            
+
             obj.put("lastModifiedDate", fp.lastModified());
             obj.put("size", fp.length());
         } catch (JSONException e) {
             // this will never happen
             e.printStackTrace();
         }
-        
+
         return obj;
     }
-    
+
     private JSONObject createErrorObject(int code, String message) {
         JSONObject obj = new JSONObject();
         try {
@@ -392,7 +392,7 @@ public class Capture extends Plugin {
 
     /**
      * Send error message to JavaScript.
-     * 
+     *
      * @param err
      */
     public void fail(JSONObject err) {
