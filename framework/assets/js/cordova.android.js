@@ -1,6 +1,6 @@
-// commit 95f199e1c207dc89b84e79a9a7b27d6a3cc8fe14
+// commit ac0a3990438f4a89faa993316fb5614f61cf3be6
 
-// File generated at :: Thu May 24 2012 21:36:17 GMT-0400 (EDT)
+// File generated at :: Tue Jun 05 2012 14:14:16 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -77,7 +77,7 @@ var channel = require('cordova/channel');
 document.addEventListener('DOMContentLoaded', function() {
     channel.onDOMContentLoaded.fire();
 }, false);
-if (document.readyState == 'complete') {
+if (document.readyState == 'complete' || document.readyState == 'interactive') {
     channel.onDOMContentLoaded.fire();
 }
 
@@ -99,7 +99,11 @@ var documentEventHandlers = {},
 document.addEventListener = function(evt, handler, capture) {
     var e = evt.toLowerCase();
     if (typeof documentEventHandlers[e] != 'undefined') {
-        documentEventHandlers[e].subscribe(handler);
+        if (evt === 'deviceready') {
+            documentEventHandlers[e].subscribeOnce(handler);
+        } else {
+            documentEventHandlers[e].subscribe(handler);
+        }
     } else {
         m_document_addEventListener.call(document, evt, handler, capture);
     }
@@ -504,7 +508,7 @@ var Channel = function(type, opts) {
     this.type = type;
     this.handlers = {};
     this.numHandlers = 0;
-    this.guid = 0;
+    this.guid = 1;
     this.fired = false;
     this.enabled = true;
     this.events = {
@@ -595,12 +599,21 @@ Channel.prototype.subscribe = function(f, c, g) {
     var func = f;
     if (typeof c == "object") { func = utils.close(c, f); }
 
-    g = g || func.observer_guid || f.observer_guid || this.guid++;
+    g = g || func.observer_guid || f.observer_guid;
+    if (!g) {
+        // first time we've seen this subscriber
+        g = this.guid++;
+    }
+    else {
+        // subscriber already handled; dont set it twice
+        return g;
+    }
     func.observer_guid = g;
     f.observer_guid = g;
     this.handlers[g] = func;
     this.numHandlers++;
     if (this.events.onSubscribe) this.events.onSubscribe.call(this);
+    if (this.fired) func.call(this);
     return g;
 };
 
@@ -637,6 +650,7 @@ Channel.prototype.unsubscribe = function(g) {
     if (typeof g == 'function') { g = g.observer_guid; }
     var handler = this.handlers[g];
     if (handler) {
+        if (handler.observer_guid) handler.observer_guid=null;
         this.handlers[g] = null;
         delete this.handlers[g];
         this.numHandlers--;
@@ -778,6 +792,9 @@ module.exports = {
         },
         Camera:{
             path: 'cordova/plugin/CameraConstants'
+        },
+        CameraPopoverOptions: {
+            path: 'cordova/plugin/CameraPopoverOptions'
         },
         CaptureError: {
             path: 'cordova/plugin/CaptureError'
@@ -1088,7 +1105,7 @@ module.exports = {
 
         // Patch localStorage if necessary
         if (typeof window.localStorage == 'undefined' || window.localStorage === null) {
-            window.localStorage = new storage.CupCakeLocalStorage();
+            window.localStorage = new storage.CupcakeLocalStorage();
         }
 
         // Let native code know we are all done on the JS side.
@@ -1259,8 +1276,12 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
     } else if (typeof options.saveToPhotoAlbum == "number") {
         saveToPhotoAlbum = options.saveToPhotoAlbum <=0 ? false : true;
     }
+    var popoverOptions = null;
+    if (typeof options.popoverOptions == "object") {
+        popoverOptions = options.popoverOptions;
+    }
 
-    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType, allowEdit, correctOrientation, saveToPhotoAlbum]);
+    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType, allowEdit, correctOrientation, saveToPhotoAlbum, popoverOptions]);
 };
 
 module.exports = cameraExport;
@@ -1286,8 +1307,35 @@ module.exports = {
     PHOTOLIBRARY : 0,    // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
     CAMERA : 1,          // Take picture from camera
     SAVEDPHOTOALBUM : 2  // Choose image from picture library (same as PHOTOLIBRARY for Android)
+  },
+  PopoverArrowDirection:{
+      ARROW_UP : 1,        // matches iOS UIPopoverArrowDirection constants to specify arrow location on popover
+      ARROW_DOWN : 2,
+      ARROW_LEFT : 4,
+      ARROW_RIGHT : 8,
+      ARROW_ANY : 15
   }
 };
+});
+
+// file: lib/common/plugin/CameraPopoverOptions.js
+define("cordova/plugin/CameraPopoverOptions", function(require, exports, module) {
+var Camera = require('cordova/plugin/CameraConstants');
+
+/**
+ * Encapsulates options for iOS Popover image picker
+ */
+var CameraPopoverOptions = function(x,y,width,height,arrowDir){
+    // information of rectangle that popover should be anchored to
+    this.x = x || 0;
+    this.y = y || 32;
+    this.width = width || 320;
+    this.height = height || 480;
+    // The direction of the popover arrow
+    this.arrowDir = arrowDir || Camera.PopoverArrowDirection.ARROW_ANY;
+};
+
+module.exports = CameraPopoverOptions;
 });
 
 // file: lib/common/plugin/CaptureAudioOptions.js
@@ -3288,7 +3336,7 @@ var Position = function(coords, timestamp) {
     } else {
         this.coords = new Coordinates();
     }
-    this.timestamp = (timestamp !== undefined) ? timestamp : new Date().getTime();
+    this.timestamp = (timestamp !== undefined) ? timestamp : new Date();
 };
 
 module.exports = Position;
@@ -4853,7 +4901,7 @@ var geolocation = {
                     velocity:p.velocity,
                     altitudeAccuracy:p.altitudeAccuracy
                 },
-                p.timestamp || new Date()
+                (p.timestamp === undefined ? new Date() : ((p.timestamp instanceof Date) ? p.timestamp : new Date(p.timestamp)))
             );
             geolocation.lastPosition = pos;
             successCallback(pos);
@@ -4937,7 +4985,7 @@ var geolocation = {
                     velocity:p.velocity,
                     altitudeAccuracy:p.altitudeAccuracy
                 },
-                p.timestamp || new Date()
+                (p.timestamp === undefined ? new Date() : ((p.timestamp instanceof Date) ? p.timestamp : new Date(p.timestamp)))
             );
             geolocation.lastPosition = pos;
             successCallback(pos);
@@ -5426,68 +5474,6 @@ var splashscreen = {
 module.exports = splashscreen;
 });
 
-// file: lib/common/plugin/widget.js
-define("cordova/plugin/widget", function(require, exports, module) {
-var exec = require('cordova/exec'),
-    cordova = require('cordova'),
-    channel = require('cordova/channel');
-
-var Widget = function () {
-    this.author = null;
-    this.description = null;
-    this.name = null;
-    this.shortName = null;
-    this.version = null;
-    this.id = null;
-    this.authorEmail = null;
-    this.authorHref = null;
-    this._firstRun = true;
-
-    var me = this;
-
-    channel.onCordovaReady.subscribeOnce(function() {
-        me.getInfo(function (info) {
-            me.author = info.author;
-            me.description = info.description;
-            me.name = info.name;
-            me.shortName = info.shortName;
-            me.version = info.version;
-            me.id = info.id;
-            me.authorEmail = info.authorEmail;
-            me.authorHref = info.authorHref;
-
-            // should only fire this once
-            if (me._firstRun) {
-                me._firstRun = false;
-                channel.onCordovaAppInfoReady.fire();
-            }
-        },
-        function (e) {
-            // If we can't get the network info we should still tell Cordova
-            // to fire the deviceready event.
-            if (me._firstRun) {
-                me._firstRun = false;
-                channel.onCordovaAppInfoReady.fire();
-            }
-            console.log("Error initializing Widget: " + e);
-        });
-    });
-};
-
-/**
- * Get connection info
- *
- * @param {Function} successCallback The function to call when the Connection data is available
- * @param {Function} errorCallback The function to call when there is an error getting the Connection data. (OPTIONAL)
- */
-Widget.prototype.getInfo = function (successCallback, errorCallback) {
-    // Get info
-    exec(successCallback, errorCallback, "Widget", "getApplicationInfo", []);
-};
-
-module.exports = new Widget();
-});
-
 // file: lib/common/utils.js
 define("cordova/utils", function(require, exports, module) {
 var utils = exports;
@@ -5613,9 +5599,10 @@ utils.format = function(formatString /* ,... */) {
 utils.vformat = function(formatString, args) {
     if (formatString === null || formatString === undefined) return "";
     if (arguments.length == 1) return formatString.toString();
+    if (typeof formatString != "string") return formatString.toString();
 
     var pattern = /(.*?)%(.)(.*)/;
-    var rest    = formatString.toString();
+    var rest    = formatString;
     var result  = [];
 
     while (args.length) {
@@ -5658,13 +5645,20 @@ function UUIDcreatePart(length) {
 //------------------------------------------------------------------------------
 function formatted(object, formatChar) {
 
-    switch(formatChar) {
-        case 'j':
-        case 'o': return JSON.stringify(object);
-        case 'c': return '';
+    try {
+        switch(formatChar) {
+            case 'j':
+            case 'o': return JSON.stringify(object);
+            case 'c': return '';
+        }
+    }
+    catch (e) {
+        return "error JSON.stringify()ing argument: " + e;
     }
 
-    if (null === object) return Object.prototype.toString.call(object);
+    if ((object === null) || (object === undefined)) {
+        return Object.prototype.toString.call(object);
+    }
 
     return object.toString();
 }
