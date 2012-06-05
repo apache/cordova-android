@@ -148,9 +148,10 @@ public class Capture extends Plugin {
      * @throws JSONException
      */
     private JSONObject getImageData(String filePath, JSONObject obj) throws JSONException {
-        Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+        Bitmap bitmap = BitmapFactory.decodeFile(FileUtils.stripFileProtocol(filePath));
         obj.put("height", bitmap.getHeight());
         obj.put("width", bitmap.getWidth());
+        bitmap.recycle();
         return obj;
     }
 

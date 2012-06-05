@@ -740,7 +740,7 @@ public class FileUtils extends Plugin {
      * @param filePath to be checked.
      * @return
      */
-    private String stripFileProtocol(String filePath) {
+    public static String stripFileProtocol(String filePath) {
         if (filePath.startsWith("file://")) {
             filePath = filePath.substring(7);
         }
