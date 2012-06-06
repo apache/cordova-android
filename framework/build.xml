@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
        distributed with this work for additional information
@@ -51,7 +51,7 @@
 
          -->
     <property file="ant.properties" />
-    
+
     <!-- We need to setup the double quote. -->
     <property name="dblQuote">"</property>
 
@@ -110,10 +110,10 @@
 
     <!-- Combine JavaScript files into one cordova-uncompressed.js file. -->
     <target name="build-javascript" depends="clean">
-        
+
       <!-- Clean up existing files -->
       <!--<delete file="assets/www/cordova_${version}.js"/>-->
-        
+
       <!-- Create uncompressed JS file -->
       <concat destfile="assets/www/cordova-${version}.js">
         <filelist dir="assets/js" files="cordova.android.js"/>
@@ -121,8 +121,8 @@
 
       <!-- update project files to reference cordova-x.x.x.min.js -->
       <replaceregexp match="cordova(.*)\.js" replace="cordova-${version}.js" byline="true">
-         <fileset file="assets/www/index.html" /> 
-         <fileset file="../bin/templates/project/cordova/templates/project/assets/www/index.html" /> 
+         <fileset file="assets/www/index.html" />
+         <fileset file="../bin/templates/project/cordova/templates/project/assets/www/index.html" />
       </replaceregexp>
 
       <!-- This is sketchy, but it works, ${dblQuote} does not -->

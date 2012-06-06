@@ -22,7 +22,6 @@ import android.content.Context;
 import android.media.AudioManager;
 import java.util.ArrayList;
 
-//import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
@@ -30,12 +29,12 @@ import org.json.JSONException;
 import java.util.HashMap;
 
 /**
- * This class called by CordovaActivity to play and record audio.  
+ * This class called by CordovaActivity to play and record audio.
  * The file can be local or over a network using http.
- * 
+ *
  * Audio formats supported (tested):
  * 	.mp3, .wav
- * 
+ *
  * Local audio files must reside in one of two places:
  * 		android_asset: 		file name must start with /android_asset/sound.mp3
  * 		sdcard:				file name is just sound.mp3
@@ -56,7 +55,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
      * @param action 		The action to execute.
      * @param args 			JSONArry of arguments for the plugin.
      * @param callbackId	The callback id used when calling back into JavaScript.
@@ -85,11 +83,11 @@ public class AudioHandler extends Plugin {
             else if (action.equals("stopPlayingAudio")) {
                 this.stopPlayingAudio(args.getString(0));
             } else if (action.equals("setVolume")) {
-                try {
-                    this.setVolume(args.getString(0), Float.parseFloat(args.getString(1)));
-                } catch (NumberFormatException nfe) {
-                    //no-op
-                }
+               try {
+                   this.setVolume(args.getString(0), Float.parseFloat(args.getString(1)));
+               } catch (NumberFormatException nfe) {
+                   //no-op
+               }
             } else if (action.equals("getCurrentPositionAudio")) {
                 float f = this.getCurrentPositionAudio(args.getString(0));
                 return new PluginResult(status, f);
@@ -111,7 +109,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
      * @param action	The action to execute
      * @return			T=returns value
      */
@@ -136,8 +133,8 @@ public class AudioHandler extends Plugin {
     }
 
     /**
-     * Called when a message is sent to plugin. 
-     * 
+     * Called when a message is sent to plugin.
+     *
      * @param id            The message id
      * @param data          The message data
      * @return              Object to stop propagation or null
@@ -177,7 +174,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Release the audio player instance to save memory.
-     * 
      * @param id				The id of the audio player
      */
     private boolean release(String id) {
@@ -192,7 +188,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Start recording and save the specified file.
-     * 
      * @param id				The id of the audio player
      * @param file				The name of the file
      */
@@ -208,7 +203,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Stop recording and save to the file specified when recording started.
-     * 
      * @param id				The id of the audio player
      */
     public void stopRecordingAudio(String id) {
@@ -221,7 +215,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Start or resume playing audio file.
-     * 
      * @param id				The id of the audio player
      * @param file				The name of the audio file.
      */
@@ -236,8 +229,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Seek to a location.
-     * 
-     * 
      * @param id				The id of the audio player
      * @param miliseconds		int: number of milliseconds to skip 1000 = 1 second
      */
@@ -250,7 +241,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Pause playing.
-     * 
      * @param id				The id of the audio player
      */
     public void pausePlayingAudio(String id) {
@@ -262,7 +252,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Stop playing the audio file.
-     * 
      * @param id				The id of the audio player
      */
     public void stopPlayingAudio(String id) {
@@ -276,7 +265,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Get current position of playback.
-     * 
      * @param id				The id of the audio player
      * @return 					position in msec
      */
@@ -290,7 +278,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Get the duration of the audio file.
-     * 
      * @param id				The id of the audio player
      * @param file				The name of the audio file.
      * @return					The duration in msec.
@@ -313,7 +300,7 @@ public class AudioHandler extends Plugin {
 
     /**
      * Set the audio device to be used for playback.
-     * 
+     *
      * @param output			1=earpiece, 2=speaker
      */
     @SuppressWarnings("deprecation")
@@ -332,7 +319,7 @@ public class AudioHandler extends Plugin {
 
     /**
      * Get the audio device to be used for playback.
-     * 
+     *
      * @return					1=earpiece, 2=speaker
      */
     @SuppressWarnings("deprecation")

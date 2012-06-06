@@ -96,13 +96,13 @@ public class App extends Plugin {
 
     /**
      * Load the url into the webview.
-     * 
+     *
      * @param url
      * @param props			Properties that can be passed in to the DroidGap activity (i.e. loadingDialog, wait, ...)
-     * @throws JSONException 
+     * @throws JSONException
      */
     public void loadUrl(String url, JSONObject props) throws JSONException {
-        LOG.d("App", "App.loadUrl(" + url + "," + props + ")");
+        LOG.d("App", "App.loadUrl("+url+","+props+")");
         int wait = 0;
         boolean openExternal = false;
         boolean clearHistory = false;
@@ -128,13 +128,13 @@ public class App extends Plugin {
 
                     }
                     else if (value.getClass().equals(String.class)) {
-                        params.put(key, (String) value);
+                        params.put(key, (String)value);
                     }
                     else if (value.getClass().equals(Boolean.class)) {
-                        params.put(key, (Boolean) value);
+                        params.put(key, (Boolean)value);
                     }
                     else if (value.getClass().equals(Integer.class)) {
-                        params.put(key, (Integer) value);
+                        params.put(key, (Integer)value);
                     }
                 }
             }
@@ -144,7 +144,7 @@ public class App extends Plugin {
 
         if (wait > 0) {
             try {
-                synchronized (this) {
+                synchronized(this) {
                     this.wait(wait);
                 }
             } catch (InterruptedException e) {
@@ -180,7 +180,7 @@ public class App extends Plugin {
     /**
      * Override the default behavior of the Android back button.
      * If overridden, when the back button is pressed, the "backKeyDown" JavaScript event will be fired.
-     * 
+     *
      * @param override		T=override, F=cancel override
      */
     public void overrideBackbutton(boolean override) {
@@ -190,7 +190,7 @@ public class App extends Plugin {
 
     /**
      * Return whether the Android back button is overridden by the user.
-     * 
+     *
      * @return boolean
      */
     public boolean isBackbuttonOverridden() {

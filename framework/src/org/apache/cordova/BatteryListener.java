@@ -47,7 +47,7 @@ public class BatteryListener extends Plugin {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action        The action to execute.
      * @param args          JSONArry of arguments for the plugin.
      * @param callbackId    The callback id used when calling back into JavaScript.
@@ -76,7 +76,7 @@ public class BatteryListener extends Plugin {
                 ctx.getActivity().registerReceiver(this.receiver, intentFilter);
             }
 
-            // Don't return any result now, since status results will be sent when events come in from broadcast receiver 
+            // Don't return any result now, since status results will be sent when events come in from broadcast receiver
             PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
             pluginResult.setKeepCallback(true);
             return pluginResult;
@@ -115,7 +115,7 @@ public class BatteryListener extends Plugin {
 
     /**
      * Creates a JSONObject with the current battery information
-     * 
+     *
      * @param batteryIntent the current battery information
      * @return a JSONObject containing the battery status information
      */
@@ -132,7 +132,7 @@ public class BatteryListener extends Plugin {
 
     /**
      * Updates the JavaScript side whenever the battery changes
-     * 
+     *
      * @param batteryIntent the current battery information
      * @return
      */
@@ -142,7 +142,7 @@ public class BatteryListener extends Plugin {
 
     /**
      * Create a new plugin result and send it back to JavaScript
-     * 
+     *
      * @param connection the network info to set as navigator.connection
      */
     private void sendUpdate(JSONObject info, boolean keepCallback) {

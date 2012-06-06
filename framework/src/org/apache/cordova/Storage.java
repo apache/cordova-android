@@ -31,209 +31,209 @@ import android.database.Cursor;
 import android.database.sqlite.*;
 
 /**
- * This class implements the HTML5 database support to work around a bug for 
- * Android 3.0 devices. It is not used for other versions of Android, since 
+ * This class implements the HTML5 database support to work around a bug for
+ * Android 3.0 devices. It is not used for other versions of Android, since
  * HTML5 database is built in to the browser.
  */
 public class Storage extends Plugin {
 
-	// Data Definition Language
-	private static final String ALTER = "alter";
-	private static final String CREATE = "create";
-	private static final String DROP = "drop";
-	private static final String TRUNCATE = "truncate";
-	
-	SQLiteDatabase myDb = null; // Database object
-	String path = null; // Database path
-	String dbName = null; // Database name
+    // Data Definition Language
+    private static final String ALTER = "alter";
+    private static final String CREATE = "create";
+    private static final String DROP = "drop";
+    private static final String TRUNCATE = "truncate";
 
-	/**
-	 * Constructor.
-	 */
-	public Storage() {
-	}
+    SQLiteDatabase myDb = null; // Database object
+    String path = null; // Database path
+    String dbName = null; // Database name
 
-	/**
-	 * Executes the request and returns PluginResult.
-	 * 
-	 * @param action
-	 *            The action to execute.
-	 * @param args
-	 *            JSONArry of arguments for the plugin.
-	 * @param callbackId
-	 *            The callback id used when calling back into JavaScript.
-	 * @return A PluginResult object with a status and message.
-	 */
-	public PluginResult execute(String action, JSONArray args, String callbackId) {
-		PluginResult.Status status = PluginResult.Status.OK;
-		String result = "";
+    /**
+     * Constructor.
+     */
+    public Storage() {
+    }
 
-		try {
-			if (action.equals("openDatabase")) {
-				this.openDatabase(args.getString(0), args.getString(1),
-						args.getString(2), args.getLong(3));
-			} else if (action.equals("executeSql")) {
-				String[] s = null;
-				if (args.isNull(1)) {
-					s = new String[0];
-				} else {
-					JSONArray a = args.getJSONArray(1);
-					int len = a.length();
-					s = new String[len];
-					for (int i = 0; i < len; i++) {
-						s[i] = a.getString(i);
-					}
-				}
-				this.executeSql(args.getString(0), s, args.getString(2));
-			}
-			return new PluginResult(status, result);
-		} catch (JSONException e) {
-			return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
-		}
-	}
+    /**
+     * Executes the request and returns PluginResult.
+     *
+     * @param action
+     *            The action to execute.
+     * @param args
+     *            JSONArry of arguments for the plugin.
+     * @param callbackId
+     *            The callback id used when calling back into JavaScript.
+     * @return A PluginResult object with a status and message.
+     */
+    public PluginResult execute(String action, JSONArray args, String callbackId) {
+        PluginResult.Status status = PluginResult.Status.OK;
+        String result = "";
 
-	/**
-	 * Identifies if action to be executed returns a value and should be run
-	 * synchronously.
-	 * 
-	 * @param action
-	 *            The action to execute
-	 * @return T=returns value
-	 */
-	public boolean isSynch(String action) {
-		return true;
-	}
+        try {
+            if (action.equals("openDatabase")) {
+                this.openDatabase(args.getString(0), args.getString(1),
+                        args.getString(2), args.getLong(3));
+            } else if (action.equals("executeSql")) {
+                String[] s = null;
+                if (args.isNull(1)) {
+                    s = new String[0];
+                } else {
+                    JSONArray a = args.getJSONArray(1);
+                    int len = a.length();
+                    s = new String[len];
+                    for (int i = 0; i < len; i++) {
+                        s[i] = a.getString(i);
+                    }
+                }
+                this.executeSql(args.getString(0), s, args.getString(2));
+            }
+            return new PluginResult(status, result);
+        } catch (JSONException e) {
+            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+        }
+    }
 
-	/**
-	 * Clean up and close database.
-	 */
-	@Override
-	public void onDestroy() {
-		if (this.myDb != null) {
-			this.myDb.close();
-			this.myDb = null;
-		}
-	}
+    /**
+     * Identifies if action to be executed returns a value and should be run
+     * synchronously.
+     *
+     * @param action
+     *            The action to execute
+     * @return T=returns value
+     */
+    public boolean isSynch(String action) {
+        return true;
+    }
 
-	// --------------------------------------------------------------------------
-	// LOCAL METHODS
-	// --------------------------------------------------------------------------
+    /**
+     * Clean up and close database.
+     */
+    @Override
+    public void onDestroy() {
+        if (this.myDb != null) {
+            this.myDb.close();
+            this.myDb = null;
+        }
+    }
 
-	/**
-	 * Open database.
-	 * 
-	 * @param db
-	 *            The name of the database
-	 * @param version
-	 *            The version
-	 * @param display_name
-	 *            The display name
-	 * @param size
-	 *            The size in bytes
-	 */
-	public void openDatabase(String db, String version, String display_name,
-			long size) {
+    // --------------------------------------------------------------------------
+    // LOCAL METHODS
+    // --------------------------------------------------------------------------
 
-		// If database is open, then close it
-		if (this.myDb != null) {
-			this.myDb.close();
-		}
+    /**
+     * Open database.
+     *
+     * @param db
+     *            The name of the database
+     * @param version
+     *            The version
+     * @param display_name
+     *            The display name
+     * @param size
+     *            The size in bytes
+     */
+    public void openDatabase(String db, String version, String display_name,
+            long size) {
 
-		// If no database path, generate from application package
-		if (this.path == null) {
-			this.path = this.ctx.getActivity().getDir("database", Context.MODE_PRIVATE).getPath();
-		}
+        // If database is open, then close it
+        if (this.myDb != null) {
+            this.myDb.close();
+        }
 
-		this.dbName = this.path + File.pathSeparator + db + ".db";
-		this.myDb = SQLiteDatabase.openOrCreateDatabase(this.dbName, null);
-	}
+        // If no database path, generate from application package
+        if (this.path == null) {
+            this.path = this.ctx.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
+        }
 
-	/**
-	 * Execute SQL statement.
-	 * 
-	 * @param query
-	 *            The SQL query
-	 * @param params
-	 *            Parameters for the query
-	 * @param tx_id
-	 *            Transaction id
-	 */
-	public void executeSql(String query, String[] params, String tx_id) {
-		try {
-			if (isDDL(query)) {
-				this.myDb.execSQL(query);
-				this.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', '');");
-			} 
-			else {
-				Cursor myCursor = this.myDb.rawQuery(query, params);
-				this.processResults(myCursor, tx_id);
-				myCursor.close();
-			}
-		} 
-		catch (SQLiteException ex) {
-			ex.printStackTrace();
-			System.out.println("Storage.executeSql(): Error=" +  ex.getMessage());
-			
-			// Send error message back to JavaScript
-			this.sendJavascript("cordova.require('cordova/plugin/android/storage').failQuery('" + ex.getMessage() + "','" + tx_id + "');");
-		}
-	}
+        this.dbName = this.path + File.pathSeparator + db + ".db";
+        this.myDb = SQLiteDatabase.openOrCreateDatabase(this.dbName, null);
+    }
 
-	/**
-	 * Checks to see the the query is a Data Definintion command
-	 * 
-	 * @param query to be executed
-	 * @return true if it is a DDL command, false otherwise
-	 */
-	private boolean isDDL(String query) {
-		String cmd = query.toLowerCase();
-		if (cmd.startsWith(DROP) || cmd.startsWith(CREATE) || cmd.startsWith(ALTER) || cmd.startsWith(TRUNCATE)) {
-			return true;
-		}
-		return false;
-	}
+    /**
+     * Execute SQL statement.
+     *
+     * @param query
+     *            The SQL query
+     * @param params
+     *            Parameters for the query
+     * @param tx_id
+     *            Transaction id
+     */
+    public void executeSql(String query, String[] params, String tx_id) {
+        try {
+            if (isDDL(query)) {
+                this.myDb.execSQL(query);
+                this.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', '');");
+            }
+            else {
+                Cursor myCursor = this.myDb.rawQuery(query, params);
+                this.processResults(myCursor, tx_id);
+                myCursor.close();
+            }
+        }
+        catch (SQLiteException ex) {
+            ex.printStackTrace();
+            System.out.println("Storage.executeSql(): Error=" +  ex.getMessage());
 
-	/**
-	 * Process query results.
-	 * 
-	 * @param cur
-	 *            Cursor into query results
-	 * @param tx_id
-	 *            Transaction id
-	 */
-	public void processResults(Cursor cur, String tx_id) {
+            // Send error message back to JavaScript
+            this.sendJavascript("cordova.require('cordova/plugin/android/storage').failQuery('" + ex.getMessage() + "','" + tx_id + "');");
+        }
+    }
 
-		String result = "[]";
-		// If query result has rows
+    /**
+     * Checks to see the the query is a Data Definintion command
+     *
+     * @param query to be executed
+     * @return true if it is a DDL command, false otherwise
+     */
+    private boolean isDDL(String query) {
+        String cmd = query.toLowerCase();
+        if (cmd.startsWith(DROP) || cmd.startsWith(CREATE) || cmd.startsWith(ALTER) || cmd.startsWith(TRUNCATE)) {
+            return true;
+        }
+        return false;
+    }
 
-		if (cur.moveToFirst()) {
-			JSONArray fullresult = new JSONArray();
-			String key = "";
-			String value = "";
-			int colCount = cur.getColumnCount();
+    /**
+     * Process query results.
+     *
+     * @param cur
+     *            Cursor into query results
+     * @param tx_id
+     *            Transaction id
+     */
+    public void processResults(Cursor cur, String tx_id) {
 
-			// Build up JSON result object for each row
-			do {
-				JSONObject row = new JSONObject();
-				try {
-					for (int i = 0; i < colCount; ++i) {
-						key = cur.getColumnName(i);
-						value = cur.getString(i);
-						row.put(key, value);
-					}
-					fullresult.put(row);
+        String result = "[]";
+        // If query result has rows
 
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
+        if (cur.moveToFirst()) {
+            JSONArray fullresult = new JSONArray();
+            String key = "";
+            String value = "";
+            int colCount = cur.getColumnCount();
 
-			} while (cur.moveToNext());
+            // Build up JSON result object for each row
+            do {
+                JSONObject row = new JSONObject();
+                try {
+                    for (int i = 0; i < colCount; ++i) {
+                        key = cur.getColumnName(i);
+                        value = cur.getString(i);
+                        row.put(key, value);
+                    }
+                    fullresult.put(row);
 
-			result = fullresult.toString();
-		}
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
-		// Let JavaScript know that there are no more rows
-		this.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', " + result + ");");
-	}
+            } while (cur.moveToNext());
+
+            result = fullresult.toString();
+        }
+
+        // Let JavaScript know that there are no more rows
+        this.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', " + result + ");");
+    }
 
 }

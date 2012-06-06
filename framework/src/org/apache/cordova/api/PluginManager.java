@@ -33,7 +33,7 @@ import android.content.res.XmlResourceParser;
 
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
- * 
+ *
  * Calling native plugin code can be done by calling PluginManager.exec(...)
  * from JavaScript.
  */
@@ -55,7 +55,7 @@ public class PluginManager {
 
     /**
      * Constructor.
-     * 
+     *
      * @param app
      * @param ctx
      */
@@ -148,23 +148,23 @@ public class PluginManager {
     /**
      * Receives a request for execution and fulfills it by finding the appropriate
      * Java class and calling it's execute method.
-     * 
-     * PluginManager.exec can be used either synchronously or async. In either case, a JSON encoded 
+     *
+     * PluginManager.exec can be used either synchronously or async. In either case, a JSON encoded
      * string is returned that will indicate if any errors have occurred when trying to find
      * or execute the class denoted by the clazz argument.
-     * 
+     *
      * @param service       String containing the service to run
      * @param action        String containt the action that the class is supposed to perform. This is
-     *                      passed to the plugin execute method and it is up to the plugin developer 
+     *                      passed to the plugin execute method and it is up to the plugin developer
      *                      how to deal with it.
      * @param callbackId    String containing the id of the callback that is execute in JavaScript if
      *                      this is an async plugin call.
      * @param args          An Array literal string containing any arguments needed in the
      *                      plugin execute method.
      * @param async         Boolean indicating whether the calling JavaScript code is expecting an
-     *                      immediate return value. If true, either Cordova.callbackSuccess(...) or 
+     *                      immediate return value. If true, either Cordova.callbackSuccess(...) or
      *                      Cordova.callbackError(...) is called once the plugin code has executed.
-     * 
+     *
      * @return              JSON encoded string with a response message and status.
      */
     public String exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
@@ -231,10 +231,10 @@ public class PluginManager {
     }
 
     /**
-     * Get the plugin object that implements the service. 
-     * If the plugin object does not already exist, then create it. 
+     * Get the plugin object that implements the service.
+     * If the plugin object does not already exist, then create it.
      * If the service doesn't exist, then return null.
-     * 
+     *
      * @param service       The name of the service.
      * @return              IPlugin or null
      */
@@ -251,9 +251,9 @@ public class PluginManager {
     }
 
     /**
-     * Add a plugin class that implements a service to the service entry table. 
+     * Add a plugin class that implements a service to the service entry table.
      * This does not create the plugin object instance.
-     * 
+     *
      * @param service           The service name
      * @param className         The plugin class name
      */
@@ -263,9 +263,9 @@ public class PluginManager {
     }
 
     /**
-     * Add a plugin class that implements a service to the service entry table. 
+     * Add a plugin class that implements a service to the service entry table.
      * This does not create the plugin object instance.
-     * 
+     *
      * @param entry             The plugin entry
      */
     public void addService(PluginEntry entry) {
@@ -274,7 +274,7 @@ public class PluginManager {
 
     /**
      * Called when the system is about to start resuming a previous activity.
-     * 
+     *
      * @param multitasking      Flag indicating if multitasking is turned on for app
      */
     public void onPause(boolean multitasking) {
@@ -287,7 +287,7 @@ public class PluginManager {
 
     /**
      * Called when the activity will start interacting with the user.
-     * 
+     *
      * @param multitasking      Flag indicating if multitasking is turned on for app
      */
     public void onResume(boolean multitasking) {
@@ -311,7 +311,7 @@ public class PluginManager {
 
     /**
      * Send a message to all plugins.
-     * 
+     *
      * @param id                The message id
      * @param data              The message data
      * @return
@@ -345,7 +345,7 @@ public class PluginManager {
 
     /**
      * Called when the URL of the webview changes.
-     * 
+     *
      * @param url               The URL that is being changed to.
      * @return                  Return false to allow the URL to load, return true to prevent the URL from loading.
      */

@@ -46,7 +46,7 @@ import android.provider.MediaStore;
 
 /**
  * This class launches the camera view, allows the user to take a picture, closes the camera view,
- * and returns the captured image.  When the camera view is closed, the screen displayed before 
+ * and returns the captured image.  When the camera view is closed, the screen displayed before
  * the camera view was shown is redisplayed.
  */
 public class CameraLauncher extends Plugin {
@@ -73,7 +73,7 @@ public class CameraLauncher extends Plugin {
     private int mQuality;                   // Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
     private int targetWidth;                // desired width of the image
     private int targetHeight;               // desired height of the image
-    private Uri imageUri;                   // Uri of captured image       
+    private Uri imageUri;                   // Uri of captured image
     private int encodingType;               // Type of encoding to use
     private int mediaType;                  // What type of media to retrieve
 
@@ -99,7 +99,7 @@ public class CameraLauncher extends Plugin {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action        The action to execute.
      * @param args          JSONArry of arguments for the plugin.
      * @param callbackId    The callback id used when calling back into JavaScript.
@@ -153,15 +153,15 @@ public class CameraLauncher extends Plugin {
      * Take a picture with the camera.
      * When an image is captured or the camera view is cancelled, the result is returned
      * in CordovaActivity.onActivityResult, which forwards the result to this.onActivityResult.
-     * 
+     *
      * The image can either be returned as a base64 string or a URI that points to the file.
      * To display base64 string in an img tag, set the source to:
      *      img.src="data:image/jpeg;base64,"+result;
      * or to display URI in an img tag
      *      img.src=result;
-     * 
+     *
      * @param quality           Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
-     * @param returnType        Set the type of image to return. 
+     * @param returnType        Set the type of image to return.
      */
     public void takePicture(int returnType, int encodingType) {
         // Save the number of images currently on disk for later
@@ -185,7 +185,7 @@ public class CameraLauncher extends Plugin {
 
     /**
      * Create a file in the applications temporary directory based upon the supplied encoding.
-     * 
+     *
      * @param encodingType of the image to be taken
      * @return a File object pointing to the temporary picture
      */
@@ -203,10 +203,10 @@ public class CameraLauncher extends Plugin {
 
     /**
      * Get image from photo library.
-     * 
+     *
      * @param quality           Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
      * @param srcType           The album to get image from.
-     * @param returnType        Set the type of image to return. 
+     * @param returnType        Set the type of image to return.
      */
     // TODO: Images selected from SDCARD don't display correctly, but from CAMERA ALBUM do!
     public void getImage(int srcType, int returnType) {
@@ -220,7 +220,7 @@ public class CameraLauncher extends Plugin {
             title = GET_VIDEO;
         }
         else if (this.mediaType == ALLMEDIA) {
-            // I wanted to make the type 'image/*, video/*' but this does not work on all versions 
+            // I wanted to make the type 'image/*, video/*' but this does not work on all versions
             // of android so I had to go with the wildcard search.
             intent.setType("*/*");
             title = GET_All;
@@ -236,9 +236,9 @@ public class CameraLauncher extends Plugin {
 
     /**
      * Scales the bitmap according to the requested size.
-     * 
+     *
      * @param bitmap        The bitmap to scale.
-     * @return Bitmap       A new Bitmap object of the same bitmap after scaling. 
+     * @return Bitmap       A new Bitmap object of the same bitmap after scaling.
      */
     public Bitmap scaleBitmap(Bitmap bitmap) {
         int newWidth = this.targetWidth;
@@ -274,16 +274,16 @@ public class CameraLauncher extends Plugin {
                 newWidth = (newHeight * origWidth) / origHeight;
             }
         }
-        
+
         Bitmap retval = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
         bitmap.recycle();
         return retval;
     }
 
     /**
-     * Called when the camera view exits. 
-     * 
-     * @param requestCode       The request code originally supplied to startActivityForResult(), 
+     * Called when the camera view exits.
+     *
+     * @param requestCode       The request code originally supplied to startActivityForResult(),
      *                          allowing you to identify who this result came from.
      * @param resultCode        The integer result code returned by the child activity through its setResult().
      * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
@@ -305,7 +305,6 @@ public class CameraLauncher extends Plugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         // If CAMERA
         if (srcType == CAMERA) {
             // If image available
@@ -415,7 +414,7 @@ public class CameraLauncher extends Plugin {
                                 matrix.setRotate(rotate);
                                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                             }
-                            bitmap = scaleBitmap(bitmap);
+                           bitmap = scaleBitmap(bitmap);
                             this.processPicture(bitmap);
                             bitmap.recycle();
                             bitmap = null;
@@ -474,7 +473,7 @@ public class CameraLauncher extends Plugin {
 
     /**
      * Creates a cursor that can be used to determine how many images we have.
-     * 
+     *
      * @return a cursor
      */
     private Cursor queryImgDB() {
@@ -488,9 +487,9 @@ public class CameraLauncher extends Plugin {
 
     /**
      * Used to find out if we are in a situation where the Camera Intent adds to images
-     * to the content store. If we are using a FILE_URI and the number of images in the DB 
+     * to the content store. If we are using a FILE_URI and the number of images in the DB
      * increases by 2 we have a duplicate, when using a DATA_URL the number is 1.
-     * 
+     *
      * @param type FILE_URI or DATA_URL
      */
     private void checkForDuplicateImage(int type) {
@@ -536,7 +535,7 @@ public class CameraLauncher extends Plugin {
 
     /**
      * Send error message to JavaScript.
-     * 
+     *
      * @param err
      */
     public void failPicture(String err) {

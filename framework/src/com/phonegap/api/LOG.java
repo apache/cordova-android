@@ -20,7 +20,7 @@ package com.phonegap.api;
 
 /**
  * Log to Android logging system.
- * 
+ *
  * Log message can be a string or a printf formatted string with arguments.
  * See http://developer.android.com/reference/java/util/Formatter.html
  */

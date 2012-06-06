@@ -83,7 +83,7 @@ public class NetworkManager extends Plugin {
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
-     * 
+     *
      * @param ctx The context of the main Activity.
      */
     public void setContext(CordovaInterface ctx) {
@@ -109,7 +109,7 @@ public class NetworkManager extends Plugin {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action         The action to execute.
      * @param args             JSONArry of arguments for the plugin.
      * @param callbackId    The callback id used when calling back into JavaScript.
@@ -132,7 +132,7 @@ public class NetworkManager extends Plugin {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
+     *
      * @param action    The action to execute
      * @return            T=returns value
      */
@@ -159,7 +159,7 @@ public class NetworkManager extends Plugin {
 
     /**
      * Updates the JavaScript side whenever the connection changes
-     * 
+     *
      * @param info the current active network info
      * @return
      */
@@ -168,9 +168,9 @@ public class NetworkManager extends Plugin {
         sendUpdate(this.getConnectionInfo(info));
     }
 
-    /** 
+    /**
      * Get the latest network connection information
-     * 
+     *
      * @param info the current active network info
      * @return a JSONObject that represents the network info
      */
@@ -190,7 +190,7 @@ public class NetworkManager extends Plugin {
 
     /**
      * Create a new plugin result and send it back to JavaScript
-     * 
+     *
      * @param connection the network info to set as navigator.connection
      */
     private void sendUpdate(String type) {
@@ -204,7 +204,7 @@ public class NetworkManager extends Plugin {
 
     /**
      * Determine the type of connection
-     * 
+     *
      * @param info the network info so we can determine connection type.
      * @return the type of mobile network we are on
      */

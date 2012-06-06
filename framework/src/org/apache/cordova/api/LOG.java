@@ -22,12 +22,12 @@ import android.util.Log;
 
 /**
  * Log to Android logging system.
- * 
+ *
  * Log message can be a string or a printf formatted string with arguments.
  * See http://developer.android.com/reference/java/util/Formatter.html
  */
 public class LOG {
-    
+
     public static final int VERBOSE = Log.VERBOSE;
     public static final int DEBUG = Log.DEBUG;
     public static final int INFO = Log.INFO;
@@ -36,20 +36,20 @@ public class LOG {
 
     // Current log level
     public static int LOGLEVEL = Log.ERROR;
-    
+
     /**
      * Set the current log level.
-     * 
+     *
      * @param logLevel
      */
     public static void setLogLevel(int logLevel) {
         LOGLEVEL = logLevel;
         Log.i("CordovaLog", "Changing log level to " + logLevel);
     }
-    
+
     /**
      * Set the current log level.
-     * 
+     *
      * @param logLevel
      */
     public static void setLogLevel(String logLevel) {
@@ -63,7 +63,7 @@ public class LOG {
 
     /**
      * Determine if log level will be logged
-     * 
+     *
      * @param logLevel
      * @return
      */
@@ -73,7 +73,7 @@ public class LOG {
 
     /**
      * Verbose log message.
-     * 
+     *
      * @param tag
      * @param s
      */
@@ -83,17 +83,17 @@ public class LOG {
 
     /**
      * Debug log message.
-     * 
+     *
      * @param tag
      * @param s
      */
     public static void d(String tag, String s) {
         if (LOG.DEBUG >= LOGLEVEL) Log.d(tag, s);
     }
-    
+
     /**
      * Info log message.
-     * 
+     *
      * @param tag
      * @param s
      */
@@ -103,7 +103,7 @@ public class LOG {
 
     /**
      * Warning log message.
-     * 
+     *
      * @param tag
      * @param s
      */
@@ -113,7 +113,7 @@ public class LOG {
 
     /**
      * Error log message.
-     * 
+     *
      * @param tag
      * @param s
      */
@@ -123,7 +123,7 @@ public class LOG {
 
     /**
      * Verbose log message.
-     * 
+     *
      * @param tag
      * @param s
      * @param e
@@ -134,7 +134,7 @@ public class LOG {
 
     /**
      * Debug log message.
-     * 
+     *
      * @param tag
      * @param s
      * @param e
@@ -142,10 +142,10 @@ public class LOG {
     public static void d(String tag, String s, Throwable e) {
         if (LOG.DEBUG >= LOGLEVEL) Log.d(tag, s, e);
     }
-    
+
     /**
      * Info log message.
-     * 
+     *
      * @param tag
      * @param s
      * @param e
@@ -156,7 +156,7 @@ public class LOG {
 
     /**
      * Warning log message.
-     * 
+     *
      * @param tag
      * @param s
      * @param e
@@ -167,7 +167,7 @@ public class LOG {
 
     /**
      * Error log message.
-     * 
+     *
      * @param tag
      * @param s
      * @param e
@@ -178,7 +178,7 @@ public class LOG {
 
     /**
      * Verbose log message with printf formatting.
-     * 
+     *
      * @param tag
      * @param s
      * @param args
@@ -189,7 +189,7 @@ public class LOG {
 
     /**
      * Debug log message with printf formatting.
-     * 
+     *
      * @param tag
      * @param s
      * @param args
@@ -200,7 +200,7 @@ public class LOG {
 
     /**
      * Info log message with printf formatting.
-     * 
+     *
      * @param tag
      * @param s
      * @param args
@@ -208,10 +208,10 @@ public class LOG {
     public static void i(String tag, String s, Object... args) {
         if (LOG.INFO >= LOGLEVEL) Log.i(tag, String.format(s, args));
     }
-    
+
     /**
      * Warning log message with printf formatting.
-     * 
+     *
      * @param tag
      * @param s
      * @param args
@@ -219,10 +219,10 @@ public class LOG {
     public static void w(String tag, String s, Object... args) {
         if (LOG.WARN >= LOGLEVEL) Log.w(tag, String.format(s, args));
     }
-    
+
     /**
      * Error log message with printf formatting.
-     * 
+     *
      * @param tag
      * @param s
      * @param args

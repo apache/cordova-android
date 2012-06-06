@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<!--
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
        distributed with this work for additional information
@@ -18,16 +18,16 @@
        under the License.
 -->
 <cordova>
-	<!--  
-	access elements control the Android whitelist.  
-	Domains are assumed blocked unless set otherwise
-	 -->
+    <!--
+    access elements control the Android whitelist.
+    Domains are assumed blocked unless set otherwise
+     -->
 
     <access origin="http://127.0.0.1*"/> <!-- allow local pages -->
 
-	<!-- <access origin="https://example.com" /> allow any secure requests to example.com -->
-	<!-- <access origin="https://example.com" subdomains="true" /> such as above, but including subdomains, such as www -->
-	<!-- <access origin=".*"/> Allow all domains, suggested development use only -->
+    <!-- <access origin="https://example.com" /> allow any secure requests to example.com -->
+    <!-- <access origin="https://example.com" subdomains="true" /> such as above, but including subdomains, such as www -->
+    <!-- <access origin=".*"/> Allow all domains, suggested development use only -->
 
     <log level="DEBUG"/>
     <preference name="useBrowserHistory" value="false" />

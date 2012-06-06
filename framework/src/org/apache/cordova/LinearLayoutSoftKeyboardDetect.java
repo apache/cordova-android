@@ -32,7 +32,7 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
     private static final String TAG = "SoftKeyboardDetect";
 
     private int oldHeight = 0;  // Need to save the old height as not to send redundant events
-    private int oldWidth = 0; // Need to save old width for orientation change          
+    private int oldWidth = 0; // Need to save old width for orientation change
     private int screenWidth = 0;
     private int screenHeight = 0;
     private DroidGap app = null;
@@ -46,12 +46,12 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
 
     @Override
     /**
-     * Start listening to new measurement events.  Fire events when the height 
-     * gets smaller fire a show keyboard event and when height gets bigger fire 
+     * Start listening to new measurement events.  Fire events when the height
+     * gets smaller fire a show keyboard event and when height gets bigger fire
      * a hide keyboard event.
-     * 
+     *
      * Note: We are using app.postMessage so that this is more compatible with the API
-     * 
+     *
      * @param widthMeasureSpec
      * @param heightMeasureSpec
      */
@@ -84,7 +84,7 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
             screenWidth = tmp_var;
             LOG.v(TAG, "Orientation Change");
         }
-        // If the height as gotten bigger then we will assume the soft keyboard has 
+        // If the height as gotten bigger then we will assume the soft keyboard has
         // gone away.
         else if (height > oldHeight) {
             if (app != null)

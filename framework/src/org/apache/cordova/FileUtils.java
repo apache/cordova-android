@@ -42,7 +42,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-//import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 //import android.app.Activity;
@@ -739,7 +738,7 @@ public class FileUtils extends Plugin {
 
     /**
      * This method removes the "file://" from the passed in filePath
-     * 
+     *
      * @param filePath to be checked.
      * @return
      */
@@ -752,7 +751,7 @@ public class FileUtils extends Plugin {
 
     /**
      * Create a File object from the passed in path
-     * 
+     *
      * @param filePath
      * @return
      */

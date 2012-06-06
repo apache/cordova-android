@@ -30,7 +30,7 @@ import android.location.LocationManager;
 
 /*
  * This class is the interface to the Geolocation.  It's bound to the geo object.
- * 
+ *
  * This class only starts and stops various GeoListeners, which consist of a GPS and a Network Listener
  */
 
@@ -47,7 +47,7 @@ public class GeoBroker extends Plugin {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action 		The action to execute.
      * @param args 			JSONArry of arguments for the plugin.
      * @param callbackId	The callback id used when calling back into JavaScript.
@@ -114,7 +114,7 @@ public class GeoBroker extends Plugin {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
+     *
      * @param action	The action to execute
      * @return			T=returns value
      */

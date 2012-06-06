@@ -66,7 +66,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
-     * 
+     *
      * @param ctx The context of the main Activity.
      */
     public void setContext(CordovaInterface ctx) {
@@ -76,7 +76,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action        The action to execute.
      * @param args          JSONArry of arguments for the plugin.
      * @param callbackId    The callback id used when calling back into JavaScript.
@@ -139,7 +139,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
+     *
      * @param action    The action to execute
      * @return          T=returns value
      */
@@ -172,7 +172,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Start listening for compass sensor.
-     * 
+     *
      * @return          status of listener
      */
     public int start() {
@@ -213,12 +213,12 @@ public class CompassListener extends Plugin implements SensorEventListener {
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // TODO Auto-generated method stub  
+        // TODO Auto-generated method stub
     }
 
     /**
      * Sensor listener event.
-     * 
+     *
      * @param SensorEvent event
      */
     public void onSensorChanged(SensorEvent event) {
@@ -239,7 +239,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Get status of compass sensor.
-     * 
+     *
      * @return          status
      */
     public int getStatus() {
@@ -248,7 +248,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Get the most recent compass heading.
-     * 
+     *
      * @return          heading
      */
     public float getHeading() {
@@ -258,7 +258,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Set the timeout to turn off compass sensor if getHeading() hasn't been called.
-     * 
+     *
      * @param timeout       Timeout in msec.
      */
     public void setTimeout(long timeout) {
@@ -267,7 +267,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Get the timeout to turn off compass sensor if getHeading() hasn't been called.
-     * 
+     *
      * @return timeout in msec
      */
     public long getTimeout() {
@@ -284,7 +284,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
 
     /**
      * Create the CompassHeading JSON object to be returned to JavaScript
-     * 
+     *
      * @return a compass heading
      */
     private JSONObject getCompassHeading() {
@@ -293,7 +293,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
         try {
             obj.put("magneticHeading", this.getHeading());
             obj.put("trueHeading", this.getHeading());
-            // Since the magnetic and true heading are always the same our and accuracy 
+            // Since the magnetic and true heading are always the same our and accuracy
             // is defined as the difference between true and magnetic always return zero
             obj.put("headingAccuracy", 0);
             obj.put("timestamp", this.timeStamp);

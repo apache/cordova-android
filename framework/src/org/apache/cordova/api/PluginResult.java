@@ -21,13 +21,12 @@ package org.apache.cordova.api;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-//import android.util.Log;
-
 public class PluginResult {
     private final int status;
     private final String message;
     private boolean keepCallback = false;
     
+
     public PluginResult(Status status) {
         this.status = status.ordinal();
         this.message = "'" + PluginResult.StatusMessages[this.status] + "'";

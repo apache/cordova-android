@@ -58,10 +58,7 @@ public class HttpHandler {
             HttpGet httpget = new HttpGet(url);
             HttpResponse response = httpclient.execute(httpget);
             entity = response.getEntity();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        } catch (Exception e) { e.printStackTrace(); return null; }
         return entity;
     }
 
@@ -76,7 +73,7 @@ public class HttpHandler {
         byte buff[] = new byte[1024];
         FileOutputStream out =
                 new FileOutputStream(FilePath);
-        do {
+       do {
             int numread = in.read(buff);
             if (numread <= 0)
                 break;

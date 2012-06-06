@@ -41,9 +41,9 @@ public abstract class ContactAccessor {
     protected WebView mView;
 
     /**
-     * Check to see if the data associated with the key is required to 
+     * Check to see if the data associated with the key is required to
      * be populated in the Contact object.
-     * @param key 
+     * @param key
      * @param map created by running buildPopulationSet.
      * @return true if the key data is required
      */
@@ -51,7 +51,7 @@ public abstract class ContactAccessor {
         Boolean retVal = map.get(key);
         return (retVal == null) ? false : retVal.booleanValue();
     }
-    
+
     /**
      * Create a hash map of what data needs to be populated in the Contact object
      * @param fields the list of fields to populate
@@ -59,7 +59,7 @@ public abstract class ContactAccessor {
      */
     protected HashMap<String,Boolean> buildPopulationSet(JSONArray fields) {
         HashMap<String,Boolean> map = new HashMap<String,Boolean>();
-    
+
         String key;
         try {
             if (fields.length() == 1 && fields.getString(0).equals("*")) {
@@ -128,12 +128,12 @@ public abstract class ContactAccessor {
         }
         return map;
     }
-  
+
     /**
-     * Convenience method to get a string from a JSON object.  Saves a 
+     * Convenience method to get a string from a JSON object.  Saves a
      * lot of try/catch writing.
      * If the property is not found in the object null will be returned.
-     * 
+     *
      * @param obj contact object to search
      * @param property to be looked up
      * @return The value of the property
@@ -151,7 +151,7 @@ public abstract class ContactAccessor {
        }
         catch (JSONException e) {
             Log.d(LOG_TAG, "Could not get = " + e.getMessage());
-        }   
+        }
         return value;
     }
 
@@ -168,7 +168,7 @@ public abstract class ContactAccessor {
 
     /**
      * Handles searching through SDK-specific contacts API.
-     * @throws JSONException 
+     * @throws JSONException
      */
     public abstract JSONObject getContactById(String id) throws JSONException;
 

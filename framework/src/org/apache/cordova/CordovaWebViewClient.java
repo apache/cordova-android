@@ -53,7 +53,7 @@ public class CordovaWebViewClient extends WebViewClient {
 
     /**
      * Constructor.
-     * 
+     *
      * @param ctx
      */
     public CordovaWebViewClient(CordovaInterface ctx) {
@@ -81,9 +81,9 @@ public class CordovaWebViewClient extends WebViewClient {
     }
 
     /**
-     * Give the host application a chance to take over the control when a new url 
+     * Give the host application a chance to take over the control when a new url
      * is about to be loaded in the current WebView.
-     * 
+     *
      * @param view          The WebView that is initiating the callback.
      * @param url           The url to be loaded.
      * @return              true to override, false for default behavior
@@ -189,8 +189,8 @@ public class CordovaWebViewClient extends WebViewClient {
 
     /**
      * On received http auth request.
-     * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination 
-     * 
+     * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination
+     *
      * @param view
      * @param handler
      * @param host
@@ -217,7 +217,7 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
-        // Clear history so history.back() doesn't do anything.  
+        // Clear history so history.back() doesn't do anything.
         // So we can reinit() native side CallbackServer & PluginManager.
         if (!this.appView.useBrowserHistory) {
             view.clearHistory();
@@ -250,8 +250,8 @@ public class CordovaWebViewClient extends WebViewClient {
         LOG.d(TAG, "onPageFinished(" + url + ")");
 
         /**
-         * Because of a timing issue we need to clear this history in onPageFinished as well as 
-         * onPageStarted. However we only want to do this if the doClearHistory boolean is set to 
+         * Because of a timing issue we need to clear this history in onPageFinished as well as
+         * onPageStarted. However we only want to do this if the doClearHistory boolean is set to
          * true. You see when you load a url with a # in it which is common in jQuery applications
          * onPageStared is not called. Clearing the history at that point would break jQuery apps.
          */
@@ -302,13 +302,13 @@ public class CordovaWebViewClient extends WebViewClient {
     }
 
     /**
-     * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
+     * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable).
      * The errorCode parameter corresponds to one of the ERROR_* constants.
      *
      * @param view          The WebView that is initiating the callback.
      * @param errorCode     The error code corresponding to an ERROR_* value.
      * @param description   A String describing the error.
-     * @param failingUrl    The url that failed to load. 
+     * @param failingUrl    The url that failed to load.
      */
     @Override
     public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
@@ -370,7 +370,7 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     @Override
     public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
-        /* 
+        /*
          * If you do a document.location.href the url does not get pushed on the stack
          * so we do a check here to see if the url should be pushed.
          */

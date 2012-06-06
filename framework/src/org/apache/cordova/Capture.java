@@ -54,13 +54,13 @@ public class Capture extends Plugin {
 //    private static final int CAPTURE_APPLICATION_BUSY = 1;
 //    private static final int CAPTURE_INVALID_ARGUMENT = 2;
     private static final int CAPTURE_NO_MEDIA_FILES = 3;
-//    private static final int CAPTURE_NOT_SUPPORTED = 20;
+    private static final int CAPTURE_NOT_SUPPORTED = 20;
 
     private String callbackId;                      // The ID of the callback to be invoked with our result
     private long limit;                             // the number of pics/vids/clips to take
     private double duration;                        // optional duration parameter for video recording
     private JSONArray results;                      // The array of results to be returned to the user
-    private Uri imageUri;                           // Uri of captured image 
+    private Uri imageUri;                           // Uri of captured image
 
     //private CordovaInterface cordova;
 
@@ -110,7 +110,7 @@ public class Capture extends Plugin {
 
     /**
      * Provides the media data file data depending on it's mime type
-     * 
+     *
      * @param filePath path to the file
      * @param mimeType of the file
      * @return a MediaFileData object
@@ -149,7 +149,7 @@ public class Capture extends Plugin {
 
     /**
      * Get the Image specific attributes
-     * 
+     *
      * @param filePath path to the file
      * @param obj represents the Media File Data
      * @return a JSONObject that represents the Media File Data
@@ -165,7 +165,7 @@ public class Capture extends Plugin {
 
     /**
      * Get the Image specific attributes
-     * 
+     *
      * @param filePath path to the file
      * @param obj represents the Media File Data
      * @param video if true get video attributes as well
@@ -223,13 +223,13 @@ public class Capture extends Plugin {
     }
 
     /**
-     * Called when the video view exits. 
-     * 
-     * @param requestCode       The request code originally supplied to startActivityForResult(), 
+     * Called when the video view exits.
+     *
+     * @param requestCode       The request code originally supplied to startActivityForResult(),
      *                          allowing you to identify who this result came from.
      * @param resultCode        The integer result code returned by the child activity through its setResult().
      * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
-     * @throws JSONException 
+     * @throws JSONException
      */
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
@@ -349,10 +349,10 @@ public class Capture extends Plugin {
 
     /**
      * Creates a JSONObject that represents a File from the Uri
-     *  
+     *
      * @param data the Uri of the audio/image/video
      * @return a JSONObject that represents a File
-     * @throws IOException 
+     * @throws IOException
      */
     private JSONObject createMediaFile(Uri data) {
         File fp = new File(FileUtils.getRealPathFromURI(data, this.ctx));
@@ -398,7 +398,7 @@ public class Capture extends Plugin {
 
     /**
      * Send error message to JavaScript.
-     * 
+     *
      * @param err
      */
     public void fail(JSONObject err) {

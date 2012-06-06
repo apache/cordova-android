@@ -25,9 +25,9 @@ import android.os.Environment;
 import android.os.StatFs;
 
 /**
- * This class provides file directory utilities.  
+ * This class provides file directory utilities.
  * All file operations are performed on the SD card.
- *   
+ *
  * It is used by the FileUtils class.
  */
 public class DirectoryManager {
@@ -37,7 +37,6 @@ public class DirectoryManager {
 
     /**
      * Determine if a file or directory exists.
-     * 
      * @param name				The name of the file to check.
      * @return					T=exists, F=not found
      */
@@ -117,12 +116,12 @@ public class DirectoryManager {
 
     /**
      * Create a new file object from two file paths.
-     * 
+     *
      * @param file1			Base file path
      * @param file2			Remaining file path
      * @return				File object
      */
-    private static File constructFilePaths(String file1, String file2) {
+    private static File constructFilePaths (String file1, String file2) {
         File newPath;
         if (file2.startsWith(file1)) {
             newPath = new File(file2);
@@ -134,9 +133,9 @@ public class DirectoryManager {
     }
 
     /**
-     * Determine if we can use the SD Card to store the temporary file.  If not then use 
+     * Determine if we can use the SD Card to store the temporary file.  If not then use
      * the internal cache directory.
-     * 
+     *
      * @return the absolute path of where to store the file
      */
     protected static String getTempDirectoryPath(Context ctx) {

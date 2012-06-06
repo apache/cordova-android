@@ -18,12 +18,7 @@
 */
 package org.apache.cordova;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
@@ -35,12 +30,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Location;
-import android.util.Log;
 import android.content.Context;
 
 /**
- * This class listens to the accelerometer sensor and stores the latest 
+ * This class listens to the accelerometer sensor and stores the latest
  * acceleration values x,y,z.
  */
 public class AccelListener extends Plugin implements SensorEventListener {
@@ -49,7 +42,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
     public static int STARTING = 1;
     public static int RUNNING = 2;
     public static int ERROR_FAILED_TO_START = 3;
-    
+   
     private float x,y,z;                                // most recent acceleration values
     private long timestamp;                         // time of most recent value
     private int status;                                 // status of listener
@@ -70,11 +63,11 @@ public class AccelListener extends Plugin implements SensorEventListener {
         this.timestamp = 0;
         this.setStatus(AccelListener.STOPPED);
      }
-    
+
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
-     * 
+     *
      * @param ctx The context of the main Activity.
      */
 
@@ -95,7 +88,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
         PluginResult.Status status = PluginResult.Status.NO_RESULT;
         String message = "";
         PluginResult result = new PluginResult(status, message);
-        result.setKeepCallback(true);   
+        result.setKeepCallback(true);
 
         if (action.equals("start")) {
             this.callbackId = callbackId;
@@ -115,7 +108,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
         }
         return result;
     }
-    
+
     /**
      * Called by AccelBroker when listener is to be shut down.
      * Stop listener.
@@ -132,15 +125,15 @@ public class AccelListener extends Plugin implements SensorEventListener {
      * Start listening for acceleration sensor.
      * 
      * @return          status of listener
-     */
+    */
     private int start() {
         // If already starting or running, then just return
         if ((this.status == AccelListener.RUNNING) || (this.status == AccelListener.STARTING)) {
-          return this.status;
+            return this.status;
         }
-        
+
         this.setStatus(AccelListener.STARTING);
-        
+
         // Get accelerometer from sensor manager
         List<Sensor> list = this.sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
 
@@ -185,7 +178,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
 
     /**
      * Called when the accuracy of the sensor has changed.
-     * 
+     *
      * @param sensor
      * @param accuracy
      */
@@ -194,7 +187,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
         if (sensor.getType() != Sensor.TYPE_ACCELEROMETER) {
             return;
         }
-        
+
         // If not running, then just return
         if (this.status == AccelListener.STOPPED) {
             return;
@@ -204,7 +197,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
 
     /**
      * Sensor listener event.
-     * 
+     *
      * @param SensorEvent event
      */
     public void onSensorChanged(SensorEvent event) {
@@ -218,7 +211,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
             return;
         }
         this.setStatus(AccelListener.RUNNING);
-        
+
         if (this.accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
 
             // Save time that event was received
@@ -246,7 +239,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
 
         this.error(err, this.callbackId);
     }
-    
+
     private void win() {
         // Success return object
         PluginResult result = new PluginResult(PluginResult.Status.OK, this.getAccelerationJSON());
@@ -258,7 +251,6 @@ public class AccelListener extends Plugin implements SensorEventListener {
     private void setStatus(int status) {
         this.status = status;
     }
-    
     private JSONObject getAccelerationJSON() {
         JSONObject r = new JSONObject();
         try {

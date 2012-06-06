@@ -46,7 +46,7 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
+     *
      * @param action	The action to execute
      * @return			T=returns value
      */
@@ -57,7 +57,7 @@ public abstract class Plugin implements IPlugin {
     /**
      * Sets the context of the Plugin. This can then be used to do things like
      * get file paths associated with the Activity.
-     * 
+     *
      * @param ctx The context of the main Activity.
      */
     public void setContext(CordovaInterface ctx) {
@@ -83,28 +83,28 @@ public abstract class Plugin implements IPlugin {
     }
 
     /**
-     * Called when the activity will start interacting with the user. 
-     * 
+     * Called when the activity will start interacting with the user.
+     *
      * @param multitasking		Flag indicating if multitasking is turned on for app
      */
     public void onResume(boolean multitasking) {
     }
 
     /**
-     * Called when the activity receives a new intent. 
+     * Called when the activity receives a new intent.
      */
     public void onNewIntent(Intent intent) {
     }
 
     /**
-     * The final call you receive before your activity is destroyed. 
+     * The final call you receive before your activity is destroyed.
      */
     public void onDestroy() {
     }
 
     /**
-     * Called when a message is sent to plugin. 
-     * 
+     * Called when a message is sent to plugin.
+     *
      * @param id            The message id
      * @param data          The message data
      * @return              Object to stop propagation or null
@@ -115,9 +115,9 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Called when an activity you launched exits, giving you the requestCode you started it with,
-     * the resultCode it returned, and any additional data from it. 
-     * 
-     * @param requestCode		The request code originally supplied to startActivityForResult(), 
+     * the resultCode it returned, and any additional data from it.
+     *
+     * @param requestCode		The request code originally supplied to startActivityForResult(),
      * 							allowing you to identify who this result came from.
      * @param resultCode		The integer result code returned by the child activity through its setResult().
      * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
@@ -127,7 +127,7 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * By specifying a <url-filter> in plugins.xml you can map a URL (using startsWith atm) to this method.
-     * 
+     *
      * @param url				The URL that is trying to be loaded in the Cordova webview.
      * @return					Return true to prevent the URL from loading. Default is false.
      */
@@ -138,7 +138,7 @@ public abstract class Plugin implements IPlugin {
     /**
      * Send generic JavaScript statement back to JavaScript.
      * success(...) and error(...) should be used instead where possible.
-     * 
+     *
      * @param statement
      */
     public void sendJavascript(String statement) {
@@ -147,11 +147,11 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Call the JavaScript success callback for this plugin.
-     * 
+     *
      * This can be used if the execute code for the plugin is asynchronous meaning
      * that execute should return null and the callback from the async operation can
      * call success(...) or error(...)
-     * 
+     *
      * @param pluginResult		The result to return.
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
@@ -161,7 +161,7 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Helper for success callbacks that just returns the Status.OK by default
-     * 
+     *
      * @param message			The message to add to the success result.
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
@@ -171,7 +171,7 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Helper for success callbacks that just returns the Status.OK by default
-     * 
+     *
      * @param message			The message to add to the success result.
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
@@ -181,7 +181,7 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Call the JavaScript error callback for this plugin.
-     * 
+     *
      * @param pluginResult		The result to return.
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
@@ -191,7 +191,7 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Helper for error callbacks that just returns the Status.ERROR by default
-     * 
+     *
      * @param message			The message to add to the error result.
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
@@ -201,7 +201,7 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Helper for error callbacks that just returns the Status.ERROR by default
-     * 
+     *
      * @param message			The message to add to the error result.
      * @param callbackId		The callback id used when calling back into JavaScript.
      */

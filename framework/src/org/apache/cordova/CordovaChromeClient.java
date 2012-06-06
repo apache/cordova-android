@@ -50,7 +50,7 @@ public class CordovaChromeClient extends WebChromeClient {
 
     /**
      * Constructor.
-     * 
+     *
      * @param ctx
      */
     public CordovaChromeClient(CordovaInterface ctx) {
@@ -79,7 +79,7 @@ public class CordovaChromeClient extends WebChromeClient {
 
     /**
      * Tell the client to display a javascript alert dialog.
-     * 
+     *
      * @param view
      * @param url
      * @param message
@@ -123,7 +123,7 @@ public class CordovaChromeClient extends WebChromeClient {
 
     /**
      * Tell the client to display a confirm dialog to the user.
-     * 
+     *
      * @param view
      * @param url
      * @param message
@@ -171,13 +171,13 @@ public class CordovaChromeClient extends WebChromeClient {
     }
 
     /**
-     * Tell the client to display a prompt dialog to the user. 
-     * If the client returns true, WebView will assume that the client will 
+     * Tell the client to display a prompt dialog to the user.
+     * If the client returns true, WebView will assume that the client will
      * handle the prompt dialog and call the appropriate JsPromptResult method.
-     * 
-     * Since we are hacking prompts for our own purposes, we should not be using them for 
+     *
+     * Since we are hacking prompts for our own purposes, we should not be using them for
      * this purpose, perhaps we should hack console.log to do this instead!
-     * 
+     *
      * @param view
      * @param url
      * @param message
@@ -320,8 +320,8 @@ public class CordovaChromeClient extends WebChromeClient {
 
     @Override
     /**
-     * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin. 
-     * 
+     * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin.
+     *
      * @param origin
      * @param callback
      */

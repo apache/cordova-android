@@ -45,7 +45,7 @@ public class TempListener extends Plugin implements SensorEventListener {
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
-     * 
+     *
      * @param ctx The context of the main Activity.
      */
     public void setContext(CordovaInterface ctx) {

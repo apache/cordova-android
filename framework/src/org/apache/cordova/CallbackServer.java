@@ -31,25 +31,25 @@ import java.util.LinkedList;
  * This class provides a way for Java to run JavaScript in the web page that has loaded Cordova.
  * The CallbackServer class implements an XHR server and a polling server with a list of JavaScript
  * statements that are to be executed on the web page.
- * 
+ *
  * The process flow for XHR is:
- * 1. JavaScript makes an async XHR call. 
- * 2. The server holds the connection open until data is available. 
- * 3. The server writes the data to the client and closes the connection. 
- * 4. The server immediately starts listening for the next XHR call. 
+ * 1. JavaScript makes an async XHR call.
+ * 2. The server holds the connection open until data is available.
+ * 3. The server writes the data to the client and closes the connection.
+ * 4. The server immediately starts listening for the next XHR call.
  * 5. The client receives this XHR response, processes it.
  * 6. The client sends a new async XHR request.
  *
  * The CallbackServer class requires the following permission in Android manifest file
  * 		<uses-permission android:name="android.permission.INTERNET" />
- * 
+ *
  * If the device has a proxy set, then XHR cannot be used, so polling must be used instead.
- * This can be determined by the client by calling CallbackServer.usePolling().  
- * 
+ * This can be determined by the client by calling CallbackServer.usePolling().
+ *
  * The process flow for polling is:
  * 1. The client calls CallbackServer.getJavascript() to retrieve next statement.
  * 2. If statement available, then client processes it.
- * 3. The client repeats #1 in loop. 
+ * 3. The client repeats #1 in loop.
  */
 public class CallbackServer implements Runnable {
 
@@ -104,15 +104,14 @@ public class CallbackServer implements Runnable {
 
     /**
      * Init callback server and start XHR if running local app.
-     * 
+    *
      * If Cordova app is loaded from file://, then we can use XHR
      * otherwise we have to use polling due to cross-domain security restrictions.
-     * 
+     *
      * @param url			The URL of the Cordova app being loaded
      */
-    @SuppressWarnings("deprecation")
     public void init(String url) {
-        //Log.d(LOG_TAG, "CallbackServer.start("+url+")");
+        //System.out.println("CallbackServer.start("+url+")");
         this.active = false;
         this.empty = true;
         this.port = 0;
@@ -135,7 +134,7 @@ public class CallbackServer implements Runnable {
 
     /**
      * Re-init when loading a new HTML page into webview.
-     * 
+     *
      * @param url           The URL of the Cordova app being loaded
      */
     public void reinit(String url) {
@@ -145,7 +144,6 @@ public class CallbackServer implements Runnable {
 
     /**
      * Return if polling is being used instead of XHR.
-     * 
      * @return
      */
     public boolean usePolling() {
@@ -154,7 +152,6 @@ public class CallbackServer implements Runnable {
 
     /**
      * Get the port that this server is running on.
-     * 
      * @return
      */
     public int getPort() {
@@ -163,7 +160,6 @@ public class CallbackServer implements Runnable {
 
     /**
      * Get the security token that this server requires when calling getJavascript().
-     * 
      * @return
      */
     public String getToken() {
@@ -373,10 +369,10 @@ public class CallbackServer implements Runnable {
     static final String digits = "0123456789ABCDEF";
 
     /**
-     * This will encode the return value to JavaScript.  We revert the encoding for 
-     * common characters that don't require encoding to reduce the size of the string 
+     * This will encode the return value to JavaScript.  We revert the encoding for
+     * common characters that don't require encoding to reduce the size of the string
      * being passed to JavaScript.
-     * 
+     *
      * @param s to be encoded
      * @param enc encoding type
      * @return encoded string

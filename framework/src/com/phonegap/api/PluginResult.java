@@ -22,32 +22,32 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class PluginResult extends org.apache.cordova.api.PluginResult {
-	
-	public PluginResult(Status status) {
-		super(status);
-	}
-	
-	public PluginResult(Status status, String message) {
-		super(status, message);
-	}
 
-	public PluginResult(Status status, JSONArray message) {
+    public PluginResult(Status status) {
+        super(status);
+    }
+
+    public PluginResult(Status status, String message) {
         super(status, message);
-	}
+    }
 
-	public PluginResult(Status status, JSONObject message) {
+    public PluginResult(Status status, JSONArray message) {
         super(status, message);
-	}
+    }
 
-	public PluginResult(Status status, int i) {
+    public PluginResult(Status status, JSONObject message) {
+        super(status, message);
+    }
+
+    public PluginResult(Status status, int i) {
         super(status, i);
-	}
+    }
 
-	public PluginResult(Status status, float f) {
+    public PluginResult(Status status, float f) {
         super(status, f);
-	}
+    }
 
-	public PluginResult(Status status, boolean b) {
+    public PluginResult(Status status, boolean b) {
         super(status, b);
-	}
+    }
 }

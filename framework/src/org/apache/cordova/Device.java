@@ -53,7 +53,7 @@ public class Device extends Plugin {
     /**
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
-     * 
+     *
      * @param ctx The context of the main Activity.
      */
     public void setContext(CordovaInterface ctx) {
@@ -64,7 +64,7 @@ public class Device extends Plugin {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action        The action to execute.
      * @param args          JSONArry of arguments for the plugin.
      * @param callbackId    The callback id used when calling back into JavaScript.
@@ -95,7 +95,7 @@ public class Device extends Plugin {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
+     *
      * @param action    The action to execute
      * @return          T=returns value
      */
@@ -158,7 +158,7 @@ public class Device extends Plugin {
 
     /**
      * Get the OS name.
-     * 
+     *
      * @return
      */
     public String getPlatform() {
@@ -167,7 +167,7 @@ public class Device extends Plugin {
 
     /**
      * Get the device's Universally Unique Identifier (UUID).
-     * 
+     *
      * @return
      */
     public String getUuid() {
@@ -177,7 +177,7 @@ public class Device extends Plugin {
 
     /**
      * Get the Cordova version.
-     * 
+     *
      * @return
      */
     public String getCordovaVersion() {
@@ -196,7 +196,7 @@ public class Device extends Plugin {
 
     /**
      * Get the OS version.
-     * 
+     *
      * @return
      */
     public String getOSVersion() {
