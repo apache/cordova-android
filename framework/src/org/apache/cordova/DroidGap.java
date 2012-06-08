@@ -160,7 +160,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     protected IPlugin activityResultCallback = null;
     protected boolean activityResultKeepRunning;
 
-    // Default background color for activity 
+    // Default background color for activity
     // (this is not the color for the webview, which is set in HTML)
     private int backgroundColor = Color.BLACK;
 
@@ -183,7 +183,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
     * Sets the authentication token.
-    * 
+    *
     * @param authenticationToken
     * @param host
     * @param realm
@@ -199,7 +199,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      *
      * @param host
      * @param realm
-     * 
+     *
      * @return the authentication token or null if did not exist
      */
     public AuthenticationToken removeAuthenticationToken(String host, String realm) {
@@ -220,7 +220,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      *
      * @param host
      * @param realm
-     * 
+     *
      * @return the authentication token
      */
     public AuthenticationToken getAuthenticationToken(String host, String realm) {
@@ -239,9 +239,9 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
     }
 
-    /** 
-     * Called when the activity is first created. 
-     * 
+    /**
+     * Called when the activity is first created.
+     *
      * @param savedInstanceState
      */
     @SuppressWarnings("deprecation")
@@ -273,7 +273,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Get the Android activity.
-     * 
+     *
      * @return
      */
     public Activity getActivity() {
@@ -323,7 +323,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Load the url into the webview.
-     * 
+     *
      * @param url
      */
     public void loadUrl(String url) {
@@ -771,7 +771,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Called when a key is released. (Key UP)
-     * 
+     *
      * @param keyCode
      * @param event
      */
@@ -817,7 +817,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Launch an activity for which you would like a result when it finished. When this activity exits, 
+     * Launch an activity for which you would like a result when it finished. When this activity exits,
      * your onActivityResult() method will be called.
      *
      * @param command           The command object
@@ -860,12 +860,12 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable). 
+     * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable).
      * The errorCode parameter corresponds to one of the ERROR_* constants.
      *
      * @param errorCode    The error code corresponding to an ERROR_* value.
      * @param description  A String describing the error.
-     * @param failingUrl   The url that failed to load. 
+     * @param failingUrl   The url that failed to load.
      */
     public void onReceivedError(final int errorCode, final String description, final String failingUrl) {
         final DroidGap me = this;
@@ -901,7 +901,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Display an error dialog and optionally exit application.
-     * 
+     *
      * @param title
      * @param message
      * @param button
@@ -948,7 +948,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         return false;
     }
 
-    /* 
+    /*
      * Hook in DroidGap for menu plugins
      *
      */
@@ -972,7 +972,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Get Activity context.
-     * 
+     *
      * @return
      */
     public Context getContext() {
@@ -981,7 +981,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Override the backbutton.
-     * 
+     *
      * @param override
      */
     public void bindBackButton(boolean override) {
@@ -990,7 +990,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Determine of backbutton is overridden.
-     * 
+     *
      * @return
      */
     public boolean isBackButtonBound() {
@@ -999,7 +999,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     /**
      * Load the specified URL in the Cordova webview or a new browser instance.
-     * 
+     *
      * NOTE: If openExternal is false, only URLs listed in whitelist can be loaded.
      *
      * @param url           The url to load.
@@ -1046,8 +1046,12 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Create and show the dialog
         splashDialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
-        splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        // check to see if the splash screen should be full screen
+        if ((getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+            splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         splashDialog.setContentView(root);
         splashDialog.setCancelable(false);
         splashDialog.show();
@@ -1062,8 +1066,8 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Called when a message is sent to plugin. 
-     * 
+     * Called when a message is sent to plugin.
+     *
      * @param id            The message id
      * @param data          The message data
      * @return              Object or null
