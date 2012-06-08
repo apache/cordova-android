@@ -50,16 +50,16 @@ function exec(s, output) {
     WScript.Echo("Command exited with code " + o.Status);
 }
 
-function fork(s) {
-    WScript.Echo('Executing ' + s);
-    var o=shell.Exec(s);
-    while (o.Status != 1) {
-        WScript.Sleep(100);
-    }
-    WScript.Echo(o.StdOut.ReadAll());
-    WScript.Echo(o.StdErr.ReadAll());
-    WScript.Echo("Command exited with code " + o.Status);
-}
+//function fork(s) {
+//    WScript.Echo('Executing ' + s);
+//    var o=shell.Exec(s);
+//    while (o.Status != 1) {
+//        WScript.Sleep(100);
+//    }
+//    WScript.Echo(o.StdOut.ReadAll());
+//    WScript.Echo(o.StdErr.ReadAll());
+//    WScript.Echo("Command exited with code " + o.Status);
+//}
 
 var args = WScript.Arguments, PROJECT_PATH="example", 
     PACKAGE="org.apache.cordova.example", ACTIVITY="cordovaExample",
@@ -79,7 +79,7 @@ var PACKAGE_AS_PATH=PACKAGE.replace(/\./g, '\\');
 var ACTIVITY_PATH=PROJECT_PATH+'\\src\\'+PACKAGE_AS_PATH+'\\'+ACTIVITY+'.java';
 var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
 var TARGET=shell.Exec('android.bat list targets').StdOut.ReadAll().match(/id:\s([0-9]).*/)[1];
-var VERSION=read('VERSION').replace(/\r\n/,'').replace(/\n/,'');
+var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 
 WScript.Echo("Project path: " + PROJECT_PATH);
 WScript.Echo("Package: " + PACKAGE);
@@ -89,28 +89,24 @@ WScript.Echo("Activity path: " + ACTIVITY_PATH);
 WScript.Echo("Manifest path: " + MANIFEST_PATH);
 WScript.Echo("Cordova version: " + VERSION);
 
-// TODO: clobber any existing example
-
-/*
-if [ $# -eq 0 ]
-then
-    rm -rf $PROJECT_PATH
-fi
-*/
-
 // create the project
 exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --package '+PACKAGE+' --activity '+ACTIVITY);
 
 // update the cordova framework project to a target that exists on this machine
-exec('android.bat update project --target '+TARGET+' --path framework');
+exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
 
 // pull down commons codec if necessary
 var fso = WScript.CreateObject('Scripting.FileSystemObject');
 if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
   // We need the .jar
   var url = 'http://mirror.symnds.com/software/Apache//commons/codec/binaries/commons-codec-1.6-bin.zip';
-  var savePath = ROOT + '\\framework\\libs\\commons-codec-1.6-bin.zip';
+  var libsPath = ROOT + '\\framework\\libs';
+  var savePath = libsPath + '\\commons-codec-1.6-bin.zip';
   if (!fso.FileExists(savePath)) {
+    if(!fso.FolderExists(ROOT + '\\framework\\libs')) {
+        fso.CreateFolder(libsPath);
+        WScript.Echo('Created new libs folder at '+libsPath);
+    }
     // We need the zip to get the jar
     var xhr = WScript.CreateObject('MSXML2.XMLHTTP');
     xhr.open('GET', url, false);
@@ -139,36 +135,29 @@ if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
   fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6-bin.zip');
   fso.DeleteFolder(ROOT + '\\framework\\libs\\commons-codec-1.6', true);
 }
-
-
 // compile cordova.js and cordova.jar
 // if you see an error about "Unable to resolve target" then you may need to 
 // update your android tools or install an additional Android platform version
-exec('ant.bat -f framework\\build.xml jar');
+exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
 
 // copy in the project template
-exec('cmd /c xcopy bin\\templates\\project\\* '+PROJECT_PATH+' /S /Y');
-
-// copy example www assets
-exec('cmd /c xcopy ' + PROJECT_PATH + '\\cordova\\assets ' + PROJECT_PATH + ' /S /Y');
+exec('cmd /c xcopy '+ ROOT + '\\bin\\templates2\\project\\* '+PROJECT_PATH+' /S /Y');
 
 // copy in cordova.js
-exec('cmd /c copy framework\\assets\\js\\cordova.android.js '+PROJECT_PATH+'\\.cordova\\android\\cordova-'+VERSION+'.js /Y');
+exec('cmd /c copy '+ROOT+'\\framework\\assets\\js\\cordova.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
 
 // copy in cordova.jar
-exec('cmd /c copy framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\.cordova\\android\\cordova-'+VERSION+'.jar /Y');
+exec('cmd /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
 
 // copy in xml
-exec('cmd /c copy framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\.cordova\\android\\cordova.xml /Y');
-exec('cmd /c copy framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\.cordova\\android\\plugins.xml /Y');
+exec('cmd /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
+exec('cmd /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
 
-// write out config file
-write(PROJECT_PATH + '\\.cordova\\config',
-  'VERSION=' + VERSION + '\r\n' +
-  'PROJECT_PATH=' + PROJECT_PATH + '\r\n' +
-  'PACKAGE=' + PACKAGE + '\r\n' +
-  'ACTIVITY=' + ACTIVITY + '\r\n' +
-  'TARGET=' + TARGET);
+// interpolate the activity name and package
+replaceInFile(ACTIVITY_PATH, /__ACTIVITY__/, ACTIVITY);
+replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 
-// run project-specific create process
-fork('cscript.exe ' + PROJECT_PATH + '\\cordova\\create.js');
+replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, ACTIVITY);
+replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
+
+WScript.Echo('Create completed successfully.');

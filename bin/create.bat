@@ -1,1 +1,1 @@
-cscript bin\create.js %*
+cscript %~dp0\create.js %*
