@@ -93,8 +93,8 @@ $ANDROID_BIN create project --target $TARGET --path $PROJECT_PATH --package $PAC
 
 # copy project template
 echo "Copying assets and resources ..."
-cp -r $BUILD_PATH/bin/templates2/project/assets $PROJECT_PATH
-cp -r $BUILD_PATH/bin/templates2/project/res $PROJECT_PATH
+cp -r $BUILD_PATH/bin/templates/project/assets $PROJECT_PATH
+cp -r $BUILD_PATH/bin/templates/project/res $PROJECT_PATH
 
 # copy cordova.js, cordova.jar and res/xml
 echo "Setting up config and plugins list ..."
@@ -106,10 +106,10 @@ cp $BUILD_PATH/framework/cordova-$VERSION.jar $PROJECT_PATH/libs/cordova-$VERSIO
 
 # interpolate the activity name and package
 echo "Updating Activity and AndroidManifest ..."
-cp $BUILD_PATH/bin/templates2/project/Activity.java $ACTIVITY_PATH
+cp $BUILD_PATH/bin/templates/project/Activity.java $ACTIVITY_PATH
 sed -i '' -e "s/__ACTIVITY__/${ACTIVITY}/g" $ACTIVITY_PATH
 sed -i '' -e "s/__ID__/${PACKAGE}/g" $ACTIVITY_PATH
 
-cp $BUILD_PATH/bin/templates2/project/AndroidManifest.xml $MANIFEST_PATH
+cp $BUILD_PATH/bin/templates/project/AndroidManifest.xml $MANIFEST_PATH
 sed -i '' -e "s/__ACTIVITY__/${ACTIVITY}/g" $MANIFEST_PATH
 sed -i '' -e "s/__PACKAGE__/${PACKAGE}/g" $MANIFEST_PATH
