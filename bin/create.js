@@ -141,7 +141,7 @@ if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
 exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
 
 // copy in the project template
-exec('cmd /c xcopy '+ ROOT + '\\bin\\templates2\\project\\* '+PROJECT_PATH+' /S /Y');
+exec('cmd /c xcopy '+ ROOT + '\\bin\\templates\\project\\* '+PROJECT_PATH+' /S /Y');
 
 // copy in cordova.js
 exec('cmd /c copy '+ROOT+'\\framework\\assets\\js\\cordova.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
