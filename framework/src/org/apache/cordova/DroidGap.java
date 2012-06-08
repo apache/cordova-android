@@ -1432,6 +1432,8 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Create and show the dialog
         splashDialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
+        splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         splashDialog.setContentView(root);
         splashDialog.setCancelable(false);
         splashDialog.show();
