@@ -181,6 +181,10 @@ public class DroidGap extends Activity implements CordovaInterface {
     // when another application (activity) is started.
     protected boolean keepRunning = true;
 
+    private boolean volumeupBound;
+
+    private boolean volumedownBound;
+
     /**
     * Sets the authentication token.
     * 
@@ -817,6 +821,38 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
+    * Called when a key is pressed. (Key DOWN)
+     *
+     * @param keyCode
+     * @param event
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (this.appView == null) {
+            return super.onKeyDown(keyCode, event);
+        }
+
+        // If volumedown key
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            if (this.volumedownBound==true) {
+                // only override default behaviour is event bound
+                this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
+                return true;
+            }
+        }
+
+        // If volumeup key
+        else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            if (this.volumeupBound==true) {
+                // only override default behaviour is event bound
+                this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Launch an activity for which you would like a result when it finished. When this activity exits, 
      * your onActivityResult() method will be called.
      *
@@ -1011,6 +1047,16 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (this.appView != null) {
             appView.showWebPage(url, openExternal, clearHistory, params);
         }
+    }
+
+    public void bindButton(String button, boolean override) {
+      // TODO Auto-generated method stub
+      if (button.compareTo("volumeup")==0) {
+        this.volumeupBound = override;
+      }
+      else if (button.compareTo("volumedown")==0) {
+        this.volumedownBound = override;
+      }
     }
 
     protected Dialog splashDialog;

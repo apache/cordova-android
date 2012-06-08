@@ -189,6 +189,17 @@ public class App extends Plugin {
     }
 
     /**
+     * Override the default behavior of the Android volume buttons.
+     * If overridden, when the volume button is pressed, the "volume[up|down]button" JavaScript event will be fired.
+     *
+     * @param button        volumeup, volumedown
+     * @param override      T=override, F=cancel override
+     */
+    public void overrideButton(String button, boolean override) {
+        LOG.i("DroidGap", "WARNING: Volume Button Default Behaviour will be overridden.  The volume event will be fired!");
+        ((DroidGap)this.ctx).bindButton(button, override);
+    }
+    /**
      * Return whether the Android back button is overridden by the user.
      *
      * @return boolean
