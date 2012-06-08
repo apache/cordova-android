@@ -19,6 +19,7 @@
 package org.apache.cordova.api;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 
 /**
@@ -28,9 +29,9 @@ import android.content.Intent;
 public interface CordovaInterface {
 
     /**
-     * Launch an activity for which you would like a result when it finished. When this activity exits, 
+     * Launch an activity for which you would like a result when it finished. When this activity exits,
      * your onActivityResult() method will be called.
-     *  
+     *
      * @param command     The command object
      * @param intent      The intent to start
      * @param requestCode   The request code that is passed to callback to identify the activity
@@ -38,29 +39,36 @@ public interface CordovaInterface {
     abstract public void startActivityForResult(IPlugin command, Intent intent, int requestCode);
 
     /**
+     * Launch an activity for which you would not like a result when it finished.
+     *
+     * @param intent            The intent to start
+     */
+    abstract public void startActivity(Intent intent);
+
+    /**
      * Set the plugin to be called when a sub-activity exits.
-     * 
+     *
      * @param plugin      The plugin on which onActivityResult is to be called
      */
     abstract public void setActivityResultCallback(IPlugin plugin);
 
     /**
      * Causes the Activity to override the back button behavior.
-     * 
+     *
      * @param override
      */
     public abstract void bindBackButton(boolean override);
 
     /**
      * A hook required to check if the Back Button is bound.
-     * 
+     *
      * @return
      */
     public abstract boolean isBackButtonBound();
 
     /**
      * Get the Android activity.
-     * 
+     *
      * @return
      */
     public abstract Activity getActivity();
@@ -69,12 +77,13 @@ public interface CordovaInterface {
     public abstract void cancelLoadUrl();
 
     /**
-     * Called when a message is sent to plugin. 
-     * 
+     * Called when a message is sent to plugin.
+     *
      * @param id            The message id
      * @param data          The message data
      * @return              Object or null
      */
     public Object onMessage(String id, Object data);
 
+    abstract public Context getContext();
 }
