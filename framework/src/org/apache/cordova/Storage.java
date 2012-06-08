@@ -141,7 +141,7 @@ public class Storage extends Plugin {
 
         // If no database path, generate from application package
         if (this.path == null) {
-            this.path = this.ctx.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
+            this.path = this.ctx.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         }
 
         this.dbName = this.path + File.pathSeparator + db + ".db";

@@ -53,6 +53,7 @@ import java.util.LinkedList;
  */
 public class CallbackServer implements Runnable {
 
+    @SuppressWarnings("unused")
     private static final String LOG_TAG = "CallbackServer";
 
     /**
@@ -94,7 +95,7 @@ public class CallbackServer implements Runnable {
      * Constructor.
      */
     public CallbackServer() {
-        //System.out.println("CallbackServer()");
+        //Log.d(LOG_TAG, "CallbackServer()");
         this.active = false;
         this.empty = true;
         this.port = 0;
@@ -103,7 +104,7 @@ public class CallbackServer implements Runnable {
 
     /**
      * Init callback server and start XHR if running local app.
-     *
+    *
      * If Cordova app is loaded from file://, then we can use XHR
      * otherwise we have to use polling due to cross-domain security restrictions.
      *
@@ -143,7 +144,6 @@ public class CallbackServer implements Runnable {
 
     /**
      * Return if polling is being used instead of XHR.
-     *
      * @return
      */
     public boolean usePolling() {
@@ -152,7 +152,6 @@ public class CallbackServer implements Runnable {
 
     /**
      * Get the port that this server is running on.
-     *
      * @return
      */
     public int getPort() {
@@ -161,7 +160,6 @@ public class CallbackServer implements Runnable {
 
     /**
      * Get the security token that this server requires when calling getJavascript().
-     *
      * @return
      */
     public String getToken() {
@@ -172,7 +170,7 @@ public class CallbackServer implements Runnable {
      * Start the server on a new thread.
      */
     public void startServer() {
-        //System.out.println("CallbackServer.startServer()");
+        //Log.d(LOG_TAG, "CallbackServer.startServer()");
         this.active = false;
 
         // Start server on new thread
@@ -193,7 +191,7 @@ public class CallbackServer implements Runnable {
     }
 
     /**
-     * Start running the server.
+     * Start running the server.  
      * This is called automatically when the server thread is started.
      */
     public void run() {
@@ -204,90 +202,90 @@ public class CallbackServer implements Runnable {
             String request;
             ServerSocket waitSocket = new ServerSocket(0);
             this.port = waitSocket.getLocalPort();
-            //System.out.println("CallbackServer -- using port " +this.port);
+            //Log.d(LOG_TAG, "CallbackServer -- using port " +this.port);
             this.token = java.util.UUID.randomUUID().toString();
-            //System.out.println("CallbackServer -- using token "+this.token);
+            //Log.d(LOG_TAG, "CallbackServer -- using token "+this.token);
 
-             while (this.active) {
-                 //System.out.println("CallbackServer: Waiting for data on socket");
-                 Socket connection = waitSocket.accept();
-                 BufferedReader xhrReader = new BufferedReader(new InputStreamReader(connection.getInputStream()),40);
-                 DataOutputStream output = new DataOutputStream(connection.getOutputStream());
-                 request = xhrReader.readLine();
-                 String response = "";
-                 //System.out.println("CallbackServerRequest="+request);
-                 if (this.active && (request != null)) {
-                     if (request.contains("GET")) {
+            while (this.active) {
+                //Log.d(LOG_TAG, "CallbackServer: Waiting for data on socket");
+                Socket connection = waitSocket.accept();
+                BufferedReader xhrReader = new BufferedReader(new InputStreamReader(connection.getInputStream()), 40);
+                DataOutputStream output = new DataOutputStream(connection.getOutputStream());
+                request = xhrReader.readLine();
+                String response = "";
+                //Log.d(LOG_TAG, "CallbackServerRequest="+request);
+                if (this.active && (request != null)) {
+                    if (request.contains("GET")) {
 
-                         // Get requested file
-                         String[] requestParts = request.split(" ");
+                        // Get requested file
+                        String[] requestParts = request.split(" ");
 
-                         // Must have security token
-                         if ((requestParts.length == 3) && (requestParts[1].substring(1).equals(this.token))) {
-                             //System.out.println("CallbackServer -- Processing GET request");
+                        // Must have security token
+                        if ((requestParts.length == 3) && (requestParts[1].substring(1).equals(this.token))) {
+                            //Log.d(LOG_TAG, "CallbackServer -- Processing GET request");
 
-                             // Wait until there is some data to send, or send empty data every 10 sec
-                             // to prevent XHR timeout on the client
-                             synchronized (this) {
-                                 while (this.empty) {
-                                     try {
-                                         this.wait(10000); // prevent timeout from happening
-                                         //System.out.println("CallbackServer>>> break <<<");
-                                         break;
-                                     }
-                                     catch (Exception e) { }
-                                 }
-                             }
+                            // Wait until there is some data to send, or send empty data every 10 sec 
+                            // to prevent XHR timeout on the client 
+                            synchronized (this) {
+                                while (this.empty) {
+                                    try {
+                                        this.wait(10000); // prevent timeout from happening
+                                        //Log.d(LOG_TAG, "CallbackServer>>> break <<<");
+                                        break;
+                                    } catch (Exception e) {
+                                    }
+                                }
+                            }
 
-                             // If server is still running
-                             if (this.active) {
+                            // If server is still running
+                            if (this.active) {
 
-                                 // If no data, then send 404 back to client before it times out
-                                 if (this.empty) {
-                                     //System.out.println("CallbackServer -- sending data 0");
-                                     response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
-                                 }
-                                 else {
-                                     //System.out.println("CallbackServer -- sending item");
-                                     response = "HTTP/1.1 200 OK\r\n\r\n";
-                                     String js = this.getJavascript();
-                                     if (js != null) {
-                                         response += encode(js, "UTF-8");
-                                     }
-                                 }
-                             }
-                             else {
-                                 response = "HTTP/1.1 503 Service Unavailable\r\n\r\n ";
-                             }
-                         }
-                         else {
-                             response = "HTTP/1.1 403 Forbidden\r\n\r\n ";
-                         }
-                     }
-                     else {
-                         response = "HTTP/1.1 400 Bad Request\r\n\r\n ";
-                     }
-                     //System.out.println("CallbackServer: response="+response);
-                     //System.out.println("CallbackServer: closing output");
-                     output.writeBytes(response);
-                     output.flush();
-                 }
-                 output.close();
-                 xhrReader.close();
-             }
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-         this.active = false;
-         //System.out.println("CallbackServer.startServer() - EXIT");
+                                // If no data, then send 404 back to client before it times out
+                                if (this.empty) {
+                                    //Log.d(LOG_TAG, "CallbackServer -- sending data 0");
+                                    response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
+                                }
+                                else {
+                                    //Log.d(LOG_TAG, "CallbackServer -- sending item");
+                                    response = "HTTP/1.1 200 OK\r\n\r\n";
+                                    String js = this.getJavascript();
+                                    if (js != null) {
+                                        response += encode(js, "UTF-8");
+                                    }
+                                }
+                            }
+                            else {
+                                response = "HTTP/1.1 503 Service Unavailable\r\n\r\n ";
+                            }
+                        }
+                        else {
+                            response = "HTTP/1.1 403 Forbidden\r\n\r\n ";
+                        }
+                    }
+                    else {
+                        response = "HTTP/1.1 400 Bad Request\r\n\r\n ";
+                    }
+                    //Log.d(LOG_TAG, "CallbackServer: response="+response);
+                    //Log.d(LOG_TAG, "CallbackServer: closing output");
+                    output.writeBytes(response);
+                    output.flush();
+                }
+                output.close();
+                xhrReader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.active = false;
+        //Log.d(LOG_TAG, "CallbackServer.startServer() - EXIT");
     }
 
     /**
-     * Stop server.
+     * Stop server.  
      * This stops the thread that the server is running on.
      */
     public void stopServer() {
-        //System.out.println("CallbackServer.stopServer()");
+        //Log.d(LOG_TAG, "CallbackServer.stopServer()");
         if (this.active) {
             this.active = false;
 
@@ -307,11 +305,11 @@ public class CallbackServer implements Runnable {
 
     /**
      * Get the number of JavaScript statements.
-     *
+     * 
      * @return int
      */
     public int getSize() {
-        synchronized(this) {
+        synchronized (this) {
             int size = this.javascript.size();
             return size;
         }
@@ -319,11 +317,11 @@ public class CallbackServer implements Runnable {
 
     /**
      * Get the next JavaScript statement and remove from list.
-     *
+     *  
      * @return String
      */
     public String getJavascript() {
-        synchronized(this) {
+        synchronized (this) {
             if (this.javascript.size() == 0) {
                 return null;
             }
@@ -337,7 +335,7 @@ public class CallbackServer implements Runnable {
 
     /**
      * Add a JavaScript statement to the list.
-     *
+     * 
      * @param statement
      */
     public void sendJavascript(String statement) {

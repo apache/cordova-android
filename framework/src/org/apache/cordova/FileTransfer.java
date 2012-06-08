@@ -51,7 +51,6 @@ import android.net.Uri;
 import android.util.Log;
 import android.webkit.CookieManager;
 
-
 public class FileTransfer extends Plugin {
 
     private static final String LOG_TAG = "FileTransfer";
@@ -76,8 +75,7 @@ public class FileTransfer extends Plugin {
         try {
             source = args.getString(0);
             target = args.getString(1);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             Log.d(LOG_TAG, "Missing source or target");
             return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing source or target");
         }
@@ -353,11 +351,11 @@ public class FileTransfer extends Plugin {
             }
 
             public void checkClientTrusted(X509Certificate[] chain,
-                            String authType) throws CertificateException {
+                    String authType) throws CertificateException {
             }
 
             public void checkServerTrusted(X509Certificate[] chain,
-                            String authType) throws CertificateException {
+                    String authType) throws CertificateException {
             }
         } };
 
@@ -419,7 +417,7 @@ public class FileTransfer extends Plugin {
      */
     private String getArgument(JSONArray args, int position, String defaultString) {
         String arg = defaultString;
-        if(args.length() >= position) {
+        if (args.length() >= position) {
             arg = args.optString(position);
             if (arg == null || "null".equals(arg)) {
                 arg = defaultString;
@@ -427,7 +425,6 @@ public class FileTransfer extends Plugin {
         }
         return arg;
     }
-
 
     /**
      * Downloads a file form a given URL and saves it to the specified directory.
@@ -447,7 +444,7 @@ public class FileTransfer extends Plugin {
             file.getParentFile().mkdirs();
 
             // connect to server
-            if(this.ctx.isUrlWhiteListed(source))
+            if (webView.isUrlWhiteListed(source))
             {
               URL url = new URL(source);
               connection = (HttpURLConnection) url.openConnection();
@@ -464,20 +461,24 @@ public class FileTransfer extends Plugin {
 
               Log.d(LOG_TAG, "Download file: " + url);
 
-              InputStream inputStream = connection.getInputStream();
-              byte[] buffer = new byte[1024];
-              int bytesRead = 0;
+                connection.connect();
 
-              FileOutputStream outputStream = new FileOutputStream(file);
+                Log.d(LOG_TAG, "Download file:" + url);
 
-              // write bytes to file
-              while ( (bytesRead = inputStream.read(buffer)) > 0 ) {
-                outputStream.write(buffer,0, bytesRead);
-              }
+                InputStream inputStream = connection.getInputStream();
+                byte[] buffer = new byte[1024];
+                int bytesRead = 0;
 
-              outputStream.close();
+                FileOutputStream outputStream = new FileOutputStream(file);
 
-              Log.d(LOG_TAG, "Saved file: " + target);
+                // write bytes to file
+                while ((bytesRead = inputStream.read(buffer)) > 0) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+
+                outputStream.close();
+
+                Log.d(LOG_TAG, "Saved file: " + target);
 
               // create FileEntry object
               FileUtils fileUtil = new FileUtils();
@@ -521,7 +522,7 @@ public class FileTransfer extends Plugin {
     private InputStream getPathFromUri(String path) throws FileNotFoundException {
         if (path.startsWith("content:")) {
             Uri uri = Uri.parse(path);
-            return ctx.getContentResolver().openInputStream(uri);
+            return ctx.getActivity().getContentResolver().openInputStream(uri);
         }
         else if (path.startsWith("file://")) {
             int question = path.indexOf("?");

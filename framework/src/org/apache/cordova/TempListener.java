@@ -25,7 +25,6 @@ import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -51,12 +50,12 @@ public class TempListener extends Plugin implements SensorEventListener {
      */
     public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
-        this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
+        this.sensorManager = (SensorManager) ctx.getActivity().getSystemService(Context.SENSOR_SERVICE);
     }
 
     /**
      * Executes the request and returns PluginResult.
-     *
+     * 
      * @param action 		The action to execute.
      * @param args 			JSONArry of arguments for the plugin.
      * @param callbackId	The callback id used when calling back into JavaScript.
@@ -87,7 +86,8 @@ public class TempListener extends Plugin implements SensorEventListener {
     // LOCAL METHODS
     //--------------------------------------------------------------------------
 
-    public void start()	{
+    public void start() {
+        @SuppressWarnings("deprecation")
         List<Sensor> list = this.sensorManager.getSensorList(Sensor.TYPE_TEMPERATURE);
         if (list.size() > 0) {
             this.mSensor = list.get(0);

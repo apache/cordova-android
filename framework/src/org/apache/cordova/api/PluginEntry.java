@@ -18,7 +18,10 @@
  */
 package org.apache.cordova.api;
 
-import android.webkit.WebView;
+import org.apache.cordova.CordovaWebView;
+
+//import android.content.Context;
+//import android.webkit.WebView;
 
 /**
  * This class represents a service entry object.
@@ -66,12 +69,12 @@ public class PluginEntry {
      *
      * @return                      The plugin object
      */
-    @SuppressWarnings("unchecked")
-    public IPlugin createPlugin(WebView webView, CordovaInterface ctx) {
+    public IPlugin createPlugin(CordovaWebView webView, CordovaInterface ctx) {
         if (this.plugin != null) {
             return this.plugin;
         }
         try {
+            @SuppressWarnings("rawtypes")
             Class c = getClassByName(this.pluginClass);
             if (isCordovaPlugin(c)) {
                 this.plugin = (IPlugin) c.newInstance();
@@ -93,7 +96,7 @@ public class PluginEntry {
      * @return
      * @throws ClassNotFoundException
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Class getClassByName(final String clazz) throws ClassNotFoundException {
         Class c = null;
         if (clazz != null) {
@@ -109,7 +112,7 @@ public class PluginEntry {
      * @param c                     The class to check the interfaces of.
      * @return                      Boolean indicating if the class implements org.apache.cordova.api.Plugin
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private boolean isCordovaPlugin(Class c) {
         if (c != null) {
             return org.apache.cordova.api.Plugin.class.isAssignableFrom(c) || org.apache.cordova.api.IPlugin.class.isAssignableFrom(c);

@@ -22,6 +22,7 @@ import android.content.Context;
 import android.util.Log;
 import android.webkit.WebView;
 
+import org.apache.cordova.api.CordovaInterface;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +37,7 @@ import org.json.JSONObject;
 public abstract class ContactAccessor {
 
     protected final String LOG_TAG = "ContactsAccessor";
-    protected Context mApp;
+    protected CordovaInterface mApp;
     protected WebView mView;
 
     /**
@@ -75,7 +76,7 @@ public abstract class ContactAccessor {
                 map.put("urls", true);
                 map.put("photos", true);
                 map.put("categories", true);
-            }
+           } 
             else {
                 for (int i=0; i<fields.length(); i++) {
                     key = fields.getString(i);
@@ -121,7 +122,7 @@ public abstract class ContactAccessor {
                     }
                 }
             }
-        }
+       }
         catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
@@ -147,7 +148,7 @@ public abstract class ContactAccessor {
                     value = null;
                 }
             }
-        }
+       }
         catch (JSONException e) {
             Log.d(LOG_TAG, "Could not get = " + e.getMessage());
         }
@@ -176,8 +177,8 @@ public abstract class ContactAccessor {
      */
     public abstract boolean remove(String id);
 
-    /**
-     * A class that represents the where clause to be used in the database query
+   /**
+     * A class that represents the where clause to be used in the database query 
      */
     class WhereOptions {
         private String where;

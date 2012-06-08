@@ -18,9 +18,11 @@
 */
 package org.apache.cordova.api;
 
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
+
+//import android.content.Context;
 import android.content.Intent;
-import android.webkit.WebView;
 
 /**
  * Plugin interface must be implemented by any plugin classes.
@@ -50,18 +52,18 @@ public interface IPlugin {
     /**
      * Sets the context of the Plugin. This can then be used to do things like
      * get file paths associated with the Activity.
-     *
+     * 
      * @param ctx The context of the main Activity.
      */
     void setContext(CordovaInterface ctx);
 
     /**
-     * Sets the main View of the application, this is the WebView within which
+     * Sets the main View of the application, this is the WebView within which 
      * a Cordova app runs.
-     *
+     * 
      * @param webView The Cordova WebView
      */
-    void setView(WebView webView);
+    void setView(CordovaWebView webView);
 
     /**
      * Called when the system is about to start resuming a previous activity.
@@ -92,8 +94,9 @@ public interface IPlugin {
      *
      * @param id            The message id
      * @param data          The message data
+     * @return              Object to stop propagation or null
      */
-    public void onMessage(String id, Object data);
+    public Object onMessage(String id, Object data);
 
     /**
      * Called when an activity you launched exits, giving you the requestCode you started it with,

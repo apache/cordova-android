@@ -16,19 +16,24 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova;
+package org.apache.cordova.test;
 
-// represents the <preference> element from the W3C config.xml spec
-// see http://www.w3.org/TR/widgets/#the-preference-element-and-its-attributes
-public class PreferenceNode {
-    public String name;
-    public String value;
-    public boolean readonly;
+import android.os.Bundle;
+import org.apache.cordova.*;
 
-    // constructor
-    public PreferenceNode(String name, String value, boolean readonly) {
-        this.name = name;
-        this.value = value;
-        this.readonly = readonly;
+public class fullscreen extends DroidGap {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Properties must be set before init() is called, since some are processed during init(). 
+
+        // fullscreen can also be set in cordova.xml.  For example, 
+        //      <preference name="fullscreen" value="true" />
+        super.setBooleanProperty("fullscreen", true);
+
+        super.init();
+        super.loadUrl("file:///android_asset/www/fullscreen/index.html");
     }
+
 }

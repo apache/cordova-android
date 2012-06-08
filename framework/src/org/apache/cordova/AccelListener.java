@@ -26,7 +26,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -43,14 +42,14 @@ public class AccelListener extends Plugin implements SensorEventListener {
     public static int STARTING = 1;
     public static int RUNNING = 2;
     public static int ERROR_FAILED_TO_START = 3;
-
-    private float x,y,z;						        // most recent acceleration values
-    private long timestamp;					        // time of most recent value
-    private int status;							        // status of listener
+   
+    private float x,y,z;                                // most recent acceleration values
+    private long timestamp;                         // time of most recent value
+    private int status;                                 // status of listener
     private int accuracy = SensorManager.SENSOR_STATUS_UNRELIABLE;
 
     private SensorManager sensorManager;    // Sensor manager
-    private Sensor mSensor;						      // Acceleration sensor returned by sensor manager
+    private Sensor mSensor;                           // Acceleration sensor returned by sensor manager
 
     private String callbackId;              // Keeps track of the single "start" callback ID passed in from JS
 
@@ -71,18 +70,19 @@ public class AccelListener extends Plugin implements SensorEventListener {
      *
      * @param ctx The context of the main Activity.
      */
+
     public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
-        this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
+        this.sensorManager = (SensorManager) ctx.getActivity().getSystemService(Context.SENSOR_SERVICE);
     }
 
     /**
      * Executes the request and returns PluginResult.
-     *
-     * @param action 		The action to execute.
-     * @param args 			JSONArry of arguments for the plugin.
-     * @param callbackId	The callback id used when calling back into JavaScript.
-     * @return 				A PluginResult object with a status and message.
+     * 
+     * @param action        The action to execute.
+     * @param args          JSONArry of arguments for the plugin.
+     * @param callbackId    The callback id used when calling back into JavaScript.
+     * @return              A PluginResult object with a status and message.
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         PluginResult.Status status = PluginResult.Status.NO_RESULT;
@@ -123,9 +123,9 @@ public class AccelListener extends Plugin implements SensorEventListener {
     //
     /**
      * Start listening for acceleration sensor.
-     *
-     * @return 			status of listener
-     */
+     * 
+     * @return          status of listener
+    */
     private int start() {
         // If already starting or running, then just return
         if ((this.status == AccelListener.RUNNING) || (this.status == AccelListener.STARTING)) {
@@ -139,24 +139,24 @@ public class AccelListener extends Plugin implements SensorEventListener {
 
         // If found, then register as listener
         if ((list != null) && (list.size() > 0)) {
-            this.mSensor = list.get(0);
-            this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_UI);
-            this.setStatus(AccelListener.STARTING);
+          this.mSensor = list.get(0);
+          this.sensorManager.registerListener(this, this.mSensor, SensorManager.SENSOR_DELAY_UI);
+          this.setStatus(AccelListener.STARTING);
         } else {
-            this.setStatus(AccelListener.ERROR_FAILED_TO_START);
-            this.fail(AccelListener.ERROR_FAILED_TO_START, "No sensors found to register accelerometer listening to.");
-            return this.status;
+          this.setStatus(AccelListener.ERROR_FAILED_TO_START);
+          this.fail(AccelListener.ERROR_FAILED_TO_START, "No sensors found to register accelerometer listening to.");
+          return this.status;
         }
-
+        
         // Wait until running
         long timeout = 2000;
         while ((this.status == STARTING) && (timeout > 0)) {
-            timeout = timeout - 100;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+          timeout = timeout - 100;
+          try {
+              Thread.sleep(100);
+          } catch (InterruptedException e) {
+              e.printStackTrace();
+          }
         }
         if (timeout == 0) {
           this.setStatus(AccelListener.ERROR_FAILED_TO_START);
@@ -210,7 +210,6 @@ public class AccelListener extends Plugin implements SensorEventListener {
         if (this.status == AccelListener.STOPPED) {
             return;
         }
-
         this.setStatus(AccelListener.RUNNING);
 
         if (this.accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
@@ -252,7 +251,6 @@ public class AccelListener extends Plugin implements SensorEventListener {
     private void setStatus(int status) {
         this.status = status;
     }
-
     private JSONObject getAccelerationJSON() {
         JSONObject r = new JSONObject();
         try {

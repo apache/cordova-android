@@ -32,11 +32,11 @@ import android.os.StatFs;
  */
 public class DirectoryManager {
 
+    @SuppressWarnings("unused")
     private static final String LOG_TAG = "DirectoryManager";
 
     /**
      * Determine if a file or directory exists.
-     *
      * @param name				The name of the file to check.
      * @return					T=exists, F=not found
      */
@@ -50,7 +50,7 @@ public class DirectoryManager {
             status = newPath.exists();
         }
         // If no SD card
-        else{
+        else {
             status = false;
         }
         return status;
@@ -58,7 +58,7 @@ public class DirectoryManager {
 
     /**
      * Get the free disk space
-     *
+     * 
      * @return 		Size in KB or -1 if not available
      */
     protected static long getFreeDiskSpace(boolean checkInternal) {
@@ -82,7 +82,7 @@ public class DirectoryManager {
 
     /**
      * Given a path return the number of free KB
-     *
+     * 
      * @param path to the file system
      * @return free space in KB
      */
@@ -90,12 +90,12 @@ public class DirectoryManager {
         StatFs stat = new StatFs(path);
         long blockSize = stat.getBlockSize();
         long availableBlocks = stat.getAvailableBlocks();
-        return availableBlocks*blockSize/1024;
+        return availableBlocks * blockSize / 1024;
     }
 
     /**
      * Determine if SD card exists.
-     *
+     * 
      * @return				T=exists, F=not found
      */
     protected static boolean testSaveLocationExists() {
@@ -127,7 +127,7 @@ public class DirectoryManager {
             newPath = new File(file2);
         }
         else {
-            newPath = new File(file1+"/"+file2);
+            newPath = new File(file1 + "/" + file2);
         }
         return newPath;
     }

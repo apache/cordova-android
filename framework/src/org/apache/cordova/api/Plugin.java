@@ -18,11 +18,10 @@
 */
 package org.apache.cordova.api;
 
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import android.content.Intent;
-import android.webkit.WebView;
 
 /**
  * Plugin interface must be implemented by any plugin classes.
@@ -32,12 +31,12 @@ import android.webkit.WebView;
 public abstract class Plugin implements IPlugin {
 
     public String id;
-    public WebView webView;					// WebView object
-    public CordovaInterface ctx;			// CordovaActivity object
+    public CordovaWebView webView;					// WebView object
+    public CordovaInterface ctx;			        // CordovaActivity object
 
     /**
      * Executes the request and returns PluginResult.
-     *
+     * 
      * @param action 		The action to execute.
      * @param args 			JSONArry of arguments for the plugin.
      * @param callbackId	The callback id used when calling back into JavaScript.
@@ -66,18 +65,18 @@ public abstract class Plugin implements IPlugin {
     }
 
     /**
-     * Sets the main View of the application, this is the WebView within which
+     * Sets the main View of the application, this is the WebView within which 
      * a Cordova app runs.
-     *
+     * 
      * @param webView The Cordova WebView
      */
-    public void setView(WebView webView) {
+    public void setView(CordovaWebView webView) {
         this.webView = webView;
     }
 
     /**
-     * Called when the system is about to start resuming a previous activity.
-     *
+     * Called when the system is about to start resuming a previous activity. 
+     * 
      * @param multitasking		Flag indicating if multitasking is turned on for app
      */
     public void onPause(boolean multitasking) {
@@ -108,8 +107,10 @@ public abstract class Plugin implements IPlugin {
      *
      * @param id            The message id
      * @param data          The message data
+     * @return              Object to stop propagation or null
      */
-    public void onMessage(String id, Object data) {
+    public Object onMessage(String id, Object data) {
+        return null;
     }
 
     /**
@@ -141,7 +142,7 @@ public abstract class Plugin implements IPlugin {
      * @param statement
      */
     public void sendJavascript(String statement) {
-        this.ctx.sendJavascript(statement);
+        this.webView.sendJavascript(statement);
     }
 
     /**
@@ -155,7 +156,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(PluginResult pluginResult, String callbackId) {
-        this.ctx.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
+        this.webView.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
     }
 
     /**
@@ -165,7 +166,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(JSONObject message, String callbackId) {
-        this.ctx.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+        this.webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
     }
 
     /**
@@ -175,7 +176,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(String message, String callbackId) {
-        this.ctx.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+        this.webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
     }
 
     /**
@@ -185,7 +186,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(PluginResult pluginResult, String callbackId) {
-        this.ctx.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
+        this.webView.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
     }
 
     /**
@@ -195,7 +196,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(JSONObject message, String callbackId) {
-        this.ctx.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+        this.webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
     }
 
     /**
@@ -205,6 +206,6 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(String message, String callbackId) {
-        this.ctx.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+        this.webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
     }
 }

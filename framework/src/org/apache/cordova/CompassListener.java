@@ -27,7 +27,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -72,7 +71,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
      */
     public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
-        this.sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
+        this.sensorManager = (SensorManager) ctx.getActivity().getSystemService(Context.SENSOR_SERVICE);
     }
 
     /**
@@ -184,6 +183,7 @@ public class CompassListener extends Plugin implements SensorEventListener {
         }
 
         // Get compass sensor from sensor manager
+        @SuppressWarnings("deprecation")
         List<Sensor> list = this.sensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
 
         // If found, then register as listener
@@ -211,7 +211,6 @@ public class CompassListener extends Plugin implements SensorEventListener {
         }
         this.setStatus(CompassListener.STOPPED);
     }
-
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // TODO Auto-generated method stub

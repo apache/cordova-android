@@ -23,7 +23,6 @@ import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -77,7 +76,7 @@ public class NetworkManager extends Plugin {
     /**
      * Constructor.
      */
-    public NetworkManager()    {
+    public NetworkManager() {
         this.receiver = null;
     }
 
@@ -89,20 +88,21 @@ public class NetworkManager extends Plugin {
      */
     public void setContext(CordovaInterface ctx) {
         super.setContext(ctx);
-        this.sockMan = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+        this.sockMan = (ConnectivityManager) ctx.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         this.connectionCallbackId = null;
 
         // We need to listen to connectivity events to update navigator.connection
-        IntentFilter intentFilter = new IntentFilter() ;
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         if (this.receiver == null) {
             this.receiver = new BroadcastReceiver() {
+                @SuppressWarnings("deprecation")
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));
                 }
             };
-            ctx.registerReceiver(this.receiver, intentFilter);
+            ctx.getActivity().registerReceiver(this.receiver, intentFilter);
         }
 
     }
@@ -146,7 +146,7 @@ public class NetworkManager extends Plugin {
     public void onDestroy() {
         if (this.receiver != null) {
             try {
-                this.ctx.unregisterReceiver(this.receiver);
+                this.ctx.getActivity().unregisterReceiver(this.receiver);
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Error unregistering network receiver: " + e.getMessage(), e);
             }
@@ -156,7 +156,6 @@ public class NetworkManager extends Plugin {
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
-
 
     /**
      * Updates the JavaScript side whenever the connection changes
@@ -200,7 +199,7 @@ public class NetworkManager extends Plugin {
         this.success(result, this.connectionCallbackId);
 
         // Send to all plugins
-        this.ctx.postMessage("networkconnection", type);
+        webView.postMessage("networkconnection", type);
     }
 
     /**
@@ -224,7 +223,7 @@ public class NetworkManager extends Plugin {
                     return TYPE_2G;
                 }
                 else if (type.toLowerCase().startsWith(CDMA) ||
-                        type.toLowerCase().equals(UMTS)  ||
+                        type.toLowerCase().equals(UMTS) ||
                         type.toLowerCase().equals(ONEXRTT) ||
                         type.toLowerCase().equals(EHRPD) ||
                         type.toLowerCase().equals(HSUPA) ||

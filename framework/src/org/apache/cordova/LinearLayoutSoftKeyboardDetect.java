@@ -17,9 +17,11 @@
        under the License.
 */
 package org.apache.cordova;
+
 import org.apache.cordova.api.LOG;
 
 import android.content.Context;
+//import android.view.View.MeasureSpec;
 import android.widget.LinearLayout;
 
 /**
@@ -75,7 +77,7 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
             LOG.d(TAG, "Ignore this event");
         }
         // Account for orientation change and ignore this event/Fire orientation change
-        else if(screenHeight == width)
+        else if (screenHeight == width)
         {
             int tmp_var = screenHeight;
             screenHeight = screenWidth;
@@ -85,14 +87,14 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         // If the height as gotten bigger then we will assume the soft keyboard has
         // gone away.
         else if (height > oldHeight) {
-            if(app != null)
-                app.sendJavascript("cordova.fireDocumentEvent('hidekeyboard');");
+            if (app != null)
+                app.appView.sendJavascript("cordova.fireDocumentEvent('hidekeyboard');");
         }
-        // If the height as gotten smaller then we will assume the soft keyboard has
+        // If the height as gotten smaller then we will assume the soft keyboard has 
         // been displayed.
         else if (height < oldHeight) {
-            if(app != null)
-                app.sendJavascript("cordova.fireDocumentEvent('showkeyboard');");
+            if (app != null)
+                app.appView.sendJavascript("cordova.fireDocumentEvent('showkeyboard');");
         }
 
         // Update the old height for the next event

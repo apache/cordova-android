@@ -69,7 +69,7 @@ public class ContactManager extends Plugin {
          * older phones.
          */
         if (this.contactAccessor == null) {
-            this.contactAccessor = new ContactAccessorSdk5(this.webView, this.ctx.getContext());
+            this.contactAccessor = new ContactAccessorSdk5(this.webView, this.ctx);
         }
 
         try {
