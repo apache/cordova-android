@@ -14,7 +14,7 @@ var version = fs.readFileSync(__dirname + '/../VERSION').toString().replace('\n'
 assert(version !== undefined);
 assert(version !== '');
 
-var create_project = spawn(__dirname + '/create2',
+var create_project = spawn(__dirname + '/create',
                            [project_path,
                             package_name,
                             project_name]);
