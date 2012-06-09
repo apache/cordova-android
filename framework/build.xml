@@ -122,7 +122,7 @@
       <!-- update project files to reference cordova-x.x.x.min.js -->
       <replaceregexp match="cordova(.*)\.js" replace="cordova-${version}.js" byline="true">
          <fileset file="assets/www/index.html" />
-         <fileset file="../bin/templates/project/cordova/templates/project/assets/www/index.html" />
+         <fileset file="../bin/templates/project/assets/www/index.html" />
       </replaceregexp>
 
       <!-- This is sketchy, but it works, ${dblQuote} does not -->
