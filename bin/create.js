@@ -52,7 +52,6 @@ function exec(s, output) {
 
 function cleanup() {
     // Cleanup
-    WScript.Echo('Cleaning up...');
     if(fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
         fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
         fso.DeleteFolder(ROOT + '\\framework\\libs', true);
@@ -62,6 +61,46 @@ function cleanup() {
     }
     if(fso.FileExists(ROOT + '\\framework\\assets\\www\\cordova-'+VERSION+'.js')) {
         fso.DeleteFile(ROOT + '\\framework\\assets\\www\\cordova-'+VERSION+'.js');
+    }
+}
+
+function downloadCommonsCodec() {
+    if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
+      // We need the .jar
+      var url = 'http://mirror.symnds.com/software/Apache//commons/codec/binaries/commons-codec-1.6-bin.zip';
+      var libsPath = ROOT + '\\framework\\libs';
+      var savePath = libsPath + '\\commons-codec-1.6-bin.zip';
+      if (!fso.FileExists(savePath)) {
+        if(!fso.FolderExists(ROOT + '\\framework\\libs')) {
+            fso.CreateFolder(libsPath);
+        }
+        // We need the zip to get the jar
+        var xhr = WScript.CreateObject('MSXML2.XMLHTTP');
+        xhr.open('GET', url, false);
+        xhr.send();
+        if (xhr.status == 200) {
+          var stream = WScript.CreateObject('ADODB.Stream');
+          stream.Open();
+          stream.Type = 1;
+          stream.Write(xhr.ResponseBody);
+          stream.Position = 0;
+          stream.SaveToFile(savePath);
+          stream.Close();
+        } else {
+          WScript.Echo('Could not retrieve the commons-codec. Please download it yourself and put into the framework/libs directory. This process may fail now. Sorry.');
+        }
+      }
+      var app = WScript.CreateObject('Shell.Application');
+      var source = app.NameSpace(savePath).Items();
+      var target = app.NameSpace(ROOT + '\\framework\\libs');
+      target.CopyHere(source, 256);
+      
+      // Move the jar into libs
+      fso.MoveFile(ROOT + '\\framework\\libs\\commons-codec-1.6\\commons-codec-1.6.jar', ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
+      
+      // Clean up
+      fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6-bin.zip');
+      fso.DeleteFolder(ROOT + '\\framework\\libs\\commons-codec-1.6', true);
     }
 }
 
@@ -78,6 +117,11 @@ if (args.Count() == 3) {
     ACTIVITY=args(2);
 }
 
+if(fso.FolderExists(PROJECT_PATH)) {
+    WScript.Echo("Project already exists!");
+    WScript.Quit(1);
+}
+
 var PACKAGE_AS_PATH=PACKAGE.replace(/\./g, '\\');
 var ACTIVITY_PATH=PROJECT_PATH+'\\src\\'+PACKAGE_AS_PATH+'\\'+ACTIVITY+'.java';
 var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
@@ -91,46 +135,8 @@ exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --p
 exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
 
 // pull down commons codec if necessary
-if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
-  // We need the .jar
-  var url = 'http://mirror.symnds.com/software/Apache//commons/codec/binaries/commons-codec-1.6-bin.zip';
-  var libsPath = ROOT + '\\framework\\libs';
-  var savePath = libsPath + '\\commons-codec-1.6-bin.zip';
-  if (!fso.FileExists(savePath)) {
-    if(!fso.FolderExists(ROOT + '\\framework\\libs')) {
-        fso.CreateFolder(libsPath);
-    }
-    // We need the zip to get the jar
-    var xhr = WScript.CreateObject('MSXML2.XMLHTTP');
-    xhr.open('GET', url, false);
-    xhr.send();
-    if (xhr.status == 200) {
-      var stream = WScript.CreateObject('ADODB.Stream');
-      stream.Open();
-      stream.Type = 1;
-      stream.Write(xhr.ResponseBody);
-      stream.Position = 0;
-      stream.SaveToFile(savePath);
-      stream.Close();
-    } else {
-      WScript.Echo('Could not retrieve the commons-codec. Please download it yourself and put into the framework/libs directory. This process may fail now. Sorry.');
-    }
-  }
-  var app = WScript.CreateObject('Shell.Application');
-  var source = app.NameSpace(savePath).Items();
-  var target = app.NameSpace(ROOT + '\\framework\\libs');
-  target.CopyHere(source, 256);
-  
-  // Move the jar into libs
-  fso.MoveFile(ROOT + '\\framework\\libs\\commons-codec-1.6\\commons-codec-1.6.jar', ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
-  
-  // Clean up
-  fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6-bin.zip');
-  fso.DeleteFolder(ROOT + '\\framework\\libs\\commons-codec-1.6', true);
-}
-// compile cordova.js and cordova.jar
-// if you see an error about "Unable to resolve target" then you may need to 
-// update your android tools or install an additional Android platform version
+downloadCommonsCodec();
+
 exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
 
 // copy in the project template
