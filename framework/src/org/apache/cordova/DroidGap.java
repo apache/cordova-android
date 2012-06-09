@@ -836,6 +836,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             if (this.volumedownBound==true) {
                 // only override default behaviour is event bound
+                LOG.d(TAG, "Down Key Hit");
                 this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
                 return true;
             }
@@ -845,6 +846,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             if (this.volumeupBound==true) {
                 // only override default behaviour is event bound
+                LOG.d(TAG, "Up Key Hit");
                 this.appView.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
                 return true;
             }

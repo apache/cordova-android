@@ -67,6 +67,9 @@ public class App extends Plugin {
             else if (action.equals("backHistory")) {
                 this.backHistory();
             }
+            else if (action.equals("overrideButton")) {
+                this.overrideButton(args.getString(0), args.getBoolean(1));
+            }
             else if (action.equals("overrideBackbutton")) {
                 this.overrideBackbutton(args.getBoolean(0));
             }
