@@ -24,8 +24,9 @@
  *  ./create [path package activity]
  */
 
+var fso = WScript.CreateObject('Scripting.FileSystemObject');
+
 function read(filename) {
-    WScript.Echo('Reading in ' + filename);
     var fso=WScript.CreateObject("Scripting.FileSystemObject");
     var f=fso.OpenTextFile(filename, 1);
     var s=f.ReadAll();
@@ -42,24 +43,27 @@ function replaceInFile(filename, regexp, replacement) {
     write(filename, read(filename).replace(regexp, replacement));
 }
 function exec(s, output) {
-    WScript.Echo('Executing ' + s);
     var o=shell.Exec(s);
     while (o.Status == 0) {
         WScript.Sleep(100);
     }
-    WScript.Echo("Command exited with code " + o.Status);
+    //WScript.Echo("Command exited with code " + o.Status);
 }
 
-//function fork(s) {
-//    WScript.Echo('Executing ' + s);
-//    var o=shell.Exec(s);
-//    while (o.Status != 1) {
-//        WScript.Sleep(100);
-//    }
-//    WScript.Echo(o.StdOut.ReadAll());
-//    WScript.Echo(o.StdErr.ReadAll());
-//    WScript.Echo("Command exited with code " + o.Status);
-//}
+function cleanup() {
+    // Cleanup
+    WScript.Echo('Cleaning up...');
+    if(fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
+        fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
+        fso.DeleteFolder(ROOT + '\\framework\\libs', true);
+    }
+    if(fso.FileExists(ROOT + '\\framework\\cordova-'+VERSION+'.jar')) {
+        fso.DeleteFile(ROOT + '\\framework\\cordova-'+VERSION+'.jar');
+    }
+    if(fso.FileExists(ROOT + '\\framework\\assets\\www\\cordova-'+VERSION+'.js')) {
+        fso.DeleteFile(ROOT + '\\framework\\assets\\www\\cordova-'+VERSION+'.js');
+    }
+}
 
 var args = WScript.Arguments, PROJECT_PATH="example", 
     PACKAGE="org.apache.cordova.example", ACTIVITY="cordovaExample",
@@ -69,7 +73,6 @@ var args = WScript.Arguments, PROJECT_PATH="example",
 var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
 
 if (args.Count() == 3) {
-    WScript.Echo('Found expected arguments');
     PROJECT_PATH=args(0);
     PACKAGE=args(1);
     ACTIVITY=args(2);
@@ -81,14 +84,6 @@ var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
 var TARGET=shell.Exec('android.bat list targets').StdOut.ReadAll().match(/id:\s([0-9]).*/)[1];
 var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 
-WScript.Echo("Project path: " + PROJECT_PATH);
-WScript.Echo("Package: " + PACKAGE);
-WScript.Echo("Activity: " + ACTIVITY);
-WScript.Echo("Package as path: " + PACKAGE_AS_PATH);
-WScript.Echo("Activity path: " + ACTIVITY_PATH);
-WScript.Echo("Manifest path: " + MANIFEST_PATH);
-WScript.Echo("Cordova version: " + VERSION);
-
 // create the project
 exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --package '+PACKAGE+' --activity '+ACTIVITY);
 
@@ -96,7 +91,6 @@ exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --p
 exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
 
 // pull down commons codec if necessary
-var fso = WScript.CreateObject('Scripting.FileSystemObject');
 if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
   // We need the .jar
   var url = 'http://mirror.symnds.com/software/Apache//commons/codec/binaries/commons-codec-1.6-bin.zip';
@@ -105,7 +99,6 @@ if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
   if (!fso.FileExists(savePath)) {
     if(!fso.FolderExists(ROOT + '\\framework\\libs')) {
         fso.CreateFolder(libsPath);
-        WScript.Echo('Created new libs folder at '+libsPath);
     }
     // We need the zip to get the jar
     var xhr = WScript.CreateObject('MSXML2.XMLHTTP');
@@ -144,7 +137,7 @@ exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
 exec('cmd /c xcopy '+ ROOT + '\\bin\\templates\\project\\* '+PROJECT_PATH+' /S /Y');
 
 // copy in cordova.js
-exec('cmd /c copy '+ROOT+'\\framework\\assets\\js\\cordova.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
+exec('cmd /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
 
 // copy in cordova.jar
 exec('cmd /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
@@ -160,4 +153,4 @@ replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, ACTIVITY);
 replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
 
-WScript.Echo('Create completed successfully.');
+cleanup();
