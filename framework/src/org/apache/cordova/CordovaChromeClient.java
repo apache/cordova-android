@@ -218,7 +218,7 @@ public class CordovaChromeClient extends WebChromeClient {
         }
 
         // Do NO-OP so older code doesn't display dialog
-        else if (defaultValue.equals("gap_init:")) {
+        else if (defaultValue != null && defaultValue.equals("gap_init:")) {
             result.confirm("OK");
         }
 
