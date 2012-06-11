@@ -851,7 +851,7 @@ public class DroidGap extends Activity implements CordovaInterface {
                 return true;
             }
         }
-        return false;
+        return super.onKeyDown(keyCode, event);
     }
 
     /**
