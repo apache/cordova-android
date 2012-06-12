@@ -1,6 +1,6 @@
-// commit ac0a3990438f4a89faa993316fb5614f61cf3be6
+// commit 722ce5820b6fc3e371245927e00c7f9745eb041a
 
-// File generated at :: Tue Jun 05 2012 14:14:16 GMT-0700 (PDT)
+// File generated at :: Tue Jun 12 2012 11:04:57 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -1283,6 +1283,10 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
 
     exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType, allowEdit, correctOrientation, saveToPhotoAlbum, popoverOptions]);
 };
+
+cameraExport.cleanup = function(successCallback, errorCallback) {
+    exec(successCallback, errorCallback, "Camera", "cleanup", []);
+}
 
 module.exports = cameraExport;
 });
@@ -2591,6 +2595,8 @@ var DirectoryEntry = require('cordova/plugin/DirectoryEntry');
 var FileSystem = function(name, root) {
     this.name = name || null;
     if (root) {
+        console.log('root.name ' + name);
+        console.log('root.root ' + root);
         this.root = new DirectoryEntry(root.name, root.fullPath);
     }
 };
