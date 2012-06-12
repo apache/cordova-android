@@ -34,10 +34,16 @@ public class HttpHandler {
         HttpEntity entity = getHttpEntity(url);
         try {
             writeToDisk(entity, file);
-        } catch (Exception e) { e.printStackTrace(); return false; }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
         try {
             entity.consumeContent();
-        } catch (Exception e) { e.printStackTrace(); return false; }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
@@ -46,7 +52,7 @@ public class HttpHandler {
      * get the http entity at a given url
      */
     {
-        HttpEntity entity=null;
+        HttpEntity entity = null;
         try {
             DefaultHttpClient httpclient = new DefaultHttpClient();
             HttpGet httpget = new HttpGet(url);
@@ -61,18 +67,18 @@ public class HttpHandler {
      * writes a HTTP entity to the specified filename and location on disk
      */
     {
-        int i=0;
-        String FilePath="/sdcard/" + file;
+        //int i = 0;
+        String FilePath = "/sdcard/" + file;
         InputStream in = entity.getContent();
         byte buff[] = new byte[1024];
-        FileOutputStream out=
-            new FileOutputStream(FilePath);
-        do {
+        FileOutputStream out =
+                new FileOutputStream(FilePath);
+       do {
             int numread = in.read(buff);
             if (numread <= 0)
                 break;
             out.write(buff, 0, numread);
-            i++;
+            //i++;
         } while (true);
         out.flush();
         out.close();

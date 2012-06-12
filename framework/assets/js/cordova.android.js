@@ -1,6 +1,6 @@
-// commit ac0a3990438f4a89faa993316fb5614f61cf3be6
+// commit 347de1a785b7ecbe86c2189343ab2549a9297f9b
 
-// File generated at :: Tue Jun 05 2012 14:14:16 GMT-0700 (PDT)
+// File generated at :: Fri Jun 08 2012 16:17:50 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -1067,6 +1067,28 @@ module.exports = {
         cordova.addDocumentEventHandler('menubutton');
         cordova.addDocumentEventHandler('searchbutton');
 
+        function bindButtonChannel(buttonName) {
+            // generic button bind used for volumeup/volumedown buttons
+            return cordova.addDocumentEventHandler(buttonName + 'button', {
+                onSubscribe:function() {
+                    // If we just attached the first handler, let native know we need to override the button.
+                    if (this.numHandlers === 1) {
+                        exec(null, null, "App", "overrideButton", [buttonName, true]);
+                    }
+                },
+                onUnsubscribe:function() {
+                    // If we just detached the last handler, let native know we no longer override the volumeup button.
+                    if (this.numHandlers === 0) {
+                        exec(null, null, "App", "overrideButton", [buttonName, false]);
+                    }
+                }
+            });
+
+        }
+        // Inject a listener for the volume buttons on the document.
+        var volumeUpButtonChannel = bindButtonChannel('volumeup');
+        var volumeDownButtonChannel = bindButtonChannel('volumedown');
+
         // Figure out if we need to shim-in localStorage and WebSQL
         // support from the native side.
         var storage = require('cordova/plugin/android/storage');
@@ -1283,6 +1305,10 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
 
     exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType, allowEdit, correctOrientation, saveToPhotoAlbum, popoverOptions]);
 };
+
+cameraExport.cleanup = function(successCallback, errorCallback) {
+    exec(successCallback, errorCallback, "Camera", "cleanup", []);
+}
 
 module.exports = cameraExport;
 });
@@ -2591,6 +2617,8 @@ var DirectoryEntry = require('cordova/plugin/DirectoryEntry');
 var FileSystem = function(name, root) {
     this.name = name || null;
     if (root) {
+        console.log('root.name ' + name);
+        console.log('root.root ' + root);
         this.root = new DirectoryEntry(root.name, root.fullPath);
     }
 };
@@ -3636,6 +3664,21 @@ module.exports = {
   overrideBackbutton:function(override) {
     exec(null, null, "App", "overrideBackbutton", [override]);
   },
+
+  /**
+   * Override the default behavior of the Android volume button.
+   * If overridden, when the volume button is pressed, the "volume[up|down]button" JavaScript event will be fired.
+   *
+   * Note: The user should not have to call this method.  Instead, when the user
+   *       registers for the "volume[up|down]button" event, this is automatically done.
+   *
+   * @param button          volumeup, volumedown
+   * @param override        T=override, F=cancel override
+   */
+  overrideButton:function(button, override) {
+    exec(null, null, "App", "overrideButton", [button, override]);
+  },
+
 
   /**
    * Exit and terminate the application.

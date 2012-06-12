@@ -26,7 +26,6 @@ import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
-
 import java.util.HashMap;
 
 /**
@@ -43,20 +42,19 @@ import java.util.HashMap;
 public class AudioHandler extends Plugin {
 
     public static String TAG = "AudioHandler";
-    HashMap<String,AudioPlayer> players;	// Audio player object
+    HashMap<String, AudioPlayer> players;	// Audio player object
     ArrayList<AudioPlayer> pausedForPhone;     // Audio players that were paused when phone call came in
 
     /**
      * Constructor.
      */
     public AudioHandler() {
-        this.players = new HashMap<String,AudioPlayer>();
+        this.players = new HashMap<String, AudioPlayer>();
         this.pausedForPhone = new ArrayList<AudioPlayer>();
     }
 
     /**
      * Executes the request and returns PluginResult.
-     *
      * @param action 		The action to execute.
      * @param args 			JSONArry of arguments for the plugin.
      * @param callbackId	The callback id used when calling back into JavaScript.
@@ -111,7 +109,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     *
      * @param action	The action to execute
      * @return			T=returns value
      */
@@ -140,8 +137,9 @@ public class AudioHandler extends Plugin {
      *
      * @param id            The message id
      * @param data          The message data
+     * @return              Object to stop propagation or null
      */
-    public void onMessage(String id, Object data) {
+    public Object onMessage(String id, Object data) {
 
         // If phone message
         if (id.equals("telephone")) {
@@ -167,6 +165,7 @@ public class AudioHandler extends Plugin {
                 this.pausedForPhone.clear();
             }
         }
+        return null;
     }
 
     //--------------------------------------------------------------------------
@@ -175,7 +174,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Release the audio player instance to save memory.
-     *
      * @param id				The id of the audio player
      */
     private boolean release(String id) {
@@ -190,7 +188,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Start recording and save the specified file.
-     *
      * @param id				The id of the audio player
      * @param file				The name of the file
      */
@@ -206,7 +203,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Stop recording and save to the file specified when recording started.
-     *
      * @param id				The id of the audio player
      */
     public void stopRecordingAudio(String id) {
@@ -219,7 +215,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Start or resume playing audio file.
-     *
      * @param id				The id of the audio player
      * @param file				The name of the audio file.
      */
@@ -234,8 +229,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Seek to a location.
-     *
-     *
      * @param id				The id of the audio player
      * @param miliseconds		int: number of milliseconds to skip 1000 = 1 second
      */
@@ -248,7 +241,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Pause playing.
-     *
      * @param id				The id of the audio player
      */
     public void pausePlayingAudio(String id) {
@@ -260,7 +252,6 @@ public class AudioHandler extends Plugin {
 
     /**
      * Stop playing the audio file.
-     *
      * @param id				The id of the audio player
      */
     public void stopPlayingAudio(String id) {
@@ -274,21 +265,19 @@ public class AudioHandler extends Plugin {
 
     /**
      * Get current position of playback.
-     *
      * @param id				The id of the audio player
      * @return 					position in msec
      */
     public float getCurrentPositionAudio(String id) {
         AudioPlayer audio = this.players.get(id);
         if (audio != null) {
-            return(audio.getCurrentPosition()/1000.0f);
+            return (audio.getCurrentPosition() / 1000.0f);
         }
         return -1;
     }
 
     /**
      * Get the duration of the audio file.
-     *
      * @param id				The id of the audio player
      * @param file				The name of the audio file.
      * @return					The duration in msec.
@@ -298,14 +287,14 @@ public class AudioHandler extends Plugin {
         // Get audio file
         AudioPlayer audio = this.players.get(id);
         if (audio != null) {
-            return(audio.getDuration(file));
+            return (audio.getDuration(file));
         }
 
         // If not already open, then open the file
         else {
             audio = new AudioPlayer(this, id);
             this.players.put(id, audio);
-            return(audio.getDuration(file));
+            return (audio.getDuration(file));
         }
     }
 
@@ -314,8 +303,9 @@ public class AudioHandler extends Plugin {
      *
      * @param output			1=earpiece, 2=speaker
      */
+    @SuppressWarnings("deprecation")
     public void setAudioOutputDevice(int output) {
-        AudioManager audiMgr = (AudioManager) this.ctx.getSystemService(Context.AUDIO_SERVICE);
+        AudioManager audiMgr = (AudioManager) this.ctx.getActivity().getSystemService(Context.AUDIO_SERVICE);
         if (output == 2) {
             audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_SPEAKER, AudioManager.ROUTE_ALL);
         }
@@ -332,8 +322,9 @@ public class AudioHandler extends Plugin {
      *
      * @return					1=earpiece, 2=speaker
      */
+    @SuppressWarnings("deprecation")
     public int getAudioOutputDevice() {
-        AudioManager audiMgr = (AudioManager) this.ctx.getSystemService(Context.AUDIO_SERVICE);
+        AudioManager audiMgr = (AudioManager) this.ctx.getActivity().getSystemService(Context.AUDIO_SERVICE);
         if (audiMgr.getRouting(AudioManager.MODE_NORMAL) == AudioManager.ROUTE_EARPIECE) {
             return 1;
         }

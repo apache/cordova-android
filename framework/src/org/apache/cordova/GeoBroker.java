@@ -55,7 +55,7 @@ public class GeoBroker extends Plugin {
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         if (this.locationManager == null) {
-            this.locationManager = (LocationManager) this.ctx.getSystemService(Context.LOCATION_SERVICE);
+            this.locationManager = (LocationManager) this.ctx.getActivity().getSystemService(Context.LOCATION_SERVICE);
             this.networkListener = new NetworkListener(this.locationManager, this);
             this.gpsListener = new GPSListener(this.locationManager, this);
         }
@@ -141,46 +141,47 @@ public class GeoBroker extends Plugin {
             o.put("latitude", loc.getLatitude());
             o.put("longitude", loc.getLongitude());
             o.put("altitude", (loc.hasAltitude() ? loc.getAltitude() : null));
-                o.put("accuracy", loc.getAccuracy());
-                o.put("heading", (loc.hasBearing() ? (loc.hasSpeed() ? loc.getBearing() : null) : null));
-                o.put("speed", loc.getSpeed());
+            o.put("accuracy", loc.getAccuracy());
+            o.put("heading", (loc.hasBearing() ? (loc.hasSpeed() ? loc.getBearing() : null) : null));
+            o.put("speed", loc.getSpeed());
             o.put("timestamp", loc.getTime());
         } catch (JSONException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
-
         return o;
-      }
-      public void win(Location loc, String callbackId) {
-          PluginResult result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(loc));
-          this.success(result, callbackId);
-      }
-      /**
-       * Location failed.  Send error back to JavaScript.
-       *
-       * @param code			The error code
-       * @param msg			The error message
-       * @throws JSONException
-       */
-      public void fail(int code, String msg, String callbackId) {
-          JSONObject obj = new JSONObject();
-          String backup = null;
-          try {
-              obj.put("code", code);
-              obj.put("message", msg);
-          } catch (JSONException e) {
-              obj = null;
-              backup = "{'code':" + code + ",'message':'" + msg.replaceAll("'", "\'") + "'}";
-          }
-          PluginResult result;
-          if (obj != null) {
-              result = new PluginResult(PluginResult.Status.ERROR, obj);
-          } else {
-              result = new PluginResult(PluginResult.Status.ERROR, backup);
-          }
+    }
 
-          this.error(result, callbackId);
-      }
+    public void win(Location loc, String callbackId) {
+        PluginResult result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(loc));
+        this.success(result, callbackId);
+    }
+
+    /**
+     * Location failed.  Send error back to JavaScript.
+     * 
+     * @param code			The error code
+     * @param msg			The error message
+     * @throws JSONException 
+     */
+    public void fail(int code, String msg, String callbackId) {
+        JSONObject obj = new JSONObject();
+        String backup = null;
+        try {
+            obj.put("code", code);
+            obj.put("message", msg);
+        } catch (JSONException e) {
+            obj = null;
+            backup = "{'code':" + code + ",'message':'" + msg.replaceAll("'", "\'") + "'}";
+        }
+        PluginResult result;
+        if (obj != null) {
+            result = new PluginResult(PluginResult.Status.ERROR, obj);
+        } else {
+            result = new PluginResult(PluginResult.Status.ERROR, backup);
+        }
+
+        this.error(result, callbackId);
+    }
 }

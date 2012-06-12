@@ -110,7 +110,7 @@ public class Device extends Plugin {
      * Unregister receiver.
      */
     public void onDestroy() {
-        this.ctx.unregisterReceiver(this.telephonyReceiver);
+        this.ctx.getActivity().unregisterReceiver(this.telephonyReceiver);
     }
 
     //--------------------------------------------------------------------------
@@ -123,9 +123,9 @@ public class Device extends Plugin {
      *      DroidGap.onMessage("telephone", "ringing" | "offhook" | "idle")
      */
     private void initTelephonyReceiver() {
-        IntentFilter intentFilter = new IntentFilter() ;
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        final CordovaInterface myctx = this.ctx;
+        //final CordovaInterface myctx = this.ctx;
         this.telephonyReceiver = new BroadcastReceiver() {
 
             @Override
@@ -137,15 +137,15 @@ public class Device extends Plugin {
                         String extraData = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
                         if (extraData.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
                             LOG.i(TAG, "Telephone RINGING");
-                            myctx.postMessage("telephone", "ringing");
+                            webView.postMessage("telephone", "ringing");
                         }
                         else if (extraData.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
                             LOG.i(TAG, "Telephone OFFHOOK");
-                            myctx.postMessage("telephone", "offhook");
+                            webView.postMessage("telephone", "offhook");
                         }
                         else if (extraData.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                             LOG.i(TAG, "Telephone IDLE");
-                            myctx.postMessage("telephone", "idle");
+                            webView.postMessage("telephone", "idle");
                         }
                     }
                 }
@@ -153,7 +153,7 @@ public class Device extends Plugin {
         };
 
         // Register the receiver
-        this.ctx.registerReceiver(this.telephonyReceiver, intentFilter);
+        this.ctx.getActivity().registerReceiver(this.telephonyReceiver, intentFilter);
     }
 
     /**
@@ -171,7 +171,7 @@ public class Device extends Plugin {
      * @return
      */
     public String getUuid() {
-        String uuid = Settings.Secure.getString(this.ctx.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+        String uuid = Settings.Secure.getString(this.ctx.getActivity().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
         return uuid;
     }
 
@@ -205,15 +205,14 @@ public class Device extends Plugin {
     }
 
     public String getSDKVersion() {
+        @SuppressWarnings("deprecation")
         String sdkversion = android.os.Build.VERSION.SDK;
         return sdkversion;
     }
 
-
     public String getTimeZoneID() {
-       TimeZone tz = TimeZone.getDefault();
-        return(tz.getID());
+        TimeZone tz = TimeZone.getDefault();
+        return (tz.getID());
     }
 
 }
-

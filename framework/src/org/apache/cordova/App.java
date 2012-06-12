@@ -48,6 +48,13 @@ public class App extends Plugin {
             if (action.equals("clearCache")) {
                 this.clearCache();
             }
+            else if (action.equals("show")) { // TODO @bc - Not in master branch.  When should this be called?
+                ctx.getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        webView.postMessage("spinner", "stop");
+                    }
+                });
+            }
             else if (action.equals("loadUrl")) {
                 this.loadUrl(args.getString(0), args.optJSONObject(1));
             }
@@ -59,6 +66,9 @@ public class App extends Plugin {
             }
             else if (action.equals("backHistory")) {
                 this.backHistory();
+            }
+            else if (action.equals("overrideButton")) {
+                this.overrideButton(args.getString(0), args.getBoolean(1));
             }
             else if (action.equals("overrideBackbutton")) {
                 this.overrideBackbutton(args.getBoolean(0));
@@ -84,7 +94,7 @@ public class App extends Plugin {
      * Clear the resource cache.
      */
     public void clearCache() {
-        ((DroidGap)this.ctx).clearCache();
+        this.webView.clearCache(true);
     }
 
     /**
@@ -104,7 +114,7 @@ public class App extends Plugin {
         HashMap<String, Object> params = new HashMap<String, Object>();
         if (props != null) {
             JSONArray keys = props.names();
-            for (int i=0; i<keys.length(); i++) {
+            for (int i = 0; i < keys.length(); i++) {
                 String key = keys.getString(i);
                 if (key.equals("wait")) {
                     wait = props.getInt(key);
@@ -144,21 +154,22 @@ public class App extends Plugin {
                 e.printStackTrace();
             }
         }
-        ((DroidGap)this.ctx).showWebPage(url, openExternal, clearHistory, params);
+        this.webView.showWebPage(url, openExternal, clearHistory, params);
     }
 
     /**
-     * Cancel loadUrl before it has been loaded.
+     * Cancel loadUrl before it has been loaded (Only works on a CordovaInterface class)
      */
+    @Deprecated
     public void cancelLoadUrl() {
-        ((DroidGap)this.ctx).cancelLoadUrl();
+        this.ctx.cancelLoadUrl();
     }
 
     /**
      * Clear page history for the app.
      */
     public void clearHistory() {
-        ((DroidGap)this.ctx).clearHistory();
+        this.webView.clearHistory();
     }
 
     /**
@@ -166,7 +177,7 @@ public class App extends Plugin {
      * This is the same as pressing the backbutton on Android device.
      */
     public void backHistory() {
-        ((DroidGap)this.ctx).backHistory();
+        this.webView.backHistory();
     }
 
     /**
@@ -176,23 +187,35 @@ public class App extends Plugin {
      * @param override		T=override, F=cancel override
      */
     public void overrideBackbutton(boolean override) {
-        LOG.i("DroidGap", "WARNING: Back Button Default Behaviour will be overridden.  The backbutton event will be fired!");
-        ((DroidGap)this.ctx).bound = override;
+        LOG.i("App", "WARNING: Back Button Default Behaviour will be overridden.  The backbutton event will be fired!");
+        this.ctx.bindBackButton(override);
     }
 
+    /**
+     * Override the default behavior of the Android volume buttons.
+     * If overridden, when the volume button is pressed, the "volume[up|down]button" JavaScript event will be fired.
+     *
+     * @param button        volumeup, volumedown
+     * @param override      T=override, F=cancel override
+     */
+    public void overrideButton(String button, boolean override) {
+        LOG.i("DroidGap", "WARNING: Volume Button Default Behaviour will be overridden.  The volume event will be fired!");
+        ((DroidGap)this.ctx).bindButton(button, override);
+    }
     /**
      * Return whether the Android back button is overridden by the user.
      *
      * @return boolean
      */
     public boolean isBackbuttonOverridden() {
-        return ((DroidGap)this.ctx).bound;
+        return this.ctx.isBackButtonBound();
     }
 
     /**
      * Exit the Android application.
      */
     public void exitApp() {
-        ((DroidGap)this.ctx).endActivity();
+        this.webView.postMessage("exit", null);
     }
+
 }

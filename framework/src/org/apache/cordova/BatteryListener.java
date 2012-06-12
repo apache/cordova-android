@@ -24,7 +24,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -65,7 +64,7 @@ public class BatteryListener extends Plugin {
             this.batteryCallbackId = callbackId;
 
             // We need to listen to power events to update battery status
-            IntentFilter intentFilter = new IntentFilter() ;
+            IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
             if (this.receiver == null) {
                 this.receiver = new BroadcastReceiver() {
@@ -74,7 +73,7 @@ public class BatteryListener extends Plugin {
                         updateBatteryInfo(intent);
                     }
                 };
-                ctx.registerReceiver(this.receiver, intentFilter);
+                ctx.getActivity().registerReceiver(this.receiver, intentFilter);
             }
 
             // Don't return any result now, since status results will be sent when events come in from broadcast receiver
@@ -106,7 +105,7 @@ public class BatteryListener extends Plugin {
     private void removeBatteryListener() {
         if (this.receiver != null) {
             try {
-                this.ctx.unregisterReceiver(this.receiver);
+                this.ctx.getActivity().unregisterReceiver(this.receiver);
                 this.receiver = null;
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Error unregistering battery receiver: " + e.getMessage(), e);

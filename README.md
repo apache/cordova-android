@@ -20,6 +20,10 @@ Requires
 - Android SDK [http://developer.android.com](http://developer.android.com)
 - Apache Commons Codec [http://commons.apache.org/codec/](http://commons.apache.org/codec/)
 
+Test Requirements
+---
+- JUnit - [https://github.com/KentBeck/junit](https://github.com/KentBeck/junit)
+ 
 Building
 ---
 
@@ -98,6 +102,9 @@ Importing a Cordova Android Project into Eclipse
 5. Right click on the project root: Run as > Run Configurations
 6. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
 
+Running Tests
+----
+Please see details under test/README.md.
 
 Further Reading
 ---
