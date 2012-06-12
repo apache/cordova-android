@@ -313,7 +313,9 @@ public class DroidGap extends Activity implements CordovaInterface {
         LOG.d(TAG, "DroidGap.onCreate()");
         super.onCreate(savedInstanceState);
 
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        if (!preferences.prefMatches("showTitle", "true")) {
+            getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        }
 
         if (preferences.prefMatches("fullscreen","true")) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
