@@ -47,8 +47,8 @@ fi
 # cleanup after exit and/or on error
 function on_exit {
     echo "Cleaning up ..."
-    [ -f $BUILD_PATH/framework/libs/commons-codec-1.6.jar ] && rm $BUILD_PATH/framework/libs/commons-codec-1.6.jar
-    [ -d $BUILD_PATH/framework/libs ] && rmdir $BUILD_PATH/framework/libs
+    # [ -f $BUILD_PATH/framework/libs/commons-codec-1.6.jar ] && rm $BUILD_PATH/framework/libs/commons-codec-1.6.jar
+    # [ -d $BUILD_PATH/framework/libs ] && rmdir $BUILD_PATH/framework/libs
     [ -f $BUILD_PATH/framework/assets/www/cordova-$VERSION.js ] && rm $BUILD_PATH/framework/assets/www/cordova-$VERSION.js
     [ -f $BUILD_PATH/framework/cordova-$VERSION.jar ] && rm $BUILD_PATH/framework/cordova-$VERSION.jar
 }
