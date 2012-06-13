@@ -156,10 +156,11 @@ public class Capture extends Plugin {
      * @throws JSONException
      */
     private JSONObject getImageData(String filePath, JSONObject obj) throws JSONException {
-        Bitmap bitmap = BitmapFactory.decodeFile(FileUtils.stripFileProtocol(filePath));
-        obj.put("height", bitmap.getHeight());
-        obj.put("width", bitmap.getWidth());
-        bitmap.recycle();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(FileUtils.stripFileProtocol(filePath), options);
+        obj.put("height", options.outHeight);
+        obj.put("width", options.outWidth);
         return obj;
     }
 
@@ -362,8 +363,8 @@ public class Capture extends Plugin {
             // File properties
             obj.put("name", fp.getName());
             obj.put("fullPath", "file://" + fp.getAbsolutePath());
-            // Because of an issue with MimeTypeMap.getMimeTypeFromExtension() all .3gpp files 
-            // are reported as video/3gpp. I'm doing this hacky check of the URI to see if it 
+            // Because of an issue with MimeTypeMap.getMimeTypeFromExtension() all .3gpp files
+            // are reported as video/3gpp. I'm doing this hacky check of the URI to see if it
             // is stored in the audio or video content store.
             if (fp.getAbsoluteFile().toString().endsWith(".3gp") || fp.getAbsoluteFile().toString().endsWith(".3gpp")) {
                 if (data.toString().contains("/audio/")) {
