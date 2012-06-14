@@ -18,9 +18,5 @@
   "repository":   {
     "type": "git",
     "url": "http://git-wip-us.apache.org/repos/asf/incubator-cordova-android.git"
-  },
-  "dependencies":{
-    "coffee-script":"1.1.2",
-    "nodeunit":"0.5.3"
   }
 }

@@ -1,4 +1,5 @@
-var project_path = '/tmp/example',
+var build_path = __dirname + '/../..',
+    project_path = '/tmp/example',
     package_name = 'org.apache.cordova.example',
     package_as_path = 'org/apache/cordova/example',
     project_name = 'cordovaExample';
@@ -9,15 +10,24 @@ var path = require('path'),
     assert = require('assert'),
     spawn = require('child_process').spawn;
 
-var version = fs.readFileSync(__dirname + '/../VERSION').toString().replace('\n', '');
+var version = fs.readFileSync(build_path + '/VERSION').toString().replace('\n', '');
 
 assert(version !== undefined);
 assert(version !== '');
 
-var create_project = spawn(__dirname + '/create',
+var create_project = spawn(build_path + '/bin/create',
                            [project_path,
                             package_name,
                             project_name]);
+
+process.on('uncaughtException', function (err) {
+    console.log('Caught exception: ' + err);
+    spawn('rm', ['-rf', project_path], function(code) {
+        if(code != 0) {
+            console.log("Could not delete project directory");
+        }
+    });
+});
 
 create_project.on('exit', function(code) {
 
@@ -29,13 +39,13 @@ create_project.on('exit', function(code) {
     });
 
     // make sure the build directory was cleaned up
-    path.exists(__dirname + '/framework/libs', function(exists) {
-        assert(!exists, 'libs directory did not get cleaned up');
-    });
-    path.exists(__dirname + util.format('/framework/assets/cordova-%s.js', version), function(exists) {
+//    path.exists(build_path + '/framework/libs', function(exists) {
+//        assert(!exists, 'libs directory did not get cleaned up');
+//    });
+    path.exists(build_path + util.format('/framework/assets/cordova-%s.js', version), function(exists) {
         assert(!exists, 'javascript file did not get cleaned up');
     });
-    path.exists(__dirname + util.format('/framework/cordova-%s.jar', version), function(exists) {
+    path.exists(build_path + util.format('/framework/cordova-%s.jar', version), function(exists) {
         assert(!exists, 'jar file did not get cleaned up');
     });
 

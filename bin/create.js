@@ -52,10 +52,10 @@ function exec(s, output) {
 
 function cleanup() {
     // Cleanup
-    if(fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
-        fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
-        fso.DeleteFolder(ROOT + '\\framework\\libs', true);
-    }
+//    if(fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
+//        fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
+//        fso.DeleteFolder(ROOT + '\\framework\\libs', true);
+//    }
     if(fso.FileExists(ROOT + '\\framework\\cordova-'+VERSION+'.jar')) {
         fso.DeleteFile(ROOT + '\\framework\\cordova-'+VERSION+'.jar');
     }
