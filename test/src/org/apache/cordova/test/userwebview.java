@@ -26,9 +26,15 @@ import org.apache.cordova.*;
 import org.apache.cordova.api.LOG;
 
 public class userwebview extends DroidGap {
+    
+    public TestViewClient testViewClient;
+    public TestChromeClient testChromeClient;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        testViewClient = new TestViewClient(this);
+        testChromeClient = new TestChromeClient(this);
         super.init(new CordovaWebView(this), new TestViewClient(this), new TestChromeClient(this));
         super.loadUrl("file:///android_asset/www/userwebview/index.html");
     }
