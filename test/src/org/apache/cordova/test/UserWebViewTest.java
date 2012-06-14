@@ -22,7 +22,6 @@ public class UserWebViewTest extends ActivityInstrumentationTestCase2<userwebvie
   private CordovaWebView testView;
   
 
-  
   protected void setUp() throws Exception {
       super.setUp();
       testActivity = this.getActivity();
