@@ -256,7 +256,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         LOG.d(TAG, "DroidGap.onCreate()");
         super.onCreate(savedInstanceState);
 
-        if(this.getBooleanProperty("showTitle", false))
+        if(!this.getBooleanProperty("showTitle", false))
         {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
