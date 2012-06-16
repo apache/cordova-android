@@ -219,9 +219,11 @@ public class FileTransfer extends Plugin {
 
             extraParams += LINE_START + BOUNDARY + LINE_END;
             extraParams += "Content-Disposition: form-data; name=\"" + fileKey + "\";" + " filename=\"";
+            byte[] extraBytes = extraParams.getBytes("UTF-8");
 
             String midParams = "\"" + LINE_END + "Content-Type: " + mimeType + LINE_END + LINE_END;
             String tailParams = LINE_END + LINE_START + BOUNDARY + LINE_START + LINE_END;
+            byte[] fileNameBytes = fileName.getBytes("UTF-8");
 
             // Should set this up as an option
             if (chunkedMode) {
@@ -229,7 +231,7 @@ public class FileTransfer extends Plugin {
             }
             else
             {
-              int stringLength = extraParams.length() + midParams.length() + tailParams.length() + fileName.getBytes("UTF-8").length;
+              int stringLength = extraBytes.length + midParams.length() + tailParams.length() + fileNameBytes.length;
               Log.d(LOG_TAG, "String Length: " + stringLength);
               int fixedLength = (int) fileInputStream.getChannel().size() + stringLength;
               Log.d(LOG_TAG, "Content Length: " + fixedLength);
@@ -238,9 +240,9 @@ public class FileTransfer extends Plugin {
 
 
             dos = new DataOutputStream( conn.getOutputStream() );
-            dos.writeBytes(extraParams);
-            //We don't want to chagne encoding, we just want this to write for all Unicode.
-            dos.write(fileName.getBytes("UTF-8"));
+            //We don't want to change encoding, we just want this to write for all Unicode.
+            dos.write(extraBytes);
+            dos.write(fileNameBytes);
             dos.writeBytes(midParams);
 
             // create a buffer of maximum size
