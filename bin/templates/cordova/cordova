@@ -1,0 +1,91 @@
+#!/bin/bash
+
+set -e
+
+PROJECT_PATH=$( cd "$( dirname "$0" )/.." && pwd )
+
+function check_devices {
+    local devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}'`
+    if [ -z "$devices"  ] ; then
+        echo "1"
+    else
+        echo "0"
+    fi
+}
+
+function emulate {
+    declare -a avd_list=($(android list avd | grep "Name:" | cut -f 2 -d ":" | xargs))
+    # we need to start adb-server
+    adb start-server 1>/dev/null
+
+    # Do not launch an emulator if there is already one running or if a device is attached
+    if [ $(check_devices) == 0 ] ; then
+        echo "Device attached or emulator already running"
+        return
+    fi
+
+    local avd_id="1000" #FIXME: hopefully user does not have 1000 AVDs
+    # User has no AVDs
+    if [ ${#avd_list[@]} == 0 ]
+    then
+        echo "You don't have any Android Virtual Devices. Please create at least one AVD."
+        echo "android"
+    fi
+    # User has only one AVD
+    if [ ${#avd_list[@]} == 1 ]
+    then
+        emulator -cpu-delay 0 -no-boot-anim -cache /tmp/cache -avd ${avd_list[0]} 1> /dev/null 2>&1 &
+    # User has more than 1 AVD
+    elif [ ${#avd_list[@]} -gt 1 ]
+    then
+        while [ -z ${avd_list[$avd_id]} ]
+        do
+            echo "Choose from one of the following Android Virtual Devices [0 to $((${#avd_list[@]}-1))]:"
+            for(( i = 0 ; i < ${#avd_list[@]} ; i++ ))
+            do
+                echo "$i) ${avd_list[$i]}"
+            done
+            echo -n "> "
+            read avd_id
+        done
+        emulator -cpu-delay 0 -no-boot-anim -cache /tmp/cache -avd ${avd_list[$avd_id]} 1> /dev/null 2>&1 &
+    fi
+    
+}
+
+function clean {
+    ant clean
+}
+# has to be used independently and not in conjuction with other commands
+function log {
+    adb logcat
+}
+
+function debug_install {
+    ant debug install
+}
+
+function debug {
+    ant debug
+}
+
+function launch {
+    local launch_str=$(java -jar $PROJECT_PATH/cordova/appinfo.jar $PROJECT_PATH/AndroidManifest.xml)
+    adb shell am start -n $launch_str 
+}
+
+function BOOM {
+    clean
+    if [ $(check_devices) == 0 ] ; then
+        debug_install && launch 
+        return
+    else
+        debug
+        echo "##################################################################"
+        echo "# Plug in your device or launch an emulator with cordova/emulate #"
+        echo "##################################################################"
+    fi
+}
+
+# TODO parse arguments
+(cd $PROJECT_PATH && $1)

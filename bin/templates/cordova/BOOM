@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+CORDOVA_PATH=$( cd "$( dirname "$0" )" && pwd )
+
+bash $CORDOVA_PATH/cordova BOOM
