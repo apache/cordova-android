@@ -96,6 +96,12 @@ public class AudioHandler extends Plugin {
                 float f = this.getDurationAudio(args.getString(0), args.getString(1));
                 return new PluginResult(status, f);
             }
+            else if (action.equals("create")) {
+            	String id = args.getString(0);
+            	String src = args.getString(1);
+            	AudioPlayer audio = new AudioPlayer(this, id, src);
+            	this.players.put(id, audio);
+            }
             else if (action.equals("release")) {
                 boolean b = this.release(args.getString(0));
                 return new PluginResult(status, b);
@@ -196,7 +202,7 @@ public class AudioHandler extends Plugin {
         if (this.players.containsKey(id)) {
             return;
         }
-        AudioPlayer audio = new AudioPlayer(this, id);
+        AudioPlayer audio = new AudioPlayer(this, id, file);
         this.players.put(id, audio);
         audio.startRecording(file);
     }
@@ -221,7 +227,7 @@ public class AudioHandler extends Plugin {
     public void startPlayingAudio(String id, String file) {
         AudioPlayer audio = this.players.get(id);
         if (audio == null) {
-            audio = new AudioPlayer(this, id);
+            audio = new AudioPlayer(this, id, file);
             this.players.put(id, audio);
         }
         audio.startPlaying(file);
@@ -292,7 +298,7 @@ public class AudioHandler extends Plugin {
 
         // If not already open, then open the file
         else {
-            audio = new AudioPlayer(this, id);
+            audio = new AudioPlayer(this, id, file);
             this.players.put(id, audio);
             return (audio.getDuration(file));
         }
