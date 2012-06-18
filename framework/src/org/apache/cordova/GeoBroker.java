@@ -55,7 +55,7 @@ public class GeoBroker extends Plugin {
      */
     public PluginResult execute(String action, JSONArray args, String callbackId) {
         if (this.locationManager == null) {
-            this.locationManager = (LocationManager) this.ctx.getActivity().getSystemService(Context.LOCATION_SERVICE);
+            this.locationManager = (LocationManager) this.cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
             this.networkListener = new NetworkListener(this.locationManager, this);
             this.gpsListener = new GPSListener(this.locationManager, this);
         }

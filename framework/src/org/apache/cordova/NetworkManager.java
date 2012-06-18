@@ -84,11 +84,11 @@ public class NetworkManager extends Plugin {
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
      *
-     * @param ctx The context of the main Activity.
+     * @param cordova The context of the main Activity.
      */
-    public void setContext(CordovaInterface ctx) {
-        super.setContext(ctx);
-        this.sockMan = (ConnectivityManager) ctx.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+    public void setContext(CordovaInterface cordova) {
+        super.setContext(cordova);
+        this.sockMan = (ConnectivityManager) cordova.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         this.connectionCallbackId = null;
 
         // We need to listen to connectivity events to update navigator.connection
@@ -102,7 +102,7 @@ public class NetworkManager extends Plugin {
                     updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));
                 }
             };
-            ctx.getActivity().registerReceiver(this.receiver, intentFilter);
+            cordova.getActivity().registerReceiver(this.receiver, intentFilter);
         }
 
     }
@@ -146,7 +146,7 @@ public class NetworkManager extends Plugin {
     public void onDestroy() {
         if (this.receiver != null) {
             try {
-                this.ctx.getActivity().unregisterReceiver(this.receiver);
+                this.cordova.getActivity().unregisterReceiver(this.receiver);
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Error unregistering network receiver: " + e.getMessage(), e);
             }

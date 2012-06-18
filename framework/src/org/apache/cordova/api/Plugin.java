@@ -33,6 +33,7 @@ public abstract class Plugin implements IPlugin {
     public String id;
     public CordovaWebView webView;					// WebView object
     public CordovaInterface ctx;			        // CordovaActivity object
+    public CordovaInterface cordova;
 
     /**
      * Executes the request and returns PluginResult.
@@ -61,7 +62,8 @@ public abstract class Plugin implements IPlugin {
      * @param ctx The context of the main Activity.
      */
     public void setContext(CordovaInterface ctx) {
-        this.ctx = ctx;
+        this.cordova = ctx;
+        this.ctx = cordova;
     }
 
     /**

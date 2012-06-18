@@ -67,11 +67,11 @@ public class CompassListener extends Plugin implements SensorEventListener {
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
      *
-     * @param ctx The context of the main Activity.
+     * @param cordova The context of the main Activity.
      */
-    public void setContext(CordovaInterface ctx) {
-        super.setContext(ctx);
-        this.sensorManager = (SensorManager) ctx.getActivity().getSystemService(Context.SENSOR_SERVICE);
+    public void setContext(CordovaInterface cordova) {
+        super.setContext(cordova);
+        this.sensorManager = (SensorManager) cordova.getActivity().getSystemService(Context.SENSOR_SERVICE);
     }
 
     /**
