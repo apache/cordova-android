@@ -45,6 +45,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     private static final String LOG_TAG = "AudioPlayer";
 
     // AudioPlayer states
+//    public static final int 
     public static final int MEDIA_NONE = 0;
     public static final int MEDIA_STARTING = 1;
     public static final int MEDIA_RUNNING = 2;
@@ -190,50 +191,17 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      * @param file              The name of the audio file.
      */
     public void startPlaying(String file) {
-        if (this.recorder != null) {
-            Log.d(LOG_TAG, "AudioPlayer Error: Can't play in record mode.");
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
-        }
-
-        // If this is a new request to play audio, or stopped
-        else if ((this.mPlayer == null) || (this.state == MEDIA_STOPPED)) {
-            try {
-                // If stopped, then reset player
-                if (this.mPlayer != null) {
-                    this.mPlayer.reset();
-                }
-                // Otherwise, create a new one
-                else {
-                    this.mPlayer = new MediaPlayer();
-                }
-                this.audioFile = file;
-                this.loadAudioFile(file);
-            } catch (Exception e) {
-                e.printStackTrace();
-                this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
-            }
-        }
-
-        // If we have already have created an audio player
-        else {
-
-            // If player has been paused, then resume playback
-            if ((this.state == MEDIA_PAUSED) || (this.state == MEDIA_STARTING)) {
-                this.mPlayer.start();
-                this.setState(MEDIA_RUNNING);
-            }
-            else {
-                Log.d(LOG_TAG, "AudioPlayer Error: startPlaying() called during invalid state: " + this.state);
-                this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
-            }
-        }
+    	if (this.readyPlayer(file)) {
+    		this.mPlayer.start();
+    		this.setState(MEDIA_RUNNING);
+    	}
     }
 
     /**
      * Seek or jump to a new time in the track.
      */
     public void seekToPlaying(int milliseconds) {
-        if (this.mPlayer != null) {
+    	if (this.mPlayer != null) {
             this.mPlayer.seekTo(milliseconds);
             Log.d(LOG_TAG, "Send a onStatus update for the new seek");
             this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_POSITION + ", " + milliseconds / 1000.0f + ");");
@@ -428,6 +396,52 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      */
     public void setVolume(float volume) {
         this.mPlayer.setVolume(volume, volume);
+    }
+    
+    /**
+     * attempts to initialize the media player for playback
+     * @param file the file to play
+     * @return false if player not ready, reports if in wrong mode or state
+     */
+    private boolean readyPlayer(String file) {
+    	//make sure we are in the right mode
+        if (this.recorder != null) {
+            Log.d(LOG_TAG, "AudioPlayer Error: Can't play in record mode.");
+            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+            return false; //player is not ready
+        }
+        
+    	if (this.mPlayer == null) {
+    		this.mPlayer = new MediaPlayer();
+    		try {
+    			this.prepareOnly = false;
+    			this.loadAudioFile(file); 
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+    		}
+    		return false;
+    	}
+    	
+    	try {
+    	switch (this.state) {
+	    	case MEDIA_STOPPED:
+	    		this.mPlayer.reset();
+				this.loadAudioFile(file); 
+	    		return true;
+	    	case MEDIA_PAUSED:
+	    		return true;
+	    	case MEDIA_STARTING:
+	    		return true;
+	    	default:
+	                Log.d(LOG_TAG, "AudioPlayer Error: startPlaying() called during invalid state: " + this.state);
+	                this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+	            }
+		} catch (Exception e) {
+			e.printStackTrace();
+			this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+		}
+    	return false;
     }
     
 	/**
