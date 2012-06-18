@@ -188,7 +188,7 @@ public class App extends Plugin {
      */
     public void overrideBackbutton(boolean override) {
         LOG.i("App", "WARNING: Back Button Default Behaviour will be overridden.  The backbutton event will be fired!");
-        this.ctx.bindBackButton(override);
+        webView.bindButton(override);
     }
 
     /**
@@ -200,7 +200,7 @@ public class App extends Plugin {
      */
     public void overrideButton(String button, boolean override) {
         LOG.i("DroidGap", "WARNING: Volume Button Default Behaviour will be overridden.  The volume event will be fired!");
-        ((DroidGap)this.ctx).bindButton(button, override);
+        webView.bindButton(button, override);
     }
     /**
      * Return whether the Android back button is overridden by the user.
