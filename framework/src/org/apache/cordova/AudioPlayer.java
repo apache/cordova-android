@@ -207,40 +207,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                     this.mPlayer = new MediaPlayer();
                 }
                 this.audioFile = file;
-
-                // If streaming file
-                if (this.isStreaming(file)) {
-                    this.mPlayer.setDataSource(file);
-                    this.mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                    this.setState(MEDIA_STARTING);
-                    this.mPlayer.setOnPreparedListener(this);
-                    this.mPlayer.prepareAsync();
-                }
-
-                // If local file
-                else {
-                    if (file.startsWith("/android_asset/")) {
-                        String f = file.substring(15);
-                        android.content.res.AssetFileDescriptor fd = this.handler.ctx.getActivity().getAssets().openFd(f);
-                        this.mPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
-                    }
-                    else {
-                        File fp = new File(file);
-                        if (fp.exists()) {
-                            FileInputStream fileInputStream = new FileInputStream(file);
-                            this.mPlayer.setDataSource(fileInputStream.getFD());
-                        }
-                        else {
-                            this.mPlayer.setDataSource("/sdcard/" + file);
-                        }
-                    }
-                    this.setState(MEDIA_STARTING);
-                    this.mPlayer.setOnPreparedListener(this);
-                    this.mPlayer.prepare();
-
-                    // Get duration
-                    this.duration = getDurationInSeconds();
-                }
+                this.loadAudioFile(file);
             } catch (Exception e) {
                 e.printStackTrace();
                 this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
@@ -462,4 +429,44 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     public void setVolume(float volume) {
         this.mPlayer.setVolume(volume, volume);
     }
+    
+	/**
+	 * load audio file
+	 * @throws IOException 
+	 * @throws IllegalStateException 
+	 * @throws SecurityException 
+	 * @throws IllegalArgumentException 
+	 */
+	private void loadAudioFile(String file) throws IllegalArgumentException, SecurityException, IllegalStateException, IOException {
+		if (this.isStreaming(file)) {
+			this.mPlayer.setDataSource(file);
+			this.mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  
+			this.setState(MEDIA_STARTING);
+			this.mPlayer.setOnPreparedListener(this);		
+			this.mPlayer.prepareAsync();
+		}
+		else {
+			if (file.startsWith("/android_asset/")) {
+				String f = file.substring(15);
+				android.content.res.AssetFileDescriptor fd = this.handler.ctx.getActivity().getAssets().openFd(f);
+                this.mPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+			}
+            else {
+            	File fp = new File(file);
+                if (fp.exists()) {
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    this.mPlayer.setDataSource(fileInputStream.getFD());
+                } 
+                else {
+                	this.mPlayer.setDataSource("/sdcard/" + file);
+                }
+            }
+				this.setState(MEDIA_STARTING);
+				this.mPlayer.setOnPreparedListener(this);		
+				this.mPlayer.prepare();
+
+				// Get duration
+				this.duration = getDurationInSeconds();
+			}
+	}
 }
