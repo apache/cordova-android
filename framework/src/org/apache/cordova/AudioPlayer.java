@@ -45,11 +45,11 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     private static final String LOG_TAG = "AudioPlayer";
 
     // AudioPlayer states
-    public static int MEDIA_NONE = 0;
-    public static int MEDIA_STARTING = 1;
-    public static int MEDIA_RUNNING = 2;
-    public static int MEDIA_PAUSED = 3;
-    public static int MEDIA_STOPPED = 4;
+    public static final int MEDIA_NONE = 0;
+    public static final int MEDIA_STARTING = 1;
+    public static final int MEDIA_RUNNING = 2;
+    public static final int MEDIA_PAUSED = 3;
+    public static final int MEDIA_STOPPED = 4;
 
     // AudioPlayer message ids
     private static int MEDIA_STATE = 1;
