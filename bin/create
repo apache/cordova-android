@@ -113,3 +113,13 @@ sed -i '' -e "s/__ID__/${PACKAGE}/g" $ACTIVITY_PATH
 cp $BUILD_PATH/bin/templates/project/AndroidManifest.xml $MANIFEST_PATH
 sed -i '' -e "s/__ACTIVITY__/${ACTIVITY}/g" $MANIFEST_PATH
 sed -i '' -e "s/__PACKAGE__/${PACKAGE}/g" $MANIFEST_PATH
+
+# creating cordova folder and copying emulate/debug/log/launch scripts
+mkdir $PROJECT_PATH/cordova
+cp $BUILD_PATH/bin/templates/cordova/appinfo.jar $PROJECT_PATH/cordova/appinfo.jar
+cp $BUILD_PATH/bin/templates/cordova/cordova $PROJECT_PATH/cordova/cordova
+cp $BUILD_PATH/bin/templates/cordova/debug $PROJECT_PATH/cordova/debug
+cp $BUILD_PATH/bin/templates/cordova/clean $PROJECT_PATH/cordova/clean
+cp $BUILD_PATH/bin/templates/cordova/log $PROJECT_PATH/cordova/log
+cp $BUILD_PATH/bin/templates/cordova/emulate $PROJECT_PATH/cordova/emulate
+cp $BUILD_PATH/bin/templates/cordova/BOOM $PROJECT_PATH/cordova/BOOM

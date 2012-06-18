@@ -80,6 +80,41 @@ create_project.on('exit', function(code) {
     path.exists(util.format('%s/assets/www/cordova-%s.js', project_path, version), function(exists) {
         assert(exists, 'cordova.js did not get added');
     });
+    
+    // make sure cordova master script was added
+    path.exists(util.format('%s/cordova/cordova', project_path), function(exists) {
+        assert(exists, 'cordova script did not get added');
+    });
+    
+    // make sure debug script was added
+    path.exists(util.format('%s/cordova/debug', project_path), function(exists) {
+        assert(exists, 'debug script did not get added');
+    });
+    
+    // make sure BOOM script was added
+    path.exists(util.format('%s/cordova/BOOM', project_path), function(exists) {
+        assert(exists, 'BOOM script did not get added');
+    });
+    
+    // make sure log script was added
+    path.exists(util.format('%s/cordova/log', project_path), function(exists) {
+        assert(exists, 'log script did not get added');
+    });
+    
+    // make sure clean script was added
+    path.exists(util.format('%s/cordova/clean', project_path), function(exists) {
+        assert(exists, 'clean script did not get added');
+    });
+    
+    // make sure emulate script was added
+    path.exists(util.format('%s/cordova/emulate', project_path), function(exists) {
+        assert(exists, 'emulate script did not get added');
+    });
+    
+    // make sure appinfo.jar script was added
+    path.exists(util.format('%s/cordova/appinfo.jar', project_path), function(exists) {
+        assert(exists, 'appinfo.jar script did not get added');
+    });
 
     // check that project compiles && creates a cordovaExample-debug.apk
     var compile_project = spawn('ant', ['debug'], {cwd: project_path});
