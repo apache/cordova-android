@@ -74,7 +74,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     private String tempFile = null;                 // Temporary recording file name
     
     private MediaPlayer mPlayer = null;             // Audio player object
-   private boolean prepareOnly = false;
+    private boolean prepareOnly = false;
 
     /**
      * Constructor.
@@ -82,9 +82,10 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      * @param handler           The audio handler object
      * @param id                The id of this audio player
      */
-    public AudioPlayer(AudioHandler handler, String id) {
+    public AudioPlayer(AudioHandler handler, String id, String src) {
         this.handler = handler;
         this.id = id;
+        this.audioFile = src;
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
         } else {
