@@ -149,6 +149,7 @@ exec('cmd /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PRO
 exec('cmd /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
 
 // copy in xml
+fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
 exec('cmd /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
 exec('cmd /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
 
