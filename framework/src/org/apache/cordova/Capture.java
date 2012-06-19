@@ -19,6 +19,7 @@
 package org.apache.cordova;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -32,10 +33,11 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 
 public class Capture extends Plugin {
@@ -61,6 +63,7 @@ public class Capture extends Plugin {
     private double duration;                        // optional duration parameter for video recording
     private JSONArray results;                      // The array of results to be returned to the user
     private Uri imageUri;                           // Uri of captured image
+    private int numPics;                            // Number of pictures before capture activity
 
     //private CordovaInterface cordova;
 
@@ -202,6 +205,9 @@ public class Capture extends Plugin {
      * Sets up an intent to capture images.  Result handled by onActivityResult()
      */
     private void captureImage() {
+        // Save the number of images currently on disk for later
+        this.numPics = queryImgDB().getCount();
+
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
         // Specify file so that large image is captured and returned
@@ -256,14 +262,6 @@ public class Capture extends Plugin {
                 // It crashes in the emulator and on my phone with a null pointer exception
                 // To work around it I had to grab the code from CameraLauncher.java
                 try {
-                    // Create an ExifHelper to save the exif data that is lost during compression
-                    ExifHelper exif = new ExifHelper();
-                    exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/Capture.jpg");
-                    exif.readExifData();
-
-                    // Read in bitmap of captured image
-                    Bitmap bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.cordova.getActivity().getContentResolver(), imageUri);
-
                     // Create entry in media store for image
                     // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
                     ContentValues values = new ContentValues();
@@ -281,22 +279,21 @@ public class Capture extends Plugin {
                             return;
                         }
                     }
-
-                    // Add compressed version of captured image to returned media store Uri
+                    FileInputStream fis = new FileInputStream(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/Capture.jpg");
                     OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+                    byte[] buffer = new byte[4096];
+                    int len;
+                    while ((len = fis.read(buffer)) != -1) {
+                        os.write(buffer, 0, len);
+                    }
+                    os.flush();
                     os.close();
-
-                    bitmap.recycle();
-                    bitmap = null;
-                    System.gc();
-
-                    // Restore exif data to file
-                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.cordova));
-                    exif.writeExifData();
+                    fis.close();
 
                     // Add image to results
                     results.put(createMediaFile(uri));
+
+                    checkForDuplicateImage();
 
                     if (results.length() >= limit) {
                         // Send Uri back to JavaScript for viewing image
@@ -404,5 +401,37 @@ public class Capture extends Plugin {
      */
     public void fail(JSONObject err) {
         this.error(new PluginResult(PluginResult.Status.ERROR, err), this.callbackId);
+    }
+
+
+    /**
+     * Creates a cursor that can be used to determine how many images we have.
+     *
+     * @return a cursor
+     */
+    private Cursor queryImgDB() {
+        return this.cordova.getActivity().getContentResolver().query(
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Images.Media._ID },
+                null,
+                null,
+                null);
+    }
+
+    /**
+     * Used to find out if we are in a situation where the Camera Intent adds to images
+     * to the content store.
+     */
+    private void checkForDuplicateImage() {
+        Cursor cursor = queryImgDB();
+        int currentNumOfImages = cursor.getCount();
+
+        // delete the duplicate file if the difference is 2
+        if ((currentNumOfImages - numPics) == 2) {
+            cursor.moveToLast();
+            int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;
+            Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
+            this.cordova.getActivity().getContentResolver().delete(uri, null, null);
+        }
     }
 }

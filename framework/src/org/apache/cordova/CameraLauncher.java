@@ -20,6 +20,7 @@ package org.apache.cordova;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,6 +44,7 @@ import android.graphics.Matrix;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 /**
  * This class launches the camera view, allows the user to take a picture, closes the camera view,
@@ -277,6 +279,7 @@ public class CameraLauncher extends Plugin {
 
         Bitmap retval = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
         bitmap.recycle();
+        System.gc();
         return retval;
     }
 
@@ -310,20 +313,12 @@ public class CameraLauncher extends Plugin {
             // If image available
             if (resultCode == Activity.RESULT_OK) {
                 try {
-                    // Read in bitmap of captured image
-                    Bitmap bitmap;
-                    try {
-                        bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.cordova.getActivity().getContentResolver(), imageUri);
-                    } catch (FileNotFoundException e) {
-                        Uri uri = intent.getData();
-                        android.content.ContentResolver resolver = this.cordova.getActivity().getContentResolver();
-                        bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
-                    }
-
-                    bitmap = scaleBitmap(bitmap);
+                    Bitmap bitmap = null;
 
                     // If sending base64 image back
                     if (destType == DATA_URL) {
+                        bitmap = scaleBitmap(getBitmapFromResult(intent));
+
                         this.processPicture(bitmap);
                         checkForDuplicateImage(DATA_URL);
                     }
@@ -347,6 +342,27 @@ public class CameraLauncher extends Plugin {
                                 return;
                             }
                         }
+
+                        // If all this is true we shouldn't compress the image.
+                        if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100) {
+                            FileInputStream fis = new FileInputStream(FileUtils.stripFileProtocol(imageUri.toString()));
+                            OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
+                            byte[] buffer = new byte[4096];
+                            int len;
+                            while ((len = fis.read(buffer)) != -1) {
+                                os.write(buffer, 0, len);
+                            }
+                            os.flush();
+                            os.close();
+                            fis.close();
+
+                            checkForDuplicateImage(FILE_URI);
+
+                            this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
+                            return;
+                        }
+
+                        bitmap = scaleBitmap(getBitmapFromResult(intent));
 
                         // Add compressed version of captured image to returned media store Uri
                         OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
@@ -390,7 +406,7 @@ public class CameraLauncher extends Plugin {
                 Uri uri = intent.getData();
                 android.content.ContentResolver resolver = this.cordova.getActivity().getContentResolver();
 
-                // If you ask for video or all media type you will automatically get back a file URI 
+                // If you ask for video or all media type you will automatically get back a file URI
                 // and there will be no attempt to resize any returned data
                 if (this.mediaType != PICTURE) {
                     this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
@@ -447,7 +463,7 @@ public class CameraLauncher extends Plugin {
                                 bitmap.recycle();
                                 bitmap = null;
 
-                                // The resized image is cached by the app in order to get around this and not have to delete you 
+                                // The resized image is cached by the app in order to get around this and not have to delete you
                                 // application cache I'm adding the current system time to the end of the file url.
                                 this.success(new PluginResult(PluginResult.Status.OK, ("file://" + fileName + "?" + System.currentTimeMillis())), this.callbackId);
                                 System.gc();
@@ -469,6 +485,19 @@ public class CameraLauncher extends Plugin {
                 this.failPicture("Selection did not complete!");
             }
         }
+    }
+
+    private Bitmap getBitmapFromResult(Intent intent)
+            throws IOException, FileNotFoundException {
+        Bitmap bitmap = null;
+        try {
+            bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getActivity().getContentResolver(), imageUri);
+        } catch (FileNotFoundException e) {
+            Uri uri = intent.getData();
+            android.content.ContentResolver resolver = this.ctx.getActivity().getContentResolver();
+            bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+        }
+        return bitmap;
     }
 
     /**
