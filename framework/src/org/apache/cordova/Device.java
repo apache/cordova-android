@@ -38,7 +38,7 @@ import android.telephony.TelephonyManager;
 public class Device extends Plugin {
     public static final String TAG = "Device";
 
-    public static String cordovaVersion = "1.8.0";              // Cordova version
+    public static String cordovaVersion = "1.9.0rc1";              // Cordova version
     public static String platform = "Android";                  // Device OS
     public static String uuid;                                  // Device UUID
 
@@ -54,10 +54,10 @@ public class Device extends Plugin {
      * Sets the context of the Command. This can then be used to do things like
      * get file paths associated with the Activity.
      *
-     * @param ctx The context of the main Activity.
+     * @param cordova The context of the main Activity.
      */
-    public void setContext(CordovaInterface ctx) {
-        super.setContext(ctx);
+    public void setContext(CordovaInterface cordova) {
+        super.setContext(cordova);
         Device.uuid = getUuid();
         this.initTelephonyReceiver();
     }
@@ -110,7 +110,7 @@ public class Device extends Plugin {
      * Unregister receiver.
      */
     public void onDestroy() {
-        this.ctx.getActivity().unregisterReceiver(this.telephonyReceiver);
+        this.cordova.getActivity().unregisterReceiver(this.telephonyReceiver);
     }
 
     //--------------------------------------------------------------------------
@@ -125,7 +125,7 @@ public class Device extends Plugin {
     private void initTelephonyReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        //final CordovaInterface myctx = this.ctx;
+        //final CordovaInterface mycordova = this.cordova;
         this.telephonyReceiver = new BroadcastReceiver() {
 
             @Override
@@ -153,7 +153,7 @@ public class Device extends Plugin {
         };
 
         // Register the receiver
-        this.ctx.getActivity().registerReceiver(this.telephonyReceiver, intentFilter);
+        this.cordova.getActivity().registerReceiver(this.telephonyReceiver, intentFilter);
     }
 
     /**
@@ -171,7 +171,7 @@ public class Device extends Plugin {
      * @return
      */
     public String getUuid() {
-        String uuid = Settings.Secure.getString(this.ctx.getActivity().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+        String uuid = Settings.Secure.getString(this.cordova.getActivity().getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
         return uuid;
     }
 

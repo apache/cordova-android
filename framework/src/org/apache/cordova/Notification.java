@@ -143,7 +143,7 @@ public class Notification extends Plugin {
      */
     public void beep(long count) {
         Uri ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        Ringtone notification = RingtoneManager.getRingtone(this.ctx.getActivity().getBaseContext(), ringtone);
+        Ringtone notification = RingtoneManager.getRingtone(this.cordova.getActivity().getBaseContext(), ringtone);
 
         // If phone is not set to silent mode
         if (notification != null) {
@@ -171,7 +171,7 @@ public class Notification extends Plugin {
         if (time == 0) {
             time = 500;
         }
-        Vibrator vibrator = (Vibrator) this.ctx.getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+        Vibrator vibrator = (Vibrator) this.cordova.getActivity().getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(time);
     }
 
@@ -184,13 +184,13 @@ public class Notification extends Plugin {
      */
     public synchronized void alert(final String message, final String title, final String buttonLabel, final String callbackId) {
 
-        final CordovaInterface ctx = this.ctx;
+        final CordovaInterface cordova = this.cordova;
         final Notification notification = this;
 
         Runnable runnable = new Runnable() {
             public void run() {
 
-                AlertDialog.Builder dlg = new AlertDialog.Builder(ctx.getActivity());
+                AlertDialog.Builder dlg = new AlertDialog.Builder(cordova.getActivity());
                 dlg.setMessage(message);
                 dlg.setTitle(title);
                 dlg.setCancelable(false);
@@ -205,7 +205,7 @@ public class Notification extends Plugin {
                 dlg.show();
             };
         };
-        this.ctx.getActivity().runOnUiThread(runnable);
+        this.cordova.getActivity().runOnUiThread(runnable);
     }
 
     /**
@@ -220,13 +220,13 @@ public class Notification extends Plugin {
      */
     public synchronized void confirm(final String message, final String title, String buttonLabels, final String callbackId) {
 
-        final CordovaInterface ctx = this.ctx;
+        final CordovaInterface cordova = this.cordova;
         final Notification notification = this;
         final String[] fButtons = buttonLabels.split(",");
 
         Runnable runnable = new Runnable() {
             public void run() {
-                AlertDialog.Builder dlg = new AlertDialog.Builder(ctx.getActivity());
+                AlertDialog.Builder dlg = new AlertDialog.Builder(cordova.getActivity());
                 dlg.setMessage(message);
                 dlg.setTitle(title);
                 dlg.setCancelable(false);
@@ -269,7 +269,7 @@ public class Notification extends Plugin {
                 dlg.show();
             };
         };
-        this.ctx.getActivity().runOnUiThread(runnable);
+        this.cordova.getActivity().runOnUiThread(runnable);
     }
 
     /**
@@ -284,10 +284,10 @@ public class Notification extends Plugin {
             this.spinnerDialog = null;
         }
         final Notification notification = this;
-        final CordovaInterface ctx = this.ctx;
+        final CordovaInterface cordova = this.cordova;
         Runnable runnable = new Runnable() {
             public void run() {
-                notification.spinnerDialog = ProgressDialog.show(ctx.getActivity(), title, message, true, true,
+                notification.spinnerDialog = ProgressDialog.show(cordova.getActivity(), title, message, true, true,
                         new DialogInterface.OnCancelListener() {
                             public void onCancel(DialogInterface dialog) {
                                 notification.spinnerDialog = null;
@@ -295,7 +295,7 @@ public class Notification extends Plugin {
                         });
             }
         };
-        this.ctx.getActivity().runOnUiThread(runnable);
+        this.cordova.getActivity().runOnUiThread(runnable);
     }
 
     /**
@@ -320,10 +320,10 @@ public class Notification extends Plugin {
             this.progressDialog = null;
         }
         final Notification notification = this;
-        final CordovaInterface ctx = this.ctx;
+        final CordovaInterface cordova = this.cordova;
         Runnable runnable = new Runnable() {
             public void run() {
-                notification.progressDialog = new ProgressDialog(ctx.getActivity());
+                notification.progressDialog = new ProgressDialog(cordova.getActivity());
                 notification.progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 notification.progressDialog.setTitle(title);
                 notification.progressDialog.setMessage(message);
@@ -339,7 +339,7 @@ public class Notification extends Plugin {
                 notification.progressDialog.show();
             }
         };
-        this.ctx.getActivity().runOnUiThread(runnable);
+        this.cordova.getActivity().runOnUiThread(runnable);
     }
 
     /**

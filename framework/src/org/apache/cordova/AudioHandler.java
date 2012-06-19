@@ -305,7 +305,7 @@ public class AudioHandler extends Plugin {
      */
     @SuppressWarnings("deprecation")
     public void setAudioOutputDevice(int output) {
-        AudioManager audiMgr = (AudioManager) this.ctx.getActivity().getSystemService(Context.AUDIO_SERVICE);
+        AudioManager audiMgr = (AudioManager) this.cordova.getActivity().getSystemService(Context.AUDIO_SERVICE);
         if (output == 2) {
             audiMgr.setRouting(AudioManager.MODE_NORMAL, AudioManager.ROUTE_SPEAKER, AudioManager.ROUTE_ALL);
         }
@@ -324,7 +324,7 @@ public class AudioHandler extends Plugin {
      */
     @SuppressWarnings("deprecation")
     public int getAudioOutputDevice() {
-        AudioManager audiMgr = (AudioManager) this.ctx.getActivity().getSystemService(Context.AUDIO_SERVICE);
+        AudioManager audiMgr = (AudioManager) this.cordova.getActivity().getSystemService(Context.AUDIO_SERVICE);
         if (audiMgr.getRouting(AudioManager.MODE_NORMAL) == AudioManager.ROUTE_EARPIECE) {
             return 1;
         }

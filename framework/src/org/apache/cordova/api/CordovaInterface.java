@@ -76,4 +76,6 @@ public interface CordovaInterface {
      * @return              Object or null
      */
     public Object onMessage(String id, Object data);
+
+    public abstract void bindButton(String button, boolean override);
 }

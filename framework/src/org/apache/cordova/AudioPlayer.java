@@ -88,7 +88,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
         } else {
-            this.tempFile = "/data/data/" + handler.ctx.getActivity().getPackageName() + "/cache/tmprecording.mp3";
+            this.tempFile = "/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/tmprecording.mp3";
         }
     }
 
@@ -160,7 +160,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             f.renameTo(new File(Environment.getExternalStorageDirectory().getAbsolutePath()
                     + File.separator + file));
         } else {
-            f.renameTo(new File("/data/data/" + handler.ctx.getActivity().getPackageName() + "/cache/" + file));
+            f.renameTo(new File("/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/" + file));
         }
 
     }
@@ -220,7 +220,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                 else {
                     if (file.startsWith("/android_asset/")) {
                         String f = file.substring(15);
-                        android.content.res.AssetFileDescriptor fd = this.handler.ctx.getActivity().getAssets().openFd(f);
+                        android.content.res.AssetFileDescriptor fd = this.handler.cordova.getActivity().getAssets().openFd(f);
                         this.mPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
                     }
                     else {

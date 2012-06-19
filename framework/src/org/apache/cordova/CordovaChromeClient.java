@@ -45,16 +45,16 @@ public class CordovaChromeClient extends WebChromeClient {
 
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    private CordovaInterface ctx;
+    private CordovaInterface cordova;
     private CordovaWebView appView;
 
     /**
      * Constructor.
      *
-     * @param ctx
+     * @param cordova
      */
-    public CordovaChromeClient(CordovaInterface ctx) {
-        this.ctx = ctx;
+    public CordovaChromeClient(CordovaInterface cordova) {
+        this.cordova = cordova;
     }
 
     /**
@@ -64,7 +64,7 @@ public class CordovaChromeClient extends WebChromeClient {
      * @param app
      */
     public CordovaChromeClient(CordovaInterface ctx, CordovaWebView app) {
-        this.ctx = ctx;
+        this.cordova = ctx;
         this.appView = app;
     }
 
@@ -87,7 +87,7 @@ public class CordovaChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-        AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx.getActivity());
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
         dlg.setMessage(message);
         dlg.setTitle("Alert");
         //Don't let alerts break the back button
@@ -131,7 +131,7 @@ public class CordovaChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-        AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx.getActivity());
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
         dlg.setMessage(message);
         dlg.setTitle("Confirm");
         dlg.setCancelable(true);
@@ -243,9 +243,9 @@ public class CordovaChromeClient extends WebChromeClient {
         // Show dialog
         else {
             final JsPromptResult res = result;
-            AlertDialog.Builder dlg = new AlertDialog.Builder(this.ctx.getActivity());
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
             dlg.setMessage(message);
-            final EditText input = new EditText(this.ctx.getActivity());
+            final EditText input = new EditText(this.cordova.getActivity());
             if (defaultValue != null) {
                 input.setText(defaultValue);
             }

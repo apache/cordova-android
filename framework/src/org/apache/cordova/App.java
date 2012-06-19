@@ -49,7 +49,7 @@ public class App extends Plugin {
                 this.clearCache();
             }
             else if (action.equals("show")) { // TODO @bc - Not in master branch.  When should this be called?
-                ctx.getActivity().runOnUiThread(new Runnable() {
+                cordova.getActivity().runOnUiThread(new Runnable() {
                     public void run() {
                         webView.postMessage("spinner", "stop");
                     }
@@ -162,7 +162,7 @@ public class App extends Plugin {
      */
     @Deprecated
     public void cancelLoadUrl() {
-        this.ctx.cancelLoadUrl();
+        this.cordova.cancelLoadUrl();
     }
 
     /**
@@ -188,7 +188,7 @@ public class App extends Plugin {
      */
     public void overrideBackbutton(boolean override) {
         LOG.i("App", "WARNING: Back Button Default Behaviour will be overridden.  The backbutton event will be fired!");
-        this.ctx.bindBackButton(override);
+        this.cordova.bindBackButton(override);
     }
 
     /**
@@ -200,7 +200,7 @@ public class App extends Plugin {
      */
     public void overrideButton(String button, boolean override) {
         LOG.i("DroidGap", "WARNING: Volume Button Default Behaviour will be overridden.  The volume event will be fired!");
-        ((DroidGap)this.ctx).bindButton(button, override);
+        this.cordova.bindButton(button, override);
     }
     /**
      * Return whether the Android back button is overridden by the user.
@@ -208,7 +208,7 @@ public class App extends Plugin {
      * @return boolean
      */
     public boolean isBackbuttonOverridden() {
-        return this.ctx.isBackButtonBound();
+        return this.cordova.isBackButtonBound();
     }
 
     /**
