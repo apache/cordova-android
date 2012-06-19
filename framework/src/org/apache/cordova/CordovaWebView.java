@@ -52,8 +52,12 @@ public class CordovaWebView extends WebView {
     /** The whitelist **/
     private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
     private HashMap<String, Boolean> whiteListCache = new HashMap<String, Boolean>();
+    private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
+    private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
+    
     public PluginManager pluginManager;
     public CallbackServer callbackServer;
+    
 
     /** Actvities and other important classes **/
     private CordovaInterface mCtx;
@@ -675,26 +679,25 @@ public class CordovaWebView extends WebView {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-     // If volumedown key
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            if (this.volumedownBound==true) {
-                // only override default behaviour is event bound
-                LOG.d(TAG, "Down Key Hit");
-                this.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
-                return true;
+        if(keyDownCodes.contains(keyCode))
+        {
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                    // only override default behaviour is event bound
+                    LOG.d(TAG, "Down Key Hit");
+                    this.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
+                    return true;
+            }
+            // If volumeup key
+            else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                    LOG.d(TAG, "Up Key Hit");
+                    this.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
+                    return true;
+            }
+            else
+            {
+                //Do some other stuff!
             }
         }
-
-        // If volumeup key
-        else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            if (this.volumeupBound==true) {
-                // only override default behaviour is event bound
-                LOG.d(TAG, "Up Key Hit");
-                this.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
-                return true;
-            }
-        }
-
         return false;
     }
     
@@ -723,18 +726,21 @@ public class CordovaWebView extends WebView {
                 }
             }
         }
-
-        // If menu key
+        // Legacy
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
             this.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
             return super.onKeyUp(keyCode, event);
         }
-
         // If search key
         else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
             this.loadUrl("javascript:cordova.fireDocumentEvent('searchbutton');");
             return true;
         }
+        else if(keyUpCodes.contains(keyCode))
+        {
+            //What the hell should this do?
+        }
+
         
         Log.d(TAG, "KeyUp has been triggered on the view");
         return false;
@@ -748,10 +754,21 @@ public class CordovaWebView extends WebView {
     public void bindButton(String button, boolean override) {
         // TODO Auto-generated method stub
         if (button.compareTo("volumeup")==0) {
-          this.volumeupBound = override;
+          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_DOWN);
         }
         else if (button.compareTo("volumedown")==0) {
-          this.volumedownBound = override;
+          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_UP);
         }
       }
+    
+    public void bindButton(int keyCode, boolean keyDown, boolean override) {
+       if(keyDown)
+       {
+           keyDownCodes.add(keyCode);
+       }
+       else
+       {
+           keyUpCodes.add(keyCode);
+       }
+    }
 }
