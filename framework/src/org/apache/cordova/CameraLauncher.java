@@ -202,9 +202,9 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
     private File createCaptureFile(int encodingType) {
         File photo = null;
         if (encodingType == JPEG) {
-            photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), "Pic.jpg");
+            photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), ".Pic.jpg");
         } else if (encodingType == PNG) {
-            photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), "Pic.png");
+            photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), ".Pic.png");
         } else {
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
@@ -310,7 +310,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         ExifHelper exif = new ExifHelper();
         try {
             if (this.encodingType == JPEG) {
-                exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/Pic.jpg");
+                exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/.Pic.jpg");
                 exif.readExifData();
             }
         } catch (IOException e) {
