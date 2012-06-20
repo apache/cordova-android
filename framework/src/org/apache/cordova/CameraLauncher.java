@@ -338,6 +338,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         ContentValues values = new ContentValues();
                         values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
 
+                       
                         try {
                             this.imageUri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                         } catch (UnsupportedOperationException e) {
@@ -349,6 +350,22 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                                 this.failPicture("Error capturing image - no media storage found.");
                                 return;
                             }
+                        }
+                        if (!this.saveToPhotoAlbum) {
+                            File tempFile = new File(this.imageUri.toString());
+                            Uri jailURI = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", tempFile.getName()));
+                            
+                            // Clean up initial URI before writing out safe URI
+                            boolean didWeDeleteIt = tempFile.delete();
+                            if (!didWeDeleteIt) {
+                                int result = this.cordova.getActivity().getContentResolver().delete(
+                                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                                    MediaStore.Images.Media.DATA + " = ?",
+                                    new String[] { this.imageUri.toString() }
+                                );
+                                LOG.d("TAG!","result is " + result);
+                            }
+                            this.imageUri = jailURI;
                         }
 
                         // If all this is true we shouldn't compress the image.
@@ -378,10 +395,18 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         os.close();
 
                         // Restore exif data to file
+                        
                         if (this.encodingType == JPEG) {
-                            exif.createOutFile(FileUtils.getRealPathFromURI(this.imageUri, this.cordova));
+                            String exifPath;
+                            if (this.saveToPhotoAlbum) {
+                                exifPath = FileUtils.getRealPathFromURI(this.imageUri, this.cordova);
+                            } else {
+                                exifPath = this.imageUri.toString();
+                            }
+                            exif.createOutFile(exifPath);
                             exif.writeExifData();
                         }
+                        
 
                         // Scan for the gallery to update pic refs in gallery
                         this.scanForGallery();
