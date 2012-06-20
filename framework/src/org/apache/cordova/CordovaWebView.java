@@ -754,10 +754,10 @@ public class CordovaWebView extends WebView {
     public void bindButton(String button, boolean override) {
         // TODO Auto-generated method stub
         if (button.compareTo("volumeup")==0) {
-          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_DOWN);
+          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_UP);
         }
         else if (button.compareTo("volumedown")==0) {
-          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_UP);
+          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_DOWN);
         }
       }
     
