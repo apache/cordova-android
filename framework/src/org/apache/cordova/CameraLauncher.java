@@ -524,18 +524,20 @@ public class CameraLauncher extends Plugin {
     private void checkForDuplicateImage(int type) {
         int diff = 1;
         Cursor cursor = queryImgDB();
-        int currentNumOfImages = cursor.getCount();
+        if (cursor != null) {
+            int currentNumOfImages = cursor.getCount();
 
-        if (type == FILE_URI) {
-            diff = 2;
-        }
+            if (type == FILE_URI) {
+                diff = 2;
+            }
 
-        // delete the duplicate file if the difference is 2 for file URI or 1 for Data URL
-        if ((currentNumOfImages - numPics) == diff) {
-            cursor.moveToLast();
-            int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;
-            Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
-            this.cordova.getActivity().getContentResolver().delete(uri, null, null);
+            // delete the duplicate file if the difference is 2 for file URI or 1 for Data URL
+            if ((currentNumOfImages - numPics) == diff) {
+                cursor.moveToLast();
+                int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;
+                Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
+                this.cordova.getActivity().getContentResolver().delete(uri, null, null);
+            }
         }
     }
 

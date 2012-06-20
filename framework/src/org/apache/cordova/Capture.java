@@ -424,14 +424,16 @@ public class Capture extends Plugin {
      */
     private void checkForDuplicateImage() {
         Cursor cursor = queryImgDB();
-        int currentNumOfImages = cursor.getCount();
+        if (cursor != null) {
+            int currentNumOfImages = cursor.getCount();
 
-        // delete the duplicate file if the difference is 2
-        if ((currentNumOfImages - numPics) == 2) {
-            cursor.moveToLast();
-            int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;
-            Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
-            this.cordova.getActivity().getContentResolver().delete(uri, null, null);
+            // delete the duplicate file if the difference is 2
+            if ((currentNumOfImages - numPics) == 2) {
+                cursor.moveToLast();
+                int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;
+                Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
+                this.cordova.getActivity().getContentResolver().delete(uri, null, null);
+            }
         }
     }
 }
