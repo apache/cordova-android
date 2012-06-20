@@ -461,7 +461,7 @@ public class CordovaWebViewClient extends WebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        if(url.contains("?")){
+        if(url.contains("?") || url.contains("#")){
             return generateWebResourceResponse(url);
         } else {
             return super.shouldInterceptRequest(view, url);
@@ -475,6 +475,10 @@ public class CordovaWebViewClient extends WebViewClient {
             niceUrl = url.replaceFirst(ANDROID_ASSET, "");
             if(niceUrl.contains("?")){
                 niceUrl = niceUrl.split("\\?")[0];
+            }
+            else if(niceUrl.contains("#"))
+            {
+                niceUrl = niceUrl.split("#")[0];
             }
 
             String mimetype = null;
