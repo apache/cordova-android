@@ -81,6 +81,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
     private Uri imageUri;                   // Uri of captured image
     private int encodingType;               // Type of encoding to use
     private int mediaType;                  // What type of media to retrieve
+    private boolean saveToPhotoAlbum;       // Should the picture be saved to the device's photo album
 
     public String callbackId;
     private int numPics;
@@ -121,6 +122,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
             if (action.equals("takePicture")) {
                 int srcType = CAMERA;
                 int destType = FILE_URI;
+                this.saveToPhotoAlbum = false;
                 this.targetHeight = 0;
                 this.targetWidth = 0;
                 this.encodingType = JPEG;
@@ -134,6 +136,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 this.targetHeight = args.getInt(4);
                 this.encodingType = args.getInt(5);
                 this.mediaType = args.getInt(6);
+                this.saveToPhotoAlbum = args.getBoolean(9);
 
                 if (srcType == CAMERA) {
                     this.takePicture(destType, encodingType);
