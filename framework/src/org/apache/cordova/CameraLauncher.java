@@ -353,9 +353,10 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         }
                         if (!this.saveToPhotoAlbum) {
                             File tempFile = new File(this.imageUri.toString());
-                            Uri jailURI = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", tempFile.getName()));
+                            Uri jailURI = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", tempFile.getName() + "." + (this.encodingType == JPEG ? "jpg" : "png" )));
                             
-                            // Clean up initial URI before writing out safe URI
+                            // Clean up initial URI before writing out safe URI.
+                            // First try File-based approach to delete. Then use the media delete method. Neither seem to work on ICS right now...
                             boolean didWeDeleteIt = tempFile.delete();
                             if (!didWeDeleteIt) {
                                 int result = this.cordova.getActivity().getContentResolver().delete(
@@ -363,7 +364,6 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                                     MediaStore.Images.Media.DATA + " = ?",
                                     new String[] { this.imageUri.toString() }
                                 );
-                                LOG.d("TAG!","result is " + result);
                             }
                             this.imageUri = jailURI;
                         }
