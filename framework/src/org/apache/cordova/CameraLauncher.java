@@ -43,6 +43,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -167,7 +168,7 @@ public class CameraLauncher extends Plugin {
      */
     public void takePicture(int returnType, int encodingType) {
         // Save the number of images currently on disk for later
-        this.numPics = queryImgDB().getCount();
+        this.numPics = queryImgDB(whichContentStore()).getCount();
 
         // Display camera
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
@@ -505,9 +506,9 @@ public class CameraLauncher extends Plugin {
      *
      * @return a cursor
      */
-    private Cursor queryImgDB() {
+    private Cursor queryImgDB(Uri contentStore) {
         return this.cordova.getActivity().getContentResolver().query(
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                contentStore,
                 new String[] { MediaStore.Images.Media._ID },
                 null,
                 null,
@@ -523,7 +524,8 @@ public class CameraLauncher extends Plugin {
      */
     private void checkForDuplicateImage(int type) {
         int diff = 1;
-        Cursor cursor = queryImgDB();
+        Uri contentStore = whichContentStore();
+        Cursor cursor = queryImgDB(contentStore);
         int currentNumOfImages = cursor.getCount();
 
         if (type == FILE_URI) {
@@ -534,8 +536,20 @@ public class CameraLauncher extends Plugin {
         if ((currentNumOfImages - numPics) == diff) {
             cursor.moveToLast();
             int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;
-            Uri uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI + "/" + id);
+            Uri uri = Uri.parse(contentStore + "/" + id);
             this.cordova.getActivity().getContentResolver().delete(uri, null, null);
+        }
+    }
+
+    /**
+     * Determine if we are storing the images in internal or external storage
+     * @return Uri
+     */
+    private Uri whichContentStore() {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            return android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        } else {
+            return android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI;
         }
     }
 
