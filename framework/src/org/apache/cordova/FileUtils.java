@@ -223,9 +223,9 @@ public class FileUtils extends Plugin {
      */
     private void notifyDelete(String filePath) {
         String newFilePath = stripFileProtocol(filePath);
-        int result = this.ctx.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        int result = this.cordova.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             MediaStore.Images.Media.DATA + " = ?",
-            new String[] { filePath });
+            new String[] { newFilePath });
     }
 
     /**
@@ -246,7 +246,7 @@ public class FileUtils extends Plugin {
 
         // Handle the special case where you get an Android content:// uri.
         if (decoded.startsWith("content:")) {
-            Cursor cursor = this.ctx.getActivity().managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
+            Cursor cursor = this.cordova.getActivity().managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
             // Note: MediaStore.Images/Audio/Video.Media.DATA is always "_data"
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
@@ -728,9 +728,9 @@ public class FileUtils extends Plugin {
     private boolean atRootDirectory(String filePath) {
         filePath = stripFileProtocol(filePath);
 
-        if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + ctx.getActivity().getPackageName() + "/cache") ||
+        if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + cordova.getActivity().getPackageName() + "/cache") ||
                 filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) ||
-                filePath.equals("/data/data/" + ctx.getActivity().getPackageName())) {
+                filePath.equals("/data/data/" + cordova.getActivity().getPackageName())) {
             return true;
         }
         return false;
@@ -819,16 +819,16 @@ public class FileUtils extends Plugin {
             fs.put("name", "temporary");
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 fp = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        "/Android/data/" + ctx.getActivity().getPackageName() + "/cache/");
+                        "/Android/data/" + cordova.getActivity().getPackageName() + "/cache/");
                 // Create the cache dir if it doesn't exist.
                 fp.mkdirs();
                 fs.put("root", getEntry(Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        "/Android/data/" + ctx.getActivity().getPackageName() + "/cache/"));
+                        "/Android/data/" + cordova.getActivity().getPackageName() + "/cache/"));
             } else {
-                fp = new File("/data/data/" + ctx.getActivity().getPackageName() + "/cache/");
+                fp = new File("/data/data/" + cordova.getActivity().getPackageName() + "/cache/");
                 // Create the cache dir if it doesn't exist.
                 fp.mkdirs();
-                fs.put("root", getEntry("/data/data/" + ctx.getActivity().getPackageName() + "/cache/"));
+                fs.put("root", getEntry("/data/data/" + cordova.getActivity().getPackageName() + "/cache/"));
             }
         }
         else if (type == PERSISTENT) {
@@ -836,7 +836,7 @@ public class FileUtils extends Plugin {
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 fs.put("root", getEntry(Environment.getExternalStorageDirectory()));
             } else {
-                fs.put("root", getEntry("/data/data/" + ctx.getActivity().getPackageName()));
+                fs.put("root", getEntry("/data/data/" + cordova.getActivity().getPackageName()));
             }
         }
         else {
@@ -943,7 +943,7 @@ public class FileUtils extends Plugin {
         String contentType = null;
         if (filename.startsWith("content:")) {
             Uri fileUri = Uri.parse(filename);
-            contentType = this.ctx.getActivity().getContentResolver().getType(fileUri);
+            contentType = this.cordova.getActivity().getContentResolver().getType(fileUri);
         }
         else {
             contentType = getMimeType(filename);
@@ -1026,7 +1026,7 @@ public class FileUtils extends Plugin {
     private InputStream getPathFromUri(String path) throws FileNotFoundException {
         if (path.startsWith("content")) {
             Uri uri = Uri.parse(path);
-            return ctx.getActivity().getContentResolver().openInputStream(uri);
+            return cordova.getActivity().getContentResolver().openInputStream(uri);
         }
         else {
             path = stripFileProtocol(path);
@@ -1038,13 +1038,13 @@ public class FileUtils extends Plugin {
      * Queries the media store to find out what the file path is for the Uri we supply
      *
      * @param contentUri the Uri of the audio/image/video
-     * @param  ctx) the current applicaiton context
+     * @param  cordova) the current applicaiton context
      * @return the full path to the file
      */
     @SuppressWarnings("deprecation")
-    protected static String getRealPathFromURI(Uri contentUri, CordovaInterface ctx) {
+    protected static String getRealPathFromURI(Uri contentUri, CordovaInterface cordova) {
         String[] proj = { _DATA };
-        Cursor cursor = ctx.getActivity().managedQuery(contentUri, proj, null, null, null);
+        Cursor cursor = cordova.getActivity().managedQuery(contentUri, proj, null, null, null);
         int column_index = cursor.getColumnIndexOrThrow(_DATA);
         cursor.moveToFirst();
         return cursor.getString(column_index);

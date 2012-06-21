@@ -60,7 +60,7 @@ public class CordovaWebView extends WebView {
     
 
     /** Actvities and other important classes **/
-    private CordovaInterface mCtx;
+    private CordovaInterface cordova;
     CordovaWebViewClient viewClient;
     @SuppressWarnings("unused")
     private CordovaChromeClient chromeClient;
@@ -90,7 +90,7 @@ public class CordovaWebView extends WebView {
         super(context);
         if (CordovaInterface.class.isInstance(context))
         {
-            this.mCtx = (CordovaInterface) context;
+            this.cordova = (CordovaInterface) context;
         }
         else
         {
@@ -110,14 +110,14 @@ public class CordovaWebView extends WebView {
         super(context, attrs);
         if (CordovaInterface.class.isInstance(context))
         {
-            this.mCtx = (CordovaInterface) context;
+            this.cordova = (CordovaInterface) context;
         }
         else
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
-        this.setWebChromeClient(new CordovaChromeClient(this.mCtx, this));
-        this.setWebViewClient(new CordovaWebViewClient(this.mCtx, this));
+        this.setWebChromeClient(new CordovaChromeClient(this.cordova, this));
+        this.setWebViewClient(new CordovaWebViewClient(this.cordova, this));
         this.loadConfiguration();
         this.setup();
     }
@@ -134,14 +134,14 @@ public class CordovaWebView extends WebView {
         super(context, attrs, defStyle);
         if (CordovaInterface.class.isInstance(context))
         {
-            this.mCtx = (CordovaInterface) context;
+            this.cordova = (CordovaInterface) context;
         }
         else
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
-        this.setWebChromeClient(new CordovaChromeClient(this.mCtx, this));
-        this.setWebViewClient(new CordovaWebViewClient(this.mCtx, this));
+        this.setWebChromeClient(new CordovaChromeClient(this.cordova, this));
+        this.setWebViewClient(new CordovaWebViewClient(this.cordova, this));
         this.loadConfiguration();
         this.setup();
     }
@@ -158,14 +158,14 @@ public class CordovaWebView extends WebView {
         super(context, attrs, defStyle, privateBrowsing);
         if (CordovaInterface.class.isInstance(context))
         {
-            this.mCtx = (CordovaInterface) context;
+            this.cordova = (CordovaInterface) context;
         }
         else
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
-        this.setWebChromeClient(new CordovaChromeClient(this.mCtx));
-        this.setWebViewClient(new CordovaWebViewClient(this.mCtx));
+        this.setWebChromeClient(new CordovaChromeClient(this.cordova));
+        this.setWebViewClient(new CordovaWebViewClient(this.cordova));
         this.loadConfiguration();
         this.setup();
     }
@@ -191,7 +191,7 @@ public class CordovaWebView extends WebView {
 
         // Enable database
         settings.setDatabaseEnabled(true);
-        String databasePath = this.mCtx.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
+        String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         settings.setDatabasePath(databasePath);
 
         // Enable DOM storage
@@ -202,7 +202,7 @@ public class CordovaWebView extends WebView {
 
         //Start up the plugin manager
         try {
-            this.pluginManager = new PluginManager(this, this.mCtx);
+            this.pluginManager = new PluginManager(this, this.cordova);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -394,13 +394,13 @@ public class CordovaWebView extends WebView {
 
                 // If timeout, then stop loading and handle error
                 if (me.loadUrlTimeout == currentLoadUrlTimeout) {
-                    me.mCtx.getActivity().runOnUiThread(loadError);
+                    me.cordova.getActivity().runOnUiThread(loadError);
                 }
             }
         };
 
         // Load url
-        this.mCtx.getActivity().runOnUiThread(new Runnable() {
+        this.cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 Thread thread = new Thread(timeoutCheck);
                 thread.start();
@@ -569,7 +569,7 @@ public class CordovaWebView extends WebView {
                 try {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(url));
-                    mCtx.getActivity().startActivity(intent);
+                    cordova.getActivity().startActivity(intent);
                 } catch (android.content.ActivityNotFoundException e) {
                     LOG.e(TAG, "Error loading url " + url, e);
                 }
@@ -581,7 +581,7 @@ public class CordovaWebView extends WebView {
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(url));
-                mCtx.getActivity().startActivity(intent);
+                cordova.getActivity().startActivity(intent);
             } catch (android.content.ActivityNotFoundException e) {
                 LOG.e(TAG, "Error loading url " + url, e);
             }
@@ -596,7 +596,7 @@ public class CordovaWebView extends WebView {
      *      <log level="DEBUG" />
      */
     private void loadConfiguration() {
-        int id = getResources().getIdentifier("cordova", "xml", this.mCtx.getActivity().getPackageName());
+        int id = getResources().getIdentifier("cordova", "xml", this.cordova.getActivity().getPackageName());
         if (id == 0) {
             LOG.i("CordovaLog", "cordova.xml missing. Ignoring...");
             return;
@@ -627,7 +627,7 @@ public class CordovaWebView extends WebView {
                     LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
 
                     // Save preferences in Intent
-                    this.mCtx.getActivity().getIntent().putExtra(name, value);
+                    this.cordova.getActivity().getIntent().putExtra(name, value);
                 }
             }
             try {
@@ -648,8 +648,8 @@ public class CordovaWebView extends WebView {
         }
 
         if ("true".equals(this.getProperty("fullscreen", "false"))) {
-            this.mCtx.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-            this.mCtx.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            this.cordova.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            this.cordova.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
     }
 
@@ -661,7 +661,7 @@ public class CordovaWebView extends WebView {
      * @return
      */
     public String getProperty(String name, String defaultValue) {
-        Bundle bundle = this.mCtx.getActivity().getIntent().getExtras();
+        Bundle bundle = this.cordova.getActivity().getIntent().getExtras();
         if (bundle == null) {
             return defaultValue;
         }

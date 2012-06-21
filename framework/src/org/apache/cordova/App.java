@@ -49,7 +49,7 @@ public class App extends Plugin {
                 this.clearCache();
             }
             else if (action.equals("show")) { // TODO @bc - Not in master branch.  When should this be called?
-                ctx.getActivity().runOnUiThread(new Runnable() {
+                cordova.getActivity().runOnUiThread(new Runnable() {
                     public void run() {
                         webView.postMessage("spinner", "stop");
                     }
@@ -162,7 +162,7 @@ public class App extends Plugin {
      */
     @Deprecated
     public void cancelLoadUrl() {
-        this.ctx.cancelLoadUrl();
+        this.cordova.cancelLoadUrl();
     }
 
     /**
@@ -208,7 +208,7 @@ public class App extends Plugin {
      * @return boolean
      */
     public boolean isBackbuttonOverridden() {
-        return this.ctx.isBackButtonBound();
+        return this.cordova.isBackButtonBound();
     }
 
     /**

@@ -260,7 +260,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
-        
+
         if(this.getBooleanProperty("setFullscreen", false))
         {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -786,7 +786,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     
     /**
-     * Launch an activity for which you would like a result when it finished. When this activity exits, 
+     * Launch an activity for which you would like a result when it finished. When this activity exits,
      * your onActivityResult() method will be called.
      *
      * @param command           The command object
@@ -1008,40 +1008,46 @@ public class DroidGap extends Activity implements CordovaInterface {
      * Shows the splash screen over the full Activity
      */
     @SuppressWarnings("deprecation")
-    protected void showSplashScreen(int time) {
+    protected void showSplashScreen(final int time) {
+        final DroidGap that = this;
 
-        // Get reference to display
-        Display display = getWindowManager().getDefaultDisplay();
-
-        // Create the layout for the dialog
-        LinearLayout root = new LinearLayout(this);
-        root.setMinimumHeight(display.getHeight());
-        root.setMinimumWidth(display.getWidth());
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(this.getIntegerProperty("backgroundColor", Color.BLACK));
-        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-                ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
-        root.setBackgroundResource(this.splashscreen);
-
-        // Create and show the dialog
-        splashDialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
-        // check to see if the splash screen should be full screen
-        if ((getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
-            splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
-        splashDialog.setContentView(root);
-        splashDialog.setCancelable(false);
-        splashDialog.show();
-
-        // Set Runnable to remove splash screen just in case
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+        Runnable runnable = new Runnable() {
             public void run() {
-                removeSplashScreen();
+                // Get reference to display
+                Display display = getWindowManager().getDefaultDisplay();
+
+                // Create the layout for the dialog
+                LinearLayout root = new LinearLayout(that.getActivity());
+                root.setMinimumHeight(display.getHeight());
+                root.setMinimumWidth(display.getWidth());
+                root.setOrientation(LinearLayout.VERTICAL);
+                root.setBackgroundColor(that.getIntegerProperty("backgroundColor", Color.BLACK));
+                root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+                        ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+                root.setBackgroundResource(that.splashscreen);
+
+                // Create and show the dialog
+                splashDialog = new Dialog(that, android.R.style.Theme_Translucent_NoTitleBar);
+                // check to see if the splash screen should be full screen
+                if ((getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                        == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+                    splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                }
+                splashDialog.setContentView(root);
+                splashDialog.setCancelable(false);
+                splashDialog.show();
+
+                // Set Runnable to remove splash screen just in case
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        removeSplashScreen();
+                    }
+                }, time);
             }
-        }, time);
+        };
+        this.runOnUiThread(runnable);
     }
 
     /**
