@@ -335,19 +335,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                     else if (destType == FILE_URI) {
                         Uri uri;
                         if (!this.saveToPhotoAlbum) {
-                            File tempFile = new File(this.imageUri.toString());
-                            uri = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", tempFile.getName()));
-                            
-                            // Clean up initial URI before writing out safe URI.
-                            // First try File-based approach to delete. Then use the media delete method. Neither seem to work on ICS right now...
-                            boolean didWeDeleteIt = tempFile.delete();
-                            if (!didWeDeleteIt) {
-                                int result = this.cordova.getActivity().getContentResolver().delete(
-                                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                    MediaStore.Images.Media.DATA + " = ?",
-                                    new String[] { this.imageUri.toString() }
-                                );
-                            }
+                            uri = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", (new File(FileUtils.stripFileProtocol(this.imageUri.toString()))).getName()));
                         } else {
                             // Create entry in media store for image
                             // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
@@ -381,44 +369,36 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                             os.close();
                             fis.close();
 
-                            checkForDuplicateImage(FILE_URI);
-
                             this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
-                            return;
-                        }
+                        } else {
 
-                        bitmap = scaleBitmap(getBitmapFromResult(intent));
-
-                        // Add compressed version of captured image to returned media store Uri
-                        OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
-                        os.close();
-
-                        // Restore exif data to file
-                        
-                        if (this.encodingType == JPEG) {
-                            String exifPath;
-                            if (this.saveToPhotoAlbum) {
-                                exifPath = FileUtils.getRealPathFromURI(uri, this.cordova);
-                            } else {
-                                exifPath = uri.getPath();
+                            bitmap = scaleBitmap(getBitmapFromResult(intent));
+    
+                            // Add compressed version of captured image to returned media store Uri
+                            OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
+                            os.close();
+    
+                            // Restore exif data to file
+                            
+                            if (this.encodingType == JPEG) {
+                                String exifPath;
+                                if (this.saveToPhotoAlbum) {
+                                    exifPath = FileUtils.getRealPathFromURI(uri, this.cordova);
+                                } else {
+                                    exifPath = uri.getPath();
+                                }
+                                exif.createOutFile(exifPath);
+                                exif.writeExifData();
                             }
-                            exif.createOutFile(exifPath);
-                            exif.writeExifData();
+                            
                         }
-                        
-
-                        // Scan for the gallery to update pic refs in gallery
-                        this.scanForGallery();
-
                         // Send Uri back to JavaScript for viewing image
                         this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                     }
-                    bitmap.recycle();
+                    
+                    this.cleanup(FILE_URI, this.imageUri, bitmap);
                     bitmap = null;
-                    System.gc();
-
-                    checkForDuplicateImage(FILE_URI);
                     
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -550,6 +530,22 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 null,
                 null);
     }
+    
+    /**
+     * Cleans up after picture taking. Checking for duplicates and that kind of stuff.
+     */
+    private void cleanup(int imageType, Uri oldImage, Bitmap bitmap) {
+        bitmap.recycle();
+        
+        // Clean up initial camera-written image file.
+        (new File(FileUtils.stripFileProtocol(oldImage.toString()))).delete();
+        
+        checkForDuplicateImage(imageType);
+        // Scan for the gallery to update pic refs in gallery
+        this.scanForGallery();
+        
+        System.gc();
+    }
 
     /**
      * Used to find out if we are in a situation where the Camera Intent adds to images
@@ -627,7 +623,6 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         conn.connect(); 
     } 
 
-    @Override
     public void onMediaScannerConnected() {
         try{
             this.conn.scanFile(this.imageUri.toString(), "image/*");
@@ -638,7 +633,6 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         
     }
 
-    @Override
     public void onScanCompleted(String path, Uri uri) {
         this.conn.disconnect();   
     }
