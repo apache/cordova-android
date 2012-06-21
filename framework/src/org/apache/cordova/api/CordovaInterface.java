@@ -44,19 +44,6 @@ public interface CordovaInterface {
      */
     abstract public void setActivityResultCallback(IPlugin plugin);
 
-    /**
-     * Causes the Activity to override the back button behavior.
-     *
-     * @param override
-     */
-    public abstract void bindBackButton(boolean override);
-
-    /**
-     * A hook required to check if the Back Button is bound.
-     *
-     * @return
-     */
-    public abstract boolean isBackButtonBound();
 
     /**
      * Get the Android activity.
@@ -77,5 +64,4 @@ public interface CordovaInterface {
      */
     public Object onMessage(String id, Object data);
 
-    public abstract void bindButton(String button, boolean override);
 }
