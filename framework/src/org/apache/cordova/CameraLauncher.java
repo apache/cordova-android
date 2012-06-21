@@ -333,9 +333,10 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
                     // If sending filename back
                     else if (destType == FILE_URI) {
+                        Uri uri;
                         if (!this.saveToPhotoAlbum) {
                             File tempFile = new File(this.imageUri.toString());
-                            Uri jailURI = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", tempFile.getName()));
+                            uri = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", tempFile.getName()));
                             
                             // Clean up initial URI before writing out safe URI.
                             // First try File-based approach to delete. Then use the media delete method. Neither seem to work on ICS right now...
@@ -347,7 +348,6 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                                     new String[] { this.imageUri.toString() }
                                 );
                             }
-                            this.imageUri = jailURI;
                         } else {
                             // Create entry in media store for image
                             // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
@@ -355,11 +355,11 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                             values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
 
                             try {
-                                this.imageUri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                                uri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                             } catch (UnsupportedOperationException e) {
                                 LOG.d(LOG_TAG, "Can't write to external media storage.");
                                 try {
-                                    this.imageUri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
+                                    uri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
                                 } catch (UnsupportedOperationException ex) {
                                     LOG.d(LOG_TAG, "Can't write to internal media storage.");
                                     this.failPicture("Error capturing image - no media storage found.");
@@ -390,7 +390,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         bitmap = scaleBitmap(getBitmapFromResult(intent));
 
                         // Add compressed version of captured image to returned media store Uri
-                        OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(this.imageUri);
+                        OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
                         bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
                         os.close();
 
@@ -399,9 +399,9 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         if (this.encodingType == JPEG) {
                             String exifPath;
                             if (this.saveToPhotoAlbum) {
-                                exifPath = FileUtils.getRealPathFromURI(this.imageUri, this.cordova);
+                                exifPath = FileUtils.getRealPathFromURI(uri, this.cordova);
                             } else {
-                                exifPath = this.imageUri.getPath();
+                                exifPath = uri.getPath();
                             }
                             exif.createOutFile(exifPath);
                             exif.writeExifData();
@@ -412,7 +412,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         this.scanForGallery();
 
                         // Send Uri back to JavaScript for viewing image
-                        this.success(new PluginResult(PluginResult.Status.OK, this.imageUri.toString()), this.callbackId);
+                        this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                     }
                     bitmap.recycle();
                     bitmap = null;
