@@ -333,27 +333,9 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
                     // If sending filename back
                     else if (destType == FILE_URI) {
-                        // Create entry in media store for image
-                        // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
-                        ContentValues values = new ContentValues();
-                        values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-
-                       
-                        try {
-                            this.imageUri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                        } catch (UnsupportedOperationException e) {
-                            LOG.d(LOG_TAG, "Can't write to external media storage.");
-                            try {
-                                this.imageUri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
-                            } catch (UnsupportedOperationException ex) {
-                                LOG.d(LOG_TAG, "Can't write to internal media storage.");
-                                this.failPicture("Error capturing image - no media storage found.");
-                                return;
-                            }
-                        }
                         if (!this.saveToPhotoAlbum) {
                             File tempFile = new File(this.imageUri.toString());
-                            Uri jailURI = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", tempFile.getName() + "." + (this.encodingType == JPEG ? "jpg" : "png" )));
+                            Uri jailURI = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", tempFile.getName()));
                             
                             // Clean up initial URI before writing out safe URI.
                             // First try File-based approach to delete. Then use the media delete method. Neither seem to work on ICS right now...
@@ -366,6 +348,24 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                                 );
                             }
                             this.imageUri = jailURI;
+                        } else {
+                            // Create entry in media store for image
+                            // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
+                            ContentValues values = new ContentValues();
+                            values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+
+                            try {
+                                this.imageUri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                            } catch (UnsupportedOperationException e) {
+                                LOG.d(LOG_TAG, "Can't write to external media storage.");
+                                try {
+                                    this.imageUri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
+                                } catch (UnsupportedOperationException ex) {
+                                    LOG.d(LOG_TAG, "Can't write to internal media storage.");
+                                    this.failPicture("Error capturing image - no media storage found.");
+                                    return;
+                                }
+                            }
                         }
 
                         // If all this is true we shouldn't compress the image.
@@ -401,7 +401,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                             if (this.saveToPhotoAlbum) {
                                 exifPath = FileUtils.getRealPathFromURI(this.imageUri, this.cordova);
                             } else {
-                                exifPath = this.imageUri.toString();
+                                exifPath = this.imageUri.getPath();
                             }
                             exif.createOutFile(exifPath);
                             exif.writeExifData();
