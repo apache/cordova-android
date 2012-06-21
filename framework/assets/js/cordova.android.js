@@ -1,6 +1,6 @@
-// commit 347de1a785b7ecbe86c2189343ab2549a9297f9b
+// commit 25033fceac7c800623f1f16881b784d19eba69cc
 
-// File generated at :: Fri Jun 08 2012 16:17:50 GMT-0700 (PDT)
+// File generated at :: Thu Jun 21 2012 10:45:32 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -190,7 +190,9 @@ var cordova = {
     fireDocumentEvent: function(type, data) {
         var evt = createEvent(type, data);
         if (typeof documentEventHandlers[type] != 'undefined') {
-            documentEventHandlers[type].fire(evt);
+            setTimeout(function() {
+                documentEventHandlers[type].fire(evt);
+            }, 0);
         } else {
             document.dispatchEvent(evt);
         }
@@ -198,7 +200,9 @@ var cordova = {
     fireWindowEvent: function(type, data) {
         var evt = createEvent(type,data);
         if (typeof windowEventHandlers[type] != 'undefined') {
-            windowEventHandlers[type].fire(evt);
+            setTimeout(function() {
+                windowEventHandlers[type].fire(evt);
+            }, 0);
         } else {
             window.dispatchEvent(evt);
         }
@@ -953,8 +957,7 @@ module.exports = function(success, fail, service, action, args) {
 
     // If a result was returned
     if (r.length > 0) {
-        var v;
-        eval("v="+r+";");
+        var v = JSON.parse(r);
 
         // If status is OK, then return value back to caller
         if (v.status === cordova.callbackStatus.OK) {
@@ -1066,28 +1069,6 @@ module.exports = {
         // Add hardware MENU and SEARCH button handlers
         cordova.addDocumentEventHandler('menubutton');
         cordova.addDocumentEventHandler('searchbutton');
-
-        function bindButtonChannel(buttonName) {
-            // generic button bind used for volumeup/volumedown buttons
-            return cordova.addDocumentEventHandler(buttonName + 'button', {
-                onSubscribe:function() {
-                    // If we just attached the first handler, let native know we need to override the button.
-                    if (this.numHandlers === 1) {
-                        exec(null, null, "App", "overrideButton", [buttonName, true]);
-                    }
-                },
-                onUnsubscribe:function() {
-                    // If we just detached the last handler, let native know we no longer override the volumeup button.
-                    if (this.numHandlers === 0) {
-                        exec(null, null, "App", "overrideButton", [buttonName, false]);
-                    }
-                }
-            });
-
-        }
-        // Inject a listener for the volume buttons on the document.
-        var volumeUpButtonChannel = bindButtonChannel('volumeup');
-        var volumeDownButtonChannel = bindButtonChannel('volumedown');
 
         // Figure out if we need to shim-in localStorage and WebSQL
         // support from the native side.
@@ -1308,7 +1289,7 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
 
 cameraExport.cleanup = function(successCallback, errorCallback) {
     exec(successCallback, errorCallback, "Camera", "cleanup", []);
-}
+};
 
 module.exports = cameraExport;
 });
@@ -2628,7 +2609,8 @@ module.exports = FileSystem;
 
 // file: lib/common/plugin/FileTransfer.js
 define("cordova/plugin/FileTransfer", function(require, exports, module) {
-var exec = require('cordova/exec');
+var exec = require('cordova/exec'),
+    FileTransferError = require('cordova/plugin/FileTransferError');
 
 /**
  * FileTransfer uploads a file to a remote server.
@@ -2647,6 +2629,8 @@ var FileTransfer = function() {};
 * @param trustAllHosts {Boolean} Optional trust all hosts (e.g. for self-signed certs), defaults to false
 */
 FileTransfer.prototype.upload = function(filePath, server, successCallback, errorCallback, options, trustAllHosts) {
+    // sanity parameter checking
+    if (!filePath || !server) throw new Error("FileTransfer.upload requires filePath and server URL parameters at the minimum.");
     // check for options
     var fileKey = null;
     var fileName = null;
@@ -2668,7 +2652,12 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
         }
     }
 
-    exec(successCallback, errorCallback, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, trustAllHosts, chunkedMode]);
+    var fail = function(e) {
+        var error = new FileTransferError(e.code, e.source, e.target, e.http_status);
+        errorCallback(error);
+    };
+
+    exec(successCallback, fail, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, trustAllHosts, chunkedMode]);
 };
 
 /**
@@ -2679,6 +2668,8 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
  * @param errorCallback {Function}    Callback to be invoked upon error
  */
 FileTransfer.prototype.download = function(source, target, successCallback, errorCallback) {
+    // sanity parameter checking
+    if (!source || !target) throw new Error("FileTransfer.download requires source URI and target URI parameters at the minimum.");
     var win = function(result) {
         var entry = null;
         if (result.isDirectory) {
@@ -2693,6 +2684,12 @@ FileTransfer.prototype.download = function(source, target, successCallback, erro
         entry.fullPath = result.fullPath;
         successCallback(entry);
     };
+
+    var fail = function(e) {
+        var error = new FileTransferError(e.code, e.source, e.target, e.http_status);
+        errorCallback(error);
+    };
+
     exec(win, errorCallback, 'FileTransfer', 'download', [source, target]);
 };
 
@@ -2706,8 +2703,11 @@ define("cordova/plugin/FileTransferError", function(require, exports, module) {
  * FileTransferError
  * @constructor
  */
-var FileTransferError = function(code) {
+var FileTransferError = function(code, source, target, status) {
     this.code = code || null;
+    this.source = source || null;
+    this.target = target || null;
+    this.http_status = status || null;
 };
 
 FileTransferError.FILE_NOT_FOUND_ERR = 1;
@@ -2715,6 +2715,7 @@ FileTransferError.INVALID_URL_ERR = 2;
 FileTransferError.CONNECTION_ERR = 3;
 
 module.exports = FileTransferError;
+
 });
 
 // file: lib/common/plugin/FileUploadOptions.js
@@ -3664,21 +3665,6 @@ module.exports = {
   overrideBackbutton:function(override) {
     exec(null, null, "App", "overrideBackbutton", [override]);
   },
-
-  /**
-   * Override the default behavior of the Android volume button.
-   * If overridden, when the volume button is pressed, the "volume[up|down]button" JavaScript event will be fired.
-   *
-   * Note: The user should not have to call this method.  Instead, when the user
-   *       registers for the "volume[up|down]button" event, this is automatically done.
-   *
-   * @param button          volumeup, volumedown
-   * @param override        T=override, F=cancel override
-   */
-  overrideButton:function(button, override) {
-    exec(null, null, "App", "overrideButton", [button, override]);
-  },
-
 
   /**
    * Exit and terminate the application.
@@ -5509,6 +5495,9 @@ define("cordova/plugin/splashscreen", function(require, exports, module) {
 var exec = require('cordova/exec');
 
 var splashscreen = {
+    show:function() {
+        exec(null, null, "SplashScreen", "show", []);
+    },
     hide:function() {
         exec(null, null, "SplashScreen", "hide", []);
     }
