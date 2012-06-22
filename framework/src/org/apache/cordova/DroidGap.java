@@ -138,7 +138,6 @@ public class DroidGap extends Activity implements CordovaInterface {
     protected CordovaWebViewClient webViewClient;
 
     protected LinearLayout root;
-    public boolean bound = false;
     protected boolean cancelLoadUrl = false;
     protected ProgressDialog spinnerDialog = null;
 
@@ -180,10 +179,6 @@ public class DroidGap extends Activity implements CordovaInterface {
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
     protected boolean keepRunning = true;
-
-    private boolean volumeupBound;
-
-    private boolean volumedownBound;
 
     /**
     * Sets the authentication token.
@@ -949,24 +944,6 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Override the backbutton.
-     *
-     * @param override
-     */
-    public void bindBackButton(boolean override) {
-        this.bound = override;
-    }
-
-    /**
-     * Determine of backbutton is overridden.
-     *
-     * @return
-     */
-    public boolean isBackButtonBound() {
-        return this.bound;
-    }
-
-    /**
      * Load the specified URL in the Cordova webview or a new browser instance.
      *
      * NOTE: If openExternal is false, only URLs listed in whitelist can be loaded.
@@ -980,16 +957,6 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (this.appView != null) {
             appView.showWebPage(url, openExternal, clearHistory, params);
         }
-    }
-
-    public void bindButton(String button, boolean override) {
-      // TODO Auto-generated method stub
-      if (button.compareTo("volumeup")==0) {
-        this.volumeupBound = override;
-      }
-      else if (button.compareTo("volumedown")==0) {
-        this.volumedownBound = override;
-      }
     }
 
     protected Dialog splashDialog;
