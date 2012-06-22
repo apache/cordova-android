@@ -33,6 +33,10 @@ function read(filename) {
     f.Close();
     return s;
 }
+function setTarget() {
+    var targets = shell.Exec('android.bat list targets').StdOut.ReadAll().match(/id:\s\d+/g);
+    return targets[targets.length - 1].replace(/id: /, ""); // TODO: give users the option to set their target 
+}
 function write(filename, contents) {
     var fso=WScript.CreateObject("Scripting.FileSystemObject");
     var f=fso.OpenTextFile(filename, 2, true);
@@ -42,12 +46,11 @@ function write(filename, contents) {
 function replaceInFile(filename, regexp, replacement) {
     write(filename, read(filename).replace(regexp, replacement));
 }
-function exec(s, output) {
-    var o=shell.Exec(s);
-    while (o.Status == 0) {
-        WScript.Sleep(100);
+function exec(command) {
+    var oShell=shell.Exec(command);
+    while (oShell.Status == 0) {
+        WScript.sleep(100);
     }
-    //WScript.Echo("Command exited with code " + o.Status);
 }
 
 function cleanup() {
@@ -125,9 +128,8 @@ if(fso.FolderExists(PROJECT_PATH)) {
 var PACKAGE_AS_PATH=PACKAGE.replace(/\./g, '\\');
 var ACTIVITY_PATH=PROJECT_PATH+'\\src\\'+PACKAGE_AS_PATH+'\\'+ACTIVITY+'.java';
 var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
-var TARGET=shell.Exec('android.bat list targets').StdOut.ReadAll().match(/id:\s([0-9]).*/)[1];
+var TARGET=setTarget();
 var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
-
 // create the project
 exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --package '+PACKAGE+' --activity '+ACTIVITY);
 
@@ -140,18 +142,32 @@ downloadCommonsCodec();
 exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
 
 // copy in the project template
-exec('cmd /c xcopy '+ ROOT + '\\bin\\templates\\project\\* '+PROJECT_PATH+' /S /Y');
+exec('%comspec% /c xcopy '+ ROOT + '\\bin\\templates\\project\\res '+PROJECT_PATH+'\\res\\ /E /Y');
+exec('%comspec% /c xcopy '+ ROOT + '\\bin\\templates\\project\\assets '+PROJECT_PATH+'\\assets\\ /E /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\project\\AndroidManifest.xml ' + PROJECT_PATH + '\\AndroidManifest.xml /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\project\\Activity.java '+ ACTIVITY_PATH +' /Y');
 
 // copy in cordova.js
-exec('cmd /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
+exec('%comspec% /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
 
 // copy in cordova.jar
-exec('cmd /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
+exec('%comspec% /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
 
 // copy in xml
 fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-exec('cmd /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
-exec('cmd /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
+exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+
+// copy cordova scripts
+fso.CreateFolder(PROJECT_PATH + '\\cordova');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\appinfo.jar ' + PROJECT_PATH + '\\cordova\\appinfo.jar /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\cordova.js ' + PROJECT_PATH + '\\cordova\\cordova.js /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\clean.bat ' + PROJECT_PATH + '\\cordova\\clean.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\debug.bat ' + PROJECT_PATH + '\\cordova\\debug.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\log.bat ' + PROJECT_PATH + '\\cordova\\log.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\emulate.bat ' + PROJECT_PATH + '\\cordova\\emulate.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\BOOM.bat ' + PROJECT_PATH + '\\cordova\\BOOM.bat /Y');
 
 // interpolate the activity name and package
 replaceInFile(ACTIVITY_PATH, /__ACTIVITY__/, ACTIVITY);

@@ -91,8 +91,43 @@ create_project.on('exit', function(code) {
         assert(exists, 'cordova.js did not get added');
     });
     
-    // check that project compiles && creates a cordovaExample-debug.apk
-    // XXX: !@##!@# WINDOWS
+    // make sure cordova master script was added
+    path.exists(util.format('%s/cordova/cordova.bat', project_path), function(exists) {
+        assert(exists, 'cordova script did not get added');
+    });
+    
+    // make sure debug script was added
+    path.exists(util.format('%s/cordova/debug.bat', project_path), function(exists) {
+        assert(exists, 'debug script did not get added');
+    });
+    
+    // make sure BOOM script was added
+    path.exists(util.format('%s/cordova/BOOM.bat', project_path), function(exists) {
+        assert(exists, 'BOOM script did not get added');
+    });
+    
+    // make sure log script was added
+    path.exists(util.format('%s/cordova/log.bat', project_path), function(exists) {
+        assert(exists, 'log script did not get added');
+    });
+    
+    // make sure clean script was added
+    path.exists(util.format('%s/cordova/clean.bat', project_path), function(exists) {
+        assert(exists, 'clean script did not get added');
+    });
+    
+    // make sure emulate script was added
+    path.exists(util.format('%s/cordova/emulate.bat', project_path), function(exists) {
+        assert(exists, 'emulate script did not get added');
+    });
+    
+    // make sure appinfo.jar script was added
+    path.exists(util.format('%s/cordova/appinfo.jar', project_path), function(exists) {
+        assert(exists, 'appinfo.jar script did not get added');
+    });
+  
+  // check that project compiles && creates a cordovaExample-debug.apk
+  // XXX: !@##!@# WINDOWS
     exec('ant debug -f ' + project_path + "\\build.xml", function(error, stdout, stderr) {
         assert(error == null, "Cordova Android Project does not compile");
         path.exists(util.format('%s/bin/%s-debug.apk', project_path, project_name), 

@@ -21,7 +21,7 @@ public class ApplicationInfo {
 
             // getting activity name
             String activity = ((Element)dom.getElementsByTagName("activity").item(0)).getAttribute("android:name");
-            System.out.println(String.format("%s/%s.%s", pakkage, pakkage, activity));
+            System.out.println(String.format("%s/.%s", pakkage, activity.replace(".", "")));
         } catch(ParserConfigurationException pce) {
 			pce.printStackTrace();
 		} catch(SAXException se) {
