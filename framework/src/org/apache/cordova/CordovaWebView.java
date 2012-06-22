@@ -771,4 +771,9 @@ public class CordovaWebView extends WebView {
            keyUpCodes.add(keyCode);
        }
     }
+    
+    public boolean isBackButtonBound()
+    {
+        return this.bound;
+    }
 }

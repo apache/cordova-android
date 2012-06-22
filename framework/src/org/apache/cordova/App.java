@@ -208,7 +208,7 @@ public class App extends Plugin {
      * @return boolean
      */
     public boolean isBackbuttonOverridden() {
-        return this.cordova.isBackButtonBound();
+        return webView.isBackButtonBound();
     }
 
     /**
