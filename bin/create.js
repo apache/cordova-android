@@ -142,32 +142,32 @@ downloadCommonsCodec();
 exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
 
 // copy in the project template
-exec('cmd /c xcopy '+ ROOT + '\\bin\\templates\\project\\res '+PROJECT_PATH+'\\res\\ /E /Y');
-exec('cmd /c xcopy '+ ROOT + '\\bin\\templates\\project\\assets '+PROJECT_PATH+'\\assets\\ /E /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\project\\AndroidManifest.xml ' + PROJECT_PATH + '\\AndroidManifest.xml /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\project\\Activity.java '+ ACTIVITY_PATH +' /Y');
+exec('%comspec% /c xcopy '+ ROOT + '\\bin\\templates\\project\\res '+PROJECT_PATH+'\\res\\ /E /Y');
+exec('%comspec% /c xcopy '+ ROOT + '\\bin\\templates\\project\\assets '+PROJECT_PATH+'\\assets\\ /E /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\project\\AndroidManifest.xml ' + PROJECT_PATH + '\\AndroidManifest.xml /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\project\\Activity.java '+ ACTIVITY_PATH +' /Y');
 
 // copy in cordova.js
-exec('cmd /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
+exec('%comspec% /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
 
 // copy in cordova.jar
-exec('cmd /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
+exec('%comspec% /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
 
 // copy in xml
 fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-exec('cmd /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
-exec('cmd /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
+exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
 
 // copy cordova scripts
 fso.CreateFolder(PROJECT_PATH + '\\cordova');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\cordova\\appinfo.jar ' + PROJECT_PATH + '\\cordova\\appinfo.jar /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\cordova\\cordova.js ' + PROJECT_PATH + '\\cordova\\cordova.js /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\cordova\\clean.bat ' + PROJECT_PATH + '\\cordova\\clean.bat /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\cordova\\debug.bat ' + PROJECT_PATH + '\\cordova\\debug.bat /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\cordova\\log.bat ' + PROJECT_PATH + '\\cordova\\log.bat /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\cordova\\emulate.bat ' + PROJECT_PATH + '\\cordova\\emulate.bat /Y');
-exec('cmd /c copy '+ROOT+'\\bin\\templates\\cordova\\BOOM.bat ' + PROJECT_PATH + '\\cordova\\BOOM.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\appinfo.jar ' + PROJECT_PATH + '\\cordova\\appinfo.jar /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\cordova.js ' + PROJECT_PATH + '\\cordova\\cordova.js /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\clean.bat ' + PROJECT_PATH + '\\cordova\\clean.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\debug.bat ' + PROJECT_PATH + '\\cordova\\debug.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\log.bat ' + PROJECT_PATH + '\\cordova\\log.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\emulate.bat ' + PROJECT_PATH + '\\cordova\\emulate.bat /Y');
+exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\BOOM.bat ' + PROJECT_PATH + '\\cordova\\BOOM.bat /Y');
 
 // interpolate the activity name and package
 replaceInFile(ACTIVITY_PATH, /__ACTIVITY__/, ACTIVITY);

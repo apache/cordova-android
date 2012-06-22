@@ -1,35 +1,42 @@
-var ROOT = WScript.ScriptFullName.split('\\bin\\templates\\cordova\\cordova.js').join(''),
+var ROOT = WScript.ScriptFullName.split('\\cordova\\cordova.js').join(''),
     shell=WScript.CreateObject("WScript.Shell");
 
 function exec(command) {
     var oExec=shell.Exec(command);
-    var output = '';
-    while (!oExec.StdOut.AtEndOfStream) {
-        output += oExec.StdOut.ReadLine();
+    var output = new String();
+    while(oExec.Status == 0) {
+        if(!oExec.StdOut.AtEndOfStream) {
+            var line = oExec.StdOut.ReadLine();
+            // XXX: Change to verbose mode 
+            //WScript.StdOut.WriteLine(line);
+            output += line;
+        }
+        WScript.sleep(100);
     }
+
     return output;
 }
 
-function devices_running() {
-    var local_devices = exec("adb devices");
-    if(local_devices.match(/device |emulator /)) {
+function emulator_running() {
+    var local_devices = shell.Exec("%comspec% /c adb devices").StdOut.ReadAll();
+    if(local_devices.match(/emulator/)) {
         return true;
     }
     return false;
 }
 function emulate() {
     // don't run emulator if a device is plugged in or if emulator is already running
-    if(devices_running()) {
+    if(emulator_running()) {
         WScript.Echo("Device or Emulator already running!");
         return;
     }
-    var oExec = shell.Exec("android.bat list avd");
+    var oExec = shell.Exec("%comspec% /c android.bat list avd");
     var avd_list = [];
     var avd_id = -10;
     while(!oExec.StdOut.AtEndOfStream) {
         var output = oExec.StdOut.ReadLine();
         if(output.match(/Name: (.)*/)) {
-            avd_list.push(output.replace(/\sName:\s/, ""));
+            avd_list.push(output.replace(/ *Name:\s/, ""));
         }
     }
     // user has no AVDs
@@ -41,7 +48,7 @@ function emulate() {
     // user has only one AVD so we launch that one
     if(avd_list.length == 1) {
 
-        exec("emulator.bat -cpu-delay 0 -no-boot-anim -cache /tmp/cache -avd "+avd_list[0]+" > NUL");
+        shell.Run("emulator -cpu-delay 0 -no-boot-anim -cache %Temp%\cache -avd "+avd_list[0]);
     }
 
     // user has more than one avd so we ask them to choose
@@ -55,34 +62,35 @@ function emulate() {
             avd_id = new Number(WScript.StdIn.ReadLine());
         }
 
-        WScript.Echo("emulator.bat -cpu-delay 0 -no-boot-anim -cache /tmp/cache -avd "+avd_list[avd_id]+" > NUL");
+        shell.Run("emulator -cpu-delay 0 -no-boot-anim -cache %Temp%\\cache -avd "+avd_list[avd_id], 0, false);
     }
 }
 
 function clean() {
-    WScript.Echo(exec("ant.bat clean"));
+    exec("%comspec% /c ant.bat clean -f "+ROOT+"\\build.xml 2>&1");
 }
 
 function debug() {
-    WScript.Echo(exec("ant.bat debug"));
+    exec("%comspec% /c ant.bat debug -f "+ROOT+"\\build.xml 2>&1");
 }
 
 function debug_install() {
-    WScript.Echo(exec("ant.bat debug install"));
+    exec("%comspec% /c ant.bat debug install -f "+ROOT+"\\build.xml 2>&1");
 }
 
 function log() {
-    WScript.Echo(exec("adb.bat logcat"));
+    WScript.Echo(exec("%comspec% /c adb.bat logcat"));
 }
 
 function launch() {
-    var launch_str=exec("java -jar "+ROOT+"\\cordova\\appinfo.jar "+ROOT+"\\AndroidManifest.xml")
-    exec("adb.bat shell am start -n "+launch_str);
+    var launch_str=exec("%comspec% /c java -jar "+ROOT+"\\cordova\\appinfo.jar "+ROOT+"\\AndroidManifest.xml");
+    //WScript.Echo(launch_str);
+    exec("%comspec% /c adb shell am start -n "+launch_str+" 2>&1");
 }
 
 function BOOM() {
-   clean(); 
-   if(devices_running()) {
+   clean();
+   if(emulator_running()) {
         debug_install();
         launch();
    } else {
@@ -92,5 +100,9 @@ function BOOM() {
         WScript.Echo("##################################################################");
    }
 }
-
-emulate();
+var args = WScript.Arguments;
+if(args.count() != 1) {
+    WScript.StdErr.Write("An error has occured!\n");
+    WScript.Quit(1);
+}
+eval(args(0)+"()");
