@@ -42,6 +42,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Bitmap.CompressFormat;
+import android.media.MediaScannerConnection;
+import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -52,7 +54,7 @@ import android.util.Log;
  * and returns the captured image.  When the camera view is closed, the screen displayed before
  * the camera view was shown is redisplayed.
  */
-public class CameraLauncher extends Plugin {
+public class CameraLauncher extends Plugin implements MediaScannerConnectionClient {
 
     private static final int DATA_URL = 0;              // Return base64 encoded string
     private static final int FILE_URI = 1;              // Return file uri (content://media/external/images/media/2 for Android)
@@ -79,9 +81,12 @@ public class CameraLauncher extends Plugin {
     private Uri imageUri;                   // Uri of captured image
     private int encodingType;               // Type of encoding to use
     private int mediaType;                  // What type of media to retrieve
+    private boolean saveToPhotoAlbum;       // Should the picture be saved to the device's photo album
 
     public String callbackId;
     private int numPics;
+    
+    private MediaScannerConnection conn;    // Used to update gallery app with newly-written files
 
     //This should never be null!
     //private CordovaInterface cordova;
@@ -117,6 +122,7 @@ public class CameraLauncher extends Plugin {
             if (action.equals("takePicture")) {
                 int srcType = CAMERA;
                 int destType = FILE_URI;
+                this.saveToPhotoAlbum = false;
                 this.targetHeight = 0;
                 this.targetWidth = 0;
                 this.encodingType = JPEG;
@@ -130,6 +136,7 @@ public class CameraLauncher extends Plugin {
                 this.targetHeight = args.getInt(4);
                 this.encodingType = args.getInt(5);
                 this.mediaType = args.getInt(6);
+                this.saveToPhotoAlbum = args.getBoolean(9);
 
                 if (srcType == CAMERA) {
                     this.takePicture(destType, encodingType);
@@ -195,9 +202,9 @@ public class CameraLauncher extends Plugin {
     private File createCaptureFile(int encodingType) {
         File photo = null;
         if (encodingType == JPEG) {
-            photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), "Pic.jpg");
+            photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), ".Pic.jpg");
         } else if (encodingType == PNG) {
-            photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), "Pic.png");
+            photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), ".Pic.png");
         } else {
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
@@ -303,7 +310,7 @@ public class CameraLauncher extends Plugin {
         ExifHelper exif = new ExifHelper();
         try {
             if (this.encodingType == JPEG) {
-                exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/Pic.jpg");
+                exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/.Pic.jpg");
                 exif.readExifData();
             }
         } catch (IOException e) {
@@ -326,21 +333,26 @@ public class CameraLauncher extends Plugin {
 
                     // If sending filename back
                     else if (destType == FILE_URI) {
-                        // Create entry in media store for image
-                        // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
-                        ContentValues values = new ContentValues();
-                        values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-                        Uri uri = null;
-                        try {
-                            uri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                        } catch (UnsupportedOperationException e) {
-                            LOG.d(LOG_TAG, "Can't write to external media storage.");
+                        Uri uri;
+                        if (!this.saveToPhotoAlbum) {
+                            uri = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", (new File(FileUtils.stripFileProtocol(this.imageUri.toString()))).getName()));
+                        } else {
+                            // Create entry in media store for image
+                            // (Don't use insertImage() because it uses default compression setting of 50 - no way to change it)
+                            ContentValues values = new ContentValues();
+                            values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+
                             try {
-                                uri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
-                            } catch (UnsupportedOperationException ex) {
-                                LOG.d(LOG_TAG, "Can't write to internal media storage.");
-                                this.failPicture("Error capturing image - no media storage found.");
-                                return;
+                                uri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                            } catch (UnsupportedOperationException e) {
+                                LOG.d(LOG_TAG, "Can't write to external media storage.");
+                                try {
+                                    uri = this.cordova.getActivity().getContentResolver().insert(android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, values);
+                                } catch (UnsupportedOperationException ex) {
+                                    LOG.d(LOG_TAG, "Can't write to internal media storage.");
+                                    this.failPicture("Error capturing image - no media storage found.");
+                                    return;
+                                }
                             }
                         }
 
@@ -357,33 +369,37 @@ public class CameraLauncher extends Plugin {
                             os.close();
                             fis.close();
 
-                            checkForDuplicateImage(FILE_URI);
-
                             this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
-                            return;
+                        } else {
+
+                            bitmap = scaleBitmap(getBitmapFromResult(intent));
+    
+                            // Add compressed version of captured image to returned media store Uri
+                            OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
+                            os.close();
+    
+                            // Restore exif data to file
+                            
+                            if (this.encodingType == JPEG) {
+                                String exifPath;
+                                if (this.saveToPhotoAlbum) {
+                                    exifPath = FileUtils.getRealPathFromURI(uri, this.cordova);
+                                } else {
+                                    exifPath = uri.getPath();
+                                }
+                                exif.createOutFile(exifPath);
+                                exif.writeExifData();
+                            }
+                            
                         }
-
-                        bitmap = scaleBitmap(getBitmapFromResult(intent));
-
-                        // Add compressed version of captured image to returned media store Uri
-                        OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
-                        os.close();
-
-                        // Restore exif data to file
-                        if (this.encodingType == JPEG) {
-                            exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.cordova));
-                            exif.writeExifData();
-                        }
-
                         // Send Uri back to JavaScript for viewing image
                         this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                     }
-                    bitmap.recycle();
+                    
+                    this.cleanup(FILE_URI, this.imageUri, bitmap);
                     bitmap = null;
-                    System.gc();
-
-                    checkForDuplicateImage(FILE_URI);
+                    
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.failPicture("Error capturing image.");
@@ -514,6 +530,22 @@ public class CameraLauncher extends Plugin {
                 null,
                 null);
     }
+    
+    /**
+     * Cleans up after picture taking. Checking for duplicates and that kind of stuff.
+     */
+    private void cleanup(int imageType, Uri oldImage, Bitmap bitmap) {
+        bitmap.recycle();
+        
+        // Clean up initial camera-written image file.
+        (new File(FileUtils.stripFileProtocol(oldImage.toString()))).delete();
+        
+        checkForDuplicateImage(imageType);
+        // Scan for the gallery to update pic refs in gallery
+        this.scanForGallery();
+        
+        System.gc();
+    }
 
     /**
      * Used to find out if we are in a situation where the Camera Intent adds to images
@@ -583,5 +615,25 @@ public class CameraLauncher extends Plugin {
      */
     public void failPicture(String err) {
         this.error(new PluginResult(PluginResult.Status.ERROR, err), this.callbackId);
+    }
+    
+    private void scanForGallery() { 
+        if(this.conn!=null) this.conn.disconnect();  
+        this.conn = new MediaScannerConnection(this.ctx.getActivity().getApplicationContext(), this); 
+        conn.connect(); 
+    } 
+
+    public void onMediaScannerConnected() {
+        try{
+            this.conn.scanFile(this.imageUri.toString(), "image/*");
+        } catch (java.lang.IllegalStateException e){
+            e.printStackTrace();
+            LOG.d(LOG_TAG, "Can;t scan file in MediaScanner aftering taking picture");
+        }
+        
+    }
+
+    public void onScanCompleted(String path, Uri uri) {
+        this.conn.disconnect();   
     }
 }

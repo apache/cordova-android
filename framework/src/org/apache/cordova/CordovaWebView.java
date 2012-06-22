@@ -39,6 +39,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -51,8 +52,12 @@ public class CordovaWebView extends WebView {
     /** The whitelist **/
     private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
     private HashMap<String, Boolean> whiteListCache = new HashMap<String, Boolean>();
+    private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
+    private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
+    
     public PluginManager pluginManager;
     public CallbackServer callbackServer;
+    
 
     /** Actvities and other important classes **/
     private CordovaInterface cordova;
@@ -69,6 +74,12 @@ public class CordovaWebView extends WebView {
 
     // Flag to track that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
+
+    private boolean bound;
+
+    private boolean volumedownBound;
+
+    private boolean volumeupBound;
 
     /**
      * Constructor.
@@ -659,5 +670,105 @@ public class CordovaWebView extends WebView {
             return defaultValue;
         }
         return p.toString();
+    }
+    
+    /*
+     * onKeyDown 
+     */
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if(keyDownCodes.contains(keyCode))
+        {
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                    // only override default behaviour is event bound
+                    LOG.d(TAG, "Down Key Hit");
+                    this.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
+                    return true;
+            }
+            // If volumeup key
+            else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                    LOG.d(TAG, "Up Key Hit");
+                    this.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
+                    return true;
+            }
+            else
+            {
+                //Do some other stuff!
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event)
+    {
+        
+        Log.d(TAG, "KeyDown has been triggered on the view");
+
+        // If back key
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // If back key is bound, then send event to JavaScript
+            if (this.bound) {
+                this.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
+                return true;
+            } else {
+                // If not bound
+                // Go to previous page in webview if it is possible to go back
+                if (this.backHistory()) {
+                    return true;
+                }
+                // If not, then invoke default behaviour 
+                else {
+                    //this.activityState = ACTIVITY_EXITING;
+                    return false;
+                }
+            }
+        }
+        // Legacy
+        else if (keyCode == KeyEvent.KEYCODE_MENU) {
+            this.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
+            return super.onKeyUp(keyCode, event);
+        }
+        // If search key
+        else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
+            this.loadUrl("javascript:cordova.fireDocumentEvent('searchbutton');");
+            return true;
+        }
+        else if(keyUpCodes.contains(keyCode))
+        {
+            //What the hell should this do?
+        }
+
+        
+        Log.d(TAG, "KeyUp has been triggered on the view");
+        return false;
+    }
+    
+    public void bindButton(boolean override)
+    {
+        this.bound = override;
+    }
+    
+    public void bindButton(String button, boolean override) {
+        // TODO Auto-generated method stub
+        if (button.compareTo("volumeup")==0) {
+          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_UP);
+        }
+        else if (button.compareTo("volumedown")==0) {
+          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_DOWN);
+        }
+      }
+    
+    public void bindButton(int keyCode, boolean keyDown, boolean override) {
+       if(keyDown)
+       {
+           keyDownCodes.add(keyCode);
+       }
+       else
+       {
+           keyUpCodes.add(keyCode);
+       }
     }
 }
