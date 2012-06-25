@@ -46,7 +46,6 @@ fi
 
 # cleanup after exit and/or on error
 function on_exit {
-    echo "Cleaning up ..."
     # [ -f $BUILD_PATH/framework/libs/commons-codec-1.6.jar ] && rm $BUILD_PATH/framework/libs/commons-codec-1.6.jar
     # [ -d $BUILD_PATH/framework/libs ] && rmdir $BUILD_PATH/framework/libs
     [ -f $BUILD_PATH/framework/assets/www/cordova-$VERSION.js ] && rm $BUILD_PATH/framework/assets/www/cordova-$VERSION.js
@@ -74,7 +73,6 @@ $ANDROID_BIN update project --target $TARGET --path $BUILD_PATH/framework &> /de
 
 if [ ! -e $BUILD_PATH/framework/libs/commons-codec-1.6.jar ]; then
     # Use curl to get the jar (TODO: Support Apache Mirrors)
-    echo "Downloading common-codecs-1.6 ..."
     curl -OL http://mirror.symnds.com/software/Apache//commons/codec/binaries/commons-codec-1.6-bin.zip &> /dev/null
     unzip commons-codec-1.6-bin.zip &> /dev/null
     mkdir -p $BUILD_PATH/framework/libs
@@ -84,28 +82,22 @@ if [ ! -e $BUILD_PATH/framework/libs/commons-codec-1.6.jar ]; then
 fi
 
 # compile cordova.js and cordova.jar
-echo "Building cordova-$VERSION.jar and cordova-$VERSION.js ..."
 (cd $BUILD_PATH/framework && ant jar &> /dev/null )
 
 # create new android project
-echo "Creating a new cordova android project ..."
 $ANDROID_BIN create project --target $TARGET --path $PROJECT_PATH --package $PACKAGE --activity $ACTIVITY &> /dev/null
 
 # copy project template
-echo "Copying assets and resources ..."
 cp -r $BUILD_PATH/bin/templates/project/assets $PROJECT_PATH
 cp -r $BUILD_PATH/bin/templates/project/res $PROJECT_PATH
 
 # copy cordova.js, cordova.jar and res/xml
-echo "Setting up config and plugins list ..."
 cp -r $BUILD_PATH/framework/res/xml $PROJECT_PATH/res
 
-echo "Adding cordova-$VERSION.js and cordova-$VERSION.jar ..."
 cp $BUILD_PATH/framework/assets/www/cordova-$VERSION.js $PROJECT_PATH/assets/www/cordova-$VERSION.js
 cp $BUILD_PATH/framework/cordova-$VERSION.jar $PROJECT_PATH/libs/cordova-$VERSION.jar
 
 # interpolate the activity name and package
-echo "Updating Activity and AndroidManifest ..."
 cp $BUILD_PATH/bin/templates/project/Activity.java $ACTIVITY_PATH
 sed -i '' -e "s/__ACTIVITY__/${ACTIVITY}/g" $ACTIVITY_PATH
 sed -i '' -e "s/__ID__/${PACKAGE}/g" $ACTIVITY_PATH
