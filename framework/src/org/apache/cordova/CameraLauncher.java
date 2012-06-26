@@ -428,7 +428,6 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
             if (resultCode == Activity.RESULT_OK) {
                 Uri uri = intent.getData();
-                android.content.ContentResolver resolver = this.cordova.getActivity().getContentResolver();
 
                 // If you ask for video or all media type you will automatically get back a file URI
                 // and there will be no attempt to resize any returned data
@@ -437,32 +436,30 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 }
                 else {
                     // If sending base64 image back
+
+                    // Get the path to the image. Makes loading so much easier.
+                    String imagePath = FileUtils.getRealPathFromURI(uri, this.cordova);
                     if (destType == DATA_URL) {
-                        try {
-                            Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
-                            String[] cols = { MediaStore.Images.Media.ORIENTATION };
-                            Cursor cursor = this.cordova.getActivity().getContentResolver().query(intent.getData(),
-                                    cols,
-                                    null, null, null);
-                            if (cursor != null) {
-                                cursor.moveToPosition(0);
-                                rotate = cursor.getInt(0);
-                                cursor.close();
-                            }
-                            if (rotate != 0) {
-                                Matrix matrix = new Matrix();
-                                matrix.setRotate(rotate);
-                                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                            }
-                           bitmap = scaleBitmap(bitmap);
-                            this.processPicture(bitmap);
-                            bitmap.recycle();
-                            bitmap = null;
-                            System.gc();
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                            this.failPicture("Error retrieving image.");
+                        Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+                        String[] cols = { MediaStore.Images.Media.ORIENTATION };
+                        Cursor cursor = this.cordova.getActivity().getContentResolver().query(intent.getData(),
+                                cols,
+                                null, null, null);
+                        if (cursor != null) {
+                            cursor.moveToPosition(0);
+                            rotate = cursor.getInt(0);
+                            cursor.close();
                         }
+                        if (rotate != 0) {
+                            Matrix matrix = new Matrix();
+                            matrix.setRotate(rotate);
+                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                        }
+                        bitmap = scaleBitmap(bitmap);
+                        this.processPicture(bitmap);
+                        bitmap.recycle();
+                        bitmap = null;
+                        System.gc();
                     }
 
                     // If sending filename back
@@ -470,7 +467,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         // Do we need to scale the returned file
                         if (this.targetHeight > 0 && this.targetWidth > 0) {
                             try {
-                                Bitmap bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+                                Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
                                 bitmap = scaleBitmap(bitmap);
 
                                 String fileName = DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/resize.jpg";
