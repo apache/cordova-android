@@ -19,6 +19,7 @@
 package org.apache.cordova.api;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 
 /**
@@ -51,7 +52,10 @@ public interface CordovaInterface {
      * @return
      */
     public abstract Activity getActivity();
-
+    
+    @Deprecated
+    public abstract Context getContext();
+    
     @Deprecated
     public abstract void cancelLoadUrl();
 

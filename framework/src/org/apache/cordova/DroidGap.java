@@ -940,6 +940,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @return
      */
     public Context getContext() {
+        LOG.d(TAG, "This will be deprecated December 2012");
         return this.getContext();
     }
 
