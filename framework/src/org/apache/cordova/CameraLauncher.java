@@ -40,6 +40,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Bitmap.CompressFormat;
 import android.media.MediaScannerConnection;
@@ -85,7 +86,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
     public String callbackId;
     private int numPics;
-    
+
     private MediaScannerConnection conn;    // Used to update gallery app with newly-written files
 
     //This should never be null!
@@ -373,14 +374,14 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         } else {
 
                             bitmap = scaleBitmap(getBitmapFromResult(intent));
-    
+
                             // Add compressed version of captured image to returned media store Uri
                             OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
                             bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
                             os.close();
-    
+
                             // Restore exif data to file
-                            
+
                             if (this.encodingType == JPEG) {
                                 String exifPath;
                                 if (this.saveToPhotoAlbum) {
@@ -391,15 +392,15 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                                 exif.createOutFile(exifPath);
                                 exif.writeExifData();
                             }
-                            
+
                         }
                         // Send Uri back to JavaScript for viewing image
                         this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                     }
-                    
+
                     this.cleanup(FILE_URI, this.imageUri, bitmap);
                     bitmap = null;
-                    
+
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.failPicture("Error capturing image.");
@@ -505,15 +506,18 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
     }
 
     private Bitmap getBitmapFromResult(Intent intent)
-            throws IOException, FileNotFoundException {
+            throws IOException {
         Bitmap bitmap = null;
-        try {
-            bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getActivity().getContentResolver(), imageUri);
-        } catch (FileNotFoundException e) {
-            Uri uri = intent.getData();
-            android.content.ContentResolver resolver = this.ctx.getActivity().getContentResolver();
-            bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
-        }
+        //try {
+            Log.d(LOG_TAG, "Image URI = " + imageUri.toString());
+            String fileName = FileUtils.stripFileProtocol(imageUri.toString());
+            bitmap = BitmapFactory.decodeFile(fileName);
+            //bitmap = android.provider.MediaStore.Images.Media.getBitmap(this.ctx.getActivity().getContentResolver(), imageUri);
+        //} catch (FileNotFoundException e) {
+        //    Uri uri = intent.getData();
+        //    android.content.ContentResolver resolver = this.ctx.getActivity().getContentResolver();
+        //    bitmap = android.graphics.BitmapFactory.decodeStream(resolver.openInputStream(uri));
+        //}
         return bitmap;
     }
 
@@ -530,20 +534,20 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 null,
                 null);
     }
-    
+
     /**
      * Cleans up after picture taking. Checking for duplicates and that kind of stuff.
      */
     private void cleanup(int imageType, Uri oldImage, Bitmap bitmap) {
         bitmap.recycle();
-        
+
         // Clean up initial camera-written image file.
         (new File(FileUtils.stripFileProtocol(oldImage.toString()))).delete();
-        
+
         checkForDuplicateImage(imageType);
         // Scan for the gallery to update pic refs in gallery
         this.scanForGallery();
-        
+
         System.gc();
     }
 
@@ -616,12 +620,12 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
     public void failPicture(String err) {
         this.error(new PluginResult(PluginResult.Status.ERROR, err), this.callbackId);
     }
-    
-    private void scanForGallery() { 
-        if(this.conn!=null) this.conn.disconnect();  
-        this.conn = new MediaScannerConnection(this.ctx.getActivity().getApplicationContext(), this); 
-        conn.connect(); 
-    } 
+
+    private void scanForGallery() {
+        if(this.conn!=null) this.conn.disconnect();
+        this.conn = new MediaScannerConnection(this.ctx.getActivity().getApplicationContext(), this);
+        conn.connect();
+    }
 
     public void onMediaScannerConnected() {
         try{
@@ -630,10 +634,10 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
             e.printStackTrace();
             LOG.d(LOG_TAG, "Can;t scan file in MediaScanner aftering taking picture");
         }
-        
+
     }
 
     public void onScanCompleted(String path, Uri uri) {
-        this.conn.disconnect();   
+        this.conn.disconnect();
     }
 }
