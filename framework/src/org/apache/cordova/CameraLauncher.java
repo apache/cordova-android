@@ -395,7 +395,13 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
                         }
                         // Send Uri back to JavaScript for viewing image
-                        this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
+                        if (saveToPhotoAlbum) {
+                            this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
+                        } else {
+                            // If you don't want to save the file to the photo album you need to append a timestamp
+                            // to the returned URI to do some cache busting.
+                            this.success(new PluginResult(PluginResult.Status.OK, uri.toString() + "?" + System.currentTimeMillis()), this.callbackId);
+                        }
                     }
 
                     this.cleanup(FILE_URI, this.imageUri, bitmap);
