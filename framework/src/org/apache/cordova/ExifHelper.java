@@ -178,4 +178,8 @@ public class ExifHelper {
             return 0;
         }
     }
+
+    public void resetOrientation() {
+        this.orientation = "" + ExifInterface.ORIENTATION_NORMAL;
+    }
 }

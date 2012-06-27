@@ -265,6 +265,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
             if (this.encodingType == JPEG) {
                 exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/.Pic.jpg");
                 exif.readExifData();
+                rotate = exif.getOrientation();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -280,9 +281,8 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                     if (destType == DATA_URL) {
                         bitmap = getScaledBitmap(FileUtils.stripFileProtocol(imageUri.toString()));
 
-                        rotate = exif.getOrientation();
                         if (rotate != 0) {
-                            bitmap = getRotatedBitmap(rotate, bitmap);
+                            bitmap = getRotatedBitmap(rotate, bitmap, exif);
                         }
 
                         this.processPicture(bitmap);
@@ -303,16 +303,15 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         }
 
                         // If all this is true we shouldn't compress the image.
-                        if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100) {
+                        if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100 && rotate == 0) {
                             writeUncompressedImage(uri);
 
                             this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                         } else {
                             bitmap = getScaledBitmap(FileUtils.stripFileProtocol(imageUri.toString()));
 
-                            rotate = exif.getOrientation();
                             if (rotate != 0) {
-                                bitmap = getRotatedBitmap(rotate, bitmap);
+                                bitmap = getRotatedBitmap(rotate, bitmap, exif);
                             }
 
                             // Add compressed version of captured image to returned media store Uri
@@ -450,7 +449,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
      * @param bitmap
      * @return rotated bitmap
      */
-    private Bitmap getRotatedBitmap(int rotate, Bitmap bitmap) {
+    private Bitmap getRotatedBitmap(int rotate, Bitmap bitmap, ExifHelper exif) {
         Matrix matrix = new Matrix();
         if (rotate == 180) {
             matrix.setRotate(rotate);
@@ -458,6 +457,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
             matrix.setRotate(rotate, (float) bitmap.getWidth() / 2, (float) bitmap.getHeight() / 2);
         }
         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        exif.resetOrientation();
         return bitmap;
     }
 
