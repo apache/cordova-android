@@ -83,6 +83,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
     private int encodingType;               // Type of encoding to use
     private int mediaType;                  // What type of media to retrieve
     private boolean saveToPhotoAlbum;       // Should the picture be saved to the device's photo album
+    private boolean correctOrientation;     // Should the pictures orientation be corrected
 
     public String callbackId;
     private int numPics;
@@ -137,6 +138,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 this.targetHeight = args.getInt(4);
                 this.encodingType = args.getInt(5);
                 this.mediaType = args.getInt(6);
+                this.correctOrientation = args.getBoolean(8);
                 this.saveToPhotoAlbum = args.getBoolean(9);
 
                 if (srcType == CAMERA) {
@@ -281,7 +283,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                     if (destType == DATA_URL) {
                         bitmap = getScaledBitmap(FileUtils.stripFileProtocol(imageUri.toString()));
 
-                        if (rotate != 0) {
+                        if (rotate != 0 && this.correctOrientation) {
                             bitmap = getRotatedBitmap(rotate, bitmap, exif);
                         }
 
@@ -310,7 +312,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         } else {
                             bitmap = getScaledBitmap(FileUtils.stripFileProtocol(imageUri.toString()));
 
-                            if (rotate != 0) {
+                            if (rotate != 0 && this.correctOrientation) {
                                 bitmap = getRotatedBitmap(rotate, bitmap, exif);
                             }
 
