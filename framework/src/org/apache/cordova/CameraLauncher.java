@@ -559,7 +559,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         Cursor cursor = queryImgDB(contentStore);
         int currentNumOfImages = cursor.getCount();
 
-        if (type == FILE_URI) {
+        if (type == FILE_URI && this.saveToPhotoAlbum) {
             diff = 2;
         }
 
