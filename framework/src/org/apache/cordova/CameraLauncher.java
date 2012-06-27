@@ -280,6 +280,11 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                     if (destType == DATA_URL) {
                         bitmap = getScaledBitmap(FileUtils.stripFileProtocol(imageUri.toString()));
 
+                        rotate = exif.getOrientation();
+                        if (rotate != 0) {
+                            bitmap = getRotatedBitmap(rotate, bitmap);
+                        }
+
                         this.processPicture(bitmap);
                         checkForDuplicateImage(DATA_URL);
                     }
@@ -304,6 +309,11 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                             this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                         } else {
                             bitmap = getScaledBitmap(FileUtils.stripFileProtocol(imageUri.toString()));
+
+                            rotate = exif.getOrientation();
+                            if (rotate != 0) {
+                                bitmap = getRotatedBitmap(rotate, bitmap);
+                            }
 
                             // Add compressed version of captured image to returned media store Uri
                             OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
@@ -430,6 +440,25 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 this.failPicture("Selection did not complete!");
             }
         }
+    }
+
+    /**
+     * Figure out if the bitmap should be rotated. For instance if the picture was taken in
+     * portrait mode
+     *
+     * @param rotate
+     * @param bitmap
+     * @return rotated bitmap
+     */
+    private Bitmap getRotatedBitmap(int rotate, Bitmap bitmap) {
+        Matrix matrix = new Matrix();
+        if (rotate == 180) {
+            matrix.setRotate(rotate);
+        } else {
+            matrix.setRotate(rotate, (float) bitmap.getWidth() / 2, (float) bitmap.getHeight() / 2);
+        }
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        return bitmap;
     }
 
     /**

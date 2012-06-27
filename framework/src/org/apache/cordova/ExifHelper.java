@@ -162,4 +162,20 @@ public class ExifHelper {
 
         this.outFile.saveAttributes();
     }
+
+    public int getOrientation() {
+        int o = Integer.parseInt(this.orientation);
+
+        if (o == ExifInterface.ORIENTATION_NORMAL) {
+            return 0;
+        } else if (o == ExifInterface.ORIENTATION_ROTATE_90) {
+            return 90;
+        } else if (o == ExifInterface.ORIENTATION_ROTATE_180) {
+            return 180;
+        } else if (o == ExifInterface.ORIENTATION_ROTATE_270) {
+            return 270;
+        } else {
+            return 0;
+        }
+    }
 }
