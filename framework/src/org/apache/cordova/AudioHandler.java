@@ -155,7 +155,7 @@ public class AudioHandler extends Plugin {
 
                 // Get all audio players and pause them
                 for (AudioPlayer audio : this.players.values()) {
-                    if (audio.getState() == AudioPlayer.MEDIA_RUNNING) {
+                    if (audio.getState() == AudioPlayer.STATE.MEDIA_RUNNING.ordinal()) {
                         this.pausedForPhone.add(audio);
                         audio.pausePlaying();
                     }
