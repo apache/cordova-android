@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -73,7 +74,7 @@ public class FileTransfer extends Plugin {
         String source = null;
         String target = null;
         try {
-            source = args.getString(0);
+            source = URLDecoder.decode(args.getString(0));
             target = args.getString(1);
         } catch (JSONException e) {
             Log.d(LOG_TAG, "Missing source or target");
@@ -321,7 +322,7 @@ public class FileTransfer extends Plugin {
         } catch (Throwable t) {
             // Shouldn't happen, but will
             JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, conn);
-            Log.wtf(LOG_TAG, error.toString(), t);
+            Log.e(LOG_TAG, error.toString(), t);
             return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
         } finally {
             if (conn != null) {

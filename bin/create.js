@@ -133,13 +133,15 @@ var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 // create the project
 exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --package '+PACKAGE+' --activity '+ACTIVITY);
 
-// update the cordova framework project to a target that exists on this machine
-exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
-
-// pull down commons codec if necessary
-downloadCommonsCodec();
-
-exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
+// build from source. distro should have these files
+if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
+    !fso.FileExists(ROOT+'\\cordova-'+VERSION+'.js')) {
+    // update the cordova framework project to a target that exists on this machine
+    exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
+    // pull down commons codec if necessary
+    downloadCommonsCodec();
+    exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
+}
 
 // copy in the project template
 exec('%comspec% /c xcopy '+ ROOT + '\\bin\\templates\\project\\res '+PROJECT_PATH+'\\res\\ /E /Y');
@@ -147,16 +149,23 @@ exec('%comspec% /c xcopy '+ ROOT + '\\bin\\templates\\project\\assets '+PROJECT_
 exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\project\\AndroidManifest.xml ' + PROJECT_PATH + '\\AndroidManifest.xml /Y');
 exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\project\\Activity.java '+ ACTIVITY_PATH +' /Y');
 
-// copy in cordova.js
-exec('%comspec% /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
-
-// copy in cordova.jar
-exec('%comspec% /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
-
-// copy in xml
-fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
-exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+// check if we have the source or the distro files
+if(fso.FolderExists(ROOT + '\\framework')) {
+    exec('%comspec% /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
+    exec('%comspec% /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
+    fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
+    exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
+    exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+} else {
+    // copy in cordova.js
+    exec('%comspec% /c copy '+ROOT+'\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
+    // copy in cordova.jar
+    exec('%comspec% /c copy '+ROOT+'\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
+    // copy in xml
+    fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
+    exec('%comspec% /c copy '+ROOT+'\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
+    exec('%comspec% /c copy '+ROOT+'\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+}
 
 // copy cordova scripts
 fso.CreateFolder(PROJECT_PATH + '\\cordova');
