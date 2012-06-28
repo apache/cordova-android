@@ -198,13 +198,12 @@ public class AudioHandler extends Plugin {
      * @param file				The name of the file
      */
     public void startRecordingAudio(String id, String file) {
-        // If already recording, then just return;
-        if (this.players.containsKey(id)) {
-            return;
-        }
-        AudioPlayer audio = new AudioPlayer(this, id, file);
-        this.players.put(id, audio);
-        audio.startRecording(file);
+    	AudioPlayer audio = this.players.get(id);
+    	if ( audio == null) {
+    	    audio = new AudioPlayer(this, id, file);
+            this.players.put(id, audio);
+    	}
+    	audio.startRecording(file);
     }
 
     /**
