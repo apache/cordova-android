@@ -96,6 +96,13 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         this.handler = handler;
         this.id = id;
         this.audioFile = file;	
+
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
+        } else {
+            this.tempFile = "/data/data/" + handler.ctx.getActivity().getPackageName() + "/cache/tmprecording.mp3";
+        }
+
     }
 
     /**
