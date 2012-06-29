@@ -61,12 +61,15 @@ function log {
     adb logcat
 }
 
-function debug_install {
-    ant debug install
-}
-
 function debug {
-    ant debug
+    if [ $(check_devices) == 0 ] ; then
+        ant debug install
+    else
+        ant debug
+        echo "##################################################################"
+        echo "# Plug in your device or launch an emulator with cordova/emulate #"
+        echo "##################################################################"
+    fi
 }
 
 function launch {
@@ -75,16 +78,7 @@ function launch {
 }
 
 function BOOM {
-    clean
-    if [ $(check_devices) == 0 ] ; then
-        debug_install && launch 
-        return
-    else
-        debug
-        echo "##################################################################"
-        echo "# Plug in your device or launch an emulator with cordova/emulate #"
-        echo "##################################################################"
-    fi
+    clean && debug && launch 
 }
 
 # TODO parse arguments
