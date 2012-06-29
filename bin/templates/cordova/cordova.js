@@ -8,7 +8,7 @@ function exec(command) {
         if(!oExec.StdOut.AtEndOfStream) {
             var line = oExec.StdOut.ReadLine();
             // XXX: Change to verbose mode 
-            //WScript.StdOut.WriteLine(line);
+            // WScript.StdOut.WriteLine(line);
             output += line;
         }
         WScript.sleep(100);
@@ -71,15 +71,18 @@ function clean() {
 }
 
 function debug() {
-    exec("%comspec% /c ant.bat debug -f "+ROOT+"\\build.xml 2>&1");
-}
-
-function debug_install() {
-    exec("%comspec% /c ant.bat debug install -f "+ROOT+"\\build.xml 2>&1");
+   if(emulator_running()) {
+        exec("%comspec% /c ant.bat debug install -f "+ROOT+"\\build.xml 2>&1");
+   } else {
+        exec("%comspec% /c ant.bat debug -f "+ROOT+"\\build.xml 2>&1");
+        WScript.Echo("##################################################################");
+        WScript.Echo("# Plug in your device or launch an emulator with cordova/emulate #");
+        WScript.Echo("##################################################################");
+   }
 }
 
 function log() {
-    WScript.Echo(exec("%comspec% /c adb.bat logcat"));
+    shell.Run("%comspec% /c adb logcat");
 }
 
 function launch() {
@@ -90,15 +93,8 @@ function launch() {
 
 function BOOM() {
    clean();
-   if(emulator_running()) {
-        debug_install();
-        launch();
-   } else {
-        debug();
-        WScript.Echo("##################################################################");
-        WScript.Echo("# Plug in your device or launch an emulator with cordova/emulate #");
-        WScript.Echo("##################################################################");
-   }
+   debug();
+   launch();
 }
 var args = WScript.Arguments;
 if(args.count() != 1) {
