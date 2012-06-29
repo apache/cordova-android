@@ -54,10 +54,10 @@ public class CordovaWebView extends WebView {
     private HashMap<String, Boolean> whiteListCache = new HashMap<String, Boolean>();
     private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
     private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
-    
+
     public PluginManager pluginManager;
     public CallbackServer callbackServer;
-    
+
 
     /** Actvities and other important classes **/
     private CordovaInterface cordova;
@@ -65,7 +65,7 @@ public class CordovaWebView extends WebView {
     @SuppressWarnings("unused")
     private CordovaChromeClient chromeClient;
 
-    //This is for the polyfil history 
+    //This is for the polyfil history
     private String url;
     String baseUrl;
     private Stack<String> urls = new Stack<String>();
@@ -83,7 +83,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Constructor.
-     * 
+     *
      * @param context
      */
     public CordovaWebView(Context context) {
@@ -102,7 +102,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Constructor.
-     * 
+     *
      * @param context
      * @param attrs
      */
@@ -124,11 +124,11 @@ public class CordovaWebView extends WebView {
 
     /**
      * Constructor.
-     * 
+     *
      * @param context
      * @param attrs
      * @param defStyle
-     * 
+     *
      */
     public CordovaWebView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -148,7 +148,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Constructor.
-     * 
+     *
      * @param context
      * @param attrs
      * @param defStyle
@@ -211,7 +211,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Set the WebViewClient.
-     * 
+     *
      * @param client
      */
     public void setWebViewClient(CordovaWebViewClient client) {
@@ -221,7 +221,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Set the WebChromeClient.
-     * 
+     *
      * @param client
      */
     public void setWebChromeClient(CordovaChromeClient client) {
@@ -231,7 +231,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Add entry to approved list of URLs (whitelist)
-     * 
+     *
      * @param origin        URL regular expression to allow
      * @param subdomains    T=include all subdomains under origin
      */
@@ -269,7 +269,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Determine if URL is in approved list of URLs to load.
-     * 
+     *
      * @param url
      * @return
      */
@@ -297,7 +297,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Load the url into the webview.
-     * 
+     *
      * @param url
      */
     @Override
@@ -323,7 +323,7 @@ public class CordovaWebView extends WebView {
     /**
      * Load the url into the webview after waiting for period of time.
      * This is used to display the splashscreen for certain amount of time.
-     * 
+     *
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
@@ -342,7 +342,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Load the url into the webview.
-     * 
+     *
      * @param url
      */
     public void loadUrlIntoView(final String url) {
@@ -411,7 +411,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Load URL in webview.
-     * 
+     *
      * @param url
      */
     private void loadUrlNow(String url) {
@@ -422,7 +422,7 @@ public class CordovaWebView extends WebView {
     /**
      * Load the url into the webview after waiting for period of time.
      * This is used to display the splashscreen for certain amount of time.
-     * 
+     *
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
@@ -449,7 +449,7 @@ public class CordovaWebView extends WebView {
     /**
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)
-     * 
+     *
      * @param message
      */
     public void sendJavascript(String statement) {
@@ -459,8 +459,8 @@ public class CordovaWebView extends WebView {
     }
 
     /**
-     * Send a message to all plugins. 
-     * 
+     * Send a message to all plugins.
+     *
      * @param id            The message id
      * @param data          The message data
      */
@@ -470,8 +470,8 @@ public class CordovaWebView extends WebView {
         }
     }
 
-    /** 
-     * Returns the top url on the stack without removing it from 
+    /**
+     * Returns the top url on the stack without removing it from
      * the stack.
      */
     public String peekAtUrlStack() {
@@ -483,7 +483,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Add a url to the stack
-     * 
+     *
      * @param url
      */
     public void pushUrl(String url) {
@@ -492,7 +492,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Go to previous page in history.  (We manage our own history)
-     * 
+     *
      * @return true if we went back, false if we are already at top
      */
     public boolean backHistory() {
@@ -517,7 +517,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Return true if there is a history item.
-     * 
+     *
      * @return
      */
     public boolean canGoBack() {
@@ -532,7 +532,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Load the specified URL in the Cordova webview or a new browser instance.
-     * 
+     *
      * NOTE: If openExternal is false, only URLs listed in whitelist can be loaded.
      *
      * @param url           The url to load.
@@ -625,6 +625,7 @@ public class CordovaWebView extends WebView {
                     String value = xml.getAttributeValue(null, "value");
 
                     LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
+                    Log.d("CordovaLog", "Found preference for " + name + "=" + value);
 
                     // Save preferences in Intent
                     this.cordova.getActivity().getIntent().putExtra(name, value);
@@ -640,7 +641,7 @@ public class CordovaWebView extends WebView {
         }
 
         // Init preferences
-        if ("true".equals(this.getProperty("useBrowserHistory", "true"))) {
+        if ("true".equals(this.getProperty("useBrowserHistory", "false"))) {
             this.useBrowserHistory = true;
         }
         else {
@@ -655,7 +656,7 @@ public class CordovaWebView extends WebView {
 
     /**
      * Get string property for activity.
-     * 
+     *
      * @param name
      * @param defaultValue
      * @return
@@ -671,11 +672,11 @@ public class CordovaWebView extends WebView {
         }
         return p.toString();
     }
-    
+
     /*
-     * onKeyDown 
+     * onKeyDown
      */
-    
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
@@ -700,11 +701,11 @@ public class CordovaWebView extends WebView {
         }
         return false;
     }
-    
+
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        
+
         Log.d(TAG, "KeyDown has been triggered on the view");
 
         // If back key
@@ -719,7 +720,7 @@ public class CordovaWebView extends WebView {
                 if (this.backHistory()) {
                     return true;
                 }
-                // If not, then invoke default behaviour 
+                // If not, then invoke default behaviour
                 else {
                     //this.activityState = ACTIVITY_EXITING;
                     return false;
@@ -741,16 +742,16 @@ public class CordovaWebView extends WebView {
             //What the hell should this do?
         }
 
-        
+
         Log.d(TAG, "KeyUp has been triggered on the view");
         return false;
     }
-    
+
     public void bindButton(boolean override)
     {
         this.bound = override;
     }
-    
+
     public void bindButton(String button, boolean override) {
         // TODO Auto-generated method stub
         if (button.compareTo("volumeup")==0) {
@@ -760,7 +761,7 @@ public class CordovaWebView extends WebView {
           keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_DOWN);
         }
       }
-    
+
     public void bindButton(int keyCode, boolean keyDown, boolean override) {
        if(keyDown)
        {
@@ -771,7 +772,7 @@ public class CordovaWebView extends WebView {
            keyUpCodes.add(keyCode);
        }
     }
-    
+
     public boolean isBackButtonBound()
     {
         return this.bound;
