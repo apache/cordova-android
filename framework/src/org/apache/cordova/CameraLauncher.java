@@ -84,6 +84,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
     private int mediaType;                  // What type of media to retrieve
     private boolean saveToPhotoAlbum;       // Should the picture be saved to the device's photo album
     private boolean correctOrientation;     // Should the pictures orientation be corrected
+    private boolean allowEdit;              // Should we allow the user to crop the image
 
     public String callbackId;
     private int numPics;
@@ -138,6 +139,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 this.targetHeight = args.getInt(4);
                 this.encodingType = args.getInt(5);
                 this.mediaType = args.getInt(6);
+                this.allowEdit = args.getBoolean(7);
                 this.correctOrientation = args.getBoolean(8);
                 this.saveToPhotoAlbum = args.getBoolean(9);
 
@@ -261,19 +263,19 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         int destType = (requestCode % 16) - 1;
         int rotate = 0;
 
-        // Create an ExifHelper to save the exif data that is lost during compression
-        ExifHelper exif = new ExifHelper();
-        try {
-            if (this.encodingType == JPEG) {
-                exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/.Pic.jpg");
-                exif.readExifData();
-                rotate = exif.getOrientation();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         // If CAMERA
         if (srcType == CAMERA) {
+            // Create an ExifHelper to save the exif data that is lost during compression
+            ExifHelper exif = new ExifHelper();
+            try {
+                if (this.encodingType == JPEG) {
+                    exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/.Pic.jpg");
+                    exif.readExifData();
+                    rotate = exif.getOrientation();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             // If image available
             if (resultCode == Activity.RESULT_OK) {
                 try {
@@ -405,9 +407,20 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         // Do we need to scale the returned file
                         if (this.targetHeight > 0 && this.targetWidth > 0) {
                             try {
+                                // Create an ExifHelper to save the exif data that is lost during compression
+                                String resizePath = DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/resize.jpg";
+                                ExifHelper exif = new ExifHelper();
+                                try {
+                                    if (this.encodingType == JPEG) {
+                                        exif.createInFile(resizePath);
+                                        exif.readExifData();
+                                        rotate = exif.getOrientation();
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
 
-                                String fileName = DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/resize.jpg";
-                                OutputStream os = new FileOutputStream(fileName);
+                                OutputStream os = new FileOutputStream(resizePath);
                                 bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
                                 os.close();
 
@@ -419,7 +432,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
                                 // The resized image is cached by the app in order to get around this and not have to delete you
                                 // application cache I'm adding the current system time to the end of the file url.
-                                this.success(new PluginResult(PluginResult.Status.OK, ("file://" + fileName + "?" + System.currentTimeMillis())), this.callbackId);
+                                this.success(new PluginResult(PluginResult.Status.OK, ("file://" + resizePath + "?" + System.currentTimeMillis())), this.callbackId);
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 this.failPicture("Error retrieving image.");
