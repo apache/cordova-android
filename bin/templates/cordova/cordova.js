@@ -71,11 +71,14 @@ function clean() {
 }
 
 function debug() {
-    exec("%comspec% /c ant.bat debug -f "+ROOT+"\\build.xml 2>&1");
-}
-
-function debug_install() {
-    exec("%comspec% /c ant.bat debug install -f "+ROOT+"\\build.xml 2>&1");
+   if(emulator_running()) {
+        exec("%comspec% /c ant.bat debug install -f "+ROOT+"\\build.xml 2>&1");
+   } else {
+        exec("%comspec% /c ant.bat debug -f "+ROOT+"\\build.xml 2>&1");
+        WScript.Echo("##################################################################");
+        WScript.Echo("# Plug in your device or launch an emulator with cordova/emulate #");
+        WScript.Echo("##################################################################");
+   }
 }
 
 function log() {
@@ -90,15 +93,8 @@ function launch() {
 
 function BOOM() {
    clean();
-   if(emulator_running()) {
-        debug_install();
-        launch();
-   } else {
-        debug();
-        WScript.Echo("##################################################################");
-        WScript.Echo("# Plug in your device or launch an emulator with cordova/emulate #");
-        WScript.Echo("##################################################################");
-   }
+   debug();
+   launch();
 }
 var args = WScript.Arguments;
 if(args.count() != 1) {
