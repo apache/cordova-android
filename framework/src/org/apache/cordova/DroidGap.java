@@ -779,7 +779,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         super.finish();
     }
 
-    
+
     /**
      * Launch an activity for which you would like a result when it finished. When this activity exits,
      * your onActivityResult() method will be called.
@@ -941,7 +941,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     public Context getContext() {
         LOG.d(TAG, "This will be deprecated December 2012");
-        return this.getContext();
+        return this;
     }
 
     /**
