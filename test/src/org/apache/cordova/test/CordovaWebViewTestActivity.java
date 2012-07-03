@@ -24,6 +24,7 @@ import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.IPlugin;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -52,45 +53,41 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
         }
     }
 
-    @Override
     public void startActivityForResult(IPlugin command, Intent intent, int requestCode) {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public void setActivityResultCallback(IPlugin plugin) {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public void bindBackButton(boolean override) {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public boolean isBackButtonBound() {
         // TODO Auto-generated method stub
         return false;
     }
 
-    @Override
     public Activity getActivity() {
-        // TODO Auto-generated method stub
         return this;
     }
 
-    @Override
     public void cancelLoadUrl() {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
     public Object onMessage(String id, Object data) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public Context getContext() {
+        return this;
     }
 }
