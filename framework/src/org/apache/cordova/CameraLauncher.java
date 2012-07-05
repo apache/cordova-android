@@ -525,20 +525,79 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
             return BitmapFactory.decodeFile(imagePath);
         }
 
-        Bitmap unscaledBitmap = decodeFile(imagePath,
-                this.targetWidth, this.targetHeight);
-        return Bitmap.createScaledBitmap(unscaledBitmap, this.targetWidth, this.targetHeight, true);
-    }
-
-    public static Bitmap decodeFile(String pathName, int dstWidth, int dstHeight) {
+        // figure out the original width and height of the image
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(pathName, options);
-        options.inJustDecodeBounds = false;
-        options.inSampleSize = calculateSampleSize(options.outWidth, options.outHeight, dstWidth, dstHeight);
-        return BitmapFactory.decodeFile(pathName, options);
-      }
+        BitmapFactory.decodeFile(imagePath, options);
 
+        // determine the correct aspect ratio
+        int[] widthHeight = calculateAspectRatio(options.outWidth, options.outHeight);
+
+        // Load in the smallest bitmap possible that is closest to the size we want
+        options.inJustDecodeBounds = false;
+        options.inSampleSize = calculateSampleSize(options.outWidth, options.outHeight, this.targetWidth, this.targetHeight);
+        Bitmap unscaledBitmap = BitmapFactory.decodeFile(imagePath, options);
+
+        return Bitmap.createScaledBitmap(unscaledBitmap, widthHeight[0], widthHeight[1], true);
+    }
+
+    /**
+     * Maintain the aspect ratio so the resulting image does not look smooshed
+     *
+     * @param origWidth
+     * @param origHeight
+     * @return
+     */
+    public int[] calculateAspectRatio(int origWidth, int origHeight) {
+        int newWidth = this.targetWidth;
+        int newHeight = this.targetHeight;
+
+        // If no new width or height were specified return the original bitmap
+        if (newWidth <= 0 && newHeight <= 0) {
+            newWidth = origWidth;
+            newHeight = origHeight;
+        }
+        // Only the width was specified
+        else if (newWidth > 0 && newHeight <= 0) {
+            newHeight = (newWidth * origHeight) / origWidth;
+        }
+        // only the height was specified
+        else if (newWidth <= 0 && newHeight > 0) {
+            newWidth = (newHeight * origWidth) / origHeight;
+        }
+        // If the user specified both a positive width and height
+        // (potentially different aspect ratio) then the width or height is
+        // scaled so that the image fits while maintaining aspect ratio.
+        // Alternatively, the specified width and height could have been
+        // kept and Bitmap.SCALE_TO_FIT specified when scaling, but this
+        // would result in whitespace in the new image.
+        else {
+            double newRatio = newWidth / (double) newHeight;
+            double origRatio = origWidth / (double) origHeight;
+
+            if (origRatio > newRatio) {
+                newHeight = (newWidth * origHeight) / origWidth;
+            } else if (origRatio < newRatio) {
+                newWidth = (newHeight * origWidth) / origHeight;
+            }
+        }
+
+        int[] retval = new int[2];
+        retval[0] = newWidth;
+        retval[1] = newHeight;
+        return retval;
+    }
+
+    /**
+     * Figure out what ratio we can load our image into memory at while still being bigger than
+     * our desired width and height
+     *
+     * @param srcWidth
+     * @param srcHeight
+     * @param dstWidth
+     * @param dstHeight
+     * @return
+     */
     public static int calculateSampleSize(int srcWidth, int srcHeight, int dstWidth, int dstHeight) {
         final float srcAspect = (float)srcWidth / (float)srcHeight;
         final float dstAspect = (float)dstWidth / (float)dstHeight;
