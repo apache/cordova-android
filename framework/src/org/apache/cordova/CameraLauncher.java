@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.commons.codec.binary.Base64;
-//import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
@@ -36,7 +35,6 @@ import org.json.JSONException;
 
 import android.app.Activity;
 import android.content.ContentValues;
-//import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -90,6 +88,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
     private int numPics;
 
     private MediaScannerConnection conn;    // Used to update gallery app with newly-written files
+    private Uri scanMe;                     // Uri of image to be added to content store
 
     //This should never be null!
     //private CordovaInterface cordova;
@@ -280,6 +279,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
             if (resultCode == Activity.RESULT_OK) {
                 try {
                     Bitmap bitmap = null;
+                    Uri uri = null;
 
                     // If sending base64 image back
                     if (destType == DATA_URL) {
@@ -295,9 +295,8 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
                     // If sending filename back
                     else if (destType == FILE_URI) {
-                        Uri uri;
                         if (!this.saveToPhotoAlbum) {
-                            uri = Uri.fromFile(new File("/data/data/" + this.cordova.getActivity().getPackageName() + "/", (new File(FileUtils.stripFileProtocol(this.imageUri.toString()))).getName()));
+                            uri = Uri.fromFile(new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), System.currentTimeMillis() + ".jpg"));
                         } else {
                             uri = getUriFromMediaStore();
                         }
@@ -324,7 +323,6 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                             os.close();
 
                             // Restore exif data to file
-
                             if (this.encodingType == JPEG) {
                                 String exifPath;
                                 if (this.saveToPhotoAlbum) {
@@ -338,16 +336,10 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
                         }
                         // Send Uri back to JavaScript for viewing image
-                        if (saveToPhotoAlbum) {
-                            this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
-                        } else {
-                            // If you don't want to save the file to the photo album you need to append a timestamp
-                            // to the returned URI to do some cache busting.
-                            this.success(new PluginResult(PluginResult.Status.OK, uri.toString() + "?" + System.currentTimeMillis()), this.callbackId);
-                        }
+                        this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                     }
 
-                    this.cleanup(FILE_URI, this.imageUri, bitmap);
+                    this.cleanup(FILE_URI, this.imageUri, uri, bitmap);
                     bitmap = null;
 
                 } catch (IOException e) {
@@ -574,8 +566,9 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
     /**
      * Cleans up after picture taking. Checking for duplicates and that kind of stuff.
+     * @param newImage
      */
-    private void cleanup(int imageType, Uri oldImage, Bitmap bitmap) {
+    private void cleanup(int imageType, Uri oldImage, Uri newImage, Bitmap bitmap) {
         if (bitmap != null) {
             bitmap.recycle();
         }
@@ -585,7 +578,9 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
         checkForDuplicateImage(imageType);
         // Scan for the gallery to update pic refs in gallery
-        this.scanForGallery();
+        if (this.saveToPhotoAlbum && newImage != null) {
+            this.scanForGallery(newImage);
+        }
 
         System.gc();
     }
@@ -610,7 +605,10 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         // delete the duplicate file if the difference is 2 for file URI or 1 for Data URL
         if ((currentNumOfImages - numPics) == diff) {
             cursor.moveToLast();
-            int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID))) - 1;
+            int id = Integer.valueOf(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID)));
+            if (diff == 2) {
+                id--;
+            }
             Uri uri = Uri.parse(contentStore + "/" + id);
             this.cordova.getActivity().getContentResolver().delete(uri, null, null);
         }
@@ -660,18 +658,20 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         this.error(new PluginResult(PluginResult.Status.ERROR, err), this.callbackId);
     }
 
-    private void scanForGallery() {
-        if(this.conn!=null) this.conn.disconnect();
+    private void scanForGallery(Uri newImage) {
+        this.scanMe = newImage;
+        if(this.conn != null) {
+            this.conn.disconnect();
+        }
         this.conn = new MediaScannerConnection(this.ctx.getActivity().getApplicationContext(), this);
         conn.connect();
     }
 
     public void onMediaScannerConnected() {
         try{
-            this.conn.scanFile(this.imageUri.toString(), "image/*");
+            this.conn.scanFile(this.scanMe.toString(), "image/*");
         } catch (java.lang.IllegalStateException e){
-            e.printStackTrace();
-            LOG.d(LOG_TAG, "Can;t scan file in MediaScanner aftering taking picture");
+            LOG.e(LOG_TAG, "Can't scan file in MediaScanner aftering taking picture");
         }
 
     }
