@@ -375,12 +375,10 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                     String imagePath = FileUtils.getRealPathFromURI(uri, this.cordova);
                     Bitmap bitmap = getScaledBitmap(imagePath);
 
-                    // If sending base64 image back
-                    if (destType == DATA_URL) {
+                    if (this.correctOrientation) {
                         String[] cols = { MediaStore.Images.Media.ORIENTATION };
                         Cursor cursor = this.cordova.getActivity().getContentResolver().query(intent.getData(),
-                                cols,
-                                null, null, null);
+                                cols, null, null, null);
                         if (cursor != null) {
                             cursor.moveToPosition(0);
                             rotate = cursor.getInt(0);
@@ -391,6 +389,10 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                             matrix.setRotate(rotate);
                             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                         }
+                    }
+
+                    // If sending base64 image back
+                    if (destType == DATA_URL) {
                         this.processPicture(bitmap);
                     }
 
