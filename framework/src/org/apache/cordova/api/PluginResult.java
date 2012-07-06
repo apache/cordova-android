@@ -25,13 +25,13 @@ public class PluginResult {
     private final int status;
     private final String message;
     private boolean keepCallback = false;
-    
+
 
     public PluginResult(Status status) {
         this.status = status.ordinal();
-        this.message = "'" + PluginResult.StatusMessages[this.status] + "'";
+        this.message = "\"" + PluginResult.StatusMessages[this.status] + "\"";
     }
-    
+
     public PluginResult(Status status, String message) {
         this.status = status.ordinal();
         this.message = JSONObject.quote(message);
@@ -61,11 +61,11 @@ public class PluginResult {
         this.status = status.ordinal();
         this.message = ""+b;
     }
-    
+
     public void setKeepCallback(boolean b) {
         this.keepCallback = b;
     }
-    
+
     public int getStatus() {
         return status;
     }
@@ -73,23 +73,23 @@ public class PluginResult {
     public String getMessage() {
         return message;
     }
-    
+
     public boolean getKeepCallback() {
         return this.keepCallback;
     }
-    
+
     public String getJSONString() {
         return "{\"status\":" + this.status + ",\"message\":" + this.message + ",\"keepCallback\":" + this.keepCallback + "}";
     }
-    
+
     public String toSuccessCallbackString(String callbackId) {
         return "cordova.callbackSuccess('"+callbackId+"',"+this.getJSONString()+");";
     }
-    
+
     public String toErrorCallbackString(String callbackId) {
         return "cordova.callbackError('"+callbackId+"', " + this.getJSONString()+ ");";
     }
-    
+
     public static String[] StatusMessages = new String[] {
         "No result",
         "OK",
@@ -102,7 +102,7 @@ public class PluginResult {
         "JSON error",
         "Error"
     };
-    
+
     public enum Status {
         NO_RESULT,
         OK,
