@@ -370,75 +370,81 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                     this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                 }
                 else {
+                    // This is a special case to just return the path as no scaling,
+                    // rotating or compression needs to be done
+                    if (this.targetHeight == -1 && this.targetWidth == -1 &&
+                            this.mQuality == 100 && destType == FILE_URI && !this.correctOrientation) {
+                        this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
+                    } else {
+                        // Get the path to the image. Makes loading so much easier.
+                        String imagePath = FileUtils.getRealPathFromURI(uri, this.cordova);
+                        Bitmap bitmap = getScaledBitmap(imagePath);
 
-                    // Get the path to the image. Makes loading so much easier.
-                    String imagePath = FileUtils.getRealPathFromURI(uri, this.cordova);
-                    Bitmap bitmap = getScaledBitmap(imagePath);
-
-                    if (this.correctOrientation) {
-                        String[] cols = { MediaStore.Images.Media.ORIENTATION };
-                        Cursor cursor = this.cordova.getActivity().getContentResolver().query(intent.getData(),
-                                cols, null, null, null);
-                        if (cursor != null) {
-                            cursor.moveToPosition(0);
-                            rotate = cursor.getInt(0);
-                            cursor.close();
-                        }
-                        if (rotate != 0) {
-                            Matrix matrix = new Matrix();
-                            matrix.setRotate(rotate);
-                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                        }
-                    }
-
-                    // If sending base64 image back
-                    if (destType == DATA_URL) {
-                        this.processPicture(bitmap);
-                    }
-
-                    // If sending filename back
-                    else if (destType == FILE_URI) {
-                        // Do we need to scale the returned file
-                        if (this.targetHeight > 0 && this.targetWidth > 0) {
-                            try {
-                                // Create an ExifHelper to save the exif data that is lost during compression
-                                String resizePath = DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/resize.jpg";
-                                ExifHelper exif = new ExifHelper();
-                                try {
-                                    if (this.encodingType == JPEG) {
-                                        exif.createInFile(resizePath);
-                                        exif.readExifData();
-                                        rotate = exif.getOrientation();
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                                OutputStream os = new FileOutputStream(resizePath);
-                                bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
-                                os.close();
-
-                                // Restore exif data to file
-                                if (this.encodingType == JPEG) {
-                                    exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.cordova));
-                                    exif.writeExifData();
-                                }
-
-                                // The resized image is cached by the app in order to get around this and not have to delete you
-                                // application cache I'm adding the current system time to the end of the file url.
-                                this.success(new PluginResult(PluginResult.Status.OK, ("file://" + resizePath + "?" + System.currentTimeMillis())), this.callbackId);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                this.failPicture("Error retrieving image.");
+                        if (this.correctOrientation) {
+                            String[] cols = { MediaStore.Images.Media.ORIENTATION };
+                            Cursor cursor = this.cordova.getActivity().getContentResolver().query(intent.getData(),
+                                    cols, null, null, null);
+                            if (cursor != null) {
+                                cursor.moveToPosition(0);
+                                rotate = cursor.getInt(0);
+                                cursor.close();
+                            }
+                            if (rotate != 0) {
+                                Matrix matrix = new Matrix();
+                                matrix.setRotate(rotate);
+                                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                             }
                         }
-                        else {
-                            this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
+
+                        // If sending base64 image back
+                        if (destType == DATA_URL) {
+                            this.processPicture(bitmap);
                         }
+
+                        // If sending filename back
+                        else if (destType == FILE_URI) {
+                            // Do we need to scale the returned file
+                            if (this.targetHeight > 0 && this.targetWidth > 0) {
+                                try {
+                                    // Create an ExifHelper to save the exif data that is lost during compression
+                                    String resizePath = DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/resize.jpg";
+                                    ExifHelper exif = new ExifHelper();
+                                    try {
+                                        if (this.encodingType == JPEG) {
+                                            exif.createInFile(resizePath);
+                                            exif.readExifData();
+                                            rotate = exif.getOrientation();
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    OutputStream os = new FileOutputStream(resizePath);
+                                    bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
+                                    os.close();
+
+                                    // Restore exif data to file
+                                    if (this.encodingType == JPEG) {
+                                        exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.cordova));
+                                        exif.writeExifData();
+                                    }
+
+                                    // The resized image is cached by the app in order to get around this and not have to delete you
+                                    // application cache I'm adding the current system time to the end of the file url.
+                                    this.success(new PluginResult(PluginResult.Status.OK, ("file://" + resizePath + "?" + System.currentTimeMillis())), this.callbackId);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    this.failPicture("Error retrieving image.");
+                                }
+                            }
+                            else {
+                                this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
+                            }
+                        }
+                        bitmap.recycle();
+                        bitmap = null;
+                        System.gc();
                     }
-                    bitmap.recycle();
-                    bitmap = null;
-                    System.gc();
                 }
             }
             else if (resultCode == Activity.RESULT_CANCELED) {
