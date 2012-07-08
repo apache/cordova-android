@@ -142,6 +142,15 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 this.correctOrientation = args.getBoolean(8);
                 this.saveToPhotoAlbum = args.getBoolean(9);
 
+                // If the user specifies a 0 or smaller width/height
+                // make it -1 so later comparrisions succeed
+                if (this.targetWidth < 1) {
+                    this.targetWidth = -1;
+                }
+                if (this.targetHeight < 1) {
+                    this.targetHeight = -1;
+                }
+
                 if (srcType == CAMERA) {
                     this.takePicture(destType, encodingType);
                 }
