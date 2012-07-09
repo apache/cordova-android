@@ -676,7 +676,6 @@ public class CordovaWebView extends WebView {
     /*
      * onKeyDown
      */
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
@@ -696,11 +695,12 @@ public class CordovaWebView extends WebView {
             }
             else
             {
-                //Do some other stuff!
+                return super.onKeyDown(keyCode, event);
             }
         }
-        return false;
+        return super.onKeyDown(keyCode, event);
     }
+    
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
@@ -740,6 +740,7 @@ public class CordovaWebView extends WebView {
         else if(keyUpCodes.contains(keyCode))
         {
             //What the hell should this do?
+            return super.onKeyUp(keyCode, event);
         }
 
 
@@ -747,6 +748,7 @@ public class CordovaWebView extends WebView {
         return false;
     }
 
+    
     public void bindButton(boolean override)
     {
         this.bound = override;
