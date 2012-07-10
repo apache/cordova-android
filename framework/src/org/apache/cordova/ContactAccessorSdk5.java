@@ -71,6 +71,7 @@ import android.webkit.WebView;
  * social status updates (see {@link android.provider.ContactsContract.StatusUpdates}).
  * </ul>
  */
+
 public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
@@ -128,12 +129,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         mView = view;
     }
 
-    /** 
-     * This method takes the fields required and search options in order to produce an 
+    /**
+     * This method takes the fields required and search options in order to produce an
      * array of contacts that matches the criteria provided.
      * @param fields an array of items to be used as search criteria
      * @param options that can be applied to contact searching
-     * @return an array of contacts 
+     * @return an array of contacts
      */
     @Override
     public JSONArray search(JSONArray fields, JSONObject options) {
@@ -203,11 +204,11 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     }
 
     /**
-     * A special search that finds one contact by id 
-     * 
+     * A special search that finds one contact by id
+     *
      * @param id   contact to find by id
      * @return     a JSONObject representing the contact
-     * @throws JSONException 
+     * @throws JSONException
      */
     public JSONObject getContactById(String id) throws JSONException {
         // Do the id query
@@ -231,9 +232,9 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         }
     }
 
-    /** 
+    /**
      * Creates an array of contacts from the cursor you pass in
-     * 
+     *
      * @param limit        max number of contacts for the array
      * @param populate     whether or not you should populate a certain value
      * @param c            the cursor
@@ -269,7 +270,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                         oldContactId = contactId;
                     }
 
-                    // When the contact ID changes we need to push the Contact object 
+                    // When the contact ID changes we need to push the Contact object
                     // to the array of contacts and create new objects.
                     if (!oldContactId.equals(contactId)) {
                         // Populate the Contact object with it's arrays
@@ -355,7 +356,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                     Log.e(LOG_TAG, e.getMessage(), e);
                 }
 
-                // Set the old contact ID 
+                // Set the old contact ID
                 oldContactId = contactId;
             }
 
@@ -405,15 +406,15 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     }
 
     /**
-     * Create a new contact using a JSONObject to hold all the data. 
-     * @param contact 
+     * Create a new contact using a JSONObject to hold all the data.
+     * @param contact
      * @param organizations array of organizations
      * @param addresses array of addresses
      * @param phones array of phones
      * @param emails array of emails
      * @param ims array of instant messenger addresses
      * @param websites array of websites
-     * @param photos 
+     * @param photos
      * @return
      */
     private JSONObject populateContact(JSONObject contact, JSONArray organizations,
@@ -447,7 +448,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         }
         return contact;
     }
-    
+
   /**
    * Take the search criteria passed into the method and create a SQL WHERE clause.
    * @param fields the properties to search against
@@ -458,9 +459,9 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     ArrayList<String> where = new ArrayList<String>();
     ArrayList<String> whereArgs = new ArrayList<String>();
-    
+
     WhereOptions options = new WhereOptions();
-        
+
         /*
          * Special case where the user wants all fields returned
          */
@@ -471,7 +472,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                 options.setWhereArgs(new String[] { searchTerm });
                 return options;
             } else {
-                // Get all contacts that match the filter but return all properties 
+                // Get all contacts that match the filter but return all properties
                 where.add("(" + dbMap.get("displayName") + " LIKE ? )");
                 whereArgs.add(searchTerm);
                 where.add("(" + dbMap.get("name") + " LIKE ? AND "
@@ -579,8 +580,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                     whereArgs.add(ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
                 }
                 //        else if (key.startsWith("birthday")) {
-//          where.add("(" + dbMap.get(key) + " LIKE ? AND " 
-//              + ContactsContract.Data.MIMETYPE + " = ? )");                 
+//          where.add("(" + dbMap.get(key) + " LIKE ? AND "
+//              + ContactsContract.Data.MIMETYPE + " = ? )");
 //        }
                 else if (key.startsWith("note")) {
                     where.add("(" + dbMap.get(key) + " LIKE ? AND "
@@ -621,7 +622,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * If the user passes in the '*' wildcard character for search then they want all fields for each contact
-     * 
+     *
      * @param fields
      * @return true if wildcard search requested, false otherwise
      */
@@ -802,7 +803,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Create a ContactField JSONObject
-     * @param contactId 
+     * @param contactId
      * @return a JSONObject representing a ContactField
      */
     private JSONObject photoQuery(Cursor cursor, String contactId) {
@@ -823,7 +824,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     @Override
     /**
      * This method will save a contact object into the devices contacts database.
-     * 
+     *
      * @param contact the contact to be saved.
      * @returns the id if the contact is successfully saved, null otherwise.
      */
@@ -878,7 +879,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Creates a new contact and stores it in the database
-     * 
+     *
      * @param id the raw contact id which is required for linking items to the contact
      * @param contact the contact to be saved
      * @param account the account to be saved under
@@ -944,29 +945,40 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         try {
             phones = contact.getJSONArray("phoneNumbers");
             if (phones != null) {
-                for (int i = 0; i < phones.length(); i++) {
-                    JSONObject phone = (JSONObject) phones.get(i);
-                    String phoneId = getJsonString(phone, "id");
-                    // This is a new phone so do a DB insert
-                    if (phoneId == null) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
-                        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
-                        contentValues.put(ContactsContract.CommonDataKinds.Phone.NUMBER, getJsonString(phone, "value"));
-                        contentValues.put(ContactsContract.CommonDataKinds.Phone.TYPE, getPhoneType(getJsonString(phone, "type")));
+                // Delete all the phones
+                if (phones.length() == 0) {
+                    ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " +
+                                    ContactsContract.Data.MIMETYPE + "=?",
+                                    new String[] { "" + rawId, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE })
+                            .build());
+                }
+                // Modify or add a phone
+                else {
+                    for (int i = 0; i < phones.length(); i++) {
+                        JSONObject phone = (JSONObject) phones.get(i);
+                        String phoneId = getJsonString(phone, "id");
+                        // This is a new phone so do a DB insert
+                        if (phoneId == null) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+                            contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+                            contentValues.put(ContactsContract.CommonDataKinds.Phone.NUMBER, getJsonString(phone, "value"));
+                            contentValues.put(ContactsContract.CommonDataKinds.Phone.TYPE, getPhoneType(getJsonString(phone, "type")));
 
-                        ops.add(ContentProviderOperation.newInsert(
-                                ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
-                    }
-                    // This is an existing phone so do a DB update
-                    else {
-                        ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                                .withSelection(ContactsContract.CommonDataKinds.Phone._ID + "=? AND " +
-                                        ContactsContract.Data.MIMETYPE + "=?",
-                                        new String[] { phoneId, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE })
-                                .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, getJsonString(phone, "value"))
-                                .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, getPhoneType(getJsonString(phone, "type")))
-                                .build());
+                            ops.add(ContentProviderOperation.newInsert(
+                                    ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
+                        }
+                        // This is an existing phone so do a DB update
+                        else {
+                            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                                    .withSelection(ContactsContract.CommonDataKinds.Phone._ID + "=? AND " +
+                                            ContactsContract.Data.MIMETYPE + "=?",
+                                            new String[] { phoneId, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE })
+                                    .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, getJsonString(phone, "value"))
+                                    .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, getPhoneType(getJsonString(phone, "type")))
+                                    .build());
+                        }
                     }
                 }
             }
@@ -979,29 +991,40 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         try {
             emails = contact.getJSONArray("emails");
             if (emails != null) {
-                for (int i = 0; i < emails.length(); i++) {
-                    JSONObject email = (JSONObject) emails.get(i);
-                    String emailId = getJsonString(email, "id");
-                    // This is a new email so do a DB insert
-                    if (emailId == null) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
-                        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
-                        contentValues.put(ContactsContract.CommonDataKinds.Email.DATA, getJsonString(email, "value"));
-                        contentValues.put(ContactsContract.CommonDataKinds.Email.TYPE, getContactType(getJsonString(email, "type")));
+                // Delete all the emails
+                if (emails.length() == 0) {
+                    ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " +
+                                    ContactsContract.Data.MIMETYPE + "=?",
+                                    new String[] { "" + rawId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE })
+                            .build());
+                }
+                // Modify or add a email
+                else {
+                    for (int i = 0; i < emails.length(); i++) {
+                        JSONObject email = (JSONObject) emails.get(i);
+                        String emailId = getJsonString(email, "id");
+                        // This is a new email so do a DB insert
+                        if (emailId == null) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+                            contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+                            contentValues.put(ContactsContract.CommonDataKinds.Email.DATA, getJsonString(email, "value"));
+                            contentValues.put(ContactsContract.CommonDataKinds.Email.TYPE, getContactType(getJsonString(email, "type")));
 
-                        ops.add(ContentProviderOperation.newInsert(
-                                ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
-                    }
-                    // This is an existing email so do a DB update
-                    else {
-                        ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                                .withSelection(ContactsContract.CommonDataKinds.Email._ID + "=? AND " +
-                                        ContactsContract.Data.MIMETYPE + "=?",
-                                        new String[] { emailId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE })
-                                .withValue(ContactsContract.CommonDataKinds.Email.DATA, getJsonString(email, "value"))
-                                .withValue(ContactsContract.CommonDataKinds.Email.TYPE, getContactType(getJsonString(email, "type")))
-                                .build());
+                            ops.add(ContentProviderOperation.newInsert(
+                                    ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
+                        }
+                        // This is an existing email so do a DB update
+                        else {
+                            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                                    .withSelection(ContactsContract.CommonDataKinds.Email._ID + "=? AND " +
+                                            ContactsContract.Data.MIMETYPE + "=?",
+                                            new String[] { emailId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE })
+                                    .withValue(ContactsContract.CommonDataKinds.Email.DATA, getJsonString(email, "value"))
+                                    .withValue(ContactsContract.CommonDataKinds.Email.TYPE, getContactType(getJsonString(email, "type")))
+                                    .build());
+                        }
                     }
                 }
             }
@@ -1014,39 +1037,50 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         try {
             addresses = contact.getJSONArray("addresses");
             if (addresses != null) {
-                for (int i = 0; i < addresses.length(); i++) {
-                    JSONObject address = (JSONObject) addresses.get(i);
-                    String addressId = getJsonString(address, "id");
-                    // This is a new address so do a DB insert
-                    if (addressId == null) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
-                        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
-                        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, getAddressType(getJsonString(address, "type")));
-                        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, getJsonString(address, "formatted"));
-                        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.STREET, getJsonString(address, "streetAddress"));
-                        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.CITY, getJsonString(address, "locality"));
-                        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.REGION, getJsonString(address, "region"));
-                        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, getJsonString(address, "postalCode"));
-                        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, getJsonString(address, "country"));
+                // Delete all the addresses
+                if (addresses.length() == 0) {
+                    ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " +
+                                    ContactsContract.Data.MIMETYPE + "=?",
+                                    new String[] { "" + rawId, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE })
+                            .build());
+                }
+                // Modify or add a address
+                else {
+                    for (int i = 0; i < addresses.length(); i++) {
+                        JSONObject address = (JSONObject) addresses.get(i);
+                        String addressId = getJsonString(address, "id");
+                        // This is a new address so do a DB insert
+                        if (addressId == null) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+                            contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
+                            contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, getAddressType(getJsonString(address, "type")));
+                            contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, getJsonString(address, "formatted"));
+                            contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.STREET, getJsonString(address, "streetAddress"));
+                            contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.CITY, getJsonString(address, "locality"));
+                            contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.REGION, getJsonString(address, "region"));
+                            contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, getJsonString(address, "postalCode"));
+                            contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, getJsonString(address, "country"));
 
-                        ops.add(ContentProviderOperation.newInsert(
-                                ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
-                    }
-                    // This is an existing address so do a DB update
-                    else {
-                        ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                                .withSelection(ContactsContract.CommonDataKinds.StructuredPostal._ID + "=? AND " +
-                                        ContactsContract.Data.MIMETYPE + "=?",
-                                        new String[] { addressId, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE })
-                                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, getAddressType(getJsonString(address, "type")))
-                                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, getJsonString(address, "formatted"))
-                                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.STREET, getJsonString(address, "streetAddress"))
-                                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.CITY, getJsonString(address, "locality"))
-                                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.REGION, getJsonString(address, "region"))
-                                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, getJsonString(address, "postalCode"))
-                                .withValue(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, getJsonString(address, "country"))
-                                .build());
+                            ops.add(ContentProviderOperation.newInsert(
+                                    ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
+                        }
+                        // This is an existing address so do a DB update
+                        else {
+                            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                                    .withSelection(ContactsContract.CommonDataKinds.StructuredPostal._ID + "=? AND " +
+                                            ContactsContract.Data.MIMETYPE + "=?",
+                                            new String[] { addressId, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE })
+                                    .withValue(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, getAddressType(getJsonString(address, "type")))
+                                    .withValue(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, getJsonString(address, "formatted"))
+                                    .withValue(ContactsContract.CommonDataKinds.StructuredPostal.STREET, getJsonString(address, "streetAddress"))
+                                    .withValue(ContactsContract.CommonDataKinds.StructuredPostal.CITY, getJsonString(address, "locality"))
+                                    .withValue(ContactsContract.CommonDataKinds.StructuredPostal.REGION, getJsonString(address, "region"))
+                                    .withValue(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, getJsonString(address, "postalCode"))
+                                    .withValue(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, getJsonString(address, "country"))
+                                    .build());
+                        }
                     }
                 }
             }
@@ -1059,33 +1093,44 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         try {
             organizations = contact.getJSONArray("organizations");
             if (organizations != null) {
-                for (int i = 0; i < organizations.length(); i++) {
-                    JSONObject org = (JSONObject) organizations.get(i);
-                    String orgId = getJsonString(org, "id");
-                    // This is a new organization so do a DB insert
-                    if (orgId == null) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
-                        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
-                        contentValues.put(ContactsContract.CommonDataKinds.Organization.TYPE, getOrgType(getJsonString(org, "type")));
-                        contentValues.put(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, getJsonString(org, "department"));
-                        contentValues.put(ContactsContract.CommonDataKinds.Organization.COMPANY, getJsonString(org, "name"));
-                        contentValues.put(ContactsContract.CommonDataKinds.Organization.TITLE, getJsonString(org, "title"));
+                // Delete all the organizations
+                if (organizations.length() == 0) {
+                    ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " +
+                                    ContactsContract.Data.MIMETYPE + "=?",
+                                    new String[] { "" + rawId, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE })
+                            .build());
+                }
+                // Modify or add a organization
+                else {
+                    for (int i = 0; i < organizations.length(); i++) {
+                        JSONObject org = (JSONObject) organizations.get(i);
+                        String orgId = getJsonString(org, "id");
+                        // This is a new organization so do a DB insert
+                        if (orgId == null) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+                            contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
+                            contentValues.put(ContactsContract.CommonDataKinds.Organization.TYPE, getOrgType(getJsonString(org, "type")));
+                            contentValues.put(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, getJsonString(org, "department"));
+                            contentValues.put(ContactsContract.CommonDataKinds.Organization.COMPANY, getJsonString(org, "name"));
+                            contentValues.put(ContactsContract.CommonDataKinds.Organization.TITLE, getJsonString(org, "title"));
 
-                        ops.add(ContentProviderOperation.newInsert(
-                                ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
-                    }
-                    // This is an existing organization so do a DB update
-                    else {
-                        ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                                .withSelection(ContactsContract.CommonDataKinds.Organization._ID + "=? AND " +
-                                        ContactsContract.Data.MIMETYPE + "=?",
-                                        new String[] { orgId, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE })
-                                .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, getOrgType(getJsonString(org, "type")))
-                                .withValue(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, getJsonString(org, "department"))
-                                .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, getJsonString(org, "name"))
-                                .withValue(ContactsContract.CommonDataKinds.Organization.TITLE, getJsonString(org, "title"))
-                                .build());
+                            ops.add(ContentProviderOperation.newInsert(
+                                    ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
+                        }
+                        // This is an existing organization so do a DB update
+                        else {
+                            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                                    .withSelection(ContactsContract.CommonDataKinds.Organization._ID + "=? AND " +
+                                            ContactsContract.Data.MIMETYPE + "=?",
+                                            new String[] { orgId, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE })
+                                    .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, getOrgType(getJsonString(org, "type")))
+                                    .withValue(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, getJsonString(org, "department"))
+                                    .withValue(ContactsContract.CommonDataKinds.Organization.COMPANY, getJsonString(org, "name"))
+                                    .withValue(ContactsContract.CommonDataKinds.Organization.TITLE, getJsonString(org, "title"))
+                                    .build());
+                        }
                     }
                 }
             }
@@ -1098,29 +1143,40 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         try {
             ims = contact.getJSONArray("ims");
             if (ims != null) {
-                for (int i = 0; i < ims.length(); i++) {
-                    JSONObject im = (JSONObject) ims.get(i);
-                    String imId = getJsonString(im, "id");
-                    // This is a new IM so do a DB insert
-                    if (imId == null) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
-                        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE);
-                        contentValues.put(ContactsContract.CommonDataKinds.Im.DATA, getJsonString(im, "value"));
-                        contentValues.put(ContactsContract.CommonDataKinds.Im.TYPE, getContactType(getJsonString(im, "type")));
+                // Delete all the ims
+                if (ims.length() == 0) {
+                    ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " +
+                                    ContactsContract.Data.MIMETYPE + "=?",
+                                    new String[] { "" + rawId, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE })
+                            .build());
+                }
+                // Modify or add a im
+                else {
+                    for (int i = 0; i < ims.length(); i++) {
+                        JSONObject im = (JSONObject) ims.get(i);
+                        String imId = getJsonString(im, "id");
+                        // This is a new IM so do a DB insert
+                        if (imId == null) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+                            contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE);
+                            contentValues.put(ContactsContract.CommonDataKinds.Im.DATA, getJsonString(im, "value"));
+                            contentValues.put(ContactsContract.CommonDataKinds.Im.TYPE, getContactType(getJsonString(im, "type")));
 
-                        ops.add(ContentProviderOperation.newInsert(
-                                ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
-                    }
-                    // This is an existing IM so do a DB update
-                    else {
-                        ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                                .withSelection(ContactsContract.CommonDataKinds.Im._ID + "=? AND " +
-                                        ContactsContract.Data.MIMETYPE + "=?",
-                                        new String[] { imId, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE })
-                                .withValue(ContactsContract.CommonDataKinds.Im.DATA, getJsonString(im, "value"))
-                                .withValue(ContactsContract.CommonDataKinds.Im.TYPE, getContactType(getJsonString(im, "type")))
-                                .build());
+                            ops.add(ContentProviderOperation.newInsert(
+                                    ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
+                        }
+                        // This is an existing IM so do a DB update
+                        else {
+                            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                                    .withSelection(ContactsContract.CommonDataKinds.Im._ID + "=? AND " +
+                                            ContactsContract.Data.MIMETYPE + "=?",
+                                            new String[] { imId, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE })
+                                    .withValue(ContactsContract.CommonDataKinds.Im.DATA, getJsonString(im, "value"))
+                                    .withValue(ContactsContract.CommonDataKinds.Im.TYPE, getContactType(getJsonString(im, "type")))
+                                    .build());
+                        }
                     }
                 }
             }
@@ -1148,34 +1204,46 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                     .build());
         }
 
-        // Modify urls  
+        // Modify urls
         JSONArray websites = null;
         try {
-            websites = contact.getJSONArray("websites");
+            websites = contact.getJSONArray("urls");
             if (websites != null) {
-                for (int i = 0; i < websites.length(); i++) {
-                    JSONObject website = (JSONObject) websites.get(i);
-                    String websiteId = getJsonString(website, "id");
-                    // This is a new website so do a DB insert
-                    if (websiteId == null) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
-                        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
-                        contentValues.put(ContactsContract.CommonDataKinds.Website.DATA, getJsonString(website, "value"));
-                        contentValues.put(ContactsContract.CommonDataKinds.Website.TYPE, getContactType(getJsonString(website, "type")));
+                // Delete all the websites
+                if (websites.length() == 0) {
+                    Log.d(LOG_TAG, "This means we should be deleting all the phone numbers.");
+                    ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " +
+                                    ContactsContract.Data.MIMETYPE + "=?",
+                                    new String[] { "" + rawId, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE })
+                            .build());
+                }
+                // Modify or add a website
+                else {
+                    for (int i = 0; i < websites.length(); i++) {
+                        JSONObject website = (JSONObject) websites.get(i);
+                        String websiteId = getJsonString(website, "id");
+                        // This is a new website so do a DB insert
+                        if (websiteId == null) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+                            contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+                            contentValues.put(ContactsContract.CommonDataKinds.Website.DATA, getJsonString(website, "value"));
+                            contentValues.put(ContactsContract.CommonDataKinds.Website.TYPE, getContactType(getJsonString(website, "type")));
 
-                        ops.add(ContentProviderOperation.newInsert(
-                                ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
-                    }
-                    // This is an existing website so do a DB update
-                    else {
-                        ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                                .withSelection(ContactsContract.CommonDataKinds.Website._ID + "=? AND " +
-                                        ContactsContract.Data.MIMETYPE + "=?",
-                                        new String[] { websiteId, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE })
-                                .withValue(ContactsContract.CommonDataKinds.Website.DATA, getJsonString(website, "value"))
-                                .withValue(ContactsContract.CommonDataKinds.Website.TYPE, getContactType(getJsonString(website, "type")))
-                                .build());
+                            ops.add(ContentProviderOperation.newInsert(
+                                    ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
+                        }
+                        // This is an existing website so do a DB update
+                        else {
+                            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                                    .withSelection(ContactsContract.CommonDataKinds.Website._ID + "=? AND " +
+                                            ContactsContract.Data.MIMETYPE + "=?",
+                                            new String[] { websiteId, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE })
+                                    .withValue(ContactsContract.CommonDataKinds.Website.DATA, getJsonString(website, "value"))
+                                    .withValue(ContactsContract.CommonDataKinds.Website.TYPE, getContactType(getJsonString(website, "type")))
+                                    .build());
+                        }
                     }
                 }
             }
@@ -1201,30 +1269,41 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         try {
             photos = contact.getJSONArray("photos");
             if (photos != null) {
-                for (int i = 0; i < photos.length(); i++) {
-                    JSONObject photo = (JSONObject) photos.get(i);
-                    String photoId = getJsonString(photo, "id");
-                    byte[] bytes = getPhotoBytes(getJsonString(photo, "value"));
-                    // This is a new photo so do a DB insert
-                    if (photoId == null) {
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
-                        contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
-                        contentValues.put(ContactsContract.Data.IS_SUPER_PRIMARY, 1);
-                        contentValues.put(ContactsContract.CommonDataKinds.Photo.PHOTO, bytes);
+                // Delete all the photos
+                if (photos.length() == 0) {
+                    ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                            .withSelection(ContactsContract.Data.RAW_CONTACT_ID + "=? AND " +
+                                    ContactsContract.Data.MIMETYPE + "=?",
+                                    new String[] { "" + rawId, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE })
+                            .build());
+                }
+                // Modify or add a photo
+                else {
+                    for (int i = 0; i < photos.length(); i++) {
+                        JSONObject photo = (JSONObject) photos.get(i);
+                        String photoId = getJsonString(photo, "id");
+                        byte[] bytes = getPhotoBytes(getJsonString(photo, "value"));
+                        // This is a new photo so do a DB insert
+                        if (photoId == null) {
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
+                            contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
+                            contentValues.put(ContactsContract.Data.IS_SUPER_PRIMARY, 1);
+                            contentValues.put(ContactsContract.CommonDataKinds.Photo.PHOTO, bytes);
 
-                        ops.add(ContentProviderOperation.newInsert(
-                                ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
-                    }
-                    // This is an existing photo so do a DB update
-                    else {
-                        ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                                .withSelection(ContactsContract.CommonDataKinds.Photo._ID + "=? AND " +
-                                        ContactsContract.Data.MIMETYPE + "=?",
-                                        new String[] { photoId, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE })
-                                .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
-                                .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, bytes)
-                                .build());
+                            ops.add(ContentProviderOperation.newInsert(
+                                    ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
+                        }
+                        // This is an existing photo so do a DB update
+                        else {
+                            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                                    .withSelection(ContactsContract.CommonDataKinds.Photo._ID + "=? AND " +
+                                            ContactsContract.Data.MIMETYPE + "=?",
+                                            new String[] { photoId, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE })
+                                    .withValue(ContactsContract.Data.IS_SUPER_PRIMARY, 1)
+                                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, bytes)
+                                    .build());
+                        }
                     }
                 }
             }
@@ -1257,7 +1336,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Add a website to a list of database actions to be performed
-     * 
+     *
      * @param ops the list of database actions
      * @param website the item to be inserted
      */
@@ -1273,7 +1352,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Add an im to a list of database actions to be performed
-     * 
+     *
      * @param ops the list of database actions
      * @param im the item to be inserted
      */
@@ -1288,7 +1367,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Add an organization to a list of database actions to be performed
-     * 
+     *
      * @param ops the list of database actions
      * @param org the item to be inserted
      */
@@ -1306,7 +1385,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Add an address to a list of database actions to be performed
-     * 
+     *
      * @param ops the list of database actions
      * @param address the item to be inserted
      */
@@ -1327,7 +1406,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Add an email to a list of database actions to be performed
-     * 
+     *
      * @param ops the list of database actions
      * @param email the item to be inserted
      */
@@ -1343,7 +1422,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Add a phone to a list of database actions to be performed
-     * 
+     *
      * @param ops the list of database actions
      * @param phone the item to be inserted
      */
@@ -1359,7 +1438,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Add a phone to a list of database actions to be performed
-     * 
+     *
      * @param ops the list of database actions
      * @param phone the item to be inserted
      */
@@ -1376,10 +1455,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Gets the raw bytes from the supplied filename
-     * 
+     *
      * @param filename the file to read the bytes from
      * @return a byte array
-     * @throws IOException 
+     * @throws IOException
      */
     private byte[] getPhotoBytes(String filename) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -1406,10 +1485,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
        * Get an input stream based on file path or uri content://, http://, file://
-       * 
+       *
        * @param path
        * @return an input stream
-     * @throws IOException 
+     * @throws IOException
        */
     private InputStream getPathFromUri(String path) throws IOException {
         if (path.startsWith("content:")) {
@@ -1427,7 +1506,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * Creates a new contact and stores it in the database
-     * 
+     *
      * @param contact the contact to be saved
      * @param account the account to be saved under
      */
@@ -1551,10 +1630,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                     .build());
         }
 
-        // Add urls 
+        // Add urls
         JSONArray websites = null;
         try {
-            websites = contact.getJSONArray("websites");
+            websites = contact.getJSONArray("urls");
             if (websites != null) {
                 for (int i = 0; i < websites.length(); i++) {
                     JSONObject website = (JSONObject) websites.get(i);
@@ -1606,7 +1685,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     }
 
     @Override
-    /** 
+    /**
      * This method will remove a Contact from the database based on ID.
      * @param id the unique ID of the contact to remove
      */
@@ -1629,10 +1708,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
     }
 
     /**************************************************************************
-     *  
-     * All methods below this comment are used to convert from JavaScript 
+     *
+     * All methods below this comment are used to convert from JavaScript
      * text types to Android integer types and vice versa.
-     * 
+     *
      *************************************************************************/
 
     /**
@@ -1715,7 +1794,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * getPhoneType converts an Android phone type into a string
-     * @param type 
+     * @param type
      * @return phone type as string.
      */
     private String getPhoneType(int type) {
@@ -1815,7 +1894,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * getPhoneType converts an Android phone type into a string
-     * @param type 
+     * @param type
      * @return phone type as string.
      */
     private String getContactType(int type) {
@@ -1864,7 +1943,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * getPhoneType converts an Android phone type into a string
-     * @param type 
+     * @param type
      * @return phone type as string.
      */
     private String getOrgType(int type) {
@@ -1907,7 +1986,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
 
     /**
      * getPhoneType converts an Android phone type into a string
-     * @param type 
+     * @param type
      * @return phone type as string.
      */
     private String getAddressType(int type) {
