@@ -215,7 +215,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
         if (this.accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
 
             // Save time that event was received
-            this.timestamp = System.nanoTime();
+            this.timestamp = System.currentTimeMillis();
             this.x = event.values[0];
             this.y = event.values[1];
             this.z = event.values[2];
