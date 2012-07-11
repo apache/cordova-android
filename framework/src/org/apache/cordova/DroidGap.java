@@ -619,10 +619,12 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // If app doesn't want to run in background
         if (!this.keepRunning) {
-
             // Pause JavaScript timers (including setInterval)
             this.appView.pauseTimers();
         }
+
+        // hide the splash screen to avoid leaking a window
+        this.removeSplashScreen();
     }
 
     @Override
@@ -683,6 +685,9 @@ public class DroidGap extends Activity implements CordovaInterface {
     public void onDestroy() {
         LOG.d(TAG, "onDestroy()");
         super.onDestroy();
+
+        // hide the splash screen to avoid leaking a window
+        this.removeSplashScreen();
 
         if (this.appView != null) {
 
@@ -966,7 +971,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * Removes the Dialog that displays the splash screen
      */
     public void removeSplashScreen() {
-        if (splashDialog != null) {
+        if (splashDialog != null && splashDialog.isShowing()) {
             splashDialog.dismiss();
             splashDialog = null;
         }

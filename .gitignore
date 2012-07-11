@@ -2,6 +2,7 @@
 default.properties
 gen
 assets/www/cordova.js
+framework/assets/www/.tmp*
 local.properties
 framework/proguard.cfg
 framework/cordova.jar

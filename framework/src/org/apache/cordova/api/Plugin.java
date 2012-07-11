@@ -32,12 +32,12 @@ public abstract class Plugin implements IPlugin {
 
     public String id;
     public CordovaWebView webView;					// WebView object
-    public CordovaInterface ctx;			        // CordovaActivity object
+    public LegacyContext    ctx;			        // LegacyContext object
     public CordovaInterface cordova;
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action 		The action to execute.
      * @param args 			JSONArry of arguments for the plugin.
      * @param callbackId	The callback id used when calling back into JavaScript.
@@ -63,13 +63,13 @@ public abstract class Plugin implements IPlugin {
      */
     public void setContext(CordovaInterface ctx) {
         this.cordova = ctx;
-        this.ctx = cordova;
+        this.ctx = new LegacyContext(cordova);
     }
 
     /**
-     * Sets the main View of the application, this is the WebView within which 
+     * Sets the main View of the application, this is the WebView within which
      * a Cordova app runs.
-     * 
+     *
      * @param webView The Cordova WebView
      */
     public void setView(CordovaWebView webView) {
@@ -77,8 +77,8 @@ public abstract class Plugin implements IPlugin {
     }
 
     /**
-     * Called when the system is about to start resuming a previous activity. 
-     * 
+     * Called when the system is about to start resuming a previous activity.
+     *
      * @param multitasking		Flag indicating if multitasking is turned on for app
      */
     public void onPause(boolean multitasking) {
