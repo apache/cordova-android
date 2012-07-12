@@ -1,6 +1,6 @@
-// commit 5647225e12e18e15aefc33b151430d9a3804d9ea
+// commit 32e35b75c5ea2946dffebbc6cf4d0fbc16c0839e
 
-// File generated at :: Fri Jun 29 2012 12:32:24 GMT-0400 (EDT)
+// File generated at :: Thu Jul 12 2012 13:35:26 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -713,7 +713,6 @@ channel.create('onDestroy');
 
 // Channels that must fire before "deviceready" is fired.
 channel.waitForInitialization('onCordovaReady');
-channel.waitForInitialization('onCordovaInfoReady');
 channel.waitForInitialization('onCordovaConnectionReady');
 
 module.exports = channel;
@@ -847,6 +846,9 @@ module.exports = {
         },
         Coordinates: {
             path: 'cordova/plugin/Coordinates'
+        },
+        device: {
+            path: 'cordova/plugin/device'
         },
         DirectoryEntry: {
             path: 'cordova/plugin/DirectoryEntry'
@@ -1114,7 +1116,7 @@ module.exports = {
         // Let native code know we are all done on the JS side.
         // Native code will then un-hide the WebView.
         channel.join(function() {
-            prompt("", "gap_init:");
+            exec(null, null, "App", "show", []);
         }, [channel.onCordovaReady]);
     },
     objects: {
@@ -1135,9 +1137,6 @@ module.exports = {
                 }
             }
         },
-        device:{
-            path: "cordova/plugin/android/device"
-        },
         File: { // exists natively on Android WebView, override
             path: "cordova/plugin/File"
         },
@@ -1152,6 +1151,9 @@ module.exports = {
         }
     },
     merges: {
+        device: {
+            path: 'cordova/plugin/android/device'
+        },
         navigator: {
             children: {
                 notification: {
@@ -1873,7 +1875,7 @@ var utils = require('cordova/utils'),
  * {boolean} isDirectory always true (readonly)
  * {DOMString} name of the directory, excluding the path leading to it (readonly)
  * {DOMString} fullPath the absolute full path to the directory (readonly)
- * {FileSystem} filesystem on which the directory resides (readonly)
+ * TODO: implement this!!! {FileSystem} filesystem on which the directory resides (readonly)
  */
 var DirectoryEntry = function(name, fullPath) {
      DirectoryEntry.__super__.constructor.apply(this, [false, true, name, fullPath]);
@@ -2598,13 +2600,12 @@ var DirectoryEntry = require('cordova/plugin/DirectoryEntry');
 var FileSystem = function(name, root) {
     this.name = name || null;
     if (root) {
-        console.log('root.name ' + name);
-        console.log('root.root ' + root);
         this.root = new DirectoryEntry(root.name, root.fullPath);
     }
 };
 
 module.exports = FileSystem;
+
 });
 
 // file: lib/common/plugin/FileTransfer.js
@@ -3768,97 +3769,44 @@ module.exports = callback;
 define("cordova/plugin/android/device", function(require, exports, module) {
 var channel = require('cordova/channel'),
     utils = require('cordova/utils'),
-    exec = require('cordova/exec');
+    exec = require('cordova/exec'),
+    app = require('cordova/plugin/android/app');
 
-/**
- * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
- * phone, etc.
- * @constructor
- */
-function Device() {
-    this.available = false;
-    this.platform = null;
-    this.version = null;
-    this.name = null;
-    this.uuid = null;
-    this.cordova = null;
+module.exports = {
+    /*
+     * DEPRECATED
+     * This is only for Android.
+     *
+     * You must explicitly override the back button.
+     */
+    overrideBackButton:function() {
+        console.log("Device.overrideBackButton() is deprecated.  Use App.overrideBackbutton(true).");
+        app.overrideBackbutton(true);
+    },
 
-    var me = this;
+    /*
+     * DEPRECATED
+     * This is only for Android.
+     *
+     * This resets the back button to the default behaviour
+     */
+    resetBackButton:function() {
+        console.log("Device.resetBackButton() is deprecated.  Use App.overrideBackbutton(false).");
+        app.overrideBackbutton(false);
+    },
 
-    channel.onCordovaReady.subscribeOnce(function() {
-        me.getInfo(function(info) {
-            me.available = true;
-            me.platform = info.platform;
-            me.version = info.version;
-            me.name = info.name;
-            me.uuid = info.uuid;
-            me.cordova = info.cordova;
-            channel.onCordovaInfoReady.fire();
-        },function(e) {
-            me.available = false;
-            utils.alert("[ERROR] Error initializing Cordova: " + e);
-        });
-    });
-}
-
-/**
- * Get device info
- *
- * @param {Function} successCallback The function to call when the heading data is available
- * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
- */
-Device.prototype.getInfo = function(successCallback, errorCallback) {
-
-    // successCallback required
-    if (typeof successCallback !== "function") {
-        console.log("Device Error: successCallback is not a function");
-        return;
+    /*
+     * DEPRECATED
+     * This is only for Android.
+     *
+     * This terminates the activity!
+     */
+    exitApp:function() {
+        console.log("Device.exitApp() is deprecated.  Use App.exitApp().");
+        app.exitApp();
     }
-
-    // errorCallback optional
-    if (errorCallback && (typeof errorCallback !== "function")) {
-        console.log("Device Error: errorCallback is not a function");
-        return;
-    }
-
-    // Get info
-    exec(successCallback, errorCallback, "Device", "getDeviceInfo", []);
 };
 
-/*
- * DEPRECATED
- * This is only for Android.
- *
- * You must explicitly override the back button.
- */
-Device.prototype.overrideBackButton = function() {
-    console.log("Device.overrideBackButton() is deprecated.  Use App.overrideBackbutton(true).");
-    navigator.app.overrideBackbutton(true);
-};
-
-/*
- * DEPRECATED
- * This is only for Android.
- *
- * This resets the back button to the default behaviour
- */
-Device.prototype.resetBackButton = function() {
-    console.log("Device.resetBackButton() is deprecated.  Use App.overrideBackbutton(false).");
-    navigator.app.overrideBackbutton(false);
-};
-
-/*
- * DEPRECATED
- * This is only for Android.
- *
- * This terminates the activity!
- */
-Device.prototype.exitApp = function() {
-    console.log("Device.exitApp() is deprecated.  Use App.exitApp().");
-    navigator.app.exitApp();
-};
-
-module.exports = new Device();
 });
 
 // file: lib/android/plugin/android/notification.js
@@ -4841,6 +4789,74 @@ var contacts = {
 };
 
 module.exports = contacts;
+
+});
+
+// file: lib/common/plugin/device.js
+define("cordova/plugin/device", function(require, exports, module) {
+var channel = require('cordova/channel'),
+    utils = require('cordova/utils'),
+    exec = require('cordova/exec');
+
+// Tell cordova channel to wait on the CordovaInfoReady event
+channel.waitForInitialization('onCordovaInfoReady');
+
+/**
+ * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
+ * phone, etc.
+ * @constructor
+ */
+function Device() {
+    this.available = false;
+    this.platform = null;
+    this.version = null;
+    this.name = null;
+    this.uuid = null;
+    this.cordova = null;
+
+    var me = this;
+
+    channel.onCordovaReady.subscribeOnce(function() {
+        me.getInfo(function(info) {
+            me.available = true;
+            me.platform = info.platform;
+            me.version = info.version;
+            me.name = info.name;
+            me.uuid = info.uuid;
+            me.cordova = info.cordova;
+            channel.onCordovaInfoReady.fire();
+        },function(e) {
+            me.available = false;
+            utils.alert("[ERROR] Error initializing Cordova: " + e);
+        });
+    });
+}
+
+/**
+ * Get device info
+ *
+ * @param {Function} successCallback The function to call when the heading data is available
+ * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
+ */
+Device.prototype.getInfo = function(successCallback, errorCallback) {
+
+    // successCallback required
+    if (typeof successCallback !== "function") {
+        console.log("Device Error: successCallback is not a function");
+        return;
+    }
+
+    // errorCallback optional
+    if (errorCallback && (typeof errorCallback !== "function")) {
+        console.log("Device Error: errorCallback is not a function");
+        return;
+    }
+
+    // Get info
+    exec(successCallback, errorCallback, "Device", "getDeviceInfo", []);
+};
+
+module.exports = new Device();
 
 });
 

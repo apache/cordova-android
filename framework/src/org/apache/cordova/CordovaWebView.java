@@ -596,7 +596,12 @@ public class CordovaWebView extends WebView {
      *      <log level="DEBUG" />
      */
     private void loadConfiguration() {
-        int id = getResources().getIdentifier("cordova", "xml", this.cordova.getActivity().getPackageName());
+        int id = getResources().getIdentifier("config", "xml", this.cordova.getActivity().getPackageName());
+        if(id == 0)
+        {
+            id = getResources().getIdentifier("cordova", "xml", this.cordova.getActivity().getPackageName());   
+            Log.i("CordovaLog", "config.xml missing, reverting to cordova.xml");
+        }
         if (id == 0) {
             LOG.i("CordovaLog", "cordova.xml missing. Ignoring...");
             return;

@@ -48,7 +48,10 @@ public class App extends Plugin {
             if (action.equals("clearCache")) {
                 this.clearCache();
             }
-            else if (action.equals("show")) { // TODO @bc - Not in master branch.  When should this be called?
+            else if (action.equals("show")) {
+                // This gets called from JavaScript onCordovaReady to show the webview.
+                // I recommend we change the name of the Message as spinner/stop is not
+                // indicative of what this actually does (shows the webview).
                 cordova.getActivity().runOnUiThread(new Runnable() {
                     public void run() {
                         webView.postMessage("spinner", "stop");

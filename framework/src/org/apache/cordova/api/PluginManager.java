@@ -92,9 +92,16 @@ public class PluginManager {
      * Load plugins from res/xml/plugins.xml
      */
     public void loadPlugins() {
-        int id = this.ctx.getActivity().getResources().getIdentifier("plugins", "xml", this.ctx.getActivity().getPackageName());
+        int id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getPackageName());
+        if(id == 0)
+        {
+            id = this.ctx.getActivity().getResources().getIdentifier("plugins", "xml", this.ctx.getActivity().getPackageName());
+            LOG.i(TAG, "Using plugins.xml instead of config.xml.  plugins.xml will eventually be deprecated");
+        }
         if (id == 0) {
             this.pluginConfigurationMissing();
+            //We have the error, we need to exit without crashing!
+            return;
         }
         XmlResourceParser xml = this.ctx.getActivity().getResources().getXml(id);
         int eventType = -1;
@@ -361,9 +368,9 @@ public class PluginManager {
     }
 
     private void pluginConfigurationMissing() {
-        System.err.println("=====================================================================================");
-        System.err.println("ERROR: plugin.xml is missing.  Add res/xml/plugins.xml to your project.");
-        System.err.println("https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
-        System.err.println("=====================================================================================");
+        LOG.e(TAG, "=====================================================================================");
+        LOG.e(TAG, "ERROR: plugin.xml is missing.  Add res/xml/plugins.xml to your project.");
+        LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
+        LOG.e(TAG, "=====================================================================================");
     }
 }
