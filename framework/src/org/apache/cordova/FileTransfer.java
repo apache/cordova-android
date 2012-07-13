@@ -49,6 +49,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import android.webkit.CookieManager;
 
@@ -239,19 +240,17 @@ public class FileTransfer extends Plugin {
             String tailParams = LINE_END + LINE_START + BOUNDARY + LINE_START + LINE_END;
             byte[] fileNameBytes = fileName.getBytes("UTF-8");
 
-            // Should set this up as an option
-            if (chunkedMode) {
+            int stringLength = extraBytes.length + midParams.length() + tailParams.length() + fileNameBytes.length;
+            Log.d(LOG_TAG, "String Length: " + stringLength);
+            int fixedLength = (int) fileInputStream.getChannel().size() + stringLength;
+            Log.d(LOG_TAG, "Content Length: " + fixedLength);
+            // setFixedLengthStreamingMode causes and OutOfMemoryException on pre-Froyo devices.
+            // http://code.google.com/p/android/issues/detail?id=3164
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO && chunkedMode) {
                 conn.setChunkedStreamingMode(maxBufferSize);
+            } else {
+                conn.setFixedLengthStreamingMode(fixedLength);
             }
-            else
-            {
-              int stringLength = extraBytes.length + midParams.length() + tailParams.length() + fileNameBytes.length;
-              Log.d(LOG_TAG, "String Length: " + stringLength);
-              int fixedLength = (int) fileInputStream.getChannel().size() + stringLength;
-              Log.d(LOG_TAG, "Content Length: " + fixedLength);
-              conn.setFixedLengthStreamingMode(fixedLength);
-            }
-
 
             dos = new DataOutputStream( conn.getOutputStream() );
             //We don't want to change encoding, we just want this to write for all Unicode.
