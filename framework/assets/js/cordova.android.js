@@ -1,6 +1,6 @@
-// commit 32e35b75c5ea2946dffebbc6cf4d0fbc16c0839e
+// commit fd00bff18daf29606d88263f7586f20cf9421861
 
-// File generated at :: Thu Jul 12 2012 13:35:26 GMT-0700 (PDT)
+// File generated at :: Fri Jul 13 2012 15:09:46 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -1286,7 +1286,10 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
         popoverOptions = options.popoverOptions;
     }
 
-    exec(successCallback, errorCallback, "Camera", "takePicture", [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType, mediaType, allowEdit, correctOrientation, saveToPhotoAlbum, popoverOptions]);
+    var args = [quality, destinationType, sourceType, targetWidth, targetHeight, encodingType,
+                mediaType, allowEdit, correctOrientation, saveToPhotoAlbum, popoverOptions];
+
+    exec(successCallback, errorCallback, "Camera", "takePicture", args);
 };
 
 cameraExport.cleanup = function(successCallback, errorCallback) {
