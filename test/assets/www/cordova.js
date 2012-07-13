@@ -17,5 +17,5 @@
        under the License.
 */
 
-document.write('<script type="text/javascript" charset="utf-8" src="../cordova-1.7.0.js"></script>');
-document.write('<script type="text/javascript" charset="utf-8" src="cordova-1.7.0.js"></script>');
+document.write('<script type="text/javascript" charset="utf-8" src="../cordova.android.js"></script>');
+document.write('<script type="text/javascript" charset="utf-8" src="cordova.android.js"></script>');

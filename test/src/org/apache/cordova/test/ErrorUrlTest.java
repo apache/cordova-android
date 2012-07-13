@@ -44,11 +44,11 @@ public class ErrorUrlTest extends ActivityInstrumentationTestCase2<errorurl> {
 
   private void sleep() {
       try {
-        Thread.sleep(TIMEOUT);
+          Thread.sleep(TIMEOUT);
       } catch (InterruptedException e) {
-        fail("Unexpected Timeout");
+          fail("Unexpected Timeout");
       }
-    }
+  }
 
   
 }
