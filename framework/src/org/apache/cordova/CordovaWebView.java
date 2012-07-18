@@ -186,8 +186,9 @@ public class CordovaWebView extends WebView {
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
 
-        //Set the nav dump for HTC
-        settings.setNavDump(true);
+        //Set the nav dump for HTC 2.x devices (disabling for ICS/Jellybean)
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+            settings.setNavDump(true);
 
         // Enable database
         settings.setDatabaseEnabled(true);
