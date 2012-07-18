@@ -101,7 +101,7 @@ public class CordovaChromeClient extends WebChromeClient {
         dlg.setOnCancelListener(
                 new DialogInterface.OnCancelListener() {
                     public void onCancel(DialogInterface dialog) {
-                        result.confirm();
+                        result.cancel();
                     }
                 });
         dlg.setOnKeyListener(new DialogInterface.OnKeyListener() {
