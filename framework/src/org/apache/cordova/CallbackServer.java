@@ -55,7 +55,8 @@ public class CallbackServer implements Runnable {
 
     @SuppressWarnings("unused")
     private static final String LOG_TAG = "CallbackServer";
-
+    
+    private ServerSocket waitSocket;
     /**
      * The list of JavaScript statements to be sent to JavaScript.
      */
@@ -200,7 +201,7 @@ public class CallbackServer implements Runnable {
         try {
             this.active = true;
             String request;
-            ServerSocket waitSocket = new ServerSocket(0);
+            waitSocket = new ServerSocket(0);
             this.port = waitSocket.getLocalPort();
             //Log.d(LOG_TAG, "CallbackServer -- using port " +this.port);
             this.token = java.util.UUID.randomUUID().toString();
@@ -288,7 +289,9 @@ public class CallbackServer implements Runnable {
         //Log.d(LOG_TAG, "CallbackServer.stopServer()");
         if (this.active) {
             this.active = false;
-
+            
+            try { waitSocket.close(); } catch (IOException ignore) {}
+            
             // Break out of server wait
             synchronized (this) {
                 this.notify();
