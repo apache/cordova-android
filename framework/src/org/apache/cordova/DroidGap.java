@@ -38,6 +38,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -600,6 +601,8 @@ public class DroidGap extends Activity implements CordovaInterface {
     protected void onPause() {
         super.onPause();
 
+        LOG.d(TAG, "Paused the application!");
+        
         // Don't process pause if shutting down, since onDestroy() will be called
         if (this.activityState == ACTIVITY_EXITING) {
             return;
@@ -608,19 +611,9 @@ public class DroidGap extends Activity implements CordovaInterface {
         if (this.appView == null) {
             return;
         }
-
-        // Send pause event to JavaScript
-        this.appView.loadUrl("javascript:try{cordova.fireDocumentEvent('pause');}catch(e){console.log('exception firing pause event from native');};");
-
-        // Forward to plugins
-        if (this.appView.pluginManager != null) {
-            this.appView.pluginManager.onPause(this.keepRunning);
-        }
-
-        // If app doesn't want to run in background
-        if (!this.keepRunning) {
-            // Pause JavaScript timers (including setInterval)
-            this.appView.pauseTimers();
+        else
+        {
+            this.appView.handlePause(this.keepRunning);
         }
 
         // hide the splash screen to avoid leaking a window
@@ -633,11 +626,9 @@ public class DroidGap extends Activity implements CordovaInterface {
      **/
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-
         //Forward to plugins
-        if ((this.appView != null) && (this.appView.pluginManager != null)) {
-            this.appView.pluginManager.onNewIntent(intent);
-        }
+        if (this.appView != null)
+           this.appView.onNewIntent(intent);
     }
 
     @Override
@@ -647,6 +638,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     protected void onResume() {
         super.onResume();
 
+        LOG.d(TAG, "Resuming the App");
         if (this.activityState == ACTIVITY_STARTING) {
             this.activityState = ACTIVITY_RUNNING;
             return;
@@ -656,13 +648,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             return;
         }
 
-        // Send resume event to JavaScript
-        this.appView.loadUrl("javascript:try{cordova.fireDocumentEvent('resume');}catch(e){console.log('exception firing resume event from native');};");
-
-        // Forward to plugins
-        if (this.appView.pluginManager != null) {
-            this.appView.pluginManager.onResume(this.keepRunning || this.activityResultKeepRunning);
-        }
+        this.appView.handleResume(this.keepRunning, this.activityResultKeepRunning);
 
         // If app doesn't want to run in background
         if (!this.keepRunning || this.activityResultKeepRunning) {
@@ -672,9 +658,6 @@ public class DroidGap extends Activity implements CordovaInterface {
                 this.keepRunning = this.activityResultKeepRunning;
                 this.activityResultKeepRunning = false;
             }
-
-            // Resume JavaScript timers (including setInterval)
-            this.appView.resumeTimers();
         }
     }
 
@@ -690,17 +673,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.removeSplashScreen();
 
         if (this.appView != null) {
-
-            // Send destroy event to JavaScript
-            this.appView.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
-
-            // Load blank page so that JavaScript onunload is called
-            this.appView.loadUrl("about:blank");
-
-            // Forward to plugins
-            if (this.appView.pluginManager != null) {
-                this.appView.pluginManager.onDestroy();
-            }
+            appView.handleDestroy();
         }
         else {
             this.endActivity();

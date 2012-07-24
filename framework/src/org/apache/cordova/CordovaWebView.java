@@ -785,4 +785,62 @@ public class CordovaWebView extends WebView {
     {
         return this.bound;
     }
+    
+    public void handlePause(boolean keepRunning)
+    {
+        // Send pause event to JavaScript
+        this.loadUrl("javascript:try{cordova.fireDocumentEvent('pause');}catch(e){console.log('exception firing pause event from native');};");
+
+        // Forward to plugins
+        if (this.pluginManager != null) {
+            this.pluginManager.onPause(keepRunning);
+        }
+
+        // If app doesn't want to run in background
+        if (keepRunning) {
+            // Pause JavaScript timers (including setInterval)
+            this.pauseTimers();
+        }
+   
+    }
+    
+    public void handleResume(boolean keepRunning, boolean activityResultKeepRunning)
+    {
+
+        // Send resume event to JavaScript
+        this.loadUrl("javascript:try{cordova.fireDocumentEvent('resume');}catch(e){console.log('exception firing resume event from native');};");
+
+        // Forward to plugins
+        if (this.pluginManager != null) {
+            this.pluginManager.onResume(keepRunning);
+        }
+
+        // If app doesn't want to run in background
+        if (!keepRunning || activityResultKeepRunning) {
+            // Resume JavaScript timers (including setInterval)
+            this.resumeTimers();
+        }
+    }
+    
+    public void handleDestroy()
+    {
+        // Send destroy event to JavaScript
+        this.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
+
+        // Load blank page so that JavaScript onunload is called
+        this.loadUrl("about:blank");
+
+        // Forward to plugins
+        if (this.pluginManager != null) {
+            this.pluginManager.onDestroy();
+        }
+    }
+    
+    public void onNewIntent(Intent intent)
+    {
+        //Forward to plugins
+        if (this.pluginManager != null) {
+            this.pluginManager.onNewIntent(intent);
+        }
+    }
 }
