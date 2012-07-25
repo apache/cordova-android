@@ -740,10 +740,10 @@ public class DroidGap extends Activity implements CordovaInterface {
     }
 
     /**
-     * Stop spinner.
+     * Stop spinner - Must be called from UI thread
      */
     public void spinnerStop() {
-        if (this.spinnerDialog != null) {
+        if (this.spinnerDialog != null && this.spinnerDialog.isShowing()) {
             this.spinnerDialog.dismiss();
             this.spinnerDialog = null;
         }
@@ -811,10 +811,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     public void onReceivedError(final int errorCode, final String description, final String failingUrl) {
         final DroidGap me = this;
-
-        // Stop "app loading" spinner if showing
-        this.spinnerStop();
-
+        
         // If errorUrl specified, then load it
         final String errorUrl = me.getStringProperty("errorUrl", null);
         if ((errorUrl != null) && (errorUrl.startsWith("file://") || errorUrl.indexOf(me.baseUrl) == 0 || this.appView.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
@@ -822,6 +819,8 @@ public class DroidGap extends Activity implements CordovaInterface {
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {
                 public void run() {
+                    // Stop "app loading" spinner if showing
+                    me.spinnerStop();
                     me.appView.showWebPage(errorUrl, false, true, null);
                 }
             });
