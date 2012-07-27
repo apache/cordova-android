@@ -81,6 +81,8 @@ public class CordovaWebView extends WebView {
 
     private boolean volumeupBound;
 
+    private boolean handleButton = false;
+
     /**
      * Constructor.
      *
@@ -749,7 +751,6 @@ public class CordovaWebView extends WebView {
             return super.onKeyUp(keyCode, event);
         }
 
-
         Log.d(TAG, "KeyUp has been triggered on the view");
         return false;
     }
@@ -788,6 +789,7 @@ public class CordovaWebView extends WebView {
     
     public void handlePause(boolean keepRunning)
     {
+        LOG.d(TAG, "Handle the pause");
         // Send pause event to JavaScript
         this.loadUrl("javascript:try{cordova.fireDocumentEvent('pause');}catch(e){console.log('exception firing pause event from native');};");
 
@@ -842,5 +844,9 @@ public class CordovaWebView extends WebView {
         if (this.pluginManager != null) {
             this.pluginManager.onNewIntent(intent);
         }
+    }
+
+    public boolean hadKeyEvent() {
+        return handleButton;
     }
 }
