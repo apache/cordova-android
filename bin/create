@@ -67,12 +67,12 @@ function replace {
     local pattern=$1  
     local filename=$2
     # Mac OS X requires -i argument
-    if [ $OSTYPE = 'darwin11' ]
+    if [[ "$OSTYPE" =~ "darwin" ]]
     then
-        sed -i '' -e $pattern "$filename"
-    elif [ $OSTYPE = 'linux-gnu' ]
+        /usr/bin/sed -i '' -e $pattern "$filename"
+    elif [[ "$OSTYPE" =~ "linux" ]]
     then
-        sed -i -e $pattern "$filename"
+        /bin/sed -i -e $pattern "$filename"
     fi
 }
 
