@@ -51,7 +51,7 @@
     <application android:icon="@drawable/icon" android:label="@string/app_name"
         android:debuggable="true">
         <activity android:name=".StandAlone" android:windowSoftInputMode="adjustPan"
-                  android:label="@string/app_name" android:configChanges="orientation|keyboardHidden">
+               android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

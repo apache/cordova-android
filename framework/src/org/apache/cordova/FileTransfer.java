@@ -115,6 +115,11 @@ public class FileTransfer extends Plugin {
             if (params == null) params = new JSONObject();
             boolean trustEveryone = args.optBoolean(6);
             boolean chunkedMode = args.optBoolean(7) || args.isNull(7); //Always use chunked mode unless set to false as per API
+            JSONObject headers = args.optJSONObject(8);
+        	// Look for headers on the params map for backwards compatibility with older Cordova versions.
+            if (headers == null && params != null) {
+                headers = params.optJSONObject("headers");
+            }
 
             Log.d(LOG_TAG, "fileKey: " + fileKey);
             Log.d(LOG_TAG, "fileName: " + fileName);
@@ -122,6 +127,7 @@ public class FileTransfer extends Plugin {
             Log.d(LOG_TAG, "params: " + params);
             Log.d(LOG_TAG, "trustEveryone: " + trustEveryone);
             Log.d(LOG_TAG, "chunkedMode: " + chunkedMode);
+            Log.d(LOG_TAG, "headers: " + headers);
 
             // Create return object
             FileUploadResult result = new FileUploadResult();
@@ -177,25 +183,32 @@ public class FileTransfer extends Plugin {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
-
-            // Handle the other headers
-            try {
-              JSONObject headers = params.getJSONObject("headers");
-              for (Iterator iter = headers.keys(); iter.hasNext();)
-              {
-                String headerKey = iter.next().toString();
-                conn.setRequestProperty(headerKey, headers.getString(headerKey));
-              }
-            } catch (JSONException e1) {
-              // No headers to be manipulated!
-            }
-
+            
             // Set the cookies on the response
             String cookie = CookieManager.getInstance().getCookie(target);
             if (cookie != null) {
                 conn.setRequestProperty("Cookie", cookie);
             }
 
+            // Handle the other headers
+            if (headers != null) {
+                try {
+                    for (Iterator iter = headers.keys(); iter.hasNext(); ) {
+                        String headerKey = iter.next().toString();
+                        JSONArray headerValues = headers.optJSONArray(headerKey);
+                        if (headerValues == null) {
+                            headerValues = new JSONArray();
+                            headerValues.put(headers.getString(headerKey));
+                        }
+                        conn.setRequestProperty(headerKey, headerValues.getString(0));
+                        for (int i = 1; i < headerValues.length(); ++i) {
+                            conn.addRequestProperty(headerKey, headerValues.getString(i));
+                        }
+                    }
+                } catch (JSONException e1) {
+                  // No headers to be manipulated!
+                }
+            }
 
             /*
                 * Store the non-file portions of the multipart data as a string, so that we can add it

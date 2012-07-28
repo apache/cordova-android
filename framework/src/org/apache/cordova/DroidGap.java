@@ -1032,5 +1032,20 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
         return null;
     }
+    
 
+    /*
+     * (non-Javadoc)
+     * @see android.app.Activity#onKeyUp(int, android.view.KeyEvent)
+     */
+    
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event)
+    {
+        if (appView.backHistory() || keyCode != KeyEvent.KEYCODE_BACK)
+            return appView.onKeyUp(keyCode, event);
+        else 
+            return super.onKeyUp(keyCode, event);
+    }
+  
 }
