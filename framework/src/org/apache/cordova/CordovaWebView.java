@@ -191,6 +191,11 @@ public class CordovaWebView extends WebView {
         //Set the nav dump for HTC 2.x devices (disabling for ICS/Jellybean)
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
             settings.setNavDump(true);
+        
+        //Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
+        //while we do this
+        if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+            settings.setAllowUniversalAccessFromFileURLs(true);
 
         // Enable database
         settings.setDatabaseEnabled(true);
