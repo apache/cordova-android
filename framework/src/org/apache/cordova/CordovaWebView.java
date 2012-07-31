@@ -194,9 +194,10 @@ public class CordovaWebView extends WebView {
         
         //Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         //while we do this
+        /*
         if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
             settings.setAllowUniversalAccessFromFileURLs(true);
-
+        */
         // Enable database
         settings.setDatabaseEnabled(true);
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
