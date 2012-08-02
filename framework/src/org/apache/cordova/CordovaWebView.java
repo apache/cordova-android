@@ -730,9 +730,6 @@ public class CordovaWebView extends WebView {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-
-        Log.d(TAG, "KeyDown has been triggered on the view");
-
         // If back key
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // If back key is bound, then send event to JavaScript
@@ -768,8 +765,8 @@ public class CordovaWebView extends WebView {
             return super.onKeyUp(keyCode, event);
         }
 
-        Log.d(TAG, "KeyUp has been triggered on the view");
-        return false;
+        //Does webkit change this behaviour?
+        return super.onKeyUp(keyCode, event);
     }
 
     
