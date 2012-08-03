@@ -57,6 +57,7 @@ public class CordovaWebView extends WebView {
 
     public PluginManager pluginManager;
     public CallbackServer callbackServer;
+    private boolean paused;
 
 
     /** Actvities and other important classes **/
@@ -817,6 +818,7 @@ public class CordovaWebView extends WebView {
             // Pause JavaScript timers (including setInterval)
             this.pauseTimers();
         }
+        paused = true;
    
     }
     
@@ -836,6 +838,7 @@ public class CordovaWebView extends WebView {
             // Resume JavaScript timers (including setInterval)
             this.resumeTimers();
         }
+        paused = false;
     }
     
     public void handleDestroy()
@@ -858,6 +861,11 @@ public class CordovaWebView extends WebView {
         if (this.pluginManager != null) {
             this.pluginManager.onNewIntent(intent);
         }
+    }
+    
+    public boolean isPaused()
+    {
+        return paused;
     }
 
     public boolean hadKeyEvent() {

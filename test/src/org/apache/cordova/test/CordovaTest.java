@@ -21,6 +21,7 @@ package org.apache.cordova.test;
 import org.apache.cordova.CordovaWebView;
 import com.phonegap.api.PluginManager;
 
+import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
 
@@ -98,6 +99,7 @@ public class CordovaTest extends
     assertTrue(url.equals("file:///android_asset/www/index.html"));
   }
   */
+  
 
   private void sleep() {
     try {

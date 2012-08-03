@@ -22,6 +22,7 @@ package org.apache.cordova.test;
 import org.apache.cordova.CordovaWebView;
 import com.phonegap.api.PluginManager;
 
+import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -32,6 +33,8 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<Cordov
     private FrameLayout containerView;
     private LinearLayout innerContainer;
     private CordovaWebView testView;
+    private Instrumentation mInstr;
+    private int TIMEOUT = 1000;
     
     @SuppressWarnings("deprecation")
     public CordovaActivityTest()
@@ -41,6 +44,7 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<Cordov
     
     protected void setUp() throws Exception {
         super.setUp();
+        mInstr = this.getInstrumentation();
         testActivity = this.getActivity();
         containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
         innerContainer = (LinearLayout) containerView.getChildAt(0);
@@ -63,6 +67,23 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<Cordov
         String className = innerContainer.getClass().getSimpleName();
         assertTrue(className.equals("LinearLayoutSoftKeyboardDetect"));
     }
+    
 
-
+    public void testPauseAndResume()
+    {
+        mInstr.callActivityOnPause(testActivity);
+        sleep();
+        assertTrue(testView.isPaused());
+        mInstr.callActivityOnResume(testActivity);
+        sleep();
+        assertFalse(testView.isPaused());
+    }
+    
+    private void sleep() {
+        try {
+          Thread.sleep(TIMEOUT);
+        } catch (InterruptedException e) {
+          fail("Unexpected Timeout");
+        }
+    }
 }
