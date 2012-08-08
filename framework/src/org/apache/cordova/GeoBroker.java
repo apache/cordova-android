@@ -59,36 +59,43 @@ public class GeoBroker extends Plugin {
             this.networkListener = new NetworkListener(this.locationManager, this);
             this.gpsListener = new GPSListener(this.locationManager, this);
         }
+        
         PluginResult.Status status = PluginResult.Status.NO_RESULT;
-        String message = "";
+        String message = "Location API is not available for this device.";
         PluginResult result = new PluginResult(status, message);
-        result.setKeepCallback(true);
-
-        try {
-            if (action.equals("getLocation")) {
-                boolean enableHighAccuracy = args.getBoolean(0);
-                int maximumAge = args.getInt(1);
-                Location last = this.locationManager.getLastKnownLocation((enableHighAccuracy ? LocationManager.GPS_PROVIDER : LocationManager.NETWORK_PROVIDER));
-                // Check if we can use lastKnownLocation to get a quick reading and use less battery
-                if ((System.currentTimeMillis() - last.getTime()) <= maximumAge) {
-                    result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(last));
-                } else {
-                    this.getCurrentLocation(callbackId, enableHighAccuracy);
-                }
-            }
-            else if (action.equals("addWatch")) {
-                String id = args.getString(0);
-                boolean enableHighAccuracy = args.getBoolean(1);
-                this.addWatch(id, callbackId, enableHighAccuracy);
-            }
-            else if (action.equals("clearWatch")) {
-                String id = args.getString(0);
-                this.clearWatch(id);
-            }
-        } catch (JSONException e) {
-            result = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.getMessage());
+        
+        if ( locationManager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ||
+        	 locationManager.isProviderEnabled( LocationManager.NETWORK_PROVIDER )) {
+    		
+	        result.setKeepCallback(true);
+	
+	        try {
+	            if (action.equals("getLocation")) {
+	                boolean enableHighAccuracy = args.getBoolean(0);
+	                int maximumAge = args.getInt(1);
+	                Location last = this.locationManager.getLastKnownLocation((enableHighAccuracy ? LocationManager.GPS_PROVIDER : LocationManager.NETWORK_PROVIDER));
+	                // Check if we can use lastKnownLocation to get a quick reading and use less battery
+	                if ((System.currentTimeMillis() - last.getTime()) <= maximumAge) {
+	                    result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(last));
+	                } else {
+	                    this.getCurrentLocation(callbackId, enableHighAccuracy);
+	                }
+	            }
+	            else if (action.equals("addWatch")) {
+	                String id = args.getString(0);
+	                boolean enableHighAccuracy = args.getBoolean(1);
+	                this.addWatch(id, callbackId, enableHighAccuracy);
+	            }
+	            else if (action.equals("clearWatch")) {
+	                String id = args.getString(0);
+	                this.clearWatch(id);
+	            }
+	        } catch (JSONException e) {
+	            result = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.getMessage());
+	        }
         }
         return result;
+        
     }
 
     private void clearWatch(String id) {
