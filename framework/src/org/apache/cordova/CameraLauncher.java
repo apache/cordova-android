@@ -273,20 +273,21 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
 
         // If CAMERA
         if (srcType == CAMERA) {
-            // Create an ExifHelper to save the exif data that is lost during compression
-            ExifHelper exif = new ExifHelper();
-            try {
-                if (this.encodingType == JPEG) {
-                    exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/.Pic.jpg");
-                    exif.readExifData();
-                    rotate = exif.getOrientation();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             // If image available
             if (resultCode == Activity.RESULT_OK) {
                 try {
+                    // Create an ExifHelper to save the exif data that is lost during compression
+                    ExifHelper exif = new ExifHelper();
+                    try {
+                        if (this.encodingType == JPEG) {
+                            exif.createInFile(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/.Pic.jpg");
+                            exif.readExifData();
+                            rotate = exif.getOrientation();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                     Bitmap bitmap = null;
                     Uri uri = null;
 
