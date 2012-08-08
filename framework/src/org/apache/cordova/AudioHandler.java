@@ -66,13 +66,13 @@ public class AudioHandler extends Plugin {
 
         try {
             if (action.equals("startRecordingAudio")) {
-                this.startRecordingAudio(args.getString(0), args.getString(1));
+                this.startRecordingAudio(args.getString(0), FileUtils.stripFileProtocol(args.getString(1)));
             }
             else if (action.equals("stopRecordingAudio")) {
                 this.stopRecordingAudio(args.getString(0));
             }
             else if (action.equals("startPlayingAudio")) {
-                this.startPlayingAudio(args.getString(0), args.getString(1));
+                this.startPlayingAudio(args.getString(0), FileUtils.stripFileProtocol(args.getString(1)));
             }
             else if (action.equals("seekToAudio")) {
                 this.seekToAudio(args.getString(0), args.getInt(1));
@@ -97,10 +97,10 @@ public class AudioHandler extends Plugin {
                 return new PluginResult(status, f);
             }
             else if (action.equals("create")) {
-            	String id = args.getString(0);
-            	String src = args.getString(1);
-            	AudioPlayer audio = new AudioPlayer(this, id, src);
-            	this.players.put(id, audio);
+                String id = args.getString(0);
+                String src = FileUtils.stripFileProtocol(args.getString(1));
+                AudioPlayer audio = new AudioPlayer(this, id, src);
+                this.players.put(id, audio);
             }
             else if (action.equals("release")) {
                 boolean b = this.release(args.getString(0));
@@ -198,12 +198,12 @@ public class AudioHandler extends Plugin {
      * @param file				The name of the file
      */
     public void startRecordingAudio(String id, String file) {
-    	AudioPlayer audio = this.players.get(id);
-    	if ( audio == null) {
-    	    audio = new AudioPlayer(this, id, file);
+        AudioPlayer audio = this.players.get(id);
+        if ( audio == null) {
+            audio = new AudioPlayer(this, id, file);
             this.players.put(id, audio);
-    	}
-    	audio.startRecording(file);
+        }
+        audio.startRecording(file);
     }
 
     /**
