@@ -49,7 +49,7 @@ public class Notification extends Plugin {
 
     /**
      * Executes the request and returns PluginResult.
-     * 
+     *
      * @param action    The action to execute.
      * @param args      JSONArry of arguments for the plugin.
      * @param callbackId  The callback id used when calling back into JavaScript.
@@ -101,7 +101,7 @@ public class Notification extends Plugin {
 
     /**
      * Identifies if action to be executed returns a value and should be run synchronously.
-     * 
+     *
      * @param action  The action to execute
      * @return      T=returns value
      */
@@ -138,7 +138,7 @@ public class Notification extends Plugin {
 
     /**
      * Beep plays the default notification ringtone.
-     * 
+     *
      * @param count     Number of times to play notification
      */
     public void beep(long count) {
@@ -163,7 +163,7 @@ public class Notification extends Plugin {
 
     /**
      * Vibrates the device for the specified amount of time.
-     * 
+     *
      * @param time      Time to vibrate in ms.
      */
     public void vibrate(long time) {
@@ -179,7 +179,7 @@ public class Notification extends Plugin {
      * Builds and shows a native Android alert with given Strings
      * @param message     The message the alert should display
      * @param title     The title of the alert
-     * @param buttonLabel   The label of the button 
+     * @param buttonLabel   The label of the button
      * @param callbackId  The callback id
      */
     public synchronized void alert(final String message, final String title, final String buttonLabel, final String callbackId) {
@@ -193,7 +193,7 @@ public class Notification extends Plugin {
                 AlertDialog.Builder dlg = new AlertDialog.Builder(cordova.getActivity());
                 dlg.setMessage(message);
                 dlg.setTitle(title);
-                dlg.setCancelable(false);
+                dlg.setCancelable(true);
                 dlg.setPositiveButton(buttonLabel,
                         new AlertDialog.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
@@ -212,7 +212,7 @@ public class Notification extends Plugin {
      * Builds and shows a native Android confirm dialog with given title, message, buttons.
      * This dialog only shows up to 3 buttons.  Any labels after that will be ignored.
      * The index of the button pressed will be returned to the JavaScript callback identified by callbackId.
-     * 
+     *
      * @param message     The message the dialog should display
      * @param title     The title of the dialog
      * @param buttonLabels  A comma separated list of button labels (Up to 3 buttons)
@@ -229,7 +229,7 @@ public class Notification extends Plugin {
                 AlertDialog.Builder dlg = new AlertDialog.Builder(cordova.getActivity());
                 dlg.setMessage(message);
                 dlg.setTitle(title);
-                dlg.setCancelable(false);
+                dlg.setCancelable(true);
 
                 // First button
                 if (fButtons.length > 0) {
@@ -274,7 +274,7 @@ public class Notification extends Plugin {
 
     /**
      * Show the spinner.
-     * 
+     *
      * @param title     Title of the dialog
      * @param message   The message of the dialog
      */
@@ -310,7 +310,7 @@ public class Notification extends Plugin {
 
     /**
      * Show the progress dialog.
-     * 
+     *
      * @param title     Title of the dialog
      * @param message   The message of the dialog
      */
@@ -344,7 +344,7 @@ public class Notification extends Plugin {
 
     /**
      * Set value of progress bar.
-     * 
+     *
      * @param value     0-100
      */
     public synchronized void progressValue(int value) {
