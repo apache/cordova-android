@@ -49,11 +49,11 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 
     // AudioPlayer states
     public enum STATE { MEDIA_NONE,
-                        MEDIA_LOADING,
                         MEDIA_STARTING,
                         MEDIA_RUNNING,
                         MEDIA_PAUSED,
-                        MEDIA_STOPPED
+                        MEDIA_STOPPED,
+                        MEDIA_LOADING
                       };
 
     private static final String LOG_TAG = "AudioPlayer";
@@ -397,7 +397,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      */
     private void setState(STATE state) {
         if (this.state != state) {
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_STATE + ", " + this.state.ordinal() + ");");
+            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_STATE + ", " + state.ordinal() + ");");
         }
         this.state = state;
     }
