@@ -2,8 +2,10 @@ package org.apache.cordova.api;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -107,5 +109,23 @@ public class LegacyContext implements CordovaInterface {
     public Resources getResources() {
         Log.i(LOG_TAG, "Replace ctx.getResources() with cordova.getActivity().getResources()");
         return this.cordova.getActivity().getResources();
+    }
+
+    @Deprecated
+    public ComponentName startService(Intent service) {
+        Log.i(LOG_TAG, "Replace ctx.startService() with cordova.getActivity().startService()");
+        return this.cordova.getActivity().startService(service);
+    }
+
+    @Deprecated
+    public boolean bindService(Intent service, ServiceConnection conn, int flags) {
+        Log.i(LOG_TAG, "Replace ctx.bindService() with cordova.getActivity().bindService()");
+        return this.cordova.getActivity().bindService(service, conn, flags);
+    }
+
+    @Deprecated
+    public void unbindService(ServiceConnection conn) {
+        Log.i(LOG_TAG, "Replace ctx.unbindService() with cordova.getActivity().unbindService()");
+        this.cordova.getActivity().unbindService(conn);
     }
 }
