@@ -43,10 +43,10 @@ import org.apache.cordova.AudioPlayer.MODE;
  *      sdcard:             file name is just sound.mp3
  */
 public class AudioPlayer implements OnCompletionListener, OnPreparedListener, OnErrorListener {
-    
+
     // AudioPlayer modes
     public enum MODE { NONE, PLAY, RECORD };
-    
+
     // AudioPlayer states
     public enum STATE { MEDIA_NONE,
                         MEDIA_LOADING,
@@ -55,7 +55,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                         MEDIA_PAUSED,
                         MEDIA_STOPPED
                       };
-    
+
     private static final String LOG_TAG = "AudioPlayer";
 
     // AudioPlayer message ids
@@ -70,7 +70,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     private static int MEDIA_ERR_NETWORK        = 2;
     private static int MEDIA_ERR_DECODE         = 3;
     private static int MEDIA_ERR_NONE_SUPPORTED = 4;
-    
+
     private AudioHandler handler;           // The AudioHandler object
     private String id;                      // The id of this player (used to identify Media object in JavaScript)
     private MODE mode = MODE.NONE;          // Playback or Recording mode
@@ -81,26 +81,26 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 
     private MediaRecorder recorder = null;  // Audio recording object
     private String tempFile = null;         // Temporary recording file name
-    
+
     private MediaPlayer player = null;      // Audio player object
     private boolean prepareOnly = true;     // playback after file prepare flag
     private int seekOnPrepared = 0;     // seek to this location once media is prepared
 
     /**
      * Constructor.
-     * 
+     *
      * @param handler           The audio handler object
      * @param id                The id of this audio player
      */
     public AudioPlayer(AudioHandler handler, String id, String file) {
         this.handler = handler;
         this.id = id;
-        this.audioFile = file;  
+        this.audioFile = file;
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.mp3";
+            this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.3gp";
         } else {
-            this.tempFile = "/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/tmprecording.mp3";
+            this.tempFile = "/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/tmprecording.3gp";
         }
 
     }
@@ -127,7 +127,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 
     /**
      * Start recording the specified file.
-     * 
+     *
      * @param file              The name of the file
      */
     public void startRecording(String file) {
@@ -202,10 +202,10 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     //==========================================================================
     // Playback
     //==========================================================================
-    
+
     /**
      * Start or resume playing audio file.
-     * 
+     *
      * @param file              The name of the audio file.
      */
     public void startPlaying(String file) {
@@ -264,8 +264,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 
     /**
      * Callback to be invoked when playback of a media source has completed.
-     * 
-     * @param player           The MediaPlayer that reached the end of the file 
+     *
+     * @param player           The MediaPlayer that reached the end of the file
      */
     public void onCompletion(MediaPlayer player) {
         this.setState(STATE.MEDIA_STOPPED);
@@ -273,7 +273,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 
     /**
      * Get current position of playback.
-     * 
+     *
      * @return                  position in msec or -1 if not playing
      */
     public long getCurrentPosition() {
@@ -290,7 +290,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     /**
      * Determine if playback file is streaming or local.
      * It is streaming if file name starts with "http://"
-     * 
+     *
      * @param file              The file name
      * @return                  T=streaming, F=local
      */
@@ -305,7 +305,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 
     /**
       * Get the duration of the audio file.
-      * 
+      *
       * @param file             The name of the audio file.
       * @return                 The duration in msec.
       *                             -1=can't be determined
@@ -335,9 +335,9 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     }
 
     /**
-     * Callback to be invoked when the media source is ready for playback. 
-     * 
-     * @param player           The MediaPlayer that is ready for playback 
+     * Callback to be invoked when the media source is ready for playback.
+     *
+     * @param player           The MediaPlayer that is ready for playback
      */
     public void onPrepared(MediaPlayer player) {
         // Listen for playback completion
@@ -356,14 +356,14 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         this.duration = getDurationInSeconds();
         // reset prepare only flag
         this.prepareOnly = true;
-        
+
         // Send status notification to JavaScript
         this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_DURATION + "," + this.duration + ");");
     }
 
     /**
      * By default Android returns the length of audio in mills but we want seconds
-     * 
+     *
      * @return length of clip in seconds
      */
     private float getDurationInSeconds() {
@@ -373,7 +373,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     /**
      * Callback to be invoked when there has been an error during an asynchronous operation
      *  (other errors will throw exceptions at method call time).
-     *  
+     *
      * @param player           the MediaPlayer the error pertains to
      * @param arg1              the type of error that has occurred: (MEDIA_ERROR_UNKNOWN, MEDIA_ERROR_SERVER_DIED)
      * @param arg2              an extra code, specific to the error.
@@ -392,7 +392,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 
     /**
      * Set the state and send it to JavaScript.
-     * 
+     *
      * @param state
      */
     private void setState(STATE state) {
@@ -404,7 +404,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 
     /**
      * Set the mode and send it to JavaScript.
-     * 
+     *
      * @param state
      */
     private void setMode(MODE mode) {
@@ -414,10 +414,10 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         }
         this.mode = mode;
     }
-    
+
     /**
      * Get the audio state.
-     * 
+     *
      * @return int
      */
     public int getState() {
@@ -432,7 +432,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     public void setVolume(float volume) {
         this.player.setVolume(volume, volume);
     }
-    
+
     /**
      * attempts to put the player in play mode
      * @return true if in playmode, false otherwise
@@ -451,7 +451,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         }
         return true;
     }
-    
+
     /**
      * attempts to initialize the media player for playback
      * @param file the file to play
@@ -472,7 +472,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                     return false;
                 case MEDIA_LOADING:
                     //cordova js is not aware of MEDIA_LOADING, so we send MEDIA_STARTING instead
-                    Log.d(LOG_TAG, "AudioPlayer Loading: startPlaying() called during media preparation: " + STATE.MEDIA_STARTING.ordinal()); 
+                    Log.d(LOG_TAG, "AudioPlayer Loading: startPlaying() called during media preparation: " + STATE.MEDIA_STARTING.ordinal());
                     this.prepareOnly = false;
                     return false;
                 case MEDIA_STARTING:
@@ -505,13 +505,13 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         }
         return false;
     }
-    
+
     /**
      * load audio file
-     * @throws IOException 
-     * @throws IllegalStateException 
-     * @throws SecurityException 
-     * @throws IllegalArgumentException 
+     * @throws IOException
+     * @throws IllegalStateException
+     * @throws SecurityException
+     * @throws IllegalArgumentException
      */
     private void loadAudioFile(String file) throws IllegalArgumentException, SecurityException, IllegalStateException, IOException {
         if (this.isStreaming(file)) {
@@ -520,7 +520,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             //if it's a streaming file, play mode is implied
             this.setMode(MODE.PLAY);
             this.setState(STATE.MEDIA_STARTING);
-            this.player.setOnPreparedListener(this);        
+            this.player.setOnPreparedListener(this);
             this.player.prepareAsync();
         }
         else {
@@ -534,13 +534,13 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                 if (fp.exists()) {
                     FileInputStream fileInputStream = new FileInputStream(file);
                     this.player.setDataSource(fileInputStream.getFD());
-                } 
+                }
                 else {
                     this.player.setDataSource("/sdcard/" + file);
                 }
             }
                 this.setState(STATE.MEDIA_STARTING);
-                this.player.setOnPreparedListener(this);        
+                this.player.setOnPreparedListener(this);
                 this.player.prepare();
 
                 // Get duration
