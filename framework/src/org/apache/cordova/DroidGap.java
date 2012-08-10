@@ -714,8 +714,8 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param message
      */
     public void sendJavascript(String statement) {
-        if (this.appView != null && this.appView.callbackServer != null) {
-            this.appView.callbackServer.sendJavascript(statement);
+        if (this.appView != null) {
+            this.appView.jsMessageQueue.add(statement);
         }
     }
 

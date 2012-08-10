@@ -23,12 +23,9 @@ import org.apache.cordova.api.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-//import android.app.Activity;
 import android.app.AlertDialog;
-//import android.content.Context;
 import android.content.DialogInterface;
 import android.view.KeyEvent;
-//import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
@@ -211,9 +208,16 @@ public class CordovaChromeClient extends WebChromeClient {
             }
         }
 
+        // Sets the native->JS bridge mode. 
+        else if (reqOk && defaultValue != null && defaultValue.equals("gap_bridge_mode:")) {
+            this.appView.jsMessageQueue.setBridgeMode(Integer.parseInt(message));
+            result.confirm("");
+        }
+
         // Polling for JavaScript messages 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-            String r = this.appView.callbackServer.getJavascript();
+        	// TODO(agrieve): Use popAll() here.
+            String r = this.appView.jsMessageQueue.pop();
             result.confirm(r);
         }
 

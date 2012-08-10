@@ -88,6 +88,8 @@ public class CordovaWebView extends WebView {
 
     private boolean handleButton = false;
 
+	NativeToJsMessageQueue jsMessageQueue;
+
     /**
      * Constructor.
      *
@@ -190,14 +192,14 @@ public class CordovaWebView extends WebView {
         }
     }
 
-    
     /**
      * Initialize webview.
      */
     @SuppressWarnings("deprecation")
     @SuppressLint("NewApi")
     private void setup() {
-
+    	jsMessageQueue = new NativeToJsMessageQueue(this);
+    	
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
         this.requestFocusFromTouch();
@@ -456,7 +458,7 @@ public class CordovaWebView extends WebView {
      *
      * @param url
      */
-    private void loadUrlNow(String url) {
+    void loadUrlNow(String url) {
         LOG.d(TAG, ">>> loadUrlNow()");
         super.loadUrl(url);
     }
@@ -495,9 +497,7 @@ public class CordovaWebView extends WebView {
      * @param message
      */
     public void sendJavascript(String statement) {
-        if (this.callbackServer != null) {
-            this.callbackServer.sendJavascript(statement);
-        }
+        this.jsMessageQueue.add(statement);
     }
 
     /**

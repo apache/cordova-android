@@ -59,8 +59,9 @@ public class CallbackServer implements Runnable {
     private ServerSocket waitSocket;
     /**
      * The list of JavaScript statements to be sent to JavaScript.
+     * This can be null when there are no messages available.
      */
-    private LinkedList<String> javascript;
+    private NativeToJsMessageQueue jsMessageQueue;
 
     /**
      * The port to listen on.
@@ -77,10 +78,6 @@ public class CallbackServer implements Runnable {
      */
     private boolean active;
 
-    /**
-     * Indicates that the JavaScript statements list is empty
-     */
-    private boolean empty;
 
     /**
      * Indicates that polling should be used instead of XHR.
@@ -98,9 +95,7 @@ public class CallbackServer implements Runnable {
     public CallbackServer() {
         //Log.d(LOG_TAG, "CallbackServer()");
         this.active = false;
-        this.empty = true;
         this.port = 0;
-        this.javascript = new LinkedList<String>();
     }
 
     /**
@@ -113,10 +108,8 @@ public class CallbackServer implements Runnable {
      */
     public void init(String url) {
         //System.out.println("CallbackServer.start("+url+")");
-        this.active = false;
-        this.empty = true;
+        this.stopServer();
         this.port = 0;
-        this.javascript = new LinkedList<String>();
 
         // Determine if XHR or polling is to be used
         if ((url != null) && !url.startsWith("file://")) {
@@ -131,16 +124,6 @@ public class CallbackServer implements Runnable {
             this.usePolling = false;
             this.startServer();
         }
-    }
-
-    /**
-     * Re-init when loading a new HTML page into webview.
-     *
-     * @param url           The URL of the Cordova app being loaded
-     */
-    public void reinit(String url) {
-        this.stopServer();
-        this.init(url);
     }
 
     /**
@@ -224,11 +207,19 @@ public class CallbackServer implements Runnable {
                         // Must have security token
                         if ((requestParts.length == 3) && (requestParts[1].substring(1).equals(this.token))) {
                             //Log.d(LOG_TAG, "CallbackServer -- Processing GET request");
+                        	String js = null;
 
                             // Wait until there is some data to send, or send empty data every 10 sec 
                             // to prevent XHR timeout on the client 
                             synchronized (this) {
-                                while (this.empty) {
+                                while (this.active) {
+                                	if (jsMessageQueue != null) {
+                                		// TODO(agrieve): Should this use popAll() instead?
+                                		js = jsMessageQueue.pop();
+                                	    if (js != null) {
+                                	    	break;
+                                	    }
+                                	}
                                     try {
                                         this.wait(10000); // prevent timeout from happening
                                         //Log.d(LOG_TAG, "CallbackServer>>> break <<<");
@@ -242,17 +233,14 @@ public class CallbackServer implements Runnable {
                             if (this.active) {
 
                                 // If no data, then send 404 back to client before it times out
-                                if (this.empty) {
+                                if (js == null) {
                                     //Log.d(LOG_TAG, "CallbackServer -- sending data 0");
                                     response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
                                 }
                                 else {
                                     //Log.d(LOG_TAG, "CallbackServer -- sending item");
                                     response = "HTTP/1.1 200 OK\r\n\r\n";
-                                    String js = this.getJavascript();
-                                    if (js != null) {
-                                        response += encode(js, "UTF-8");
-                                    }
+                                    response += encode(js, "UTF-8");
                                 }
                             }
                             else {
@@ -305,46 +293,10 @@ public class CallbackServer implements Runnable {
     public void destroy() {
         this.stopServer();
     }
-
-    /**
-     * Get the number of JavaScript statements.
-     * 
-     * @return int
-     */
-    public int getSize() {
+    
+	public void onNativeToJsMessageAvailable(NativeToJsMessageQueue queue) {
         synchronized (this) {
-            int size = this.javascript.size();
-            return size;
-        }
-    }
-
-    /**
-     * Get the next JavaScript statement and remove from list.
-     *  
-     * @return String
-     */
-    public String getJavascript() {
-        synchronized (this) {
-            if (this.javascript.size() == 0) {
-                return null;
-            }
-            String statement = this.javascript.remove(0);
-            if (this.javascript.size() == 0) {
-                this.empty = true;
-            }
-            return statement;
-        }
-    }
-
-    /**
-     * Add a JavaScript statement to the list.
-     * 
-     * @param statement
-     */
-    public void sendJavascript(String statement) {
-        synchronized (this) {
-            this.javascript.add(statement);
-            this.empty = false;
+        	this.jsMessageQueue = queue;
             this.notify();
         }
     }

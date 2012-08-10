@@ -230,14 +230,14 @@ public class CordovaWebViewClient extends WebViewClient {
             this.doClearHistory = true;
         }
 
-        // Create callback server and plugin manager
+        // Flush stale messages.
+        this.appView.jsMessageQueue.reset();
+
+        // Create callback server
         if (this.appView.callbackServer == null) {
             this.appView.callbackServer = new CallbackServer();
-            this.appView.callbackServer.init(url);
         }
-        else {
-            this.appView.callbackServer.reinit(url);
-        }
+        this.appView.callbackServer.init(url);
 
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageStarted", url);
