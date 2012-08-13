@@ -75,7 +75,7 @@ public class FileTransfer extends Plugin {
         String source = null;
         String target = null;
         try {
-            source = URLDecoder.decode(args.getString(0));
+            source = args.getString(0);
             target = args.getString(1);
         } catch (JSONException e) {
             Log.d(LOG_TAG, "Missing source or target");
@@ -83,7 +83,7 @@ public class FileTransfer extends Plugin {
         }
 
         if (action.equals("upload")) {
-            return upload(source, target, args);
+            return upload(URLDecoder.decode(source), target, args);
         } else if (action.equals("download")) {
             return download(source, target);
         } else {
@@ -117,7 +117,7 @@ public class FileTransfer extends Plugin {
             boolean trustEveryone = args.optBoolean(6);
             boolean chunkedMode = args.optBoolean(7) || args.isNull(7); //Always use chunked mode unless set to false as per API
             JSONObject headers = args.optJSONObject(8);
-        	// Look for headers on the params map for backwards compatibility with older Cordova versions.
+            // Look for headers on the params map for backwards compatibility with older Cordova versions.
             if (headers == null && params != null) {
                 headers = params.optJSONObject("headers");
             }
@@ -184,7 +184,7 @@ public class FileTransfer extends Plugin {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
-            
+
             // Set the cookies on the response
             String cookie = CookieManager.getInstance().getCookie(target);
             if (cookie != null) {
