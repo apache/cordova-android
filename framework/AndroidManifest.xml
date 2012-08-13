@@ -64,5 +64,5 @@
         </activity>
     </application>
 
-    <uses-sdk android:minSdkVersion="2" />
+    <uses-sdk android:minSdkVersion="7" />
 </manifest>
