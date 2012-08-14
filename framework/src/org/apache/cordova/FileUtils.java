@@ -298,7 +298,9 @@ public class FileUtils extends Plugin {
         if (fp.isDirectory()) {
             File[] files = fp.listFiles();
             for (int i = 0; i < files.length; i++) {
-                entries.put(getEntry(files[i]));
+                if (files[i].canRead()) {
+                    entries.put(getEntry(files[i]));
+                }
             }
         }
 
