@@ -39,11 +39,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
+import android.widget.FrameLayout;
 
 public class CordovaWebView extends WebView {
 
@@ -84,6 +89,16 @@ public class CordovaWebView extends WebView {
 
     private boolean handleButton = false;
 
+    /** custom view created by the browser (a video player for example) */
+    private View mCustomView;
+    private WebChromeClient.CustomViewCallback mCustomViewCallback;
+    
+    static final FrameLayout.LayoutParams COVER_SCREEN_GRAVITY_CENTER =
+            new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            Gravity.CENTER);
+    
     /**
      * Constructor.
      *
@@ -208,8 +223,9 @@ public class CordovaWebView extends WebView {
         
         //Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         //while we do this
-        if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-            settings.setAllowUniversalAccessFromFileURLs(true);
+        // TODO .setAllowUniversalAccessFromFileURLs(true); is abstract and cannot be called
+        //if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+        //    settings.setAllowUniversalAccessFromFileURLs(true);
         // Enable database
         settings.setDatabaseEnabled(true);
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
@@ -733,22 +749,28 @@ public class CordovaWebView extends WebView {
     {
         // If back key
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            // If back key is bound, then send event to JavaScript
-            if (this.bound) {
-                this.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
-                return true;
-            } else {
-                // If not bound
-                // Go to previous page in webview if it is possible to go back
-                if (this.backHistory()) {
-                    return true;
-                }
-                // If not, then invoke default behaviour
-                else {
-                    //this.activityState = ACTIVITY_EXITING;
-                    return false;
-                }
-            }
+        	// A custom view is currently displayed  (e.g. playing a video)
+        	if(mCustomView != null) {
+        		this.hideCustomView();
+        	} else {
+        	// The webview is currently displayed
+	            // If back key is bound, then send event to JavaScript
+	            if (this.bound) {
+	                this.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
+	                return true;
+	            } else {
+	                // If not bound
+	                // Go to previous page in webview if it is possible to go back
+	                if (this.backHistory()) {
+	                    return true;
+	                }
+	                // If not, then invoke default behaviour
+	                else {
+	                    //this.activityState = ACTIVITY_EXITING;
+	                    return false;
+	                }
+	            }
+        	}
         }
         // Legacy
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
@@ -871,4 +893,49 @@ public class CordovaWebView extends WebView {
     public boolean hadKeyEvent() {
         return handleButton;
     }
+
+
+    public void showCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+    	// This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
+    	Log.d(TAG, "showing Custom View");
+        // if a view already exists then immediately terminate the new one
+        if (mCustomView != null) {
+            callback.onCustomViewHidden();
+            return;
+        }
+        
+        // Store the view and its callback for later (to kill it properly)
+    	mCustomView = view;
+    	mCustomViewCallback = callback;
+    	
+        // Add the custom view to its container.
+    	ViewGroup parent = (ViewGroup) this.getParent();
+    	parent.addView(view, COVER_SCREEN_GRAVITY_CENTER);
+    	
+    	// Hide the content view.
+    	this.setVisibility(View.GONE);
+    	
+    	// Finally show the custom view container.
+    	parent.setVisibility(View.VISIBLE);
+    	parent.bringToFront();
+    }
+
+	public void hideCustomView() {
+    	// This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
+    	Log.d(TAG, "Hidding Custom View");
+		if (mCustomView == null) return;
+
+		// Hide the custom view.
+		mCustomView.setVisibility(View.GONE);
+		
+		// Remove the custom view from its container.
+		ViewGroup parent = (ViewGroup) this.getParent();
+		parent.removeView(mCustomView);
+		mCustomView = null;
+		mCustomViewCallback.onCustomViewHidden();
+		
+        // Show the content view.
+        this.setVisibility(View.VISIBLE);
+	}
+
 }

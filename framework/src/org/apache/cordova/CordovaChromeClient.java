@@ -27,7 +27,14 @@ import org.json.JSONException;
 import android.app.AlertDialog;
 //import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 //import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.JsPromptResult;
@@ -37,6 +44,11 @@ import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.GeolocationPermissions.Callback;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
@@ -48,6 +60,9 @@ public class CordovaChromeClient extends WebChromeClient {
     private CordovaInterface cordova;
     private CordovaWebView appView;
 
+    // the video progress view
+    private View mVideoProgressView;
+    
     /**
      * Constructor.
      *
@@ -329,4 +344,45 @@ public class CordovaChromeClient extends WebChromeClient {
         super.onGeolocationPermissionsShowPrompt(origin, callback);
         callback.invoke(origin, true, false);
     }
+    
+    // API level 7 is required for this, see if we could lower this using something else
+    @Override
+    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+        this.appView.showCustomView(view, callback);
+    }
+
+	@Override
+	public void onHideCustomView() {
+    	this.appView.hideCustomView();
+	}
+    
+    @Override
+    /**
+     * Ask the host application for a custom progress view to show while
+     * a <video> is loading.
+     * @return View The progress view.
+     */
+    public View getVideoLoadingProgressView() {
+
+	    if (mVideoProgressView == null) {	        
+	    	// Create a new Loading view programmatically.
+	    	
+	    	// create the linear layout
+	    	LinearLayout layout = new LinearLayout(this.appView.getContext());
+	        layout.setOrientation(LinearLayout.VERTICAL);
+	        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+	        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+	        layout.setLayoutParams(layoutParams);
+	        // the proress bar
+	        ProgressBar bar = new ProgressBar(this.appView.getContext());
+	        LinearLayout.LayoutParams barLayoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+	        barLayoutParams.gravity = Gravity.CENTER;
+	        bar.setLayoutParams(barLayoutParams);   
+	        layout.addView(bar);
+	        
+	        mVideoProgressView = layout;
+	    }
+    return mVideoProgressView; 
+    }
+
 }
