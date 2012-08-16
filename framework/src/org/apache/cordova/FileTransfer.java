@@ -251,6 +251,7 @@ public class FileTransfer extends Plugin {
             } else {
                 conn.setFixedLengthStreamingMode(fixedLength);
             }
+            conn.setRequestProperty("Transfer-Encoding", "chunked");
 
             dos = new DataOutputStream( conn.getOutputStream() );
             //We don't want to change encoding, we just want this to write for all Unicode.
@@ -267,10 +268,15 @@ public class FileTransfer extends Plugin {
             bytesRead = fileInputStream.read(buffer, 0, bufferSize);
             totalBytes = 0;
 
+            long prevBytesRead = 0;
             while (bytesRead > 0) {
                 totalBytes += bytesRead;
                 result.setBytesSent(totalBytes);
                 dos.write(buffer, 0, bufferSize);
+                if (totalBytes > prevBytesRead + 102400) {
+                	prevBytesRead = totalBytes;
+                	Log.d(LOG_TAG, "Uploaded " + totalBytes + " of " + fixedLength + " bytes");
+                }
                 bytesAvailable = fileInputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
                 bytesRead = fileInputStream.read(buffer, 0, bufferSize);
