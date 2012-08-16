@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginManager;
+import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.SuppressLint;
@@ -38,6 +39,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -232,6 +234,21 @@ public class CordovaWebView extends WebView {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        exposeJsInterface();
+    }
+
+    private void exposeJsInterface() {
+        // addJavascriptInterface crashes on the 2.3 emulator.
+        if (Build.VERSION.RELEASE.startsWith("2.3") && Build.MANUFACTURER.equals("unknown")) {
+            Log.i(TAG, "Disabled addJavascriptInterface() bridge callback due to a bug on the 2.3 emulator");
+            return;
+        }
+        this.addJavascriptInterface(new Object() {
+            @SuppressWarnings("unused")
+            public String exec(String service, String action, String callbackId, String arguments) throws JSONException {
+                return pluginManager.exec(service, action, callbackId, arguments, true /* async */);
+            }
+        }, "_cordovaExec");
     }
 
     /**
