@@ -32,6 +32,8 @@ import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginManager;
 import org.xmlpull.v1.XmlPullParserException;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
@@ -157,7 +159,8 @@ public class CordovaWebView extends WebView {
      * @param defStyle
      * @param privateBrowsing
      */
-    public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
+	@TargetApi(11)
+	public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
         super(context, attrs, defStyle, privateBrowsing);
         if (CordovaInterface.class.isInstance(context))
         {
@@ -190,6 +193,7 @@ public class CordovaWebView extends WebView {
      * Initialize webview.
      */
     @SuppressWarnings("deprecation")
+    @SuppressLint("NewApi")
     private void setup() {
 
         this.setInitialScale(0);
