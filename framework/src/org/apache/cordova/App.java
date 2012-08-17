@@ -176,7 +176,11 @@ public class App extends Plugin {
      * This is the same as pressing the backbutton on Android device.
      */
     public void backHistory() {
-        this.webView.backHistory();
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                webView.backHistory();
+            }
+        });
     }
 
     /**
