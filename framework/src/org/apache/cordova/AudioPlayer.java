@@ -253,7 +253,9 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      */
     public void stopPlaying() {
         if ((this.state == STATE.MEDIA_RUNNING) || (this.state == STATE.MEDIA_PAUSED)) {
-            this.player.stop();
+            this.player.pause();
+            this.player.seekTo(0);
+            Log.d(LOG_TAG, "stopPlaying is calling stopped");
             this.setState(STATE.MEDIA_STOPPED);
         }
         else {
@@ -268,6 +270,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      * @param player           The MediaPlayer that reached the end of the file
      */
     public void onCompletion(MediaPlayer player) {
+        Log.d(LOG_TAG, "on completion is calling stopped");
         this.setState(STATE.MEDIA_STOPPED);
     }
 
