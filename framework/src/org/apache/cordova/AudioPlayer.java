@@ -96,6 +96,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         this.handler = handler;
         this.id = id;
         this.audioFile = file;
+        this.recorder = new MediaRecorder();
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             this.tempFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tmprecording.3gp";
@@ -137,26 +138,22 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
             break;
         case NONE:
-            // Make sure we're not already recording
-            if (this.recorder == null) {
-                this.audioFile = file;
-                this.recorder = new MediaRecorder();
-                this.recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-                this.recorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT); // THREE_GPP);
-                this.recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT); //AMR_NB);
-                this.recorder.setOutputFile(this.tempFile);
-                try {
-                    this.recorder.prepare();
-                    this.recorder.start();
-                    this.setState(STATE.MEDIA_RUNNING);
-                    return;
-                } catch (IllegalStateException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
+            this.audioFile = file;
+            this.recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            this.recorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT); // THREE_GPP);
+            this.recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT); //AMR_NB);
+            this.recorder.setOutputFile(this.tempFile);
+            try {
+                this.recorder.prepare();
+                this.recorder.start();
+                this.setState(STATE.MEDIA_RUNNING);
+                return;
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
             break;
         case RECORD:
             Log.d(LOG_TAG, "AudioPlayer Error: Already recording.");
@@ -191,6 +188,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                     this.recorder.stop();
                     this.setState(STATE.MEDIA_STOPPED);
                 }
+                this.recorder.reset();
                 this.moveFile(this.audioFile);
             }
             catch (Exception e) {

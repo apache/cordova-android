@@ -20,6 +20,7 @@ package org.apache.cordova;
 
 import android.content.Context;
 import android.media.AudioManager;
+
 import java.util.ArrayList;
 
 import org.apache.cordova.api.Plugin;
@@ -214,7 +215,6 @@ public class AudioHandler extends Plugin {
         AudioPlayer audio = this.players.get(id);
         if (audio != null) {
             audio.stopRecording();
-            this.players.remove(id);
         }
     }
 
