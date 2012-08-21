@@ -28,6 +28,7 @@ import org.apache.cordova.api.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -346,6 +347,7 @@ public class CordovaWebViewClient extends WebViewClient {
      * @param handler       An SslErrorHandler object that will handle the user's response.
      * @param error         The SSL error object.
      */
+    @TargetApi(8)
     @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
 

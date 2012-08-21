@@ -23,6 +23,7 @@ import org.apache.cordova.api.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.KeyEvent;
@@ -314,6 +315,7 @@ public class CordovaChromeClient extends WebChromeClient {
         super.onConsoleMessage(message, lineNumber, sourceID);
     }
 
+    @TargetApi(8)
     @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage)
     {
