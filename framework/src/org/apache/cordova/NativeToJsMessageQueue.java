@@ -20,6 +20,8 @@ package org.apache.cordova;
 
 import java.util.LinkedList;
 
+import org.apache.cordova.api.CordovaInterface;
+
 import android.util.Log;
 
 /**
@@ -32,26 +34,32 @@ public class NativeToJsMessageQueue {
     private static final int DEFAULT_BRIDGE_MODE = 1;
     
     /**
-     * The list of JavaScript statements to be sent to JavaScript.
-     */
-    private LinkedList<String> queue = new LinkedList<String>();
-
-    /**
      * The index into registeredListeners to treat as active. 
      */
     private int activeListenerIndex;
     
     /**
+     * The list of JavaScript statements to be sent to JavaScript.
+     */
+    private final LinkedList<String> queue = new LinkedList<String>();
+
+    /**
      * The array of listeners that can be used to send messages to JS.
      */
-    private BridgeMode[] registeredListeners;    
+    private final BridgeMode[] registeredListeners;    
+    
+    private final CordovaInterface cordova;
+    private final CordovaWebView webView;
         
-    public NativeToJsMessageQueue(CordovaWebView webView) {
-    	registeredListeners = new BridgeMode[3];
-    	registeredListeners[0] = null;
-    	registeredListeners[1] = new CallbackBridgeMode(webView);
-    	registeredListeners[2] = new LoadUrlBridgeMode(webView);
-    	reset();
+    public NativeToJsMessageQueue(CordovaWebView webView, CordovaInterface cordova) {
+        this.cordova = cordova;
+        this.webView = webView;
+        registeredListeners = new BridgeMode[4];
+        registeredListeners[0] = null;
+        registeredListeners[1] = new CallbackBridgeMode();
+        registeredListeners[2] = new LoadUrlBridgeMode();
+        registeredListeners[3] = new OnlineEventsBridgeMode();
+        reset();
 //        POLLING: 0,
 //        HANGING_GET: 1,
 //        LOAD_URL: 2,
@@ -63,30 +71,30 @@ public class NativeToJsMessageQueue {
      * Changes the bridge mode.
      */
     public void setBridgeMode(int value) {
-    	if (value < 0 || value >= registeredListeners.length) {
-    		Log.d(LOG_TAG, "Invalid NativeToJsBridgeMode: " + value);
-    	} else {
-    		if (value != activeListenerIndex) {
-    			Log.d(LOG_TAG, "Set native->JS mode to " + value);
-    			synchronized (this) {
-    			    activeListenerIndex = value;
-    			    BridgeMode activeListener = registeredListeners[value];
-    			    if (!queue.isEmpty() && activeListener != null) {
-    			    	activeListener.onNativeToJsMessageAvailable(this);
-    			    }
-    			}
-    		}
-    	}
+        if (value < 0 || value >= registeredListeners.length) {
+            Log.d(LOG_TAG, "Invalid NativeToJsBridgeMode: " + value);
+        } else {
+            if (value != activeListenerIndex) {
+                Log.d(LOG_TAG, "Set native->JS mode to " + value);
+                synchronized (this) {
+                    activeListenerIndex = value;
+                    BridgeMode activeListener = registeredListeners[value];
+                    if (!queue.isEmpty() && activeListener != null) {
+                        activeListener.onNativeToJsMessageAvailable();
+                    }
+                }
+            }
+        }
     }
     
-	/**
-	 * Clears all messages and resets to the default bridge mode.
+    /**
+     * Clears all messages and resets to the default bridge mode.
      */
     public void reset() {
-    	synchronized (this) {
-    		queue.clear();
-    		setBridgeMode(DEFAULT_BRIDGE_MODE);
-    	}
+        synchronized (this) {
+            queue.clear();
+            setBridgeMode(DEFAULT_BRIDGE_MODE);
+        }
     }
 
     /**
@@ -116,17 +124,17 @@ public class NativeToJsMessageQueue {
             // Wrap each statement in a try/finally so that if one throws it does 
             // not affect the next.
             int i = 0;
-			for (String message : queue) {
-            	if (++i == length) {
-            		sb.append(message);
-            	} else {
-	            	sb.append("try{")
-	            	  .append(message)
-	            	  .append("}finally{");
-            	}
+            for (String message : queue) {
+                if (++i == length) {
+                    sb.append(message);
+                } else {
+                    sb.append("try{")
+                      .append(message)
+                      .append("}finally{");
+                }
             }
             for ( i = 1; i < length; ++i) {
-            	sb.append('}');
+                sb.append('}');
             }
             queue.clear();
             return sb.toString();
@@ -140,37 +148,46 @@ public class NativeToJsMessageQueue {
         synchronized (this) {
             queue.add(statement);
             if (registeredListeners[activeListenerIndex] != null) {
-            	registeredListeners[activeListenerIndex].onNativeToJsMessageAvailable(this);
+                registeredListeners[activeListenerIndex].onNativeToJsMessageAvailable();
             }
         }
     }
 
     private interface BridgeMode {
-		void onNativeToJsMessageAvailable(NativeToJsMessageQueue queue);
-	}
-	
+        void onNativeToJsMessageAvailable();
+    }
+    
     /** Uses a local server to send messages to JS via an XHR */
-    private static class CallbackBridgeMode implements BridgeMode {
-    	private CordovaWebView webView;
-		public CallbackBridgeMode(CordovaWebView webView) {
-    		this.webView = webView;
-    	}
-    	public void onNativeToJsMessageAvailable(NativeToJsMessageQueue queue) {
-    		if (webView.callbackServer != null) {
-    			webView.callbackServer.onNativeToJsMessageAvailable(queue);
-    		}
+    private class CallbackBridgeMode implements BridgeMode {
+        public void onNativeToJsMessageAvailable() {
+            if (webView.callbackServer != null) {
+                webView.callbackServer.onNativeToJsMessageAvailable(NativeToJsMessageQueue.this);
+            }
         }
     }
     
     /** Uses webView.loadUrl("javascript:") to execute messages. */
-    public static class LoadUrlBridgeMode implements BridgeMode {
-		private CordovaWebView webView;
-		public LoadUrlBridgeMode(CordovaWebView webView) {
-    		this.webView = webView;
-    	}
-    	public void onNativeToJsMessageAvailable(NativeToJsMessageQueue queue) {
-    		webView.loadUrlNow("javascript:" + queue.popAll());
+    public class LoadUrlBridgeMode implements BridgeMode {
+        public void onNativeToJsMessageAvailable() {
+            webView.loadUrlNow("javascript:" + popAll());
         }
     }
 
+    /** Uses online/offline events to tell the JS when to poll for messages. */
+    public class OnlineEventsBridgeMode implements BridgeMode {
+        boolean online = true;
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!queue.isEmpty()) {
+                    online = !online;
+                    webView.setNetworkAvailable(online);
+                }
+            }                
+        };
+        
+        public void onNativeToJsMessageAvailable() {
+            cordova.getActivity().runOnUiThread(runnable);
+        }
+    }
 }

@@ -198,7 +198,7 @@ public class CordovaWebView extends WebView {
     @SuppressWarnings("deprecation")
     @SuppressLint("NewApi")
     private void setup() {
-    	jsMessageQueue = new NativeToJsMessageQueue(this);
+    	jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
     	
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
