@@ -47,9 +47,10 @@ public class NativeToJsMessageQueue {
     private BridgeMode[] registeredListeners;    
         
     public NativeToJsMessageQueue(CordovaWebView webView) {
-    	registeredListeners = new BridgeMode[2];
+    	registeredListeners = new BridgeMode[3];
     	registeredListeners[0] = null;
     	registeredListeners[1] = new CallbackBridgeMode(webView);
+    	registeredListeners[2] = new LoadUrlBridgeMode(webView);
     	reset();
 //        POLLING: 0,
 //        HANGING_GET: 1,
@@ -148,6 +149,7 @@ public class NativeToJsMessageQueue {
 		void onNativeToJsMessageAvailable(NativeToJsMessageQueue queue);
 	}
 	
+    /** Uses a local server to send messages to JS via an XHR */
     private static class CallbackBridgeMode implements BridgeMode {
     	private CordovaWebView webView;
 		public CallbackBridgeMode(CordovaWebView webView) {
@@ -157,6 +159,17 @@ public class NativeToJsMessageQueue {
     		if (webView.callbackServer != null) {
     			webView.callbackServer.onNativeToJsMessageAvailable(queue);
     		}
+        }
+    }
+    
+    /** Uses webView.loadUrl("javascript:") to execute messages. */
+    public static class LoadUrlBridgeMode implements BridgeMode {
+		private CordovaWebView webView;
+		public LoadUrlBridgeMode(CordovaWebView webView) {
+    		this.webView = webView;
+    	}
+    	public void onNativeToJsMessageAvailable(NativeToJsMessageQueue queue) {
+    		webView.loadUrlNow("javascript:" + queue.popAll());
         }
     }
 
