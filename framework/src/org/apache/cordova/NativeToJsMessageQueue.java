@@ -18,11 +18,17 @@
 */
 package org.apache.cordova;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.apache.cordova.api.CordovaInterface;
 
+import android.os.Message;
 import android.util.Log;
+import android.webkit.WebView;
 
 /**
  * Holds the list of messages to be sent to the WebView.
@@ -54,17 +60,13 @@ public class NativeToJsMessageQueue {
     public NativeToJsMessageQueue(CordovaWebView webView, CordovaInterface cordova) {
         this.cordova = cordova;
         this.webView = webView;
-        registeredListeners = new BridgeMode[4];
-        registeredListeners[0] = null;
+        registeredListeners = new BridgeMode[5];
+        registeredListeners[0] = null;  // Polling. Requires no logic.
         registeredListeners[1] = new CallbackBridgeMode();
         registeredListeners[2] = new LoadUrlBridgeMode();
         registeredListeners[3] = new OnlineEventsBridgeMode();
+        registeredListeners[4] = new PrivateApiBridgeMode();
         reset();
-//        POLLING: 0,
-//        HANGING_GET: 1,
-//        LOAD_URL: 2,
-//        ONLINE_EVENT: 3,
-//        PRIVATE_API: 4
     }
     
     /**
@@ -167,14 +169,14 @@ public class NativeToJsMessageQueue {
     }
     
     /** Uses webView.loadUrl("javascript:") to execute messages. */
-    public class LoadUrlBridgeMode implements BridgeMode {
+    private class LoadUrlBridgeMode implements BridgeMode {
         public void onNativeToJsMessageAvailable() {
             webView.loadUrlNow("javascript:" + popAll());
         }
     }
 
     /** Uses online/offline events to tell the JS when to poll for messages. */
-    public class OnlineEventsBridgeMode implements BridgeMode {
+    private class OnlineEventsBridgeMode implements BridgeMode {
         boolean online = true;
         final Runnable runnable = new Runnable() {
             @Override
@@ -190,4 +192,63 @@ public class NativeToJsMessageQueue {
             cordova.getActivity().runOnUiThread(runnable);
         }
     }
+    
+    /**
+     * Uses Java reflection to access an API that lets us eval JS.
+     * Requires Android 3.2.4 or above. 
+     */
+    private class PrivateApiBridgeMode implements BridgeMode {
+    	// Message added in commit:
+    	// http://omapzoom.org/?p=platform/frameworks/base.git;a=commitdiff;h=9497c5f8c4bc7c47789e5ccde01179abc31ffeb2
+    	// Which first appeared in 3.2.4ish.
+    	private static final int EXECUTE_JS = 194;
+    	
+    	Method sendMessageMethod;
+    	Object webViewCore;
+    	boolean initFailed;
+
+    	@SuppressWarnings("rawtypes")
+    	private void initReflection() {
+        	Object webViewObject = webView;
+    		Class webViewClass = WebView.class;
+        	try {
+    			Field f = webViewClass.getDeclaredField("mProvider");
+    			f.setAccessible(true);
+    			webViewObject = f.get(webView);
+    			webViewClass = webViewObject.getClass();
+        	} catch (Throwable e) {
+        		// mProvider is only required on newer Android releases.
+    		}
+        	
+        	try {
+    			Field f = webViewClass.getDeclaredField("mWebViewCore");
+                f.setAccessible(true);
+    			webViewCore = f.get(webViewObject);
+    			
+    			if (webViewCore != null) {
+    				sendMessageMethod = webViewCore.getClass().getDeclaredMethod("sendMessage", Message.class);
+	    			sendMessageMethod.setAccessible(true);	    			
+    			}
+    		} catch (Throwable e) {
+    			initFailed = true;
+				Log.e(LOG_TAG, "PrivateApiBridgeMode failed to find the expected APIs.", e);
+    		}
+    	}
+    	
+        public void onNativeToJsMessageAvailable() {
+        	if (sendMessageMethod == null && !initFailed) {
+        		initReflection();
+        	}
+        	// webViewCore is lazily initialized, and so may not be available right away.
+        	if (sendMessageMethod != null) {
+	        	String js = popAll();
+	        	Message execJsMessage = Message.obtain(null, EXECUTE_JS, js);
+				try {
+				    sendMessageMethod.invoke(webViewCore, execJsMessage);
+				} catch (Throwable e) {
+					Log.e(LOG_TAG, "Reflection message bridge failed.", e);
+				}
+        	}
+        }
+    }    
 }
