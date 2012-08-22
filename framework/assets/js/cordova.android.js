@@ -1,6 +1,6 @@
-// commit 114cf5304a74ff8f7c9ff1d21cf5652298af04b0
+// commit f8b6816a5e44b4f8cdcb4b61c49cff9b50b7ce6f
 
-// File generated at :: Wed Jul 18 2012 14:44:33 GMT-0700 (PDT)
+// File generated at :: Wed Aug 22 2012 09:42:10 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -29,6 +29,10 @@ var require,
 
 (function () {
     var modules = {};
+    // Stack of moduleIds currently being built.
+    var requireStack = [];
+    // Map of module ID -> index into requireStack of modules currently being built.
+    var inProgressModules = {};
 
     function build(module) {
         var factory = module.factory;
@@ -41,8 +45,21 @@ var require,
     require = function (id) {
         if (!modules[id]) {
             throw "module " + id + " not found";
+        } else if (id in inProgressModules) {
+            var cycle = requireStack.slice(inProgressModules[id]).join('->') + '->' + id;
+            throw "Cycle in require graph: " + cycle;
         }
-        return modules[id].factory ? build(modules[id]) : modules[id].exports;
+        if (modules[id].factory) {
+            try {
+                inProgressModules[id] = requireStack.length;
+                requireStack.push(id);
+                return build(modules[id]);
+            } finally {
+                delete inProgressModules[id];
+                requireStack.pop();
+            }
+        }
+        return modules[id].exports;
     };
 
     define = function (id, factory) {
@@ -67,6 +84,7 @@ if (typeof module === "object" && typeof require === "function") {
     module.exports.require = require;
     module.exports.define = define;
 }
+
 // file: lib/cordova.js
 define("cordova", function(require, exports, module) {
 var channel = require('cordova/channel');
@@ -207,10 +225,6 @@ var cordova = {
             window.dispatchEvent(evt);
         }
     },
-    // TODO: this is Android only; think about how to do this better
-    shuttingDown:false,
-    UsePolling:false,
-    // END TODO
 
     // TODO: iOS only
     // This queue holds the currently executing command and all pending
@@ -890,74 +904,169 @@ define("cordova/exec", function(require, exports, module) {
  * @param {String} action       Action to be run in cordova
  * @param {String[]} [args]     Zero or more arguments to pass to the method
  */
-var cordova = require('cordova');
+var cordova = require('cordova'),
+    callback = require('cordova/plugin/android/callback'),
+    polling = require('cordova/plugin/android/polling'),
+    jsToNativeBridgeMode,
+    nativeToJsBridgeMode,
+    jsToNativeModes = {
+        PROMPT: 0,
+        JS_OBJECT: 1,
+        LOCATION_CHANGE: 2  // Not yet implemented
+    },
+    nativeToJsModes = {
+        // Polls for messages using the prompt() bridge.
+        POLLING: 0,
+        // Does an XHR to a local server, which will send back messages. This is
+        // broken on ICS when a proxy server is configured.
+        HANGING_GET: 1,
+        // For LOAD_URL to be viable, it would need to have a work-around for
+        // the bug where the soft-keyboard gets dismissed when a message is sent.
+        LOAD_URL: 2,
+        // For the ONLINE_EVENT to be viable, it would need to intercept all event
+        // listeners (both through addEventListener and window.ononline) as well
+        // as set the navigator property itself.
+        ONLINE_EVENT: 3,
+        // Uses reflection to access private APIs of the WebView that can send JS
+        // to be executed.
+        // Requires Android 3.2.4 or above.
+        PRIVATE_API: 4
+    };
 
-module.exports = function(success, fail, service, action, args) {
-  try {
-    var callbackId = service + cordova.callbackId++;
-    if (success || fail) {
-        cordova.callbacks[callbackId] = {success:success, fail:fail};
+function androidExec(success, fail, service, action, args) {
+    try {
+      var callbackId = service + cordova.callbackId++,
+          argsJson = JSON.stringify(args),
+          result;
+      if (success || fail) {
+          cordova.callbacks[callbackId] = {success:success, fail:fail};
+      }
+
+      if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT) {
+          // Explicit cast to string is required on Android 2.1 to convert from
+          // a Java string to a JS string.
+          result = '' + _cordovaExec.exec(service, action, callbackId, argsJson);
+      } else {
+          result = prompt(argsJson, "gap:"+JSON.stringify([service, action, callbackId, true]));
+      }
+
+      // If a result was returned
+      if (result.length > 0) {
+          var v = JSON.parse(result);
+
+          // If status is OK, then return value back to caller
+          if (v.status === cordova.callbackStatus.OK) {
+
+              // If there is a success callback, then call it now with
+              // returned value
+              if (success) {
+                  try {
+                      success(v.message);
+                  } catch (e) {
+                      console.log("Error in success callback: " + callbackId  + " = " + e);
+                  }
+
+                  // Clear callback if not expecting any more results
+                  if (!v.keepCallback) {
+                      delete cordova.callbacks[callbackId];
+                  }
+              }
+              return v.message;
+          }
+
+          // If no result
+          else if (v.status === cordova.callbackStatus.NO_RESULT) {
+              // Clear callback if not expecting any more results
+              if (!v.keepCallback) {
+                  delete cordova.callbacks[callbackId];
+              }
+          }
+
+          // If error, then display error
+          else {
+              console.log("Error: Status="+v.status+" Message="+v.message);
+
+              // If there is a fail callback, then call it now with returned value
+              if (fail) {
+                  try {
+                      fail(v.message);
+                  }
+                  catch (e1) {
+                      console.log("Error in error callback: "+callbackId+" = "+e1);
+                  }
+
+                  // Clear callback if not expecting any more results
+                  if (!v.keepCallback) {
+                      delete cordova.callbacks[callbackId];
+                  }
+              }
+              return null;
+          }
+      }
+    } catch (e2) {
+      console.log("Error: "+e2);
     }
-
-    var r = prompt(JSON.stringify(args), "gap:"+JSON.stringify([service, action, callbackId, true]));
-
-    // If a result was returned
-    if (r.length > 0) {
-        var v = JSON.parse(r);
-
-        // If status is OK, then return value back to caller
-        if (v.status === cordova.callbackStatus.OK) {
-
-            // If there is a success callback, then call it now with
-            // returned value
-            if (success) {
-                try {
-                    success(v.message);
-                } catch (e) {
-                    console.log("Error in success callback: " + callbackId  + " = " + e);
-                }
-
-                // Clear callback if not expecting any more results
-                if (!v.keepCallback) {
-                    delete cordova.callbacks[callbackId];
-                }
-            }
-            return v.message;
-        }
-
-        // If no result
-        else if (v.status === cordova.callbackStatus.NO_RESULT) {
-            // Clear callback if not expecting any more results
-            if (!v.keepCallback) {
-                delete cordova.callbacks[callbackId];
-            }
-        }
-
-        // If error, then display error
-        else {
-            console.log("Error: Status="+v.status+" Message="+v.message);
-
-            // If there is a fail callback, then call it now with returned value
-            if (fail) {
-                try {
-                    fail(v.message);
-                }
-                catch (e1) {
-                    console.log("Error in error callback: "+callbackId+" = "+e1);
-                }
-
-                // Clear callback if not expecting any more results
-                if (!v.keepCallback) {
-                    delete cordova.callbacks[callbackId];
-                }
-            }
-            return null;
-        }
-    }
-  } catch (e2) {
-    console.log("Error: "+e2);
-  }
 };
+
+function onOnLineEvent(e) {
+    while (polling.pollOnce());
+}
+
+androidExec.jsToNativeModes = jsToNativeModes;
+androidExec.nativeToJsModes = nativeToJsModes;
+
+androidExec.setJsToNativeBridgeMode = function(mode) {
+    if (mode == jsToNativeModes.JS_OBJECT && !window._cordovaExec) {
+        console.log('Falling back on PROMPT mode since _cordovaExec is missing.');
+        mode = jsToNativeModes.PROMPT;
+    }
+    jsToNativeBridgeMode = mode;
+};
+
+androidExec.setNativeToJsBridgeMode = function(mode) {
+    if (mode == nativeToJsBridgeMode) {
+        return;
+    }
+    if (nativeToJsBridgeMode == nativeToJsModes.POLLING) {
+        polling.stop();
+    } else if (nativeToJsBridgeMode == nativeToJsModes.HANGING_GET) {
+        callback.stop();
+    } else if (nativeToJsBridgeMode == nativeToJsModes.ONLINE_EVENT) {
+        window.removeEventListener('online', onOnLineEvent, false);
+        window.removeEventListener('offline', onOnLineEvent, false);
+    }
+
+    nativeToJsBridgeMode = mode;
+    // Tell the native side to switch modes.
+    prompt(mode, "gap_bridge_mode:");
+
+    if (mode == nativeToJsModes.POLLING) {
+        polling.start();
+    } else if (mode == nativeToJsModes.HANGING_GET) {
+        callback.start();
+    } else if (mode == nativeToJsModes.ONLINE_EVENT) {
+        window.addEventListener('online', onOnLineEvent, false);
+        window.addEventListener('offline', onOnLineEvent, false);
+    }
+};
+
+// Start listening for XHR callbacks
+// Figure out which bridge approach will work on this Android
+// device: polling or XHR-based callbacks
+androidExec.initialize = function() {
+    if (jsToNativeBridgeMode === undefined) {
+        androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
+    }
+    if (nativeToJsBridgeMode === undefined) {
+        if (callback.isAvailable()) {
+            androidExec.setNativeToJsBridgeMode(nativeToJsModes.HANGING_GET);
+        } else {
+            androidExec.setNativeToJsBridgeMode(nativeToJsModes.POLLING);
+        }
+    }
+};
+
+module.exports = androidExec;
 
 });
 
@@ -968,32 +1077,11 @@ module.exports = {
     initialize:function() {
         var channel = require("cordova/channel"),
             cordova = require('cordova'),
-            callback = require('cordova/plugin/android/callback'),
-            polling = require('cordova/plugin/android/polling'),
             exec = require('cordova/exec');
 
-        channel.onDestroy.subscribe(function() {
-            cordova.shuttingDown = true;
-        });
-
-        // Start listening for XHR callbacks
-        // Figure out which bridge approach will work on this Android
-        // device: polling or XHR-based callbacks
+        // Use a setTimeout here to give apps a chance to set the bridge mode.
         setTimeout(function() {
-            if (cordova.UsePolling) {
-                polling();
-            }
-            else {
-                var isPolling = prompt("usePolling", "gap_callbackServer:");
-                cordova.UsePolling = isPolling;
-                if (isPolling == "true") {
-                    cordova.UsePolling = true;
-                    polling();
-                } else {
-                    cordova.UsePolling = false;
-                    callback();
-                }
-            }
+            exec.initialize();
         }, 1);
 
         // Inject a listener for the backbutton on the document.
@@ -2585,10 +2673,12 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
     var mimeType = null;
     var params = null;
     var chunkedMode = true;
+    var headers = null;
     if (options) {
         fileKey = options.fileKey;
         fileName = options.fileName;
         mimeType = options.mimeType;
+        headers = options.headers;
         if (options.chunkedMode !== null || typeof options.chunkedMode != "undefined") {
             chunkedMode = options.chunkedMode;
         }
@@ -2605,7 +2695,7 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
         errorCallback(error);
     };
 
-    exec(successCallback, fail, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, trustAllHosts, chunkedMode]);
+    exec(successCallback, fail, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, trustAllHosts, chunkedMode, headers]);
 };
 
 /**
@@ -2675,15 +2765,19 @@ define("cordova/plugin/FileUploadOptions", function(require, exports, module) {
  * @param fileName {String}  Filename to be used by the server. Defaults to image.jpg.
  * @param mimeType {String}  Mimetype of the uploaded file. Defaults to image/jpeg.
  * @param params {Object}    Object with key: value params to send to the server.
+ * @param headers {Object}   Keys are header names, values are header values. Multiple
+ *                           headers of the same name are not supported.
  */
-var FileUploadOptions = function(fileKey, fileName, mimeType, params) {
+var FileUploadOptions = function(fileKey, fileName, mimeType, params, headers) {
     this.fileKey = fileKey || null;
     this.fileName = fileName || null;
     this.mimeType = mimeType || null;
     this.params = params || null;
+    this.headers = headers || null;
 };
 
 module.exports = FileUploadOptions;
+
 });
 
 // file: lib/common/plugin/FileUploadResult.js
@@ -3078,7 +3172,6 @@ Media.prototype.stop = function() {
     var me = this;
     exec(function() {
         me._position = 0;
-        me.successCallback();
     }, this.errorCallback, "Media", "stopPlayingAudio", [this.id]);
 };
 
@@ -3124,14 +3217,14 @@ Media.prototype.getCurrentPosition = function(success, fail) {
  * Start recording audio file.
  */
 Media.prototype.startRecord = function() {
-    exec(this.successCallback, this.errorCallback, "Media", "startRecordingAudio", [this.id, this.src]);
+    exec(null, this.errorCallback, "Media", "startRecordingAudio", [this.id, this.src]);
 };
 
 /**
  * Stop recording audio file.
  */
 Media.prototype.stopRecord = function() {
-    exec(this.successCallback, this.errorCallback, "Media", "stopRecordingAudio", [this.id]);
+    exec(null, this.errorCallback, "Media", "stopRecordingAudio", [this.id]);
 };
 
 /**
@@ -3160,13 +3253,13 @@ Media.onStatus = function(id, msg, value) {
     var media = mediaObjects[id];
     // If state update
     if (msg === Media.MEDIA_STATE) {
+        if (media.statusCallback) {
+            media.statusCallback(value);
+        }
         if (value === Media.MEDIA_STOPPED) {
             if (media.successCallback) {
                 media.successCallback();
             }
-        }
-        if (media.statusCallback) {
-            media.statusCallback(value);
         }
     }
     else if (msg === Media.MEDIA_DURATION) {
@@ -3239,28 +3332,6 @@ MediaFile.prototype.getFormatData = function(successCallback, errorCallback) {
     } else {
         exec(successCallback, errorCallback, "Capture", "getFormatData", [this.fullPath, this.type]);
     }
-};
-
-// TODO: can we axe this?
-/**
- * Casts a PluginResult message property  (array of objects) to an array of MediaFile objects
- * (used in Objective-C and Android)
- *
- * @param {PluginResult} pluginResult
- */
-MediaFile.cast = function(pluginResult) {
-    var mediaFiles = [];
-    for (var i=0; i<pluginResult.message.length; i++) {
-        var mediaFile = new MediaFile();
-        mediaFile.name = pluginResult.message[i].name;
-        mediaFile.fullPath = pluginResult.message[i].fullPath;
-        mediaFile.type = pluginResult.message[i].type;
-        mediaFile.lastModifiedDate = pluginResult.message[i].lastModifiedDate;
-        mediaFile.size = pluginResult.message[i].size;
-        mediaFiles.push(mediaFile);
-    }
-    pluginResult.message = mediaFiles;
-    return pluginResult;
 };
 
 module.exports = MediaFile;
@@ -3630,89 +3701,82 @@ module.exports = {
 define("cordova/plugin/android/callback", function(require, exports, module) {
 var port = null,
     token = null,
-    cordova = require('cordova'),
-    polling = require('cordova/plugin/android/polling'),
-    callback = function() {
-      // Exit if shutting down app
-      if (cordova.shuttingDown) {
-          return;
-      }
+    xmlhttp;
 
-      // If polling flag was changed, start using polling from now on
-      if (cordova.UsePolling) {
-          polling();
-          return;
-      }
+function startXhr() {
+    // cordova/exec depends on this module, so we can't require cordova/exec on the module level.
+    var exec = require('cordova/exec'),
+    xmlhttp = new XMLHttpRequest();
 
-      var xmlhttp = new XMLHttpRequest();
+    // Callback function when XMLHttpRequest is ready
+    xmlhttp.onreadystatechange=function(){
+        if (!xmlhttp) {
+            return;
+        }
+        if (xmlhttp.readyState === 4){
+            // If callback has JavaScript statement to execute
+            if (xmlhttp.status === 200) {
 
-      // Callback function when XMLHttpRequest is ready
-      xmlhttp.onreadystatechange=function(){
-          if(xmlhttp.readyState === 4){
+                // Need to url decode the response
+                var msg = decodeURIComponent(xmlhttp.responseText);
+                setTimeout(function() {
+                    try {
+                        var t = eval(msg);
+                    }
+                    catch (e) {
+                        // If we're getting an error here, seeing the message will help in debugging
+                        console.log("JSCallback: Message from Server: " + msg);
+                        console.log("JSCallback Error: "+e);
+                    }
+                }, 1);
+                setTimeout(startXhr, 1);
+            }
 
-              // Exit if shutting down app
-              if (cordova.shuttingDown) {
-                  return;
-              }
+            // If callback ping (used to keep XHR request from timing out)
+            else if (xmlhttp.status === 404) {
+                setTimeout(startXhr, 10);
+            }
 
-              // If callback has JavaScript statement to execute
-              if (xmlhttp.status === 200) {
+            // 0 == Page is unloading.
+            // 400 == Bad request.
+            // 403 == invalid token.
+            // 503 == server stopped.
+            else {
+                console.log("JSCallback Error: Request failed with status " + xmlhttp.status);
+                exec.setNativeToJsBridgeMode(exec.nativeToJsModes.POLLING);
+            }
+        }
+    };
 
-                  // Need to url decode the response
-                  var msg = decodeURIComponent(xmlhttp.responseText);
-                  setTimeout(function() {
-                      try {
-                          var t = eval(msg);
-                      }
-                      catch (e) {
-                          // If we're getting an error here, seeing the message will help in debugging
-                          console.log("JSCallback: Message from Server: " + msg);
-                          console.log("JSCallback Error: "+e);
-                      }
-                  }, 1);
-                  setTimeout(callback, 1);
-              }
+    if (port === null) {
+        port = prompt("getPort", "gap_callbackServer:");
+    }
+    if (token === null) {
+        token = prompt("getToken", "gap_callbackServer:");
+    }
+    xmlhttp.open("GET", "http://127.0.0.1:"+port+"/"+token , true);
+    xmlhttp.send();
+}
 
-              // If callback ping (used to keep XHR request from timing out)
-              else if (xmlhttp.status === 404) {
-                  setTimeout(callback, 10);
-              }
+module.exports = {
+    start: function() {
+        startXhr();
+    },
 
-              // If security error
-              else if (xmlhttp.status === 403) {
-                  console.log("JSCallback Error: Invalid token.  Stopping callbacks.");
-              }
+    stop: function() {
+        if (xmlhttp) {
+            var tmp = xmlhttp;
+            xmlhttp = null;
+            tmp.abort();
+        }
+    },
 
-              // If server is stopping
-              else if (xmlhttp.status === 503) {
-                  console.log("JSCallback Server Closed: Stopping callbacks.");
-              }
-
-              // If request wasn't GET
-              else if (xmlhttp.status === 400) {
-                  console.log("JSCallback Error: Bad request.  Stopping callbacks.");
-              }
-
-              // If error, revert to polling
-              else {
-                  console.log("JSCallback Error: Request failed.");
-                  cordova.UsePolling = true;
-                  polling();
-              }
-          }
-      };
-
-      if (port === null) {
-          port = prompt("getPort", "gap_callbackServer:");
-      }
-      if (token === null) {
-          token = prompt("getToken", "gap_callbackServer:");
-      }
-      xmlhttp.open("GET", "http://127.0.0.1:"+port+"/"+token , true);
-      xmlhttp.send();
+    isAvailable: function() {
+        return ("true" != prompt("usePolling", "gap_callbackServer:"));
+    }
 };
 
-module.exports = callback;
+
 });
 
 // file: lib/android/plugin/android/device.js
@@ -3819,38 +3883,47 @@ module.exports = {
 // file: lib/android/plugin/android/polling.js
 define("cordova/plugin/android/polling", function(require, exports, module) {
 var cordova = require('cordova'),
-    period = 50,
-    polling = function() {
-      // Exit if shutting down app
-      if (cordova.shuttingDown) {
-          return;
-      }
+    POLL_INTERVAL = 50,
+    enabled = false;
 
-      // If polling flag was changed, stop using polling from now on and switch to XHR server / callback
-      if (!cordova.UsePolling) {
-          require('cordova/plugin/android/callback')();
-          return;
-      }
+function pollOnce() {
+    var msg = prompt("", "gap_poll:");
+    if (msg) {
+        try {
+            eval(""+msg);
+        }
+        catch (e) {
+            console.log("JSCallbackPolling: Message from Server: " + msg);
+            console.log("JSCallbackPolling Error: "+e);
+        }
+        return true;
+    }
+    return false;
+}
 
-      var msg = prompt("", "gap_poll:");
-      if (msg) {
-          setTimeout(function() {
-              try {
-                  var t = eval(""+msg);
-              }
-              catch (e) {
-                  console.log("JSCallbackPolling: Message from Server: " + msg);
-                  console.log("JSCallbackPolling Error: "+e);
-              }
-          }, 1);
-          setTimeout(polling, 1);
-      }
-      else {
-          setTimeout(polling, period);
-      }
+function doPoll() {
+    if (!enabled) {
+        return;
+    }
+    var nextDelay = POLL_INTERVAL;
+    if (pollOnce()) {
+        nextDelay = 0;
+    }
+    setTimeout(doPoll, nextDelay);
+}
+
+module.exports = {
+    start: function() {
+        enabled = true;
+        setTimeout(doPoll, 1);
+    },
+    stop: function() {
+        enabled = false;
+    },
+    pollOnce: pollOnce
 };
 
-module.exports = polling;
+
 });
 
 // file: lib/android/plugin/android/storage.js
@@ -4807,6 +4880,25 @@ Device.prototype.getInfo = function(successCallback, errorCallback) {
 };
 
 module.exports = new Device();
+
+});
+
+// file: lib/common/plugin/echo.js
+define("cordova/plugin/echo", function(require, exports, module) {
+var exec = require('cordova/exec');
+
+/**
+ * Sends the given message through exec() to the Echo plugink, which sends it back to the successCallback.
+ * @param successCallback  invoked with a FileSystem object
+ * @param errorCallback  invoked if error occurs retrieving file system
+ * @param message  The string to be echoed.
+ * @param forceAsync  Whether to force an async return value (for testing native->js bridge).
+ */
+module.exports = function(successCallback, errorCallback, message, forceAsync) {
+    var action = forceAsync ? 'echoAsync' : 'echo';
+    exec(successCallback, errorCallback, "Echo", action, [message]);
+};
+
 
 });
 
