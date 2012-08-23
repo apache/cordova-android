@@ -835,7 +835,7 @@ public class CordovaWebView extends WebView {
         }
 
         // If app doesn't want to run in background
-        if (keepRunning) {
+        if (!keepRunning) {
             // Pause JavaScript timers (including setInterval)
             this.pauseTimers();
         }
@@ -854,11 +854,8 @@ public class CordovaWebView extends WebView {
             this.pluginManager.onResume(keepRunning);
         }
 
-        // If app doesn't want to run in background
-        if (!keepRunning || activityResultKeepRunning) {
-            // Resume JavaScript timers (including setInterval)
-            this.resumeTimers();
-        }
+        // Resume JavaScript timers (including setInterval)
+        this.resumeTimers();
         paused = false;
     }
     
