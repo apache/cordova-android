@@ -162,7 +162,7 @@ if(fso.FolderExists(ROOT + '\\framework')) {
     exec('%comspec% /c copy '+ROOT+'\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
     // copy in xml
     fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-    exec('%comspec% /c copy '+ROOT+'\\xml\\config.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+    exec('%comspec% /c copy '+ROOT+'\\xml\\config.xml ' + PROJECT_PATH + '\\res\\xml\\config.xml /Y');
 }
 
 // copy cordova scripts
