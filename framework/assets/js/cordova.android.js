@@ -1,6 +1,6 @@
-// commit f8b6816a5e44b4f8cdcb4b61c49cff9b50b7ce6f
+// commit 69d652e9dcaaaf4bdaa55ec37329636dd5b20fbe
 
-// File generated at :: Wed Aug 22 2012 09:42:10 GMT-0400 (EDT)
+// File generated at :: Fri Aug 24 2012 16:38:32 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -418,7 +418,8 @@ module.exports = {
 
 // file: lib/common/channel.js
 define("cordova/channel", function(require, exports, module) {
-var utils = require('cordova/utils');
+var utils = require('cordova/utils'),
+    nextGuid = 1;
 
 /**
  * Custom pub-sub "channel" that can have functions subscribed to it
@@ -470,7 +471,6 @@ var Channel = function(type, opts) {
     this.type = type;
     this.handlers = {};
     this.numHandlers = 0;
-    this.guid = 1;
     this.fired = false;
     this.enabled = true;
     this.events = {
@@ -563,19 +563,19 @@ Channel.prototype.subscribe = function(f, c, g) {
 
     g = g || func.observer_guid || f.observer_guid;
     if (!g) {
-        // first time we've seen this subscriber
-        g = this.guid++;
-    }
-    else {
-        // subscriber already handled; dont set it twice
-        return g;
+        // first time any channel has seen this subscriber
+        g = nextGuid++;
     }
     func.observer_guid = g;
     f.observer_guid = g;
-    this.handlers[g] = func;
-    this.numHandlers++;
-    if (this.events.onSubscribe) this.events.onSubscribe.call(this);
-    if (this.fired) func.call(this);
+
+    // Don't add the same handler more than once.
+    if (!this.handlers[g]) {
+        this.handlers[g] = func;
+        this.numHandlers++;
+        if (this.events.onSubscribe) this.events.onSubscribe.call(this);
+        if (this.fired) func.apply(this, this.fireArgs);
+    }
     return g;
 };
 
@@ -589,15 +589,14 @@ Channel.prototype.subscribeOnce = function(f, c) {
 
     var g = null;
     var _this = this;
-    var m = function() {
-        f.apply(c || null, arguments);
-        _this.unsubscribe(g);
-    };
     if (this.fired) {
-        if (typeof c == "object") { f = utils.close(c, f); }
-        f.apply(this, this.fireArgs);
+        f.apply(c || null, this.fireArgs);
     } else {
-        g = this.subscribe(m);
+        g = this.subscribe(function() {
+            _this.unsubscribe(g);
+            f.apply(c || null, arguments);
+        });
+        f.observer_guid = g;
     }
     return g;
 };
@@ -613,7 +612,6 @@ Channel.prototype.unsubscribe = function(g) {
     var handler = this.handlers[g];
     if (handler) {
         if (handler.observer_guid) handler.observer_guid=null;
-        this.handlers[g] = null;
         delete this.handlers[g];
         this.numHandlers--;
         if (this.events.onUnsubscribe) this.events.onUnsubscribe.call(this);
@@ -627,14 +625,17 @@ Channel.prototype.fire = function(e) {
     if (this.enabled) {
         var fail = false;
         this.fired = true;
-        for (var item in this.handlers) {
-            var handler = this.handlers[item];
-            if (typeof handler == 'function') {
-                var rv = (handler.apply(this, arguments)===false);
-                fail = fail || rv;
-            }
-        }
         this.fireArgs = arguments;
+        // Copy the values first so that it is safe to modify it from within
+        // callbacks.
+        var toCall = [];
+        for (var item in this.handlers) {
+            toCall.push(this.handlers[item]);
+        }
+        for (var i = 0; i < toCall.length; ++i) {
+            var rv = (toCall[i].apply(this, arguments)===false);
+            fail = fail || rv;
+        }
         return !fail;
     }
     return true;
@@ -912,7 +913,10 @@ var cordova = require('cordova'),
     jsToNativeModes = {
         PROMPT: 0,
         JS_OBJECT: 1,
-        LOCATION_CHANGE: 2  // Not yet implemented
+        // This mode is currently for benchmarking purposes only. It must be enabled
+        // on the native side through the ENABLE_LOCATION_CHANGE_EXEC_MODE
+        // constant within CordovaWebViewClient.java before it will work.
+        LOCATION_CHANGE: 2
     },
     nativeToJsModes = {
         // Polls for messages using the prompt() bridge.
@@ -934,6 +938,17 @@ var cordova = require('cordova'),
     };
 
 function androidExec(success, fail, service, action, args) {
+    // Set default bridge modes if they have not already been set.
+    if (jsToNativeBridgeMode === undefined) {
+        androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
+    }
+    if (nativeToJsBridgeMode === undefined) {
+        if (callback.isAvailable()) {
+            androidExec.setNativeToJsBridgeMode(nativeToJsModes.HANGING_GET);
+        } else {
+            androidExec.setNativeToJsBridgeMode(nativeToJsModes.POLLING);
+        }
+    }
     try {
       var callbackId = service + cordova.callbackId++,
           argsJson = JSON.stringify(args),
@@ -942,7 +957,9 @@ function androidExec(success, fail, service, action, args) {
           cordova.callbacks[callbackId] = {success:success, fail:fail};
       }
 
-      if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT) {
+      if (jsToNativeBridgeMode == jsToNativeModes.LOCATION_CHANGE) {
+          window.location = 'http://cdv_exec/' + service + '#' + action + '#' + callbackId + '#' + argsJson; 
+      } else if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT) {
           // Explicit cast to string is required on Android 2.1 to convert from
           // a Java string to a JS string.
           result = '' + _cordovaExec.exec(service, action, callbackId, argsJson);
@@ -951,7 +968,7 @@ function androidExec(success, fail, service, action, args) {
       }
 
       // If a result was returned
-      if (result.length > 0) {
+      if (result) {
           var v = JSON.parse(result);
 
           // If status is OK, then return value back to caller
@@ -1050,22 +1067,6 @@ androidExec.setNativeToJsBridgeMode = function(mode) {
     }
 };
 
-// Start listening for XHR callbacks
-// Figure out which bridge approach will work on this Android
-// device: polling or XHR-based callbacks
-androidExec.initialize = function() {
-    if (jsToNativeBridgeMode === undefined) {
-        androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
-    }
-    if (nativeToJsBridgeMode === undefined) {
-        if (callback.isAvailable()) {
-            androidExec.setNativeToJsBridgeMode(nativeToJsModes.HANGING_GET);
-        } else {
-            androidExec.setNativeToJsBridgeMode(nativeToJsModes.POLLING);
-        }
-    }
-};
-
 module.exports = androidExec;
 
 });
@@ -1078,11 +1079,6 @@ module.exports = {
         var channel = require("cordova/channel"),
             cordova = require('cordova'),
             exec = require('cordova/exec');
-
-        // Use a setTimeout here to give apps a chance to set the bridge mode.
-        setTimeout(function() {
-            exec.initialize();
-        }, 1);
 
         // Inject a listener for the backbutton on the document.
         var backButtonChannel = cordova.addDocumentEventHandler('backbutton', {
@@ -2965,7 +2961,7 @@ FileWriter.prototype.seek = function(offset) {
     if (offset < 0) {
         this.position = Math.max(offset + this.length, 0);
     }
-    // Offset is bigger then file size so set position
+    // Offset is bigger than file size so set position
     // to the end of the file.
     else if (offset > this.length) {
         this.position = this.length;
@@ -3592,7 +3588,7 @@ var accelerometer = {
 
         if (running) {
             // If we're already running then immediately invoke the success callback
-            // but only if we have retreived a value, sample code does not check for null ...
+            // but only if we have retrieved a value, sample code does not check for null ...
             if(accel) {
                 successCallback(accel);
             }
@@ -4796,7 +4792,7 @@ var contacts = {
      * This function creates a new contact, but it does not persist the contact
      * to device storage. To persist the contact to device storage, invoke
      * contact.save().
-     * @param properties an object who's properties will be examined to create a new Contact
+     * @param properties an object whose properties will be examined to create a new Contact
      * @returns new Contact object
      */
     create:function(properties) {
@@ -5010,7 +5006,7 @@ var geolocation = {
         } else if (options.timeout === 0) {
             fail({
                 code:PositionError.TIMEOUT,
-                message:"timeout value in PositionOptions set to 0 and no cached Position object available, or cached Position object's age exceed's provided PositionOptions' maximumAge parameter."
+                message:"timeout value in PositionOptions set to 0 and no cached Position object available, or cached Position object's age exceeds provided PositionOptions' maximumAge parameter."
             });
         // Otherwise we have to call into native to retrieve a position.
         } else {
@@ -5174,7 +5170,7 @@ CurrentLevel = LevelsMap.WARN;
  *
  * The value used determines which messages get printed.  The logging
  * values above are in order, and only messages logged at the logging
- * level or above will actually be displayed to the user.  Eg, the
+ * level or above will actually be displayed to the user.  E.g., the
  * default level is WARN, so only messages logged with LOG, ERROR, or
  * WARN will be displayed; INFO and DEBUG messages will be ignored.
  */
