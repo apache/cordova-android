@@ -154,8 +154,7 @@ if(fso.FolderExists(ROOT + '\\framework')) {
     exec('%comspec% /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
     exec('%comspec% /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
     fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-    exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
-    exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+    exec('%comspec% /c copy '+ROOT+'\\framework\\res\\xml\\config.xml ' + PROJECT_PATH + '\\res\\xml\\config.xml /Y');
 } else {
     // copy in cordova.js
     exec('%comspec% /c copy '+ROOT+'\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
@@ -163,8 +162,7 @@ if(fso.FolderExists(ROOT + '\\framework')) {
     exec('%comspec% /c copy '+ROOT+'\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
     // copy in xml
     fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-    exec('%comspec% /c copy '+ROOT+'\\xml\\cordova.xml ' + PROJECT_PATH + '\\res\\xml\\cordova.xml /Y');
-    exec('%comspec% /c copy '+ROOT+'\\xml\\plugins.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
+    exec('%comspec% /c copy '+ROOT+'\\xml\\config.xml ' + PROJECT_PATH + '\\res\\xml\\plugins.xml /Y');
 }
 
 // copy cordova scripts
