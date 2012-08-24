@@ -20,6 +20,7 @@ package org.apache.cordova;
 
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
+import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -202,8 +203,8 @@ public class CordovaChromeClient extends WebChromeClient {
                 String action = array.getString(1);
                 String callbackId = array.getString(2);
                 boolean async = array.getBoolean(3);
-                String r = this.appView.pluginManager.exec(service, action, callbackId, message, async);
-                result.confirm(r);
+                PluginResult r = this.appView.pluginManager.exec(service, action, callbackId, message, async);
+                result.confirm(r == null ? "" : r.getJSONString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }

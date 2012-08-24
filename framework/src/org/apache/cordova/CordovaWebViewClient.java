@@ -21,6 +21,8 @@ package org.apache.cordova;
 import java.util.Hashtable;
 
 import org.apache.cordova.api.CordovaInterface;
+import org.apache.cordova.api.PluginResult;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -38,6 +40,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
@@ -50,7 +53,11 @@ import android.webkit.WebViewClient;
  */
 public class CordovaWebViewClient extends WebViewClient {
 
-    private static final String TAG = "Cordova";
+	private static final String TAG = "Cordova";
+	// Disable URL-based exec() bridge by default since it's a bit of a
+	// security concern.
+	private static boolean ENABLE_LOCATION_CHANGE_EXEC_MODE = false;
+	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     CordovaWebView appView;
     private boolean doClearHistory = false;
@@ -87,6 +94,29 @@ public class CordovaWebViewClient extends WebViewClient {
         this.appView = view;
     }
 
+
+    // Parses commands sent by setting the webView's URL to:
+    // cdvbrg:service/action/callbackId#jsonArgs
+	private void handleExecUrl(String url) {
+		int idx1 = CORDOVA_EXEC_URL_PREFIX.length();
+		int idx2 = url.indexOf('#', idx1 + 1);
+		int idx3 = url.indexOf('#', idx2 + 1);
+		int idx4 = url.indexOf('#', idx3 + 1);
+		if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1) {
+			Log.e(TAG, "Could not decode URL command: " + url);
+			return;
+		}
+		String service    = url.substring(idx1, idx2);
+		String action     = url.substring(idx2 + 1, idx3);
+		String callbackId = url.substring(idx3 + 1, idx4);
+		String jsonArgs   = url.substring(idx4 + 1);
+        PluginResult r = appView.pluginManager.exec(service, action, callbackId, jsonArgs, true /* async */);
+        String callbackString = r.toCallbackString(callbackId);
+        if (r != null) {
+            appView.sendJavascript(callbackString);
+        }
+	}    
+	
     /**
      * Give the host application a chance to take over the control when a new url
      * is about to be loaded in the current WebView.
@@ -95,11 +125,15 @@ public class CordovaWebViewClient extends WebViewClient {
      * @param url           The url to be loaded.
      * @return              true to override, false for default behavior
      */
-    @Override
+	@Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
+    	// Check if it's an exec() bridge command message.
+    	if (ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
+    		handleExecUrl(url);
+    	}
 
-        // First give any plugins the chance to handle the url themselves
-        if ((this.appView.pluginManager != null) && this.appView.pluginManager.onOverrideUrlLoading(url)) {
+        // Give plugins the chance to handle the url
+    	else if ((this.appView.pluginManager != null) && this.appView.pluginManager.onOverrideUrlLoading(url)) {
         }
 
         // If dialing phone (tel:5551212)
