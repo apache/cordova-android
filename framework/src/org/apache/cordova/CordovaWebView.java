@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginManager;
+import org.apache.cordova.api.PluginResult;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -248,7 +249,8 @@ public class CordovaWebView extends WebView {
         this.addJavascriptInterface(new Object() {
             @SuppressWarnings("unused")
             public String exec(String service, String action, String callbackId, String arguments) throws JSONException {
-                return pluginManager.exec(service, action, callbackId, arguments, true /* async */);
+                PluginResult r = pluginManager.exec(service, action, callbackId, arguments, true /* async */);
+                return r == null ? "" : r.getJSONString();
             }
         }, "_cordovaExec");
     }
@@ -489,7 +491,7 @@ public class CordovaWebView extends WebView {
         // Load url
         this.loadUrlIntoView(url);
     }
-
+    
     /**
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)

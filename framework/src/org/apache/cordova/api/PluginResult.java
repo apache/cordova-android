@@ -82,6 +82,19 @@ public class PluginResult {
         return "{\"status\":" + this.status + ",\"message\":" + this.message + ",\"keepCallback\":" + this.keepCallback + "}";
     }
 
+    public String toCallbackString(String callbackId) {
+        // If no result to be sent and keeping callback, then no need to sent back to JavaScript
+        if ((status == PluginResult.Status.NO_RESULT.ordinal()) && keepCallback) {
+        	return null;
+        }
+
+        // Check the success (OK, NO_RESULT & !KEEP_CALLBACK)
+        if ((status == PluginResult.Status.OK.ordinal()) || (status == PluginResult.Status.NO_RESULT.ordinal())) {
+            return toSuccessCallbackString(callbackId);
+        }
+
+        return toErrorCallbackString(callbackId);
+    }
     public String toSuccessCallbackString(String callbackId) {
         return "cordova.callbackSuccess('"+callbackId+"',"+this.getJSONString()+");";
     }
