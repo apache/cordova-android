@@ -32,6 +32,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.net.ssl.HostnameVerifier;
@@ -63,29 +64,44 @@ public class FileTransfer extends Plugin {
     public static int FILE_NOT_FOUND_ERR = 1;
     public static int INVALID_URL_ERR = 2;
     public static int CONNECTION_ERR = 3;
+    public static int ABORTED_ERR = 4;
+
+    private static HashSet abortTriggered = new HashSet();
 
     private SSLSocketFactory defaultSSLSocketFactory = null;
     private HostnameVerifier defaultHostnameVerifier = null;
+
+    static class AbortException extends Exception {
+        public AbortException(String str) {
+            super(str);
+        }
+    }
 
     /* (non-Javadoc)
     * @see org.apache.cordova.api.Plugin#execute(java.lang.String, org.json.JSONArray, java.lang.String)
     */
     @Override
     public PluginResult execute(String action, JSONArray args, String callbackId) {
-        String source = null;
-        String target = null;
-        try {
-            source = args.getString(0);
-            target = args.getString(1);
-        } catch (JSONException e) {
-            Log.d(LOG_TAG, "Missing source or target");
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing source or target");
-        }
+        if (action.equals("upload") || action.equals("download")) {
+            String source = null;
+            String target = null;
+            try {
+                source = args.getString(0);
+                target = args.getString(1);
+            } catch (JSONException e) {
+                Log.d(LOG_TAG, "Missing source or target");
+                return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing source or target");
+            }
 
-        if (action.equals("upload")) {
-            return upload(URLDecoder.decode(source), target, args);
-        } else if (action.equals("download")) {
-            return download(source, target, args.optBoolean(2));
+            if (action.equals("upload")) {
+                return upload(URLDecoder.decode(source), target, args, callbackId);
+            } else if (action.equals("download")) {
+                String objectId = args.getString(2);
+                boolean trustEveryone = args.optBoolean(3);
+                return download(source, target, trustEveryone, objectId, callbackId);
+            }
+        } else if (action.equals("abort")) {
+            return abort(args);
         } else {
             return new PluginResult(PluginResult.Status.INVALID_ACTION);
         }
@@ -96,6 +112,7 @@ public class FileTransfer extends Plugin {
      * @param source        Full path of the file on the file system
      * @param target        URL of the server to receive the file
      * @param args          JSON Array of args
+     * @param callbackId    callback id for optional progress reports
      *
      * args[2] fileKey       Name of file request parameter
      * args[3] fileName      File name to be used on server
@@ -103,7 +120,7 @@ public class FileTransfer extends Plugin {
      * args[5] params        key:value pairs of user-defined parameters
      * @return FileUploadResult containing result of upload request
      */
-    private PluginResult upload(String source, String target, JSONArray args) {
+    private PluginResult upload(String source, String target, JSONArray args, String callbackId) {
         Log.d(LOG_TAG, "upload " + source + " to " +  target);
 
         HttpURLConnection conn = null;
@@ -121,6 +138,7 @@ public class FileTransfer extends Plugin {
             if (headers == null && params != null) {
                 headers = params.optJSONObject("headers");
             }
+            String objectId = args.getString(9);
 
             Log.d(LOG_TAG, "fileKey: " + fileKey);
             Log.d(LOG_TAG, "fileName: " + fileName);
@@ -129,9 +147,11 @@ public class FileTransfer extends Plugin {
             Log.d(LOG_TAG, "trustEveryone: " + trustEveryone);
             Log.d(LOG_TAG, "chunkedMode: " + chunkedMode);
             Log.d(LOG_TAG, "headers: " + headers);
+            Log.d(LOG_TAG, "objectId: " + objectId);
 
             // Create return object
             FileUploadResult result = new FileUploadResult();
+            FileProgressResult progress = new FileProgressResult();
 
             // Get a input stream of the file on the phone
             FileInputStream fileInputStream = (FileInputStream) getPathFromUri(source);
@@ -285,6 +305,21 @@ public class FileTransfer extends Plugin {
                 bytesAvailable = fileInputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
                 bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                if (objectId != null) {
+                    // Only send progress callbacks if the JS code sent us an object ID,
+                    // so we don't spam old versions with unrecognized callbacks.
+                    Log.d(LOG_TAG, "****** About to send a progress result from upload");
+                    progress.setLoaded(totalBytes);
+                    PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
+                    progressResult.setKeepCallback(true);
+                    success(progressResult, callbackId);
+                }
+                synchronized (abortTriggered) {
+                    if (objectId != null && abortTriggered.contains(objectId)) {
+                        abortTriggered.remove(objectId);
+                        throw new AbortException("upload aborted");
+                    }
+                }
             }
 
             // send multipart form data necessary after file data...
@@ -342,6 +377,10 @@ public class FileTransfer extends Plugin {
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+        } catch (AbortException e) {
+            JSONObject error = createFileTransferError(ABORTED_ERR, source, target, conn);
+            Log.e(LOG_TAG, error.toString(), e);
+            return new PluginResult(PluginResult.Status.ERROR, error);
         } catch (Throwable t) {
             // Shouldn't happen, but will
             JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, conn);
@@ -459,7 +498,7 @@ public class FileTransfer extends Plugin {
      * @param target      	Full path of the file on the file system
      * @return JSONObject 	the downloaded file
      */
-    private PluginResult download(String source, String target, boolean trustEveryone) {
+    private PluginResult download(String source, String target, boolean trustEveryone, String objectId, String callbackId) {
         Log.d(LOG_TAG, "download " + source + " to " +  target);
 
         HttpURLConnection connection = null;
@@ -523,12 +562,36 @@ public class FileTransfer extends Plugin {
 
                 byte[] buffer = new byte[1024];
                 int bytesRead = 0;
+                long totalBytes = 0;
+                FileProgressResult progress = new FileProgressResult();
+
+                if (connection.getContentEncoding() == null) {
+                    // Only trust content-length header if no gzip etc
+                    progress.setLengthComputable(true);
+                    progress.setTotal(connection.getContentLength());
+                }
 
                 FileOutputStream outputStream = new FileOutputStream(file);
 
                 // write bytes to file
                 while ((bytesRead = inputStream.read(buffer)) > 0) {
                     outputStream.write(buffer, 0, bytesRead);
+                    totalBytes += bytesRead;
+                    if (objectId != null) {
+                        // Only send progress callbacks if the JS code sent us an object ID,
+                        // so we don't spam old versions with unrecognized callbacks.
+                        Log.d(LOG_TAG, "****** About to send a progress result from download");
+                        progress.setLoaded(totalBytes);
+                        PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
+                        progressResult.setKeepCallback(true);
+                        success(progressResult, callbackId);
+                    }
+                    synchronized (abortTriggered) {
+                        if (objectId != null && abortTriggered.contains(objectId)) {
+                            abortTriggered.remove(objectId);
+                            throw new AbortException("download aborted");
+                        }
+                    }
                 }
 
                 outputStream.close();
@@ -620,5 +683,24 @@ public class FileTransfer extends Plugin {
         }
 
         return file;
+    }
+
+    /**
+     * Abort an ongoing upload or download.
+     *
+     * @param args          args
+     */
+    private PluginResult abort(JSONArray args) {
+        String objectId;
+        try {
+            objectId = args.getString(0);
+        } catch (JSONException e) {
+            Log.d(LOG_TAG, "Missing objectId");
+            return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing objectId");
+        }
+        synchronized (abortTriggered) {
+            abortTriggered.add(objectId);
+        }
+        return new PluginResult(PluginResult.Status.OK);
     }
 }
