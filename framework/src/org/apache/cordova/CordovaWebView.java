@@ -215,10 +215,10 @@ public class CordovaWebView extends WebView {
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
             settings.setNavDump(true);
         
-        //Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
-        //while we do this
-        if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-            settings.setAllowUniversalAccessFromFileURLs(true);
+        // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
+        // while we do this
+        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+        	Level16Apis.enableUniversalAccess(settings);
         // Enable database
         settings.setDatabaseEnabled(true);
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
@@ -890,5 +890,14 @@ public class CordovaWebView extends WebView {
 
     public boolean hadKeyEvent() {
         return handleButton;
+    }
+
+    // Wrapping these functions in their own class prevents warnings in adb like:
+    // VFY: unable to resolve virtual method 285: Landroid/webkit/WebSettings;.setAllowUniversalAccessFromFileURLs
+    @TargetApi(16)
+    private static class Level16Apis {
+        static void enableUniversalAccess(WebSettings settings) {
+            settings.setAllowUniversalAccessFromFileURLs(true);
+        }
     }
 }
