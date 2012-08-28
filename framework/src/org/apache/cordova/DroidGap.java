@@ -602,7 +602,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         super.onPause();
 
         LOG.d(TAG, "Paused the application!");
-        
+
         // Don't process pause if shutting down, since onDestroy() will be called
         if (this.activityState == ACTIVITY_EXITING) {
             return;
@@ -811,7 +811,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     public void onReceivedError(final int errorCode, final String description, final String failingUrl) {
         final DroidGap me = this;
-        
+
         // If errorUrl specified, then load it
         final String errorUrl = me.getStringProperty("errorUrl", null);
         if ((errorUrl != null) && (errorUrl.startsWith("file://") || errorUrl.indexOf(me.baseUrl) == 0 || this.appView.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
@@ -1032,20 +1032,4 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
         return null;
     }
-    
-
-    /*
-     * (non-Javadoc)
-     * @see android.app.Activity#onKeyUp(int, android.view.KeyEvent)
-     */
-    
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event)
-    {
-        if (appView.canGoBack() || keyCode != KeyEvent.KEYCODE_BACK)
-            return appView.onKeyUp(keyCode, event);
-        else 
-            return super.onKeyUp(keyCode, event);
-    }
-  
 }
