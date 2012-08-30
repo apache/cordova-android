@@ -490,8 +490,14 @@ public class FileTransfer extends Plugin {
                 connection.connect();
 
                 Log.d(LOG_TAG, "Download file:" + url);
+                InputStream inputStream;
+                try {
+                    inputStream = connection.getInputStream();
+                } catch(FileNotFoundException e) {
+                    Log.e(LOG_TAG, e.toString(), e);
+                    throw new IOException("Received error from server");
+                }
 
-                InputStream inputStream = connection.getInputStream();
                 byte[] buffer = new byte[1024];
                 int bytesRead = 0;
 
@@ -521,6 +527,7 @@ public class FileTransfer extends Plugin {
 
         } catch (FileNotFoundException e) {
             JSONObject error = createFileTransferError(FILE_NOT_FOUND_ERR, source, target, connection);
+            Log.d(LOG_TAG, "I got a file not found exception");
             Log.e(LOG_TAG, error.toString(), e);
             return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
         } catch (MalformedURLException e) {
