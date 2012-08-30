@@ -146,9 +146,9 @@ public class FileTransfer extends Plugin {
             //------------------ CLIENT REQUEST
             // open a URL connection to the server
             URL url = new URL(target);
-
+            boolean useHttps = url.getProtocol().toLowerCase().equals("https");
             // Open a HTTP connection to the URL based on protocol
-            if (url.getProtocol().toLowerCase().equals("https")) {
+            if (useHttps) {
                 // Using standard HTTPS connection. Will not allow self signed certificate
                 if (!trustEveryone) {
                     conn = (HttpsURLConnection) url.openConnection();
@@ -246,12 +246,17 @@ public class FileTransfer extends Plugin {
             Log.d(LOG_TAG, "Content Length: " + fixedLength);
             // setFixedLengthStreamingMode causes and OutOfMemoryException on pre-Froyo devices.
             // http://code.google.com/p/android/issues/detail?id=3164
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO && chunkedMode) {
+            // It also causes OOM if HTTPS is used, even on newer devices.
+            chunkedMode = chunkedMode && (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO || useHttps);
+            		
+            if (chunkedMode) {
                 conn.setChunkedStreamingMode(maxBufferSize);
+                // Although setChunkedStreamingMode sets this header, setting it explicitly here works
+                // around an OutOfMemoryException when using https.
+                conn.setRequestProperty("Transfer-Encoding", "chunked");
             } else {
                 conn.setFixedLengthStreamingMode(fixedLength);
             }
-            conn.setRequestProperty("Transfer-Encoding", "chunked");
 
             dos = new DataOutputStream( conn.getOutputStream() );
             //We don't want to change encoding, we just want this to write for all Unicode.
