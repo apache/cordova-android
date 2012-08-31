@@ -1,6 +1,6 @@
-// commit 69d652e9dcaaaf4bdaa55ec37329636dd5b20fbe
+// commit 2aa46aa0eef2ba641cf91793735152d7fb5b6998
 
-// File generated at :: Fri Aug 24 2012 16:38:32 GMT-0400 (EDT)
+// File generated at :: Fri Aug 31 2012 16:26:04 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -29,10 +29,6 @@ var require,
 
 (function () {
     var modules = {};
-    // Stack of moduleIds currently being built.
-    var requireStack = [];
-    // Map of module ID -> index into requireStack of modules currently being built.
-    var inProgressModules = {};
 
     function build(module) {
         var factory = module.factory;
@@ -45,21 +41,8 @@ var require,
     require = function (id) {
         if (!modules[id]) {
             throw "module " + id + " not found";
-        } else if (id in inProgressModules) {
-            var cycle = requireStack.slice(inProgressModules[id]).join('->') + '->' + id;
-            throw "Cycle in require graph: " + cycle;
         }
-        if (modules[id].factory) {
-            try {
-                inProgressModules[id] = requireStack.length;
-                requireStack.push(id);
-                return build(modules[id]);
-            } finally {
-                delete inProgressModules[id];
-                requireStack.pop();
-            }
-        }
-        return modules[id].exports;
+        return modules[id].factory ? build(modules[id]) : modules[id].exports;
     };
 
     define = function (id, factory) {
@@ -84,7 +67,6 @@ if (typeof module === "object" && typeof require === "function") {
     module.exports.require = require;
     module.exports.define = define;
 }
-
 // file: lib/cordova.js
 define("cordova", function(require, exports, module) {
 var channel = require('cordova/channel');
@@ -958,7 +940,7 @@ function androidExec(success, fail, service, action, args) {
       }
 
       if (jsToNativeBridgeMode == jsToNativeModes.LOCATION_CHANGE) {
-          window.location = 'http://cdv_exec/' + service + '#' + action + '#' + callbackId + '#' + argsJson; 
+          window.location = 'http://cdv_exec/' + service + '#' + action + '#' + callbackId + '#' + argsJson;
       } else if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT) {
           // Explicit cast to string is required on Android 2.1 to convert from
           // a Java string to a JS string.
@@ -1023,7 +1005,7 @@ function androidExec(success, fail, service, action, args) {
     } catch (e2) {
       console.log("Error: "+e2);
     }
-};
+}
 
 function onOnLineEvent(e) {
     while (polling.pollOnce());
