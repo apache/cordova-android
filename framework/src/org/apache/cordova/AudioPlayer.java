@@ -468,7 +468,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                     try {
                         this.loadAudioFile(file);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
                     }
                     return false;
                 case MEDIA_LOADING:
@@ -493,7 +493,6 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                         try {
                             this.loadAudioFile(file);
                         } catch (Exception e) {
-                            e.printStackTrace();
                             this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
                         }
                         //if we had to prepare= the file, we won't be in the correct state for playback
