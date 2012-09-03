@@ -19,7 +19,7 @@
 package org.apache.cordova.test;
 
 import org.apache.cordova.CordovaWebView;
-import com.phonegap.api.PluginManager;
+import org.apache.cordova.api.PluginManager;
 
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
@@ -34,13 +34,13 @@ public class CordovaTest extends
   private String rString;
 
   public CordovaTest() {
-    super("com.phonegap.test.activities", CordovaWebViewTestActivity.class);
+    super("org.apache.cordova.test.activities", CordovaWebViewTestActivity.class);
   }
 
   protected void setUp() throws Exception {
     super.setUp();
     testActivity = this.getActivity();
-    testView = testActivity.findViewById(R.id.phoneGapView);
+    testView = testActivity.findViewById(R.id.cordovaWebView);
   }
 
   public void testPreconditions() {

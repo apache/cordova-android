@@ -20,7 +20,7 @@
 package org.apache.cordova.test;
 
 import org.apache.cordova.CordovaWebView;
-import com.phonegap.api.PluginManager;
+import org.apache.cordova.api.PluginManager;
 
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;

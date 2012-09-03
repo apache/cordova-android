@@ -30,7 +30,7 @@ import android.os.Bundle;
 
 public class CordovaWebViewTestActivity extends Activity implements CordovaInterface {
 
-    CordovaWebView phoneGap;
+    CordovaWebView cordovaWebView;
 
     /** Called when the activity is first created. */
     @Override
@@ -39,17 +39,17 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
 
         setContentView(R.layout.main);
 
-        phoneGap = (CordovaWebView) findViewById(R.id.phoneGapView);
+        cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
 
-        phoneGap.loadUrl("file:///android_asset/www/index.html");
+        cordovaWebView.loadUrl("file:///android_asset/www/index.html");
 
     }
 
     public void onDestroy()
     {
         super.onDestroy();
-        if (phoneGap.pluginManager != null) {
-            phoneGap.pluginManager.onDestroy();
+        if (cordovaWebView.pluginManager != null) {
+            cordovaWebView.pluginManager.onDestroy();
         }
     }
 

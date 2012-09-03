@@ -20,7 +20,7 @@
 package org.apache.cordova.test;
 
 import org.apache.cordova.CordovaWebView;
-import com.phonegap.api.PluginManager;
+import org.apache.cordova.api.PluginManager;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
@@ -37,7 +37,7 @@ public class PluginManagerTest extends ActivityInstrumentationTestCase2<CordovaW
 	private PluginManager pMan;
 
 	public PluginManagerTest() {
-		super("com.phonegap.test.activities",CordovaWebViewTestActivity.class);
+		super("org.apache.cordova.test.activities",CordovaWebViewTestActivity.class);
 	}
 	
 	protected void setUp() throws Exception{

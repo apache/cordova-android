@@ -41,7 +41,7 @@ public class GapClientTest extends ActivityInstrumentationTestCase2<CordovaWebVi
 	private CordovaChromeClient appCode;
 
 	public GapClientTest() {
-		super("com.phonegap.test.activities",CordovaWebViewTestActivity.class);
+		super("org.apache.cordova.test.activities",CordovaWebViewTestActivity.class);
 	}
 	
 	protected void setUp() throws Exception{

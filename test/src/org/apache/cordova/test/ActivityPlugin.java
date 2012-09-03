@@ -24,8 +24,8 @@ import org.json.JSONException;
 
 import android.content.Intent;
 
-import com.phonegap.api.Plugin;
-import com.phonegap.api.PluginResult;
+import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.PluginResult;
 
 /**
  * This class provides a service.

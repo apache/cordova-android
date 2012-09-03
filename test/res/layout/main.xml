@@ -23,7 +23,7 @@
     android:orientation="vertical" >
     
     <org.apache.cordova.CordovaWebView
-        android:id="@+id/phoneGapView"
+        android:id="@+id/cordovaWebView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 

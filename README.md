@@ -85,7 +85,7 @@ Start adb logcat (console.log calls output here):
 Creating a new Cordova Android Project
 ---
 
-    ./bin/create ~/Desktop/myapp com.phonegap.special MyApp
+    ./bin/create ~/Desktop/myapp com.myapp.special MyApp
 
 Importing a Cordova Android Project into Eclipse
 ----
@@ -105,5 +105,5 @@ Further Reading
 ---
 
 - [http://developer.android.com](http://developer.android.com)
-- [http://docs.phonegap.com](http://docs.phonegap.com)
-- [http://wiki.phonegap.com](http://wiki.phonegap.com)
+- [http://incubator.apache.org/cordova/](http://incubator.apache.org/cordova/)
+- [http://wiki.apache.org/cordova/](http://wiki.apache.org/cordova/)
