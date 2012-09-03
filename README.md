@@ -82,11 +82,6 @@ Start adb logcat (console.log calls output here):
 
     ./cordova/log
 
-Running the [callback/callback-test](http://github.com/callback/callback-test) tests:
----
-
-    ./bin/test
-
 Creating a new Cordova Android Project
 ---
 
