@@ -47,6 +47,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
@@ -995,6 +996,20 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.runOnUiThread(runnable);
     }
 
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event)
+    {
+    	//Determine if the focus is on the current view or not
+    	if(appView.getHitTestResult().getType() == WebView.HitTestResult.EDIT_TEXT_TYPE &&
+    			keyCode == KeyEvent.KEYCODE_BACK)
+    	{
+    		return appView.onKeyUp(keyCode, event);
+    	}
+    	else
+    		return super.onKeyUp(keyCode, event);
+    }
+    
     /**
      * Called when a message is sent to plugin.
      *
