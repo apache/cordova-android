@@ -206,9 +206,9 @@ public class CordovaWebViewClient extends WebViewClient {
 
             // If our app or file:, then load into a new Cordova webview container by starting a new instance of our activity.
             // Our app continues to run.  When BACK is pressed, our app is redisplayed.
-            if (url.startsWith("file://") || url.indexOf(this.appView.baseUrl) == 0 || this.appView.isUrlWhiteListed(url)) {
+            if (url.startsWith("file://") || url.startsWith("data:") || url.indexOf(this.appView.baseUrl) == 0 || this.appView.isUrlWhiteListed(url)) {
                 //This will fix iFrames
-                if (appView.useBrowserHistory)
+                if (appView.useBrowserHistory || url.startsWith("data:"))
                     return false;
                 else
                     this.appView.loadUrl(url);
