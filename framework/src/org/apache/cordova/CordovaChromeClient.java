@@ -202,9 +202,7 @@ public class CordovaChromeClient extends WebChromeClient {
                 String service = array.getString(0);
                 String action = array.getString(1);
                 String callbackId = array.getString(2);
-                boolean async = array.getBoolean(3);
-                PluginResult r = this.appView.pluginManager.exec(service, action, callbackId, message, async);
-                result.confirm(r == null ? "" : r.getJSONString());
+                result.confirm(this.appView.exposedJsApi.exec(service, action, callbackId, message));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -212,15 +210,13 @@ public class CordovaChromeClient extends WebChromeClient {
 
         // Sets the native->JS bridge mode. 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_bridge_mode:")) {
-            this.appView.jsMessageQueue.setBridgeMode(Integer.parseInt(message));
+            this.appView.exposedJsApi.setNativeToJsBridgeMode(Integer.parseInt(message));
             result.confirm("");
         }
 
         // Polling for JavaScript messages 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-        	// TODO(agrieve): Use popAll() here.
-            String r = this.appView.jsMessageQueue.pop();
-            result.confirm(r);
+            result.confirm(this.appView.exposedJsApi.retrieveJsMessages());
         }
 
         // Do NO-OP so older code doesn't display dialog
