@@ -17,7 +17,7 @@
        specific language governing permissions and limitations
        under the License.
 -->
-<cordova>
+<widget xmlns="http://www.w3.org/ns/widgets">
     <!--
     access elements control the Android whitelist.
     Domains are assumed blocked unless set otherwise
@@ -31,25 +31,73 @@
 
     <log level="DEBUG"/>
     <preference name="useBrowserHistory" value="false" />
-<plugins>
-    <plugin name="App" value="org.apache.cordova.App"/>
-    <plugin name="Geolocation" value="org.apache.cordova.GeoBroker"/>
-    <plugin name="Device" value="org.apache.cordova.Device"/>
-    <plugin name="Accelerometer" value="org.apache.cordova.AccelListener"/>
-    <plugin name="Compass" value="org.apache.cordova.CompassListener"/>
-    <plugin name="Media" value="org.apache.cordova.AudioHandler"/>
-    <plugin name="Camera" value="org.apache.cordova.CameraLauncher"/>
-    <plugin name="Contacts" value="org.apache.cordova.ContactManager"/>
-    <plugin name="File" value="org.apache.cordova.FileUtils"/>
-    <plugin name="NetworkStatus" value="org.apache.cordova.NetworkManager"/>
-    <plugin name="Notification" value="org.apache.cordova.Notification"/>
-    <plugin name="Storage" value="org.apache.cordova.Storage"/>
-    <plugin name="Temperature" value="org.apache.cordova.TempListener"/>
-    <plugin name="FileTransfer" value="org.apache.cordova.FileTransfer"/>
-    <plugin name="Capture" value="org.apache.cordova.Capture"/>
-    <plugin name="Battery" value="org.apache.cordova.BatteryListener"/>
-    <plugin name="SplashScreen" value="org.apache.cordova.SplashScreen"/>
-    <plugin name="Echo" value="org.apache.cordova.Echo"/>
-</plugins>
-</cordova>
+    <feature name="http://example.org/api/app">
+        <param name="service" value="App" />
+        <param name="package" value="org.apache.cordova.App" />
+    </feature>
+    <feature name="http://example.org/api/geolocation">
+        <param name="service" value="Geolocation" />
+        <param name="package" value="org.apache.cordova.GeoBroker" />
+    </feature>
+    <feature name="http://example.org/api/device">
+        <param name="service" value="Device" />
+        <param name="package" value="org.apache.cordova.Device" />
+    </feature>
+    <feature name="http://example.org/api/accelerometer">
+        <param name="service" value="Accelerometer" />
+        <param name="package" value="org.apache.cordova.AccelListener" />
+    </feature>
+    <feature name="http://example.org/api/compass">
+        <param name="service" value="Compass" />
+        <param name="package" value="org.apache.cordova.CompassListener" />
+    </feature>
+    <feature name="http://example.org/api/media">
+        <param name="service" value="Media" />
+        <param name="package" value="org.apache.cordova.Media" />
+    </feature>
+    <feature name="http://example.org/api/camera">
+        <param name="service" value="Camera" />
+        <param name="package" value="org.apache.cordova.Camera" />
+    </feature>
+    <feature name="http://example.org/api/contacts">
+        <param name="service" value="Contacts" />
+        <param name="package" value="org.apache.cordova.ContactManager" />
+    </feature>
+    <feature name="http://example.org/api/file">
+        <param name="service" value="File" />
+        <param name="package" value="org.apache.cordova.FileUtils" />
+    </feature>
+    <feature name="http://example.org/api/networkstatus">
+        <param name="service" value="NetworkStatus" />
+        <param name="package" value="org.apache.cordova.NetworkManager" />
+    </feature>
+    <feature name="http://example.org/api/notification">
+        <param name="service" value="Notification" />
+        <param name="package" value="org.apache.cordova.Notification" />
+    </feature>
+    <feature name="http://example.org/api/storage">
+        <param name="service" value="Storage" />
+        <param name="package" value="org.apache.cordova.Storage" />
+    </feature>
+    <feature name="http://example.org/api/temperature">
+        <param name="service" value="Temperature" />
+        <param name="package" value="org.apache.cordova.TempListener" />
+    </feature>
+    <feature name="http://example.org/api/filetransfer">
+        <param name="service" value="FileTransfer" />
+        <param name="package" value="org.apache.cordova.FileTransfer" />
+    </feature>
+    <feature name="http://example.org/api/capture">
+        <param name="service" value="Capture" />
+        <param name="package" value="org.apache.cordova.Capture" />
+    </feature>
+    <feature name="http://example.org/api/battery">
+        <param name="service" value="Battery" />
+        <param name="package" value="org.apache.cordova.BatteryListener" />
+    </feature>
+    <feature name="http://example.org/api/splashscreen">
+        <param name="service" value="SpashScreen" />
+        <param name="package" value="org.apache.cordova.SplashScreen" />
+    </feature>
+</widget>
 
