@@ -111,8 +111,8 @@ public class CordovaWebViewClient extends WebViewClient {
 		String callbackId = url.substring(idx3 + 1, idx4);
 		String jsonArgs   = url.substring(idx4 + 1);
         PluginResult r = appView.pluginManager.exec(service, action, callbackId, jsonArgs, true /* async */);
-        String callbackString = r.toCallbackString(callbackId);
         if (r != null) {
+            String callbackString = r.toCallbackString(callbackId);
             appView.sendJavascript(callbackString);
         }
 	}    
