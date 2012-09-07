@@ -187,8 +187,12 @@ public class NativeToJsMessageQueue {
                 }
             }                
         };
-        
+        OnlineEventsBridgeMode() {
+            webView.setNetworkAvailable(true);
+        }
         public void onNativeToJsMessageAvailable() {
+            // TODO(agrieve): consider running this *not* on the main thread, since it just
+            // sends a message under-the-hood anyways.
             cordova.getActivity().runOnUiThread(runnable);
         }
     }
