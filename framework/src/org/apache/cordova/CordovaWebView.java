@@ -517,7 +517,17 @@ public class CordovaWebView extends WebView {
      * @param message
      */
     public void sendJavascript(String statement) {
-        this.jsMessageQueue.add(statement);
+        this.jsMessageQueue.addJavaScript(statement);
+    }
+
+    /**
+     * Send a plugin result back to JavaScript.
+     * (This is a convenience method)
+     *
+     * @param message
+     */
+    public void sendPluginResult(PluginResult result, String callbackId) {
+        this.jsMessageQueue.addPluginResult(result, callbackId);
     }
 
     /**

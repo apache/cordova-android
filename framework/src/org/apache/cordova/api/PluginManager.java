@@ -210,10 +210,8 @@ public class PluginManager {
      * @param async         Boolean indicating whether the calling JavaScript code is expecting an
      *                      immediate return value. If true, either Cordova.callbackSuccess(...) or
      *                      Cordova.callbackError(...) is called once the plugin code has executed.
-     *
-     * @return              PluginResult to send to the page, or null if no response is ready yet.
      */
-    public PluginResult exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
+    public void exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
         PluginResult cr = null;
         boolean runAsync = async;
         try {
@@ -229,25 +227,22 @@ public class PluginManager {
                             try {
                                 // Call execute on the plugin so that it can do it's thing
                                 PluginResult cr = plugin.execute(action, args, callbackId);
-                                String callbackString = cr.toCallbackString(callbackId);
-                                if (callbackString != null) {
-                                    app.sendJavascript(callbackString);
-                                }
+                                app.sendPluginResult(cr, callbackId);
                             } catch (Exception e) {
                                 PluginResult cr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
-                                app.sendJavascript(cr.toErrorCallbackString(callbackId));
+                                app.sendPluginResult(cr, callbackId);
                             }
                         }
                     });
                     thread.start();
-                    return null;
+                    return;
                 } else {
                     // Call execute on the plugin so that it can do it's thing
                     cr = plugin.execute(action, args, callbackId);
 
                     // If no result to be sent and keeping callback, then no need to sent back to JavaScript
                     if ((cr.getStatus() == PluginResult.Status.NO_RESULT.ordinal()) && cr.getKeepCallback()) {
-                        return null;
+                        return;
                     }
                 }
             }
@@ -260,12 +255,12 @@ public class PluginManager {
             if (cr == null) {
                 cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
             }
-            app.sendJavascript(cr.toErrorCallbackString(callbackId));
+            app.sendPluginResult(cr, callbackId);
         }
         if (cr == null) {
         	cr = new PluginResult(PluginResult.Status.NO_RESULT);
         }
-        return cr;
+        app.sendPluginResult(cr, callbackId);
     }
 
     /**

@@ -23,43 +23,49 @@ import org.json.JSONObject;
 
 public class PluginResult {
     private final int status;
-    private final String message;
+    private final int messageType;
     private boolean keepCallback = false;
-
+    private String strMessage;
+    private String encodedMessage;
 
     public PluginResult(Status status) {
-        this.status = status.ordinal();
-        this.message = "\"" + PluginResult.StatusMessages[this.status] + "\"";
+        this(status, PluginResult.StatusMessages[status.ordinal()]);
     }
 
     public PluginResult(Status status, String message) {
         this.status = status.ordinal();
-        this.message = JSONObject.quote(message);
+        this.messageType = MESSAGE_TYPE_STRING;
+        this.strMessage = message;
     }
 
     public PluginResult(Status status, JSONArray message) {
         this.status = status.ordinal();
-        this.message = message.toString();
+        this.messageType = MESSAGE_TYPE_JSON;
+        encodedMessage = message.toString();
     }
 
     public PluginResult(Status status, JSONObject message) {
         this.status = status.ordinal();
-        this.message = message.toString();
+        this.messageType = MESSAGE_TYPE_JSON;
+        encodedMessage = message.toString();
     }
 
     public PluginResult(Status status, int i) {
         this.status = status.ordinal();
-        this.message = ""+i;
+        this.messageType = MESSAGE_TYPE_NUMBER;
+        this.encodedMessage = ""+i;
     }
 
     public PluginResult(Status status, float f) {
         this.status = status.ordinal();
-        this.message = ""+f;
+        this.messageType = MESSAGE_TYPE_NUMBER;
+        this.encodedMessage = ""+f;
     }
 
     public PluginResult(Status status, boolean b) {
         this.status = status.ordinal();
-        this.message = ""+b;
+        this.messageType = MESSAGE_TYPE_BOOLEAN;
+        this.encodedMessage = Boolean.toString(b);
     }
 
     public void setKeepCallback(boolean b) {
@@ -70,18 +76,35 @@ public class PluginResult {
         return status;
     }
 
+    public int getMessageType() {
+        return messageType;
+    }
+    
     public String getMessage() {
-        return message;
+        if (encodedMessage == null) {
+            encodedMessage = JSONObject.quote(strMessage);
+        }
+        return encodedMessage;
+    }
+
+    /**
+     * If messageType == MESSAGE_TYPE_STRING, then returns the message string.
+     * Otherwise, returns null.
+     */
+    public String getStrMessage() {
+        return strMessage;
     }
 
     public boolean getKeepCallback() {
         return this.keepCallback;
     }
 
+    @Deprecated // Use sendPluginResult instead of sendJavascript.
     public String getJSONString() {
-        return "{\"status\":" + this.status + ",\"message\":" + this.message + ",\"keepCallback\":" + this.keepCallback + "}";
+        return "{\"status\":" + this.status + ",\"message\":" + this.getMessage() + ",\"keepCallback\":" + this.keepCallback + "}";
     }
 
+    @Deprecated // Use sendPluginResult instead of sendJavascript.
     public String toCallbackString(String callbackId) {
         // If no result to be sent and keeping callback, then no need to sent back to JavaScript
         if ((status == PluginResult.Status.NO_RESULT.ordinal()) && keepCallback) {
@@ -95,14 +118,22 @@ public class PluginResult {
 
         return toErrorCallbackString(callbackId);
     }
+
+    @Deprecated // Use sendPluginResult instead of sendJavascript.
     public String toSuccessCallbackString(String callbackId) {
         return "cordova.callbackSuccess('"+callbackId+"',"+this.getJSONString()+");";
     }
 
+    @Deprecated // Use sendPluginResult instead of sendJavascript.
     public String toErrorCallbackString(String callbackId) {
         return "cordova.callbackError('"+callbackId+"', " + this.getJSONString()+ ");";
     }
 
+    public static final int MESSAGE_TYPE_STRING = 1;
+    public static final int MESSAGE_TYPE_JSON = 2;
+    public static final int MESSAGE_TYPE_NUMBER = 3;
+    public static final int MESSAGE_TYPE_BOOLEAN = 4;
+    
     public static String[] StatusMessages = new String[] {
         "No result",
         "OK",

@@ -202,7 +202,8 @@ public class CordovaChromeClient extends WebChromeClient {
                 String service = array.getString(0);
                 String action = array.getString(1);
                 String callbackId = array.getString(2);
-                result.confirm(this.appView.exposedJsApi.exec(service, action, callbackId, message));
+                String r = this.appView.exposedJsApi.exec(service, action, callbackId, message);
+                result.confirm(r == null ? "" : r);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -216,7 +217,8 @@ public class CordovaChromeClient extends WebChromeClient {
 
         // Polling for JavaScript messages 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-            result.confirm(this.appView.exposedJsApi.retrieveJsMessages());
+            String r = this.appView.exposedJsApi.retrieveJsMessages();
+            result.confirm(r == null ? "" : r);
         }
 
         // Do NO-OP so older code doesn't display dialog

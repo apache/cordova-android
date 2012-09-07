@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.apache.cordova.api.CordovaInterface;
+import org.apache.cordova.api.PluginResult;
+import org.json.JSONObject;
 
 import android.os.Message;
 import android.util.Log;
@@ -43,6 +45,12 @@ public class NativeToJsMessageQueue {
      * The index into registeredListeners to treat as active. 
      */
     private int activeListenerIndex;
+    
+    /**
+     * When true, the active listener is not fired upon enqueue. When set to false,
+     * the active listener will be fired if the queue is non-empty. 
+     */
+    private boolean paused;
     
     /**
      * The list of JavaScript statements to be sent to JavaScript.
@@ -99,60 +107,133 @@ public class NativeToJsMessageQueue {
         }
     }
 
-    /**
-     * Removes and returns the last statement in the queue.
-     * Returns null if the queue is empty.
-     */
-    public String pop() {
+    public String popAndEncode() {
         synchronized (this) {
             if (queue.isEmpty()) {
                 return null;
             }
-            return queue.remove(0);
-        }
+            String message = queue.removeFirst();
+            StringBuffer sb = new StringBuffer(message.length() + 8)
+                .append(message.length())
+                .append(' ')
+                .append(message);
+            return sb.toString();
+        }        
     }
-
+    
     /**
-     * Combines and returns all statements. Clears the queue.
+     * Combines and returns all messages combined into a single string.
+     * Clears the queue.
      * Returns null if the queue is empty.
      */
-    public String popAll() {
+    public String popAllAndEncode() {
         synchronized (this) {
-            int length = queue.size();
-            if (length == 0) {
+            if (queue.isEmpty()) {
                 return null;
             }
-            StringBuffer sb = new StringBuffer();
-            // Wrap each statement in a try/finally so that if one throws it does 
-            // not affect the next.
-            int i = 0;
+            int totalMessageLen = 0;
             for (String message : queue) {
-                if (++i == length) {
-                    sb.append(message);
-                } else {
-                    sb.append("try{")
-                      .append(message)
-                      .append("}finally{");
-                }
+                totalMessageLen += message.length();
             }
-            for ( i = 1; i < length; ++i) {
-                sb.append('}');
+
+            StringBuffer sb = new StringBuffer(totalMessageLen + 8 * queue.size());
+            for (String message : queue) {
+                sb.append(message.length())
+                  .append(' ')
+                  .append(message);
             }
             queue.clear();
             return sb.toString();
         }
-    }    
+    }
+    
+    private String popAllAndEncodeAsJs() {
+        String ret = popAllAndEncode();
+        if (ret != null) {
+            ret = "cordova.require('cordova/exec').processMessages(\"" + JSONObject.quote(ret) + "\")";
+        }
+        return ret;
+    }
+
+    private String encodePluginResult(PluginResult result, String callbackId) {
+        int status = result.getStatus();
+        boolean noResult = status == PluginResult.Status.NO_RESULT.ordinal();
+        boolean resultOk = status == PluginResult.Status.OK.ordinal();
+        boolean keepCallback = result.getKeepCallback();
+        if (noResult && keepCallback) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder(result.getMessage().length() + 50);
+        sb.append((noResult || resultOk) ? 'S' : 'F')
+          .append(keepCallback ? '1' : '0')
+          .append(status)
+          .append(' ')
+          .append(callbackId)
+          .append(' ');
+        switch (result.getMessageType()) {
+            case PluginResult.MESSAGE_TYPE_BOOLEAN:
+                sb.append(result.getMessage().charAt(0)); // t or f.
+                break;
+            case PluginResult.MESSAGE_TYPE_NUMBER: // n
+                sb.append('n')
+                  .append(result.getMessage());
+                break;
+            case PluginResult.MESSAGE_TYPE_STRING: // s
+                sb.append('s')
+                  .append(result.getStrMessage());
+                break;
+            case PluginResult.MESSAGE_TYPE_JSON:
+            default:
+                sb.append(result.getMessage()); // [ or {
+        }
+        return sb.toString();
+    }
 
     /**
      * Add a JavaScript statement to the list.
      */
-    public void add(String statement) {
+    public void addJavaScript(String statement) {
+        enqueueMessage("J" + statement);
+    }
+
+    /**
+     * Add a JavaScript statement to the list.
+     */
+    public void addPluginResult(PluginResult result, String callbackId) {
+        String message = encodePluginResult(result, callbackId);
+        if (message != null) {
+            enqueueMessage(message);
+        }
+    }
+    
+    private void enqueueMessage(String encodedMessage) {
         synchronized (this) {
-            queue.add(statement);
+            queue.add(encodedMessage);
             if (registeredListeners[activeListenerIndex] != null) {
                 registeredListeners[activeListenerIndex].onNativeToJsMessageAvailable();
             }
+        }        
+    }
+    
+    public void setPaused(boolean value) {
+        if (paused && value) {
+            // This should never happen. If a use-case for it comes up, we should
+            // change pause to be a counter.
+            Log.e(LOG_TAG, "nested call to setPaused detected.", new Throwable());
         }
+        paused = value;
+        if (!value) {
+            synchronized (this) {
+                if (!queue.isEmpty() && registeredListeners[activeListenerIndex] != null) {
+                    registeredListeners[activeListenerIndex].onNativeToJsMessageAvailable();
+                }
+            }   
+        }
+    }
+    
+    public boolean getPaused() {
+        return paused;
     }
 
     private interface BridgeMode {
@@ -171,7 +252,7 @@ public class NativeToJsMessageQueue {
     /** Uses webView.loadUrl("javascript:") to execute messages. */
     private class LoadUrlBridgeMode implements BridgeMode {
         public void onNativeToJsMessageAvailable() {
-            webView.loadUrlNow("javascript:" + popAll());
+            webView.loadUrlNow("javascript:" + popAllAndEncodeAsJs());
         }
     }
 
@@ -245,7 +326,7 @@ public class NativeToJsMessageQueue {
         	}
         	// webViewCore is lazily initialized, and so may not be available right away.
         	if (sendMessageMethod != null) {
-	        	String js = popAll();
+	        	String js = popAllAndEncodeAsJs();
 	        	Message execJsMessage = Message.obtain(null, EXECUTE_JS, js);
 				try {
 				    sendMessageMethod.invoke(webViewCore, execJsMessage);
