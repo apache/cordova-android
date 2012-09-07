@@ -388,12 +388,19 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                     } else {
                         // Get the path to the image. Makes loading so much easier.
                         String imagePath = FileUtils.getRealPathFromURI(uri, this.cordova);
-                        // If we don't have a valid image path quit.
+                        Log.d(LOG_TAG, "Real path = " + imagePath);
+                        // If we don't have a valid image so quit.
                         if (imagePath == null) {
-                            this.failPicture("Unable to retreive picture!");
+                        	Log.d(LOG_TAG, "I either have a null image path or bitmap");
+                            this.failPicture("Unable to retreive path to picture!");
                             return;
                         }
                         Bitmap bitmap = getScaledBitmap(imagePath);
+                        if (bitmap == null) {
+                        	Log.d(LOG_TAG, "I either have a null image path or bitmap");
+                            this.failPicture("Unable to create bitmap!");
+                            return;
+                        }
 
                         if (this.correctOrientation) {
                             String[] cols = { MediaStore.Images.Media.ORIENTATION };
@@ -456,8 +463,10 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                                 this.success(new PluginResult(PluginResult.Status.OK, uri.toString()), this.callbackId);
                             }
                         }
-                        bitmap.recycle();
-                        bitmap = null;
+                        if (bitmap != null) {
+	                        bitmap.recycle();
+	                        bitmap = null;
+                        }
                         System.gc();
                     }
                 }
