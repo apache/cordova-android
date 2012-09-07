@@ -409,19 +409,19 @@ public class FileUtils extends Plugin {
             throw new InvalidModificationException("Can't rename a file to a directory");
         }
 
-        FileChannel input = new FileInputStream(srcFile).getChannel();
-        FileChannel output = new FileOutputStream(destFile).getChannel();
+        FileInputStream istream = new FileInputStream(srcFile);
+        FileOutputStream ostream = new FileOutputStream(destFile);
+        FileChannel input = istream.getChannel();
+        FileChannel output = ostream.getChannel();
 
-        input.transferTo(0, input.size(), output);
-
-        input.close();
-        output.close();
-
-        /*
-        if (srcFile.length() != destFile.length()) {
-            return false;
+        try {
+            input.transferTo(0, input.size(), output);
+        } finally {
+            istream.close();
+            ostream.close();
+            input.close();
+            output.close();
         }
-        */
 
         return getEntry(destFile);
     }
@@ -1008,14 +1008,17 @@ public class FileUtils extends Plugin {
         filename = stripFileProtocol(filename);
 
         RandomAccessFile raf = new RandomAccessFile(filename, "rw");
-
-        if (raf.length() >= size) {
-            FileChannel channel = raf.getChannel();
-            channel.truncate(size);
-            return size;
+        try {
+            if (raf.length() >= size) {
+                FileChannel channel = raf.getChannel();
+                channel.truncate(size);
+                return size;
+            }
+    
+            return raf.length();
+        } finally {
+            raf.close();
         }
-
-        return raf.length();
     }
 
     /**
