@@ -75,7 +75,7 @@ create_project.on('exit', function(code) {
     // make sure main Activity was added 
     path.exists(util.format('%s/src/%s/%s.java', project_path, package_as_path, project_name), function(exists) {
         assert(exists, 'Activity did not get created');
-        // TODO check that package name and activity name were substitued properly
+        // TODO check that package name and activity name were substituted properly
     });
    
     // make sure plugins.xml was added
