@@ -180,7 +180,7 @@ public class Storage extends Plugin {
     }
 
     /**
-     * Checks to see the the query is a Data Definintion command
+     * Checks to see the the query is a Data Definition command
      *
      * @param query to be executed
      * @return true if it is a DDL command, false otherwise
