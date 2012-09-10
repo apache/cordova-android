@@ -65,7 +65,7 @@ public class CordovaWebView extends WebView {
     private boolean paused;
 
 
-    /** Actvities and other important classes **/
+    /** Activities and other important classes **/
     private CordovaInterface cordova;
     CordovaWebViewClient viewClient;
     @SuppressWarnings("unused")
