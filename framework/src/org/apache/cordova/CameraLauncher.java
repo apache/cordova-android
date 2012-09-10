@@ -143,7 +143,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 this.saveToPhotoAlbum = args.getBoolean(9);
 
                 // If the user specifies a 0 or smaller width/height
-                // make it -1 so later comparrisions succeed
+                // make it -1 so later comparisons succeed
                 if (this.targetWidth < 1) {
                     this.targetWidth = -1;
                 }
