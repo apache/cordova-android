@@ -731,7 +731,7 @@ public class CordovaWebView extends WebView {
         if(keyDownCodes.contains(keyCode))
         {
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                    // only override default behaviour is event bound
+                    // only override default behavior is event bound
                     LOG.d(TAG, "Down Key Hit");
                     this.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
                     return true;
@@ -766,7 +766,7 @@ public class CordovaWebView extends WebView {
                 if (this.backHistory()) {
                     return true;
                 }
-                // If not, then invoke default behaviour
+                // If not, then invoke default behavior
                 else {
                     //this.activityState = ACTIVITY_EXITING;
                     return false;
@@ -789,7 +789,7 @@ public class CordovaWebView extends WebView {
             return super.onKeyUp(keyCode, event);
         }
 
-        //Does webkit change this behaviour?
+        //Does webkit change this behavior?
         return super.onKeyUp(keyCode, event);
     }
 
