@@ -762,7 +762,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         try{
             this.conn.scanFile(this.scanMe.toString(), "image/*");
         } catch (java.lang.IllegalStateException e){
-            LOG.e(LOG_TAG, "Can't scan file in MediaScanner aftering taking picture");
+            LOG.e(LOG_TAG, "Can't scan file in MediaScanner after taking picture");
         }
 
     }
