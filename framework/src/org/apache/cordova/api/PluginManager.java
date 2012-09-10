@@ -200,7 +200,7 @@ public class PluginManager {
      * or execute the class denoted by the clazz argument.
      *
      * @param service       String containing the service to run
-     * @param action        String containt the action that the class is supposed to perform. This is
+     * @param action        String containing the action that the class is supposed to perform. This is
      *                      passed to the plugin execute method and it is up to the plugin developer
      *                      how to deal with it.
      * @param callbackId    String containing the id of the callback that is execute in JavaScript if
