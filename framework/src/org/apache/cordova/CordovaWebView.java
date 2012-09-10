@@ -36,9 +36,13 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.XmlResourceParser;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,6 +67,8 @@ public class CordovaWebView extends WebView {
     public PluginManager pluginManager;
     public CallbackServer callbackServer;
     private boolean paused;
+    
+    private BroadcastReceiver receiver;
 
 
     /** Activities and other important classes **/
@@ -229,7 +235,24 @@ public class CordovaWebView extends WebView {
 
         // Enable built-in geolocation
         settings.setGeolocationEnabled(true);
-
+        
+        // Fix for CB-1405
+        // Google issue 4641
+        this.updateUserAgentString();
+        
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
+        if (this.receiver == null) {
+            this.receiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    updateUserAgentString();
+                }
+            };
+            this.cordova.getActivity().registerReceiver(this.receiver, intentFilter);
+        }
+        // end CB-1405
+        
         //Start up the plugin manager
         try {
             this.pluginManager = new PluginManager(this, this.cordova);
@@ -238,6 +261,10 @@ public class CordovaWebView extends WebView {
             e.printStackTrace();
         }
         exposeJsInterface();
+    }
+    
+    private void updateUserAgentString() {
+    	this.getSettings().getUserAgentString();
     }
 
     private void exposeJsInterface() {
@@ -872,6 +899,15 @@ public class CordovaWebView extends WebView {
         // Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.onDestroy();
+        }
+        
+        // unregister the receiver
+        if (this.receiver != null) {
+            try {
+                this.cordova.getActivity().unregisterReceiver(this.receiver);
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering configuration receiver: " + e.getMessage(), e);
+            }
         }
     }
     
