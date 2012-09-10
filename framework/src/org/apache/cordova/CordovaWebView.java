@@ -71,7 +71,7 @@ public class CordovaWebView extends WebView {
     @SuppressWarnings("unused")
     private CordovaChromeClient chromeClient;
 
-    //This is for the polyfil history
+    //This is for the polyfill history
     private String url;
     String baseUrl;
     private Stack<String> urls = new Stack<String>();
