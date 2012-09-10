@@ -392,7 +392,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         // If we don't have a valid image so quit.
                         if (imagePath == null) {
                         	Log.d(LOG_TAG, "I either have a null image path or bitmap");
-                            this.failPicture("Unable to retreive path to picture!");
+                            this.failPicture("Unable to retrieve path to picture!");
                             return;
                         }
                         Bitmap bitmap = getScaledBitmap(imagePath);
