@@ -61,7 +61,7 @@ Project Commands
 
 These commands live in a generated Cordova Android project.
 
-    ./cordovap/debug [path] ..................... install to first device
+    ./cordova/debug [path] ..................... install to first device
     ./cordova/emulate .......................... start avd (emulator) named default
     ./cordova/log .............................. starts logcat
 
