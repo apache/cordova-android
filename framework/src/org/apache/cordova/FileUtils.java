@@ -1040,7 +1040,7 @@ public class FileUtils extends Plugin {
      * Queries the media store to find out what the file path is for the Uri we supply
      *
      * @param contentUri the Uri of the audio/image/video
-     * @param  cordova) the current applicaiton context
+     * @param  cordova) the current application context
      * @return the full path to the file
      */
     @SuppressWarnings("deprecation")
