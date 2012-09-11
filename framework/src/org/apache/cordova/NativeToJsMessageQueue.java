@@ -39,6 +39,10 @@ public class NativeToJsMessageQueue {
     // This must match the default value in incubator-cordova-js/lib/android/exec.js
     private static final int DEFAULT_BRIDGE_MODE = 1;
     
+    // Set this to true to force plugin results to be encoding as
+    // JS instead of the custom format (useful for benchmarking).
+    private static final boolean FORCE_ENCODE_USING_EVAL = false;
+    
     /**
      * The index into registeredListeners to treat as active. 
      */
@@ -202,7 +206,14 @@ public class NativeToJsMessageQueue {
         if (noResult && keepCallback) {
             return;
         }
-        enqueueMessage(new JsMessage(result, callbackId));
+        JsMessage message = new JsMessage(result, callbackId);
+        if (FORCE_ENCODE_USING_EVAL) {
+            StringBuilder sb = new StringBuilder(message.calculateEncodedLength() + 50);
+            message.encodeAsJsMessage(sb);
+            message = new JsMessage(sb.toString());
+        }
+
+        enqueueMessage(message);
     }
     
     private void enqueueMessage(JsMessage message) {
