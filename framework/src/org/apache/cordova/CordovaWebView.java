@@ -477,7 +477,9 @@ public class CordovaWebView extends WebView {
      * @param url
      */
     void loadUrlNow(String url) {
-        LOG.d(TAG, ">>> loadUrlNow()");
+        if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
+            LOG.d(TAG, ">>> loadUrlNow()");
+        }
         super.loadUrl(url);
     }
 
