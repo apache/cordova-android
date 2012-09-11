@@ -38,9 +38,14 @@ import org.json.JSONException;
     }
 
     public String exec(String service, String action, String callbackId, String arguments) throws JSONException {
-        pluginManager.exec(service, action, callbackId, arguments, true /* async */);
-        // TODO(agrieve): Should this use popAll() instead?
-        return jsMessageQueue.popAndEncode();
+        jsMessageQueue.setPaused(true);
+        try {
+            pluginManager.exec(service, action, callbackId, arguments, true /* async */);
+            // TODO(agrieve): Should this use popAll() instead?
+            return jsMessageQueue.popAndEncode();
+        } finally {
+            jsMessageQueue.setPaused(false);
+        }
     }
     
     public void setNativeToJsBridgeMode(int value) {

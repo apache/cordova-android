@@ -19,9 +19,7 @@
 package org.apache.cordova;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.apache.cordova.api.CordovaInterface;
@@ -55,7 +53,7 @@ public class NativeToJsMessageQueue {
     /**
      * The list of JavaScript statements to be sent to JavaScript.
      */
-    private final LinkedList<String> queue = new LinkedList<String>();
+    private final LinkedList<JsMessage> queue = new LinkedList<JsMessage>();
 
     /**
      * The array of listeners that can be used to send messages to JS.
@@ -89,7 +87,7 @@ public class NativeToJsMessageQueue {
                 synchronized (this) {
                     activeListenerIndex = value;
                     BridgeMode activeListener = registeredListeners[value];
-                    if (!queue.isEmpty() && activeListener != null) {
+                    if (!paused && !queue.isEmpty() && activeListener != null) {
                         activeListener.onNativeToJsMessageAvailable();
                     }
                 }
@@ -107,16 +105,26 @@ public class NativeToJsMessageQueue {
         }
     }
 
+    private int calculatePackedMessageLength(JsMessage message) {
+        int messageLen = message.calculateEncodedLength();
+        String messageLenStr = String.valueOf(messageLen);
+        return messageLenStr.length() + messageLen + 1;        
+    }
+    
+    private void packMessage(JsMessage message, StringBuilder sb) {
+        sb.append(message.calculateEncodedLength())
+          .append(' ');
+        message.encodeAsMessage(sb);
+    }
+    
     public String popAndEncode() {
         synchronized (this) {
             if (queue.isEmpty()) {
                 return null;
             }
-            String message = queue.removeFirst();
-            StringBuffer sb = new StringBuffer(message.length() + 8)
-                .append(message.length())
-                .append(' ')
-                .append(message);
+            JsMessage message = queue.removeFirst();
+            StringBuilder sb = new StringBuilder(calculatePackedMessageLength(message));
+            packMessage(message, sb);
             return sb.toString();
         }        
     }
@@ -131,16 +139,14 @@ public class NativeToJsMessageQueue {
             if (queue.isEmpty()) {
                 return null;
             }
-            int totalMessageLen = 0;
-            for (String message : queue) {
-                totalMessageLen += message.length();
+            int totalPayloadLen = 0;
+            for (JsMessage message : queue) {
+                totalPayloadLen += calculatePackedMessageLength(message);
             }
 
-            StringBuffer sb = new StringBuffer(totalMessageLen + 8 * queue.size());
-            for (String message : queue) {
-                sb.append(message.length())
-                  .append(' ')
-                  .append(message);
+            StringBuilder sb = new StringBuilder(totalPayloadLen);
+            for (JsMessage message : queue) {
+                packMessage(message, sb);
             }
             queue.clear();
             return sb.toString();
@@ -148,69 +154,61 @@ public class NativeToJsMessageQueue {
     }
     
     private String popAllAndEncodeAsJs() {
-        String ret = popAllAndEncode();
-        if (ret != null) {
-            ret = "cordova.require('cordova/exec').processMessages(\"" + JSONObject.quote(ret) + "\")";
+        synchronized (this) {
+            int length = queue.size();
+            if (length == 0) {
+                return null;
+            }
+            int totalPayloadLen = 16 * length; // accounts for try & finally.
+            for (JsMessage message : queue) {
+                totalPayloadLen += message.calculateEncodedLength(); // overestimate.
+            }
+            StringBuilder sb = new StringBuilder(totalPayloadLen);
+            // Wrap each statement in a try/finally so that if one throws it does 
+            // not affect the next.
+            int i = 0;
+            for (JsMessage message : queue) {
+                if (++i == length) {
+                    message.encodeAsJsMessage(sb);
+                } else {
+                    sb.append("try{");
+                    message.encodeAsJsMessage(sb);
+                    sb.append("}finally{");
+                }
+            }
+            for ( i = 1; i < length; ++i) {
+                sb.append('}');
+            }
+            queue.clear();
+            return sb.toString();
         }
-        return ret;
-    }
-
-    private String encodePluginResult(PluginResult result, String callbackId) {
-        int status = result.getStatus();
-        boolean noResult = status == PluginResult.Status.NO_RESULT.ordinal();
-        boolean resultOk = status == PluginResult.Status.OK.ordinal();
-        boolean keepCallback = result.getKeepCallback();
-        if (noResult && keepCallback) {
-            return null;
-        }
-
-        StringBuilder sb = new StringBuilder(result.getMessage().length() + 50);
-        sb.append((noResult || resultOk) ? 'S' : 'F')
-          .append(keepCallback ? '1' : '0')
-          .append(status)
-          .append(' ')
-          .append(callbackId)
-          .append(' ');
-        switch (result.getMessageType()) {
-            case PluginResult.MESSAGE_TYPE_BOOLEAN:
-                sb.append(result.getMessage().charAt(0)); // t or f.
-                break;
-            case PluginResult.MESSAGE_TYPE_NUMBER: // n
-                sb.append('n')
-                  .append(result.getMessage());
-                break;
-            case PluginResult.MESSAGE_TYPE_STRING: // s
-                sb.append('s')
-                  .append(result.getStrMessage());
-                break;
-            case PluginResult.MESSAGE_TYPE_JSON:
-            default:
-                sb.append(result.getMessage()); // [ or {
-        }
-        return sb.toString();
-    }
+    }   
 
     /**
      * Add a JavaScript statement to the list.
      */
     public void addJavaScript(String statement) {
-        enqueueMessage("J" + statement);
+        enqueueMessage(new JsMessage(statement));
     }
 
     /**
      * Add a JavaScript statement to the list.
      */
     public void addPluginResult(PluginResult result, String callbackId) {
-        String message = encodePluginResult(result, callbackId);
-        if (message != null) {
-            enqueueMessage(message);
+        // Don't send anything if there is no result and there is no need to
+        // clear the callbacks.
+        boolean noResult = result.getStatus() == PluginResult.Status.NO_RESULT.ordinal();
+        boolean keepCallback = result.getKeepCallback();
+        if (noResult && keepCallback) {
+            return;
         }
+        enqueueMessage(new JsMessage(result, callbackId));
     }
     
-    private void enqueueMessage(String encodedMessage) {
+    private void enqueueMessage(JsMessage message) {
         synchronized (this) {
-            queue.add(encodedMessage);
-            if (registeredListeners[activeListenerIndex] != null) {
+            queue.add(message);
+            if (!paused && registeredListeners[activeListenerIndex] != null) {
                 registeredListeners[activeListenerIndex].onNativeToJsMessageAvailable();
             }
         }        
@@ -251,8 +249,17 @@ public class NativeToJsMessageQueue {
     
     /** Uses webView.loadUrl("javascript:") to execute messages. */
     private class LoadUrlBridgeMode implements BridgeMode {
+        final Runnable runnable = new Runnable() {
+            public void run() {
+                String js = popAllAndEncodeAsJs();
+                if (js != null) {
+                    webView.loadUrlNow("javascript:" + js);
+                }
+            }
+        };
+        
         public void onNativeToJsMessageAvailable() {
-            webView.loadUrlNow("javascript:" + popAllAndEncodeAsJs());
+            cordova.getActivity().runOnUiThread(runnable);
         }
     }
 
@@ -336,4 +343,94 @@ public class NativeToJsMessageQueue {
         	}
         }
     }    
+    private static class JsMessage {
+        final String jsPayloadOrCallbackId;
+        final PluginResult pluginResult;
+        JsMessage(String js) {
+            jsPayloadOrCallbackId = js;
+            pluginResult = null;
+        }
+        JsMessage(PluginResult pluginResult, String callbackId) {
+            jsPayloadOrCallbackId = callbackId;
+            this.pluginResult = pluginResult;
+        }
+        
+        int calculateEncodedLength() {
+            if (pluginResult == null) {
+                return jsPayloadOrCallbackId.length() + 1;
+            }
+            int statusLen = String.valueOf(pluginResult.getStatus()).length();
+            int ret = 2 + statusLen + 1 + jsPayloadOrCallbackId.length() + 1;
+            switch (pluginResult.getMessageType()) {
+                case PluginResult.MESSAGE_TYPE_BOOLEAN:
+                    ret += 1;
+                    break;
+                case PluginResult.MESSAGE_TYPE_NUMBER: // n
+                    ret += 1 + pluginResult.getMessage().length();
+                    break;
+                case PluginResult.MESSAGE_TYPE_STRING: // s
+                    ret += 1 + pluginResult.getStrMessage().length();
+                    break;
+                case PluginResult.MESSAGE_TYPE_JSON:
+                default:
+                    ret += pluginResult.getMessage().length();
+            }
+            return ret;
+        }
+        
+        void encodeAsMessage(StringBuilder sb) {
+            if (pluginResult == null) {
+                sb.append('J')
+                  .append(jsPayloadOrCallbackId);
+                return;
+            }
+            int status = pluginResult.getStatus();
+            boolean noResult = status == PluginResult.Status.NO_RESULT.ordinal();
+            boolean resultOk = status == PluginResult.Status.OK.ordinal();
+            boolean keepCallback = pluginResult.getKeepCallback();
+
+            sb.append((noResult || resultOk) ? 'S' : 'F')
+              .append(keepCallback ? '1' : '0')
+              .append(status)
+              .append(' ')
+              .append(jsPayloadOrCallbackId)
+              .append(' ');
+            switch (pluginResult.getMessageType()) {
+                case PluginResult.MESSAGE_TYPE_BOOLEAN:
+                    sb.append(pluginResult.getMessage().charAt(0)); // t or f.
+                    break;
+                case PluginResult.MESSAGE_TYPE_NUMBER: // n
+                    sb.append('n')
+                      .append(pluginResult.getMessage());
+                    break;
+                case PluginResult.MESSAGE_TYPE_STRING: // s
+                    sb.append('s')
+                      .append(pluginResult.getStrMessage());
+                    break;
+                case PluginResult.MESSAGE_TYPE_JSON:
+                default:
+                    sb.append(pluginResult.getMessage()); // [ or {
+            }
+        }
+        
+        void encodeAsJsMessage(StringBuilder sb) {
+            if (pluginResult == null) {
+                sb.append(jsPayloadOrCallbackId);
+            } else {
+                int status = pluginResult.getStatus();
+                boolean success = (status == PluginResult.Status.OK.ordinal()) || (status == PluginResult.Status.NO_RESULT.ordinal());
+                sb.append("cordova.callbackFromNative('")
+                  .append(jsPayloadOrCallbackId)
+                  .append("',")
+                  .append(success)
+                  .append(",")
+                  .append(status)
+                  .append(",")
+                  .append(pluginResult.getMessage())
+                  .append(",")
+                  .append(pluginResult.getKeepCallback())
+                  .append(");");
+            }
+        }
+    }
 }
