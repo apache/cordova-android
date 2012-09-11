@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
@@ -45,6 +47,7 @@ public class PluginManager {
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
+    private final ExecutorService execThreadPool = Executors.newCachedThreadPool();
 
     // Flag to track first time through
     private boolean firstRun;
@@ -222,7 +225,7 @@ public class PluginManager {
                 runAsync = async && !plugin.isSynch(action);
                 if (runAsync) {
                     // Run this on a different thread so that this one can return back to JS
-                    Thread thread = new Thread(new Runnable() {
+                    execThreadPool.execute(new Runnable() {
                         public void run() {
                             try {
                                 // Call execute on the plugin so that it can do it's thing
@@ -234,7 +237,6 @@ public class PluginManager {
                             }
                         }
                     });
-                    thread.start();
                     return;
                 } else {
                     // Call execute on the plugin so that it can do it's thing
