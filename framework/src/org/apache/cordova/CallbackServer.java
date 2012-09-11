@@ -214,7 +214,6 @@ public class CallbackServer implements Runnable {
                             synchronized (this) {
                                 while (this.active) {
                                 	if (jsMessageQueue != null) {
-                                        // TODO(agrieve): Should this use popAll() instead?
                                 		payload = jsMessageQueue.popAndEncode();
                                 	    if (payload != null) {
                                 	    	break;

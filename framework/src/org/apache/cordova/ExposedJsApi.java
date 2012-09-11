@@ -41,7 +41,6 @@ import org.json.JSONException;
         jsMessageQueue.setPaused(true);
         try {
             pluginManager.exec(service, action, callbackId, arguments, true /* async */);
-            // TODO(agrieve): Should this use popAll() instead?
             return jsMessageQueue.popAndEncode();
         } finally {
             jsMessageQueue.setPaused(false);
@@ -53,7 +52,6 @@ import org.json.JSONException;
     }
     
     public String retrieveJsMessages() {
-        // TODO(agrieve): Should this use popAll() instead?
         return jsMessageQueue.popAndEncode();
     }
 }

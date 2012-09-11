@@ -24,7 +24,6 @@ import java.util.LinkedList;
 
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.PluginResult;
-import org.json.JSONObject;
 
 import android.os.Message;
 import android.util.Log;
@@ -42,6 +41,9 @@ public class NativeToJsMessageQueue {
     // Set this to true to force plugin results to be encoding as
     // JS instead of the custom format (useful for benchmarking).
     private static final boolean FORCE_ENCODE_USING_EVAL = false;
+    
+    // Arbitrarily chosen upper limit for how much data to send to JS in one shot. 
+    private static final int MAX_PAYLOAD_SIZE = 50 * 1024;
     
     /**
      * The index into registeredListeners to treat as active. 
@@ -121,58 +123,67 @@ public class NativeToJsMessageQueue {
         message.encodeAsMessage(sb);
     }
     
+    /**
+     * Combines and returns queued messages combined into a single string.
+     * Combines as many messages as possible, while staying under MAX_PAYLOAD_SIZE.
+     * Returns null if the queue is empty.
+     */
     public String popAndEncode() {
         synchronized (this) {
             if (queue.isEmpty()) {
                 return null;
             }
-            JsMessage message = queue.removeFirst();
-            StringBuilder sb = new StringBuilder(calculatePackedMessageLength(message));
-            packMessage(message, sb);
-            return sb.toString();
-        }        
-    }
-    
-    /**
-     * Combines and returns all messages combined into a single string.
-     * Clears the queue.
-     * Returns null if the queue is empty.
-     */
-    public String popAllAndEncode() {
-        synchronized (this) {
-            if (queue.isEmpty()) {
-                return null;
-            }
             int totalPayloadLen = 0;
+            int numMessagesToSend = 0;
             for (JsMessage message : queue) {
-                totalPayloadLen += calculatePackedMessageLength(message);
+                int messageSize = calculatePackedMessageLength(message);
+                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE) {
+                    break;
+                }
+                totalPayloadLen += messageSize;
+                numMessagesToSend += 1;
             }
 
             StringBuilder sb = new StringBuilder(totalPayloadLen);
-            for (JsMessage message : queue) {
+            for (int i = 0; i < numMessagesToSend; ++i) {
+                JsMessage message = queue.removeFirst();
                 packMessage(message, sb);
             }
-            queue.clear();
+            
+            if (!queue.isEmpty()) {
+                // Attach a char to indicate that there are more messages pending.
+                sb.append('*');
+            }
             return sb.toString();
         }
     }
     
-    private String popAllAndEncodeAsJs() {
+    /**
+     * Same as popAndEncode(), except encodes in a form that can be executed as JS.
+     */
+    private String popAndEncodeAsJs() {
         synchronized (this) {
             int length = queue.size();
             if (length == 0) {
                 return null;
             }
-            int totalPayloadLen = 16 * length; // accounts for try & finally.
+            int totalPayloadLen = 0;
+            int numMessagesToSend = 0;
             for (JsMessage message : queue) {
-                totalPayloadLen += message.calculateEncodedLength(); // overestimate.
+                int messageSize = message.calculateEncodedLength() + 50; // overestimate.
+                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE) {
+                    break;
+                }
+                totalPayloadLen += messageSize;
+                numMessagesToSend += 1;
             }
-            StringBuilder sb = new StringBuilder(totalPayloadLen);
+            boolean willSendAllMessages = numMessagesToSend == queue.size();
+            StringBuilder sb = new StringBuilder(totalPayloadLen + (willSendAllMessages ? 0 : 100));
             // Wrap each statement in a try/finally so that if one throws it does 
             // not affect the next.
-            int i = 0;
-            for (JsMessage message : queue) {
-                if (++i == length) {
+            for (int i = 0; i < numMessagesToSend; ++i) {
+                JsMessage message = queue.removeFirst();
+                if (willSendAllMessages && (i + 1 == numMessagesToSend)) {
                     message.encodeAsJsMessage(sb);
                 } else {
                     sb.append("try{");
@@ -180,10 +191,12 @@ public class NativeToJsMessageQueue {
                     sb.append("}finally{");
                 }
             }
-            for ( i = 1; i < length; ++i) {
+            if (!willSendAllMessages) {
+                sb.append("window.setTimeout(function(){cordova.require('cordova/plugin/android/polling').pollOnce();},0);");
+            }
+            for (int i = willSendAllMessages ? 1 : 0; i < numMessagesToSend; ++i) {
                 sb.append('}');
             }
-            queue.clear();
             return sb.toString();
         }
     }   
@@ -262,7 +275,7 @@ public class NativeToJsMessageQueue {
     private class LoadUrlBridgeMode implements BridgeMode {
         final Runnable runnable = new Runnable() {
             public void run() {
-                String js = popAllAndEncodeAsJs();
+                String js = popAndEncodeAsJs();
                 if (js != null) {
                     webView.loadUrlNow("javascript:" + js);
                 }
@@ -344,7 +357,7 @@ public class NativeToJsMessageQueue {
         	}
         	// webViewCore is lazily initialized, and so may not be available right away.
         	if (sendMessageMethod != null) {
-	        	String js = popAllAndEncodeAsJs();
+	        	String js = popAndEncodeAsJs();
 	        	Message execJsMessage = Message.obtain(null, EXECUTE_JS, js);
 				try {
 				    sendMessageMethod.invoke(webViewCore, execJsMessage);
