@@ -38,7 +38,7 @@ import android.telephony.TelephonyManager;
 public class Device extends Plugin {
     public static final String TAG = "Device";
 
-    public static String cordovaVersion = "2.1.0rc2";              // Cordova version
+    public static String cordovaVersion = "2.1.0";              // Cordova version
     public static String platform = "Android";                  // Device OS
     public static String uuid;                                  // Device UUID
 

@@ -1,6 +1,6 @@
-// commit 2aa46aa0eef2ba641cf91793735152d7fb5b6998
+// commit dc26996057d667e1a8ac6d524918cce0e7078e21
 
-// File generated at :: Fri Aug 31 2012 16:26:04 GMT-0400 (EDT)
+// File generated at :: Wed Sep 12 2012 10:09:05 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -186,13 +186,19 @@ var cordova = {
     },
     /**
      * Method to fire event from native code
+     * bNoDetach is required for events which cause an exception which needs to be caught in native code     
      */
-    fireDocumentEvent: function(type, data) {
+    fireDocumentEvent: function(type, data, bNoDetach) {
         var evt = createEvent(type, data);
         if (typeof documentEventHandlers[type] != 'undefined') {
-            setTimeout(function() {
-                documentEventHandlers[type].fire(evt);
-            }, 0);
+            if( bNoDetach ) {
+              documentEventHandlers[type].fire(evt);
+            }
+            else {
+              setTimeout(function() {
+                  documentEventHandlers[type].fire(evt);
+              }, 0);
+            }
         } else {
             document.dispatchEvent(evt);
         }
@@ -3224,34 +3230,39 @@ Media.prototype.setVolume = function(volume) {
  * PRIVATE
  *
  * @param id            The media object id (string)
- * @param status        The status code (int)
- * @param msg           The status message (string)
+ * @param msgType       The 'type' of update this is
+ * @param value         Use of value is determined by the msgType
  */
-Media.onStatus = function(id, msg, value) {
+Media.onStatus = function(id, msgType, value) {
+
     var media = mediaObjects[id];
-    // If state update
-    if (msg === Media.MEDIA_STATE) {
-        if (media.statusCallback) {
-            media.statusCallback(value);
+
+    if(media) {
+        switch(msgType) {
+            case Media.MEDIA_STATE :
+                media.statusCallback && media.statusCallback(value);
+                if(value == Media.MEDIA_STOPPED) {
+                    media.successCallback && media.successCallback();
+                }
+                break;
+            case Media.MEDIA_DURATION :
+                media._duration = value;
+                break;
+            case Media.MEDIA_ERROR :
+                media.errorCallback && media.errorCallback(value); 
+                break;
+            case Media.MEDIA_POSITION :
+                media._position = Number(value);
+                break;
+            default :
+                console && console.error && console.error("Unhandled Media.onStatus :: " + msgType); 
+                break;
         }
-        if (value === Media.MEDIA_STOPPED) {
-            if (media.successCallback) {
-                media.successCallback();
-            }
-        }
     }
-    else if (msg === Media.MEDIA_DURATION) {
-        media._duration = value;
+    else {
+         console && console.error && console.error("Received Media.onStatus callback for unknown media :: " + id);
     }
-    else if (msg === Media.MEDIA_ERROR) {
-        if (media.errorCallback) {
-            // value should be a MediaError object when msg == MEDIA_ERROR
-            media.errorCallback(value);
-        }
-    }
-    else if (msg === Media.MEDIA_POSITION) {
-        media._position = value;
-    }
+
 };
 
 module.exports = Media;
@@ -3261,20 +3272,36 @@ module.exports = Media;
 define("cordova/plugin/MediaError", function(require, exports, module) {
 /**
  * This class contains information about any Media errors.
- * @constructor
- */
-var MediaError = function(code, msg) {
-    this.code = (code !== undefined ? code : null);
-    this.message = msg || "";
-};
+*/
+/*
+ According to :: http://dev.w3.org/html5/spec-author-view/video.html#mediaerror
+ We should never be creating these objects, we should just implement the interface
+ which has 1 property for an instance, 'code'
 
-MediaError.MEDIA_ERR_NONE_ACTIVE    = 0;
-MediaError.MEDIA_ERR_ABORTED        = 1;
-MediaError.MEDIA_ERR_NETWORK        = 2;
-MediaError.MEDIA_ERR_DECODE         = 3;
-MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
+ instead of doing :
+    errorCallbackFunction( new MediaError(3,'msg') );
+we should simply use a literal :
+    errorCallbackFunction( {'code':3} );
+ */
+
+if(!MediaError) {
+    var MediaError = function(code, msg) {
+        this.code = (typeof code != 'undefined') ? code : null;
+        this.message = msg || ""; // message is NON-standard! do not use!
+    };
+}
+
+MediaError.MEDIA_ERR_NONE_ACTIVE    = MediaError.MEDIA_ERR_NONE_ACTIVE    || 0;
+MediaError.MEDIA_ERR_ABORTED        = MediaError.MEDIA_ERR_ABORTED        || 1;
+MediaError.MEDIA_ERR_NETWORK        = MediaError.MEDIA_ERR_NETWORK        || 2;
+MediaError.MEDIA_ERR_DECODE         = MediaError.MEDIA_ERR_DECODE         || 3;
+MediaError.MEDIA_ERR_NONE_SUPPORTED = MediaError.MEDIA_ERR_NONE_SUPPORTED || 4;
+// TODO: MediaError.MEDIA_ERR_NONE_SUPPORTED is legacy, the W3 spec now defines it as below. 
+// as defined by http://dev.w3.org/html5/spec-author-view/video.html#error-codes
+MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED = MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED || 4;
 
 module.exports = MediaError;
+
 });
 
 // file: lib/common/plugin/MediaFile.js
