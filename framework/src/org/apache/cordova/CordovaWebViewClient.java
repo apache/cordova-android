@@ -23,20 +23,15 @@ import java.util.Hashtable;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.PluginResult;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.cordova.api.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
@@ -44,7 +39,6 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -269,6 +263,11 @@ public class CordovaWebViewClient extends WebViewClient {
 
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageStarted", url);
+
+        // Notify all plugins of the navigation, so they can clean up if necessary.
+        if (this.appView.pluginManager != null) {
+            this.appView.pluginManager.onReset();
+        }
     }
 
     /**

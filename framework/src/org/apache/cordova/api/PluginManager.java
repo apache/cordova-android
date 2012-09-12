@@ -397,6 +397,20 @@ public class PluginManager {
         return false;
     }
 
+    /**
+     * Called when the app navigates or refreshes.
+     */
+    public void onReset() {
+        Iterator<PluginEntry> it = this.entries.values().iterator();
+        while (it.hasNext()) {
+            IPlugin plugin = it.next().plugin;
+            if (plugin != null) {
+                plugin.onReset();
+            }
+        }
+    }
+
+
     private void pluginConfigurationMissing() {
         LOG.e(TAG, "=====================================================================================");
         LOG.e(TAG, "ERROR: plugin.xml is missing.  Add res/xml/plugins.xml to your project.");
