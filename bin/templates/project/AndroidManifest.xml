@@ -18,7 +18,7 @@
        under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:windowSoftInputMode="adjustPan"
-      package="__PACKAGE__" android:versionName="1.1" android:versionCode="5">
+      package="__PACKAGE__" android:versionName="1.1" android:versionCode="5" android:hardwareAccelerated="true">
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
@@ -57,5 +57,5 @@
         </activity>
     </application>
 
-    <uses-sdk android:minSdkVersion="7" />
+    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="__APILEVEL__"/>
 </manifest> 
