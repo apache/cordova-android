@@ -47,6 +47,7 @@
 
 
     <application android:icon="@drawable/icon" android:label="@string/app_name"
+        android:hardwareAccelerated="true"
         android:debuggable="true">
         <activity android:name="__ACTIVITY__" android:label="@string/app_name"
                 android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale">
