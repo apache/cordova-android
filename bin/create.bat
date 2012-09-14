@@ -4,7 +4,7 @@ FOR %%X in (java.exe ant.bat android.bat) do (
     SET FOUND=%%~$PATH:X
     IF NOT DEFINED FOUND GOTO MISSING
 )
-cscript %~dp0\create.js %*
+cscript "%~dp0\create.js" %*
 GOTO END
 :MISSING
 ECHO Missing one of the following:
