@@ -40,8 +40,12 @@ import org.json.JSONException;
     public String exec(String service, String action, String callbackId, String arguments) throws JSONException {
         jsMessageQueue.setPaused(true);
         try {
-            pluginManager.exec(service, action, callbackId, arguments, true /* async */);
-            return jsMessageQueue.popAndEncode();
+            boolean wasSync = pluginManager.exec(service, action, callbackId, arguments, true /* async */);
+            String ret = "";
+            if (!NativeToJsMessageQueue.DISABLE_EXEC_CHAINING || wasSync) {
+                ret = jsMessageQueue.popAndEncode();
+            }
+            return ret;
         } finally {
             jsMessageQueue.setPaused(false);
         }

@@ -213,8 +213,9 @@ public class PluginManager {
      * @param async         Boolean indicating whether the calling JavaScript code is expecting an
      *                      immediate return value. If true, either Cordova.callbackSuccess(...) or
      *                      Cordova.callbackError(...) is called once the plugin code has executed.
+     * @return Whether the task completed synchronously.
      */
-    public void exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
+    public boolean exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
         PluginResult cr = null;
         boolean runAsync = async;
         try {
@@ -237,14 +238,14 @@ public class PluginManager {
                             }
                         }
                     });
-                    return;
+                    return false;
                 } else {
                     // Call execute on the plugin so that it can do it's thing
                     cr = plugin.execute(action, args, callbackId);
 
                     // If no result to be sent and keeping callback, then no need to sent back to JavaScript
                     if ((cr.getStatus() == PluginResult.Status.NO_RESULT.ordinal()) && cr.getKeepCallback()) {
-                        return;
+                        return true;
                     }
                 }
             }
@@ -263,6 +264,7 @@ public class PluginManager {
         	cr = new PluginResult(PluginResult.Status.NO_RESULT);
         }
         app.sendPluginResult(cr, callbackId);
+        return true;
     }
 
     /**

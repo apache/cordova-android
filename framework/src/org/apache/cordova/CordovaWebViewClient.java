@@ -54,9 +54,6 @@ import android.webkit.WebViewClient;
 public class CordovaWebViewClient extends WebViewClient {
 
 	private static final String TAG = "Cordova";
-	// Disable URL-based exec() bridge by default since it's a bit of a
-	// security concern.
-	private static boolean ENABLE_LOCATION_CHANGE_EXEC_MODE = false;
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     CordovaWebView appView;
@@ -124,7 +121,7 @@ public class CordovaWebViewClient extends WebViewClient {
 	@Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
     	// Check if it's an exec() bridge command message.
-    	if (ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
+    	if (NativeToJsMessageQueue.ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
     		handleExecUrl(url);
     	}
 

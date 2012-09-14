@@ -41,6 +41,14 @@ public class NativeToJsMessageQueue {
     // Set this to true to force plugin results to be encoding as
     // JS instead of the custom format (useful for benchmarking).
     private static final boolean FORCE_ENCODE_USING_EVAL = false;
+
+    // Disable URL-based exec() bridge by default since it's a bit of a
+    // security concern.
+    static final boolean ENABLE_LOCATION_CHANGE_EXEC_MODE = false;
+        
+    // Disable sending back native->JS messages during an exec() when the active
+    // exec() is asynchronous. Set this to true when running bridge benchmarks.
+    static final boolean DISABLE_EXEC_CHAINING = false;
     
     // Arbitrarily chosen upper limit for how much data to send to JS in one shot. 
     private static final int MAX_PAYLOAD_SIZE = 50 * 1024;
@@ -68,7 +76,7 @@ public class NativeToJsMessageQueue {
     
     private final CordovaInterface cordova;
     private final CordovaWebView webView;
-        
+
     public NativeToJsMessageQueue(CordovaWebView webView, CordovaInterface cordova) {
         this.cordova = cordova;
         this.webView = webView;
