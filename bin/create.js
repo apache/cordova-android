@@ -94,12 +94,12 @@ function downloadCommonsCodec() {
         }
       }
       var app = WScript.CreateObject('Shell.Application');
-      var ource = app.NameSpace(savePath).Items();
+      var source = app.NameSpace(savePath).Items();
       var target = app.NameSpace(ROOT + '\\framework\\libs');
       target.CopyHere(source, 256);
       
       // Move the jar into libs
-      fso.MoveFile(ROOT + '\\framework\\libs\\commons-codec-1.6\\commons-codec-1.7.jar', ROOT + '\\framework\\libs\\commons-codec-1.7.jar');
+      fso.MoveFile(ROOT + '\\framework\\libs\\commons-codec-1.7\\commons-codec-1.7.jar', ROOT + '\\framework\\libs\\commons-codec-1.7.jar');
       
       // Clean up
       fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.7-bin.zip');
@@ -113,6 +113,7 @@ var args = WScript.Arguments, PROJECT_PATH="example",
     
 // working dir
 var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
+WScript.echo("Root Directory:" + ROOT);
 
 if (args.Count() == 3) {
     PROJECT_PATH=args(0);
@@ -140,7 +141,7 @@ if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
     exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
     // pull down commons codec if necessary
     downloadCommonsCodec();
-    exec('ant.bat -f '+ ROOT +'\\framework\\build.xml jar');
+    exec('ant.bat -f \"'+ ROOT +'\\framework\\build.xml\" jar');
 }
 
 // copy in the project template
