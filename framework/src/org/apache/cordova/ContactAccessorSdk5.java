@@ -792,10 +792,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                 formatted.append(middleName + " ");
             }
             if (familyName != null) {
-                formatted.append(familyName + " ");
+                formatted.append(familyName);
             }
             if (honorificSuffix != null) {
-                formatted.append(honorificSuffix + " ");
+                formatted.append(" " + honorificSuffix);
             }
 
             contactName.put("familyName", familyName);
