@@ -68,11 +68,11 @@ function cleanup() {
 }
 
 function downloadCommonsCodec() {
-    if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
+    if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.7.jar')) {
       // We need the .jar
-      var url = 'http://mirror.symnds.com/software/Apache//commons/codec/binaries/commons-codec-1.6-bin.zip';
+      var url = 'http://apache.osuosl.org/commons/codec/binaries/commons-codec-1.7-bin.zip';
       var libsPath = ROOT + '\\framework\\libs';
-      var savePath = libsPath + '\\commons-codec-1.6-bin.zip';
+      var savePath = libsPath + '\\commons-codec-1.7-bin.zip';
       if (!fso.FileExists(savePath)) {
         if(!fso.FolderExists(ROOT + '\\framework\\libs')) {
             fso.CreateFolder(libsPath);
@@ -94,16 +94,16 @@ function downloadCommonsCodec() {
         }
       }
       var app = WScript.CreateObject('Shell.Application');
-      var source = app.NameSpace(savePath).Items();
+      var ource = app.NameSpace(savePath).Items();
       var target = app.NameSpace(ROOT + '\\framework\\libs');
       target.CopyHere(source, 256);
       
       // Move the jar into libs
-      fso.MoveFile(ROOT + '\\framework\\libs\\commons-codec-1.6\\commons-codec-1.6.jar', ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
+      fso.MoveFile(ROOT + '\\framework\\libs\\commons-codec-1.6\\commons-codec-1.7.jar', ROOT + '\\framework\\libs\\commons-codec-1.7.jar');
       
       // Clean up
-      fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6-bin.zip');
-      fso.DeleteFolder(ROOT + '\\framework\\libs\\commons-codec-1.6', true);
+      fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.7-bin.zip');
+      fso.DeleteFolder(ROOT + '\\framework\\libs\\commons-codec-1.7', true);
     }
 }
 
