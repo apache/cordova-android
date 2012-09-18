@@ -17,7 +17,7 @@
 
 @ECHO OFF
 IF NOT DEFINED JAVA_HOME GOTO MISSING
-FOR %%X in (java.exe ant.bat android.bat) do (
+FOR %%X in (java.exe javac.exe ant.bat android.bat) do (
     SET FOUND=%%~$PATH:X
     IF NOT DEFINED FOUND GOTO MISSING
 )

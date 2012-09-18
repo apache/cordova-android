@@ -49,14 +49,24 @@ function replaceInFile(filename, regexp, replacement) {
 function exec(command) {
     var oShell=shell.Exec(command);
     while (oShell.Status == 0) {
+        if(!oShell.StdOut.AtEndOfStream) {
+            var line = oShell.StdOut.ReadLine();
+            // XXX: Change to verbose mode 
+            WScript.StdOut.WriteLine(line);
+        }
         WScript.sleep(100);
     }
 }
 
 function createAppInfoJar() {
-    exec("cd "+ROOT+"bin\\templates\\cordova");
-    exec("javac bin\\templates\\cordova\\ApplicationInfo\\ApplicationInfo.java");
-    exec("jar -cfe ..\\appinfo.jar ApplicationInfo ApplicationInfo.class");
+    if(!fso.FileExists(ROOT+"\\bin\\templates\\cordova\\appinfo.jar")) {
+        WScript.Echo("Creating appinfo.jar...");
+        var cur = shell.CurrentDirectory;
+        shell.CurrentDirectory = ROOT+"\\bin\\templates\\cordova\\ApplicationInfo";
+        exec("javac ApplicationInfo.java");
+        exec("jar -cfe ..\\appinfo.jar ApplicationInfo ApplicationInfo.class");
+        shell.CurrentDirectory = cur;
+    }
 }
 
 function cleanup() {
@@ -119,7 +129,6 @@ var args = WScript.Arguments, PROJECT_PATH="example",
     
 // working dir
 var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
-WScript.echo("Root Directory:" + ROOT);
 
 if (args.Count() == 3) {
     PROJECT_PATH=args(0);
@@ -138,11 +147,13 @@ var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
 var TARGET=setTarget();
 var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 // create the project
+WScript.Echo("Creating new android project...");
 exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --package '+PACKAGE+' --activity '+ACTIVITY);
 
 // build from source. distro should have these files
 if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
     !fso.FileExists(ROOT+'\\cordova-'+VERSION+'.js')) {
+    WScript.Echo("Building jar and js files...");
     // update the cordova framework project to a target that exists on this machine
     exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
     // pull down commons codec if necessary
@@ -151,12 +162,14 @@ if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
 }
 
 // copy in the project template
+WScript.Echo("Copying template files...");
 exec('%comspec% /c xcopy '+ ROOT + '\\bin\\templates\\project\\res '+PROJECT_PATH+'\\res\\ /E /Y');
 exec('%comspec% /c xcopy '+ ROOT + '\\bin\\templates\\project\\assets '+PROJECT_PATH+'\\assets\\ /E /Y');
 exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\project\\AndroidManifest.xml ' + PROJECT_PATH + '\\AndroidManifest.xml /Y');
 exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\project\\Activity.java '+ ACTIVITY_PATH +' /Y');
 
 // check if we have the source or the distro files
+WScript.Echo("Copying js, jar & config.xml files...");
 if(fso.FolderExists(ROOT + '\\framework')) {
     exec('%comspec% /c copy '+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
     exec('%comspec% /c copy '+ROOT+'\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
@@ -174,6 +187,8 @@ if(fso.FolderExists(ROOT + '\\framework')) {
 
 // copy cordova scripts
 fso.CreateFolder(PROJECT_PATH + '\\cordova');
+createAppInfoJar();
+WScript.Echo("Copying cordova command tools...");
 exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\appinfo.jar ' + PROJECT_PATH + '\\cordova\\appinfo.jar /Y');
 exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\cordova.js ' + PROJECT_PATH + '\\cordova\\cordova.js /Y');
 exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
@@ -184,6 +199,7 @@ exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\emulate.bat ' + PROJE
 exec('%comspec% /c copy '+ROOT+'\\bin\\templates\\cordova\\BOOM.bat ' + PROJECT_PATH + '\\cordova\\BOOM.bat /Y');
 
 // interpolate the activity name and package
+WScript.Echo("Updating AndroidManifest.xml and Main Activity...");
 replaceInFile(ACTIVITY_PATH, /__ACTIVITY__/, ACTIVITY);
 replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 
