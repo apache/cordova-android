@@ -85,7 +85,7 @@ public class FileTransfer extends Plugin {
         if (action.equals("upload")) {
             return upload(URLDecoder.decode(source), target, args);
         } else if (action.equals("download")) {
-            return download(source, target);
+            return download(source, target, args.optBoolean(2));
         } else {
             return new PluginResult(PluginResult.Status.INVALID_ACTION);
         }
@@ -459,7 +459,7 @@ public class FileTransfer extends Plugin {
      * @param target      	Full path of the file on the file system
      * @return JSONObject 	the downloaded file
      */
-    private PluginResult download(String source, String target) {
+    private PluginResult download(String source, String target, boolean trustEveryone) {
         Log.d(LOG_TAG, "download " + source + " to " +  target);
 
         HttpURLConnection connection = null;
@@ -473,7 +473,30 @@ public class FileTransfer extends Plugin {
             if (webView.isUrlWhiteListed(source))
             {
               URL url = new URL(source);
-              connection = (HttpURLConnection) url.openConnection();
+              boolean useHttps = url.getProtocol().toLowerCase().equals("https");
+              // Open a HTTP connection to the URL based on protocol
+              if (useHttps) {
+                  // Using standard HTTPS connection. Will not allow self signed certificate
+                  if (!trustEveryone) {
+                	  connection = (HttpsURLConnection) url.openConnection();
+                  }
+                  // Use our HTTPS connection that blindly trusts everyone.
+                  // This should only be used in debug environments
+                  else {
+                      // Setup the HTTPS connection class to trust everyone
+                      trustAllHosts();
+                      HttpsURLConnection https = (HttpsURLConnection) url.openConnection();
+                      // Save the current hostnameVerifier
+                      defaultHostnameVerifier = https.getHostnameVerifier();
+                      // Setup the connection not to verify hostnames
+                      https.setHostnameVerifier(DO_NOT_VERIFY);
+                      connection = https;
+                  }
+              }
+              // Return a standard HTTP connection
+              else {
+            	  connection = (HttpURLConnection) url.openConnection();
+              }
               connection.setRequestMethod("GET");
 
               //Add cookie support
@@ -515,6 +538,12 @@ public class FileTransfer extends Plugin {
               // create FileEntry object
               FileUtils fileUtil = new FileUtils();
               JSONObject fileEntry = fileUtil.getEntry(file);
+
+              // Revert back to the proper verifier and socket factories
+              if (trustEveryone && url.getProtocol().toLowerCase().equals("https")) {
+                  ((HttpsURLConnection) connection).setHostnameVerifier(defaultHostnameVerifier);
+                  HttpsURLConnection.setDefaultSSLSocketFactory(defaultSSLSocketFactory);
+              }
 
               return new PluginResult(PluginResult.Status.OK, fileEntry);
             }
