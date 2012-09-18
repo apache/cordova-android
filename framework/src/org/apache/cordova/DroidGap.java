@@ -406,6 +406,8 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
 
         this.splashscreenTime = time;
+        this.splashscreen = this.getIntegerProperty("splashscreen", 0);
+        this.showSplashScreen(this.splashscreenTime);
         this.appView.loadUrl(url, time);
     }
 
@@ -996,7 +998,6 @@ public class DroidGap extends Activity implements CordovaInterface {
         this.runOnUiThread(runnable);
     }
 
-
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
@@ -1024,8 +1025,11 @@ public class DroidGap extends Activity implements CordovaInterface {
                 this.removeSplashScreen();
             }
             else {
-                this.splashscreen = this.getIntegerProperty("splashscreen", 0);
-                this.showSplashScreen(this.splashscreenTime);
+                // If the splash dialog is showing don't try to show it again
+                if (this.splashDialog != null && !this.splashDialog.isShowing()) {
+	                this.splashscreen = this.getIntegerProperty("splashscreen", 0);
+	                this.showSplashScreen(this.splashscreenTime);
+                }
             }
         }
         else if ("spinner".equals(id)) {
