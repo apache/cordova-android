@@ -211,14 +211,14 @@ public class CallbackServer implements Runnable {
 
                             // Wait until there is some data to send, or send empty data every 10 sec 
                             // to prevent XHR timeout on the client 
-                            synchronized (this) {
-                                while (this.active) {
-                                	if (jsMessageQueue != null) {
-                                		payload = jsMessageQueue.popAndEncode();
-                                	    if (payload != null) {
-                                	    	break;
-                                	    }
-                                	}
+                            while (this.active) {
+                            	if (jsMessageQueue != null) {
+                            		payload = jsMessageQueue.popAndEncode();
+                            	    if (payload != null) {
+                            	    	break;
+                            	    }
+                            	}
+                            	synchronized (this) {
                                     try {
                                         this.wait(10000); // prevent timeout from happening
                                         //Log.d(LOG_TAG, "CallbackServer>>> break <<<");
