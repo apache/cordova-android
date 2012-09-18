@@ -191,4 +191,14 @@ public class GeoBroker extends Plugin {
 
         this.error(result, callbackId);
     }
+    
+    public boolean isGlobalListener(CordovaLocationListener listener)
+    {
+    	if (gpsListener != null && networkListener != null)
+    	{
+    		return gpsListener.equals(listener) || networkListener.equals(listener);
+    	}
+    	else
+    		return false;
+    }
 }
