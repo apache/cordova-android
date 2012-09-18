@@ -53,6 +53,12 @@ function exec(command) {
     }
 }
 
+function createAppInfoJar() {
+    exec("cd "+ROOT+"bin\\templates\\cordova");
+    exec("javac bin\\templates\\cordova\\ApplicationInfo\\ApplicationInfo.java");
+    exec("jar -cfe ..\\appinfo.jar ApplicationInfo ApplicationInfo.class");
+}
+
 function cleanup() {
     // Cleanup
 //    if(fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {

@@ -58,6 +58,13 @@ function on_exit {
     fi
 }
 
+function createAppInfoJar {
+    (cd "$BUILD_PATH"/bin/templates/cordova/ApplicationInfo &&
+     javac ApplicationInfo.java &&
+     jar -cfe ../appinfo.jar ApplicationInfo ApplicationInfo.class
+    )
+}
+
 function on_error {
     echo "An error occured. Deleting project..."
     [ -d "$PROJECT_PATH" ] && rm -rf "$PROJECT_PATH"
@@ -139,6 +146,7 @@ replace "s/__APILEVEL__/${API_LEVEL}/g" "$MANIFEST_PATH"
 
 # creating cordova folder and copying emulate/debug/log/launch scripts
 mkdir "$PROJECT_PATH"/cordova
+createAppInfoJar
 cp "$BUILD_PATH"/bin/templates/cordova/appinfo.jar "$PROJECT_PATH"/cordova/appinfo.jar
 cp "$BUILD_PATH"/bin/templates/cordova/cordova "$PROJECT_PATH"/cordova/cordova
 cp "$BUILD_PATH"/bin/templates/cordova/debug "$PROJECT_PATH"/cordova/debug
