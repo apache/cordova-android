@@ -33,7 +33,7 @@ To create your cordova.jar, copy the commons codec:
 
 then run in the framework directory:
 
-    android update project -p . -t android-15
+    android update project -p . -t android-16
     ant jar
 
 
