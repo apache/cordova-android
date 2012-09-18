@@ -410,7 +410,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      */
     private void setMode(MODE mode) {
         if (this.mode != mode) {
-            //mode is not part of the expected behaviour, so no notification
+            //mode is not part of the expected behavior, so no notification
             //this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_STATE + ", " + mode + ");");
         }
         this.mode = mode;

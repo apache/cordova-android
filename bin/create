@@ -66,7 +66,7 @@ function createAppInfoJar {
 }
 
 function on_error {
-    echo "An error occured. Deleting project..."
+    echo "An error occurred. Deleting project..."
     [ -d "$PROJECT_PATH" ] && rm -rf "$PROJECT_PATH"
 }
 

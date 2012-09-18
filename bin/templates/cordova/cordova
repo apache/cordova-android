@@ -73,7 +73,7 @@ function emulate {
 function clean {
     ant clean
 }
-# has to be used independently and not in conjuction with other commands
+# has to be used independently and not in conjunction with other commands
 function log {
     adb logcat
 }

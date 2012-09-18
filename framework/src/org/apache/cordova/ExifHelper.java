@@ -23,7 +23,7 @@ import java.io.IOException;
 import android.media.ExifInterface;
 
 public class ExifHelper {
-    private String aperature = null;
+    private String aperture = null;
     private String datetime = null;
     private String exposureTime = null;
     private String flash = null;
@@ -70,7 +70,7 @@ public class ExifHelper {
      * Reads all the EXIF data from the input file.
      */
     public void readExifData() {
-        this.aperature = inFile.getAttribute(ExifInterface.TAG_APERTURE);
+        this.aperture = inFile.getAttribute(ExifInterface.TAG_APERTURE);
         this.datetime = inFile.getAttribute(ExifInterface.TAG_DATETIME);
         this.exposureTime = inFile.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
         this.flash = inFile.getAttribute(ExifInterface.TAG_FLASH);
@@ -102,8 +102,8 @@ public class ExifHelper {
             return;
         }
 
-        if (this.aperature != null) {
-            this.outFile.setAttribute(ExifInterface.TAG_APERTURE, this.aperature);
+        if (this.aperture != null) {
+            this.outFile.setAttribute(ExifInterface.TAG_APERTURE, this.aperture);
         }
         if (this.datetime != null) {
             this.outFile.setAttribute(ExifInterface.TAG_DATETIME, this.datetime);

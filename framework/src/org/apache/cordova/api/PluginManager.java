@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
@@ -45,6 +47,7 @@ public class PluginManager {
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
+    private final ExecutorService execThreadPool = Executors.newCachedThreadPool();
 
     // Flag to track first time through
     private boolean firstRun;
@@ -200,7 +203,7 @@ public class PluginManager {
      * or execute the class denoted by the clazz argument.
      *
      * @param service       String containing the service to run
-     * @param action        String containt the action that the class is supposed to perform. This is
+     * @param action        String containing the action that the class is supposed to perform. This is
      *                      passed to the plugin execute method and it is up to the plugin developer
      *                      how to deal with it.
      * @param callbackId    String containing the id of the callback that is execute in JavaScript if
@@ -210,10 +213,9 @@ public class PluginManager {
      * @param async         Boolean indicating whether the calling JavaScript code is expecting an
      *                      immediate return value. If true, either Cordova.callbackSuccess(...) or
      *                      Cordova.callbackError(...) is called once the plugin code has executed.
-     *
-     * @return              PluginResult to send to the page, or null if no response is ready yet.
+     * @return Whether the task completed synchronously.
      */
-    public PluginResult exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
+    public boolean exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
         PluginResult cr = null;
         boolean runAsync = async;
         try {
@@ -224,30 +226,26 @@ public class PluginManager {
                 runAsync = async && !plugin.isSynch(action);
                 if (runAsync) {
                     // Run this on a different thread so that this one can return back to JS
-                    Thread thread = new Thread(new Runnable() {
+                    execThreadPool.execute(new Runnable() {
                         public void run() {
                             try {
                                 // Call execute on the plugin so that it can do it's thing
                                 PluginResult cr = plugin.execute(action, args, callbackId);
-                                String callbackString = cr.toCallbackString(callbackId);
-                                if (callbackString != null) {
-                                    app.sendJavascript(callbackString);
-                                }
+                                app.sendPluginResult(cr, callbackId);
                             } catch (Exception e) {
                                 PluginResult cr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
-                                app.sendJavascript(cr.toErrorCallbackString(callbackId));
+                                app.sendPluginResult(cr, callbackId);
                             }
                         }
                     });
-                    thread.start();
-                    return null;
+                    return false;
                 } else {
                     // Call execute on the plugin so that it can do it's thing
                     cr = plugin.execute(action, args, callbackId);
 
                     // If no result to be sent and keeping callback, then no need to sent back to JavaScript
                     if ((cr.getStatus() == PluginResult.Status.NO_RESULT.ordinal()) && cr.getKeepCallback()) {
-                        return null;
+                        return true;
                     }
                 }
             }
@@ -260,12 +258,13 @@ public class PluginManager {
             if (cr == null) {
                 cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
             }
-            app.sendJavascript(cr.toErrorCallbackString(callbackId));
+            app.sendPluginResult(cr, callbackId);
         }
         if (cr == null) {
         	cr = new PluginResult(PluginResult.Status.NO_RESULT);
         }
-        return cr;
+        app.sendPluginResult(cr, callbackId);
+        return true;
     }
 
     /**

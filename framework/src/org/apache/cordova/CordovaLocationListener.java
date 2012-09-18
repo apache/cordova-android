@@ -55,6 +55,11 @@ public class CordovaLocationListener implements LocationListener {
         {
             this.owner.fail(code, message, callbackId);
         }
+        if(this.owner.isGlobalListener(this))
+        {
+        	Log.d(TAG, "Stopping global listener");
+        	this.stop();
+        }
         this.callbacks.clear();
 
         Iterator it = this.watches.entrySet().iterator();
@@ -68,6 +73,11 @@ public class CordovaLocationListener implements LocationListener {
         for (String callbackId: this.callbacks)
         {
             this.owner.win(loc, callbackId);
+        }
+        if(this.owner.isGlobalListener(this))
+        {
+        	Log.d(TAG, "Stopping global listener");
+        	this.stop();
         }
         this.callbacks.clear();
 

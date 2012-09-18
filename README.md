@@ -33,7 +33,7 @@ To create your cordova.jar, copy the commons codec:
 
 then run in the framework directory:
 
-    android update project -p . -t android-15
+    android update project -p . -t android-16
     ant jar
 
 
@@ -61,7 +61,7 @@ Project Commands
 
 These commands live in a generated Cordova Android project.
 
-    ./cordovap/debug [path] ..................... install to first device
+    ./cordova/debug [path] ..................... install to first device
     ./cordova/emulate .......................... start avd (emulator) named default
     ./cordova/log .............................. starts logcat
 

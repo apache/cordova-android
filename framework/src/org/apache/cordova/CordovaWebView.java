@@ -36,9 +36,13 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.XmlResourceParser;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,15 +67,17 @@ public class CordovaWebView extends WebView {
     public PluginManager pluginManager;
     public CallbackServer callbackServer;
     private boolean paused;
+    
+    private BroadcastReceiver receiver;
 
 
-    /** Actvities and other important classes **/
+    /** Activities and other important classes **/
     private CordovaInterface cordova;
     CordovaWebViewClient viewClient;
     @SuppressWarnings("unused")
     private CordovaChromeClient chromeClient;
 
-    //This is for the polyfil history
+    //This is for the polyfill history
     private String url;
     String baseUrl;
     private Stack<String> urls = new Stack<String>();
@@ -90,6 +96,7 @@ public class CordovaWebView extends WebView {
     private boolean handleButton = false;
 
 	NativeToJsMessageQueue jsMessageQueue;
+	ExposedJsApi exposedJsApi;
 
     /**
      * Constructor.
@@ -199,8 +206,6 @@ public class CordovaWebView extends WebView {
     @SuppressWarnings("deprecation")
     @SuppressLint("NewApi")
     private void setup() {
-    	jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
-    	
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
         this.requestFocusFromTouch();
@@ -229,15 +234,32 @@ public class CordovaWebView extends WebView {
 
         // Enable built-in geolocation
         settings.setGeolocationEnabled(true);
-
-        //Start up the plugin manager
-        try {
-            this.pluginManager = new PluginManager(this, this.cordova);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        
+        // Fix for CB-1405
+        // Google issue 4641
+        this.updateUserAgentString();
+        
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
+        if (this.receiver == null) {
+            this.receiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    updateUserAgentString();
+                }
+            };
+            this.cordova.getActivity().registerReceiver(this.receiver, intentFilter);
         }
+        // end CB-1405
+
+        pluginManager = new PluginManager(this, this.cordova);
+        jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
+        exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
         exposeJsInterface();
+    }
+    
+    private void updateUserAgentString() {
+    	this.getSettings().getUserAgentString();
     }
 
     private void exposeJsInterface() {
@@ -246,13 +268,7 @@ public class CordovaWebView extends WebView {
             Log.i(TAG, "Disabled addJavascriptInterface() bridge callback due to a bug on the 2.3 emulator");
             return;
         }
-        this.addJavascriptInterface(new Object() {
-            @SuppressWarnings("unused")
-            public String exec(String service, String action, String callbackId, String arguments) throws JSONException {
-                PluginResult r = pluginManager.exec(service, action, callbackId, arguments, true /* async */);
-                return r == null ? "" : r.getJSONString();
-            }
-        }, "_cordovaExec");
+        this.addJavascriptInterface(exposedJsApi, "_cordovaNative");
     }
 
     /**
@@ -461,7 +477,9 @@ public class CordovaWebView extends WebView {
      * @param url
      */
     void loadUrlNow(String url) {
-        LOG.d(TAG, ">>> loadUrlNow()");
+        if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
+            LOG.d(TAG, ">>> loadUrlNow()");
+        }
         super.loadUrl(url);
     }
 
@@ -499,7 +517,17 @@ public class CordovaWebView extends WebView {
      * @param message
      */
     public void sendJavascript(String statement) {
-        this.jsMessageQueue.add(statement);
+        this.jsMessageQueue.addJavaScript(statement);
+    }
+
+    /**
+     * Send a plugin result back to JavaScript.
+     * (This is a convenience method)
+     *
+     * @param message
+     */
+    public void sendPluginResult(PluginResult result, String callbackId) {
+        this.jsMessageQueue.addPluginResult(result, callbackId);
     }
 
     /**
@@ -731,7 +759,7 @@ public class CordovaWebView extends WebView {
         if(keyDownCodes.contains(keyCode))
         {
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                    // only override default behaviour is event bound
+                    // only override default behavior is event bound
                     LOG.d(TAG, "Down Key Hit");
                     this.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
                     return true;
@@ -766,7 +794,7 @@ public class CordovaWebView extends WebView {
                 if (this.backHistory()) {
                     return true;
                 }
-                // If not, then invoke default behaviour
+                // If not, then invoke default behavior
                 else {
                     //this.activityState = ACTIVITY_EXITING;
                     return false;
@@ -789,7 +817,7 @@ public class CordovaWebView extends WebView {
             return super.onKeyUp(keyCode, event);
         }
 
-        //Does webkit change this behaviour?
+        //Does webkit change this behavior?
         return super.onKeyUp(keyCode, event);
     }
 
@@ -872,6 +900,15 @@ public class CordovaWebView extends WebView {
         // Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.onDestroy();
+        }
+        
+        // unregister the receiver
+        if (this.receiver != null) {
+            try {
+                this.cordova.getActivity().unregisterReceiver(this.receiver);
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering configuration receiver: " + e.getMessage(), e);
+            }
         }
     }
     

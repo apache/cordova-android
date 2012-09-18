@@ -143,7 +143,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                 this.saveToPhotoAlbum = args.getBoolean(9);
 
                 // If the user specifies a 0 or smaller width/height
-                // make it -1 so later comparrisions succeed
+                // make it -1 so later comparisons succeed
                 if (this.targetWidth < 1) {
                     this.targetWidth = -1;
                 }
@@ -392,7 +392,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
                         // If we don't have a valid image so quit.
                         if (imagePath == null) {
                         	Log.d(LOG_TAG, "I either have a null image path or bitmap");
-                            this.failPicture("Unable to retreive path to picture!");
+                            this.failPicture("Unable to retrieve path to picture!");
                             return;
                         }
                         Bitmap bitmap = getScaledBitmap(imagePath);
@@ -762,7 +762,7 @@ public class CameraLauncher extends Plugin implements MediaScannerConnectionClie
         try{
             this.conn.scanFile(this.scanMe.toString(), "image/*");
         } catch (java.lang.IllegalStateException e){
-            LOG.e(LOG_TAG, "Can't scan file in MediaScanner aftering taking picture");
+            LOG.e(LOG_TAG, "Can't scan file in MediaScanner after taking picture");
         }
 
     }

@@ -409,19 +409,19 @@ public class FileUtils extends Plugin {
             throw new InvalidModificationException("Can't rename a file to a directory");
         }
 
-        FileChannel input = new FileInputStream(srcFile).getChannel();
-        FileChannel output = new FileOutputStream(destFile).getChannel();
+        FileInputStream istream = new FileInputStream(srcFile);
+        FileOutputStream ostream = new FileOutputStream(destFile);
+        FileChannel input = istream.getChannel();
+        FileChannel output = ostream.getChannel();
 
-        input.transferTo(0, input.size(), output);
-
-        input.close();
-        output.close();
-
-        /*
-        if (srcFile.length() != destFile.length()) {
-            return false;
+        try {
+            input.transferTo(0, input.size(), output);
+        } finally {
+            istream.close();
+            ostream.close();
+            input.close();
+            output.close();
         }
-        */
 
         return getEntry(destFile);
     }
@@ -480,7 +480,7 @@ public class FileUtils extends Plugin {
 
         // This weird test is to determine if we are copying or moving a directory into itself.
         // Copy /sdcard/myDir to /sdcard/myDir-backup is okay but
-        // Copy /sdcard/myDir to /sdcard/myDir/backup should thow an INVALID_MODIFICATION_ERR
+        // Copy /sdcard/myDir to /sdcard/myDir/backup should throw an INVALID_MODIFICATION_ERR
         if (dest.startsWith(src) && dest.indexOf(File.separator, src.length() - 1) != -1) {
             return true;
         }
@@ -1008,14 +1008,17 @@ public class FileUtils extends Plugin {
         filename = stripFileProtocol(filename);
 
         RandomAccessFile raf = new RandomAccessFile(filename, "rw");
-
-        if (raf.length() >= size) {
-            FileChannel channel = raf.getChannel();
-            channel.truncate(size);
-            return size;
+        try {
+            if (raf.length() >= size) {
+                FileChannel channel = raf.getChannel();
+                channel.truncate(size);
+                return size;
+            }
+    
+            return raf.length();
+        } finally {
+            raf.close();
         }
-
-        return raf.length();
     }
 
     /**
@@ -1040,7 +1043,7 @@ public class FileUtils extends Plugin {
      * Queries the media store to find out what the file path is for the Uri we supply
      *
      * @param contentUri the Uri of the audio/image/video
-     * @param  cordova) the current applicaiton context
+     * @param cordova the current application context
      * @return the full path to the file
      */
     @SuppressWarnings("deprecation")

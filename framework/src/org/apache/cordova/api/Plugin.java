@@ -139,12 +139,17 @@ public abstract class Plugin implements IPlugin {
 
     /**
      * Send generic JavaScript statement back to JavaScript.
-     * success(...) and error(...) should be used instead where possible.
-     *
-     * @param statement
+     * sendPluginResult() should be used instead where possible.
      */
     public void sendJavascript(String statement) {
         this.webView.sendJavascript(statement);
+    }
+
+    /**
+     * Send generic JavaScript statement back to JavaScript.
+     */
+    public void sendPluginResult(PluginResult pluginResult, String callbackId) {
+        this.webView.sendPluginResult(pluginResult, callbackId);
     }
 
     /**
@@ -158,7 +163,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(PluginResult pluginResult, String callbackId) {
-        this.webView.sendJavascript(pluginResult.toSuccessCallbackString(callbackId));
+        this.webView.sendPluginResult(pluginResult, callbackId);
     }
 
     /**
@@ -168,7 +173,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(JSONObject message, String callbackId) {
-        this.webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+        this.webView.sendPluginResult(new PluginResult(PluginResult.Status.OK, message), callbackId);
     }
 
     /**
@@ -178,7 +183,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void success(String message, String callbackId) {
-        this.webView.sendJavascript(new PluginResult(PluginResult.Status.OK, message).toSuccessCallbackString(callbackId));
+        this.webView.sendPluginResult(new PluginResult(PluginResult.Status.OK, message), callbackId);
     }
 
     /**
@@ -188,7 +193,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(PluginResult pluginResult, String callbackId) {
-        this.webView.sendJavascript(pluginResult.toErrorCallbackString(callbackId));
+        this.webView.sendPluginResult(pluginResult, callbackId);
     }
 
     /**
@@ -198,7 +203,7 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(JSONObject message, String callbackId) {
-        this.webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+        this.webView.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message), callbackId);
     }
 
     /**
@@ -208,6 +213,6 @@ public abstract class Plugin implements IPlugin {
      * @param callbackId		The callback id used when calling back into JavaScript.
      */
     public void error(String message, String callbackId) {
-        this.webView.sendJavascript(new PluginResult(PluginResult.Status.ERROR, message).toErrorCallbackString(callbackId));
+        this.webView.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message), callbackId);
     }
 }

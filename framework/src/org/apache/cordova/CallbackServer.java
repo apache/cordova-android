@@ -207,19 +207,18 @@ public class CallbackServer implements Runnable {
                         // Must have security token
                         if ((requestParts.length == 3) && (requestParts[1].substring(1).equals(this.token))) {
                             //Log.d(LOG_TAG, "CallbackServer -- Processing GET request");
-                        	String js = null;
+                        	String payload = null;
 
                             // Wait until there is some data to send, or send empty data every 10 sec 
                             // to prevent XHR timeout on the client 
-                            synchronized (this) {
-                                while (this.active) {
-                                	if (jsMessageQueue != null) {
-                                		// TODO(agrieve): Should this use popAll() instead?
-                                		js = jsMessageQueue.pop();
-                                	    if (js != null) {
-                                	    	break;
-                                	    }
-                                	}
+                            while (this.active) {
+                            	if (jsMessageQueue != null) {
+                            		payload = jsMessageQueue.popAndEncode();
+                            	    if (payload != null) {
+                            	    	break;
+                            	    }
+                            	}
+                            	synchronized (this) {
                                     try {
                                         this.wait(10000); // prevent timeout from happening
                                         //Log.d(LOG_TAG, "CallbackServer>>> break <<<");
@@ -233,14 +232,14 @@ public class CallbackServer implements Runnable {
                             if (this.active) {
 
                                 // If no data, then send 404 back to client before it times out
-                                if (js == null) {
+                                if (payload == null) {
                                     //Log.d(LOG_TAG, "CallbackServer -- sending data 0");
                                     response = "HTTP/1.1 404 NO DATA\r\n\r\n "; // need to send content otherwise some Android devices fail, so send space
                                 }
                                 else {
                                     //Log.d(LOG_TAG, "CallbackServer -- sending item");
                                     response = "HTTP/1.1 200 OK\r\n\r\n";
-                                    response += encode(js, "UTF-8");
+                                    response += encode(payload, "UTF-8");
                                 }
                             }
                             else {

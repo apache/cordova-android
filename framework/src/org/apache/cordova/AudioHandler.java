@@ -235,7 +235,7 @@ public class AudioHandler extends Plugin {
     /**
      * Seek to a location.
      * @param id				The id of the audio player
-     * @param miliseconds		int: number of milliseconds to skip 1000 = 1 second
+     * @param milliseconds		int: number of milliseconds to skip 1000 = 1 second
      */
     public void seekToAudio(String id, int milliseconds) {
         AudioPlayer audio = this.players.get(id);

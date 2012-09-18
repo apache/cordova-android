@@ -28,7 +28,6 @@ import android.content.ContentValues;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Debug;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -330,8 +329,6 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         JSONArray ims = new JSONArray();
         JSONArray websites = new JSONArray();
         JSONArray photos = new JSONArray();
-
-        ArrayList<String> names = new ArrayList<String>();
 
         // Column indices
         int colContactId = c.getColumnIndex(ContactsContract.Data.CONTACT_ID);
@@ -795,10 +792,10 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                 formatted.append(middleName + " ");
             }
             if (familyName != null) {
-                formatted.append(familyName + " ");
+                formatted.append(familyName);
             }
             if (honorificSuffix != null) {
-                formatted.append(honorificSuffix + " ");
+                formatted.append(" " + honorificSuffix);
             }
 
             contactName.put("familyName", familyName);
@@ -862,7 +859,8 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             im.put("id", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im._ID)));
             im.put("pref", false); // Android does not store pref attribute
             im.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.DATA)));
-            im.put("type", getContactType(cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.TYPE))));
+            String type = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.PROTOCOL));
+            im.put("type", getImType(new Integer(type).intValue()));
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
@@ -1248,7 +1246,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                             contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawId);
                             contentValues.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE);
                             contentValues.put(ContactsContract.CommonDataKinds.Im.DATA, getJsonString(im, "value"));
-                            contentValues.put(ContactsContract.CommonDataKinds.Im.TYPE, getContactType(getJsonString(im, "type")));
+                            contentValues.put(ContactsContract.CommonDataKinds.Im.TYPE, getImType(getJsonString(im, "type")));
 
                             ops.add(ContentProviderOperation.newInsert(
                                     ContactsContract.Data.CONTENT_URI).withValues(contentValues).build());
@@ -1412,7 +1410,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             retVal = false;
         }
 
-        // if the save was a succes return the contact ID
+        // if the save was a success return the contact ID
         if (retVal) {
             return id;
         } else {
@@ -1447,7 +1445,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                 .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE)
                 .withValue(ContactsContract.CommonDataKinds.Im.DATA, getJsonString(im, "value"))
-                .withValue(ContactsContract.CommonDataKinds.Im.TYPE, getContactType(getJsonString(im, "type")))
+                .withValue(ContactsContract.CommonDataKinds.Im.TYPE, getImType(getJsonString(im, "type")))
                 .build());
     }
 
@@ -2087,6 +2085,87 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         case ContactsContract.CommonDataKinds.StructuredPostal.TYPE_OTHER:
         default:
             stringType = "other";
+            break;
+        }
+        return stringType;
+    }
+
+    /**
+     * Converts a string from the W3C Contact API to it's Android int value.
+     * @param string
+     * @return Android int value
+     */
+    private int getImType(String string) {
+        int type = ContactsContract.CommonDataKinds.Im.PROTOCOL_CUSTOM;
+        if (string != null) {
+            if ("aim".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_AIM;
+            }
+            else if ("google talk".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_GOOGLE_TALK;
+            }
+            else if ("icq".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_ICQ;
+            }
+            else if ("jabber".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_JABBER;
+            }
+            else if ("msn".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_MSN;
+            }
+            else if ("netmeeting".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_NETMEETING;
+            }
+            else if ("qq".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_QQ;
+            }
+            else if ("skype".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_SKYPE;
+            }
+            else if ("yahoo".equals(string.toLowerCase())) {
+                return ContactsContract.CommonDataKinds.Im.PROTOCOL_YAHOO;
+            }
+        }
+        return type;
+    }
+
+    /**
+     * getPhoneType converts an Android phone type into a string
+     * @param type
+     * @return phone type as string.
+     */
+    private String getImType(int type) {
+        String stringType;
+        switch (type) {
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_AIM:
+            stringType = "AIM";
+            break;
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_GOOGLE_TALK:
+            stringType = "Google Talk";
+            break;
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_ICQ:
+            stringType = "ICQ";
+            break;
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_JABBER:
+            stringType = "Jabber";
+            break;
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_MSN:
+            stringType = "MSN";
+            break;
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_NETMEETING:
+            stringType = "NetMeeting";
+            break;
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_QQ:
+            stringType = "QQ";
+            break;
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_SKYPE:
+            stringType = "Skype";
+            break;
+        case ContactsContract.CommonDataKinds.Im.PROTOCOL_YAHOO:
+            stringType = "Yahoo";
+            break;
+        default:
+            stringType = "custom";
             break;
         }
         return stringType;
