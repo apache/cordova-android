@@ -52,7 +52,7 @@ function exec(command) {
         if(!oShell.StdOut.AtEndOfStream) {
             var line = oShell.StdOut.ReadLine();
             // XXX: Change to verbose mode 
-            WScript.StdOut.WriteLine(line);
+            // WScript.StdOut.WriteLine(line);
         }
         WScript.sleep(100);
     }
