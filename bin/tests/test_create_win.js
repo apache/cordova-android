@@ -88,14 +88,9 @@ create_project.on('exit', function(code) {
         // TODO check that package name and activity name were substituted properly
     });
    
-    // make sure plugins.xml was added
-    path.exists(util.format('%s/res/xml/plugins.xml', project_path), function(exists) {
-        assert(exists, 'plugins.xml did not get created');
-    });
-    
-    // make sure cordova.xml was added
-    path.exists(util.format('%s/res/xml/cordova.xml', project_path), function(exists) {
-        assert(exists, 'plugins.xml did not get created');
+    // make sure config.xml was added
+    path.exists(util.format('%s/res/xml/config.xml', project_path), function(exists) {
+        assert(exists, 'config.xml did not get created');
     });
     
     // make sure cordova.jar was added
