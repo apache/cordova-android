@@ -140,6 +140,14 @@ public class AudioHandler extends Plugin {
     }
 
     /**
+     * Stop all audio players and recorders on navigate.
+     */
+    @Override
+    public void onReset() {
+        onDestroy();
+    }
+
+    /**
      * Called when a message is sent to plugin.
      *
      * @param id            The message id
