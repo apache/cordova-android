@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -71,13 +72,46 @@ public class FileTransfer extends Plugin {
     private SSLSocketFactory defaultSSLSocketFactory = null;
     private HostnameVerifier defaultHostnameVerifier = null;
 
-    private static class AbortException extends Exception {
+    private static final class AbortException extends Exception {
         private static final long serialVersionUID = 1L;
         public AbortException(String str) {
             super(str);
         }
     }
 
+    /**
+     * Works around a bug on Android 2.3.
+     * http://code.google.com/p/android/issues/detail?id=14562
+     */
+    private static final class DoneHandlerInputStream extends FilterInputStream {
+        private boolean done;
+        
+        public DoneHandlerInputStream(InputStream stream) {
+            super(stream);
+        }
+        
+        @Override
+        public int read() throws IOException {
+            int result = done ? -1 : super.read();
+            done = (result == -1);
+            return result;
+        }
+
+        @Override
+        public int read(byte[] buffer) throws IOException {
+            int result = done ? -1 : super.read(buffer);
+            done = (result == -1);
+            return result;
+        }
+
+        @Override
+        public int read(byte[] bytes, int offset, int count) throws IOException {
+            int result = done ? -1 : super.read(bytes, offset, count);
+            done = (result == -1);
+            return result;
+        }
+    }
+    
     /* (non-Javadoc)
     * @see org.apache.cordova.api.Plugin#execute(java.lang.String, org.json.JSONArray, java.lang.String)
     */
@@ -330,13 +364,7 @@ public class FileTransfer extends Plugin {
 
             //------------------ read the SERVER RESPONSE
             StringBuffer responseString = new StringBuffer("");
-            DataInputStream inStream;
-            try {
-                inStream = new DataInputStream ( conn.getInputStream() );
-            } catch(FileNotFoundException e) {
-                Log.e(LOG_TAG, e.toString(), e);
-                throw new IOException("Received error from server");
-            }
+            DataInputStream inStream = new DataInputStream(getInputStream(conn));
 
             String line;
             while (( line = inStream.readLine()) != null) {
@@ -388,6 +416,13 @@ public class FileTransfer extends Plugin {
                 conn.disconnect();
             }
         }
+    }
+
+    private InputStream getInputStream(HttpURLConnection conn) throws IOException {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            return new DoneHandlerInputStream(conn.getInputStream());
+        }
+        return conn.getInputStream();
     }
 
     // always verify the host - don't check for certificate
@@ -551,13 +586,7 @@ public class FileTransfer extends Plugin {
                 connection.connect();
 
                 Log.d(LOG_TAG, "Download file:" + url);
-                InputStream inputStream;
-                try {
-                    inputStream = connection.getInputStream();
-                } catch(FileNotFoundException e) {
-                    Log.e(LOG_TAG, e.toString(), e);
-                    throw new IOException("Received error from server");
-                }
+                InputStream inputStream = getInputStream(connection);
 
                 byte[] buffer = new byte[1024];
                 int bytesRead = 0;
