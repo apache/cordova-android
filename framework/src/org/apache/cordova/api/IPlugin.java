@@ -116,4 +116,11 @@ public interface IPlugin {
      * @return					Return true to prevent the URL from loading. Default is false.
      */
     boolean onOverrideUrlLoading(String url);
+
+    /**
+     * Called when the WebView does a top-level navigation or refreshes.
+     *
+     * Plugins should stop any long-running processes and clean up internal state.
+     */
+    void onReset();
 }

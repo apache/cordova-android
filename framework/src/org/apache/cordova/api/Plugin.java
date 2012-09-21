@@ -23,6 +23,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import android.content.Intent;
 
+import android.util.Log;
+
 /**
  * Plugin interface must be implemented by any plugin classes.
  *
@@ -214,5 +216,15 @@ public abstract class Plugin implements IPlugin {
      */
     public void error(String message, String callbackId) {
         this.webView.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message), callbackId);
+    }
+
+    /**
+     * Called when the WebView does a top-level navigation or refreshes.
+     *
+     * Plugins should stop any long-running processes and clean up internal state.
+     *
+     * Does nothing by default.
+     */
+    public void onReset() {
     }
 }
