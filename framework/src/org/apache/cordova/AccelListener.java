@@ -19,6 +19,7 @@
 package org.apache.cordova;
 
 import java.util.List;
+
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
@@ -26,11 +27,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.content.Context;
 
 /**
  * This class listens to the accelerometer sensor and stores the latest
@@ -221,6 +222,16 @@ public class AccelListener extends Plugin implements SensorEventListener {
             this.z = event.values[2];
 
             this.win();
+        }
+    }
+
+    /**
+     * Called when the view navigates.
+     */
+    @Override
+    public void onReset() {
+        if (this.status == AccelListener.RUNNING) {
+            this.stop();
         }
     }
 
