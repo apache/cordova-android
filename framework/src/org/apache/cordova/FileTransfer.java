@@ -66,12 +66,13 @@ public class FileTransfer extends Plugin {
     public static int CONNECTION_ERR = 3;
     public static int ABORTED_ERR = 4;
 
-    private static HashSet abortTriggered = new HashSet();
+    private static HashSet<String> abortTriggered = new HashSet<String>();
 
     private SSLSocketFactory defaultSSLSocketFactory = null;
     private HostnameVerifier defaultHostnameVerifier = null;
 
-    static class AbortException extends Exception {
+    private static class AbortException extends Exception {
+        private static final long serialVersionUID = 1L;
         public AbortException(String str) {
             super(str);
         }
@@ -95,10 +96,8 @@ public class FileTransfer extends Plugin {
 
             if (action.equals("upload")) {
                 return upload(URLDecoder.decode(source), target, args, callbackId);
-            } else if (action.equals("download")) {
-                String objectId = args.getString(2);
-                boolean trustEveryone = args.optBoolean(3);
-                return download(source, target, trustEveryone, objectId, callbackId);
+            } else {
+                return download(source, target, args, callbackId);
             }
         } else if (action.equals("abort")) {
             return abort(args);
@@ -308,7 +307,6 @@ public class FileTransfer extends Plugin {
                 if (objectId != null) {
                     // Only send progress callbacks if the JS code sent us an object ID,
                     // so we don't spam old versions with unrecognized callbacks.
-                    Log.d(LOG_TAG, "****** About to send a progress result from upload");
                     progress.setLoaded(totalBytes);
                     PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
                     progressResult.setKeepCallback(true);
@@ -379,7 +377,6 @@ public class FileTransfer extends Plugin {
             return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
         } catch (AbortException e) {
             JSONObject error = createFileTransferError(ABORTED_ERR, source, target, conn);
-            Log.e(LOG_TAG, error.toString(), e);
             return new PluginResult(PluginResult.Status.ERROR, error);
         } catch (Throwable t) {
             // Shouldn't happen, but will
@@ -498,11 +495,13 @@ public class FileTransfer extends Plugin {
      * @param target      	Full path of the file on the file system
      * @return JSONObject 	the downloaded file
      */
-    private PluginResult download(String source, String target, boolean trustEveryone, String objectId, String callbackId) {
+    private PluginResult download(String source, String target, JSONArray args, String callbackId) {
         Log.d(LOG_TAG, "download " + source + " to " +  target);
 
         HttpURLConnection connection = null;
         try {
+            boolean trustEveryone = args.optBoolean(2);
+            String objectId = args.getString(3);
             File file = getFileFromPath(target);
 
             // create needed directories
@@ -580,7 +579,6 @@ public class FileTransfer extends Plugin {
                     if (objectId != null) {
                         // Only send progress callbacks if the JS code sent us an object ID,
                         // so we don't spam old versions with unrecognized callbacks.
-                        Log.d(LOG_TAG, "****** About to send a progress result from download");
                         progress.setLoaded(totalBytes);
                         PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
                         progressResult.setKeepCallback(true);
@@ -617,6 +615,9 @@ public class FileTransfer extends Plugin {
                 return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
             }
 
+        } catch (AbortException e) {
+            JSONObject error = createFileTransferError(ABORTED_ERR, source, target, connection);
+            return new PluginResult(PluginResult.Status.ERROR, error);
         } catch (FileNotFoundException e) {
             JSONObject error = createFileTransferError(FILE_NOT_FOUND_ERR, source, target, connection);
             Log.d(LOG_TAG, "I got a file not found exception");
