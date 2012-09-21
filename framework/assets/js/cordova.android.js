@@ -1,6 +1,6 @@
-// commit 65b59c7e484a9e5227fa7b4de8e784a8466b2ef5
+// commit a9db8e3d85a08cab6ccf86f29cc476c1178d2d57
 
-// File generated at :: Wed Sep 19 2012 13:58:04 GMT-0400 (EDT)
+// File generated at :: Thu Sep 20 2012 23:13:39 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -909,8 +909,6 @@ var cordova = require('cordova'),
     callback = require('cordova/plugin/android/callback'),
     polling = require('cordova/plugin/android/polling'),
     nativeApiProvider = require('cordova/plugin/android/nativeapiprovider'),
-    jsToNativeBridgeMode,
-    nativeToJsBridgeMode,
     jsToNativeModes = {
         PROMPT: 0,
         JS_OBJECT: 1,
@@ -936,20 +934,16 @@ var cordova = require('cordova'),
         // to be executed.
         // Requires Android 3.2.4 or above.
         PRIVATE_API: 4
-    };
+    },
+    jsToNativeBridgeMode,  // Set lazily.
+    nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT;
 
 function androidExec(success, fail, service, action, args) {
     // Set default bridge modes if they have not already been set.
     if (jsToNativeBridgeMode === undefined) {
-        androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
+        androidExec.setJsToNativeBridgeMode(jsToNativeModes.JS_OBJECT);
     }
-    if (nativeToJsBridgeMode === undefined) {
-        if (callback.isAvailable()) {
-            androidExec.setNativeToJsBridgeMode(nativeToJsModes.HANGING_GET);
-        } else {
-            androidExec.setNativeToJsBridgeMode(nativeToJsModes.POLLING);
-        }
-    }
+
     var callbackId = service + cordova.callbackId++,
         argsJson = JSON.stringify(args);
     if (success || fail) {
@@ -2691,13 +2685,27 @@ module.exports = FileSystem;
 define("cordova/plugin/FileTransfer", function(require, exports, module) {
 
 var exec = require('cordova/exec'),
-    FileTransferError = require('cordova/plugin/FileTransferError');
+    FileTransferError = require('cordova/plugin/FileTransferError'),
+    ProgressEvent = require('cordova/plugin/ProgressEvent');
+
+function newProgressEvent(result) {
+    var pe = new ProgressEvent();
+    pe.lengthComputable = result.lengthComputable;
+    pe.loaded = result.loaded;
+    pe.total = result.total;
+    return pe;
+}
+
+var idCounter = 0;
 
 /**
  * FileTransfer uploads a file to a remote server.
  * @constructor
  */
-var FileTransfer = function() {};
+var FileTransfer = function() {
+    this._id = ++idCounter;
+    this.onprogress = null; // optional callback
+};
 
 /**
 * Given an absolute file path, uploads a file on the device to a remote server
@@ -2740,7 +2748,17 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
         errorCallback(error);
     };
 
-    exec(successCallback, fail, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, trustAllHosts, chunkedMode, headers]);
+    var self = this;
+    var win = function(result) {
+        if (typeof result.lengthComputable != "undefined") {
+            if (self.onprogress) {
+                return self.onprogress(newProgressEvent(result));
+            }
+        } else {
+            return successCallback(result);
+        }
+    };
+    exec(win, fail, 'FileTransfer', 'upload', [filePath, server, fileKey, fileName, mimeType, params, trustAllHosts, chunkedMode, headers, this._id]);
 };
 
 /**
@@ -2749,23 +2767,31 @@ FileTransfer.prototype.upload = function(filePath, server, successCallback, erro
  * @param target {String}         Full path of the file on the device
  * @param successCallback (Function}  Callback to be invoked when upload has completed
  * @param errorCallback {Function}    Callback to be invoked upon error
+ * @param trustAllHosts {Boolean} Optional trust all hosts (e.g. for self-signed certs), defaults to false
  */
-FileTransfer.prototype.download = function(source, target, successCallback, errorCallback) {
+FileTransfer.prototype.download = function(source, target, successCallback, errorCallback, trustAllHosts) {
     // sanity parameter checking
     if (!source || !target) throw new Error("FileTransfer.download requires source URI and target URI parameters at the minimum.");
+    var self = this;
     var win = function(result) {
-        var entry = null;
-        if (result.isDirectory) {
-            entry = new (require('cordova/plugin/DirectoryEntry'))();
+        if (typeof result.lengthComputable != "undefined") {
+            if (self.onprogress) {
+                return self.onprogress(newProgressEvent(result));
+            }
+        } else {
+            var entry = null;
+            if (result.isDirectory) {
+                entry = new (require('cordova/plugin/DirectoryEntry'))();
+            }
+            else if (result.isFile) {
+                entry = new (require('cordova/plugin/FileEntry'))();
+            }
+            entry.isDirectory = result.isDirectory;
+            entry.isFile = result.isFile;
+            entry.name = result.name;
+            entry.fullPath = result.fullPath;
+            successCallback(entry);
         }
-        else if (result.isFile) {
-            entry = new (require('cordova/plugin/FileEntry'))();
-        }
-        entry.isDirectory = result.isDirectory;
-        entry.isFile = result.isFile;
-        entry.name = result.name;
-        entry.fullPath = result.fullPath;
-        successCallback(entry);
     };
 
     var fail = function(e) {
@@ -2773,8 +2799,17 @@ FileTransfer.prototype.download = function(source, target, successCallback, erro
         errorCallback(error);
     };
 
-    exec(win, errorCallback, 'FileTransfer', 'download', [source, target]);
+    exec(win, errorCallback, 'FileTransfer', 'download', [source, target, trustAllHosts, this._id]);
 };
+
+/**
+ * Aborts the ongoing file transfer on this object
+ * @param successCallback {Function}  Callback to be invoked upon success
+ * @param errorCallback {Function}    Callback to be invoked upon error
+ */
+FileTransfer.prototype.abort = function(successCallback, errorCallback) {
+    exec(successCallback, errorCallback, 'FileTransfer', 'abort', [this._id]);
+}
 
 module.exports = FileTransfer;
 
@@ -2797,6 +2832,7 @@ var FileTransferError = function(code, source, target, status) {
 FileTransferError.FILE_NOT_FOUND_ERR = 1;
 FileTransferError.INVALID_URL_ERR = 2;
 FileTransferError.CONNECTION_ERR = 3;
+FileTransferError.ABORT_ERR = 4;
 
 module.exports = FileTransferError;
 
@@ -3126,6 +3162,15 @@ module.exports = Flags;
 
 // file: lib/common/plugin/GlobalizationError.js
 define("cordova/plugin/GlobalizationError", function(require, exports, module) {
+
+
+/**
+ * Globalization error object
+ *
+ * @constructor
+ * @param code
+ * @param message
+ */
 var GlobalizationError = function(code, message) {
     this.code = code || null;
     this.message = message || '';
@@ -3138,6 +3183,7 @@ GlobalizationError.PARSING_ERROR = 2;
 GlobalizationError.PATTERN_ERROR = 3;
 
 module.exports = GlobalizationError;
+
 });
 
 // file: lib/common/plugin/LocalFileSystem.js
@@ -5229,6 +5275,7 @@ module.exports = geolocation;
 
 // file: lib/common/plugin/globalization.js
 define("cordova/plugin/globalization", function(require, exports, module) {
+
 var exec = require('cordova/exec'),
     GlobalizationError = require('cordova/plugin/GlobalizationError');
 
