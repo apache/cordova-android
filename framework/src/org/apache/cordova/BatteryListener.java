@@ -100,6 +100,13 @@ public class BatteryListener extends Plugin {
     }
 
     /**
+     * Stop battery receiver.
+     */
+    public void onReset() {
+        removeBatteryListener();
+    }
+
+    /**
      * Stop the battery receiver and set it to null.
      */
     private void removeBatteryListener() {
