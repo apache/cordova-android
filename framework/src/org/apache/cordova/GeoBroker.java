@@ -141,6 +141,14 @@ public class GeoBroker extends Plugin {
         this.gpsListener = null;
     }
 
+    /**
+     * Called when the view navigates.
+     * Stop the listeners.
+     */
+    public void onReset() {
+        this.onDestroy();
+    }
+
     public JSONObject returnLocationJSON(Location loc) {
         JSONObject o = new JSONObject();
 
