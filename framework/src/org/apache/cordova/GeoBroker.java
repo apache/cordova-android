@@ -135,10 +135,14 @@ public class GeoBroker extends Plugin {
      * Stop listener.
      */
     public void onDestroy() {
-        this.networkListener.destroy();
-        this.gpsListener.destroy();
-        this.networkListener = null;
-        this.gpsListener = null;
+        if (this.networkListener != null) {
+            this.networkListener.destroy();
+            this.networkListener = null;
+        }
+        if (this.gpsListener != null) {
+            this.gpsListener.destroy();
+            this.gpsListener = null;
+        }
     }
 
     /**
