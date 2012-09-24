@@ -47,7 +47,6 @@ public class PluginManager {
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
-    private final ExecutorService execThreadPool = Executors.newCachedThreadPool();
 
     // Flag to track first time through
     private boolean firstRun;
@@ -226,7 +225,7 @@ public class PluginManager {
                 runAsync = async && !plugin.isSynch(action);
                 if (runAsync) {
                     // Run this on a different thread so that this one can return back to JS
-                    execThreadPool.execute(new Runnable() {
+                    ctx.getThreadPool().execute(new Runnable() {
                         public void run() {
                             try {
                                 // Call execute on the plugin so that it can do it's thing

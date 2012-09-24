@@ -29,6 +29,8 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.util.Log;
 
+import java.util.concurrent.ExecutorService;
+
 @Deprecated
 public class LegacyContext implements CordovaInterface {
     private static final String LOG_TAG = "Deprecation Notice";
@@ -144,5 +146,11 @@ public class LegacyContext implements CordovaInterface {
     public void unbindService(ServiceConnection conn) {
         Log.i(LOG_TAG, "Replace ctx.unbindService() with cordova.getActivity().unbindService()");
         this.cordova.getActivity().unbindService(conn);
+    }
+
+    @Override
+    public ExecutorService getThreadPool() {
+        Log.i(LOG_TAG, "Replace ctx.getThreadPool() with cordova.getThreadPool()");
+        return this.cordova.getThreadPool();
     }
 }
