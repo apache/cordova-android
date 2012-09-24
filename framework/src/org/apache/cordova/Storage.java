@@ -115,6 +115,13 @@ public class Storage extends Plugin {
         }
     }
 
+    /**
+     * Clean up on navigation/refresh.
+     */
+    public void onReset() {
+        this.onDestroy();
+    }
+
     // --------------------------------------------------------------------------
     // LOCAL METHODS
     // --------------------------------------------------------------------------
