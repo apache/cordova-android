@@ -33,6 +33,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.content.Context;
 
+import android.util.Log;
+
 /**
  * This class listens to the compass sensor and stores the latest heading value.
  */
@@ -163,6 +165,13 @@ public class CompassListener extends Plugin implements SensorEventListener {
      * Called when listener is to be shut down and object is being destroyed.
      */
     public void onDestroy() {
+        this.stop();
+    }
+
+    /**
+     * Called when app has navigated and JS listeners have been destroyed.
+     */
+    public void onReset() {
         this.stop();
     }
 
