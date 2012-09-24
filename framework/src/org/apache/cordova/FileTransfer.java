@@ -187,7 +187,7 @@ public class FileTransfer extends Plugin {
             FileProgressResult progress = new FileProgressResult();
 
             // Get a input stream of the file on the phone
-            FileInputStream fileInputStream = (FileInputStream) getPathFromUri(source);
+            InputStream inputStream = getPathFromUri(source);
 
             DataOutputStream dos = null;
 
@@ -295,12 +295,18 @@ public class FileTransfer extends Plugin {
 
             int stringLength = extraBytes.length + midParams.length() + tailParams.length() + fileNameBytes.length;
             Log.d(LOG_TAG, "String Length: " + stringLength);
-            int fixedLength = (int) fileInputStream.getChannel().size() + stringLength;
+            int fixedLength = -1;
+            if (inputStream instanceof FileInputStream) {
+                fixedLength = (int) ((FileInputStream)inputStream).getChannel().size() + stringLength;
+                progress.setLengthComputable(true);
+                progress.setTotal(fixedLength);
+            }
             Log.d(LOG_TAG, "Content Length: " + fixedLength);
             // setFixedLengthStreamingMode causes and OutOfMemoryException on pre-Froyo devices.
             // http://code.google.com/p/android/issues/detail?id=3164
             // It also causes OOM if HTTPS is used, even on newer devices.
             chunkedMode = chunkedMode && (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO || useHttps);
+            chunkedMode = chunkedMode || (fixedLength == -1);
             		
             if (chunkedMode) {
                 conn.setChunkedStreamingMode(maxBufferSize);
@@ -318,12 +324,12 @@ public class FileTransfer extends Plugin {
             dos.writeBytes(midParams);
 
             // create a buffer of maximum size
-            bytesAvailable = fileInputStream.available();
+            bytesAvailable = inputStream.available();
             bufferSize = Math.min(bytesAvailable, maxBufferSize);
             buffer = new byte[bufferSize];
 
             // read file and write it into form...
-            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            bytesRead = inputStream.read(buffer, 0, bufferSize);
             totalBytes = 0;
 
             long prevBytesRead = 0;
@@ -335,9 +341,9 @@ public class FileTransfer extends Plugin {
                 	prevBytesRead = totalBytes;
                 	Log.d(LOG_TAG, "Uploaded " + totalBytes + " of " + fixedLength + " bytes");
                 }
-                bytesAvailable = fileInputStream.available();
+                bytesAvailable = inputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                bytesRead = inputStream.read(buffer, 0, bufferSize);
                 if (objectId != null) {
                     // Only send progress callbacks if the JS code sent us an object ID,
                     // so we don't spam old versions with unrecognized callbacks.
@@ -358,7 +364,7 @@ public class FileTransfer extends Plugin {
             dos.writeBytes(tailParams);
 
             // close streams
-            fileInputStream.close();
+            inputStream.close();
             dos.flush();
             dos.close();
 

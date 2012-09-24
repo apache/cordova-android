@@ -100,7 +100,9 @@ public class NetworkManager extends Plugin {
                 @SuppressWarnings("deprecation")
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));
+                    // (The null check is for the ARM Emulator, please use Intel Emulator for better results)
+                    if(webView != null)
+                        updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));
                 }
             };
             cordova.getActivity().registerReceiver(this.receiver, intentFilter);
@@ -208,10 +210,9 @@ public class NetworkManager extends Plugin {
         result.setKeepCallback(true);
         this.success(result, this.connectionCallbackId);
 
-        // Send to all plugins
         webView.postMessage("networkconnection", type);
     }
-
+    
     /**
      * Determine the type of connection
      *
