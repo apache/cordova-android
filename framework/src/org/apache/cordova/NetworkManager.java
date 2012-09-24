@@ -153,6 +153,13 @@ public class NetworkManager extends Plugin {
         }
     }
 
+    /**
+     * Stop the network receiver on navigation.
+     */
+    public void onReset() {
+        this.onDestroy();
+    }
+
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
