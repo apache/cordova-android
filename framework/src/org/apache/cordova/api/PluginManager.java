@@ -209,20 +209,16 @@ public class PluginManager {
      *                      this is an async plugin call.
      * @param args          An Array literal string containing any arguments needed in the
      *                      plugin execute method.
-     * @param async         Boolean indicating whether the calling JavaScript code is expecting an
-     *                      immediate return value. If true, either Cordova.callbackSuccess(...) or
-     *                      Cordova.callbackError(...) is called once the plugin code has executed.
      * @return Whether the task completed synchronously.
      */
-    public boolean exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
+    public boolean exec(final String service, final String action, final String callbackId, final String jsonArgs) {
         PluginResult cr = null;
-        boolean runAsync = async;
+        final IPlugin plugin = this.getPlugin(service);
+        boolean runAsync = !plugin.isSynch(action);
         try {
             final JSONArray args = new JSONArray(jsonArgs);
-            final IPlugin plugin = this.getPlugin(service);
             //final CordovaInterface ctx = this.ctx;
             if (plugin != null) {
-                runAsync = async && !plugin.isSynch(action);
                 if (runAsync) {
                     // Run this on a different thread so that this one can return back to JS
                     ctx.getThreadPool().execute(new Runnable() {
@@ -264,6 +260,11 @@ public class PluginManager {
         }
         app.sendPluginResult(cr, callbackId);
         return true;
+    }
+
+    @Deprecated
+    public boolean exec(String service, String action, String callbackId, String jsonArgs, boolean async) {
+        return exec(service, action, callbackId, jsonArgs);
     }
 
     /**
