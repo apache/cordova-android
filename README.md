@@ -15,8 +15,8 @@ indicate that the project has yet to be fully endorsed by the ASF.
 Requires
 ---
 
-- Java JDK 1.5
-- Apache ANT
+- Java JDK 1.5 or greater
+- Apache ANT 1.8.0 or greater
 - Android SDK [http://developer.android.com](http://developer.android.com)
 - Apache Commons Codec [http://commons.apache.org/codec/](http://commons.apache.org/codec/)
 

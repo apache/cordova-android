@@ -26,9 +26,37 @@
         </filterchain>
     </loadfile>
 
-    <!-- The local.properties file is created and updated by the 'android' tool.
-         It contains the path to the SDK. It should *NOT* be checked into
-         Version Control Systems. -->
+    <!-- check that the version of ant is at least 1.8.0, as is needed
+         for the dblQuote property -->
+    <antversion property="thisantversion" atleast="1.8.0" />
+    <fail message="The required minimum version of ant is 1.8.0, you have ${ant.version}"
+          unless="thisantversion" />
+
+    <!-- check that commons codec is available. You should copy the codec jar to
+         framework/libs, as it is not included in the Cordova distribution. 
+         The name of the jar file in framework/libs does not matter. -->
+    <available classname="org.apache.commons.codec.binary.Base64"
+               property="exists.base64"
+               ignoresystemclasses="true">
+        <classpath>
+            <pathelement path="${classpath}" />
+            <fileset dir="libs">
+                <include name="*.jar" />
+            </fileset>
+        </classpath>
+    </available>
+    <fail message="You need to put a copy of Apache Commons Codec jar in the framework/libs directory"
+          unless="exists.base64" />
+
+    <!-- The local.properties file is created and updated by the 'android' 
+         tool. (For example "sdkdir/tools/android update project -p ." inside
+         of this directory where the AndroidManifest.xml file exists. This
+         properties file that gets built contains the path to the SDK. It 
+         should *NOT* be checked into Version Control Systems since it holds
+         data about the local machine. -->
+    <available file="local.properties" property="exists.local.properties" />
+    <fail message="You need to create the file 'local.properties' by running 'android update project -p .' here."
+          unless="exists.local.properties" />
     <loadproperties srcFile="local.properties" />
 
     <!-- The ant.properties file can be created by you. It is only edited by the
@@ -66,13 +94,13 @@
          application and should be checked into Version Control Systems. -->
     <loadproperties srcFile="project.properties" />
 
-   <!-- quick check on sdk.dir -->
+    <!-- quick check on sdk.dir -->
     <fail
             message="sdk.dir is missing. Make sure to generate local.properties using 'android update project'"
             unless="sdk.dir"
     />
 
-   <!-- version-tag: custom -->
+    <!-- version-tag: custom -->
 <!-- extension targets. Uncomment the ones where you want to do custom work
      in between standard targets -->
 <!--
@@ -106,7 +134,7 @@
          In all cases you must update the value of version-tag below to read 'custom' instead of an integer,
          in order to avoid having your file be overridden by tools such as "android update project"
     -->
-   <import file="${sdk.dir}/tools/ant/build.xml" />
+    <import file="${sdk.dir}/tools/ant/build.xml" />
 
     <!-- Combine JavaScript files into one cordova-uncompressed.js file. -->
     <target name="build-javascript" depends="clean">
