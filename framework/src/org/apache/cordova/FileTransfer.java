@@ -44,7 +44,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,7 +56,7 @@ import android.os.Build;
 import android.util.Log;
 import android.webkit.CookieManager;
 
-public class FileTransfer extends Plugin {
+public class FileTransfer extends CordovaPlugin {
 
     private static final String LOG_TAG = "FileTransfer";
     private static final String LINE_START = "--";
@@ -116,7 +117,7 @@ public class FileTransfer extends Plugin {
     * @see org.apache.cordova.api.Plugin#execute(java.lang.String, org.json.JSONArray, java.lang.String)
     */
     @Override
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
+    public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
         if (action.equals("upload") || action.equals("download")) {
             String source = null;
             String target = null;
@@ -129,15 +130,18 @@ public class FileTransfer extends Plugin {
             }
 
             if (action.equals("upload")) {
-                return upload(URLDecoder.decode(source), target, args, callbackId);
+                upload(URLDecoder.decode(source), target, args, callbackContext);
             } else {
-                return download(source, target, args, callbackId);
+                download(source, target, args, callbackContext);
             }
+            return true;
         } else if (action.equals("abort")) {
-            return abort(args);
-        } else {
-            return new PluginResult(PluginResult.Status.INVALID_ACTION);
+            String objectId = args.getString(0);
+            abort(objectId);
+            callbackContext.success();
+            return true;
         }
+        return false;
     }
 
     /**
@@ -145,7 +149,7 @@ public class FileTransfer extends Plugin {
      * @param source        Full path of the file on the file system
      * @param target        URL of the server to receive the file
      * @param args          JSON Array of args
-     * @param callbackId    callback id for optional progress reports
+     * @param callbackContext    callback id for optional progress reports
      *
      * args[2] fileKey       Name of file request parameter
      * args[3] fileName      File name to be used on server
@@ -153,7 +157,7 @@ public class FileTransfer extends Plugin {
      * args[5] params        key:value pairs of user-defined parameters
      * @return FileUploadResult containing result of upload request
      */
-    private PluginResult upload(String source, String target, JSONArray args, String callbackId) {
+    private PluginResult upload(String source, String target, JSONArray args, CallbackContext callbackContext) {
         Log.d(LOG_TAG, "upload " + source + " to " +  target);
 
         HttpURLConnection conn = null;
@@ -350,7 +354,7 @@ public class FileTransfer extends Plugin {
                     progress.setLoaded(totalBytes);
                     PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
                     progressResult.setKeepCallback(true);
-                    success(progressResult, callbackId);
+                    callbackContext.sendPluginResult(progressResult);
                 }
                 synchronized (abortTriggered) {
                     if (objectId != null && abortTriggered.contains(objectId)) {
@@ -536,7 +540,7 @@ public class FileTransfer extends Plugin {
      * @param target      	Full path of the file on the file system
      * @return JSONObject 	the downloaded file
      */
-    private PluginResult download(String source, String target, JSONArray args, String callbackId) {
+    private PluginResult download(String source, String target, JSONArray args, CallbackContext callbackContext) {
         Log.d(LOG_TAG, "download " + source + " to " +  target);
 
         HttpURLConnection connection = null;
@@ -617,7 +621,7 @@ public class FileTransfer extends Plugin {
                         progress.setLoaded(totalBytes);
                         PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
                         progressResult.setKeepCallback(true);
-                        success(progressResult, callbackId);
+                        callbackContext.sendPluginResult(progressResult);
                     }
                     synchronized (abortTriggered) {
                         if (objectId != null && abortTriggered.contains(objectId)) {

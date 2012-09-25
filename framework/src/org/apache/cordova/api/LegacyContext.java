@@ -65,13 +65,13 @@ public class LegacyContext implements CordovaInterface {
     }
 
     @Deprecated
-    public void setActivityResultCallback(Plugin arg0) {
+    public void setActivityResultCallback(CordovaPlugin arg0) {
         Log.i(LOG_TAG, "Replace ctx.setActivityResultCallback() with cordova.setActivityResultCallback()");
         this.cordova.setActivityResultCallback(arg0);
     }
 
     @Deprecated
-    public void startActivityForResult(Plugin arg0, Intent arg1, int arg2) {
+    public void startActivityForResult(CordovaPlugin arg0, Intent arg1, int arg2) {
         Log.i(LOG_TAG, "Replace ctx.startActivityForResult() with cordova.startActivityForResult()");
         this.cordova.startActivityForResult(arg0, arg1, arg2);
     }

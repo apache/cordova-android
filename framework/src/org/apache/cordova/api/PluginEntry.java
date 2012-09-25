@@ -43,7 +43,7 @@ public class PluginEntry {
      * Plugin objects are only created when they are called from JavaScript.  (see PluginManager.exec)
      * The exception is if the onload flag is set, then they are created when PluginManager is initialized.
      */
-    public Plugin plugin = null;
+    public CordovaPlugin plugin = null;
 
     /**
      * Flag that indicates the plugin object should be created when PluginManager is initialized.
@@ -69,7 +69,7 @@ public class PluginEntry {
      *
      * @return                      The plugin object
      */
-    public Plugin createPlugin(CordovaWebView webView, CordovaInterface ctx) {
+    public CordovaPlugin createPlugin(CordovaWebView webView, CordovaInterface ctx) {
         if (this.plugin != null) {
             return this.plugin;
         }
@@ -77,9 +77,8 @@ public class PluginEntry {
             @SuppressWarnings("rawtypes")
             Class c = getClassByName(this.pluginClass);
             if (isCordovaPlugin(c)) {
-                this.plugin = (Plugin) c.newInstance();
-                this.plugin.setContext(ctx);
-                this.plugin.setView(webView);
+                this.plugin = (CordovaPlugin) c.newInstance();
+                this.plugin.initialize(ctx, webView);
                 return plugin;
             }
         } catch (Exception e) {
@@ -106,16 +105,12 @@ public class PluginEntry {
     }
 
     /**
-     * Get the interfaces that a class implements and see if it implements the
-     * org.apache.cordova.api.Plugin interface.
-     *
-     * @param c                     The class to check the interfaces of.
-     * @return                      Boolean indicating if the class implements org.apache.cordova.api.Plugin
+     * Returns whether the given class extends CordovaPlugin.
      */
     @SuppressWarnings("rawtypes")
     private boolean isCordovaPlugin(Class c) {
         if (c != null) {
-            return org.apache.cordova.api.Plugin.class.isAssignableFrom(c) || org.apache.cordova.api.Plugin.class.isAssignableFrom(c);
+            return org.apache.cordova.api.CordovaPlugin.class.isAssignableFrom(c);
         }
         return false;
     }

@@ -18,40 +18,27 @@
 */
 package org.apache.cordova;
 
-import org.apache.cordova.api.Plugin;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-public class Echo extends Plugin {
+public class Echo extends CordovaPlugin {
 
-    /**
-     * Executes the request and returns PluginResult.
-     *
-     * @param action        The action to execute.
-     * @param args          JSONArry of arguments for the plugin.
-     * @param callbackId    The callback id used when calling back into JavaScript.
-     * @return              A PluginResult object with a status and message.
-     */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        try {
-            String result = args.getString(0);
-            if ("echo".equals(action) || "echoAsync".equals(action)) {
-                return new PluginResult(PluginResult.Status.OK, result);
-            }
-        	return new PluginResult(PluginResult.Status.INVALID_ACTION);
-        } catch (JSONException e) {
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+    @Override
+    public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        final String result = args.getString(0);
+        if ("echo".equals(action)) {
+            callbackContext.success(result);
+            return true;
+        } else if ("echoAsync".equals(action)) {
+            cordova.getThreadPool().execute(new Runnable() {
+                @Override public void run() {
+                    callbackContext.success(result);
+                }
+            });
+            return true;
         }
-    }
-
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     *
-     * @param action    The action to execute
-     * @return          T=returns value
-     */
-    public boolean isSynch(String action) {
-        return "echo".equals(action);
+        return false;
     }
 }

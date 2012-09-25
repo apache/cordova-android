@@ -32,6 +32,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
+import android.util.Log;
 
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
@@ -207,59 +208,31 @@ public class PluginManager {
      *                      how to deal with it.
      * @param callbackId    String containing the id of the callback that is execute in JavaScript if
      *                      this is an async plugin call.
-     * @param args          An Array literal string containing any arguments needed in the
+     * @param rawArgs       An Array literal string containing any arguments needed in the
      *                      plugin execute method.
      * @return Whether the task completed synchronously.
      */
-    public boolean exec(final String service, final String action, final String callbackId, final String jsonArgs) {
-        PluginResult cr = null;
-        final Plugin plugin = this.getPlugin(service);
-        boolean runAsync = !plugin.isSynch(action);
-        try {
-            final JSONArray args = new JSONArray(jsonArgs);
-            //final CordovaInterface ctx = this.ctx;
-            if (plugin != null) {
-                if (runAsync) {
-                    // Run this on a different thread so that this one can return back to JS
-                    ctx.getThreadPool().execute(new Runnable() {
-                        public void run() {
-                            try {
-                                // Call execute on the plugin so that it can do it's thing
-                                PluginResult cr = plugin.execute(action, args, callbackId);
-                                app.sendPluginResult(cr, callbackId);
-                            } catch (Exception e) {
-                                PluginResult cr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
-                                app.sendPluginResult(cr, callbackId);
-                            }
-                        }
-                    });
-                    return false;
-                } else {
-                    // Call execute on the plugin so that it can do it's thing
-                    cr = plugin.execute(action, args, callbackId);
-
-                    // If no result to be sent and keeping callback, then no need to sent back to JavaScript
-                    if ((cr.getStatus() == PluginResult.Status.NO_RESULT.ordinal()) && cr.getKeepCallback()) {
-                        return true;
-                    }
-                }
-            }
-        } catch (JSONException e) {
-            System.out.println("ERROR: " + e.toString());
-            cr = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
-        }
-        // if async we have already returned at this point unless there was an error...
-        if (runAsync) {
-            if (cr == null) {
-                cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
-            }
+    public boolean exec(String service, String action, String callbackId, String rawArgs) {
+        CordovaPlugin plugin = this.getPlugin(service);
+        if (plugin == null) {
+            PluginResult cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
             app.sendPluginResult(cr, callbackId);
+            return true;
         }
-        if (cr == null) {
-        	cr = new PluginResult(PluginResult.Status.NO_RESULT);
+        try {
+            CallbackContext callbackContext = new CallbackContext(callbackId, app);
+            boolean wasValidAction = plugin.execute(action, rawArgs, callbackContext);
+            if (!wasValidAction) {
+                PluginResult cr = new PluginResult(PluginResult.Status.INVALID_ACTION);
+                app.sendPluginResult(cr, callbackId);
+                return true;
+            }
+            return callbackContext.isFinished();
+        } catch (JSONException e) {
+            PluginResult cr = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            app.sendPluginResult(cr, callbackId);
+            return true;
         }
-        app.sendPluginResult(cr, callbackId);
-        return true;
     }
 
     @Deprecated
@@ -273,14 +246,14 @@ public class PluginManager {
      * If the service doesn't exist, then return null.
      *
      * @param service       The name of the service.
-     * @return              Plugin or null
+     * @return              CordovaPlugin or null
      */
-    private Plugin getPlugin(String service) {
+    private CordovaPlugin getPlugin(String service) {
         PluginEntry entry = this.entries.get(service);
         if (entry == null) {
             return null;
         }
-        Plugin plugin = entry.plugin;
+        CordovaPlugin plugin = entry.plugin;
         if (plugin == null) {
             plugin = entry.createPlugin(this.app, this.ctx);
         }
@@ -403,7 +376,7 @@ public class PluginManager {
     public void onReset() {
         Iterator<PluginEntry> it = this.entries.values().iterator();
         while (it.hasNext()) {
-            Plugin plugin = it.next().plugin;
+            CordovaPlugin plugin = it.next().plugin;
             if (plugin != null) {
                 plugin.onReset();
             }

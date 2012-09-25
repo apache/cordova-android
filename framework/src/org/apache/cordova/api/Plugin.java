@@ -20,41 +20,28 @@ package org.apache.cordova.api;
 
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
-import android.content.Intent;
-
-import android.util.Log;
 
 /**
- * Plugin interface must be implemented by any plugin classes.
- *
- * The execute method is called by the PluginManager.
+ * Legacy Plugin class. This acts as a shim to support the old execute() signature.
+ * New plugins should extend CordovaPlugin directly.
  */
-public abstract class Plugin {
-
-    public String id;
-    public CordovaWebView webView;					// WebView object
+@Deprecated
+public abstract class Plugin extends CordovaPlugin {
     public LegacyContext    ctx;			        // LegacyContext object
-    public CordovaInterface cordova;
 
-    /**
-     * Executes the request and returns PluginResult.
-     *
-     * @param action 		The action to execute.
-     * @param args 			JSONArry of arguments for the plugin.
-     * @param callbackId	The callback id used when calling back into JavaScript.
-     * @return 				A PluginResult object with a status and message.
-     */
     public abstract PluginResult execute(String action, JSONArray args, String callbackId);
 
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     *
-     * @param action	The action to execute
-     * @return			T=returns value
-     */
     public boolean isSynch(String action) {
         return false;
+    }
+    
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        this.setContext(cordova);
+        this.setView(webView);
     }
 
     /**
@@ -77,66 +64,35 @@ public abstract class Plugin {
     public void setView(CordovaWebView webView) {
         this.webView = webView;
     }
-
-    /**
-     * Called when the system is about to start resuming a previous activity.
-     *
-     * @param multitasking		Flag indicating if multitasking is turned on for app
-     */
-    public void onPause(boolean multitasking) {
-    }
-
-    /**
-     * Called when the activity will start interacting with the user.
-     *
-     * @param multitasking		Flag indicating if multitasking is turned on for app
-     */
-    public void onResume(boolean multitasking) {
-    }
-
-    /**
-     * Called when the activity receives a new intent.
-     */
-    public void onNewIntent(Intent intent) {
-    }
-
-    /**
-     * The final call you receive before your activity is destroyed.
-     */
-    public void onDestroy() {
-    }
-
-    /**
-     * Called when a message is sent to plugin.
-     *
-     * @param id            The message id
-     * @param data          The message data
-     * @return              Object to stop propagation or null
-     */
-    public Object onMessage(String id, Object data) {
-        return null;
-    }
-
-    /**
-     * Called when an activity you launched exits, giving you the requestCode you started it with,
-     * the resultCode it returned, and any additional data from it.
-     *
-     * @param requestCode		The request code originally supplied to startActivityForResult(),
-     * 							allowing you to identify who this result came from.
-     * @param resultCode		The integer result code returned by the child activity through its setResult().
-     * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
-     */
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-    }
-
-    /**
-     * By specifying a <url-filter> in plugins.xml you can map a URL (using startsWith atm) to this method.
-     *
-     * @param url				The URL that is trying to be loaded in the Cordova webview.
-     * @return					Return true to prevent the URL from loading. Default is false.
-     */
-    public boolean onOverrideUrlLoading(String url) {
-        return false;
+    
+    @Override
+    public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        final String callbackId = callbackContext.getCallbackId();
+        boolean runAsync = !isSynch(action);
+        if (runAsync) {
+            // Run this on a different thread so that this one can return back to JS
+            cordova.getThreadPool().execute(new Runnable() {
+                public void run() {
+                    PluginResult cr;
+                    try {
+                        cr = execute(action, args, callbackId);
+                    } catch (Throwable e) {
+                        cr = new PluginResult(PluginResult.Status.ERROR, e.getMessage());
+                    }
+                    sendPluginResult(cr, callbackId);
+                }
+            });
+        } else {
+            PluginResult cr = execute(action, args, callbackId);
+    
+            // Interpret a null response as NO_RESULT, which *does* clear the callbacks on the JS side.
+            if (cr == null) {
+                cr = new PluginResult(PluginResult.Status.NO_RESULT);
+            }
+            
+            callbackContext.sendPluginResult(cr);
+        }
+        return true;
     }
 
     /**
@@ -161,8 +117,8 @@ public abstract class Plugin {
      * that execute should return null and the callback from the async operation can
      * call success(...) or error(...)
      *
-     * @param pluginResult		The result to return.
-     * @param callbackId		The callback id used when calling back into JavaScript.
+     * @param pluginResult      The result to return.
+     * @param callbackId        The callback id used when calling back into JavaScript.
      */
     public void success(PluginResult pluginResult, String callbackId) {
         this.webView.sendPluginResult(pluginResult, callbackId);
@@ -171,8 +127,8 @@ public abstract class Plugin {
     /**
      * Helper for success callbacks that just returns the Status.OK by default
      *
-     * @param message			The message to add to the success result.
-     * @param callbackId		The callback id used when calling back into JavaScript.
+     * @param message           The message to add to the success result.
+     * @param callbackId        The callback id used when calling back into JavaScript.
      */
     public void success(JSONObject message, String callbackId) {
         this.webView.sendPluginResult(new PluginResult(PluginResult.Status.OK, message), callbackId);
@@ -181,8 +137,8 @@ public abstract class Plugin {
     /**
      * Helper for success callbacks that just returns the Status.OK by default
      *
-     * @param message			The message to add to the success result.
-     * @param callbackId		The callback id used when calling back into JavaScript.
+     * @param message           The message to add to the success result.
+     * @param callbackId        The callback id used when calling back into JavaScript.
      */
     public void success(String message, String callbackId) {
         this.webView.sendPluginResult(new PluginResult(PluginResult.Status.OK, message), callbackId);
@@ -191,8 +147,8 @@ public abstract class Plugin {
     /**
      * Call the JavaScript error callback for this plugin.
      *
-     * @param pluginResult		The result to return.
-     * @param callbackId		The callback id used when calling back into JavaScript.
+     * @param pluginResult      The result to return.
+     * @param callbackId        The callback id used when calling back into JavaScript.
      */
     public void error(PluginResult pluginResult, String callbackId) {
         this.webView.sendPluginResult(pluginResult, callbackId);
@@ -201,8 +157,8 @@ public abstract class Plugin {
     /**
      * Helper for error callbacks that just returns the Status.ERROR by default
      *
-     * @param message			The message to add to the error result.
-     * @param callbackId		The callback id used when calling back into JavaScript.
+     * @param message           The message to add to the error result.
+     * @param callbackId        The callback id used when calling back into JavaScript.
      */
     public void error(JSONObject message, String callbackId) {
         this.webView.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message), callbackId);
@@ -211,20 +167,11 @@ public abstract class Plugin {
     /**
      * Helper for error callbacks that just returns the Status.ERROR by default
      *
-     * @param message			The message to add to the error result.
-     * @param callbackId		The callback id used when calling back into JavaScript.
+     * @param message           The message to add to the error result.
+     * @param callbackId        The callback id used when calling back into JavaScript.
      */
     public void error(String message, String callbackId) {
         this.webView.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message), callbackId);
     }
 
-    /**
-     * Called when the WebView does a top-level navigation or refreshes.
-     *
-     * Plugins should stop any long-running processes and clean up internal state.
-     *
-     * Does nothing by default.
-     */
-    public void onReset() {
-    }
 }
