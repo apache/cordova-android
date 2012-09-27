@@ -19,6 +19,9 @@
 
 package org.apache.cordova;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /** 
  * @description Exception class representing defined Globalization error codes
  * @Globalization error codes:
@@ -88,4 +91,18 @@ public class GlobalizationError extends Exception{
         return error;
     }
     
+    /**
+     * get the json version of this object to return to javascript
+     * @return
+     */
+    public JSONObject toJson() {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("code", getErrorCode());
+            obj.put("message", getErrorString());
+        } catch (JSONException e) {
+            // never happens
+        }
+        return obj;
+    }
 }

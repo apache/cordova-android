@@ -128,7 +128,7 @@ public class Globalization extends Plugin  {
                 return new PluginResult(PluginResult.Status.OK, obj);   
             }           
         }catch (GlobalizationError ge){         
-            return new PluginResult(PluginResult.Status.ERROR, ge.getErrorCode());          
+            return new PluginResult(PluginResult.Status.ERROR, ge.toJson());
         }catch (Exception e){           
             return new PluginResult(PluginResult.Status.JSON_EXCEPTION);            
         }   
