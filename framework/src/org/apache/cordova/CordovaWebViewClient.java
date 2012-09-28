@@ -255,12 +255,6 @@ public class CordovaWebViewClient extends WebViewClient {
         // Flush stale messages.
         this.appView.jsMessageQueue.reset();
 
-        // Create callback server
-        if (this.appView.callbackServer == null) {
-            this.appView.callbackServer = new CallbackServer();
-        }
-        this.appView.callbackServer.init(url);
-
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageStarted", url);
 
@@ -328,9 +322,6 @@ public class CordovaWebViewClient extends WebViewClient {
 
         // Shutdown if blank loaded
         if (url.equals("about:blank")) {
-            if (this.appView.callbackServer != null) {
-                this.appView.callbackServer.destroy();
-            }
             appView.postMessage("exit", null);
         }
     }

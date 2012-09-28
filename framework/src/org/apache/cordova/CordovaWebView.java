@@ -67,7 +67,6 @@ public class CordovaWebView extends WebView {
     private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
 
     public PluginManager pluginManager;
-    public CallbackServer callbackServer;
     private boolean paused;
     
     private BroadcastReceiver receiver;

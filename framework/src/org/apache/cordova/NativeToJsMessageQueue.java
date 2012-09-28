@@ -80,12 +80,11 @@ public class NativeToJsMessageQueue {
     public NativeToJsMessageQueue(CordovaWebView webView, CordovaInterface cordova) {
         this.cordova = cordova;
         this.webView = webView;
-        registeredListeners = new BridgeMode[5];
+        registeredListeners = new BridgeMode[4];
         registeredListeners[0] = null;  // Polling. Requires no logic.
-        registeredListeners[1] = new CallbackBridgeMode();
-        registeredListeners[2] = new LoadUrlBridgeMode();
-        registeredListeners[3] = new OnlineEventsBridgeMode();
-        registeredListeners[4] = new PrivateApiBridgeMode();
+        registeredListeners[1] = new LoadUrlBridgeMode();
+        registeredListeners[2] = new OnlineEventsBridgeMode();
+        registeredListeners[3] = new PrivateApiBridgeMode();
         reset();
     }
     
@@ -268,15 +267,6 @@ public class NativeToJsMessageQueue {
 
     private interface BridgeMode {
         void onNativeToJsMessageAvailable();
-    }
-    
-    /** Uses a local server to send messages to JS via an XHR */
-    private class CallbackBridgeMode implements BridgeMode {
-        public void onNativeToJsMessageAvailable() {
-            if (webView.callbackServer != null) {
-                webView.callbackServer.onNativeToJsMessageAvailable(NativeToJsMessageQueue.this);
-            }
-        }
     }
     
     /** Uses webView.loadUrl("javascript:") to execute messages. */

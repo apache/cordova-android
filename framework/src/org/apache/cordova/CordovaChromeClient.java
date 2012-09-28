@@ -226,24 +226,6 @@ public class CordovaChromeClient extends WebChromeClient {
             result.confirm("OK");
         }
 
-        // Calling into CallbackServer
-        else if (reqOk && defaultValue != null && defaultValue.equals("gap_callbackServer:")) {
-            String r = "";
-            if (message.equals("usePolling")) {
-                r = "" + this.appView.callbackServer.usePolling();
-            }
-            else if (message.equals("restartServer")) {
-                this.appView.callbackServer.restartServer();
-            }
-            else if (message.equals("getPort")) {
-                r = Integer.toString(this.appView.callbackServer.getPort());
-            }
-            else if (message.equals("getToken")) {
-                r = this.appView.callbackServer.getToken();
-            }
-            result.confirm(r);
-        }
-
         // Show dialog
         else {
             final JsPromptResult res = result;
