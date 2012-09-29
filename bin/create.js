@@ -37,6 +37,10 @@ function setTarget() {
     var targets = shell.Exec('android.bat list targets').StdOut.ReadAll().match(/id:\s\d+/g);
     return targets[targets.length - 1].replace(/id: /, ""); // TODO: give users the option to set their target 
 }
+function setApiLevel() {
+    var targets = shell.Exec('android.bat list targets').StdOut.ReadAll().match(/API level:\s\d+/g);
+    return targets[targets.length - 1].replace(/API level: /, "");
+}
 function write(filename, contents) {
     var fso=WScript.CreateObject("Scripting.FileSystemObject");
     var f=fso.OpenTextFile(filename, 2, true);
@@ -145,6 +149,7 @@ var PACKAGE_AS_PATH=PACKAGE.replace(/\./g, '\\');
 var ACTIVITY_PATH=PROJECT_PATH+'\\src\\'+PACKAGE_AS_PATH+'\\'+ACTIVITY+'.java';
 var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
 var TARGET=setTarget();
+var API_LEVEL=setApiLevel();
 var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 // create the project
 WScript.Echo("Creating new android project...");
@@ -205,5 +210,6 @@ replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 
 replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, ACTIVITY);
 replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
+replaceInFile(MANIFEST_PATH, /__APILEVEL__/, API_LEVEL);
 
 cleanup();
