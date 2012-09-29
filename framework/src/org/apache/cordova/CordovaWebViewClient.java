@@ -23,20 +23,15 @@ import java.util.Hashtable;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.PluginResult;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.cordova.api.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
@@ -44,7 +39,6 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -107,7 +101,7 @@ public class CordovaWebViewClient extends WebViewClient {
 		String action     = url.substring(idx2 + 1, idx3);
 		String callbackId = url.substring(idx3 + 1, idx4);
 		String jsonArgs   = url.substring(idx4 + 1);
-        appView.pluginManager.exec(service, action, callbackId, jsonArgs, true /* async */);
+        appView.pluginManager.exec(service, action, callbackId, jsonArgs);
 	}    
 	
     /**
@@ -261,14 +255,13 @@ public class CordovaWebViewClient extends WebViewClient {
         // Flush stale messages.
         this.appView.jsMessageQueue.reset();
 
-        // Create callback server
-        if (this.appView.callbackServer == null) {
-            this.appView.callbackServer = new CallbackServer();
-        }
-        this.appView.callbackServer.init(url);
-
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageStarted", url);
+
+        // Notify all plugins of the navigation, so they can clean up if necessary.
+        if (this.appView.pluginManager != null) {
+            this.appView.pluginManager.onReset();
+        }
     }
 
     /**
@@ -329,9 +322,6 @@ public class CordovaWebViewClient extends WebViewClient {
 
         // Shutdown if blank loaded
         if (url.equals("about:blank")) {
-            if (this.appView.callbackServer != null) {
-                this.appView.callbackServer.destroy();
-            }
             appView.postMessage("exit", null);
         }
     }

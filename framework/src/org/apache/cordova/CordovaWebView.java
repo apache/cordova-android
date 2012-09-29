@@ -50,6 +50,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
+import android.webkit.WebBackForwardList;
+import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -65,7 +67,6 @@ public class CordovaWebView extends WebView {
     private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
 
     public PluginManager pluginManager;
-    public CallbackServer callbackServer;
     private boolean paused;
     
     private BroadcastReceiver receiver;
@@ -572,12 +573,13 @@ public class CordovaWebView extends WebView {
         // Check webview first to see if there is a history
         // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
         if (super.canGoBack()) {
+        	printBackForwardList();
             super.goBack();
             return true;
         }
 
         // If our managed history has prev url
-        if (this.urls.size() > 1) {
+        if (this.urls.size() > 1 && !this.useBrowserHistory) {
             this.urls.pop();                // Pop current url
             String url = this.urls.pop();   // Pop prev url that we want to load, since it will be added back by loadUrl()
             this.loadUrl(url);
@@ -936,5 +938,18 @@ public class CordovaWebView extends WebView {
         static void enableUniversalAccess(WebSettings settings) {
             settings.setAllowUniversalAccessFromFileURLs(true);
         }
+    }
+    
+    
+    
+    public void printBackForwardList() {
+    	WebBackForwardList currentList = this.copyBackForwardList();
+    	int currentSize = currentList.getSize();
+    	for(int i = 0; i < currentSize; ++i)
+    	{
+    		WebHistoryItem item = currentList.getItemAtIndex(i);
+    		String url = item.getUrl();
+    		LOG.d(TAG, "The URL at index: " + Integer.toString(i) + "is " + url );
+    	}
     }
 }

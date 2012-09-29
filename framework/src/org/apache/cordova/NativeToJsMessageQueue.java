@@ -36,7 +36,7 @@ public class NativeToJsMessageQueue {
     private static final String LOG_TAG = "JsMessageQueue";
 
     // This must match the default value in incubator-cordova-js/lib/android/exec.js
-    private static final int DEFAULT_BRIDGE_MODE = 1;
+    private static final int DEFAULT_BRIDGE_MODE = 3;
     
     // Set this to true to force plugin results to be encoding as
     // JS instead of the custom format (useful for benchmarking).
@@ -80,12 +80,11 @@ public class NativeToJsMessageQueue {
     public NativeToJsMessageQueue(CordovaWebView webView, CordovaInterface cordova) {
         this.cordova = cordova;
         this.webView = webView;
-        registeredListeners = new BridgeMode[5];
+        registeredListeners = new BridgeMode[4];
         registeredListeners[0] = null;  // Polling. Requires no logic.
-        registeredListeners[1] = new CallbackBridgeMode();
-        registeredListeners[2] = new LoadUrlBridgeMode();
-        registeredListeners[3] = new OnlineEventsBridgeMode();
-        registeredListeners[4] = new PrivateApiBridgeMode();
+        registeredListeners[1] = new LoadUrlBridgeMode();
+        registeredListeners[2] = new OnlineEventsBridgeMode();
+        registeredListeners[3] = new PrivateApiBridgeMode();
         reset();
     }
     
@@ -268,15 +267,6 @@ public class NativeToJsMessageQueue {
 
     private interface BridgeMode {
         void onNativeToJsMessageAvailable();
-    }
-    
-    /** Uses a local server to send messages to JS via an XHR */
-    private class CallbackBridgeMode implements BridgeMode {
-        public void onNativeToJsMessageAvailable() {
-            if (webView.callbackServer != null) {
-                webView.callbackServer.onNativeToJsMessageAvailable(NativeToJsMessageQueue.this);
-            }
-        }
     }
     
     /** Uses webView.loadUrl("javascript:") to execute messages. */

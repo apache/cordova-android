@@ -82,6 +82,13 @@ public class TempListener extends Plugin implements SensorEventListener {
         this.stop();
     }
 
+    /**
+     * Called on navigation.
+     */
+    public void onReset() {
+        this.stop();
+    }
+
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------

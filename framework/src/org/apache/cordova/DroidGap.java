@@ -19,6 +19,8 @@
 package org.apache.cordova;
 
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.cordova.api.IPlugin;
 import org.apache.cordova.api.LOG;
@@ -142,6 +144,8 @@ public class DroidGap extends Activity implements CordovaInterface {
     protected LinearLayout root;
     protected boolean cancelLoadUrl = false;
     protected ProgressDialog spinnerDialog = null;
+    private final ExecutorService threadPool = Executors.newCachedThreadPool();
+
 
     // The initial URL for our app
     // ie http://server/path/index.html#abc?query
@@ -1050,5 +1054,10 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.endActivity();
         }
         return null;
+    }
+
+    @Override
+    public ExecutorService getThreadPool() {
+        return threadPool;
     }
 }

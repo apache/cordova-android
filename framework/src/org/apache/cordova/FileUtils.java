@@ -1048,10 +1048,16 @@ public class FileUtils extends Plugin {
      */
     @SuppressWarnings("deprecation")
     protected static String getRealPathFromURI(Uri contentUri, CordovaInterface cordova) {
-        String[] proj = { _DATA };
-        Cursor cursor = cordova.getActivity().managedQuery(contentUri, proj, null, null, null);
-        int column_index = cursor.getColumnIndexOrThrow(_DATA);
-        cursor.moveToFirst();
-        return cursor.getString(column_index);
+        String uri = contentUri.toString();
+        if (uri.startsWith("content:")) {
+            String[] proj = { _DATA };
+            Cursor cursor = cordova.getActivity().managedQuery(contentUri, proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(_DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } else {
+            return uri;
+        }
+        
     }
 }

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -32,6 +33,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.net.ssl.HostnameVerifier;
@@ -58,34 +60,81 @@ public class FileTransfer extends Plugin {
     private static final String LOG_TAG = "FileTransfer";
     private static final String LINE_START = "--";
     private static final String LINE_END = "\r\n";
-    private static final String BOUNDARY =  "*****";
+    private static final String BOUNDARY =  "+++++";
 
     public static int FILE_NOT_FOUND_ERR = 1;
     public static int INVALID_URL_ERR = 2;
     public static int CONNECTION_ERR = 3;
+    public static int ABORTED_ERR = 4;
+
+    private static HashSet<String> abortTriggered = new HashSet<String>();
 
     private SSLSocketFactory defaultSSLSocketFactory = null;
     private HostnameVerifier defaultHostnameVerifier = null;
 
+    private static final class AbortException extends Exception {
+        private static final long serialVersionUID = 1L;
+        public AbortException(String str) {
+            super(str);
+        }
+    }
+
+    /**
+     * Works around a bug on Android 2.3.
+     * http://code.google.com/p/android/issues/detail?id=14562
+     */
+    private static final class DoneHandlerInputStream extends FilterInputStream {
+        private boolean done;
+        
+        public DoneHandlerInputStream(InputStream stream) {
+            super(stream);
+        }
+        
+        @Override
+        public int read() throws IOException {
+            int result = done ? -1 : super.read();
+            done = (result == -1);
+            return result;
+        }
+
+        @Override
+        public int read(byte[] buffer) throws IOException {
+            int result = done ? -1 : super.read(buffer);
+            done = (result == -1);
+            return result;
+        }
+
+        @Override
+        public int read(byte[] bytes, int offset, int count) throws IOException {
+            int result = done ? -1 : super.read(bytes, offset, count);
+            done = (result == -1);
+            return result;
+        }
+    }
+    
     /* (non-Javadoc)
     * @see org.apache.cordova.api.Plugin#execute(java.lang.String, org.json.JSONArray, java.lang.String)
     */
     @Override
     public PluginResult execute(String action, JSONArray args, String callbackId) {
-        String source = null;
-        String target = null;
-        try {
-            source = args.getString(0);
-            target = args.getString(1);
-        } catch (JSONException e) {
-            Log.d(LOG_TAG, "Missing source or target");
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing source or target");
-        }
+        if (action.equals("upload") || action.equals("download")) {
+            String source = null;
+            String target = null;
+            try {
+                source = args.getString(0);
+                target = args.getString(1);
+            } catch (JSONException e) {
+                Log.d(LOG_TAG, "Missing source or target");
+                return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing source or target");
+            }
 
-        if (action.equals("upload")) {
-            return upload(URLDecoder.decode(source), target, args);
-        } else if (action.equals("download")) {
-            return download(source, target, args.optBoolean(2));
+            if (action.equals("upload")) {
+                return upload(URLDecoder.decode(source), target, args, callbackId);
+            } else {
+                return download(source, target, args, callbackId);
+            }
+        } else if (action.equals("abort")) {
+            return abort(args);
         } else {
             return new PluginResult(PluginResult.Status.INVALID_ACTION);
         }
@@ -96,6 +145,7 @@ public class FileTransfer extends Plugin {
      * @param source        Full path of the file on the file system
      * @param target        URL of the server to receive the file
      * @param args          JSON Array of args
+     * @param callbackId    callback id for optional progress reports
      *
      * args[2] fileKey       Name of file request parameter
      * args[3] fileName      File name to be used on server
@@ -103,7 +153,7 @@ public class FileTransfer extends Plugin {
      * args[5] params        key:value pairs of user-defined parameters
      * @return FileUploadResult containing result of upload request
      */
-    private PluginResult upload(String source, String target, JSONArray args) {
+    private PluginResult upload(String source, String target, JSONArray args, String callbackId) {
         Log.d(LOG_TAG, "upload " + source + " to " +  target);
 
         HttpURLConnection conn = null;
@@ -121,6 +171,7 @@ public class FileTransfer extends Plugin {
             if (headers == null && params != null) {
                 headers = params.optJSONObject("headers");
             }
+            String objectId = args.getString(9);
 
             Log.d(LOG_TAG, "fileKey: " + fileKey);
             Log.d(LOG_TAG, "fileName: " + fileName);
@@ -129,12 +180,14 @@ public class FileTransfer extends Plugin {
             Log.d(LOG_TAG, "trustEveryone: " + trustEveryone);
             Log.d(LOG_TAG, "chunkedMode: " + chunkedMode);
             Log.d(LOG_TAG, "headers: " + headers);
+            Log.d(LOG_TAG, "objectId: " + objectId);
 
             // Create return object
             FileUploadResult result = new FileUploadResult();
+            FileProgressResult progress = new FileProgressResult();
 
             // Get a input stream of the file on the phone
-            FileInputStream fileInputStream = (FileInputStream) getPathFromUri(source);
+            InputStream inputStream = getPathFromUri(source);
 
             DataOutputStream dos = null;
 
@@ -242,12 +295,18 @@ public class FileTransfer extends Plugin {
 
             int stringLength = extraBytes.length + midParams.length() + tailParams.length() + fileNameBytes.length;
             Log.d(LOG_TAG, "String Length: " + stringLength);
-            int fixedLength = (int) fileInputStream.getChannel().size() + stringLength;
+            int fixedLength = -1;
+            if (inputStream instanceof FileInputStream) {
+                fixedLength = (int) ((FileInputStream)inputStream).getChannel().size() + stringLength;
+                progress.setLengthComputable(true);
+                progress.setTotal(fixedLength);
+            }
             Log.d(LOG_TAG, "Content Length: " + fixedLength);
             // setFixedLengthStreamingMode causes and OutOfMemoryException on pre-Froyo devices.
             // http://code.google.com/p/android/issues/detail?id=3164
             // It also causes OOM if HTTPS is used, even on newer devices.
             chunkedMode = chunkedMode && (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO || useHttps);
+            chunkedMode = chunkedMode || (fixedLength == -1);
             		
             if (chunkedMode) {
                 conn.setChunkedStreamingMode(maxBufferSize);
@@ -265,12 +324,12 @@ public class FileTransfer extends Plugin {
             dos.writeBytes(midParams);
 
             // create a buffer of maximum size
-            bytesAvailable = fileInputStream.available();
+            bytesAvailable = inputStream.available();
             bufferSize = Math.min(bytesAvailable, maxBufferSize);
             buffer = new byte[bufferSize];
 
             // read file and write it into form...
-            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            bytesRead = inputStream.read(buffer, 0, bufferSize);
             totalBytes = 0;
 
             long prevBytesRead = 0;
@@ -282,28 +341,36 @@ public class FileTransfer extends Plugin {
                 	prevBytesRead = totalBytes;
                 	Log.d(LOG_TAG, "Uploaded " + totalBytes + " of " + fixedLength + " bytes");
                 }
-                bytesAvailable = fileInputStream.available();
+                bytesAvailable = inputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                bytesRead = inputStream.read(buffer, 0, bufferSize);
+                if (objectId != null) {
+                    // Only send progress callbacks if the JS code sent us an object ID,
+                    // so we don't spam old versions with unrecognized callbacks.
+                    progress.setLoaded(totalBytes);
+                    PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
+                    progressResult.setKeepCallback(true);
+                    success(progressResult, callbackId);
+                }
+                synchronized (abortTriggered) {
+                    if (objectId != null && abortTriggered.contains(objectId)) {
+                        abortTriggered.remove(objectId);
+                        throw new AbortException("upload aborted");
+                    }
+                }
             }
 
             // send multipart form data necessary after file data...
             dos.writeBytes(tailParams);
 
             // close streams
-            fileInputStream.close();
+            inputStream.close();
             dos.flush();
             dos.close();
 
             //------------------ read the SERVER RESPONSE
             StringBuffer responseString = new StringBuffer("");
-            DataInputStream inStream;
-            try {
-                inStream = new DataInputStream ( conn.getInputStream() );
-            } catch(FileNotFoundException e) {
-                Log.e(LOG_TAG, e.toString(), e);
-                throw new IOException("Received error from server");
-            }
+            DataInputStream inStream = new DataInputStream(getInputStream(conn));
 
             String line;
             while (( line = inStream.readLine()) != null) {
@@ -342,6 +409,9 @@ public class FileTransfer extends Plugin {
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+        } catch (AbortException e) {
+            JSONObject error = createFileTransferError(ABORTED_ERR, source, target, conn);
+            return new PluginResult(PluginResult.Status.ERROR, error);
         } catch (Throwable t) {
             // Shouldn't happen, but will
             JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, conn);
@@ -352,6 +422,13 @@ public class FileTransfer extends Plugin {
                 conn.disconnect();
             }
         }
+    }
+
+    private InputStream getInputStream(HttpURLConnection conn) throws IOException {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            return new DoneHandlerInputStream(conn.getInputStream());
+        }
+        return conn.getInputStream();
     }
 
     // always verify the host - don't check for certificate
@@ -459,11 +536,13 @@ public class FileTransfer extends Plugin {
      * @param target      	Full path of the file on the file system
      * @return JSONObject 	the downloaded file
      */
-    private PluginResult download(String source, String target, boolean trustEveryone) {
+    private PluginResult download(String source, String target, JSONArray args, String callbackId) {
         Log.d(LOG_TAG, "download " + source + " to " +  target);
 
         HttpURLConnection connection = null;
         try {
+            boolean trustEveryone = args.optBoolean(2);
+            String objectId = args.getString(3);
             File file = getFileFromPath(target);
 
             // create needed directories
@@ -513,22 +592,39 @@ public class FileTransfer extends Plugin {
                 connection.connect();
 
                 Log.d(LOG_TAG, "Download file:" + url);
-                InputStream inputStream;
-                try {
-                    inputStream = connection.getInputStream();
-                } catch(FileNotFoundException e) {
-                    Log.e(LOG_TAG, e.toString(), e);
-                    throw new IOException("Received error from server");
-                }
+                InputStream inputStream = getInputStream(connection);
 
                 byte[] buffer = new byte[1024];
                 int bytesRead = 0;
+                long totalBytes = 0;
+                FileProgressResult progress = new FileProgressResult();
+
+                if (connection.getContentEncoding() == null) {
+                    // Only trust content-length header if no gzip etc
+                    progress.setLengthComputable(true);
+                    progress.setTotal(connection.getContentLength());
+                }
 
                 FileOutputStream outputStream = new FileOutputStream(file);
 
                 // write bytes to file
                 while ((bytesRead = inputStream.read(buffer)) > 0) {
                     outputStream.write(buffer, 0, bytesRead);
+                    totalBytes += bytesRead;
+                    if (objectId != null) {
+                        // Only send progress callbacks if the JS code sent us an object ID,
+                        // so we don't spam old versions with unrecognized callbacks.
+                        progress.setLoaded(totalBytes);
+                        PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
+                        progressResult.setKeepCallback(true);
+                        success(progressResult, callbackId);
+                    }
+                    synchronized (abortTriggered) {
+                        if (objectId != null && abortTriggered.contains(objectId)) {
+                            abortTriggered.remove(objectId);
+                            throw new AbortException("download aborted");
+                        }
+                    }
                 }
 
                 outputStream.close();
@@ -554,6 +650,9 @@ public class FileTransfer extends Plugin {
                 return new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
             }
 
+        } catch (AbortException e) {
+            JSONObject error = createFileTransferError(ABORTED_ERR, source, target, connection);
+            return new PluginResult(PluginResult.Status.ERROR, error);
         } catch (FileNotFoundException e) {
             JSONObject error = createFileTransferError(FILE_NOT_FOUND_ERR, source, target, connection);
             Log.d(LOG_TAG, "I got a file not found exception");
@@ -620,5 +719,24 @@ public class FileTransfer extends Plugin {
         }
 
         return file;
+    }
+
+    /**
+     * Abort an ongoing upload or download.
+     *
+     * @param args          args
+     */
+    private PluginResult abort(JSONArray args) {
+        String objectId;
+        try {
+            objectId = args.getString(0);
+        } catch (JSONException e) {
+            Log.d(LOG_TAG, "Missing objectId");
+            return new PluginResult(PluginResult.Status.JSON_EXCEPTION, "Missing objectId");
+        }
+        synchronized (abortTriggered) {
+            abortTriggered.add(objectId);
+        }
+        return new PluginResult(PluginResult.Status.OK);
     }
 }

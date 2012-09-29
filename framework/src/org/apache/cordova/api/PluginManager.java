@@ -47,7 +47,6 @@ public class PluginManager {
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
-    private final ExecutorService execThreadPool = Executors.newCachedThreadPool();
 
     // Flag to track first time through
     private boolean firstRun;
@@ -210,23 +209,19 @@ public class PluginManager {
      *                      this is an async plugin call.
      * @param args          An Array literal string containing any arguments needed in the
      *                      plugin execute method.
-     * @param async         Boolean indicating whether the calling JavaScript code is expecting an
-     *                      immediate return value. If true, either Cordova.callbackSuccess(...) or
-     *                      Cordova.callbackError(...) is called once the plugin code has executed.
      * @return Whether the task completed synchronously.
      */
-    public boolean exec(final String service, final String action, final String callbackId, final String jsonArgs, final boolean async) {
+    public boolean exec(final String service, final String action, final String callbackId, final String jsonArgs) {
         PluginResult cr = null;
-        boolean runAsync = async;
+        final IPlugin plugin = this.getPlugin(service);
+        boolean runAsync = !plugin.isSynch(action);
         try {
             final JSONArray args = new JSONArray(jsonArgs);
-            final IPlugin plugin = this.getPlugin(service);
             //final CordovaInterface ctx = this.ctx;
             if (plugin != null) {
-                runAsync = async && !plugin.isSynch(action);
                 if (runAsync) {
                     // Run this on a different thread so that this one can return back to JS
-                    execThreadPool.execute(new Runnable() {
+                    ctx.getThreadPool().execute(new Runnable() {
                         public void run() {
                             try {
                                 // Call execute on the plugin so that it can do it's thing
@@ -265,6 +260,11 @@ public class PluginManager {
         }
         app.sendPluginResult(cr, callbackId);
         return true;
+    }
+
+    @Deprecated
+    public boolean exec(String service, String action, String callbackId, String jsonArgs, boolean async) {
+        return exec(service, action, callbackId, jsonArgs);
     }
 
     /**
@@ -396,6 +396,20 @@ public class PluginManager {
         }
         return false;
     }
+
+    /**
+     * Called when the app navigates or refreshes.
+     */
+    public void onReset() {
+        Iterator<PluginEntry> it = this.entries.values().iterator();
+        while (it.hasNext()) {
+            IPlugin plugin = it.next().plugin;
+            if (plugin != null) {
+                plugin.onReset();
+            }
+        }
+    }
+
 
     private void pluginConfigurationMissing() {
         LOG.e(TAG, "=====================================================================================");
