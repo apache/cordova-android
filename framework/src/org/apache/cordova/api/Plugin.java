@@ -30,7 +30,7 @@ import android.util.Log;
  *
  * The execute method is called by the PluginManager.
  */
-public abstract class Plugin implements IPlugin {
+public abstract class Plugin {
 
     public String id;
     public CordovaWebView webView;					// WebView object

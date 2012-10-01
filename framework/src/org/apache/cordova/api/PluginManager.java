@@ -213,7 +213,7 @@ public class PluginManager {
      */
     public boolean exec(final String service, final String action, final String callbackId, final String jsonArgs) {
         PluginResult cr = null;
-        final IPlugin plugin = this.getPlugin(service);
+        final Plugin plugin = this.getPlugin(service);
         boolean runAsync = !plugin.isSynch(action);
         try {
             final JSONArray args = new JSONArray(jsonArgs);
@@ -273,14 +273,14 @@ public class PluginManager {
      * If the service doesn't exist, then return null.
      *
      * @param service       The name of the service.
-     * @return              IPlugin or null
+     * @return              Plugin or null
      */
-    private IPlugin getPlugin(String service) {
+    private Plugin getPlugin(String service) {
         PluginEntry entry = this.entries.get(service);
         if (entry == null) {
             return null;
         }
-        IPlugin plugin = entry.plugin;
+        Plugin plugin = entry.plugin;
         if (plugin == null) {
             plugin = entry.createPlugin(this.app, this.ctx);
         }
@@ -403,7 +403,7 @@ public class PluginManager {
     public void onReset() {
         Iterator<PluginEntry> it = this.entries.values().iterator();
         while (it.hasNext()) {
-            IPlugin plugin = it.next().plugin;
+            Plugin plugin = it.next().plugin;
             if (plugin != null) {
                 plugin.onReset();
             }

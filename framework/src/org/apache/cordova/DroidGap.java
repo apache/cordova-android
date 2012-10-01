@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.cordova.api.IPlugin;
+import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.CordovaInterface;
 import org.json.JSONException;
@@ -162,7 +162,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     String baseUrl = null;
 
     // Plugin to call when activity result is received
-    protected IPlugin activityResultCallback = null;
+    protected Plugin activityResultCallback = null;
     protected boolean activityResultKeepRunning;
 
     // Default background color for activity
@@ -773,7 +773,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param intent            The intent to start
      * @param requestCode       The request code that is passed to callback to identify the activity
      */
-    public void startActivityForResult(IPlugin command, Intent intent, int requestCode) {
+    public void startActivityForResult(Plugin command, Intent intent, int requestCode) {
         this.activityResultCallback = command;
         this.activityResultKeepRunning = this.keepRunning;
 
@@ -798,13 +798,13 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        IPlugin callback = this.activityResultCallback;
+        Plugin callback = this.activityResultCallback;
         if (callback != null) {
             callback.onActivityResult(requestCode, resultCode, intent);
         }
     }
 
-    public void setActivityResultCallback(IPlugin plugin) {
+    public void setActivityResultCallback(Plugin plugin) {
         this.activityResultCallback = plugin;
     }
 

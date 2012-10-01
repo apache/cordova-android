@@ -43,7 +43,7 @@ public class PluginEntry {
      * Plugin objects are only created when they are called from JavaScript.  (see PluginManager.exec)
      * The exception is if the onload flag is set, then they are created when PluginManager is initialized.
      */
-    public IPlugin plugin = null;
+    public Plugin plugin = null;
 
     /**
      * Flag that indicates the plugin object should be created when PluginManager is initialized.
@@ -69,7 +69,7 @@ public class PluginEntry {
      *
      * @return                      The plugin object
      */
-    public IPlugin createPlugin(CordovaWebView webView, CordovaInterface ctx) {
+    public Plugin createPlugin(CordovaWebView webView, CordovaInterface ctx) {
         if (this.plugin != null) {
             return this.plugin;
         }
@@ -77,7 +77,7 @@ public class PluginEntry {
             @SuppressWarnings("rawtypes")
             Class c = getClassByName(this.pluginClass);
             if (isCordovaPlugin(c)) {
-                this.plugin = (IPlugin) c.newInstance();
+                this.plugin = (Plugin) c.newInstance();
                 this.plugin.setContext(ctx);
                 this.plugin.setView(webView);
                 return plugin;
@@ -115,7 +115,7 @@ public class PluginEntry {
     @SuppressWarnings("rawtypes")
     private boolean isCordovaPlugin(Class c) {
         if (c != null) {
-            return org.apache.cordova.api.Plugin.class.isAssignableFrom(c) || org.apache.cordova.api.IPlugin.class.isAssignableFrom(c);
+            return org.apache.cordova.api.Plugin.class.isAssignableFrom(c) || org.apache.cordova.api.Plugin.class.isAssignableFrom(c);
         }
         return false;
     }
