@@ -481,7 +481,9 @@ public class CordovaWebView extends WebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        super.loadUrl(url);
+        if (this.isUrlWhiteListed(url)) {
+            super.loadUrl(url);            
+        }
     }
 
     /**
