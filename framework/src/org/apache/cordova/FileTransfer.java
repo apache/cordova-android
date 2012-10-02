@@ -18,8 +18,8 @@
 */
 package org.apache.cordova;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +29,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -137,7 +138,12 @@ public class FileTransfer extends CordovaPlugin {
             String target = args.getString(1);
 
             if (action.equals("upload")) {
-                upload(URLDecoder.decode(source), target, args, callbackContext);
+                try {
+                    source = URLDecoder.decode(source, "UTF-8");
+                    upload(source, target, args, callbackContext);
+                } catch (UnsupportedEncodingException e) {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.MALFORMED_URL_EXCEPTION, "UTF-8 error."));
+                }
             } else {
                 download(source, target, args, callbackContext);
             }
@@ -265,7 +271,7 @@ public class FileTransfer extends CordovaPlugin {
                     // Handle the other headers
                     if (headers != null) {
                         try {
-                            for (Iterator iter = headers.keys(); iter.hasNext(); ) {
+                            for (Iterator<?> iter = headers.keys(); iter.hasNext(); ) {
                                 String headerKey = iter.next().toString();
                                 JSONArray headerValues = headers.optJSONArray(headerKey);
                                 if (headerValues == null) {
@@ -288,7 +294,7 @@ public class FileTransfer extends CordovaPlugin {
                         */
                     String extraParams = "";
                     try {
-                        for (Iterator iter = params.keys(); iter.hasNext();) {
+                        for (Iterator<?> iter = params.keys(); iter.hasNext();) {
                             Object key = iter.next();
                             if(!String.valueOf(key).equals("headers"))
                             {
@@ -392,33 +398,37 @@ public class FileTransfer extends CordovaPlugin {
                     context.currentOutputStream = null;
 
                     //------------------ read the SERVER RESPONSE
-                    StringBuffer responseString = new StringBuffer("");
-                    
-                    DataInputStream inStream = null;
+                    String responseString;
+                    int responseCode = conn.getResponseCode();
+                    InputStream inStream = null;
                     try {
                         synchronized (context) {
                             if (context.aborted) {
                                 throw new IOException("Request aborted");
                             }
-                            inStream = new DataInputStream(getInputStream(conn));
+                            inStream = getInputStream(conn);
                             context.currentInputStream = inStream;
                         }
                         
     
-                        String line;
-                        while (( line = inStream.readLine()) != null) {
-                            responseString.append(line);
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        byte[] buffer = new byte[1024];
+                        int bytesRead = 0;
+                        // write bytes to file
+                        while ((bytesRead = inStream.read(buffer)) > 0) {
+                            out.write(buffer, 0, bytesRead);
                         }
+                        responseString = out.toString("UTF-8");
                     } finally {
                         safeClose(inStream);
                     }
                     
                     Log.d(LOG_TAG, "got response from server");
-                    Log.d(LOG_TAG, responseString.toString());
+                    Log.d(LOG_TAG, responseString.substring(0, Math.min(256, responseString.length())));
                     
                     // send request and retrieve response
-                    result.setResponseCode(conn.getResponseCode());
-                    result.setResponse(responseString.toString());
+                    result.setResponseCode(responseCode);
+                    result.setResponse(responseString);
                     context.currentInputStream = null;
                     synchronized (activeRequests) {
                         activeRequests.remove(objectId);
