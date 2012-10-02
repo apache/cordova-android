@@ -148,7 +148,6 @@ public class LegacyContext implements CordovaInterface {
         this.cordova.getActivity().unbindService(conn);
     }
 
-    @Override
     public ExecutorService getThreadPool() {
         Log.i(LOG_TAG, "Replace ctx.getThreadPool() with cordova.getThreadPool()");
         return this.cordova.getThreadPool();

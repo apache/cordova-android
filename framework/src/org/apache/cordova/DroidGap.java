@@ -1056,7 +1056,6 @@ public class DroidGap extends Activity implements CordovaInterface {
         return null;
     }
 
-    @Override
     public ExecutorService getThreadPool() {
         return threadPool;
     }

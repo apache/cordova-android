@@ -33,7 +33,7 @@ public class Echo extends CordovaPlugin {
             return true;
         } else if ("echoAsync".equals(action)) {
             cordova.getThreadPool().execute(new Runnable() {
-                @Override public void run() {
+                public void run() {
                     callbackContext.success(result);
                 }
             });

@@ -293,7 +293,6 @@ public class NativeToJsMessageQueue {
     private class OnlineEventsBridgeMode implements BridgeMode {
         boolean online = true;
         final Runnable runnable = new Runnable() {
-            @Override
             public void run() {
                 if (!queue.isEmpty()) {
                     online = !online;

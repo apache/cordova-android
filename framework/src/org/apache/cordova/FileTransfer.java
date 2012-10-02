@@ -205,7 +205,6 @@ public class FileTransfer extends CordovaPlugin {
         }
         
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
             public void run() {
                 if (context.aborted) {
                     return;
@@ -615,7 +614,6 @@ public class FileTransfer extends CordovaPlugin {
         }
         
         cordova.getThreadPool().execute(new Runnable() {
-            @Override
             public void run() {
                 if (context.aborted) {
                     return;
@@ -810,7 +808,6 @@ public class FileTransfer extends CordovaPlugin {
             }
             // Closing the streams can block, so execute on a background thread.
             cordova.getThreadPool().execute(new Runnable() {
-                @Override
                 public void run() {
                     synchronized (context) {
                         safeClose(context.currentInputStream);
