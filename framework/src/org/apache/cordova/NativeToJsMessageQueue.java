@@ -219,6 +219,10 @@ public class NativeToJsMessageQueue {
      * Add a JavaScript statement to the list.
      */
     public void addPluginResult(PluginResult result, String callbackId) {
+        if (callbackId == null) {
+            Log.e(LOG_TAG, "Got plugin result with no callbackId", new Throwable());
+            return;
+        }
         // Don't send anything if there is no result and there is no need to
         // clear the callbacks.
         boolean noResult = result.getStatus() == PluginResult.Status.NO_RESULT.ordinal();
