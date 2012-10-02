@@ -74,9 +74,6 @@ public class FileTransfer extends CordovaPlugin {
     private static HashMap<String, RequestContext> activeRequests = new HashMap<String, RequestContext>();
     private static final int MAX_BUFFER_SIZE = 16 * 1024;
 
-
-    private static SSLSocketFactory defaultSSLSocketFactory = null;
-
     private static final class RequestContext {
         String source;
         String target;
@@ -216,8 +213,8 @@ public class FileTransfer extends CordovaPlugin {
                     return;
                 }
                 HttpURLConnection conn = null;
-                HostnameVerifier defaultHostnameVerifier = null;
-                
+                HostnameVerifier oldHostnameVerifier = null;
+                SSLSocketFactory oldSocketFactory = null;
                 try {
                     // Create return object
                     FileUploadResult result = new FileUploadResult();
@@ -234,10 +231,10 @@ public class FileTransfer extends CordovaPlugin {
                         // This should only be used in debug environments
                         else {
                             // Setup the HTTPS connection class to trust everyone
-                            trustAllHosts();
                             HttpsURLConnection https = (HttpsURLConnection) url.openConnection();
+                            oldSocketFactory  = trustAllHosts(https);
                             // Save the current hostnameVerifier
-                            defaultHostnameVerifier = https.getHostnameVerifier();
+                            oldHostnameVerifier = https.getHostnameVerifier();
                             // Setup the connection not to verify hostnames
                             https.setHostnameVerifier(DO_NOT_VERIFY);
                             conn = https;
@@ -455,9 +452,11 @@ public class FileTransfer extends CordovaPlugin {
 
                     if (conn != null) {
                         // Revert back to the proper verifier and socket factories
+                        // Revert back to the proper verifier and socket factories
                         if (trustEveryone && useHttps) {
-                            ((HttpsURLConnection) conn).setHostnameVerifier(defaultHostnameVerifier);
-                            HttpsURLConnection.setDefaultSSLSocketFactory(defaultSSLSocketFactory);
+                            HttpsURLConnection https = (HttpsURLConnection) conn;
+                            https.setHostnameVerifier(oldHostnameVerifier);
+                            https.setSSLSocketFactory(oldSocketFactory);
                         }
 
                         conn.disconnect();
@@ -484,11 +483,25 @@ public class FileTransfer extends CordovaPlugin {
     }
 
     // always verify the host - don't check for certificate
-    private final static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+    private static final HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
     };
+    // Create a trust manager that does not validate certificate chains
+    private static final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[] {};
+        }
+        
+        public void checkClientTrusted(X509Certificate[] chain,
+                String authType) throws CertificateException {
+        }
+        
+        public void checkServerTrusted(X509Certificate[] chain,
+                String authType) throws CertificateException {
+        }
+    } };
 
     /**
      * This function will install a trust manager that will blindly trust all SSL
@@ -498,35 +511,19 @@ public class FileTransfer extends CordovaPlugin {
      * The standard HttpsURLConnection class will throw an exception on self
      * signed certificates if this code is not run.
      */
-    private void trustAllHosts() {
-        // Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return new java.security.cert.X509Certificate[] {};
-            }
-
-            public void checkClientTrusted(X509Certificate[] chain,
-                    String authType) throws CertificateException {
-            }
-
-            public void checkServerTrusted(X509Certificate[] chain,
-                    String authType) throws CertificateException {
-            }
-        } };
-
+    private static SSLSocketFactory trustAllHosts(HttpsURLConnection connection) {
         // Install the all-trusting trust manager
+        SSLSocketFactory oldFactory = connection.getSSLSocketFactory();
         try {
-            // Backup the current SSL socket factory
-            if (defaultSSLSocketFactory == null) {
-                defaultSSLSocketFactory = HttpsURLConnection.getDefaultSSLSocketFactory();
-            }
             // Install our all trusting manager
             SSLContext sc = SSLContext.getInstance("TLS");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            SSLSocketFactory newFactory = sc.getSocketFactory();
+            connection.setSSLSocketFactory(newFactory);
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
+        return oldFactory;
     }
 
     private static JSONObject createFileTransferError(int errorCode, String source, String target, HttpURLConnection connection) {
@@ -625,7 +622,8 @@ public class FileTransfer extends CordovaPlugin {
                     return;
                 }
                 HttpURLConnection connection = null;
-                HostnameVerifier defaultHostnameVerifier = null;
+                HostnameVerifier oldHostnameVerifier = null;
+                SSLSocketFactory oldSocketFactory = null;
 
                 try {
 
@@ -644,10 +642,10 @@ public class FileTransfer extends CordovaPlugin {
                         // This should only be used in debug environments
                         else {
                             // Setup the HTTPS connection class to trust everyone
-                            trustAllHosts();
                             HttpsURLConnection https = (HttpsURLConnection) url.openConnection();
+                            oldSocketFactory = trustAllHosts(https);
                             // Save the current hostnameVerifier
-                            defaultHostnameVerifier = https.getHostnameVerifier();
+                            oldHostnameVerifier = https.getHostnameVerifier();
                             // Setup the connection not to verify hostnames
                             https.setHostnameVerifier(DO_NOT_VERIFY);
                             connection = https;
@@ -738,9 +736,10 @@ public class FileTransfer extends CordovaPlugin {
 
                     if (connection != null) {
                         // Revert back to the proper verifier and socket factories
-                        if (trustEveryone && url.getProtocol().toLowerCase().equals("https")) {
-                            ((HttpsURLConnection) connection).setHostnameVerifier(defaultHostnameVerifier);
-                            HttpsURLConnection.setDefaultSSLSocketFactory(defaultSSLSocketFactory);
+                        if (trustEveryone && useHttps) {
+                            HttpsURLConnection https = (HttpsURLConnection) connection;
+                            https.setHostnameVerifier(oldHostnameVerifier);
+                            https.setSSLSocketFactory(oldSocketFactory);
                         }
     
                         connection.disconnect();
