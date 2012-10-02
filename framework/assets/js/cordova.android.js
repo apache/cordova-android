@@ -1,6 +1,6 @@
-// commit 968764b2f67ff2ed755eace083b83f395cf0e9c2
+// commit e799aef6a4e24e95b341798e19ffeb39b43ce2c1
 
-// File generated at :: Fri Sep 28 2012 14:33:38 GMT-0400 (EDT)
+// File generated at :: Tue Oct 02 2012 09:37:50 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -922,19 +922,20 @@ var cordova = require('cordova'),
         POLLING: 0,
         // For LOAD_URL to be viable, it would need to have a work-around for
         // the bug where the soft-keyboard gets dismissed when a message is sent.
-        LOAD_URL: 2,
+        LOAD_URL: 1,
         // For the ONLINE_EVENT to be viable, it would need to intercept all event
         // listeners (both through addEventListener and window.ononline) as well
         // as set the navigator property itself.
-        ONLINE_EVENT: 3,
+        ONLINE_EVENT: 2,
         // Uses reflection to access private APIs of the WebView that can send JS
         // to be executed.
         // Requires Android 3.2.4 or above.
-        PRIVATE_API: 4
+        PRIVATE_API: 3
     },
     jsToNativeBridgeMode,  // Set lazily.
-    nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT
-    pollEnabled = false;
+    nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT,
+    pollEnabled = false,
+    messagesFromNative = [];
 
 function androidExec(success, fail, service, action, args) {
     // Set default bridge modes if they have not already been set.
@@ -1060,16 +1061,25 @@ function processMessage(message) {
 
 // This is called from the NativeToJsMessageQueue.java.
 androidExec.processMessages = function(messages) {
-    while (messages) {
-        if (messages == '*') {
-            window.setTimeout(pollOnce, 0);
-            break;
+    messagesFromNative.push(messages);
+    // Check for the reentrant case, and enqueue the message if that's the case.
+    if (messagesFromNative.length > 1) {
+        return;
+    }
+    while (messagesFromNative.length) {
+        messages = messagesFromNative[0];
+        while (messages) {
+            if (messages == '*') {
+                window.setTimeout(pollOnce, 0);
+                break;
+            }
+            var spaceIdx = messages.indexOf(' ');
+            var msgLen = +messages.slice(0, spaceIdx);
+            var message = messages.substr(spaceIdx + 1, msgLen);
+            messages = messages.slice(spaceIdx + msgLen + 1);
+            processMessage(message);
         }
-        var spaceIdx = messages.indexOf(' ');
-        var msgLen = +messages.slice(0, spaceIdx);
-        var message = messages.substr(spaceIdx + 1, msgLen);
-        messages = messages.slice(spaceIdx + msgLen + 1);
-        processMessage(message);
+        messagesFromNative.shift();
     }
 };
 

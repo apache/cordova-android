@@ -36,7 +36,7 @@ public class NativeToJsMessageQueue {
     private static final String LOG_TAG = "JsMessageQueue";
 
     // This must match the default value in incubator-cordova-js/lib/android/exec.js
-    private static final int DEFAULT_BRIDGE_MODE = 3;
+    private static final int DEFAULT_BRIDGE_MODE = 2;
     
     // Set this to true to force plugin results to be encoding as
     // JS instead of the custom format (useful for benchmarking).
@@ -367,10 +367,16 @@ public class NativeToJsMessageQueue {
         final String jsPayloadOrCallbackId;
         final PluginResult pluginResult;
         JsMessage(String js) {
+            if (js == null) {
+                throw new NullPointerException();
+            }
             jsPayloadOrCallbackId = js;
             pluginResult = null;
         }
         JsMessage(PluginResult pluginResult, String callbackId) {
+            if (callbackId == null || pluginResult == null) {
+                throw new NullPointerException();
+            }
             jsPayloadOrCallbackId = callbackId;
             this.pluginResult = pluginResult;
         }
