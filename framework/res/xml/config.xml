@@ -45,7 +45,6 @@
     <plugin name="NetworkStatus" value="org.apache.cordova.NetworkManager"/>
     <plugin name="Notification" value="org.apache.cordova.Notification"/>
     <plugin name="Storage" value="org.apache.cordova.Storage"/>
-    <plugin name="Temperature" value="org.apache.cordova.TempListener"/>
     <plugin name="FileTransfer" value="org.apache.cordova.FileTransfer"/>
     <plugin name="Capture" value="org.apache.cordova.Capture"/>
     <plugin name="Battery" value="org.apache.cordova.BatteryListener"/>
