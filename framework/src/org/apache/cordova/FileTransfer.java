@@ -347,11 +347,11 @@ public class FileTransfer extends CordovaPlugin {
 
                     DataOutputStream dos = null;
                     try {
+                        dos = new DataOutputStream( conn.getOutputStream() );
                         synchronized (context) {
                             if (context.aborted) {
-                                throw new IOException("Request aborted");
+                                return;
                             }
-                            dos = new DataOutputStream( conn.getOutputStream() );
                             context.currentOutputStream = dos;
                         }
                         //We don't want to change encoding, we just want this to write for all Unicode.
@@ -402,11 +402,11 @@ public class FileTransfer extends CordovaPlugin {
                     int responseCode = conn.getResponseCode();
                     InputStream inStream = null;
                     try {
+                        inStream = getInputStream(conn);
                         synchronized (context) {
                             if (context.aborted) {
-                                throw new IOException("Request aborted");
+                                return;
                             }
-                            inStream = getInputStream(conn);
                             context.currentInputStream = inStream;
                         }
                         
@@ -420,6 +420,7 @@ public class FileTransfer extends CordovaPlugin {
                         }
                         responseString = out.toString("UTF-8");
                     } finally {
+                        context.currentInputStream = null;
                         safeClose(inStream);
                     }
                     
@@ -429,10 +430,6 @@ public class FileTransfer extends CordovaPlugin {
                     // send request and retrieve response
                     result.setResponseCode(responseCode);
                     result.setResponse(responseString);
-                    context.currentInputStream = null;
-                    synchronized (activeRequests) {
-                        activeRequests.remove(objectId);
-                    }
 
                     context.sendPluginResult(new PluginResult(PluginResult.Status.OK, result.toJSONObject()));
                 } catch (FileNotFoundException e) {
@@ -475,12 +472,11 @@ public class FileTransfer extends CordovaPlugin {
             try {
                 stream.close();
             } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
 
-    private InputStream getInputStream(HttpURLConnection conn) throws IOException {
+    private static InputStream getInputStream(HttpURLConnection conn) throws IOException {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             return new DoneHandlerInputStream(conn.getInputStream());
         }
@@ -488,7 +484,7 @@ public class FileTransfer extends CordovaPlugin {
     }
 
     // always verify the host - don't check for certificate
-    final static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+    private final static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
@@ -533,7 +529,7 @@ public class FileTransfer extends CordovaPlugin {
         }
     }
 
-    private JSONObject createFileTransferError(int errorCode, String source, String target, HttpURLConnection connection) {
+    private static JSONObject createFileTransferError(int errorCode, String source, String target, HttpURLConnection connection) {
 
         Integer httpStatus = null;
 
@@ -553,7 +549,7 @@ public class FileTransfer extends CordovaPlugin {
         * @param errorCode 	the error
         * @return JSONObject containing the error
         */
-    private JSONObject createFileTransferError(int errorCode, String source, String target, Integer httpStatus) {
+    private static JSONObject createFileTransferError(int errorCode, String source, String target, Integer httpStatus) {
         JSONObject error = null;
         try {
             error = new JSONObject();
@@ -576,7 +572,7 @@ public class FileTransfer extends CordovaPlugin {
      * @param defaultString the default to be used if the arg does not exist
      * @return String with the retrieved value
      */
-    private String getArgument(JSONArray args, int position, String defaultString) {
+    private static String getArgument(JSONArray args, int position, String defaultString) {
         String arg = defaultString;
         if (args.length() >= position) {
             arg = args.optString(position);
@@ -686,11 +682,11 @@ public class FileTransfer extends CordovaPlugin {
                     InputStream inputStream = null;
                     
                     try {
+                        inputStream = getInputStream(connection);
                         synchronized (context) {
                             if (context.aborted) {
-                                throw new IOException("Request aborted");
+                                return;
                             }
-                            inputStream = getInputStream(connection);
                             context.currentInputStream = inputStream;
                         }
                         
@@ -708,6 +704,7 @@ public class FileTransfer extends CordovaPlugin {
                             context.sendPluginResult(progressResult);
                         }
                     } finally {
+                        context.currentInputStream = null;
                         safeClose(inputStream);
                         safeClose(outputStream);
                     }
