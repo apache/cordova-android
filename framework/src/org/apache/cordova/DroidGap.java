@@ -909,7 +909,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         this.postMessage("onPrepareOptionsMenu", menu);
-        return super.onPrepareOptionsMenu(menu);
+        return false;
     }
 
     @Override
