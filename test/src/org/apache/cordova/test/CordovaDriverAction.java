@@ -19,8 +19,10 @@
 
 package org.apache.cordova.test;
 
+import java.util.concurrent.ExecutorService;
+
 import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.IPlugin;
+import org.apache.cordova.api.CordovaPlugin;
 
 import android.app.Activity;
 import android.content.Context;
@@ -35,14 +37,15 @@ public class CordovaDriverAction extends Activity implements CordovaInterface {
         super.onCreate(savedInstanceState);
     }
 
-    public void bindBackButton(boolean arg0) {
+    public void startActivityForResult(CordovaPlugin command, Intent intent,
+            int requestCode) {
         // TODO Auto-generated method stub
-
+        
     }
 
-    public void cancelLoadUrl() {
+    public void setActivityResultCallback(CordovaPlugin plugin) {
         // TODO Auto-generated method stub
-
+        
     }
 
     public Activity getActivity() {
@@ -50,27 +53,26 @@ public class CordovaDriverAction extends Activity implements CordovaInterface {
         return null;
     }
 
-    public boolean isBackButtonBound() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    public Object onMessage(String arg0, Object arg1) {
+    @Deprecated
+    public Context getContext() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public void setActivityResultCallback(IPlugin arg0) {
+    @Deprecated
+    public void cancelLoadUrl() {
         // TODO Auto-generated method stub
-
+        
     }
 
-    public void startActivityForResult(IPlugin arg0, Intent arg1, int arg2) {
+    public Object onMessage(String id, Object data) {
         // TODO Auto-generated method stub
-
+        return null;
     }
 
-    public Context getContext() {
-        return this;
+    public ExecutorService getThreadPool() {
+        // TODO Auto-generated method stub
+        return null;
     }
+
 }

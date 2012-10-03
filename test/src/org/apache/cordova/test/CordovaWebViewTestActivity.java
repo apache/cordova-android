@@ -19,9 +19,11 @@
 
 package org.apache.cordova.test;
 
+import java.util.concurrent.ExecutorService;
+
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.IPlugin;
+import org.apache.cordova.api.CordovaPlugin;
 
 import android.app.Activity;
 import android.content.Context;
@@ -29,7 +31,6 @@ import android.content.Intent;
 import android.os.Bundle;
 
 public class CordovaWebViewTestActivity extends Activity implements CordovaInterface {
-
     CordovaWebView cordovaWebView;
 
     /** Called when the activity is first created. */
@@ -53,33 +54,30 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
         }
     }
 
-    public void startActivityForResult(IPlugin command, Intent intent, int requestCode) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void setActivityResultCallback(IPlugin plugin) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void bindBackButton(boolean override) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public boolean isBackButtonBound() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    public Activity getActivity() {
+    public Context getContext() {
         return this;
     }
 
+    public void startActivityForResult(CordovaPlugin command, Intent intent,
+            int requestCode) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void setActivityResultCallback(CordovaPlugin plugin) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public Activity getActivity() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Deprecated
     public void cancelLoadUrl() {
         // TODO Auto-generated method stub
-
+        
     }
 
     public Object onMessage(String id, Object data) {
@@ -87,7 +85,8 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
         return null;
     }
 
-    public Context getContext() {
-        return this;
+    public ExecutorService getThreadPool() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
