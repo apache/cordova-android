@@ -90,7 +90,7 @@ function cleanup() {
 function downloadCommonsCodec() {
     if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.7.jar')) {
       // We need the .jar
-      var url = 'http://apache.osuosl.org/commons/codec/binaries/commons-codec-1.7-bin.zip';
+      var url = 'http://archive.apache.org/dist/commons/codec/binaries/commons-codec-1.7-bin.zip';
       var libsPath = ROOT + '\\framework\\libs';
       var savePath = libsPath + '\\commons-codec-1.7-bin.zip';
       if (!fso.FileExists(savePath)) {
