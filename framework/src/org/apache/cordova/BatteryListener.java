@@ -18,7 +18,8 @@
 */
 package org.apache.cordova;
 
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,13 +31,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-public class BatteryListener extends Plugin {
+public class BatteryListener extends CordovaPlugin {
 
     private static final String LOG_TAG = "BatteryManager";
 
     BroadcastReceiver receiver;
 
-    private String batteryCallbackId = null;
+    private CallbackContext batteryCallbackContext = null;
 
     /**
      * Constructor.
@@ -46,22 +47,20 @@ public class BatteryListener extends Plugin {
     }
 
     /**
-     * Executes the request and returns PluginResult.
+     * Executes the request.
      *
-     * @param action        The action to execute.
-     * @param args          JSONArry of arguments for the plugin.
-     * @param callbackId    The callback id used when calling back into JavaScript.
-     * @return              A PluginResult object with a status and message.
+     * @param action        	The action to execute.
+     * @param args          	JSONArry of arguments for the plugin.
+     * @param callbackContext 	The callback context used when calling back into JavaScript.
+     * @return              	True if the action was valid, false if not.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        PluginResult.Status status = PluginResult.Status.INVALID_ACTION;
-        String result = "Unsupported Operation: " + action;
-
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         if (action.equals("start")) {
-            if (this.batteryCallbackId != null) {
-                return new PluginResult(PluginResult.Status.ERROR, "Battery listener already running.");
+            if (this.batteryCallbackContext != null) {
+                callbackContext.error( "Battery listener already running.");
+                return true;
             }
-            this.batteryCallbackId = callbackId;
+            this.batteryCallbackContext = callbackContext;
 
             // We need to listen to power events to update battery status
             IntentFilter intentFilter = new IntentFilter();
@@ -79,17 +78,19 @@ public class BatteryListener extends Plugin {
             // Don't return any result now, since status results will be sent when events come in from broadcast receiver
             PluginResult pluginResult = new PluginResult(PluginResult.Status.NO_RESULT);
             pluginResult.setKeepCallback(true);
-            return pluginResult;
+            callbackContext.sendPluginResult(pluginResult);
+            return true;
         }
 
         else if (action.equals("stop")) {
             removeBatteryListener();
             this.sendUpdate(new JSONObject(), false); // release status callback in JS side
-            this.batteryCallbackId = null;
-            return new PluginResult(PluginResult.Status.OK);
+            this.batteryCallbackContext = null;
+            callbackContext.success();
+            return true;
         }
 
-        return new PluginResult(status, result);
+        return false;
     }
 
     /**
@@ -153,10 +154,10 @@ public class BatteryListener extends Plugin {
      * @param connection the network info to set as navigator.connection
      */
     private void sendUpdate(JSONObject info, boolean keepCallback) {
-        if (this.batteryCallbackId != null) {
+        if (this.batteryCallbackContext != null) {
             PluginResult result = new PluginResult(PluginResult.Status.OK, info);
             result.setKeepCallback(keepCallback);
-            this.success(result, this.batteryCallbackId);
+            this.batteryCallbackContext.sendPluginResult(result);
         }
     }
 }
