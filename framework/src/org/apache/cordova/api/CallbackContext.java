@@ -1,5 +1,7 @@
 package org.apache.cordova.api;
 
+import org.json.JSONArray;
+
 import android.util.Log;
 
 import org.apache.cordova.CordovaWebView;
@@ -57,6 +59,15 @@ public class CallbackContext {
      * @param message           The message to add to the success result.
      */
     public void success(String message) {
+        sendPluginResult(new PluginResult(PluginResult.Status.OK, message));
+    }
+
+    /**
+     * Helper for success callbacks that just returns the Status.OK by default
+     *
+     * @param message           The message to add to the success result.
+     */
+    public void success(JSONArray message) {
         sendPluginResult(new PluginResult(PluginResult.Status.OK, message));
     }
 
