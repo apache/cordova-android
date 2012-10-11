@@ -18,12 +18,14 @@
 */
 package org.apache.cordova;
 
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
+
 import android.content.Context;
 import android.media.AudioManager;
 
 import java.util.ArrayList;
 
-import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,7 +42,7 @@ import java.util.HashMap;
  * 		android_asset: 		file name must start with /android_asset/sound.mp3
  * 		sdcard:				file name is just sound.mp3
  */
-public class AudioHandler extends Plugin {
+public class AudioHandler extends CordovaPlugin {
 
     public static String TAG = "AudioHandler";
     HashMap<String, AudioPlayer> players;	// Audio player object
@@ -58,10 +60,10 @@ public class AudioHandler extends Plugin {
      * Executes the request and returns PluginResult.
      * @param action 		The action to execute.
      * @param args 			JSONArry of arguments for the plugin.
-     * @param callbackId	The callback id used when calling back into JavaScript.
+     * @param callbackContext		The callback context used when calling back into JavaScript.
      * @return 				A PluginResult object with a status and message.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         PluginResult.Status status = PluginResult.Status.OK;
         String result = "";
 
@@ -91,11 +93,13 @@ public class AudioHandler extends Plugin {
                }
             } else if (action.equals("getCurrentPositionAudio")) {
                 float f = this.getCurrentPositionAudio(args.getString(0));
-                return new PluginResult(status, f);
+                callbackContext.sendPluginResult(new PluginResult(status, f));
+                return true;
             }
             else if (action.equals("getDurationAudio")) {
                 float f = this.getDurationAudio(args.getString(0), args.getString(1));
-                return new PluginResult(status, f);
+                callbackContext.sendPluginResult(new PluginResult(status, f));
+                return true;
             }
             else if (action.equals("create")) {
                 String id = args.getString(0);
@@ -105,28 +109,20 @@ public class AudioHandler extends Plugin {
             }
             else if (action.equals("release")) {
                 boolean b = this.release(args.getString(0));
-                return new PluginResult(status, b);
+                callbackContext.sendPluginResult(new PluginResult(status, b));
+                return true;
             }
-            return new PluginResult(status, result);
+            else { // Unrecognized action.
+                return false;
+            }
+
+            callbackContext.sendPluginResult(new PluginResult(status, result));
         } catch (JSONException e) {
             e.printStackTrace();
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
-    }
 
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     * @param action	The action to execute
-     * @return			T=returns value
-     */
-    public boolean isSynch(String action) {
-        if (action.equals("getCurrentPositionAudio")) {
-            return true;
-        }
-        else if (action.equals("getDurationAudio")) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /**

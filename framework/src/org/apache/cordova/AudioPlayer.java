@@ -31,8 +31,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import org.apache.cordova.AudioPlayer.MODE;
-
 /**
  * This class implements the audio playback and recording capabilities used by Cordova.
  * It is called by the AudioHandler Cordova class.
@@ -135,7 +133,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         switch (this.mode) {
         case PLAY:
             Log.d(LOG_TAG, "AudioPlayer Error: Can't record in play mode.");
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
             break;
         case NONE:
             this.audioFile = file;
@@ -153,11 +151,11 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
             break;
         case RECORD:
             Log.d(LOG_TAG, "AudioPlayer Error: Already recording.");
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
         }
     }
 
@@ -223,7 +221,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         if (this.readyPlayer(this.audioFile)) {
             this.player.seekTo(milliseconds);
             Log.d(LOG_TAG, "Send a onStatus update for the new seek");
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_POSITION + ", " + milliseconds / 1000.0f + ");");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_POSITION + ", " + milliseconds / 1000.0f + ");");
         }
         else {
             this.seekOnPrepared = milliseconds;
@@ -242,7 +240,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         }
         else {
             Log.d(LOG_TAG, "AudioPlayer Error: pausePlaying() called during invalid state: " + this.state.ordinal());
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_NONE_ACTIVE + "});");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_NONE_ACTIVE + "});");
         }
     }
 
@@ -258,7 +256,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         }
         else {
             Log.d(LOG_TAG, "AudioPlayer Error: stopPlaying() called during invalid state: " + this.state.ordinal());
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_NONE_ACTIVE + "});");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_NONE_ACTIVE + "});");
         }
     }
 
@@ -280,7 +278,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     public long getCurrentPosition() {
         if ((this.state == STATE.MEDIA_RUNNING) || (this.state == STATE.MEDIA_PAUSED)) {
             int curPos = this.player.getCurrentPosition();
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_POSITION + ", " + curPos / 1000.0f + ");");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_POSITION + ", " + curPos / 1000.0f + ");");
             return curPos;
         }
         else {
@@ -359,7 +357,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         this.prepareOnly = true;
 
         // Send status notification to JavaScript
-        this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_DURATION + "," + this.duration + ");");
+        this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_DURATION + "," + this.duration + ");");
     }
 
     /**
@@ -387,7 +385,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         this.player.release();
 
         // Send error notification to JavaScript
-        this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', { \"code\":" + arg1 + "});");
+        this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', { \"code\":" + arg1 + "});");
         return false;
     }
 
@@ -398,7 +396,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
      */
     private void setState(STATE state) {
         if (this.state != state) {
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_STATE + ", " + state.ordinal() + ");");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_STATE + ", " + state.ordinal() + ");");
         }
         this.state = state;
     }
@@ -411,7 +409,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     private void setMode(MODE mode) {
         if (this.mode != mode) {
             //mode is not part of the expected behavior, so no notification
-            //this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_STATE + ", " + mode + ");");
+            //this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_STATE + ", " + mode + ");");
         }
         this.mode = mode;
     }
@@ -447,7 +445,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             break;
         case RECORD:
             Log.d(LOG_TAG, "AudioPlayer Error: Can't play in record mode.");
-            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
             return false; //player is not ready
         }
         return true;
@@ -468,7 +466,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                     try {
                         this.loadAudioFile(file);
                     } catch (Exception e) {
-                        this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
+                        this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', "+MEDIA_ERROR+", { \"code\":"+MEDIA_ERR_ABORTED+"});");
                     }
                     return false;
                 case MEDIA_LOADING:
@@ -493,14 +491,14 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                         try {
                             this.loadAudioFile(file);
                         } catch (Exception e) {
-                            this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+                            this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
                         }
                         //if we had to prepare= the file, we won't be in the correct state for playback
                         return false;
                     }
                 default:
                     Log.d(LOG_TAG, "AudioPlayer Error: startPlaying() called during invalid state: " + this.state);
-                    this.handler.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
+                    this.handler.webView.sendJavascript("cordova.require('cordova/plugin/Media').onStatus('" + this.id + "', " + MEDIA_ERROR + ", { \"code\":" + MEDIA_ERR_ABORTED + "});");
             }
         }
         return false;
@@ -526,7 +524,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         else {
             if (file.startsWith("/android_asset/")) {
                 String f = file.substring(15);
-                android.content.res.AssetFileDescriptor fd = this.handler.ctx.getActivity().getAssets().openFd(f);
+                android.content.res.AssetFileDescriptor fd = this.handler.cordova.getActivity().getAssets().openFd(f);
                 this.player.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
             }
             else {
