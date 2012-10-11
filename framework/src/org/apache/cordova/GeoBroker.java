@@ -18,7 +18,8 @@
 */
 package org.apache.cordova;
 
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,7 +35,7 @@ import android.location.LocationManager;
  * This class only starts and stops various GeoListeners, which consist of a GPS and a Network Listener
  */
 
-public class GeoBroker extends Plugin {
+public class GeoBroker extends CordovaPlugin {
     private GPSListener gpsListener;
     private NetworkListener networkListener;
     private LocationManager locationManager;
@@ -49,53 +50,57 @@ public class GeoBroker extends Plugin {
      * Executes the request and returns PluginResult.
      *
      * @param action 		The action to execute.
-     * @param args 			JSONArry of arguments for the plugin.
-     * @param callbackId	The callback id used when calling back into JavaScript.
-     * @return 				A PluginResult object with a status and message.
+     * @param args 		JSONArry of arguments for the plugin.
+     * @param callbackContext	The callback id used when calling back into JavaScript.
+     * @return 			True if the action was valid, or false if not.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         if (this.locationManager == null) {
             this.locationManager = (LocationManager) this.cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
             this.networkListener = new NetworkListener(this.locationManager, this);
             this.gpsListener = new GPSListener(this.locationManager, this);
         }
-        
+
         PluginResult.Status status = PluginResult.Status.NO_RESULT;
         String message = "Location API is not available for this device.";
         PluginResult result = new PluginResult(status, message);
-        
+
         if ( locationManager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ||
-        	 locationManager.isProviderEnabled( LocationManager.NETWORK_PROVIDER )) {
-    		
-	        result.setKeepCallback(true);
-	
-	        try {
-	            if (action.equals("getLocation")) {
-	                boolean enableHighAccuracy = args.getBoolean(0);
-	                int maximumAge = args.getInt(1);
-	                Location last = this.locationManager.getLastKnownLocation((enableHighAccuracy ? LocationManager.GPS_PROVIDER : LocationManager.NETWORK_PROVIDER));
-	                // Check if we can use lastKnownLocation to get a quick reading and use less battery
-	                if (last != null && (System.currentTimeMillis() - last.getTime()) <= maximumAge) {
-	                    result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(last));
-	                } else {
-	                    this.getCurrentLocation(callbackId, enableHighAccuracy);
-	                }
-	            }
-	            else if (action.equals("addWatch")) {
-	                String id = args.getString(0);
-	                boolean enableHighAccuracy = args.getBoolean(1);
-	                this.addWatch(id, callbackId, enableHighAccuracy);
-	            }
-	            else if (action.equals("clearWatch")) {
-	                String id = args.getString(0);
-	                this.clearWatch(id);
-	            }
-	        } catch (JSONException e) {
-	            result = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.getMessage());
-	        }
+                locationManager.isProviderEnabled( LocationManager.NETWORK_PROVIDER )) {
+
+            result.setKeepCallback(true);
+
+            try {
+                if (action.equals("getLocation")) {
+                    boolean enableHighAccuracy = args.getBoolean(0);
+                    int maximumAge = args.getInt(1);
+                    Location last = this.locationManager.getLastKnownLocation((enableHighAccuracy ? LocationManager.GPS_PROVIDER : LocationManager.NETWORK_PROVIDER));
+                    // Check if we can use lastKnownLocation to get a quick reading and use less battery
+                    if (last != null && (System.currentTimeMillis() - last.getTime()) <= maximumAge) {
+                        result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(last));
+                    } else {
+                        this.getCurrentLocation(callbackContext, enableHighAccuracy);
+                    }
+                }
+                else if (action.equals("addWatch")) {
+                    String id = args.getString(0);
+                    boolean enableHighAccuracy = args.getBoolean(1);
+                    this.addWatch(id, callbackContext, enableHighAccuracy);
+                }
+                else if (action.equals("clearWatch")) {
+                    String id = args.getString(0);
+                    this.clearWatch(id);
+                }
+                else {
+                    return false;
+                }
+            } catch (JSONException e) {
+                result = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.getMessage());
+            }
         }
-        return result;
-        
+        callbackContext.sendPluginResult(result);
+        return true;
+
     }
 
     private void clearWatch(String id) {
@@ -103,31 +108,20 @@ public class GeoBroker extends Plugin {
         this.networkListener.clearWatch(id);
     }
 
-    private void getCurrentLocation(String callbackId, boolean enableHighAccuracy) {
+    private void getCurrentLocation(CallbackContext callbackContext, boolean enableHighAccuracy) {
         if (enableHighAccuracy) {
-            this.gpsListener.addCallback(callbackId);
+            this.gpsListener.addCallback(callbackContext);
         } else {
-            this.networkListener.addCallback(callbackId);
+            this.networkListener.addCallback(callbackContext);
         }
     }
 
-    private void addWatch(String timerId, String callbackId, boolean enableHighAccuracy) {
+    private void addWatch(String timerId, CallbackContext callbackContext, boolean enableHighAccuracy) {
         if (enableHighAccuracy) {
-            this.gpsListener.addWatch(timerId, callbackId);
+            this.gpsListener.addWatch(timerId, callbackContext);
         } else {
-            this.networkListener.addWatch(timerId, callbackId);
+            this.networkListener.addWatch(timerId, callbackContext);
         }
-    }
-
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     *
-     * @param action	The action to execute
-     * @return			T=returns value
-     */
-    public boolean isSynch(String action) {
-        // Starting listeners is easier to run on main thread, so don't run async.
-        return true;
     }
 
     /**
@@ -172,9 +166,9 @@ public class GeoBroker extends Plugin {
         return o;
     }
 
-    public void win(Location loc, String callbackId) {
+    public void win(Location loc, CallbackContext callbackContext) {
         PluginResult result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(loc));
-        this.success(result, callbackId);
+        callbackContext.sendPluginResult(result);
     }
 
     /**
@@ -184,7 +178,7 @@ public class GeoBroker extends Plugin {
      * @param msg			The error message
      * @throws JSONException 
      */
-    public void fail(int code, String msg, String callbackId) {
+    public void fail(int code, String msg, CallbackContext callbackContext) {
         JSONObject obj = new JSONObject();
         String backup = null;
         try {
@@ -201,9 +195,9 @@ public class GeoBroker extends Plugin {
             result = new PluginResult(PluginResult.Status.ERROR, backup);
         }
 
-        this.error(result, callbackId);
+        callbackContext.sendPluginResult(result);
     }
-    
+
     public boolean isGlobalListener(CordovaLocationListener listener)
     {
     	if (gpsListener != null && networkListener != null)
