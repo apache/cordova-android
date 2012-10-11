@@ -20,9 +20,10 @@ package org.apache.cordova;
 
 import java.util.TimeZone;
 
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +36,7 @@ import android.content.IntentFilter;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 
-public class Device extends Plugin {
+public class Device extends CordovaPlugin {
     public static final String TAG = "Device";
 
     public static String cordovaVersion = "2.1.0";              // Cordova version
@@ -55,9 +56,10 @@ public class Device extends Plugin {
      * get file paths associated with the Activity.
      *
      * @param cordova The context of the main Activity.
+     * @param webView The CordovaWebView Cordova is running in.
      */
-    public void setContext(CordovaInterface cordova) {
-        super.setContext(cordova);
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
         Device.uuid = getUuid();
         this.initTelephonyReceiver();
     }
@@ -65,15 +67,12 @@ public class Device extends Plugin {
     /**
      * Executes the request and returns PluginResult.
      *
-     * @param action        The action to execute.
-     * @param args          JSONArry of arguments for the plugin.
-     * @param callbackId    The callback id used when calling back into JavaScript.
-     * @return              A PluginResult object with a status and message.
+     * @param action            The action to execute.
+     * @param args              JSONArry of arguments for the plugin.
+     * @param callbackContext   The callback id used when calling back into JavaScript.
+     * @return                  True if the action was valid, false if not.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";
-
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         try {
             if (action.equals("getDeviceInfo")) {
                 JSONObject r = new JSONObject();
@@ -85,25 +84,15 @@ public class Device extends Plugin {
                 //JSONObject pg = new JSONObject();
                 //pg.put("version", Device.CordovaVersion);
                 //r.put("cordova", pg);
-                return new PluginResult(status, r);
+                callbackContext.success(r);
             }
-            return new PluginResult(status, result);
+            else {
+                return false;
+            }
         } catch (JSONException e) {
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
-    }
-
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     *
-     * @param action    The action to execute
-     * @return          T=returns value
-     */
-    public boolean isSynch(String action) {
-        if (action.equals("getDeviceInfo")) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /**
