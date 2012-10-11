@@ -98,4 +98,14 @@ public class CallbackContext {
     public void error(String message) {
         sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message));
     }
+
+    /**
+     * Helper for error callbacks that just returns the Status.ERROR by default
+     *
+     * @param message           The message to add to the error result.
+     * @param callbackId        The callback id used when calling back into JavaScript.
+     */
+    public void error(int message) {
+        sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message));
+    }
 }
