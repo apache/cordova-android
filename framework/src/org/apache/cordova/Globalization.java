@@ -33,7 +33,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,7 +45,7 @@ import android.text.format.Time;
 /**
  *
  */
-public class Globalization extends Plugin  {
+public class Globalization extends CordovaPlugin  {
     //GlobalizationCommand Plugin Actions
     public static final String GETLOCALENAME = "getLocaleName";
     public static final String DATETOSTRING = "dateToString";
@@ -85,54 +86,45 @@ public class Globalization extends Plugin  {
     public static final String CURRENCYCODE = "currencyCode";
 
     @Override
-    public PluginResult execute(String action, JSONArray data, String callbackId) {
-        PluginResult.Status status = PluginResult.Status.OK;
+    public boolean execute(String action, JSONArray data, CallbackContext callbackContext) {
         JSONObject obj = new JSONObject();
 
         try{
             if (action.equals(GETLOCALENAME)){
                 obj = getLocaleName();
-                return new PluginResult(status, obj);
             }else if (action.equals(GETPREFERREDLANGUAGE)){
                 obj = getPreferredLanguage();
-                return new PluginResult(status, obj);
             } else if (action.equalsIgnoreCase(DATETOSTRING)) {
                 obj = getDateToString(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(STRINGTODATE)){
                 obj = getStringtoDate(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(GETDATEPATTERN)){
                 obj = getDatePattern(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(GETDATENAMES)){
                 obj = getDateNames(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(ISDAYLIGHTSAVINGSTIME)){
                 obj = getIsDayLightSavingsTime(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(GETFIRSTDAYOFWEEK)){
                 obj = getFirstDayOfWeek(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(NUMBERTOSTRING)){
                 obj = getNumberToString(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(STRINGTONUMBER)){
                 obj = getStringToNumber(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(GETNUMBERPATTERN)){
                 obj = getNumberPattern(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
             }else if(action.equalsIgnoreCase(GETCURRENCYPATTERN)){
                 obj = getCurrencyPattern(data);
-                return new PluginResult(PluginResult.Status.OK, obj);
+            }else {
+                return false;
             }
+
+            callbackContext.success(obj);
         }catch (GlobalizationError ge){
-            return new PluginResult(PluginResult.Status.ERROR, ge.toJson());
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, ge.toJson()));
         }catch (Exception e){
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
-        return new PluginResult(PluginResult.Status.INVALID_ACTION);
+        return true;
     }
     /*
      * @Description: Returns the string identifier for the client's current locale setting
