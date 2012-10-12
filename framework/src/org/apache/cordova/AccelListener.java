@@ -156,7 +156,6 @@ public class AccelListener extends CordovaPlugin implements SensorEventListener 
         // Set a timeout callback on the main thread.
         Handler handler = new Handler(Looper.getMainLooper());
         handler.postDelayed(new Runnable() {
-            @Override
             public void run() {
                 AccelListener.this.timeout();
             }

@@ -1015,6 +1015,27 @@ public class DroidGap extends Activity implements CordovaInterface {
     		return super.onKeyUp(keyCode, event);
     }
     
+    /*
+     * Android 2.x needs to be able to check where the cursor is.  Android 4.x does not
+     * 
+     * (non-Javadoc)
+     * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
+     */
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        //Determine if the focus is on the current view or not
+        if (appView.getHitTestResult() != null && 
+            appView.getHitTestResult().getType() == WebView.HitTestResult.EDIT_TEXT_TYPE &&
+            keyCode == KeyEvent.KEYCODE_BACK) {
+                    return appView.onKeyDown(keyCode, event);
+        }
+        else
+            return super.onKeyDown(keyCode, event);
+    }
+    
+    
     /**
      * Called when a message is sent to plugin.
      *
