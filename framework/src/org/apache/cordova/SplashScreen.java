@@ -19,26 +19,25 @@
 
 package org.apache.cordova;
 
-import org.apache.cordova.api.Plugin;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.json.JSONArray;
 
-public class SplashScreen extends Plugin {
+public class SplashScreen extends CordovaPlugin {
 
     @Override
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";
-
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         if (action.equals("hide")) {
             this.webView.postMessage("splashscreen", "hide");
         } else if (action.equals("show")){
             this.webView.postMessage("splashscreen", "show");
         }
         else {
-            status = PluginResult.Status.INVALID_ACTION;
+            return false;
         }
-        return new PluginResult(status, result);
+
+        callbackContext.success();
+        return true;
     }
 
 }
