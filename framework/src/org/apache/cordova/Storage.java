@@ -20,7 +20,8 @@ package org.apache.cordova;
 
 import java.io.File;
 
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +36,7 @@ import android.database.sqlite.*;
  * Android 3.0 devices. It is not used for other versions of Android, since
  * HTML5 database is built in to the browser.
  */
-public class Storage extends Plugin {
+public class Storage extends CordovaPlugin {
 
     // Data Definition Language
     private static final String ALTER = "alter";
@@ -60,14 +61,11 @@ public class Storage extends Plugin {
      *            The action to execute.
      * @param args
      *            JSONArry of arguments for the plugin.
-     * @param callbackId
-     *            The callback id used when calling back into JavaScript.
-     * @return A PluginResult object with a status and message.
+     * @param callbackContext
+     *            The callback context used when calling back into JavaScript.
+     * @return True if the action was valid, false otherwise.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";
-
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         try {
             if (action.equals("openDatabase")) {
                 this.openDatabase(args.getString(0), args.getString(1),
@@ -86,21 +84,13 @@ public class Storage extends Plugin {
                 }
                 this.executeSql(args.getString(0), s, args.getString(2));
             }
-            return new PluginResult(status, result);
+            else {
+                return false;
+            }
+            callbackContext.success();
         } catch (JSONException e) {
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
-    }
-
-    /**
-     * Identifies if action to be executed returns a value and should be run
-     * synchronously.
-     *
-     * @param action
-     *            The action to execute
-     * @return T=returns value
-     */
-    public boolean isSynch(String action) {
         return true;
     }
 
@@ -169,7 +159,7 @@ public class Storage extends Plugin {
         try {
             if (isDDL(query)) {
                 this.myDb.execSQL(query);
-                this.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', '');");
+                this.webView.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', '');");
             }
             else {
                 Cursor myCursor = this.myDb.rawQuery(query, params);
@@ -182,7 +172,7 @@ public class Storage extends Plugin {
             System.out.println("Storage.executeSql(): Error=" +  ex.getMessage());
 
             // Send error message back to JavaScript
-            this.sendJavascript("cordova.require('cordova/plugin/android/storage').failQuery('" + ex.getMessage() + "','" + tx_id + "');");
+            this.webView.sendJavascript("cordova.require('cordova/plugin/android/storage').failQuery('" + ex.getMessage() + "','" + tx_id + "');");
         }
     }
 
@@ -240,7 +230,7 @@ public class Storage extends Plugin {
         }
 
         // Let JavaScript know that there are no more rows
-        this.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', " + result + ");");
+        this.webView.sendJavascript("cordova.require('cordova/plugin/android/storage').completeQuery('" + tx_id + "', " + result + ");");
     }
 
 }
