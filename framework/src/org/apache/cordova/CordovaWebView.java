@@ -83,7 +83,7 @@ public class CordovaWebView extends WebView {
     String baseUrl;
     private Stack<String> urls = new Stack<String>();
 
-    boolean useBrowserHistory = false;
+    boolean useBrowserHistory = true;
 
     // Flag to track that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
@@ -722,11 +722,11 @@ public class CordovaWebView extends WebView {
         }
 
         // Init preferences
-        if ("true".equals(this.getProperty("useBrowserHistory", "false"))) {
-            this.useBrowserHistory = true;
+        if ("false".equals(this.getProperty("useBrowserHistory", "false"))) {
+            this.useBrowserHistory = false;
         }
         else {
-            this.useBrowserHistory = false;
+            this.useBrowserHistory = true;
         }
 
         if ("true".equals(this.getProperty("fullscreen", "false"))) {
