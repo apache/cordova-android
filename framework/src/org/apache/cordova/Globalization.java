@@ -33,7 +33,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,7 +45,7 @@ import android.text.format.Time;
 /**
  *
  */
-public class Globalization extends Plugin  {
+public class Globalization extends CordovaPlugin  {
     //GlobalizationCommand Plugin Actions
     public static final String GETLOCALENAME = "getLocaleName";
     public static final String DATETOSTRING = "dateToString";
@@ -58,7 +59,7 @@ public class Globalization extends Plugin  {
     public static final String GETNUMBERPATTERN = "getNumberPattern";
     public static final String GETCURRENCYPATTERN = "getCurrencyPattern";
     public static final String GETPREFERREDLANGUAGE = "getPreferredLanguage";
-    
+
     //GlobalizationCommand Option Parameters
     public static final String OPTIONS = "options";
     public static final String FORMATLENGTH = "formatLength";
@@ -83,82 +84,73 @@ public class Globalization extends Plugin  {
     public static final String PERCENT = "percent";
     public static final String CURRENCY = "currency";
     public static final String CURRENCYCODE = "currencyCode";
-    
+
     @Override
-    public PluginResult execute(String action, JSONArray data, String callbackId) {     
-        PluginResult.Status status = PluginResult.Status.OK;            
+    public boolean execute(String action, JSONArray data, CallbackContext callbackContext) {
         JSONObject obj = new JSONObject();
 
-        try{            
-            if (action.equals(GETLOCALENAME)){                  
-                obj = getLocaleName();                  
-                return new PluginResult(status, obj);               
+        try{
+            if (action.equals(GETLOCALENAME)){
+                obj = getLocaleName();
             }else if (action.equals(GETPREFERREDLANGUAGE)){
                 obj = getPreferredLanguage();
-                return new PluginResult(status, obj);
             } else if (action.equalsIgnoreCase(DATETOSTRING)) {
-                obj = getDateToString(data);                
-                return new PluginResult(PluginResult.Status.OK, obj);       
-            }else if(action.equalsIgnoreCase(STRINGTODATE)){                    
-                obj = getStringtoDate(data);                
-                return new PluginResult(PluginResult.Status.OK, obj);       
+                obj = getDateToString(data);
+            }else if(action.equalsIgnoreCase(STRINGTODATE)){
+                obj = getStringtoDate(data);
             }else if(action.equalsIgnoreCase(GETDATEPATTERN)){
-                obj = getDatePattern(data);             
-                return new PluginResult(PluginResult.Status.OK, obj);       
+                obj = getDatePattern(data);
             }else if(action.equalsIgnoreCase(GETDATENAMES)){
-                obj = getDateNames(data);               
-                return new PluginResult(PluginResult.Status.OK, obj);       
+                obj = getDateNames(data);
             }else if(action.equalsIgnoreCase(ISDAYLIGHTSAVINGSTIME)){
-                obj = getIsDayLightSavingsTime(data);               
-                return new PluginResult(PluginResult.Status.OK, obj);       
+                obj = getIsDayLightSavingsTime(data);
             }else if(action.equalsIgnoreCase(GETFIRSTDAYOFWEEK)){
-                obj = getFirstDayOfWeek(data);              
-                return new PluginResult(PluginResult.Status.OK, obj);       
+                obj = getFirstDayOfWeek(data);
             }else if(action.equalsIgnoreCase(NUMBERTOSTRING)){
-                obj = getNumberToString(data);              
-                return new PluginResult(PluginResult.Status.OK, obj);       
+                obj = getNumberToString(data);
             }else if(action.equalsIgnoreCase(STRINGTONUMBER)){
-                obj = getStringToNumber(data);              
-                return new PluginResult(PluginResult.Status.OK, obj);       
+                obj = getStringToNumber(data);
             }else if(action.equalsIgnoreCase(GETNUMBERPATTERN)){
-                obj = getNumberPattern(data);           
-                return new PluginResult(PluginResult.Status.OK, obj);       
+                obj = getNumberPattern(data);
             }else if(action.equalsIgnoreCase(GETCURRENCYPATTERN)){
-                obj = getCurrencyPattern(data);             
-                return new PluginResult(PluginResult.Status.OK, obj);   
-            }           
-        }catch (GlobalizationError ge){         
-            return new PluginResult(PluginResult.Status.ERROR, ge.toJson());
-        }catch (Exception e){           
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);            
-        }   
-        return new PluginResult(PluginResult.Status.INVALID_ACTION);        
-    }   
-    /* 
+                obj = getCurrencyPattern(data);
+            }else {
+                return false;
+            }
+
+            callbackContext.success(obj);
+        }catch (GlobalizationError ge){
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, ge.toJson()));
+        }catch (Exception e){
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+        }
+        return true;
+    }
+    /*
      * @Description: Returns the string identifier for the client's current locale setting
-     * 
+     *
      * @Return: JSONObject
      *          Object.value {String}: The locale identifier
-     * 
+     *
      * @throws: GlobalizationError.UNKNOWN_ERROR
-     */ 
+     */
     private JSONObject getLocaleName() throws GlobalizationError{
         JSONObject obj = new JSONObject();
-        try{            
-            obj.put("value",Locale.getDefault().toString());//get the locale from the Android Device        
-            return obj;     
+        try{
+            obj.put("value",Locale.getDefault().toString());//get the locale from the Android Device
+            return obj;
         }catch(Exception e){
             throw new GlobalizationError(GlobalizationError.UNKNOWN_ERROR);
-        }       
+        }
     }
-    /* 
+    /*
      * @Description: Returns the string identifier for the client's current language
-     * 
+     *
      * @Return: JSONObject
      *          Object.value {String}: The language identifier
-     * 
+     *
      * @throws: GlobalizationError.UNKNOWN_ERROR
-     */ 
+     */
     private JSONObject getPreferredLanguage() throws GlobalizationError {
         JSONObject obj = new JSONObject();
         try {
@@ -168,33 +160,33 @@ public class Globalization extends Plugin  {
             throw new GlobalizationError(GlobalizationError.UNKNOWN_ERROR);
         }
     }
-    /* 
-     * @Description: Returns a date formatted as a string according to the client's user preferences and 
-     * calendar using the time zone of the client. 
-     * 
-     * @Return: JSONObject 
+    /*
+     * @Description: Returns a date formatted as a string according to the client's user preferences and
+     * calendar using the time zone of the client.
+     *
+     * @Return: JSONObject
      *          Object.value {String}: The localized date string
-     * 
+     *
      * @throws: GlobalizationError.FORMATTING_ERROR
-     */ 
-    private JSONObject getDateToString(JSONArray options) throws GlobalizationError{        
-        JSONObject obj = new JSONObject();  
-        try{            
+     */
+    private JSONObject getDateToString(JSONArray options) throws GlobalizationError{
+        JSONObject obj = new JSONObject();
+        try{
             Date date = new Date((Long)options.getJSONObject(0).get(DATE));
-            
+
             //get formatting pattern from android device (Will only have device specific formatting for short form of date) or options supplied
             JSONObject datePattern = getDatePattern(options);
-            SimpleDateFormat fmt = new SimpleDateFormat(datePattern.getString("pattern"));              
-            
-            //return formatted date                 
+            SimpleDateFormat fmt = new SimpleDateFormat(datePattern.getString("pattern"));
+
+            //return formatted date
             return obj.put("value",fmt.format(date));
-        }catch(Exception ge){               
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.FORMATTING_ERROR);
-        }   
-    }   
-    
-    /* 
-     * @Description: Parses a date formatted as a string according to the client's user 
+        }
+    }
+
+    /*
+     * @Description: Parses a date formatted as a string according to the client's user
      * preferences and calendar using the time zone of the client and returns
      * the corresponding date object
      * @Return: JSONObject
@@ -207,22 +199,22 @@ public class Globalization extends Plugin  {
      *          Object.millisecond {Number}: The milliseconds (from 0 - 999), not available on all platforms
      *
      * @throws: GlobalizationError.PARSING_ERROR
-    */  
+    */
     private JSONObject getStringtoDate(JSONArray options)throws GlobalizationError{
-        JSONObject obj = new JSONObject();  
-        Date date;      
-        try{            
+        JSONObject obj = new JSONObject();
+        Date date;
+        try{
             //get format pattern from android device (Will only have device specific formatting for short form of date) or options supplied
-            DateFormat fmt = new SimpleDateFormat(getDatePattern(options).getString("pattern")); 
-            
+            DateFormat fmt = new SimpleDateFormat(getDatePattern(options).getString("pattern"));
+
             //attempt parsing string based on user preferences
             date = fmt.parse(options.getJSONObject(0).get(DATESTRING).toString());
-            
+
             //set Android Time object
             Time time = new Time();
-            time.set(date.getTime());           
-            
-            //return properties;            
+            time.set(date.getTime());
+
+            //return properties;
             obj.put("year", time.year);
             obj.put("month", time.month);
             obj.put("day", time.monthDay);
@@ -233,50 +225,50 @@ public class Globalization extends Plugin  {
             return obj;
         }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.PARSING_ERROR);
-        }       
-    }   
-    
-    /* 
-     * @Description: Returns a pattern string for formatting and parsing dates according to the client's 
+        }
+    }
+
+    /*
+     * @Description: Returns a pattern string for formatting and parsing dates according to the client's
      * user preferences.
      * @Return: JSONObject
-     * 
-     *          Object.pattern {String}: The date and time pattern for formatting and parsing dates. 
+     *
+     *          Object.pattern {String}: The date and time pattern for formatting and parsing dates.
      *                                  The patterns follow Unicode Technical Standard #35
      *                                  http://unicode.org/reports/tr35/tr35-4.html
      *          Object.timezone {String}: The abbreviated name of the time zone on the client
-     *          Object.utc_offset {Number}: The current difference in seconds between the client's 
-     *                                      time zone and coordinated universal time. 
-     *          Object.dst_offset {Number}: The current daylight saving time offset in seconds 
-     *                                      between the client's non-daylight saving's time zone 
+     *          Object.utc_offset {Number}: The current difference in seconds between the client's
+     *                                      time zone and coordinated universal time.
+     *          Object.dst_offset {Number}: The current daylight saving time offset in seconds
+     *                                      between the client's non-daylight saving's time zone
      *                                      and the client's daylight saving's time zone.
      *
      * @throws: GlobalizationError.PATTERN_ERROR
     */
     private JSONObject getDatePattern(JSONArray options) throws GlobalizationError{
         JSONObject obj = new JSONObject();
-        
+
         try{
             SimpleDateFormat fmtDate = (SimpleDateFormat)android.text.format.DateFormat.getDateFormat(this.cordova.getActivity()); //default user preference for date
             SimpleDateFormat fmtTime = (SimpleDateFormat)android.text.format.DateFormat.getTimeFormat(this.cordova.getActivity());  //default user preference for time
-                        
+
             String fmt = fmtDate.toLocalizedPattern() + " " + fmtTime.toLocalizedPattern(); //default SHORT date/time format. ex. dd/MM/yyyy h:mm a
-                        
-            //get Date value + options (if available)   
+
+            //get Date value + options (if available)
             if (options.getJSONObject(0).length() > 1){
                 //options were included
-                
-                //get formatLength option               
-                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(FORMATLENGTH)){                 
+
+                //get formatLength option
+                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(FORMATLENGTH)){
                     String fmtOpt = (String)((JSONObject)options.getJSONObject(0).get(OPTIONS)).get(FORMATLENGTH);
                     if (fmtOpt.equalsIgnoreCase(MEDIUM)){//medium
-                        fmtDate = (SimpleDateFormat)android.text.format.DateFormat.getMediumDateFormat(this.cordova.getActivity());                     
+                        fmtDate = (SimpleDateFormat)android.text.format.DateFormat.getMediumDateFormat(this.cordova.getActivity());
                     }else if (fmtOpt.equalsIgnoreCase(LONG) || fmtOpt.equalsIgnoreCase(FULL)){ //long/full
                         fmtDate = (SimpleDateFormat)android.text.format.DateFormat.getLongDateFormat(this.cordova.getActivity());
                     }
                 }
-                
-                //return pattern type   
+
+                //return pattern type
                 fmt = fmtDate.toLocalizedPattern() + " " + fmtTime.toLocalizedPattern();
                 if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(SELECTOR)){
                     String selOpt = (String)((JSONObject)options.getJSONObject(0).get(OPTIONS)).get(SELECTOR);
@@ -284,57 +276,57 @@ public class Globalization extends Plugin  {
                         fmt =  fmtDate.toLocalizedPattern();
                     }else if (selOpt.equalsIgnoreCase(TIME)){
                         fmt = fmtTime.toLocalizedPattern();
-                    }                       
-                }               
-            }           
-                        
-            //TimeZone from users device        
-            //TimeZone tz = Calendar.getInstance(Locale.getDefault()).getTimeZone(); //substitute method        
-            TimeZone tz = TimeZone.getTimeZone(Time.getCurrentTimezone());          
-            
+                    }
+                }
+            }
+
+            //TimeZone from users device
+            //TimeZone tz = Calendar.getInstance(Locale.getDefault()).getTimeZone(); //substitute method
+            TimeZone tz = TimeZone.getTimeZone(Time.getCurrentTimezone());
+
             obj.put("pattern", fmt);
             obj.put("timezone", tz.getDisplayName(tz.inDaylightTime(Calendar.getInstance().getTime()),TimeZone.SHORT));
             obj.put("utc_offset", tz.getRawOffset()/1000);
-            obj.put("dst_offset", tz.getDSTSavings()/1000);         
+            obj.put("dst_offset", tz.getDSTSavings()/1000);
             return obj;
-            
-        }catch(Exception ge){               
+
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.PATTERN_ERROR);
-        }   
+        }
     }
-    
-    /* 
-     * @Description: Returns an array of either the names of the months or days of the week 
+
+    /*
+     * @Description: Returns an array of either the names of the months or days of the week
      * according to the client's user preferences and calendar
      * @Return: JSONObject
-     *          Object.value {Array{String}}: The array of names starting from either 
-     *                                      the first month in the year or the 
+     *          Object.value {Array{String}}: The array of names starting from either
+     *                                      the first month in the year or the
      *                                      first day of the week.
-     * 
+     *
      * @throws: GlobalizationError.UNKNOWN_ERROR
     */
     private JSONObject getDateNames(JSONArray options) throws GlobalizationError{
-        JSONObject obj = new JSONObject();      
+        JSONObject obj = new JSONObject();
         //String[] value;
-        JSONArray value = new JSONArray();  
+        JSONArray value = new JSONArray();
         List<String> namesList = new ArrayList<String>();
         final Map<String,Integer> namesMap; // final needed for sorting with anonymous comparator
-        try{            
+        try{
             int type = 0; //default wide
-            int item = 0; //default months          
-            
+            int item = 0; //default months
+
             //get options if available
             if (options.getJSONObject(0).length() > 0){
                 //get type if available
-                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(TYPE)){ 
+                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(TYPE)){
                     String t = (String)((JSONObject)options.getJSONObject(0).get(OPTIONS)).get(TYPE);
                     if (t.equalsIgnoreCase(NARROW)){type++;} //DateUtils.LENGTH_MEDIUM
                 }
                 //get item if available
-                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(ITEM)){ 
+                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(ITEM)){
                     String t = (String)((JSONObject)options.getJSONObject(0).get(OPTIONS)).get(ITEM);
                     if (t.equalsIgnoreCase(DAYS)){item += 10;} //Days of week start at 1
-                }               
+                }
             }
             //determine return value
             int method = item + type;
@@ -345,40 +337,40 @@ public class Globalization extends Plugin  {
             } else if (method == 11) { //days and narrow
                 namesMap = Calendar.getInstance().getDisplayNames(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault());
             } else { //default: months and wide
-                namesMap = Calendar.getInstance().getDisplayNames(Calendar.MONTH, Calendar.LONG, Locale.getDefault());              
+                namesMap = Calendar.getInstance().getDisplayNames(Calendar.MONTH, Calendar.LONG, Locale.getDefault());
             }
 
             // save names as a list
             for(String name : namesMap.keySet()) {
                 namesList.add(name);
             }
-            
+
             // sort the list according to values in namesMap
             Collections.sort(namesList, new Comparator<String>() {
                 public int compare(String arg0, String arg1) {
                     return namesMap.get(arg0).compareTo(namesMap.get(arg1));
                 }
             });
-            
-            // convert nameList into JSONArray of String objects 
+
+            // convert nameList into JSONArray of String objects
             for (int i = 0; i < namesList.size(); i ++){
                 value.put(namesList.get(i));
-            }           
+            }
 
-            //return array of names         
-            return obj.put("value", value);             
-        }catch(Exception ge){               
+            //return array of names
+            return obj.put("value", value);
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.UNKNOWN_ERROR);
-        }           
+        }
     }
-    
-    /* 
-     * @Description: Returns whether daylight savings time is in effect for a given date using the client's 
+
+    /*
+     * @Description: Returns whether daylight savings time is in effect for a given date using the client's
      * time zone and calendar.
      * @Return: JSONObject
-     *          Object.dst {Boolean}: The value "true" indicates that daylight savings time is 
-     *                              in effect for the given date and "false" indicate that it is not.    * 
-     * 
+     *          Object.dst {Boolean}: The value "true" indicates that daylight savings time is
+     *                              in effect for the given date and "false" indicate that it is not.    *
+     *
      * @throws: GlobalizationError.UNKNOWN_ERROR
     */
     private JSONObject getIsDayLightSavingsTime(JSONArray options) throws GlobalizationError{
@@ -388,112 +380,112 @@ public class Globalization extends Plugin  {
             Date date = new Date((Long)options.getJSONObject(0).get(DATE));
             //TimeZone tz = Calendar.getInstance(Locale.getDefault()).getTimeZone();
             TimeZone tz = TimeZone.getTimeZone(Time.getCurrentTimezone());
-            dst = tz.inDaylightTime(date); //get daylight savings data from date object and user timezone settings  
-            
-            return obj.put("dst",dst);      
-        }catch(Exception ge){               
+            dst = tz.inDaylightTime(date); //get daylight savings data from date object and user timezone settings
+
+            return obj.put("dst",dst);
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.UNKNOWN_ERROR);
-        }               
-    }   
-    
-    /* 
-     * @Description: Returns the first day of the week according to the client's user preferences and calendar. 
+        }
+    }
+
+    /*
+     * @Description: Returns the first day of the week according to the client's user preferences and calendar.
      * The days of the week are numbered starting from 1 where 1 is considered to be Sunday.
      * @Return: JSONObject
      *          Object.value {Number}: The number of the first day of the week.
-     * 
+     *
      * @throws: GlobalizationError.UNKNOWN_ERROR
     */
     private JSONObject getFirstDayOfWeek(JSONArray options) throws GlobalizationError{
-        JSONObject obj = new JSONObject();      
-        try{            
+        JSONObject obj = new JSONObject();
+        try{
             int value = Calendar.getInstance(Locale.getDefault()).getFirstDayOfWeek(); //get first day of week based on user locale settings
             return obj.put("value", value);
-        }catch(Exception ge){               
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.UNKNOWN_ERROR);
-        }           
-    }   
-    
-    /* 
-     * @Description: Returns a number formatted as a string according to the client's user preferences. 
+        }
+    }
+
+    /*
+     * @Description: Returns a number formatted as a string according to the client's user preferences.
      * @Return: JSONObject
-     *          Object.value {String}: The formatted number string. 
-     * 
+     *          Object.value {String}: The formatted number string.
+     *
      * @throws: GlobalizationError.FORMATTING_ERROR
     */
     private JSONObject getNumberToString(JSONArray options) throws GlobalizationError{
-        JSONObject obj = new JSONObject();  
+        JSONObject obj = new JSONObject();
         String value = "";
         try{
             DecimalFormat fmt = getNumberFormatInstance(options);//returns Decimal/Currency/Percent instance
             value = fmt.format(options.getJSONObject(0).get(NUMBER));
-            return obj.put("value", value);                 
-        }catch(Exception ge){   
+            return obj.put("value", value);
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.FORMATTING_ERROR);
-        }           
-    }   
-    
-    /* 
-     * @Description: Parses a number formatted as a string according to the client's user preferences and 
+        }
+    }
+
+    /*
+     * @Description: Parses a number formatted as a string according to the client's user preferences and
      * returns the corresponding number.
-     * @Return: JSONObject 
+     * @Return: JSONObject
      *          Object.value {Number}: The parsed number.
-     * 
+     *
      * @throws: GlobalizationError.PARSING_ERROR
     */
     private JSONObject getStringToNumber(JSONArray options) throws GlobalizationError{
-        JSONObject obj = new JSONObject();  
+        JSONObject obj = new JSONObject();
         Number value;
         try{
             DecimalFormat fmt = getNumberFormatInstance(options); //returns Decimal/Currency/Percent instance
-            value = fmt.parse((String)options.getJSONObject(0).get(NUMBERSTRING));  
-            return obj.put("value", value);                     
-        }catch(Exception ge){               
+            value = fmt.parse((String)options.getJSONObject(0).get(NUMBERSTRING));
+            return obj.put("value", value);
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.PARSING_ERROR);
-        }           
+        }
     }
-    
-    /* 
-     * @Description: Returns a pattern string for formatting and parsing numbers according to the client's user 
+
+    /*
+     * @Description: Returns a pattern string for formatting and parsing numbers according to the client's user
      * preferences.
      * @Return: JSONObject
-     *          Object.pattern {String}: The number pattern for formatting and parsing numbers. 
-     *                                  The patterns follow Unicode Technical Standard #35. 
+     *          Object.pattern {String}: The number pattern for formatting and parsing numbers.
+     *                                  The patterns follow Unicode Technical Standard #35.
      *                                  http://unicode.org/reports/tr35/tr35-4.html
-     *          Object.symbol {String}: The symbol to be used when formatting and parsing 
+     *          Object.symbol {String}: The symbol to be used when formatting and parsing
      *                                  e.g., percent or currency symbol.
-     *          Object.fraction {Number}: The number of fractional digits to use when parsing and 
+     *          Object.fraction {Number}: The number of fractional digits to use when parsing and
      *                                  formatting numbers.
      *          Object.rounding {Number}: The rounding increment to use when parsing and formatting.
      *          Object.positive {String}: The symbol to use for positive numbers when parsing and formatting.
      *          Object.negative: {String}: The symbol to use for negative numbers when parsing and formatting.
      *          Object.decimal: {String}: The decimal symbol to use for parsing and formatting.
      *          Object.grouping: {String}: The grouping symbol to use for parsing and formatting.
-     * 
+     *
      * @throws: GlobalizationError.PATTERN_ERROR
     */
     private JSONObject getNumberPattern(JSONArray options) throws GlobalizationError{
-        JSONObject obj = new JSONObject();      
-        try{                
-            //uses java.text.DecimalFormat to format value          
-            DecimalFormat fmt = (DecimalFormat) DecimalFormat.getInstance(Locale.getDefault()); //default format    
+        JSONObject obj = new JSONObject();
+        try{
+            //uses java.text.DecimalFormat to format value
+            DecimalFormat fmt = (DecimalFormat) DecimalFormat.getInstance(Locale.getDefault()); //default format
             String symbol = String.valueOf(fmt.getDecimalFormatSymbols().getDecimalSeparator());
-            //get Date value + options (if available)   
+            //get Date value + options (if available)
             if (options.getJSONObject(0).length() > 0){
                 //options were included
-                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(TYPE)){                 
+                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(TYPE)){
                     String fmtOpt = (String)((JSONObject)options.getJSONObject(0).get(OPTIONS)).get(TYPE);
                     if (fmtOpt.equalsIgnoreCase(CURRENCY)){
                         fmt = (DecimalFormat) DecimalFormat.getCurrencyInstance(Locale.getDefault());
                         symbol = fmt.getDecimalFormatSymbols().getCurrencySymbol();
                     }else if(fmtOpt.equalsIgnoreCase(PERCENT)){
                         fmt = (DecimalFormat) DecimalFormat.getPercentInstance(Locale.getDefault());
-                        symbol = String.valueOf(fmt.getDecimalFormatSymbols().getPercent());                        
+                        symbol = String.valueOf(fmt.getDecimalFormatSymbols().getPercent());
                     }
                 }
-            }                           
-                    
-            //return properties         
+            }
+
+            //return properties
             obj.put("pattern", fmt.toPattern());
             obj.put("symbol", symbol);
             obj.put("fraction", fmt.getMinimumFractionDigits());
@@ -501,79 +493,79 @@ public class Globalization extends Plugin  {
             obj.put("positive", fmt.getPositivePrefix());
             obj.put("negative", fmt.getNegativePrefix());
             obj.put("decimal", String.valueOf(fmt.getDecimalFormatSymbols().getDecimalSeparator()));
-            obj.put("grouping", String.valueOf(fmt.getDecimalFormatSymbols().getGroupingSeparator()));                      
-                        
-            return obj;         
-        }catch(Exception ge){               
+            obj.put("grouping", String.valueOf(fmt.getDecimalFormatSymbols().getGroupingSeparator()));
+
+            return obj;
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.PATTERN_ERROR);
-        }       
-    }   
-    
-    /* 
+        }
+    }
+
+    /*
      * @Description: Returns a pattern string for formatting and parsing currency values according to the client's
      * user preferences and ISO 4217 currency code.
      * @Return: JSONObject
-     *          Object.pattern {String}: The currency pattern for formatting and parsing currency values. 
-     *                                  The patterns follow Unicode Technical Standard #35 
+     *          Object.pattern {String}: The currency pattern for formatting and parsing currency values.
+     *                                  The patterns follow Unicode Technical Standard #35
      *                                  http://unicode.org/reports/tr35/tr35-4.html
      *          Object.code {String}: The ISO 4217 currency code for the pattern.
-     *          Object.fraction {Number}: The number of fractional digits to use when parsing and 
+     *          Object.fraction {Number}: The number of fractional digits to use when parsing and
      *                                  formatting currency.
      *          Object.rounding {Number}: The rounding increment to use when parsing and formatting.
      *          Object.decimal: {String}: The decimal symbol to use for parsing and formatting.
      *          Object.grouping: {String}: The grouping symbol to use for parsing and formatting.
-     * 
+     *
      * @throws: GlobalizationError.FORMATTING_ERROR
     */
     private JSONObject getCurrencyPattern(JSONArray options) throws GlobalizationError{
-        JSONObject obj = new JSONObject();  
-        try{    
+        JSONObject obj = new JSONObject();
+        try{
             //get ISO 4217 currency code
-            String code = options.getJSONObject(0).getString(CURRENCYCODE);         
-            
-            //uses java.text.DecimalFormat to format value          
+            String code = options.getJSONObject(0).getString(CURRENCYCODE);
+
+            //uses java.text.DecimalFormat to format value
             DecimalFormat fmt = (DecimalFormat) DecimalFormat.getCurrencyInstance(Locale.getDefault());
-            
+
             //set currency format
             Currency currency = Currency.getInstance(code);
             fmt.setCurrency(currency);
-            
-            //return properties         
+
+            //return properties
             obj.put("pattern", fmt.toPattern());
             obj.put("code", currency.getCurrencyCode());
             obj.put("fraction", fmt.getMinimumFractionDigits());
             obj.put("rounding", new Integer(0));
             obj.put("decimal", String.valueOf(fmt.getDecimalFormatSymbols().getDecimalSeparator()));
-            obj.put("grouping", String.valueOf(fmt.getDecimalFormatSymbols().getGroupingSeparator()));          
-            
-            return obj;         
-        }catch(Exception ge){               
+            obj.put("grouping", String.valueOf(fmt.getDecimalFormatSymbols().getGroupingSeparator()));
+
+            return obj;
+        }catch(Exception ge){
             throw new GlobalizationError(GlobalizationError.FORMATTING_ERROR);
-        }       
+        }
     }
-    
-    /* 
+
+    /*
      * @Description: Parses a JSONArray from user options and returns the correct Instance of Decimal/Percent/Currency.
      * @Return: DecimalFormat : The Instance to use.
-     *  
+     *
      * @throws: JSONException
     */
-    private DecimalFormat getNumberFormatInstance(JSONArray options) throws JSONException{      
+    private DecimalFormat getNumberFormatInstance(JSONArray options) throws JSONException{
         DecimalFormat fmt =  (DecimalFormat)DecimalFormat.getInstance(Locale.getDefault()); //default format
-        try{             
+        try{
             if (options.getJSONObject(0).length() > 1){
-                //options were included             
-                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(TYPE)){                 
+                //options were included
+                if (!((JSONObject)options.getJSONObject(0).get(OPTIONS)).isNull(TYPE)){
                     String fmtOpt = (String)((JSONObject)options.getJSONObject(0).get(OPTIONS)).get(TYPE);
                     if (fmtOpt.equalsIgnoreCase(CURRENCY)){
                         fmt = (DecimalFormat)DecimalFormat.getCurrencyInstance(Locale.getDefault());
                     }else if(fmtOpt.equalsIgnoreCase(PERCENT)){
-                        fmt = (DecimalFormat)DecimalFormat.getPercentInstance(Locale.getDefault()); 
+                        fmt = (DecimalFormat)DecimalFormat.getPercentInstance(Locale.getDefault());
                     }
                 }
             }
-            
-        }catch (JSONException je){}     
+
+        }catch (JSONException je){}
         return fmt;
     }
 }

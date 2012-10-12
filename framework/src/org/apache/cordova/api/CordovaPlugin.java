@@ -33,27 +33,28 @@ public class CordovaPlugin {
     public CordovaInterface cordova;
 
     /**
-     * @param ctx The context of the main Activity.
+     * @param cordova The context of the main Activity.
+     * @param webView The associated CordovaWebView.
      */
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         assert this.cordova == null;
         this.cordova = cordova;
         this.webView = webView;
     }
-    
+
     /**
      * Executes the request.
-     * 
+     *
      * This method is called from the WebView thread. To do a non-trivial amount of work, use:
      *     cordova.getThreadPool().execute(runnable);
-     * 
+     *
      * To run on the UI thread, use:
      *     cordova.getActivity().runOnUiThread(runnable);
      *
-     * @param action        The action to execute.
-     * @param rawArgs       The exec() arguments in JSON form.
-     * @param callbackId    The callback id used when calling back into JavaScript.
-     * @return              Whether the action was valid.
+     * @param action          The action to execute.
+     * @param rawArgs         The exec() arguments in JSON form.
+     * @param callbackContext The callback context used when calling back into JavaScript.
+     * @return                Whether the action was valid.
      */
     public boolean execute(String action, String rawArgs, CallbackContext callbackContext) throws JSONException {
         JSONArray args = new JSONArray(rawArgs);
@@ -62,17 +63,17 @@ public class CordovaPlugin {
 
     /**
      * Executes the request.
-     * 
+     *
      * This method is called from the WebView thread. To do a non-trivial amount of work, use:
      *     cordova.getThreadPool().execute(runnable);
-     * 
+     *
      * To run on the UI thread, use:
      *     cordova.getActivity().runOnUiThread(runnable);
      *
-     * @param action        The action to execute.
-     * @param args          The exec() arguments.
-     * @param callbackId    The callback id used when calling back into JavaScript.
-     * @return              Whether the action was valid.
+     * @param action          The action to execute.
+     * @param args            The exec() arguments.
+     * @param callbackContext The callback context used when calling back into JavaScript.
+     * @return                Whether the action was valid.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         return false;

@@ -23,8 +23,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.LOG;
-import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,7 +42,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
-public class Capture extends Plugin {
+public class Capture extends CordovaPlugin {
 
     private static final String VIDEO_3GPP = "video/3gpp";
     private static final String VIDEO_MP4 = "video/mp4";
@@ -57,13 +58,11 @@ public class Capture extends Plugin {
 //    private static final int CAPTURE_APPLICATION_BUSY = 1;
 //    private static final int CAPTURE_INVALID_ARGUMENT = 2;
     private static final int CAPTURE_NO_MEDIA_FILES = 3;
-    private static final int CAPTURE_NOT_SUPPORTED = 20;
 
-    private String callbackId;                      // The ID of the callback to be invoked with our result
+    private CallbackContext callbackContext;        // The callback context from which we were invoked.
     private long limit;                             // the number of pics/vids/clips to take
     private double duration;                        // optional duration parameter for video recording
     private JSONArray results;                      // The array of results to be returned to the user
-    private Uri imageUri;                           // Uri of captured image
     private int numPics;                            // Number of pictures before capture activity
 
     //private CordovaInterface cordova;
@@ -77,8 +76,8 @@ public class Capture extends Plugin {
 //    }
 
     @Override
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        this.callbackId = callbackId;
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
+        this.callbackContext = callbackContext;
         this.limit = 1;
         this.duration = 0.0f;
         this.results = new JSONArray();
@@ -92,10 +91,11 @@ public class Capture extends Plugin {
         if (action.equals("getFormatData")) {
             try {
                 JSONObject obj = getFormatData(args.getString(0), args.getString(1));
-                return new PluginResult(PluginResult.Status.OK, obj);
+                callbackContext.success(obj);
             } catch (JSONException e) {
-                return new PluginResult(PluginResult.Status.ERROR);
+                callbackContext.error("");
             }
+            return true;
         }
         else if (action.equals("captureAudio")) {
             this.captureAudio();
@@ -106,10 +106,11 @@ public class Capture extends Plugin {
         else if (action.equals("captureVideo")) {
             this.captureVideo(duration);
         }
+        else {
+            return false;
+        }
 
-        PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
-        r.setKeepCallback(true);
-        return r;
+        return true;
     }
 
     /**
@@ -199,7 +200,7 @@ public class Capture extends Plugin {
     private void captureAudio() {
         Intent intent = new Intent(android.provider.MediaStore.Audio.Media.RECORD_SOUND_ACTION);
 
-        this.cordova.startActivityForResult((Plugin) this, intent, CAPTURE_AUDIO);
+        this.cordova.startActivityForResult((CordovaPlugin) this, intent, CAPTURE_AUDIO);
     }
 
     /**
@@ -214,9 +215,8 @@ public class Capture extends Plugin {
         // Specify file so that large image is captured and returned
         File photo = new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), "Capture.jpg");
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, Uri.fromFile(photo));
-        this.imageUri = Uri.fromFile(photo);
 
-        this.cordova.startActivityForResult((Plugin) this, intent, CAPTURE_IMAGE);
+        this.cordova.startActivityForResult((CordovaPlugin) this, intent, CAPTURE_IMAGE);
     }
 
     /**
@@ -227,7 +227,7 @@ public class Capture extends Plugin {
         // Introduced in API 8
         //intent.putExtra(android.provider.MediaStore.EXTRA_DURATION_LIMIT, duration);
 
-        this.cordova.startActivityForResult((Plugin) this, intent, CAPTURE_VIDEO);
+        this.cordova.startActivityForResult((CordovaPlugin) this, intent, CAPTURE_VIDEO);
     }
 
     /**
@@ -252,7 +252,7 @@ public class Capture extends Plugin {
 
                 if (results.length() >= limit) {
                     // Send Uri back to JavaScript for listening to audio
-                    this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
+                    this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, results));
                 } else {
                     // still need to capture more audio clips
                     captureAudio();
@@ -298,7 +298,7 @@ public class Capture extends Plugin {
 
                     if (results.length() >= limit) {
                         // Send Uri back to JavaScript for viewing image
-                        this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
+                        this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, results));
                     } else {
                         // still need to capture more images
                         captureImage();
@@ -315,7 +315,7 @@ public class Capture extends Plugin {
 
                 if (results.length() >= limit) {
                     // Send Uri back to JavaScript for viewing video
-                    this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
+                    this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, results));
                 } else {
                     // still need to capture more video clips
                     captureVideo(duration);
@@ -326,7 +326,7 @@ public class Capture extends Plugin {
         else if (resultCode == Activity.RESULT_CANCELED) {
             // If we have partial results send them back to the user
             if (results.length() > 0) {
-                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
+                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, results));
             }
             // user canceled the action
             else {
@@ -337,7 +337,7 @@ public class Capture extends Plugin {
         else {
             // If we have partial results send them back to the user
             if (results.length() > 0) {
-                this.success(new PluginResult(PluginResult.Status.OK, results), this.callbackId);
+                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, results));
             }
             // something bad happened
             else {
@@ -401,7 +401,7 @@ public class Capture extends Plugin {
      * @param err
      */
     public void fail(JSONObject err) {
-        this.error(new PluginResult(PluginResult.Status.ERROR, err), this.callbackId);
+        this.callbackContext.error(err);
     }
 
 

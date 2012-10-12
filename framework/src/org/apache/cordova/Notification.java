@@ -18,8 +18,9 @@
 */
 package org.apache.cordova;
 
+import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +36,7 @@ import android.os.Vibrator;
 /**
  * This class provides access to notifications on the device.
  */
-public class Notification extends Plugin {
+public class Notification extends CordovaPlugin {
 
     public int confirmResult = -1;
     public ProgressDialog spinnerDialog = null;
@@ -50,15 +51,12 @@ public class Notification extends Plugin {
     /**
      * Executes the request and returns PluginResult.
      *
-     * @param action    The action to execute.
-     * @param args      JSONArry of arguments for the plugin.
-     * @param callbackId  The callback id used when calling back into JavaScript.
-     * @return        A PluginResult object with a status and message.
+     * @param action            The action to execute.
+     * @param args              JSONArray of arguments for the plugin.
+     * @param callbackContext   The callback context used when calling back into JavaScript.
+     * @return                  True when the action was valid, false otherwise.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";
-
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         try {
             if (action.equals("beep")) {
                 this.beep(args.getLong(0));
@@ -67,16 +65,12 @@ public class Notification extends Plugin {
                 this.vibrate(args.getLong(0));
             }
             else if (action.equals("alert")) {
-                this.alert(args.getString(0), args.getString(1), args.getString(2), callbackId);
-                PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
-                r.setKeepCallback(true);
-                return r;
+                this.alert(args.getString(0), args.getString(1), args.getString(2), callbackContext);
+                return true;
             }
             else if (action.equals("confirm")) {
-                this.confirm(args.getString(0), args.getString(1), args.getString(2), callbackId);
-                PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
-                r.setKeepCallback(true);
-                return r;
+                this.confirm(args.getString(0), args.getString(1), args.getString(2), callbackContext);
+                return true;
             }
             else if (action.equals("activityStart")) {
                 this.activityStart(args.getString(0), args.getString(1));
@@ -93,43 +87,16 @@ public class Notification extends Plugin {
             else if (action.equals("progressStop")) {
                 this.progressStop();
             }
-            return new PluginResult(status, result);
-        } catch (JSONException e) {
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
-        }
-    }
+            else {
+                return false;
+            }
 
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     *
-     * @param action  The action to execute
-     * @return      T=returns value
-     */
-    public boolean isSynch(String action) {
-        if (action.equals("alert")) {
-            return true;
+            // Only alert and confirm are async.
+            callbackContext.success();
+        } catch (JSONException e) {
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
-        else if (action.equals("confirm")) {
-            return true;
-        }
-        else if (action.equals("activityStart")) {
-            return true;
-        }
-        else if (action.equals("activityStop")) {
-            return true;
-        }
-        else if (action.equals("progressStart")) {
-            return true;
-        }
-        else if (action.equals("progressValue")) {
-            return true;
-        }
-        else if (action.equals("progressStop")) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return true;
     }
 
     //--------------------------------------------------------------------------
@@ -177,15 +144,14 @@ public class Notification extends Plugin {
 
     /**
      * Builds and shows a native Android alert with given Strings
-     * @param message     The message the alert should display
-     * @param title     The title of the alert
-     * @param buttonLabel   The label of the button
-     * @param callbackId  The callback id
+     * @param message           The message the alert should display
+     * @param title             The title of the alert
+     * @param buttonLabel       The label of the button
+     * @param callbackContext   The callback context
      */
-    public synchronized void alert(final String message, final String title, final String buttonLabel, final String callbackId) {
+    public synchronized void alert(final String message, final String title, final String buttonLabel, final CallbackContext callbackContext) {
 
         final CordovaInterface cordova = this.cordova;
-        final Notification notification = this;
 
         Runnable runnable = new Runnable() {
             public void run() {
@@ -198,7 +164,7 @@ public class Notification extends Plugin {
                         new AlertDialog.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
-                                notification.success(new PluginResult(PluginResult.Status.OK, 0), callbackId);
+                                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 0));
                             }
                         });
                 dlg.create();
@@ -213,15 +179,14 @@ public class Notification extends Plugin {
      * This dialog only shows up to 3 buttons.  Any labels after that will be ignored.
      * The index of the button pressed will be returned to the JavaScript callback identified by callbackId.
      *
-     * @param message     The message the dialog should display
-     * @param title     The title of the dialog
-     * @param buttonLabels  A comma separated list of button labels (Up to 3 buttons)
-     * @param callbackId  The callback id
+     * @param message           The message the dialog should display
+     * @param title             The title of the dialog
+     * @param buttonLabels      A comma separated list of button labels (Up to 3 buttons)
+     * @param callbackContext   The callback context.
      */
-    public synchronized void confirm(final String message, final String title, String buttonLabels, final String callbackId) {
+    public synchronized void confirm(final String message, final String title, String buttonLabels, final CallbackContext callbackContext) {
 
         final CordovaInterface cordova = this.cordova;
-        final Notification notification = this;
         final String[] fButtons = buttonLabels.split(",");
 
         Runnable runnable = new Runnable() {
@@ -237,7 +202,7 @@ public class Notification extends Plugin {
                             new AlertDialog.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
-                                    notification.success(new PluginResult(PluginResult.Status.OK, 1), callbackId);
+                                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 1));
                                 }
                             });
                 }
@@ -248,7 +213,7 @@ public class Notification extends Plugin {
                             new AlertDialog.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
-                                    notification.success(new PluginResult(PluginResult.Status.OK, 2), callbackId);
+                                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 2));
                                 }
                             });
                 }
@@ -259,7 +224,7 @@ public class Notification extends Plugin {
                             new AlertDialog.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
-                                    notification.success(new PluginResult(PluginResult.Status.OK, 3), callbackId);
+                                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 3));
                                 }
                             }
                             );
@@ -283,14 +248,13 @@ public class Notification extends Plugin {
             this.spinnerDialog.dismiss();
             this.spinnerDialog = null;
         }
-        final Notification notification = this;
         final CordovaInterface cordova = this.cordova;
         Runnable runnable = new Runnable() {
             public void run() {
-                notification.spinnerDialog = ProgressDialog.show(cordova.getActivity(), title, message, true, true,
+                Notification.this.spinnerDialog = ProgressDialog.show(cordova.getActivity(), title, message, true, true,
                         new DialogInterface.OnCancelListener() {
                             public void onCancel(DialogInterface dialog) {
-                                notification.spinnerDialog = null;
+                                Notification.this.spinnerDialog = null;
                             }
                         });
             }

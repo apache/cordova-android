@@ -18,8 +18,9 @@
 */
 package org.apache.cordova;
 
+import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 
@@ -31,7 +32,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
-public class NetworkManager extends Plugin {
+public class NetworkManager extends CordovaPlugin {
 
     public static int NOT_REACHABLE = 0;
     public static int REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
@@ -68,7 +69,7 @@ public class NetworkManager extends Plugin {
 
     private static final String LOG_TAG = "NetworkManager";
 
-    private String connectionCallbackId;
+    private CallbackContext connectionCallbackContext;
     private boolean registered = false;
 
     ConnectivityManager sockMan;
@@ -86,11 +87,12 @@ public class NetworkManager extends Plugin {
      * get file paths associated with the Activity.
      *
      * @param cordova The context of the main Activity.
+     * @param webView The CordovaWebView Cordova is running in.
      */
-    public void setContext(CordovaInterface cordova) {
-        super.setContext(cordova);
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
         this.sockMan = (ConnectivityManager) cordova.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        this.connectionCallbackId = null;
+        this.connectionCallbackContext = null;
 
         // We need to listen to connectivity events to update navigator.connection
         IntentFilter intentFilter = new IntentFilter();
@@ -101,7 +103,7 @@ public class NetworkManager extends Plugin {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     // (The null check is for the ARM Emulator, please use Intel Emulator for better results)
-                    if(webView != null)
+                    if(NetworkManager.this.webView != null)
                         updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));
                 }
             };
@@ -114,34 +116,21 @@ public class NetworkManager extends Plugin {
     /**
      * Executes the request and returns PluginResult.
      *
-     * @param action         The action to execute.
-     * @param args             JSONArry of arguments for the plugin.
-     * @param callbackId    The callback id used when calling back into JavaScript.
-     * @return                 A PluginResult object with a status and message.
+     * @param action            The action to execute.
+     * @param args              JSONArry of arguments for the plugin.
+     * @param callbackContext   The callback id used when calling back into JavaScript.
+     * @return                  True if the action was valid, false otherwise.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        PluginResult.Status status = PluginResult.Status.INVALID_ACTION;
-        String result = "Unsupported Operation: " + action;
-
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         if (action.equals("getConnectionInfo")) {
-            this.connectionCallbackId = callbackId;
+            this.connectionCallbackContext = callbackContext;
             NetworkInfo info = sockMan.getActiveNetworkInfo();
             PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, this.getConnectionInfo(info));
             pluginResult.setKeepCallback(true);
-            return pluginResult;
+            callbackContext.sendPluginResult(pluginResult);
+            return true;
         }
-
-        return new PluginResult(status, result);
-    }
-
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     *
-     * @param action    The action to execute
-     * @return            T=returns value
-     */
-    public boolean isSynch(String action) {
-        return true;
+        return false;
     }
 
     /**
@@ -206,15 +195,15 @@ public class NetworkManager extends Plugin {
      * @param connection the network info to set as navigator.connection
      */
     private void sendUpdate(String type) {
-        if (connectionCallbackId != null) {
+        if (connectionCallbackContext != null) {
             PluginResult result = new PluginResult(PluginResult.Status.OK, type);
             result.setKeepCallback(true);
-            this.success(result, this.connectionCallbackId);
+            connectionCallbackContext.sendPluginResult(result);
         }
 
         webView.postMessage("networkconnection", type);
     }
-    
+
     /**
      * Determine the type of connection
      *

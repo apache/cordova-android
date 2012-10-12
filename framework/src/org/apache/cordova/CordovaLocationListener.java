@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+
+import org.apache.cordova.api.CallbackContext;
 
 import android.location.Location;
 import android.location.LocationListener;
@@ -39,8 +40,8 @@ public class CordovaLocationListener implements LocationListener {
     private GeoBroker owner;
     protected boolean running = false;
 
-    public HashMap<String, String> watches = new HashMap<String, String>();
-    private List<String> callbacks = new ArrayList<String>();
+    public HashMap<String, CallbackContext> watches = new HashMap<String, CallbackContext>();
+    private List<CallbackContext> callbacks = new ArrayList<CallbackContext>();
 
     private String TAG = "[Cordova Location Listener]";
 
@@ -51,9 +52,9 @@ public class CordovaLocationListener implements LocationListener {
     }
 
     protected void fail(int code, String message) {
-        for (String callbackId: this.callbacks)
+        for (CallbackContext callbackContext: this.callbacks)
         {
-            this.owner.fail(code, message, callbackId);
+            this.owner.fail(code, message, callbackContext);
         }
         if(this.owner.isGlobalListener(this))
         {
@@ -62,17 +63,16 @@ public class CordovaLocationListener implements LocationListener {
         }
         this.callbacks.clear();
 
-        Iterator it = this.watches.entrySet().iterator();
+        Iterator<CallbackContext> it = this.watches.values().iterator();
         while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry)it.next();
-            this.owner.fail(code, message, (String)pairs.getValue());
+            this.owner.fail(code, message, it.next());
         }
     }
 
     private void win(Location loc) {
-        for (String callbackId: this.callbacks)
+        for (CallbackContext callbackContext: this.callbacks)
         {
-            this.owner.win(loc, callbackId);
+            this.owner.win(loc, callbackContext);
         }
         if(this.owner.isGlobalListener(this))
         {
@@ -81,10 +81,9 @@ public class CordovaLocationListener implements LocationListener {
         }
         this.callbacks.clear();
 
-        Iterator it = this.watches.entrySet().iterator();
+        Iterator<CallbackContext> it = this.watches.values().iterator();
         while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry)it.next();
-            this.owner.win(loc, (String)pairs.getValue());
+            this.owner.win(loc, it.next());
         }
     }
 
@@ -150,14 +149,14 @@ public class CordovaLocationListener implements LocationListener {
         return this.watches.size() + this.callbacks.size();
     }
 
-    public void addWatch(String timerId, String callbackId) {
-        this.watches.put(timerId, callbackId);
+    public void addWatch(String timerId, CallbackContext callbackContext) {
+        this.watches.put(timerId, callbackContext);
         if (this.size() == 1) {
             this.start();
         }
     }
-    public void addCallback(String callbackId) {
-        this.callbacks.add(callbackId);
+    public void addCallback(CallbackContext callbackContext) {
+        this.callbacks.add(callbackContext);
         if (this.size() == 1) {
             this.start();
         }
