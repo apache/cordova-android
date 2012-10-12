@@ -577,6 +577,7 @@ public class CordovaWebView extends WebView {
         if (super.canGoBack()) {
         	printBackForwardList();
             super.goBack();
+            
             return true;
         }
 
@@ -779,6 +780,17 @@ public class CordovaWebView extends WebView {
                 return super.onKeyDown(keyCode, event);
             }
         }
+        else if(keyCode == KeyEvent.KEYCODE_BACK)
+        {
+            //Because exit is fired on the keyDown and not the key up on Android 4.x
+            //we need to check for this.
+            //Also, I really wished "canGoBack" worked!
+            if(this.useBrowserHistory)
+                return !(this.startOfHistory()) || this.bound;
+            else
+                return this.urls.size() > 1 || this.bound;
+        }
+        
         return super.onKeyDown(keyCode, event);
     }
     
@@ -942,8 +954,6 @@ public class CordovaWebView extends WebView {
         }
     }
     
-    
-    
     public void printBackForwardList() {
     	WebBackForwardList currentList = this.copyBackForwardList();
     	int currentSize = currentList.getSize();
@@ -953,5 +963,18 @@ public class CordovaWebView extends WebView {
     		String url = item.getUrl();
     		LOG.d(TAG, "The URL at index: " + Integer.toString(i) + "is " + url );
     	}
+    }
+    
+    
+    //Can Go Back is BROKEN!
+    public boolean startOfHistory()
+    {
+        WebBackForwardList currentList = this.copyBackForwardList();
+        WebHistoryItem item = currentList.getItemAtIndex(0);
+        String url = item.getUrl();
+        String currentUrl = this.getUrl();
+        LOG.d(TAG, "The current URL is: " + currentUrl);
+        LOG.d(TAG, "The URL at item 0 is:" + url);
+        return currentUrl.equals(url);
     }
 }
