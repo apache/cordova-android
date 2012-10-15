@@ -92,7 +92,7 @@ public class FileUtils extends CordovaPlugin {
      * @param callbackContext	The callback context used when calling back into JavaScript.
      * @return 			True if the action was valid, false otherwise.
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         try {
             if (action.equals("testSaveLocationExists")) {
                 boolean b = DirectoryManager.testSaveLocationExists();
@@ -198,8 +198,6 @@ public class FileUtils extends CordovaPlugin {
         } catch (FileExistsException e) {
             callbackContext.error(FileUtils.PATH_EXISTS_ERR);
         } catch (NoModificationAllowedException e) {
-            callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
-        } catch (JSONException e) {
             callbackContext.error(FileUtils.NO_MODIFICATION_ALLOWED_ERR);
         } catch (InvalidModificationException e) {
             callbackContext.error(FileUtils.INVALID_MODIFICATION_ERR);

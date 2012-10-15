@@ -56,46 +56,42 @@ public class Notification extends CordovaPlugin {
      * @param callbackContext   The callback context used when calling back into JavaScript.
      * @return                  True when the action was valid, false otherwise.
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
-        try {
-            if (action.equals("beep")) {
-                this.beep(args.getLong(0));
-            }
-            else if (action.equals("vibrate")) {
-                this.vibrate(args.getLong(0));
-            }
-            else if (action.equals("alert")) {
-                this.alert(args.getString(0), args.getString(1), args.getString(2), callbackContext);
-                return true;
-            }
-            else if (action.equals("confirm")) {
-                this.confirm(args.getString(0), args.getString(1), args.getString(2), callbackContext);
-                return true;
-            }
-            else if (action.equals("activityStart")) {
-                this.activityStart(args.getString(0), args.getString(1));
-            }
-            else if (action.equals("activityStop")) {
-                this.activityStop();
-            }
-            else if (action.equals("progressStart")) {
-                this.progressStart(args.getString(0), args.getString(1));
-            }
-            else if (action.equals("progressValue")) {
-                this.progressValue(args.getInt(0));
-            }
-            else if (action.equals("progressStop")) {
-                this.progressStop();
-            }
-            else {
-                return false;
-            }
-
-            // Only alert and confirm are async.
-            callbackContext.success();
-        } catch (JSONException e) {
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        if (action.equals("beep")) {
+            this.beep(args.getLong(0));
         }
+        else if (action.equals("vibrate")) {
+            this.vibrate(args.getLong(0));
+        }
+        else if (action.equals("alert")) {
+            this.alert(args.getString(0), args.getString(1), args.getString(2), callbackContext);
+            return true;
+        }
+        else if (action.equals("confirm")) {
+            this.confirm(args.getString(0), args.getString(1), args.getString(2), callbackContext);
+            return true;
+        }
+        else if (action.equals("activityStart")) {
+            this.activityStart(args.getString(0), args.getString(1));
+        }
+        else if (action.equals("activityStop")) {
+            this.activityStop();
+        }
+        else if (action.equals("progressStart")) {
+            this.progressStart(args.getString(0), args.getString(1));
+        }
+        else if (action.equals("progressValue")) {
+            this.progressValue(args.getInt(0));
+        }
+        else if (action.equals("progressStop")) {
+            this.progressStop();
+        }
+        else {
+            return false;
+        }
+
+        // Only alert and confirm are async.
+        callbackContext.success();
         return true;
     }
 

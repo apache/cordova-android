@@ -76,7 +76,7 @@ public class Capture extends CordovaPlugin {
 //    }
 
     @Override
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
         this.limit = 1;
         this.duration = 0.0f;
@@ -89,12 +89,8 @@ public class Capture extends CordovaPlugin {
         }
 
         if (action.equals("getFormatData")) {
-            try {
-                JSONObject obj = getFormatData(args.getString(0), args.getString(1));
-                callbackContext.success(obj);
-            } catch (JSONException e) {
-                callbackContext.error("");
-            }
+            JSONObject obj = getFormatData(args.getString(0), args.getString(1));
+            callbackContext.success(obj);
             return true;
         }
         else if (action.equals("captureAudio")) {
@@ -120,34 +116,30 @@ public class Capture extends CordovaPlugin {
      * @param mimeType of the file
      * @return a MediaFileData object
      */
-    private JSONObject getFormatData(String filePath, String mimeType) {
+    private JSONObject getFormatData(String filePath, String mimeType) throws JSONException {
         JSONObject obj = new JSONObject();
-        try {
-            // setup defaults
-            obj.put("height", 0);
-            obj.put("width", 0);
-            obj.put("bitrate", 0);
-            obj.put("duration", 0);
-            obj.put("codecs", "");
+        // setup defaults
+        obj.put("height", 0);
+        obj.put("width", 0);
+        obj.put("bitrate", 0);
+        obj.put("duration", 0);
+        obj.put("codecs", "");
 
-            // If the mimeType isn't set the rest will fail
-            // so let's see if we can determine it.
-            if (mimeType == null || mimeType.equals("")) {
-                mimeType = FileUtils.getMimeType(filePath);
-            }
-            Log.d(LOG_TAG, "Mime type = " + mimeType);
+        // If the mimeType isn't set the rest will fail
+        // so let's see if we can determine it.
+        if (mimeType == null || mimeType.equals("")) {
+            mimeType = FileUtils.getMimeType(filePath);
+        }
+        Log.d(LOG_TAG, "Mime type = " + mimeType);
 
-            if (mimeType.equals(IMAGE_JPEG) || filePath.endsWith(".jpg")) {
-                obj = getImageData(filePath, obj);
-            }
-            else if (mimeType.endsWith(AUDIO_3GPP)) {
-                obj = getAudioVideoData(filePath, obj, false);
-            }
-            else if (mimeType.equals(VIDEO_3GPP) || mimeType.equals(VIDEO_MP4)) {
-                obj = getAudioVideoData(filePath, obj, true);
-            }
-        } catch (JSONException e) {
-            Log.d(LOG_TAG, "Error: setting media file data object");
+        if (mimeType.equals(IMAGE_JPEG) || filePath.endsWith(".jpg")) {
+            obj = getImageData(filePath, obj);
+        }
+        else if (mimeType.endsWith(AUDIO_3GPP)) {
+            obj = getAudioVideoData(filePath, obj, false);
+        }
+        else if (mimeType.equals(VIDEO_3GPP) || mimeType.equals(VIDEO_MP4)) {
+            obj = getAudioVideoData(filePath, obj, true);
         }
         return obj;
     }

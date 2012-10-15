@@ -88,50 +88,46 @@ public class CompassListener extends CordovaPlugin implements SensorEventListene
      * @param args          	    JSONArry of arguments for the plugin.
      * @param callbackS=Context     The callback id used when calling back into JavaScript.
      * @return              	    True if the action was valid.
+     * @throws JSONException 
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
-        try {
-            if (action.equals("start")) {
-                this.start();
-            }
-            else if (action.equals("stop")) {
-                this.stop();
-            }
-            else if (action.equals("getStatus")) {
-                int i = this.getStatus();
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, i));
-            }
-            else if (action.equals("getHeading")) {
-                // If not running, then this is an async call, so don't worry about waiting
-                if (this.status != CompassListener.RUNNING) {
-                    int r = this.start();
-                    if (r == CompassListener.ERROR_FAILED_TO_START) {
-                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, CompassListener.ERROR_FAILED_TO_START));
-                        return true;
-                    }
-                    // Set a timeout callback on the main thread.
-                    Handler handler = new Handler(Looper.getMainLooper());
-                    handler.postDelayed(new Runnable() {
-                        public void run() {
-                            CompassListener.this.timeout();
-                        }
-                    }, 2000);
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        if (action.equals("start")) {
+            this.start();
+        }
+        else if (action.equals("stop")) {
+            this.stop();
+        }
+        else if (action.equals("getStatus")) {
+            int i = this.getStatus();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, i));
+        }
+        else if (action.equals("getHeading")) {
+            // If not running, then this is an async call, so don't worry about waiting
+            if (this.status != CompassListener.RUNNING) {
+                int r = this.start();
+                if (r == CompassListener.ERROR_FAILED_TO_START) {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, CompassListener.ERROR_FAILED_TO_START));
+                    return true;
                 }
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, getCompassHeading()));
+                // Set a timeout callback on the main thread.
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        CompassListener.this.timeout();
+                    }
+                }, 2000);
             }
-            else if (action.equals("setTimeout")) {
-                this.setTimeout(args.getLong(0));
-            }
-            else if (action.equals("getTimeout")) {
-                long l = this.getTimeout();
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, l));
-            } else {
-                // Unsupported action
-                return false;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, getCompassHeading()));
+        }
+        else if (action.equals("setTimeout")) {
+            this.setTimeout(args.getLong(0));
+        }
+        else if (action.equals("getTimeout")) {
+            long l = this.getTimeout();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, l));
+        } else {
+            // Unsupported action
+            return false;
         }
         return true;
     }
@@ -281,19 +277,15 @@ public class CompassListener extends CordovaPlugin implements SensorEventListene
      *
      * @return a compass heading
      */
-    private JSONObject getCompassHeading() {
+    private JSONObject getCompassHeading() throws JSONException {
         JSONObject obj = new JSONObject();
 
-        try {
-            obj.put("magneticHeading", this.getHeading());
-            obj.put("trueHeading", this.getHeading());
-            // Since the magnetic and true heading are always the same our and accuracy
-            // is defined as the difference between true and magnetic always return zero
-            obj.put("headingAccuracy", 0);
-            obj.put("timestamp", this.timeStamp);
-        } catch (JSONException e) {
-            // Should never happen
-        }
+        obj.put("magneticHeading", this.getHeading());
+        obj.put("trueHeading", this.getHeading());
+        // Since the magnetic and true heading are always the same our and accuracy
+        // is defined as the difference between true and magnetic always return zero
+        obj.put("headingAccuracy", 0);
+        obj.put("timestamp", this.timeStamp);
 
         return obj;
     }
