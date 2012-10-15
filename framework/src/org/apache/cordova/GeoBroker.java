@@ -61,14 +61,8 @@ public class GeoBroker extends CordovaPlugin {
             this.gpsListener = new GPSListener(this.locationManager, this);
         }
 
-        PluginResult.Status status = PluginResult.Status.NO_RESULT;
-        String message = "Location API is not available for this device.";
-        PluginResult result = new PluginResult(status, message);
-
         if ( locationManager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ||
                 locationManager.isProviderEnabled( LocationManager.NETWORK_PROVIDER )) {
-
-            result.setKeepCallback(true);
 
             if (action.equals("getLocation")) {
                 boolean enableHighAccuracy = args.getBoolean(0);
@@ -76,7 +70,8 @@ public class GeoBroker extends CordovaPlugin {
                 Location last = this.locationManager.getLastKnownLocation((enableHighAccuracy ? LocationManager.GPS_PROVIDER : LocationManager.NETWORK_PROVIDER));
                 // Check if we can use lastKnownLocation to get a quick reading and use less battery
                 if (last != null && (System.currentTimeMillis() - last.getTime()) <= maximumAge) {
-                    result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(last));
+                    PluginResult result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(last));
+                    callbackContext.sendPluginResult(result);
                 } else {
                     this.getCurrentLocation(callbackContext, enableHighAccuracy);
                 }
@@ -93,10 +88,13 @@ public class GeoBroker extends CordovaPlugin {
             else {
                 return false;
             }
+        } else {
+            PluginResult.Status status = PluginResult.Status.NO_RESULT;
+            String message = "Location API is not available for this device.";
+            PluginResult result = new PluginResult(status, message);
+            callbackContext.sendPluginResult(result);
         }
-        callbackContext.sendPluginResult(result);
         return true;
-
     }
 
     private void clearWatch(String id) {
