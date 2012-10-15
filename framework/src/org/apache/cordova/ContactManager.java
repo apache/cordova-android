@@ -53,7 +53,7 @@ public class ContactManager extends CordovaPlugin {
      * @param callbackContext   The callback context used when calling back into JavaScript.
      * @return                  True if the action was valid, false otherwise.
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
+    public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) {
         /**
          * Check to see if we are on an Android 1.X device.  If we are return an error as we
          * do not support this as of Cordova 1.0.
@@ -73,22 +73,47 @@ public class ContactManager extends CordovaPlugin {
 
         try {
             if (action.equals("search")) {
-                JSONArray res = contactAccessor.search(args.getJSONArray(0), args.optJSONObject(1));
-                callbackContext.success(res);
-            }
-            else if (action.equals("save")) {
-                String id = contactAccessor.save(args.getJSONObject(0));
-                if (id != null) {
-                    JSONObject res = contactAccessor.getContactById(id);
-                    if (res != null) {
+                final JSONArray filter = args.getJSONArray(0);
+                final JSONObject options = args.getJSONObject(1);
+                this.cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        JSONArray res = contactAccessor.search(filter, options);
                         callbackContext.success(res);
                     }
-                }
+                });
+            }
+            else if (action.equals("save")) {
+                final JSONObject contact = args.getJSONObject(0);
+                this.cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        JSONObject res = null;
+                        String id = contactAccessor.save(contact);
+                        if (id != null) {
+                            try {
+                                res = contactAccessor.getContactById(id);
+                            } catch (JSONException e) {
+                                Log.e(LOG_TAG, "JSON fail.", e);
+                            }
+                        }
+                        if (res != null) {
+                            callbackContext.success(res);
+                        } else {
+                            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, UNKNOWN_ERROR));
+                        }
+                    }
+                });
             }
             else if (action.equals("remove")) {
-                if (contactAccessor.remove(args.getString(0))) {
-                    callbackContext.success();
-                }
+                final String contactId = args.getString(0);
+                this.cordova.getThreadPool().execute(new Runnable() {
+                    public void run() {
+                        if (contactAccessor.remove(contactId)) {
+                            callbackContext.success();
+                        } else {
+                            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, UNKNOWN_ERROR));
+                        }
+                    }
+                });
             }
             else {
                 return false;
