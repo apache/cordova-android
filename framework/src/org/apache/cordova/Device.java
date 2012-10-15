@@ -72,25 +72,21 @@ public class Device extends CordovaPlugin {
      * @param callbackContext   The callback id used when calling back into JavaScript.
      * @return                  True if the action was valid, false if not.
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
-        try {
-            if (action.equals("getDeviceInfo")) {
-                JSONObject r = new JSONObject();
-                r.put("uuid", Device.uuid);
-                r.put("version", this.getOSVersion());
-                r.put("platform", Device.platform);
-                r.put("name", this.getProductName());
-                r.put("cordova", Device.cordovaVersion);
-                //JSONObject pg = new JSONObject();
-                //pg.put("version", Device.CordovaVersion);
-                //r.put("cordova", pg);
-                callbackContext.success(r);
-            }
-            else {
-                return false;
-            }
-        } catch (JSONException e) {
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        if (action.equals("getDeviceInfo")) {
+            JSONObject r = new JSONObject();
+            r.put("uuid", Device.uuid);
+            r.put("version", this.getOSVersion());
+            r.put("platform", Device.platform);
+            r.put("name", this.getProductName());
+            r.put("cordova", Device.cordovaVersion);
+            //JSONObject pg = new JSONObject();
+            //pg.put("version", Device.CordovaVersion);
+            //r.put("cordova", pg);
+            callbackContext.success(r);
+        }
+        else {
+            return false;
         }
         return true;
     }

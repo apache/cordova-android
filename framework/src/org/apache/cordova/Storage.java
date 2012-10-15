@@ -65,32 +65,28 @@ public class Storage extends CordovaPlugin {
      *            The callback context used when calling back into JavaScript.
      * @return True if the action was valid, false otherwise.
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
-        try {
-            if (action.equals("openDatabase")) {
-                this.openDatabase(args.getString(0), args.getString(1),
-                        args.getString(2), args.getLong(3));
-            } else if (action.equals("executeSql")) {
-                String[] s = null;
-                if (args.isNull(1)) {
-                    s = new String[0];
-                } else {
-                    JSONArray a = args.getJSONArray(1);
-                    int len = a.length();
-                    s = new String[len];
-                    for (int i = 0; i < len; i++) {
-                        s[i] = a.getString(i);
-                    }
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        if (action.equals("openDatabase")) {
+            this.openDatabase(args.getString(0), args.getString(1),
+                    args.getString(2), args.getLong(3));
+        } else if (action.equals("executeSql")) {
+            String[] s = null;
+            if (args.isNull(1)) {
+                s = new String[0];
+            } else {
+                JSONArray a = args.getJSONArray(1);
+                int len = a.length();
+                s = new String[len];
+                for (int i = 0; i < len; i++) {
+                    s[i] = a.getString(i);
                 }
-                this.executeSql(args.getString(0), s, args.getString(2));
             }
-            else {
-                return false;
-            }
-            callbackContext.success();
-        } catch (JSONException e) {
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+            this.executeSql(args.getString(0), s, args.getString(2));
         }
+        else {
+            return false;
+        }
+        callbackContext.success();
         return true;
     }
 

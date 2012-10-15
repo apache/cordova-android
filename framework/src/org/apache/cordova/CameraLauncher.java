@@ -116,57 +116,51 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      * @param callbackContext   The callback id used when calling back into JavaScript.
      * @return              	A PluginResult object with a status and message.
      */
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
 
-        try {
-            if (action.equals("takePicture")) {
-                int srcType = CAMERA;
-                int destType = FILE_URI;
-                this.saveToPhotoAlbum = false;
-                this.targetHeight = 0;
-                this.targetWidth = 0;
-                this.encodingType = JPEG;
-                this.mediaType = PICTURE;
-                this.mQuality = 80;
+        if (action.equals("takePicture")) {
+            int srcType = CAMERA;
+            int destType = FILE_URI;
+            this.saveToPhotoAlbum = false;
+            this.targetHeight = 0;
+            this.targetWidth = 0;
+            this.encodingType = JPEG;
+            this.mediaType = PICTURE;
+            this.mQuality = 80;
 
-                this.mQuality = args.getInt(0);
-                destType = args.getInt(1);
-                srcType = args.getInt(2);
-                this.targetWidth = args.getInt(3);
-                this.targetHeight = args.getInt(4);
-                this.encodingType = args.getInt(5);
-                this.mediaType = args.getInt(6);
-                //this.allowEdit = args.getBoolean(7); // This field is unused.
-                this.correctOrientation = args.getBoolean(8);
-                this.saveToPhotoAlbum = args.getBoolean(9);
+            this.mQuality = args.getInt(0);
+            destType = args.getInt(1);
+            srcType = args.getInt(2);
+            this.targetWidth = args.getInt(3);
+            this.targetHeight = args.getInt(4);
+            this.encodingType = args.getInt(5);
+            this.mediaType = args.getInt(6);
+            //this.allowEdit = args.getBoolean(7); // This field is unused.
+            this.correctOrientation = args.getBoolean(8);
+            this.saveToPhotoAlbum = args.getBoolean(9);
 
-                // If the user specifies a 0 or smaller width/height
-                // make it -1 so later comparisons succeed
-                if (this.targetWidth < 1) {
-                    this.targetWidth = -1;
-                }
-                if (this.targetHeight < 1) {
-                    this.targetHeight = -1;
-                }
-
-                if (srcType == CAMERA) {
-                    this.takePicture(destType, encodingType);
-                }
-                else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
-                    this.getImage(srcType, destType);
-                }
-                PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
-                r.setKeepCallback(true);
-                callbackContext.sendPluginResult(r);
-                return true;
+            // If the user specifies a 0 or smaller width/height
+            // make it -1 so later comparisons succeed
+            if (this.targetWidth < 1) {
+                this.targetWidth = -1;
             }
-            return false;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+            if (this.targetHeight < 1) {
+                this.targetHeight = -1;
+            }
+
+            if (srcType == CAMERA) {
+                this.takePicture(destType, encodingType);
+            }
+            else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
+                this.getImage(srcType, destType);
+            }
+            PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
+            r.setKeepCallback(true);
+            callbackContext.sendPluginResult(r);
             return true;
         }
+        return false;
     }
 
     //--------------------------------------------------------------------------
