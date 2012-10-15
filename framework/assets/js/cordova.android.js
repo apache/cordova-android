@@ -1,6 +1,6 @@
-// commit e799aef6a4e24e95b341798e19ffeb39b43ce2c1
+// commit 98d190ad98ec48f4f06c61286faee99c0eb000ed
 
-// File generated at :: Tue Oct 02 2012 09:37:50 GMT-0400 (EDT)
+// File generated at :: Mon Oct 15 2012 13:22:37 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -206,7 +206,7 @@ var cordova = {
     },
     /**
      * Method to fire event from native code
-     * bNoDetach is required for events which cause an exception which needs to be caught in native code     
+     * bNoDetach is required for events which cause an exception which needs to be caught in native code
      */
     fireDocumentEvent: function(type, data, bNoDetach) {
         var evt = createEvent(type, data);
@@ -234,14 +234,6 @@ var cordova = {
         }
     },
 
-    // TODO: iOS only
-    // This queue holds the currently executing command and all pending
-    // commands executed with cordova.exec().
-    commandQueue:[],
-    // Indicates if we're currently in the middle of flushing the command
-    // queue on the native side.
-    commandQueueFlushing:false,
-    // END TODO
     /**
      * Plugin callback mechanism.
      */
@@ -502,8 +494,8 @@ var Channel = function(type, sticky) {
                     if (!(--i)) h();
                 };
             for (var j=0; j<len; j++) {
-                if (c[j].state == 0) {
-                    throw Error('Can only use join with sticky channels.')
+                if (c[j].state === 0) {
+                    throw Error('Can only use join with sticky channels.');
                 }
                 c[j].subscribe(f);
             }
@@ -602,7 +594,7 @@ Channel.prototype.unsubscribe = function(f) {
     if (handler) {
         delete this.handlers[guid];
         this.numHandlers--;
-        if (this.numHandlers == 0) {
+        if (this.numHandlers === 0) {
             this.onHasSubscribersChange && this.onHasSubscribersChange();
         }
     }
@@ -672,6 +664,37 @@ channel.waitForInitialization('onCordovaReady');
 channel.waitForInitialization('onCordovaConnectionReady');
 
 module.exports = channel;
+
+});
+
+// file: lib/common/commandProxy.js
+define("cordova/commandProxy", function(require, exports, module) {
+
+
+// internal map of proxy function
+var CommandProxyMap = {};
+
+module.exports = {
+
+    // example: cordova.commandProxy.add("Accelerometer",{getCurrentAcceleration: function(successCallback, errorCallback, options) {...},...);
+    add:function(id,proxyObj) {
+        console.log("adding proxy for " + id);
+        CommandProxyMap[id] = proxyObj;
+        return proxyObj;
+    },
+
+    // cordova.commandProxy.remove("Accelerometer");
+    remove:function(id) {
+        var proxy = CommandProxyMap[id];
+        delete CommandProxyMap[id];
+        CommandProxyMap[id] = null;
+        return proxy;
+    },
+
+    get:function(service,action) {
+        return ( CommandProxyMap[service] ? CommandProxyMap[service][action] : null );
+    }
+};
 
 });
 
@@ -2817,7 +2840,7 @@ FileTransfer.prototype.download = function(source, target, successCallback, erro
  */
 FileTransfer.prototype.abort = function(successCallback, errorCallback) {
     exec(successCallback, errorCallback, 'FileTransfer', 'abort', [this._id]);
-}
+};
 
 module.exports = FileTransfer;
 
@@ -3390,13 +3413,13 @@ Media.onStatus = function(id, msgType, value) {
                 media._duration = value;
                 break;
             case Media.MEDIA_ERROR :
-                media.errorCallback && media.errorCallback(value); 
+                media.errorCallback && media.errorCallback(value);
                 break;
             case Media.MEDIA_POSITION :
                 media._position = Number(value);
                 break;
             default :
-                console && console.error && console.error("Unhandled Media.onStatus :: " + msgType); 
+                console && console.error && console.error("Unhandled Media.onStatus :: " + msgType);
                 break;
         }
     }
@@ -3427,23 +3450,26 @@ we should simply use a literal :
     errorCallbackFunction( {'code':3} );
  */
 
-if(!MediaError) {
-    var MediaError = function(code, msg) {
+ var _MediaError = window.MediaError;
+
+
+if(!_MediaError) {
+    window.MediaError = _MediaError = function(code, msg) {
         this.code = (typeof code != 'undefined') ? code : null;
         this.message = msg || ""; // message is NON-standard! do not use!
     };
 }
 
-MediaError.MEDIA_ERR_NONE_ACTIVE    = MediaError.MEDIA_ERR_NONE_ACTIVE    || 0;
-MediaError.MEDIA_ERR_ABORTED        = MediaError.MEDIA_ERR_ABORTED        || 1;
-MediaError.MEDIA_ERR_NETWORK        = MediaError.MEDIA_ERR_NETWORK        || 2;
-MediaError.MEDIA_ERR_DECODE         = MediaError.MEDIA_ERR_DECODE         || 3;
-MediaError.MEDIA_ERR_NONE_SUPPORTED = MediaError.MEDIA_ERR_NONE_SUPPORTED || 4;
-// TODO: MediaError.MEDIA_ERR_NONE_SUPPORTED is legacy, the W3 spec now defines it as below. 
+_MediaError.MEDIA_ERR_NONE_ACTIVE    = _MediaError.MEDIA_ERR_NONE_ACTIVE    || 0;
+_MediaError.MEDIA_ERR_ABORTED        = _MediaError.MEDIA_ERR_ABORTED        || 1;
+_MediaError.MEDIA_ERR_NETWORK        = _MediaError.MEDIA_ERR_NETWORK        || 2;
+_MediaError.MEDIA_ERR_DECODE         = _MediaError.MEDIA_ERR_DECODE         || 3;
+_MediaError.MEDIA_ERR_NONE_SUPPORTED = _MediaError.MEDIA_ERR_NONE_SUPPORTED || 4;
+// TODO: MediaError.MEDIA_ERR_NONE_SUPPORTED is legacy, the W3 spec now defines it as below.
 // as defined by http://dev.w3.org/html5/spec-author-view/video.html#error-codes
-MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED = MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED || 4;
+_MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED = _MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED || 4;
 
-module.exports = MediaError;
+module.exports = _MediaError;
 
 });
 
@@ -3910,7 +3936,7 @@ var nativeApi = this._cordovaNative || require('cordova/plugin/android/promptbas
 var currentApi = nativeApi;
 
 module.exports = {
-    get: function() { return currentApi },
+    get: function() { return currentApi; },
     setPreferPrompt: function(value) {
         currentApi = value ? require('cordova/plugin/android/promptbasednativeapi') : nativeApi;
     }
@@ -4405,7 +4431,6 @@ var Battery = function() {
     for (var key in this.channels) {
         this.channels[key].onHasSubscribersChange = Battery.onHasSubscribersChange;
     }
-
 };
 /**
  * Event handlers for when callbacks get registered for the battery.
@@ -6406,7 +6431,7 @@ window.cordova = require('cordova');
     // Replace navigator before any modules are required(), to ensure it happens as soon as possible.
     // We replace it so that properties that can't be clobbered can instead be overridden.
     if (typeof navigator != 'undefined') {
-        function CordovaNavigator() {}
+        var CordovaNavigator = function () {};
         CordovaNavigator.prototype = navigator;
         navigator = new CordovaNavigator();
     }
