@@ -1010,9 +1010,11 @@ public class DroidGap extends Activity implements CordovaInterface {
     	    appView.getHitTestResult().getType() == WebView.HitTestResult.EDIT_TEXT_TYPE &&
     	    keyCode == KeyEvent.KEYCODE_BACK) {
     	    		return appView.onKeyUp(keyCode, event);
+        } else if (appView.isCustomViewShowing() && keyCode == KeyEvent.KEYCODE_BACK) {
+            return appView.onKeyUp(keyCode, event);
+        } else {
+            return super.onKeyUp(keyCode, event);
     	}
-    	else
-    		return super.onKeyUp(keyCode, event);
     }
     
     /*
