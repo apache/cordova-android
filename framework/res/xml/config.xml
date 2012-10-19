@@ -30,7 +30,7 @@
     <access origin=".*"/>
 
     <log level="DEBUG"/>
-    <preference name="useBrowserHistory" value="false" />
+    <preference name="useBrowserHistory" value="true" />
     <preference name="exit-on-suspend" value="false" />
 <plugins>
     <plugin name="App" value="org.apache.cordova.App"/>
