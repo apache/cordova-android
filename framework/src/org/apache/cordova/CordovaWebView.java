@@ -734,7 +734,7 @@ public class CordovaWebView extends WebView {
         {
             //Switch back to the old browser history and state the six month policy
             this.useBrowserHistory = false;
-            Log.w(TAG, "useBrowserHistory=false is deprecated. We will be removing this feature entirely in six months.  Please use the browser history and use history.back().");
+            Log.w(TAG, "useBrowserHistory=false is deprecated as of Cordova 2.2.0 and will be removed six months after the 2.2.0 release.  Please use the browser history and use history.back().");
         }
  
         if ("true".equals(this.getProperty("fullscreen", "false"))) {
