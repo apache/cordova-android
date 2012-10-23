@@ -730,13 +730,13 @@ public class CordovaWebView extends WebView {
             }
         }
 
-        // Init preferences
-        this.useBrowserHistory = !"false".equals(this.getProperty("useBrowserHistory", "true"));
-        if (!this.useBrowserHistory) {
-            // Deprecated in Cordova 2.2.0.
-            Log.w(TAG, "useBrowserHistory=false is deprecated. Use history.back() instead of navigator.app.backHistory().");
+        if("false".equals(this.getProperty("useBrowserHistory", "true")))
+        {
+            //Switch back to the old browser history and state the six month policy
+            this.useBrowserHistory = false;
+            Log.w(TAG, "useBrowserHistory=false is deprecated. We will be removing this feature entirely in six months.  Please use the browser history and use history.back().");
         }
-
+ 
         if ("true".equals(this.getProperty("fullscreen", "false"))) {
             this.cordova.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             this.cordova.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
