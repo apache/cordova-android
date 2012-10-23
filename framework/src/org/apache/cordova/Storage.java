@@ -137,7 +137,20 @@ public class Storage extends CordovaPlugin {
             this.path = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         }
 
-        this.dbName = this.path + File.pathSeparator + db + ".db";
+        this.dbName = this.path + File.separator + db + ".db";
+
+        /*
+         * What is all this nonsense? Well the separator was incorrect so the db was showing up in the wrong 
+         * directory. This bit of code fixes that issue and moves the db to the correct directory.
+         */
+        File oldDbFile = new File(this.path + File.pathSeparator + db + ".db");
+        if (oldDbFile.exists()) {
+            File dbPath = new File(this.path);
+            File dbFile = new File(dbName);
+            dbPath.mkdirs();
+            oldDbFile.renameTo(dbFile);
+        }
+        
         this.myDb = SQLiteDatabase.openOrCreateDatabase(this.dbName, null);
     }
 
