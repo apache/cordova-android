@@ -731,11 +731,10 @@ public class CordovaWebView extends WebView {
         }
 
         // Init preferences
-        if ("false".equals(this.getProperty("useBrowserHistory", "false"))) {
-            this.useBrowserHistory = false;
-        }
-        else {
-            this.useBrowserHistory = true;
+        this.useBrowserHistory = !"false".equals(this.getProperty("useBrowserHistory", "true"));
+        if (!this.useBrowserHistory) {
+            // Deprecated in Cordova 2.2.0.
+            Log.w(TAG, "useBrowserHistory=false is deprecated. Use history.back() instead of navigator.app.backHistory().");
         }
 
         if ("true".equals(this.getProperty("fullscreen", "false"))) {
