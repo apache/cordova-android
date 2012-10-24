@@ -1,6 +1,6 @@
-// commit 98d190ad98ec48f4f06c61286faee99c0eb000ed
+// commit 6881d72b96f476a1e8cd6e03fe1465a0fb88b000
 
-// File generated at :: Mon Oct 15 2012 13:22:37 GMT-0700 (PDT)
+// File generated at :: Wed Oct 24 2012 16:27:17 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -695,7 +695,6 @@ module.exports = {
         return ( CommandProxyMap[service] ? CommandProxyMap[service][action] : null );
     }
 };
-
 });
 
 // file: lib/common/common.js
@@ -1096,6 +1095,8 @@ androidExec.processMessages = function(messages) {
                 window.setTimeout(pollOnce, 0);
                 break;
             }
+            // Needed for Android 2.2
+            messages = "" + messages;
             var spaceIdx = messages.indexOf(' ');
             var msgLen = +messages.slice(0, spaceIdx);
             var message = messages.substr(spaceIdx + 1, msgLen);
@@ -6322,8 +6323,8 @@ utils.extend = (function() {
  * Alerts a message in any available way: alert or console.log.
  */
 utils.alert = function(msg) {
-    if (alert) {
-        alert(msg);
+    if (window.alert) {
+        window.alert(msg);
     } else if (console && console.log) {
         console.log(msg);
     }
