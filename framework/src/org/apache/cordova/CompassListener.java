@@ -202,7 +202,9 @@ public class CompassListener extends CordovaPlugin implements SensorEventListene
     private void timeout() {
         if (this.status == CompassListener.STARTING) {
             this.setStatus(CompassListener.ERROR_FAILED_TO_START);
-            this.callbackContext.error("Compass listener failed to start.");
+            if (this.callbackContext != null) {
+                this.callbackContext.error("Compass listener failed to start.");
+            }
         }
     }
 
