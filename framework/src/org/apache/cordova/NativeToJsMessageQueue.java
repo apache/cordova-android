@@ -398,7 +398,12 @@ public class NativeToJsMessageQueue {
                     ret += 1 + pluginResult.getMessage().length();
                     break;
                 case PluginResult.MESSAGE_TYPE_STRING: // s
-                    ret += 1 + pluginResult.getStrMessage().length();
+                    if (pluginResult.getStrMessage() == null) {
+                        ret += 1;
+                    }
+                    else {
+                        ret += 1 + pluginResult.getStrMessage().length();
+                    }
                     break;
                 case PluginResult.MESSAGE_TYPE_JSON:
                 default:
@@ -433,8 +438,10 @@ public class NativeToJsMessageQueue {
                       .append(pluginResult.getMessage());
                     break;
                 case PluginResult.MESSAGE_TYPE_STRING: // s
-                    sb.append('s')
-                      .append(pluginResult.getStrMessage());
+                    sb.append('s');
+                    if (pluginResult.getStrMessage() != null) {
+                        sb.append(pluginResult.getStrMessage());
+                    }
                     break;
                 case PluginResult.MESSAGE_TYPE_JSON:
                 default:
