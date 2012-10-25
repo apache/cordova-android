@@ -163,6 +163,14 @@ public class Notification extends CordovaPlugin {
                                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 0));
                             }
                         });
+                dlg.setOnCancelListener(new AlertDialog.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog)
+                    {
+                        dialog.dismiss();
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 0));
+                    }
+                });
+                
                 dlg.create();
                 dlg.show();
             };
@@ -225,6 +233,13 @@ public class Notification extends CordovaPlugin {
                             }
                             );
                 }
+                dlg.setOnCancelListener(new AlertDialog.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog)
+                    {
+                        dialog.dismiss();
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 0));
+                    }
+                });
 
                 dlg.create();
                 dlg.show();
