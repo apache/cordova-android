@@ -391,19 +391,15 @@ public class NativeToJsMessageQueue {
             int statusLen = String.valueOf(pluginResult.getStatus()).length();
             int ret = 2 + statusLen + 1 + jsPayloadOrCallbackId.length() + 1;
             switch (pluginResult.getMessageType()) {
-                case PluginResult.MESSAGE_TYPE_BOOLEAN:
+                case PluginResult.MESSAGE_TYPE_BOOLEAN: // f or t
+                case PluginResult.MESSAGE_TYPE_NULL: // N
                     ret += 1;
                     break;
                 case PluginResult.MESSAGE_TYPE_NUMBER: // n
                     ret += 1 + pluginResult.getMessage().length();
                     break;
                 case PluginResult.MESSAGE_TYPE_STRING: // s
-                    if (pluginResult.getStrMessage() == null) {
-                        ret += 1;
-                    }
-                    else {
-                        ret += 1 + pluginResult.getStrMessage().length();
-                    }
+                    ret += 1 + pluginResult.getStrMessage().length();
                     break;
                 case PluginResult.MESSAGE_TYPE_JSON:
                 default:
@@ -433,15 +429,16 @@ public class NativeToJsMessageQueue {
                 case PluginResult.MESSAGE_TYPE_BOOLEAN:
                     sb.append(pluginResult.getMessage().charAt(0)); // t or f.
                     break;
+                case PluginResult.MESSAGE_TYPE_NULL: // N
+                    sb.append('N');
+                    break;
                 case PluginResult.MESSAGE_TYPE_NUMBER: // n
                     sb.append('n')
                       .append(pluginResult.getMessage());
                     break;
                 case PluginResult.MESSAGE_TYPE_STRING: // s
                     sb.append('s');
-                    if (pluginResult.getStrMessage() != null) {
-                        sb.append(pluginResult.getStrMessage());
-                    }
+                    sb.append(pluginResult.getStrMessage());
                     break;
                 case PluginResult.MESSAGE_TYPE_JSON:
                 default:

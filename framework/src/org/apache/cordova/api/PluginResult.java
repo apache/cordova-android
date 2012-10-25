@@ -34,7 +34,7 @@ public class PluginResult {
 
     public PluginResult(Status status, String message) {
         this.status = status.ordinal();
-        this.messageType = MESSAGE_TYPE_STRING;
+        this.messageType = message == null ? MESSAGE_TYPE_NULL : MESSAGE_TYPE_STRING;
         this.strMessage = message;
     }
 
@@ -133,6 +133,7 @@ public class PluginResult {
     public static final int MESSAGE_TYPE_JSON = 2;
     public static final int MESSAGE_TYPE_NUMBER = 3;
     public static final int MESSAGE_TYPE_BOOLEAN = 4;
+    public static final int MESSAGE_TYPE_NULL = 5;
     
     public static String[] StatusMessages = new String[] {
         "No result",

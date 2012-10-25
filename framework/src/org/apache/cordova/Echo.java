@@ -27,7 +27,7 @@ public class Echo extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
-        final String result = args.getString(0);
+        final String result = args.isNull(0) ? null : args.getString(0);
         if ("echo".equals(action)) {
             callbackContext.success(result);
             return true;
