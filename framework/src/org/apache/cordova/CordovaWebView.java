@@ -122,6 +122,7 @@ public class CordovaWebView extends WebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
+        this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
     }
@@ -167,7 +168,6 @@ public class CordovaWebView extends WebView {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
         this.setWebChromeClient(new CordovaChromeClient(this.cordova, this));
-        this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
     }
@@ -199,7 +199,7 @@ public class CordovaWebView extends WebView {
 
 
     private void initWebViewClient(CordovaInterface cordova) {
-        if(android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.HONEYCOMB)
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
         {
             this.setWebViewClient(new CordovaWebViewClient(this.cordova, this));
         }

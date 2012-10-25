@@ -301,7 +301,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     public void init() {
         CordovaWebView webView = new CordovaWebView(DroidGap.this);
-        this.init(webView, new CordovaWebViewClient(this, webView), new CordovaChromeClient(this, webView));
+        this.init(webView, new CordovaChromeClient(this, webView));
     }
 
     /**
@@ -311,16 +311,14 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param webViewClient
      * @param webChromeClient
      */
-    public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
+    public void init(CordovaWebView webView, CordovaChromeClient webChromeClient) {
         LOG.d(TAG, "DroidGap.init()");
 
         // Set up web container
         this.appView = webView;
         this.appView.setId(100);
 
-        this.appView.setWebViewClient(webViewClient);
         this.appView.setWebChromeClient(webChromeClient);
-        webViewClient.setWebView(this.appView);
         webChromeClient.setWebView(this.appView);
 
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
