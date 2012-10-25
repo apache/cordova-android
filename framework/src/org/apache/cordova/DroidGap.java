@@ -320,6 +320,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         this.appView.setWebChromeClient(webChromeClient);
         webChromeClient.setWebView(this.appView);
+        webViewClient = appView.viewClient;
 
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
