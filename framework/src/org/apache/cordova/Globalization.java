@@ -40,6 +40,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.TargetApi;
 import android.text.format.Time;
 
 /**
@@ -101,7 +102,11 @@ public class Globalization extends CordovaPlugin  {
             }else if(action.equalsIgnoreCase(GETDATEPATTERN)){
                 obj = getDatePattern(data);
             }else if(action.equalsIgnoreCase(GETDATENAMES)){
-                obj = getDateNames(data);
+                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.GINGERBREAD) {
+                    throw new GlobalizationError(GlobalizationError.UNKNOWN_ERROR);
+                } else {
+                    obj = getDateNames(data);
+                }
             }else if(action.equalsIgnoreCase(ISDAYLIGHTSAVINGSTIME)){
                 obj = getIsDayLightSavingsTime(data);
             }else if(action.equalsIgnoreCase(GETFIRSTDAYOFWEEK)){
@@ -305,6 +310,7 @@ public class Globalization extends CordovaPlugin  {
      *
      * @throws: GlobalizationError.UNKNOWN_ERROR
     */
+    @TargetApi(9)
     private JSONObject getDateNames(JSONArray options) throws GlobalizationError{
         JSONObject obj = new JSONObject();
         //String[] value;
