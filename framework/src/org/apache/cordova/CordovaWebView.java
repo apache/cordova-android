@@ -272,8 +272,14 @@ public class CordovaWebView extends WebView {
     }
 
     private void exposeJsInterface() {
-        // addJavascriptInterface crashes on the 2.3 emulator.
-        if (Build.VERSION.RELEASE.startsWith("2.3") && Build.MANUFACTURER.equals("unknown")) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) {
+            Log.i(TAG, "Disabled addJavascriptInterface() bridge since Android version is old.");
+            // Bug being that Java Strings do not get converted to JS strings automatically.
+            // This isn't hard to work-around on the JS side, but it's easier to just
+            // use the prompt bridge instead.
+            return;            
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB && Build.MANUFACTURER.equals("unknown")) {
+            // addJavascriptInterface crashes on the 2.3 emulator.
             Log.i(TAG, "Disabled addJavascriptInterface() bridge callback due to a bug on the 2.3 emulator");
             return;
         }
