@@ -122,7 +122,6 @@ public class CordovaWebView extends WebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
-        this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
     }
