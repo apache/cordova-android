@@ -1,6 +1,6 @@
-// commit 6881d72b96f476a1e8cd6e03fe1465a0fb88b000
+// commit 8119d0b96958dfa3a0ce8590a90b24242ec4e31a
 
-// File generated at :: Wed Oct 24 2012 16:27:17 GMT-0400 (EDT)
+// File generated at :: Thu Oct 25 2012 15:01:24 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -966,22 +966,32 @@ function androidExec(success, fail, service, action, args) {
     }
 
     var callbackId = service + cordova.callbackId++,
-        argsJson = JSON.stringify(args);
-    if (success || fail) {
-        cordova.callbacks[callbackId] = {success:success, fail:fail};
+        argsJson = JSON.stringify(args),
+        returnValue;
+
+    // TODO: Returning the payload of a synchronous call was deprecated in 2.2.0.
+    // Remove it after 6 months.
+    function captureReturnValue(value) {
+        returnValue = value;
+        success(value);
     }
+
+    cordova.callbacks[callbackId] = {success:captureReturnValue, fail:fail};
 
     if (jsToNativeBridgeMode == jsToNativeModes.LOCATION_CHANGE) {
         window.location = 'http://cdv_exec/' + service + '#' + action + '#' + callbackId + '#' + argsJson;
     } else {
         var messages = nativeApiProvider.get().exec(service, action, callbackId, argsJson);
-        // Explicit cast to string is required on Android 2.1 to convert from
-        // a Java string to a JS string.
-        if (messages) {
-            messages = String(messages);
-        }
         androidExec.processMessages(messages);
     }
+    if (cordova.callbacks[callbackId]) {
+        if (success || fail) {
+            cordova.callbacks[callbackId].success = success;
+        } else {
+            delete cordova.callbacks[callbackId];
+        }
+    }
+    return returnValue;
 }
 
 function pollOnce() {
@@ -1065,6 +1075,8 @@ function processMessage(message) {
                 payload = true;
             } else if (payloadKind == 'f') {
                 payload = false;
+            } else if (payloadKind == 'N') {
+                payload = null;
             } else if (payloadKind == 'n') {
                 payload = +message.slice(nextSpaceIdx + 2);
             } else {
@@ -1095,8 +1107,6 @@ androidExec.processMessages = function(messages) {
                 window.setTimeout(pollOnce, 0);
                 break;
             }
-            // Needed for Android 2.2
-            messages = "" + messages;
             var spaceIdx = messages.indexOf(' ');
             var msgLen = +messages.slice(0, spaceIdx);
             var message = messages.substr(spaceIdx + 1, msgLen);
@@ -3940,6 +3950,10 @@ module.exports = {
     get: function() { return currentApi; },
     setPreferPrompt: function(value) {
         currentApi = value ? require('cordova/plugin/android/promptbasednativeapi') : nativeApi;
+    },
+    // Used only by tests.
+    set: function(value) {
+        currentApi = value;
     }
 };
 
