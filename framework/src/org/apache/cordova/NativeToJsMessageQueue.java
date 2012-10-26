@@ -50,8 +50,13 @@ public class NativeToJsMessageQueue {
     // exec() is asynchronous. Set this to true when running bridge benchmarks.
     static final boolean DISABLE_EXEC_CHAINING = false;
     
-    // Arbitrarily chosen upper limit for how much data to send to JS in one shot. 
-    private static final int MAX_PAYLOAD_SIZE = 50 * 1024;
+    // Upper limit for how much data to send to JS in one shot.
+    // TODO(agrieve): This is currently disable. It should be re-enabled once we
+    // remove support for returning values from exec() calls. This was
+    // deprecated in 2.2.0.
+    // Also, this currently only chops up on message boundaries. It may be useful
+    // to allow it to break up messages.
+    private static int MAX_PAYLOAD_SIZE = -1; //50 * 1024 * 10240;
     
     /**
      * The index into registeredListeners to treat as active. 
@@ -144,7 +149,7 @@ public class NativeToJsMessageQueue {
             int numMessagesToSend = 0;
             for (JsMessage message : queue) {
                 int messageSize = calculatePackedMessageLength(message);
-                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE) {
+                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE && MAX_PAYLOAD_SIZE > 0) {
                     break;
                 }
                 totalPayloadLen += messageSize;
@@ -178,7 +183,7 @@ public class NativeToJsMessageQueue {
             int numMessagesToSend = 0;
             for (JsMessage message : queue) {
                 int messageSize = message.calculateEncodedLength() + 50; // overestimate.
-                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE) {
+                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE && MAX_PAYLOAD_SIZE > 0) {
                     break;
                 }
                 totalPayloadLen += messageSize;
