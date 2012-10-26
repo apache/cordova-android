@@ -1,6 +1,6 @@
-// commit 8119d0b96958dfa3a0ce8590a90b24242ec4e31a
+// commit 97a05cb0f672ee1bfb7e9e14a0dfd452d7763ba9
 
-// File generated at :: Thu Oct 25 2012 15:01:24 GMT-0400 (EDT)
+// File generated at :: Fri Oct 26 2012 10:37:55 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -973,7 +973,7 @@ function androidExec(success, fail, service, action, args) {
     // Remove it after 6 months.
     function captureReturnValue(value) {
         returnValue = value;
-        success(value);
+        success && success(value);
     }
 
     cordova.callbacks[callbackId] = {success:captureReturnValue, fail:fail};
