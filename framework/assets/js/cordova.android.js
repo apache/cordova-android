@@ -1,6 +1,6 @@
-// commit 97a05cb0f672ee1bfb7e9e14a0dfd452d7763ba9
+// commit d819e1e60599c12ac831379b06bba9110e9f1790
 
-// File generated at :: Fri Oct 26 2012 10:37:55 GMT-0400 (EDT)
+// File generated at :: Fri Oct 26 2012 16:03:51 GMT-0400 (EDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -1001,8 +1001,8 @@ function pollOnce() {
 
 function pollingTimerFunc() {
     if (pollEnabled) {
-      pollOnce();
-      setTimeout(pollingTimerFunc, 50);
+        pollOnce();
+        setTimeout(pollingTimerFunc, 50);
     }
 }
 
@@ -1095,25 +1095,34 @@ function processMessage(message) {
 
 // This is called from the NativeToJsMessageQueue.java.
 androidExec.processMessages = function(messages) {
-    messagesFromNative.push(messages);
-    // Check for the reentrant case, and enqueue the message if that's the case.
-    if (messagesFromNative.length > 1) {
-        return;
-    }
-    while (messagesFromNative.length) {
-        messages = messagesFromNative[0];
-        while (messages) {
+    if (messages) {
+        messagesFromNative.push(messages);
+        while (messagesFromNative.length) {
+            messages = messagesFromNative.shift();
+            // The Java side can send a * message to indicate that it
+            // still has messages waiting to be retrieved.
+            // TODO(agrieve): This is currently disabled on the Java side
+            // since it breaks returning the result in exec of synchronous
+            // plugins. Once we remove this ability, we can remove this comment.
             if (messages == '*') {
                 window.setTimeout(pollOnce, 0);
-                break;
+                continue;
             }
+
             var spaceIdx = messages.indexOf(' ');
             var msgLen = +messages.slice(0, spaceIdx);
             var message = messages.substr(spaceIdx + 1, msgLen);
             messages = messages.slice(spaceIdx + msgLen + 1);
-            processMessage(message);
+            // Put the remaining messages back into queue in case an exec()
+            // is made by the callback.
+            if (messages) {
+                messagesFromNative.unshift(messages);
+            }
+
+            if (message) {
+                processMessage(message);
+            }
         }
-        messagesFromNative.shift();
     }
 };
 
