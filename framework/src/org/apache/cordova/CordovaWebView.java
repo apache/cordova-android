@@ -93,6 +93,8 @@ public class CordovaWebView extends WebView {
     private boolean bound;
 
     private boolean handleButton = false;
+    
+    private long lastMenuEventTime = 0;
 
 	NativeToJsMessageQueue jsMessageQueue;
 	ExposedJsApi exposedJsApi;
@@ -838,7 +840,10 @@ public class CordovaWebView extends WebView {
         }
         // Legacy
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
-            this.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
+            if (this.lastMenuEventTime < event.getEventTime()) {
+                this.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
+            }
+            this.lastMenuEventTime = event.getEventTime();
             return super.onKeyUp(keyCode, event);
         }
         // If search key
