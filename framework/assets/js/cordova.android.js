@@ -1,6 +1,6 @@
-// commit d819e1e60599c12ac831379b06bba9110e9f1790
+// commit 02b91c5313ff37d74a58f71775170afd360f4a1f
 
-// File generated at :: Fri Oct 26 2012 16:03:51 GMT-0400 (EDT)
+// File generated at :: Wed Oct 31 2012 10:40:25 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -2850,7 +2850,7 @@ FileTransfer.prototype.download = function(source, target, successCallback, erro
         errorCallback(error);
     };
 
-    exec(win, errorCallback, 'FileTransfer', 'download', [source, target, trustAllHosts, this._id]);
+    exec(win, fail, 'FileTransfer', 'download', [source, target, trustAllHosts, this._id]);
 };
 
 /**
