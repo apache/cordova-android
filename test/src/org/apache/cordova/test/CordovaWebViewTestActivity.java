@@ -69,9 +69,9 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
         
     }
 
+    //Note: This must always return an activity!
     public Activity getActivity() {
-        // TODO Auto-generated method stub
-        return null;
+        return this;
     }
 
     @Deprecated

@@ -35,6 +35,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -688,6 +689,12 @@ public class CordovaWebView extends WebView {
      *      <log level="DEBUG" />
      */
     private void loadConfiguration() {
+        Activity action = this.cordova.getActivity();
+        if(action == null)
+        {
+            LOG.i("CordovaLog", "There is no activity.  Is this on the lock screen?");
+            return;
+        }
         int id = getResources().getIdentifier("config", "xml", this.cordova.getActivity().getPackageName());
         if(id == 0)
         {
