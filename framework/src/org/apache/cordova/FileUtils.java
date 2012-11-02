@@ -43,6 +43,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 //import android.app.Activity;
@@ -317,8 +318,9 @@ public class FileUtils extends CordovaPlugin {
      * @throws InvalidModificationException
      * @throws EncodingException
      * @throws JSONException
+     * @throws FileExistsException 
      */
-    private JSONObject transferTo(String fileName, String newParent, String newName, boolean move) throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException {
+    private JSONObject transferTo(String fileName, String newParent, String newName, boolean move) throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException, FileExistsException {
         fileName = stripFileProtocol(fileName);
         newParent = stripFileProtocol(newParent);
 
@@ -406,6 +408,16 @@ public class FileUtils extends CordovaPlugin {
             throw new InvalidModificationException("Can't rename a file to a directory");
         }
 
+        copyAction(srcFile, destFile);
+
+        return getEntry(destFile);
+    }
+
+    /**
+     * Moved this code into it's own method so moveTo could use it when the move is across file systems
+     */
+    private void copyAction(File srcFile, File destFile)
+            throws FileNotFoundException, IOException {
         FileInputStream istream = new FileInputStream(srcFile);
         FileOutputStream ostream = new FileOutputStream(destFile);
         FileChannel input = istream.getChannel();
@@ -419,8 +431,6 @@ public class FileUtils extends CordovaPlugin {
             input.close();
             output.close();
         }
-
-        return getEntry(destFile);
     }
 
     /**
@@ -495,7 +505,7 @@ public class FileUtils extends CordovaPlugin {
      * @throws InvalidModificationException
      * @throws JSONException
      */
-    private JSONObject moveFile(File srcFile, File destFile) throws JSONException, InvalidModificationException {
+    private JSONObject moveFile(File srcFile, File destFile) throws IOException, JSONException, InvalidModificationException {
         // Renaming a file to an existing directory should fail
         if (destFile.exists() && destFile.isDirectory()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -507,6 +517,12 @@ public class FileUtils extends CordovaPlugin {
             // Now we have to do things the hard way
             // 1) Copy all the old file
             // 2) delete the src file
+            copyAction(srcFile, destFile);
+            if (destFile.exists()) {
+                srcFile.delete();
+            } else {
+                throw new IOException("moved failed");
+            }
         }
 
         return getEntry(destFile);
@@ -521,8 +537,10 @@ public class FileUtils extends CordovaPlugin {
      * @throws JSONException
      * @throws IOException
      * @throws InvalidModificationException
+     * @throws NoModificationAllowedException 
+     * @throws FileExistsException 
      */
-    private JSONObject moveDirectory(File srcDir, File destinationDir) throws JSONException, InvalidModificationException {
+    private JSONObject moveDirectory(File srcDir, File destinationDir) throws IOException, JSONException, InvalidModificationException, NoModificationAllowedException, FileExistsException {
         // Renaming a file to an existing directory should fail
         if (destinationDir.exists() && destinationDir.isFile()) {
             throw new InvalidModificationException("Can't rename a file to a directory");
@@ -546,6 +564,12 @@ public class FileUtils extends CordovaPlugin {
             // Now we have to do things the hard way
             // 1) Copy all the old files
             // 2) delete the src directory
+            copyDirectory(srcDir, destinationDir);
+            if (destinationDir.exists()) {
+                removeDirRecursively(srcDir);
+            } else {
+                throw new IOException("moved failed");
+            }
         }
 
         return getEntry(destinationDir);
