@@ -20,6 +20,7 @@
 package org.apache.cordova.test;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.api.CordovaInterface;
@@ -33,6 +34,8 @@ import android.os.Bundle;
 public class CordovaWebViewTestActivity extends Activity implements CordovaInterface {
     CordovaWebView cordovaWebView;
 
+    private final ExecutorService threadPool = Executors.newCachedThreadPool();
+    
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,6 +90,6 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
 
     public ExecutorService getThreadPool() {
         // TODO Auto-generated method stub
-        return null;
+        return threadPool;
     }
 }
