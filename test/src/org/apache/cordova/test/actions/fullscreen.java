@@ -16,7 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova.test.actions;
 
 import android.os.Bundle;
 import org.apache.cordova.*;

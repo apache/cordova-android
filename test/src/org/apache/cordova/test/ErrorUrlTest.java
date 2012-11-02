@@ -22,6 +22,7 @@ package org.apache.cordova.test;
 
 
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.test.actions.errorurl;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.FrameLayout;

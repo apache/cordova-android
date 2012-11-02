@@ -21,6 +21,8 @@ package org.apache.cordova.test;
 */
 
 
+import org.apache.cordova.test.actions.xhr;
+
 import android.test.ActivityInstrumentationTestCase2;
 
 public class XhrTest extends ActivityInstrumentationTestCase2<xhr> {

@@ -16,36 +16,19 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova.test.actions;
 
 import android.os.Bundle;
-import android.webkit.WebView;
-
 import org.apache.cordova.*;
-import org.apache.cordova.api.LOG;
 
-public class whitelist extends DroidGap {
+public class errorurl extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.init(new CordovaWebView(this), new TestViewClient(this), new CordovaChromeClient(this));
-        super.loadUrl("file:///android_asset/www/whitelist/index.html");
+        super.init();
+        this.setStringProperty("errorUrl", "file:///android_asset/www/htmlnotfound/error.html");
+        super.loadUrl("file:///android_asset/www/htmlnotfound/index.html");
     }
-
-    /**
-     * This class can be used to override the GapViewClient and receive notification of webview events.
-     */
-    public class TestViewClient extends CordovaWebViewClient {
-
-        public TestViewClient(DroidGap arg0) {
-            super(arg0);
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            LOG.d("whitelist", "shouldOverrideUrlLoading(" + url + ")");
-            LOG.d("whitelist", "originalUrl=" + view.getOriginalUrl());
-            return super.shouldOverrideUrlLoading(view, url);
-        }
-    }
+    
+    
 }

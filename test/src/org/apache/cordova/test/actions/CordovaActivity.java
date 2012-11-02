@@ -16,20 +16,18 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova.test.actions;
 
+import org.apache.cordova.DroidGap;
+
+import android.app.Activity;
 import android.os.Bundle;
-import org.apache.cordova.*;
 
-public class splashscreen extends DroidGap {
+public class CordovaActivity extends DroidGap {
+    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.init();
-
-        // Show splashscreen
-        this.setIntegerProperty("splashscreen", R.drawable.sandy);
-
-        super.loadUrl("file:///android_asset/www/splashscreen/index.html", 2000);
+        super.loadUrl("file:///android_asset/www/index.html");
     }
 }

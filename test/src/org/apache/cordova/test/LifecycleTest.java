@@ -21,6 +21,8 @@ package org.apache.cordova.test;
 */
 
 
+import org.apache.cordova.test.actions.lifecycle;
+
 import android.test.ActivityInstrumentationTestCase2;
 
 public class LifecycleTest extends ActivityInstrumentationTestCase2<lifecycle> {

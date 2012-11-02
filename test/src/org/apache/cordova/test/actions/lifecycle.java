@@ -16,28 +16,15 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova.test.actions;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class basicauth extends DroidGap {
+public class lifecycle extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.init();
-
-        // LogCat: onReceivedHttpAuthRequest(browserspy.dk:80,BrowserSpy.dk - HTTP Password Test)
-        AuthenticationToken token = new AuthenticationToken();
-        token.setUserName("test");
-        token.setPassword("test");
-        super.setAuthenticationToken(token, "browserspy.dk:80", "BrowserSpy.dk - HTTP Password Test");
-
-        // Add web site to whitelist
-        super.appView.addWhiteListEntry("http://browserspy.dk*", true);
-
-        // Load test
-        super.loadUrl("file:///android_asset/www/basicauth/index.html");
+        super.loadUrl("file:///android_asset/www/lifecycle/index.html");
     }
-
 }

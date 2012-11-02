@@ -16,15 +16,19 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova.test.actions;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class backbuttonmultipage extends DroidGap {
+public class timeout extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.loadUrl("file:///android_asset/www/backbuttonmultipage/index.html");
+        super.init();
+
+        // Short timeout to cause error
+        this.setIntegerProperty("loadUrlTimeoutValue", 10);
+        super.loadUrl("http://www.google.com");
     }
 }

@@ -24,6 +24,7 @@ package org.apache.cordova.test;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaWebViewClient;
 import org.apache.cordova.CordovaChromeClient;
+import org.apache.cordova.test.actions.userwebview;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.FrameLayout;

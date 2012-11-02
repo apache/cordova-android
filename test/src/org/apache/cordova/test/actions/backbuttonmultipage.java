@@ -16,19 +16,15 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova.test.actions;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class errorurl extends DroidGap {
+public class backbuttonmultipage extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.init();
-        this.setStringProperty("errorUrl", "file:///android_asset/www/htmlnotfound/error.html");
-        super.loadUrl("file:///android_asset/www/htmlnotfound/index.html");
+        super.loadUrl("file:///android_asset/www/backbuttonmultipage/index.html");
     }
-    
-    
 }

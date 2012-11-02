@@ -21,6 +21,7 @@ package org.apache.cordova.test;
 
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.api.PluginManager;
+import org.apache.cordova.test.actions.CordovaActivity;
 
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;

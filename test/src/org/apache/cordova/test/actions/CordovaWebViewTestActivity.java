@@ -17,24 +17,51 @@
        under the License.
 */
 
-package org.apache.cordova.test;
+package org.apache.cordova.test.actions;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.CordovaPlugin;
+import org.apache.cordova.test.R;
+import org.apache.cordova.test.R.id;
+import org.apache.cordova.test.R.layout;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+public class CordovaWebViewTestActivity extends Activity implements CordovaInterface {
+    CordovaWebView cordovaWebView;
 
-public class CordovaDriverAction extends Activity implements CordovaInterface {
+    private final ExecutorService threadPool = Executors.newCachedThreadPool();
+    
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.main);
+
+        cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
+
+        cordovaWebView.loadUrl("file:///android_asset/www/index.html");
+
+    }
+
+    public void onDestroy()
+    {
+        super.onDestroy();
+        if (cordovaWebView.pluginManager != null) {
+            cordovaWebView.pluginManager.onDestroy();
+        }
+    }
+
+    public Context getContext() {
+        return this;
     }
 
     public void startActivityForResult(CordovaPlugin command, Intent intent,
@@ -48,15 +75,9 @@ public class CordovaDriverAction extends Activity implements CordovaInterface {
         
     }
 
+    //Note: This must always return an activity!
     public Activity getActivity() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Deprecated
-    public Context getContext() {
-        // TODO Auto-generated method stub
-        return null;
+        return this;
     }
 
     @Deprecated
@@ -72,7 +93,6 @@ public class CordovaDriverAction extends Activity implements CordovaInterface {
 
     public ExecutorService getThreadPool() {
         // TODO Auto-generated method stub
-        return null;
+        return threadPool;
     }
-
 }

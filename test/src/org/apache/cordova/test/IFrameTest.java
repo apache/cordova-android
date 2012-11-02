@@ -21,6 +21,8 @@ package org.apache.cordova.test;
 */
 
 
+import org.apache.cordova.test.actions.iframe;
+
 import android.test.ActivityInstrumentationTestCase2;
 
 public class IFrameTest extends ActivityInstrumentationTestCase2<iframe> {

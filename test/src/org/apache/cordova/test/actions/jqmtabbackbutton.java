@@ -16,17 +16,15 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova.test.actions;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class tests extends DroidGap {
+public class jqmtabbackbutton extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.init();
-        //super.pluginManager.addService("Activity", "org.apache.cordova.test.ActivityPlugin");
-        super.loadUrl("file:///android_asset/www/index.html");
+        super.loadUrl("file:///android_asset/www/jqmtabbackbutton/index.html");
     }
 }

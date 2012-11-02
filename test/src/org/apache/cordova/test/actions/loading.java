@@ -15,19 +15,17 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
- */
-package org.apache.cordova.test;
+*/
+package org.apache.cordova.test.actions;
 
 import android.os.Bundle;
-
 import org.apache.cordova.*;
 
-public class background extends DroidGap {
+public class loading extends DroidGap {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //super.init(new FixWebView(this), new CordovaWebViewClient(this), new CordovaChromeClient(this));
-        super.setBooleanProperty("keepRunning", false);
-        super.loadUrl("file:///android_asset/www/background/index.html");
+        super.setStringProperty("loadingDialog", "Testing,Loading...");
+        super.loadUrl("http://www.google.com");
     }
 }

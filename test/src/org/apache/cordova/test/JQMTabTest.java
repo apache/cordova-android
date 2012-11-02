@@ -21,6 +21,8 @@ package org.apache.cordova.test;
 */
 
 
+import org.apache.cordova.test.actions.jqmtabbackbutton;
+
 import android.test.ActivityInstrumentationTestCase2;
 
 public class JQMTabTest extends ActivityInstrumentationTestCase2<jqmtabbackbutton> {
