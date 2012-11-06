@@ -66,12 +66,14 @@ function createAppInfoJar {
 }
 
 function on_error {
-    echo "An error occurred. Deleting project..."
+    echo "An unexpected error occurred: $previous_command exited with $?"
+    echo "Deleting project..."
     [ -d "$PROJECT_PATH" ] && rm -rf "$PROJECT_PATH"
+    exit "$?"
 }
 
 function replace {
-    local pattern=$1  
+    local pattern=$1
     local filename=$2
     # Mac OS X requires -i argument
     if [[ "$OSTYPE" =~ "darwin" ]]
@@ -84,6 +86,7 @@ function replace {
 }
 
 # we do not want the script to silently fail
+trap 'previous_command=$this_command; this_command=$BASH_COMMAND' DEBUG
 trap on_error ERR
 trap on_exit EXIT
 
