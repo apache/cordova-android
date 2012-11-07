@@ -90,7 +90,7 @@ function debug {
 }
 
 function launch {
-    local launch_str=$(java -jar $PROJECT_PATH/cordova/appinfo.jar $PROJECT_PATH/AndroidManifest.xml)
+    local launch_str=$(java -jar "$PROJECT_PATH"/cordova/appinfo.jar "$PROJECT_PATH"/AndroidManifest.xml)
     adb shell am start -n $launch_str 
 }
 
@@ -99,4 +99,4 @@ function BOOM {
 }
 
 # TODO parse arguments
-(cd $PROJECT_PATH && $1)
+(cd "$PROJECT_PATH" && $1)

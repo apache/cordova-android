@@ -19,6 +19,6 @@
 
 set -e
 
-PROJECT_PATH=$( cd "$( dirname "$0" )/.." && pwd )
+CORDOVA_PATH=$( cd "$( dirname "$0" )/.." && pwd )
 
-bash $PROJECT_PATH/cordova/cordova log
+bash "$CORDOVA_PATH"/cordova/cordova log

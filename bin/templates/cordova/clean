@@ -21,4 +21,4 @@ set -e
 
 CORDOVA_PATH=$( cd "$( dirname "$0" )" && pwd )
 
-bash $CORDOVA_PATH/cordova clean
+bash "$CORDOVA_PATH"/cordova clean
