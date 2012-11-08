@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.cordova.api.CordovaInterface;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginManager;
 import org.apache.cordova.api.PluginResult;
@@ -103,6 +104,23 @@ public class CordovaWebView extends WebView {
     /** custom view created by the browser (a video player for example) */
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
+
+    private ActivityResult mResult = null;
+
+    class ActivityResult {
+        
+        int request;
+        int result;
+        Intent incoming;
+        
+        public ActivityResult(int req, int res, Intent intent) {
+            request = req;
+            result = res;
+            incoming = intent;
+        }
+
+        
+    }
     
     static final FrameLayout.LayoutParams COVER_SCREEN_GRAVITY_CENTER =
             new FrameLayout.LayoutParams(
@@ -497,8 +515,9 @@ public class CordovaWebView extends WebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || url.startsWith("javascript:") || this.isUrlWhiteListed(url)) {
-            super.loadUrl(url);            
+        boolean isDocument = this.baseUrl != null && url.indexOf(this.baseUrl) == 0;
+        if (url.startsWith("file://") || isDocument || url.startsWith("javascript:") || this.isUrlWhiteListed(url)) {
+            super.loadUrl(url);
         }
     }
 
@@ -922,9 +941,8 @@ public class CordovaWebView extends WebView {
     public void handleResume(boolean keepRunning, boolean activityResultKeepRunning)
     {
 
-        // Send resume event to JavaScript
         this.loadUrl("javascript:try{cordova.fireDocumentEvent('resume');}catch(e){console.log('exception firing resume event from native');};");
-
+        
         // Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.onResume(keepRunning);
@@ -1060,4 +1078,17 @@ public class CordovaWebView extends WebView {
 	public boolean isCustomViewShowing() {
 	    return mCustomView != null;
 	}
+	
+	public WebBackForwardList restoreState(Bundle savedInstanceState)
+	{
+	    WebBackForwardList myList = super.restoreState(savedInstanceState);
+	    Log.d(TAG, "WebView restoration crew now restoring!");
+	    //Initialize the plugin manager once more
+	    this.pluginManager.init();
+	    return myList;
+	}
+
+    public void storeResult(int requestCode, int resultCode, Intent intent) {
+        mResult = new ActivityResult(requestCode, resultCode, intent);
+    }
 }

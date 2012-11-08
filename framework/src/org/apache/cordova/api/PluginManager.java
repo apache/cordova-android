@@ -248,7 +248,7 @@ public class PluginManager {
      * @param service       The name of the service.
      * @return              CordovaPlugin or null
      */
-    private CordovaPlugin getPlugin(String service) {
+    public CordovaPlugin getPlugin(String service) {
         PluginEntry entry = this.entries.get(service);
         if (entry == null) {
             return null;

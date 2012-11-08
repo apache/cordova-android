@@ -186,6 +186,17 @@ public class DroidGap extends Activity implements CordovaInterface {
     // when another application (activity) is started.
     protected boolean keepRunning = true;
 
+    private int lastRequestCode;
+
+    private Object responseCode;
+
+    private Intent lastIntent;
+
+    private Object lastResponseCode;
+
+    private String initCallbackClass;
+
+
     /**
     * Sets the authentication token.
     *
@@ -252,11 +263,15 @@ public class DroidGap extends Activity implements CordovaInterface {
     @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        //preferences = new PreferenceSet();
 
         LOG.d(TAG, "DroidGap.onCreate()");
         super.onCreate(savedInstanceState);
 
+        if(savedInstanceState != null)
+        {
+            initCallbackClass = savedInstanceState.getString("callbackClass");
+        }
+        
         if(!this.getBooleanProperty("showTitle", false))
         {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -344,6 +359,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Clear cancel flag
         this.cancelLoadUrl = false;
+        
     }
 
     /**
@@ -806,9 +822,22 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param data              An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        Log.d(TAG, "Incoming Result");
         super.onActivityResult(requestCode, resultCode, intent);
         CordovaPlugin callback = this.activityResultCallback;
-        if (callback != null) {
+        if(callback == null)
+        {
+            if(initCallbackClass != null)
+            {
+                this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
+                callback = activityResultCallback;
+                Log.d(TAG, "We have a callback to send this result to");
+                callback.onActivityResult(requestCode, resultCode, intent);
+            }
+        }
+        else
+        {
+            Log.d(TAG, "We have a callback to send this result to");
             callback.onActivityResult(requestCode, resultCode, intent);
         }
     }
@@ -1091,4 +1120,15 @@ public class DroidGap extends Activity implements CordovaInterface {
     public ExecutorService getThreadPool() {
         return threadPool;
     }
+    
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        if(this.activityResultCallback != null)
+        {
+            String cClass = this.activityResultCallback.getClass().getName();
+            outState.putString("callbackClass", cClass);
+        }
+    }
 }
+    
