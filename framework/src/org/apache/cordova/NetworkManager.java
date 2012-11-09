@@ -147,13 +147,6 @@ public class NetworkManager extends CordovaPlugin {
         }
     }
 
-    /**
-     * Stop the network receiver on navigation.
-     */
-    public void onReset() {
-        this.onDestroy();
-    }
-
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
