@@ -988,7 +988,12 @@ public class FileUtils extends CordovaPlugin {
         // So we need to replace the space with a url encoded %20
         String url = filename.replace(" ", "%20");
         MimeTypeMap map = MimeTypeMap.getSingleton();
-        return map.getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(url));
+        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+        if (extension.toLowerCase().equals("3ga")) {
+            return "audio/3gpp";
+        } else {
+            return map.getMimeTypeFromExtension(extension);
+        }
     }
 
     /**
