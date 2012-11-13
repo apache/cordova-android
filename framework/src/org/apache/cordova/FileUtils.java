@@ -984,8 +984,16 @@ public class FileUtils extends CordovaPlugin {
      * @return a mime type
      */
     public static String getMimeType(String filename) {
+        // Stupid bug in getFileExtensionFromUrl when the file name has a space
+        // So we need to replace the space with a url encoded %20
+        String url = filename.replace(" ", "%20");
         MimeTypeMap map = MimeTypeMap.getSingleton();
-        return map.getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(filename));
+        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+        if (extension.toLowerCase().equals("3ga")) {
+            return "audio/3gpp";
+        } else {
+            return map.getMimeTypeFromExtension(extension);
+        }
     }
 
     /**
@@ -1069,16 +1077,18 @@ public class FileUtils extends CordovaPlugin {
      */
     @SuppressWarnings("deprecation")
     protected static String getRealPathFromURI(Uri contentUri, CordovaInterface cordova) {
-        String uri = contentUri.toString();
-        if (uri.startsWith("content:")) {
+        final String scheme = contentUri.getScheme();
+        
+        if (scheme.compareTo("content") == 0) {
             String[] proj = { _DATA };
             Cursor cursor = cordova.getActivity().managedQuery(contentUri, proj, null, null, null);
             int column_index = cursor.getColumnIndexOrThrow(_DATA);
             cursor.moveToFirst();
             return cursor.getString(column_index);
+        } else if (scheme.compareTo("file") == 0) {
+            return contentUri.getPath();
         } else {
-            return uri;
+            return contentUri.toString();
         }
-        
     }
 }
