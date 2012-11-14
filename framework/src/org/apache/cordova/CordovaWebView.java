@@ -20,6 +20,8 @@
 package org.apache.cordova;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -226,11 +228,24 @@ public class CordovaWebView extends WebView {
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
-
-        //Set the nav dump for HTC 2.x devices (disabling for ICS/Jellybean)
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
-            settings.setNavDump(true);
         
+        //Set the nav dump for HTC 2.x devices (disabling for ICS, derecated entirely for Jellybean 4.2)
+        try {
+            Method gingerbread_getMethod =  WebSettings.class.getMethod("setNavDump", new Class[] { boolean.class });
+            if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+            {
+                gingerbread_getMethod.invoke(settings, true);
+            }
+        } catch (NoSuchMethodException e) {
+            Log.d(TAG, "We are on a modern version of Android, we will deprecate HTC 2.3 devices in 2.8");
+        } catch (IllegalArgumentException e) {
+            Log.d(TAG, "Doing the NavDump failed with bad arguments");
+        } catch (IllegalAccessException e) {
+            Log.d(TAG, "This should never happen: IllegalAccessException means this isn't Android anymore");
+        } catch (InvocationTargetException e) {
+            Log.d(TAG, "This should never happen: InvocationTargetException means this isn't Android anymore.");
+        }
+
         // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         // while we do this
         if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
