@@ -19,6 +19,7 @@
 
 package org.apache.cordova;
 
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
@@ -30,7 +31,7 @@ import java.util.HashMap;
 /**
  * This class exposes methods in DroidGap that can be called from JavaScript.
  */
-public class App extends Plugin {
+public class App extends CordovaPlugin {
 
     /**
      * Executes the request and returns PluginResult.
