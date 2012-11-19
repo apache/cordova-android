@@ -80,9 +80,7 @@ public class Device extends CordovaPlugin {
             r.put("platform", Device.platform);
             r.put("name", this.getProductName());
             r.put("cordova", Device.cordovaVersion);
-            //JSONObject pg = new JSONObject();
-            //pg.put("version", Device.CordovaVersion);
-            //r.put("cordova", pg);
+            r.put("model", this.getProductName());
             callbackContext.success(r);
         }
         else {
