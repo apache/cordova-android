@@ -49,6 +49,8 @@ public class CordovaTest extends
   }
 
   public void testForCordovaView() {
+    //Sleep for no reason!!!!
+    sleep();
     String className = testView.getClass().getSimpleName();
     assertTrue(className.equals("CordovaWebView"));
   }
