@@ -15,4 +15,4 @@
 :: specific language governing permissions and limitations
 :: under the License.
 
-%~dp0\cordova.bat BOOM
+%~dp0\cordova.bat build
