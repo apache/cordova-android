@@ -22,7 +22,7 @@ set -e
 PROJECT_PATH=$( cd "$( dirname "$0" )/.." && pwd )
 
 function check_devices {
-    local devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}'`
+    local devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep device`
     if [ -z "$devices"  ] ; then
         echo "1"
     else
@@ -37,7 +37,7 @@ function emulate {
 
     # Do not launch an emulator if there is already one running or if a device is attached
     if [ $(check_devices) == 0 ] ; then
-        echo "Device attached or emulator already running"
+        # echo "Device attached or emulator already running"
         return
     fi
 
@@ -78,24 +78,39 @@ function log {
     adb logcat
 }
 
-function debug {
+function run {
     if [ $(check_devices) == 0 ] ; then
-        ant debug install
+        clean && emulate && install && launch 
     else
-        ant debug
+        build
         echo "##################################################################"
-        echo "# Plug in your device or launch an emulator with cordova/emulate #"
+        echo "# Plug in your device or launch an emulator with cordova/run #"
         echo "##################################################################"
     fi
+}
+
+function install {
+    ant debug install
+}
+
+function build {
+    ant debug
+}
+
+function wait_for_device {
+    local i=0
+    echo "Waiting for emulator..."
+    while [ check_devices -eq 0 || timeout -lt 300 ]
+    do
+        sleep 1
+        i=$[i+1]
+    end
+
 }
 
 function launch {
     local launch_str=$(java -jar "$PROJECT_PATH"/cordova/appinfo.jar "$PROJECT_PATH"/AndroidManifest.xml)
     adb shell am start -n $launch_str 
-}
-
-function BOOM {
-    clean && debug && launch 
 }
 
 # TODO parse arguments
