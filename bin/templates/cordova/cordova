@@ -121,6 +121,10 @@ function build {
     ant debug
 }
 
+function release {
+    ant release
+}
+
 function wait_for_device {
     local i="0"
     echo -n "Waiting for device..."
