@@ -153,6 +153,7 @@ createAppInfoJar
 cp "$BUILD_PATH"/bin/templates/cordova/appinfo.jar "$PROJECT_PATH"/cordova/appinfo.jar
 cp "$BUILD_PATH"/bin/templates/cordova/cordova "$PROJECT_PATH"/cordova/cordova
 cp "$BUILD_PATH"/bin/templates/cordova/build "$PROJECT_PATH"/cordova/build
+cp "$BUILD_PATH"/bin/templates/cordova/release "$PROJECT_PATH"/cordova/release
 cp "$BUILD_PATH"/bin/templates/cordova/clean "$PROJECT_PATH"/cordova/clean
 cp "$BUILD_PATH"/bin/templates/cordova/log "$PROJECT_PATH"/cordova/log
 cp "$BUILD_PATH"/bin/templates/cordova/run "$PROJECT_PATH"/cordova/run
