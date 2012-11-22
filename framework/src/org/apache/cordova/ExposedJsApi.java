@@ -18,6 +18,7 @@
 */
 package org.apache.cordova;
 
+import android.webkit.JavascriptInterface;
 import org.apache.cordova.api.PluginManager;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONException;
@@ -37,6 +38,7 @@ import org.json.JSONException;
         this.jsMessageQueue = jsMessageQueue;
     }
 
+    @JavascriptInterface
     public String exec(String service, String action, String callbackId, String arguments) throws JSONException {
         jsMessageQueue.setPaused(true);
         try {
@@ -51,10 +53,12 @@ import org.json.JSONException;
         }
     }
     
+    @JavascriptInterface
     public void setNativeToJsBridgeMode(int value) {
         jsMessageQueue.setBridgeMode(value);
     }
     
+    @JavascriptInterface
     public String retrieveJsMessages() {
         return jsMessageQueue.popAndEncode();
     }

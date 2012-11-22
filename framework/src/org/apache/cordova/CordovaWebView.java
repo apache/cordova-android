@@ -302,10 +302,6 @@ public class CordovaWebView extends WebView {
             Log.i(TAG, "Disabled addJavascriptInterface() bridge callback due to a bug on the 2.3 emulator");
             return;
         }
-        else if (SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {            
-            Log.i(TAG, "Disabled addJavascriptInterface() bridge callback for 4.2.  Symbols are broken, and we can't compile the annotation needed to expose the exec.");
-            return;
-        }
         this.addJavascriptInterface(exposedJsApi, "_cordovaNative");
     }
 
