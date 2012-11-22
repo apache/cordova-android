@@ -51,6 +51,7 @@
     <plugin name="SplashScreen" value="org.apache.cordova.SplashScreen"/>
     <plugin name="Echo" value="org.apache.cordova.Echo" />
     <plugin name="Globalization" value="org.apache.cordova.Globalization"/>
+    <plugin name="InAppBrowser" value="org.apache.cordova.InAppBrowser"/>
 </plugins>
 </cordova>
 
