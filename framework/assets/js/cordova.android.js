@@ -1,6 +1,6 @@
-// commit 7203d335b59902a72a374a170b1edb04438b6a47
+// commit 54335c8f70223b053f4c039185d13cb95801d043
 
-// File generated at :: Wed Nov 21 2012 16:34:19 GMT-0500 (EST)
+// File generated at :: Mon Nov 26 2012 16:05:15 GMT-0500 (EST)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -313,6 +313,65 @@ channel.onResume = cordova.addDocumentEventHandler('resume');
 channel.onDeviceReady = cordova.addStickyDocumentEventHandler('deviceready');
 
 module.exports = cordova;
+
+});
+
+// file: lib/common/argscheck.js
+define("cordova/argscheck", function(require, exports, module) {
+
+var exec = require('cordova/exec');
+var moduleExports = module.exports;
+
+var typeMap = {
+    'A': 'Array',
+    'D': 'Date',
+    'N': 'Number',
+    'S': 'String',
+    'F': 'Function',
+    'O': 'Object'
+};
+
+function extractParamName(callee, argIndex) {
+  return (/.*?\((.*?)\)/).exec(callee)[1].split(', ')[argIndex];
+}
+
+function checkArgs(spec, functionName, args, opt_callee) {
+    if (!moduleExports.enableChecks) {
+        return;
+    }
+    var errMsg = null;
+    var type;
+    for (var i = 0; i < spec.length; ++i) {
+        var c = spec.charAt(i),
+            cUpper = c.toUpperCase(),
+            arg = args[i];
+        // Asterix means allow anything.
+        if (c == '*') {
+            continue;
+        }
+        type = Object.prototype.toString.call(arg).slice(8, -1);
+        if ((arg === null || arg === undefined) && c == cUpper) {
+            continue;
+        }
+        if (type != typeMap[cUpper]) {
+            errMsg = 'Expected ' + typeMap[cUpper];
+            break;
+        }
+    }
+    if (errMsg) {
+        errMsg += ', but got ' + type + '.';
+        errMsg = 'Wrong type for parameter "' + extractParamName(opt_callee || args.callee, i) + '" of ' + functionName + ': ' + errMsg;
+        // Don't log when running jake test.
+        if (typeof jasmine == 'undefined') {
+            console.error(errMsg);
+        }
+        throw TypeError(errMsg);
+    }
+}
+
+moduleExports.checkArgs = checkArgs;
+moduleExports.enableChecks = true;
+
 
 });
 
@@ -1238,8 +1297,8 @@ module.exports = {
         MediaError: { // exists natively on Android WebView on Android 4.x
             path: "cordova/plugin/MediaError"
         },
-        open : {
-            path: 'cordova/plugin/InAppBrowser'
+        open: {
+            path: "cordova/plugin/InAppBrowser"
         }
     },
     merges: {
@@ -3714,7 +3773,8 @@ define("cordova/plugin/accelerometer", function(require, exports, module) {
  * This class provides access to device accelerometer data.
  * @constructor
  */
-var utils = require("cordova/utils"),
+var argscheck = require('cordova/argscheck'),
+    utils = require("cordova/utils"),
     exec = require("cordova/exec"),
     Acceleration = require('cordova/plugin/Acceleration');
 
@@ -3778,10 +3838,7 @@ var accelerometer = {
      * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
      */
     getCurrentAcceleration: function(successCallback, errorCallback, options) {
-        // successCallback required
-        if (typeof successCallback !== "function") {
-            throw "getCurrentAcceleration must be called with at least a success callback function as first parameter.";
-        }
+        argscheck.checkArgs('fFO', 'accelerometer.getCurrentAcceleration', arguments);
 
         var p;
         var win = function(a) {
@@ -3790,7 +3847,7 @@ var accelerometer = {
         };
         var fail = function(e) {
             removeListeners(p);
-            errorCallback(e);
+            errorCallback && errorCallback(e);
         };
 
         p = createCallbackPair(win, fail);
@@ -3810,20 +3867,16 @@ var accelerometer = {
      * @return String                       The watch id that must be passed to #clearWatch to stop watching.
      */
     watchAcceleration: function(successCallback, errorCallback, options) {
+        argscheck.checkArgs('fFO', 'accelerometer.watchAcceleration', arguments);
         // Default interval (10 sec)
         var frequency = (options && options.frequency && typeof options.frequency == 'number') ? options.frequency : 10000;
-
-        // successCallback required
-        if (typeof successCallback !== "function") {
-            throw "watchAcceleration must be called with at least a success callback function as first parameter.";
-        }
 
         // Keep reference to watch id, and report accel readings as often as defined in frequency
         var id = utils.createUUID();
 
         var p = createCallbackPair(function(){}, function(e) {
             removeListeners(p);
-            errorCallback(e);
+            errorCallback && errorCallback(e);
         });
         listeners.push(p);
 
@@ -3839,7 +3892,7 @@ var accelerometer = {
         if (running) {
             // If we're already running then immediately invoke the success callback
             // but only if we have retrieved a value, sample code does not check for null ...
-            if(accel) {
+            if (accel) {
                 successCallback(accel);
             }
         } else {
@@ -4633,7 +4686,8 @@ module.exports = new Capture();
 // file: lib/common/plugin/compass.js
 define("cordova/plugin/compass", function(require, exports, module) {
 
-var exec = require('cordova/exec'),
+var argscheck = require('cordova/argscheck'),
+    exec = require('cordova/exec'),
     utils = require('cordova/utils'),
     CompassHeading = require('cordova/plugin/CompassHeading'),
     CompassError = require('cordova/plugin/CompassError'),
@@ -4648,23 +4702,13 @@ var exec = require('cordova/exec'),
          * @param {CompassOptions} options The options for getting the heading data (not used).
          */
         getCurrentHeading:function(successCallback, errorCallback, options) {
-            // successCallback required
-            if (typeof successCallback !== "function") {
-              console.log("Compass Error: successCallback is not a function");
-              return;
-            }
-
-            // errorCallback optional
-            if (errorCallback && (typeof errorCallback !== "function")) {
-              console.log("Compass Error: errorCallback is not a function");
-              return;
-            }
+            argscheck.checkArgs('fFO', 'compass.getCurrentHeading', arguments);
 
             var win = function(result) {
                 var ch = new CompassHeading(result.magneticHeading, result.trueHeading, result.headingAccuracy, result.timestamp);
                 successCallback(ch);
             };
-            var fail = function(code) {
+            var fail = errorCallback && function(code) {
                 var ce = new CompassError(code);
                 errorCallback(ce);
             };
@@ -4684,21 +4728,10 @@ var exec = require('cordova/exec'),
          * specifies to watch via a distance filter rather than time.
          */
         watchHeading:function(successCallback, errorCallback, options) {
+            argscheck.checkArgs('fFO', 'compass.watchHeading', arguments);
             // Default interval (100 msec)
             var frequency = (options !== undefined && options.frequency !== undefined) ? options.frequency : 100;
             var filter = (options !== undefined && options.filter !== undefined) ? options.filter : 0;
-
-            // successCallback required
-            if (typeof successCallback !== "function") {
-              console.log("Compass Error: successCallback is not a function");
-              return;
-            }
-
-            // errorCallback optional
-            if (errorCallback && (typeof errorCallback !== "function")) {
-              console.log("Compass Error: errorCallback is not a function");
-              return;
-            }
 
             var id = utils.createUUID();
             if (filter > 0) {
@@ -4723,8 +4756,8 @@ var exec = require('cordova/exec'),
             // Stop javascript timer & remove from timer list
             if (id && timers[id]) {
                 if (timers[id] != "iOS") {
-                      clearInterval(timers[id]);
-                  } else {
+                    clearInterval(timers[id]);
+                } else {
                     // is iOS watch by filter so call into device to stop
                     exec(null, null, "Compass", "stopHeading", []);
                 }
@@ -4912,7 +4945,8 @@ for (var key in console) {
 // file: lib/common/plugin/contacts.js
 define("cordova/plugin/contacts", function(require, exports, module) {
 
-var exec = require('cordova/exec'),
+var argscheck = require('cordova/argscheck'),
+    exec = require('cordova/exec'),
     ContactError = require('cordova/plugin/ContactError'),
     utils = require('cordova/utils'),
     Contact = require('cordova/plugin/Contact');
@@ -4931,13 +4965,9 @@ var contacts = {
      * @return array of Contacts matching search criteria
      */
     find:function(fields, successCB, errorCB, options) {
-        if (!successCB) {
-            throw new TypeError("You must specify a success callback for the find command.");
-        }
-        if (!fields || (utils.isArray(fields) && fields.length === 0)) {
-            if (typeof errorCB === "function") {
-                errorCB(new ContactError(ContactError.INVALID_ARGUMENT_ERROR));
-            }
+        argscheck.checkArgs('afFO', 'contacts.find', arguments);
+        if (!fields.length) {
+            errorCB && errorCB(new ContactError(ContactError.INVALID_ARGUMENT_ERROR));
         } else {
             var win = function(result) {
                 var cs = [];
@@ -4958,9 +4988,9 @@ var contacts = {
      * @returns new Contact object
      */
     create:function(properties) {
-        var i;
+        argscheck.checkArgs('O', 'contacts.create', arguments);
         var contact = new Contact();
-        for (i in properties) {
+        for (var i in properties) {
             if (typeof contact[i] !== 'undefined' && properties.hasOwnProperty(i)) {
                 contact[i] = properties[i];
             }
@@ -4976,7 +5006,8 @@ module.exports = contacts;
 // file: lib/common/plugin/device.js
 define("cordova/plugin/device", function(require, exports, module) {
 
-var channel = require('cordova/channel'),
+var argscheck = require('cordova/argscheck'),
+    channel = require('cordova/channel'),
     utils = require('cordova/utils'),
     exec = require('cordova/exec');
 
@@ -5023,20 +5054,7 @@ function Device() {
  * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
  */
 Device.prototype.getInfo = function(successCallback, errorCallback) {
-
-    // successCallback required
-    if (typeof successCallback !== "function") {
-        console.log("Device Error: successCallback is not a function");
-        return;
-    }
-
-    // errorCallback optional
-    if (errorCallback && (typeof errorCallback !== "function")) {
-        console.log("Device Error: errorCallback is not a function");
-        return;
-    }
-
-    // Get info
+    argscheck.checkArgs('fF', 'Device.getInfo', arguments);
     exec(successCallback, errorCallback, "Device", "getDeviceInfo", []);
 };
 
@@ -5067,7 +5085,8 @@ module.exports = function(successCallback, errorCallback, message, forceAsync) {
 // file: lib/common/plugin/geolocation.js
 define("cordova/plugin/geolocation", function(require, exports, module) {
 
-var utils = require('cordova/utils'),
+var argscheck = require('cordova/argscheck'),
+    utils = require('cordova/utils'),
     exec = require('cordova/exec'),
     PositionError = require('cordova/plugin/PositionError'),
     Position = require('cordova/plugin/Position');
@@ -5124,9 +5143,7 @@ var geolocation = {
    * @param {PositionOptions} options     The options for getting the position data. (OPTIONAL)
    */
     getCurrentPosition:function(successCallback, errorCallback, options) {
-        if (arguments.length === 0) {
-            throw new Error("getCurrentPosition must be called with at least one argument.");
-        }
+        argscheck.checkArgs('fFO', 'geolocation.getCurrentPosition', arguments);
         options = parseParameters(options);
 
         // Timer var that will fire an error callback if no position is retrieved from native
@@ -5202,9 +5219,7 @@ var geolocation = {
      * @return String                       The watch id that must be passed to #clearWatch to stop watching.
      */
     watchPosition:function(successCallback, errorCallback, options) {
-        if (arguments.length === 0) {
-            throw new Error("watchPosition must be called with at least one argument.");
-        }
+        argscheck.checkArgs('fFO', 'geolocation.getCurrentPosition', arguments);
         options = parseParameters(options);
 
         var id = utils.createUUID();
@@ -5266,7 +5281,8 @@ module.exports = geolocation;
 // file: lib/common/plugin/globalization.js
 define("cordova/plugin/globalization", function(require, exports, module) {
 
-var exec = require('cordova/exec'),
+var argscheck = require('cordova/argscheck'),
+    exec = require('cordova/exec'),
     GlobalizationError = require('cordova/plugin/GlobalizationError');
 
 var globalization = {
@@ -5289,18 +5305,7 @@ var globalization = {
 *                                function () {});
 */
 getPreferredLanguage:function(successCB, failureCB) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.getPreferredLanguage Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.getPreferredLanguage Error: failureCB is not a function");
-        return;
-    }
-
+    argscheck.checkArgs('fF', 'Globalization.getPreferredLanguage', arguments);
     exec(successCB, failureCB, "Globalization","getPreferredLanguage", []);
 },
 
@@ -5322,17 +5327,7 @@ getPreferredLanguage:function(successCB, failureCB) {
 *                                function () {});
 */
 getLocaleName:function(successCB, failureCB) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.getLocaleName Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.getLocaleName Error: failureCB is not a function");
-        return;
-    }
+    argscheck.checkArgs('fF', 'Globalization.getLocaleName', arguments);
     exec(successCB, failureCB, "Globalization","getLocaleName", []);
 },
 
@@ -5363,27 +5358,9 @@ getLocaleName:function(successCB, failureCB) {
 *                {formatLength:'short'});
 */
 dateToString:function(date, successCB, failureCB, options) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.dateToString Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.dateToString Error: failureCB is not a function");
-        return;
-    }
-
-
-    if (date instanceof Date){
-        var dateValue;
-        dateValue = date.valueOf();
-        exec(successCB, failureCB, "Globalization", "dateToString", [{"date": dateValue, "options": options}]);
-    }
-    else {
-        console.log("Globalization.dateToString Error: date is not a Date object");
-    }
+    argscheck.checkArgs('dfFO', 'Globalization.dateToString', arguments);
+    var dateValue = date.valueOf();
+    exec(successCB, failureCB, "Globalization", "dateToString", [{"date": dateValue, "options": options}]);
 },
 
 
@@ -5423,23 +5400,8 @@ dateToString:function(date, successCB, failureCB, options) {
 *                {selector:'date'});
 */
 stringToDate:function(dateString, successCB, failureCB, options) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.stringToDate Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.stringToDate Error: failureCB is not a function");
-        return;
-    }
-    if (typeof dateString == "string"){
-        exec(successCB, failureCB, "Globalization", "stringToDate", [{"dateString": dateString, "options": options}]);
-    }
-    else {
-        console.log("Globalization.stringToDate Error: dateString is not a string");
-    }
+    argscheck.checkArgs('sfFO', 'Globalization.stringToDate', arguments);
+    exec(successCB, failureCB, "Globalization", "stringToDate", [{"dateString": dateString, "options": options}]);
 },
 
 
@@ -5476,18 +5438,7 @@ stringToDate:function(dateString, successCB, failureCB, options) {
 *                {formatLength:'short'});
 */
 getDatePattern:function(successCB, failureCB, options) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.getDatePattern Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.getDatePattern Error: failureCB is not a function");
-        return;
-    }
-
+    argscheck.checkArgs('fFO', 'Globalization.getDatePattern', arguments);
     exec(successCB, failureCB, "Globalization", "getDatePattern", [{"options": options}]);
 },
 
@@ -5518,17 +5469,7 @@ getDatePattern:function(successCB, failureCB, options) {
 *        function () {});
 */
 getDateNames:function(successCB, failureCB, options) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.getDateNames Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.getDateNames Error: failureCB is not a function");
-        return;
-    }
+    argscheck.checkArgs('fFO', 'Globalization.getDateNames', arguments);
     exec(successCB, failureCB, "Globalization", "getDateNames", [{"options": options}]);
 },
 
@@ -5553,28 +5494,9 @@ getDateNames:function(successCB, failureCB, options) {
 *                function () {});
 */
 isDayLightSavingsTime:function(date, successCB, failureCB) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.isDayLightSavingsTime Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.isDayLightSavingsTime Error: failureCB is not a function");
-        return;
-    }
-
-
-    if (date instanceof Date){
-        var dateValue;
-        dateValue = date.valueOf();
-        exec(successCB, failureCB, "Globalization", "isDayLightSavingsTime", [{"date": dateValue}]);
-    }
-    else {
-        console.log("Globalization.isDayLightSavingsTime Error: date is not a Date object");
-    }
-
+    argscheck.checkArgs('dfF', 'Globalization.isDayLightSavingsTime', arguments);
+    var dateValue = date.valueOf();
+    exec(successCB, failureCB, "Globalization", "isDayLightSavingsTime", [{"date": dateValue}]);
 },
 
 /**
@@ -5596,18 +5518,7 @@ isDayLightSavingsTime:function(date, successCB, failureCB) {
 *                function () {});
 */
 getFirstDayOfWeek:function(successCB, failureCB) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.getFirstDayOfWeek Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.getFirstDayOfWeek Error: failureCB is not a function");
-        return;
-    }
-
+    argscheck.checkArgs('fF', 'Globalization.getFirstDayOfWeek', arguments);
     exec(successCB, failureCB, "Globalization", "getFirstDayOfWeek", []);
 },
 
@@ -5636,24 +5547,8 @@ getFirstDayOfWeek:function(successCB, failureCB) {
 *                {type:'decimal'});
 */
 numberToString:function(number, successCB, failureCB, options) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.numberToString Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.numberToString Error: failureCB is not a function");
-        return;
-    }
-
-    if(typeof number == "number") {
-        exec(successCB, failureCB, "Globalization", "numberToString", [{"number": number, "options": options}]);
-    }
-    else {
-        console.log("Globalization.numberToString Error: number is not a number");
-    }
+    argscheck.checkArgs('nfFO', 'Globalization.numberToString', arguments);
+    exec(successCB, failureCB, "Globalization", "numberToString", [{"number": number, "options": options}]);
 },
 
 /**
@@ -5680,24 +5575,8 @@ numberToString:function(number, successCB, failureCB, options) {
 *                function () { alert('Error parsing number');});
 */
 stringToNumber:function(numberString, successCB, failureCB, options) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.stringToNumber Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.stringToNumber Error: failureCB is not a function");
-        return;
-    }
-
-    if(typeof numberString == "string") {
-        exec(successCB, failureCB, "Globalization", "stringToNumber", [{"numberString": numberString, "options": options}]);
-    }
-    else {
-        console.log("Globalization.stringToNumber Error: numberString is not a string");
-    }
+    argscheck.checkArgs('sfFO', 'Globalization.stringToNumber', arguments);
+    exec(successCB, failureCB, "Globalization", "stringToNumber", [{"numberString": numberString, "options": options}]);
 },
 
 /**
@@ -5733,18 +5612,7 @@ stringToNumber:function(numberString, successCB, failureCB, options) {
 *                function () {});
 */
 getNumberPattern:function(successCB, failureCB, options) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.getNumberPattern Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.getNumberPattern Error: failureCB is not a function");
-        return;
-    }
-
+    argscheck.checkArgs('fFO', 'Globalization.getNumberPattern', arguments);
     exec(successCB, failureCB, "Globalization", "getNumberPattern", [{"options": options}]);
 },
 
@@ -5776,24 +5644,8 @@ getNumberPattern:function(successCB, failureCB, options) {
 *                function () {});
 */
 getCurrencyPattern:function(currencyCode, successCB, failureCB) {
-    // successCallback required
-    if (typeof successCB != "function") {
-        console.log("Globalization.getCurrencyPattern Error: successCB is not a function");
-        return;
-    }
-
-    // errorCallback required
-    if (typeof failureCB != "function") {
-        console.log("Globalization.getCurrencyPattern Error: failureCB is not a function");
-        return;
-    }
-
-    if(typeof currencyCode == "string") {
-        exec(successCB, failureCB, "Globalization", "getCurrencyPattern", [{"currencyCode": currencyCode}]);
-    }
-    else {
-        console.log("Globalization.getCurrencyPattern Error: currencyCode is not a currency code");
-    }
+    argscheck.checkArgs('sfF', 'Globalization.getCurrencyPattern', arguments);
+    exec(successCB, failureCB, "Globalization", "getCurrencyPattern", [{"currencyCode": currencyCode}]);
 }
 
 };
@@ -6145,20 +5997,10 @@ module.exports = {
     /**
      * Causes the device to vibrate.
      *
-     * @param {Integer} time       The number of milliseconds to vibrate for.
-     * OR
-     * @param {Integer} pattern    A vibration pattern represented by a list of time entries, in milliseconds.
+     * @param {Integer} mills       The number of milliseconds to vibrate for.
      */
-    vibrate: function(time) {
-        var pattern = [];
-        if (time) {
-            if (typeof time === 'number') {
-                pattern.push(time);
-            } else {
-                pattern = time;
-            }
-        }
-        exec(null, null, "Notification", "vibrate", [pattern]);
+    vibrate: function(mills) {
+        exec(null, null, "Notification", "vibrate", [mills]);
     },
 
     /**
@@ -6177,7 +6019,8 @@ module.exports = {
 // file: lib/common/plugin/requestFileSystem.js
 define("cordova/plugin/requestFileSystem", function(require, exports, module) {
 
-var FileError = require('cordova/plugin/FileError'),
+var argscheck = require('cordova/argscheck'),
+    FileError = require('cordova/plugin/FileError'),
     FileSystem = require('cordova/plugin/FileSystem'),
     exec = require('cordova/exec');
 
@@ -6189,10 +6032,9 @@ var FileError = require('cordova/plugin/FileError'),
  * @param errorCallback  invoked if error occurs retrieving file system
  */
 var requestFileSystem = function(type, size, successCallback, errorCallback) {
+    argscheck.checkArgs('nnFF', 'requestFileSystem', arguments);
     var fail = function(code) {
-        if (typeof errorCallback === 'function') {
-            errorCallback(new FileError(code));
-        }
+        errorCallback && errorCallback(new FileError(code));
     };
 
     if (type < 0 || type > 3) {
@@ -6201,7 +6043,7 @@ var requestFileSystem = function(type, size, successCallback, errorCallback) {
         // if successful, return a FileSystem object
         var success = function(file_system) {
             if (file_system) {
-                if (typeof successCallback === 'function') {
+                if (successCallback) {
                     // grab the name and root from the file system object
                     var result = new FileSystem(file_system.name, file_system.root);
                     successCallback(result);
@@ -6223,7 +6065,8 @@ module.exports = requestFileSystem;
 // file: lib/common/plugin/resolveLocalFileSystemURI.js
 define("cordova/plugin/resolveLocalFileSystemURI", function(require, exports, module) {
 
-var DirectoryEntry = require('cordova/plugin/DirectoryEntry'),
+var argscheck = require('cordova/argscheck'),
+    DirectoryEntry = require('cordova/plugin/DirectoryEntry'),
     FileEntry = require('cordova/plugin/FileEntry'),
     FileError = require('cordova/plugin/FileError'),
     exec = require('cordova/exec');
@@ -6235,11 +6078,10 @@ var DirectoryEntry = require('cordova/plugin/DirectoryEntry'),
  * @param errorCallback    invoked if error occurs retrieving file system entry
  */
 module.exports = function(uri, successCallback, errorCallback) {
+    argscheck.checkArgs('sFF', 'resolveLocalFileSystemURI', arguments);
     // error callback
     var fail = function(error) {
-        if (typeof errorCallback === 'function') {
-            errorCallback(new FileError(error));
-        }
+        errorCallback && errorCallback(new FileError(error));
     };
     // sanity check for 'not:valid:filename'
     if(!uri || uri.split(":").length > 2) {
@@ -6252,15 +6094,10 @@ module.exports = function(uri, successCallback, errorCallback) {
     var success = function(entry) {
         var result;
         if (entry) {
-            if (typeof successCallback === 'function') {
+            if (successCallback) {
                 // create appropriate Entry object
                 result = (entry.isDirectory) ? new DirectoryEntry(entry.name, entry.fullPath) : new FileEntry(entry.name, entry.fullPath);
-                try {
-                    successCallback(result);
-                }
-                catch (e) {
-                    console.log('Error invoking callback: ' + e);
-                }
+                successCallback(result);
             }
         }
         else {
