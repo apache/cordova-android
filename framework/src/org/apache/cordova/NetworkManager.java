@@ -74,6 +74,7 @@ public class NetworkManager extends CordovaPlugin {
 
     ConnectivityManager sockMan;
     BroadcastReceiver receiver;
+    private String lastStatus = "";
 
     /**
      * Constructor.
@@ -99,12 +100,11 @@ public class NetworkManager extends CordovaPlugin {
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         if (this.receiver == null) {
             this.receiver = new BroadcastReceiver() {
-                @SuppressWarnings("deprecation")
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     // (The null check is for the ARM Emulator, please use Intel Emulator for better results)
-                    if(NetworkManager.this.webView != null)
-                        updateConnectionInfo((NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO));
+                    if(NetworkManager.this.webView != null)                        
+                        updateConnectionInfo(sockMan.getActiveNetworkInfo());
                 }
             };
             cordova.getActivity().registerReceiver(this.receiver, intentFilter);
@@ -147,13 +147,6 @@ public class NetworkManager extends CordovaPlugin {
         }
     }
 
-    /**
-     * Stop the network receiver on navigation.
-     */
-    public void onReset() {
-        this.onDestroy();
-    }
-
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
@@ -166,7 +159,14 @@ public class NetworkManager extends CordovaPlugin {
      */
     private void updateConnectionInfo(NetworkInfo info) {
         // send update to javascript "navigator.network.connection"
-        sendUpdate(this.getConnectionInfo(info));
+        // Jellybean sends its own info
+        String thisStatus = this.getConnectionInfo(info);
+        if(!thisStatus.equals(lastStatus))
+        {
+            sendUpdate(thisStatus);
+            lastStatus = thisStatus;
+        }
+            
     }
 
     /**
@@ -186,6 +186,7 @@ public class NetworkManager extends CordovaPlugin {
                 type = getType(info);
             }
         }
+        Log.d("CordovaNetworkManager", "Connection Type: " + type);
         return type;
     }
 
@@ -200,7 +201,6 @@ public class NetworkManager extends CordovaPlugin {
             result.setKeepCallback(true);
             connectionCallbackContext.sendPluginResult(result);
         }
-
         webView.postMessage("networkconnection", type);
     }
 

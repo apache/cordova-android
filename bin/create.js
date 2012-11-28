@@ -198,10 +198,9 @@ exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\appinfo.jar ' + PRO
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\cordova.js ' + PROJECT_PATH + '\\cordova\\cordova.js /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\clean.bat ' + PROJECT_PATH + '\\cordova\\clean.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\debug.bat ' + PROJECT_PATH + '\\cordova\\debug.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\build.bat ' + PROJECT_PATH + '\\cordova\\build.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\log.bat ' + PROJECT_PATH + '\\cordova\\log.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\emulate.bat ' + PROJECT_PATH + '\\cordova\\emulate.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\BOOM.bat ' + PROJECT_PATH + '\\cordova\\BOOM.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\run.bat ' + PROJECT_PATH + '\\cordova\\run.bat /Y');
 
 // interpolate the activity name and package
 WScript.Echo("Updating AndroidManifest.xml and Main Activity...");

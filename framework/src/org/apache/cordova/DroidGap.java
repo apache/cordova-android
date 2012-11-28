@@ -40,7 +40,6 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -155,11 +154,6 @@ public class DroidGap extends Activity implements CordovaInterface {
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
     private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
-
-    // The base of the initial URL for our app.
-    // Does not include file name.  Ends with /
-    // ie http://server/path/
-    String baseUrl = null;
 
     // Plugin to call when activity result is received
     protected CordovaPlugin activityResultCallback = null;
@@ -859,7 +853,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // If errorUrl specified, then load it
         final String errorUrl = me.getStringProperty("errorUrl", null);
-        if ((errorUrl != null) && (errorUrl.startsWith("file://") || errorUrl.indexOf(me.baseUrl) == 0 || this.appView.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
+        if ((errorUrl != null) && (errorUrl.startsWith("file://") || this.appView.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
 
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {

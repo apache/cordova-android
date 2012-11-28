@@ -26,6 +26,7 @@ import org.apache.cordova.test.actions.backbuttonmultipage;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.KeyEvent;
+import android.view.inputmethod.BaseInputConnection;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -97,6 +98,54 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       assertTrue(didGoBack);
   }
 
+  public void testViaBackButtonOnView() {
+      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+      sleep();
+      String url = testView.getUrl();
+      assertTrue(url.endsWith("sample2.html"));
+      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+      sleep();
+      url = testView.getUrl();
+      assertTrue(url.endsWith("sample3.html"));
+      BaseInputConnection viewConnection = new BaseInputConnection(testView, true);
+      KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
+      KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+      viewConnection.sendKeyEvent(backDown);
+      viewConnection.sendKeyEvent(backUp);
+      sleep();
+      url = testView.getUrl();
+      assertTrue(url.endsWith("sample2.html"));
+      viewConnection.sendKeyEvent(backDown);
+      viewConnection.sendKeyEvent(backUp);
+      sleep();
+      url = testView.getUrl();
+      assertTrue(url.endsWith("index.html"));
+  }
+  
+  public void testViaBackButtonOnLayout() {
+      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+      sleep();
+      String url = testView.getUrl();
+      assertTrue(url.endsWith("sample2.html"));
+      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+      sleep();
+      url = testView.getUrl();
+      assertTrue(url.endsWith("sample3.html"));
+      BaseInputConnection viewConnection = new BaseInputConnection(containerView, true);
+      KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
+      KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+      viewConnection.sendKeyEvent(backDown);
+      viewConnection.sendKeyEvent(backUp);
+      sleep();
+      url = testView.getUrl();
+      assertTrue(url.endsWith("sample2.html"));
+      viewConnection.sendKeyEvent(backDown);
+      viewConnection.sendKeyEvent(backUp);
+      sleep();
+      url = testView.getUrl();
+      assertTrue(url.endsWith("index.html"));
+  }
+  
   private void sleep() {
       try {
           Thread.sleep(TIMEOUT);

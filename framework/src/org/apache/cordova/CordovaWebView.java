@@ -20,6 +20,8 @@
 package org.apache.cordova;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -98,8 +100,8 @@ public class CordovaWebView extends WebView {
     
     private long lastMenuEventTime = 0;
 
-	NativeToJsMessageQueue jsMessageQueue;
-	ExposedJsApi exposedJsApi;
+    NativeToJsMessageQueue jsMessageQueue;
+    ExposedJsApi exposedJsApi;
 
     /** custom view created by the browser (a video player for example) */
     private View mCustomView;
@@ -200,8 +202,8 @@ public class CordovaWebView extends WebView {
      * @param defStyle
      * @param privateBrowsing
      */
-	@TargetApi(11)
-	public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
+    @TargetApi(11)
+    public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
         super(context, attrs, defStyle, privateBrowsing);
         if (CordovaInterface.class.isInstance(context))
         {
@@ -244,15 +246,28 @@ public class CordovaWebView extends WebView {
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
-
-        //Set the nav dump for HTC 2.x devices (disabling for ICS/Jellybean)
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
-            settings.setNavDump(true);
         
+        // Set the nav dump for HTC 2.x devices (disabling for ICS, deprecated entirely for Jellybean 4.2)
+        try {
+            Method gingerbread_getMethod =  WebSettings.class.getMethod("setNavDump", new Class[] { boolean.class });
+            if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+            {
+                gingerbread_getMethod.invoke(settings, true);
+            }
+        } catch (NoSuchMethodException e) {
+            Log.d(TAG, "We are on a modern version of Android, we will deprecate HTC 2.3 devices in 2.8");
+        } catch (IllegalArgumentException e) {
+            Log.d(TAG, "Doing the NavDump failed with bad arguments");
+        } catch (IllegalAccessException e) {
+            Log.d(TAG, "This should never happen: IllegalAccessException means this isn't Android anymore");
+        } catch (InvocationTargetException e) {
+            Log.d(TAG, "This should never happen: InvocationTargetException means this isn't Android anymore.");
+        }
+
         // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         // while we do this
         if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-        	Level16Apis.enableUniversalAccess(settings);
+            Level16Apis.enableUniversalAccess(settings);
         // Enable database
         settings.setDatabaseEnabled(true);
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
@@ -288,17 +303,19 @@ public class CordovaWebView extends WebView {
     }
     
     private void updateUserAgentString() {
-    	this.getSettings().getUserAgentString();
+        this.getSettings().getUserAgentString();
     }
 
     private void exposeJsInterface() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) {
+        int SDK_INT = Build.VERSION.SDK_INT;
+        boolean isHoneycomb = (SDK_INT >= Build.VERSION_CODES.HONEYCOMB && SDK_INT <= Build.VERSION_CODES.HONEYCOMB_MR2);
+        if (isHoneycomb || (SDK_INT < Build.VERSION_CODES.GINGERBREAD)) {
             Log.i(TAG, "Disabled addJavascriptInterface() bridge since Android version is old.");
             // Bug being that Java Strings do not get converted to JS strings automatically.
             // This isn't hard to work-around on the JS side, but it's easier to just
             // use the prompt bridge instead.
             return;            
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB && Build.MANUFACTURER.equals("unknown")) {
+        } else if (SDK_INT < Build.VERSION_CODES.HONEYCOMB && Build.MANUFACTURER.equals("unknown")) {
             // addJavascriptInterface crashes on the 2.3 emulator.
             Log.i(TAG, "Disabled addJavascriptInterface() bridge callback due to a bug on the 2.3 emulator");
             return;
@@ -610,7 +627,7 @@ public class CordovaWebView extends WebView {
         // Check webview first to see if there is a history
         // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
         if (super.canGoBack()) {
-        	printBackForwardList();
+            printBackForwardList();
             super.goBack();
             
             return true;
@@ -841,27 +858,27 @@ public class CordovaWebView extends WebView {
         // If back key
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // A custom view is currently displayed  (e.g. playing a video)
-        	if(mCustomView != null) {
-        		this.hideCustomView();
-        	} else {
-        	    // The webview is currently displayed
-	            // If back key is bound, then send event to JavaScript
-	            if (this.bound) {
-	                this.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
-	                return true;
-	            } else {
-	                // If not bound
-	                // Go to previous page in webview if it is possible to go back
-	                if (this.backHistory()) {
-	                    return true;
-	                }
-	                // If not, then invoke default behaviour
-	                else {
-	                    //this.activityState = ACTIVITY_EXITING;
-	                    return false;
-	                }
-	            }
-        	}
+            if(mCustomView != null) {
+                this.hideCustomView();
+            } else {
+                // The webview is currently displayed
+                // If back key is bound, then send event to JavaScript
+                if (this.bound) {
+                    this.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
+                    return true;
+                } else {
+                    // If not bound
+                    // Go to previous page in webview if it is possible to go back
+                    if (this.backHistory()) {
+                        return true;
+                    }
+                    // If not, then invoke default behaviour
+                    else {
+                        //this.activityState = ACTIVITY_EXITING;
+                        return false;
+                    }
+                }
+            }
         }
         // Legacy
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
@@ -1003,14 +1020,14 @@ public class CordovaWebView extends WebView {
     }
     
     public void printBackForwardList() {
-    	WebBackForwardList currentList = this.copyBackForwardList();
-    	int currentSize = currentList.getSize();
-    	for(int i = 0; i < currentSize; ++i)
-    	{
-    		WebHistoryItem item = currentList.getItemAtIndex(i);
-    		String url = item.getUrl();
-    		LOG.d(TAG, "The URL at index: " + Integer.toString(i) + "is " + url );
-    	}
+        WebBackForwardList currentList = this.copyBackForwardList();
+        int currentSize = currentList.getSize();
+        for(int i = 0; i < currentSize; ++i)
+        {
+            WebHistoryItem item = currentList.getItemAtIndex(i);
+            String url = item.getUrl();
+            LOG.d(TAG, "The URL at index: " + Integer.toString(i) + "is " + url );
+        }
     }
     
     
@@ -1027,8 +1044,8 @@ public class CordovaWebView extends WebView {
     }
 
     public void showCustomView(View view, WebChromeClient.CustomViewCallback callback) {
-    	// This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
-    	Log.d(TAG, "showing Custom View");
+        // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
+        Log.d(TAG, "showing Custom View");
         // if a view already exists then immediately terminate the new one
         if (mCustomView != null) {
             callback.onCustomViewHidden();
@@ -1036,57 +1053,57 @@ public class CordovaWebView extends WebView {
         }
         
         // Store the view and its callback for later (to kill it properly)
-    	mCustomView = view;
-    	mCustomViewCallback = callback;
-    	
+        mCustomView = view;
+        mCustomViewCallback = callback;
+        
         // Add the custom view to its container.
-    	ViewGroup parent = (ViewGroup) this.getParent();
-    	parent.addView(view, COVER_SCREEN_GRAVITY_CENTER);
-    	
-    	// Hide the content view.
-    	this.setVisibility(View.GONE);
-    	
-    	// Finally show the custom view container.
-    	parent.setVisibility(View.VISIBLE);
-    	parent.bringToFront();
+        ViewGroup parent = (ViewGroup) this.getParent();
+        parent.addView(view, COVER_SCREEN_GRAVITY_CENTER);
+        
+        // Hide the content view.
+        this.setVisibility(View.GONE);
+        
+        // Finally show the custom view container.
+        parent.setVisibility(View.VISIBLE);
+        parent.bringToFront();
     }
 
-	public void hideCustomView() {
-    	// This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
-    	Log.d(TAG, "Hidding Custom View");
-		if (mCustomView == null) return;
+    public void hideCustomView() {
+        // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
+        Log.d(TAG, "Hidding Custom View");
+        if (mCustomView == null) return;
 
-		// Hide the custom view.
-		mCustomView.setVisibility(View.GONE);
-		
-		// Remove the custom view from its container.
-		ViewGroup parent = (ViewGroup) this.getParent();
-		parent.removeView(mCustomView);
-		mCustomView = null;
-		mCustomViewCallback.onCustomViewHidden();
-		
+        // Hide the custom view.
+        mCustomView.setVisibility(View.GONE);
+        
+        // Remove the custom view from its container.
+        ViewGroup parent = (ViewGroup) this.getParent();
+        parent.removeView(mCustomView);
+        mCustomView = null;
+        mCustomViewCallback.onCustomViewHidden();
+        
         // Show the content view.
         this.setVisibility(View.VISIBLE);
-	}
-	
-	/**
-	 * if the video overlay is showing then we need to know 
-	 * as it effects back button handling
-	 * 
-	 * @return
-	 */
-	public boolean isCustomViewShowing() {
-	    return mCustomView != null;
-	}
-	
-	public WebBackForwardList restoreState(Bundle savedInstanceState)
-	{
-	    WebBackForwardList myList = super.restoreState(savedInstanceState);
-	    Log.d(TAG, "WebView restoration crew now restoring!");
-	    //Initialize the plugin manager once more
-	    this.pluginManager.init();
-	    return myList;
-	}
+    }
+    
+    /**
+     * if the video overlay is showing then we need to know 
+     * as it effects back button handling
+     * 
+     * @return
+     */
+    public boolean isCustomViewShowing() {
+        return mCustomView != null;
+    }
+    
+    public WebBackForwardList restoreState(Bundle savedInstanceState)
+    {
+        WebBackForwardList myList = super.restoreState(savedInstanceState);
+        Log.d(TAG, "WebView restoration crew now restoring!");
+        //Initialize the plugin manager once more
+        this.pluginManager.init();
+        return myList;
+    }
 
     public void storeResult(int requestCode, int resultCode, Intent intent) {
         mResult = new ActivityResult(requestCode, resultCode, intent);

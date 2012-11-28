@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.CordovaPlugin;
+import org.apache.cordova.api.LOG;
 import org.apache.cordova.test.R;
 import org.apache.cordova.test.R.id;
 import org.apache.cordova.test.R.layout;
@@ -50,14 +51,6 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
 
         cordovaWebView.loadUrl("file:///android_asset/www/index.html");
 
-    }
-
-    public void onDestroy()
-    {
-        super.onDestroy();
-        if (cordovaWebView.pluginManager != null) {
-            cordovaWebView.pluginManager.onDestroy();
-        }
     }
 
     public Context getContext() {
@@ -94,5 +87,18 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
     public ExecutorService getThreadPool() {
         // TODO Auto-generated method stub
         return threadPool;
+    }
+    
+    @Override
+    /**
+     * The final call you receive before your activity is destroyed.
+     */
+    public void onDestroy() {
+        super.onDestroy();
+        if (cordovaWebView != null) {
+            // Send destroy event to JavaScript
+            cordovaWebView.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
+            cordovaWebView.handleDestroy();
+        }
     }
 }

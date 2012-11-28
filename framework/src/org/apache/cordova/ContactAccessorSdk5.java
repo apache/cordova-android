@@ -1579,7 +1579,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             Uri uri = Uri.parse(path);
             return mApp.getActivity().getContentResolver().openInputStream(uri);
         }
-        if (path.startsWith("http:") || path.startsWith("file:")) {
+        if (path.startsWith("http:") || path.startsWith("https:") || path.startsWith("file:")) {
             URL url = new URL(path);
             return url.openStream();
         }

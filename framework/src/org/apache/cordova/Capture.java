@@ -127,7 +127,7 @@ public class Capture extends CordovaPlugin {
 
         // If the mimeType isn't set the rest will fail
         // so let's see if we can determine it.
-        if (mimeType == null || mimeType.equals("")) {
+        if (mimeType == null || mimeType.equals("") || "null".equals(mimeType)) {
             mimeType = FileUtils.getMimeType(filePath);
         }
         Log.d(LOG_TAG, "Mime type = " + mimeType);

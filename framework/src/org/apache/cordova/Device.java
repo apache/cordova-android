@@ -39,7 +39,7 @@ import android.telephony.TelephonyManager;
 public class Device extends CordovaPlugin {
     public static final String TAG = "Device";
 
-    public static String cordovaVersion = "2.2.0";              // Cordova version
+    public static String cordovaVersion = "2.3.0rc1";              // Cordova version
     public static String platform = "Android";                  // Device OS
     public static String uuid;                                  // Device UUID
 
@@ -80,9 +80,7 @@ public class Device extends CordovaPlugin {
             r.put("platform", Device.platform);
             r.put("name", this.getProductName());
             r.put("cordova", Device.cordovaVersion);
-            //JSONObject pg = new JSONObject();
-            //pg.put("version", Device.CordovaVersion);
-            //r.put("cordova", pg);
+            r.put("model", this.getProductName());
             callbackContext.success(r);
         }
         else {

@@ -19,28 +19,30 @@
 
 package org.apache.cordova;
 
+import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.LOG;
-import org.apache.cordova.api.Plugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.HashMap;
 
 /**
  * This class exposes methods in DroidGap that can be called from JavaScript.
  */
-public class App extends Plugin {
+public class App extends CordovaPlugin {
 
     /**
      * Executes the request and returns PluginResult.
      *
-     * @param action        The action to execute.
-     * @param args          JSONArry of arguments for the plugin.
-     * @param callbackId    The callback id used when calling back into JavaScript.
-     * @return              A PluginResult object with a status and message.
+     * @param action            The action to execute.
+     * @param args              JSONArry of arguments for the plugin.
+     * @param callbackContext   The callback context from which we were invoked.
+     * @return                  A PluginResult object with a status and message.
      */
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         PluginResult.Status status = PluginResult.Status.OK;
         String result = "";
 
@@ -79,9 +81,11 @@ public class App extends Plugin {
             else if (action.equals("exitApp")) {
                 this.exitApp();
             }
-            return new PluginResult(status, result);
+            callbackContext.sendPluginResult(new PluginResult(status, result));
+            return true;
         } catch (JSONException e) {
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+            return false;
         }
     }
 

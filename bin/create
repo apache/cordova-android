@@ -147,13 +147,13 @@ replace "s/__ACTIVITY__/${ACTIVITY}/g" "$MANIFEST_PATH"
 replace "s/__PACKAGE__/${PACKAGE}/g" "$MANIFEST_PATH"
 replace "s/__APILEVEL__/${API_LEVEL}/g" "$MANIFEST_PATH"
 
-# creating cordova folder and copying emulate/debug/log/launch scripts
+# creating cordova folder and copying run/build/log/launch scripts
 mkdir "$PROJECT_PATH"/cordova
 createAppInfoJar
 cp "$BUILD_PATH"/bin/templates/cordova/appinfo.jar "$PROJECT_PATH"/cordova/appinfo.jar
 cp "$BUILD_PATH"/bin/templates/cordova/cordova "$PROJECT_PATH"/cordova/cordova
-cp "$BUILD_PATH"/bin/templates/cordova/debug "$PROJECT_PATH"/cordova/debug
+cp "$BUILD_PATH"/bin/templates/cordova/build "$PROJECT_PATH"/cordova/build
+cp "$BUILD_PATH"/bin/templates/cordova/release "$PROJECT_PATH"/cordova/release
 cp "$BUILD_PATH"/bin/templates/cordova/clean "$PROJECT_PATH"/cordova/clean
 cp "$BUILD_PATH"/bin/templates/cordova/log "$PROJECT_PATH"/cordova/log
-cp "$BUILD_PATH"/bin/templates/cordova/emulate "$PROJECT_PATH"/cordova/emulate
-cp "$BUILD_PATH"/bin/templates/cordova/BOOM "$PROJECT_PATH"/cordova/BOOM
+cp "$BUILD_PATH"/bin/templates/cordova/run "$PROJECT_PATH"/cordova/run
