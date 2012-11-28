@@ -816,7 +816,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param data              An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        Log.d(TAG, "Incoming Result");
+        LOG.d(TAG, "Incoming Result");
         super.onActivityResult(requestCode, resultCode, intent);
         CordovaPlugin callback = this.activityResultCallback;
         if(callback == null)
@@ -825,13 +825,13 @@ public class DroidGap extends Activity implements CordovaInterface {
             {
                 this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
                 callback = activityResultCallback;
-                Log.d(TAG, "We have a callback to send this result to");
+                LOG.d(TAG, "We have a callback to send this result to");
                 callback.onActivityResult(requestCode, resultCode, intent);
             }
         }
         else
         {
-            Log.d(TAG, "We have a callback to send this result to");
+            LOG.d(TAG, "We have a callback to send this result to");
             callback.onActivityResult(requestCode, resultCode, intent);
         }
     }
