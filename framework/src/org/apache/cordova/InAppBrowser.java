@@ -209,6 +209,7 @@ public class InAppBrowser extends CordovaPlugin {
      */
     private void closeDialog() {
         // TODO: fire 'exit' event 
+        this.webView.sendJavascript("cordova.fireWindowEvent('exit');");
         if (dialog != null) {
             dialog.dismiss();
         }
@@ -271,6 +272,8 @@ public class InAppBrowser extends CordovaPlugin {
         if (features != null) {
             showLocationBar = features.get(LOCATION).booleanValue();
         }
+        
+        final CordovaWebView thatWebView = this.webView;
 
         // Create dialog in new thread
         Runnable runnable = new Runnable() {
@@ -394,7 +397,7 @@ public class InAppBrowser extends CordovaPlugin {
                 inAppWebView = new WebView(cordova.getActivity());
                 inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
                 inAppWebView.setWebChromeClient(new WebChromeClient());
-                WebViewClient client = new InAppBrowserClient(edittext);
+                WebViewClient client = new InAppBrowserClient(thatWebView, edittext);
                 inAppWebView.setWebViewClient(client);
                 WebSettings settings = inAppWebView.getSettings();
                 settings.setJavaScriptEnabled(true);
@@ -464,6 +467,7 @@ public class InAppBrowser extends CordovaPlugin {
      */
     public class InAppBrowserClient extends WebViewClient {
         EditText edittext;
+        CordovaWebView webView;
 
         /**
          * Constructor.
@@ -471,7 +475,8 @@ public class InAppBrowser extends CordovaPlugin {
          * @param mContext
          * @param edittext
          */
-        public InAppBrowserClient(EditText mEditText) {
+        public InAppBrowserClient(CordovaWebView webView, EditText mEditText) {
+            this.webView = webView;
             this.edittext = mEditText;
         }
 
@@ -495,21 +500,14 @@ public class InAppBrowser extends CordovaPlugin {
                 edittext.setText(newloc);
             }
 
-            // TODO: Fire 'loadstart' event
-            try {
-                JSONObject obj = new JSONObject();
-                obj.put("type", LOCATION_CHANGED_EVENT);
-                obj.put("location", url);
-
-                sendUpdate(obj, true);
-            } catch (JSONException e) {
-                Log.d("InAppBrowser", "This should never happen");
-            }
+            // TODO: Fire 'loadstart' event only on the InAppBrowser object
+            this.webView.sendJavascript("cordova.fireWindowEvent('loadstart', '" + url + "');");
         }
         
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            // TODO: Fire 'loadstop' event
+            // TODO: Fire 'loadstop' event only on the InAppBrowser object
+            this.webView.sendJavascript("cordova.fireWindowEvent('loadstop', '" + url + "');");
         }
     }
 }
