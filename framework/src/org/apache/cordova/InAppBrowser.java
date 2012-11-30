@@ -64,8 +64,9 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String SYSTEM = "_system";
     private static final String BLANK = "_blank";
     private static final String LOCATION = "location";
-    private static int CLOSE_EVENT = 0;
-    private static int LOCATION_CHANGED_EVENT = 1;
+    private static final String EXIT_EVENT = "exit";
+    private static final String LOAD_START_EVENT = "loadstart";
+    private static final String LOAD_STOP_EVENT = "loadstop";
 
     private String browserCallbackId = null;
 
@@ -128,17 +129,16 @@ public class InAppBrowser extends CordovaPlugin {
             else if (action.equals("close")) {
                 closeDialog();
 
-                JSONObject obj = new JSONObject();
-                obj.put("type", CLOSE_EVENT);
-
-                PluginResult pluginResult = new PluginResult(status, obj);
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
                 pluginResult.setKeepCallback(false);
                 this.callbackContext.sendPluginResult(pluginResult);
             }
             else {
                 status = PluginResult.Status.INVALID_ACTION;
             }
-            this.callbackContext.sendPluginResult(new PluginResult(status, result));
+            PluginResult pluginResult = new PluginResult(status, result);
+            pluginResult.setKeepCallback(true);
+            this.callbackContext.sendPluginResult(pluginResult);
         } catch (JSONException e) {
             this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
@@ -208,8 +208,15 @@ public class InAppBrowser extends CordovaPlugin {
      * Closes the dialog
      */
     private void closeDialog() {
-        // TODO: fire 'exit' event 
-        this.webView.sendJavascript("cordova.fireWindowEvent('exit');");
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("type", EXIT_EVENT);
+
+            sendUpdate(obj, false);
+        } catch (JSONException ex) {
+            Log.d(LOG_TAG, "Should never happen");
+        }
+        
         if (dialog != null) {
             dialog.dismiss();
         }
@@ -301,7 +308,7 @@ public class InAppBrowser extends CordovaPlugin {
                         public void onDismiss(DialogInterface dialog) {
                             try {
                                 JSONObject obj = new JSONObject();
-                                obj.put("type", CLOSE_EVENT);
+                                obj.put("type", EXIT_EVENT);
 
                                 sendUpdate(obj, false);
                             } catch (JSONException e) {
@@ -455,11 +462,12 @@ public class InAppBrowser extends CordovaPlugin {
      * @param obj a JSONObject contain event payload information
      */
     private void sendUpdate(JSONObject obj, boolean keepCallback) {
-        if (this.browserCallbackId != null) {
+        // TODO: Not sure how browserCallbackId is used overall, commenting it out for now
+//        if (this.browserCallbackId != null) {
             PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
             result.setKeepCallback(keepCallback);
             this.callbackContext.sendPluginResult(result);
-        }
+//        }
     }
 
     /**
@@ -500,14 +508,29 @@ public class InAppBrowser extends CordovaPlugin {
                 edittext.setText(newloc);
             }
 
-            // TODO: Fire 'loadstart' event only on the InAppBrowser object
-            this.webView.sendJavascript("cordova.fireWindowEvent('loadstart', '" + url + "');");
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("type", LOAD_START_EVENT);
+                obj.put("url", newloc);
+    
+                sendUpdate(obj, true);
+            } catch (JSONException ex) {
+                Log.d(LOG_TAG, "Should never happen");
+            }
         }
         
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            // TODO: Fire 'loadstop' event only on the InAppBrowser object
-            this.webView.sendJavascript("cordova.fireWindowEvent('loadstop', '" + url + "');");
+            
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("type", LOAD_STOP_EVENT);
+                obj.put("url", url);
+    
+                sendUpdate(obj, true);
+            } catch (JSONException ex) {
+                Log.d(LOG_TAG, "Should never happen");
+            }
         }
     }
 }
