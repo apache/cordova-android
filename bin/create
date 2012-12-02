@@ -23,7 +23,7 @@
 #
 set -e
 
-if [ -n "$1" ] && [ "$1" == "-h" ]
+if [ -z "$1" ] || [ "$1" == "-h" ]
 then
     echo 'usage: create path package activity'
     echo "Make sure the Android SDK tools folder is in your PATH!"
