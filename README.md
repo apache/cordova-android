@@ -29,11 +29,11 @@ Building
 
 To create your cordova.jar, copy the commons codec:
 
-    mv commons-codec-1.6.jar framework/libs
+    mv commons-codec-1.7.jar framework/libs
 
 then run in the framework directory:
 
-    android update project -p . -t android-16
+    android update project -p . -t android-17
     ant jar
 
 
