@@ -1008,8 +1008,10 @@ public class DroidGap extends Activity implements CordovaInterface {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
+        //Get whatever has focus!
+        View childView = appView.getFocusedChild();
     	//Determine if the focus is on the current view or not
-        if (appView.getHitTestResult() != null && 
+        if (appView.getHitTestResult() != null && childView == null &&
                 appView.getHitTestResult().getType() == WebView.HitTestResult.EDIT_TEXT_TYPE &&
                 (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
                         return appView.onKeyUp(keyCode, event);
