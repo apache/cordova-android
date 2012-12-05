@@ -219,6 +219,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             columnsToFetch.add(ContactsContract.CommonDataKinds.Phone.TYPE);
         }
         if (isRequired("emails", populate)) {
+            columnsToFetch.add(ContactsContract.CommonDataKinds.Email._ID);
             columnsToFetch.add(ContactsContract.CommonDataKinds.Email.DATA);
             columnsToFetch.add(ContactsContract.CommonDataKinds.Email.TYPE);
         }
