@@ -80,7 +80,7 @@ public class Device extends CordovaPlugin {
             r.put("platform", Device.platform);
             r.put("name", this.getProductName());
             r.put("cordova", Device.cordovaVersion);
-            r.put("model", this.getProductName());
+            r.put("model", this.getModel());
             callbackContext.success(r);
         }
         else {
