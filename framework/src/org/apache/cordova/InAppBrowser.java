@@ -18,7 +18,6 @@
 */
 package org.apache.cordova;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -29,12 +28,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.text.InputType;
 import android.util.Log;
@@ -56,19 +55,18 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+@SuppressLint("SetJavaScriptEnabled")
 public class InAppBrowser extends CordovaPlugin {
 
     private static final String NULL = "null";
     protected static final String LOG_TAG = "InAppBrowser";
     private static final String SELF = "_self";
     private static final String SYSTEM = "_system";
-    private static final String BLANK = "_blank";
+    // private static final String BLANK = "_blank";
     private static final String LOCATION = "location";
     private static final String EXIT_EVENT = "exit";
     private static final String LOAD_START_EVENT = "loadstart";
     private static final String LOAD_STOP_EVENT = "loadstop";
-
-    private String browserCallbackId = null;
 
     private Dialog dialog;
     private WebView inAppWebView;
@@ -410,6 +408,11 @@ public class InAppBrowser extends CordovaPlugin {
                 settings.setJavaScriptEnabled(true);
                 settings.setJavaScriptCanOpenWindowsAutomatically(true);
                 settings.setBuiltInZoomControls(true);
+                /** 
+                 * We need to be careful of this line as a future Android release may deprecate it out of existence.
+                 * Can't replace it with the API 8 level call right now as our minimum SDK is 7 until May 2013
+                 */
+                // @TODO: replace with settings.setPluginState(android.webkit.WebSettings.PluginState.ON)
                 settings.setPluginsEnabled(true);
                 settings.setDomStorageEnabled(true);
                 inAppWebView.loadUrl(url);
@@ -446,11 +449,6 @@ public class InAppBrowser extends CordovaPlugin {
                 dialog.show();
                 dialog.getWindow().setAttributes(lp);
             }
-
-          private Bitmap loadDrawable(String filename) throws java.io.IOException {
-              InputStream input = cordova.getActivity().getAssets().open(filename);
-              return BitmapFactory.decodeStream(input);
-          }
         };
         this.cordova.getActivity().runOnUiThread(runnable);
         return "";
@@ -462,12 +460,9 @@ public class InAppBrowser extends CordovaPlugin {
      * @param obj a JSONObject contain event payload information
      */
     private void sendUpdate(JSONObject obj, boolean keepCallback) {
-        // TODO: Not sure how browserCallbackId is used overall, commenting it out for now
-//        if (this.browserCallbackId != null) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
-            result.setKeepCallback(keepCallback);
-            this.callbackContext.sendPluginResult(result);
-//        }
+        PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+        result.setKeepCallback(keepCallback);
+        this.callbackContext.sendPluginResult(result);
     }
 
     /**
