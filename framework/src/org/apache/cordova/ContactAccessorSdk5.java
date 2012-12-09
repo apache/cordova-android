@@ -1501,7 +1501,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                 .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)
                 .withValue(ContactsContract.CommonDataKinds.Email.DATA, getJsonString(email, "value"))
-                .withValue(ContactsContract.CommonDataKinds.Email.TYPE, getPhoneType(getJsonString(email, "type")))
+                .withValue(ContactsContract.CommonDataKinds.Email.TYPE, getContactType(getJsonString(email, "type")))
                 .build());
     }
 
