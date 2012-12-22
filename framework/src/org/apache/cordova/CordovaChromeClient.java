@@ -24,8 +24,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -33,6 +37,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.webkit.ConsoleMessage;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
@@ -47,6 +52,8 @@ import android.widget.RelativeLayout;
  */
 public class CordovaChromeClient extends WebChromeClient {
 
+    public static final int FILECHOOSER_RESULTCODE = 5173;
+    private static final String LOG_TAG = "CordovaChromeClient";
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
     private CordovaInterface cordova;
@@ -54,6 +61,9 @@ public class CordovaChromeClient extends WebChromeClient {
 
     // the video progress view
     private View mVideoProgressView;
+    
+    // File Chooser
+    public ValueCallback<Uri> mUploadMessage;
     
     /**
      * Constructor.
@@ -369,5 +379,21 @@ public class CordovaChromeClient extends WebChromeClient {
 	    }
     return mVideoProgressView; 
     }
+    
+    public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+        this.openFileChooser(uploadMsg, "*/*");
+    }
 
+    public void openFileChooser( ValueCallback<Uri> uploadMsg, String acceptType ) {
+        mUploadMessage = uploadMsg;
+        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("*/*");
+        this.cordova.getActivity().startActivityForResult(Intent.createChooser(i, "File Browser"),
+                FILECHOOSER_RESULTCODE);
+    }
+    
+    public ValueCallback<Uri> getValueCallback() {
+        return this.mUploadMessage;
+    }
 }
