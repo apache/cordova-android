@@ -125,7 +125,16 @@ public class FileUtils extends CordovaPlugin {
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
             }
             else if (action.equals("readAsDataURL")) {
-                String s = this.readAsDataURL(args.getString(0));
+                int start = 0;
+                int end = Integer.MAX_VALUE;
+                if (args.length() >= 2) {
+                    start = args.getInt(1);
+                }
+                if (args.length() >= 3) {
+                    end = args.getInt(2);
+                }
+
+                String s = this.readAsDataURL(args.getString(0), start, end);
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
             }
             else if (action.equals("write")) {
@@ -972,12 +981,19 @@ public class FileUtils extends CordovaPlugin {
      * @return					Contents of file = data:<media type>;base64,<data>
      * @throws FileNotFoundException, IOException
      */
-    public String readAsDataURL(String filename) throws FileNotFoundException, IOException {
+    public String readAsDataURL(String filename, int start, int end) throws FileNotFoundException, IOException {
+        int diff = end - start;
         byte[] bytes = new byte[1000];
         BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int numRead = 0;
-        while ((numRead = bis.read(bytes, 0, 1000)) >= 0) {
+
+        if (start > 0) {
+            bis.skip(start);
+        }
+
+        while (diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
+            diff -= numRead;
             bos.write(bytes, 0, numRead);
         }
 
