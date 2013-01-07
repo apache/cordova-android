@@ -414,6 +414,9 @@ public class InAppBrowser extends CordovaPlugin {
                  */
                 // @TODO: replace with settings.setPluginState(android.webkit.WebSettings.PluginState.ON)
                 settings.setPluginsEnabled(true);
+                settings.setDatabaseEnabled(true);
+                String databasePath = cordova.getActivity().getApplicationContext().getDir("inAppBrowserDB", Context.MODE_PRIVATE).getPath();
+                settings.setDatabasePath(databasePath);
                 settings.setDomStorageEnabled(true);
                 inAppWebView.loadUrl(url);
                 inAppWebView.setId(6);
