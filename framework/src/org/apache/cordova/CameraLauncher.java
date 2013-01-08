@@ -322,7 +322,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         }
 
                         // If all this is true we shouldn't compress the image.
-                        if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100 && rotate == 0) {
+                        if (this.targetHeight == -1 && this.targetWidth == -1 && this.mQuality == 100 && 
+                                !this.correctOrientation) {
                             writeUncompressedImage(uri);
 
                             this.callbackContext.success(uri.toString());
