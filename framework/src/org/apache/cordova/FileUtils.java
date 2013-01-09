@@ -1019,15 +1019,19 @@ public class FileUtils extends CordovaPlugin {
      * @return a mime type
      */
     public static String getMimeType(String filename) {
-        // Stupid bug in getFileExtensionFromUrl when the file name has a space
-        // So we need to replace the space with a url encoded %20
-        String url = filename.replace(" ", "%20");
-        MimeTypeMap map = MimeTypeMap.getSingleton();
-        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
-        if (extension.toLowerCase().equals("3ga")) {
-            return "audio/3gpp";
+        if (filename != null) {
+            // Stupid bug in getFileExtensionFromUrl when the file name has a space
+            // So we need to replace the space with a url encoded %20
+            String url = filename.replace(" ", "%20");
+            MimeTypeMap map = MimeTypeMap.getSingleton();
+            String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+            if (extension.toLowerCase().equals("3ga")) {
+                return "audio/3gpp";
+            } else {
+                return map.getMimeTypeFromExtension(extension);
+            }
         } else {
-            return map.getMimeTypeFromExtension(extension);
+            return "";
         }
     }
 
