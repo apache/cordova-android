@@ -34,7 +34,8 @@ public class basicauth extends DroidGap {
         super.setAuthenticationToken(token, "browserspy.dk:80", "BrowserSpy.dk - HTTP Password Test");
 
         // Add web site to whitelist
-        super.appView.addWhiteListEntry("http://browserspy.dk*", true);
+        Config.init();
+        Config.addWhiteListEntry("http://browserspy.dk*", true);
 
         // Load test
         super.loadUrl("file:///android_asset/www/basicauth/index.html");

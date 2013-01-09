@@ -48,7 +48,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
@@ -853,7 +852,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // If errorUrl specified, then load it
         final String errorUrl = me.getStringProperty("errorUrl", null);
-        if ((errorUrl != null) && (errorUrl.startsWith("file://") || this.appView.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
+        if ((errorUrl != null) && (errorUrl.startsWith("file://") || Config.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
 
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {
@@ -921,11 +920,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @return
      */
     public boolean isUrlWhiteListed(String url) {
-        // Check to see if we have matched url previously
-        if (this.appView != null) {
-            return this.appView.isUrlWhiteListed(url);
-        }
-        return false;
+        return Config.isUrlWhiteListed(url);
     }
 
     /*

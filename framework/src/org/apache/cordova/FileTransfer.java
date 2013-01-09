@@ -602,8 +602,8 @@ public class FileTransfer extends CordovaPlugin {
             return;
         }
         final boolean useHttps = url.getProtocol().toLowerCase().equals("https");
-        
-        if (!webView.isUrlWhiteListed(source)) {
+
+        if (!Config.isUrlWhiteListed(source)) {
             Log.w(LOG_TAG, "Source URL is not in white list: '" + source + "'");
             JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, 401);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
