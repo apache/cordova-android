@@ -197,7 +197,7 @@ public class CordovaChromeClient extends WebChromeClient {
         // Security check to make sure any requests are coming from the page initially
         // loaded in webview and not another loaded in an iframe.
         boolean reqOk = false;
-        if (url.startsWith("file://") || url.indexOf(this.appView.baseUrl) == 0 || this.appView.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.indexOf(this.appView.baseUrl) == 0 || Config.isUrlWhiteListed(url)) {
             reqOk = true;
         }
 

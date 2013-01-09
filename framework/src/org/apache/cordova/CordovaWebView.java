@@ -19,30 +19,24 @@
 
 package org.apache.cordova;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import org.apache.cordova.Config;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginManager;
 import org.apache.cordova.api.PluginResult;
-import org.xmlpull.v1.XmlPullParserException;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.XmlResourceParser;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -65,15 +59,12 @@ public class CordovaWebView extends WebView {
 
     public static final String TAG = "CordovaWebView";
 
-    /** The whitelist **/
-    private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
-    private HashMap<String, Boolean> whiteListCache = new HashMap<String, Boolean>();
     private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
     private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
 
     public PluginManager pluginManager;
     private boolean paused;
-    
+
     private BroadcastReceiver receiver;
 
 
@@ -326,72 +317,6 @@ public class CordovaWebView extends WebView {
     }
 
     /**
-     * Add entry to approved list of URLs (whitelist)
-     *
-     * @param origin        URL regular expression to allow
-     * @param subdomains    T=include all subdomains under origin
-     */
-    public void addWhiteListEntry(String origin, boolean subdomains) {
-        try {
-            // Unlimited access to network resources
-            if (origin.compareTo("*") == 0) {
-                LOG.d(TAG, "Unlimited access to network resources");
-                this.whiteList.add(Pattern.compile(".*"));
-            } else { // specific access
-                // check if subdomains should be included
-                // TODO: we should not add more domains if * has already been added
-                if (subdomains) {
-                    // XXX making it stupid friendly for people who forget to include protocol/SSL
-                    if (origin.startsWith("http")) {
-                        this.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://(.*\\.)?")));
-                    } else {
-                        this.whiteList.add(Pattern.compile("^https?://(.*\\.)?" + origin));
-                    }
-                    LOG.d(TAG, "Origin to allow with subdomains: %s", origin);
-                } else {
-                    // XXX making it stupid friendly for people who forget to include protocol/SSL
-                    if (origin.startsWith("http")) {
-                        this.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://")));
-                    } else {
-                        this.whiteList.add(Pattern.compile("^https?://" + origin));
-                    }
-                    LOG.d(TAG, "Origin to allow: %s", origin);
-                }
-            }
-        } catch (Exception e) {
-            LOG.d(TAG, "Failed to add origin %s", origin);
-        }
-    }
-
-    /**
-     * Determine if URL is in approved list of URLs to load.
-     *
-     * @param url
-     * @return
-     */
-    public boolean isUrlWhiteListed(String url) {
-
-        // Check to see if we have matched url previously
-        if (this.whiteListCache.get(url) != null) {
-            return true;
-        }
-
-        // Look for match in white list
-        Iterator<Pattern> pit = this.whiteList.iterator();
-        while (pit.hasNext()) {
-            Pattern p = pit.next();
-            Matcher m = p.matcher(url);
-
-            // If match found, then cache it to speed up subsequent comparisons
-            if (m.find()) {
-                this.whiteListCache.put(url, true);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Load the url into the webview.
      *
      * @param url
@@ -514,8 +439,8 @@ public class CordovaWebView extends WebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || url.startsWith("javascript:") || this.isUrlWhiteListed(url)) {
-            super.loadUrl(url);            
+        if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || url.startsWith("javascript:") || Config.isUrlWhiteListed(url)) {
+            super.loadUrl(url);
         }
     }
 
@@ -662,7 +587,7 @@ public class CordovaWebView extends WebView {
         if (!openExternal) {
 
             // Make sure url is in whitelist
-            if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || isUrlWhiteListed(url)) {
+            if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || Config.isUrlWhiteListed(url)) {
                 // TODO: What about params?
 
                 // Clear out current url from history, since it will be replacing it
@@ -699,68 +624,14 @@ public class CordovaWebView extends WebView {
     }
 
     /**
-     * Load Cordova configuration from res/xml/cordova.xml.
+     * Check configuration parameters from Config.
      * Approved list of URLs that can be loaded into DroidGap
      *      <access origin="http://server regexp" subdomains="true" />
      * Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
      *      <log level="DEBUG" />
      */
     private void loadConfiguration() {
-        Activity action = this.cordova.getActivity();
-        if(action == null)
-        {
-            LOG.i("CordovaLog", "There is no activity.  Is this on the lock screen?");
-            return;
-        }
-        int id = getResources().getIdentifier("config", "xml", this.cordova.getActivity().getPackageName());
-        if(id == 0)
-        {
-            id = getResources().getIdentifier("cordova", "xml", this.cordova.getActivity().getPackageName());   
-            Log.i("CordovaLog", "config.xml missing, reverting to cordova.xml");
-        }
-        if (id == 0) {
-            LOG.i("CordovaLog", "cordova.xml missing. Ignoring...");
-            return;
-        }
-        XmlResourceParser xml = getResources().getXml(id);
-        int eventType = -1;
-        while (eventType != XmlResourceParser.END_DOCUMENT) {
-            if (eventType == XmlResourceParser.START_TAG) {
-                String strNode = xml.getName();
-                if (strNode.equals("access")) {
-                    String origin = xml.getAttributeValue(null, "origin");
-                    String subdomains = xml.getAttributeValue(null, "subdomains");
-                    if (origin != null) {
-                        this.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
-                    }
-                }
-                else if (strNode.equals("log")) {
-                    String level = xml.getAttributeValue(null, "level");
-                    LOG.i("CordovaLog", "Found log level %s", level);
-                    if (level != null) {
-                        LOG.setLogLevel(level);
-                    }
-                }
-                else if (strNode.equals("preference")) {
-                    String name = xml.getAttributeValue(null, "name");
-                    String value = xml.getAttributeValue(null, "value");
-
-                    LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
-                    Log.d("CordovaLog", "Found preference for " + name + "=" + value);
-
-                    // Save preferences in Intent
-                    this.cordova.getActivity().getIntent().putExtra(name, value);
-                }
-            }
-            try {
-                eventType = xml.next();
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
+        // Config has already been loaded, and it stores these preferences on the Intent.
         if("false".equals(this.getProperty("useBrowserHistory", "true")))
         {
             //Switch back to the old browser history and state the six month policy
