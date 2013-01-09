@@ -29,7 +29,8 @@ public class __ACTIVITY__ extends DroidGap
     {
         super.onCreate(savedInstanceState);
         Config.init(this);
-        super.loadUrl("file:///android_asset/www/index.html");
+        super.loadUrl(Config.getStartUrl());
+        //super.loadUrl("file:///android_asset/www/index.html")
     }
 }
 

@@ -44,6 +44,7 @@ public class Config {
 
     private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
     private HashMap<String, Boolean> whiteListCache = new HashMap<String, Boolean>();
+    private String startUrl;
 
     private static Config self = null;
 
@@ -90,7 +91,7 @@ public class Config {
                     String origin = xml.getAttributeValue(null, "origin");
                     String subdomains = xml.getAttributeValue(null, "subdomains");
                     if (origin != null) {
-                        addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                        this._addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
                     }
                 }
                 else if (strNode.equals("log")) {
@@ -109,6 +110,25 @@ public class Config {
 
                     action.getIntent().putExtra(name, value);
                 }
+                else if (strNode.equals("content")) {
+                    String src = xml.getAttributeValue(null, "src");
+
+                    LOG.i("CordovaLog", "Found start page location: %s", src);
+
+                    if (src != null) {
+                        Pattern schemeRegex = Pattern.compile("^[a-z]+://");
+                        Matcher matcher = schemeRegex.matcher(src);
+                        if (matcher.find()) {
+                            startUrl = src;
+                        } else {
+                            if (src.charAt(0) == '/') {
+                                src = src.substring(1);
+                            }
+                            startUrl = "file:///android_asset/www/" + src;
+                        }
+                    }
+                }
+
             }
 
             try {
@@ -132,28 +152,33 @@ public class Config {
             return;
         }
 
+        self._addWhiteListEntry(origin, subdomains);
+    }
+
+
+    private void _addWhiteListEntry(String origin, boolean subdomains) {
         try {
             // Unlimited access to network resources
             if (origin.compareTo("*") == 0) {
                 LOG.d(TAG, "Unlimited access to network resources");
-                self.whiteList.add(Pattern.compile(".*"));
+                this.whiteList.add(Pattern.compile(".*"));
             } else { // specific access
                 // check if subdomains should be included
                 // TODO: we should not add more domains if * has already been added
                 if (subdomains) {
                     // XXX making it stupid friendly for people who forget to include protocol/SSL
                     if (origin.startsWith("http")) {
-                        self.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://(.*\\.)?")));
+                        this.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://(.*\\.)?")));
                     } else {
-                        self.whiteList.add(Pattern.compile("^https?://(.*\\.)?" + origin));
+                        this.whiteList.add(Pattern.compile("^https?://(.*\\.)?" + origin));
                     }
                     LOG.d(TAG, "Origin to allow with subdomains: %s", origin);
                 } else {
                     // XXX making it stupid friendly for people who forget to include protocol/SSL
                     if (origin.startsWith("http")) {
-                        self.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://")));
+                        this.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://")));
                     } else {
-                        self.whiteList.add(Pattern.compile("^https?://" + origin));
+                        this.whiteList.add(Pattern.compile("^https?://" + origin));
                     }
                     LOG.d(TAG, "Origin to allow: %s", origin);
                 }
@@ -192,5 +217,12 @@ public class Config {
             }
         }
         return false;
+    }
+
+    public static String getStartUrl() {
+        if (self == null || self.startUrl == null) {
+            return "file:///android_asset/www/index.html";
+        }
+        return self.startUrl;
     }
 }
