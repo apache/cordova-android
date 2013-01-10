@@ -54,11 +54,6 @@ public interface CordovaInterface {
      */
     public abstract Activity getActivity();
     
-    @Deprecated
-    public abstract Context getContext();
-    
-    @Deprecated
-    public abstract void cancelLoadUrl();
 
     /**
      * Called when a message is sent to plugin.
