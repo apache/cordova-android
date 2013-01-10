@@ -1022,7 +1022,9 @@ public class FileUtils extends CordovaPlugin {
         if (filename != null) {
             // Stupid bug in getFileExtensionFromUrl when the file name has a space
             // So we need to replace the space with a url encoded %20
-            String url = filename.replace(" ", "%20");
+            
+            // CB-2185: Stupid bug not putting JPG extension in the mime-type map
+            String url = filename.replace(" ", "%20").toLowerCase();
             MimeTypeMap map = MimeTypeMap.getSingleton();
             String extension = MimeTypeMap.getFileExtensionFromUrl(url);
             if (extension.toLowerCase().equals("3ga")) {
