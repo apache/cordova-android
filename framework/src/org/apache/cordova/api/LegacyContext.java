@@ -43,7 +43,6 @@ public class LegacyContext implements CordovaInterface {
     @Deprecated
     public void cancelLoadUrl() {
         Log.i(LOG_TAG, "Replace ctx.cancelLoadUrl() with cordova.cancelLoadUrl()");
-        this.cordova.cancelLoadUrl();
     }
 
     @Deprecated
@@ -55,7 +54,7 @@ public class LegacyContext implements CordovaInterface {
     @Deprecated
     public Context getContext() {
         Log.i(LOG_TAG, "Replace ctx.getContext() with cordova.getContext()");
-        return this.cordova.getContext();
+        return this.cordova.getActivity();
     }
 
     @Deprecated
