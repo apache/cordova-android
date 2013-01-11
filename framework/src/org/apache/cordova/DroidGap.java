@@ -40,6 +40,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -48,7 +49,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
@@ -968,19 +968,21 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         Runnable runnable = new Runnable() {
             public void run() {
-                // Get reference to display
-                Display display = getWindowManager().getDefaultDisplay();
 
+                // Get reference to display
+                DisplayMetrics displaymetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+                
                 // Create the layout for the dialog
                 LinearLayout root = new LinearLayout(that.getActivity());
-                root.setMinimumHeight(display.getHeight());
-                root.setMinimumWidth(display.getWidth());
+                root.setMinimumHeight(displaymetrics.heightPixels);
+                root.setMinimumWidth(displaymetrics.widthPixels);
                 root.setOrientation(LinearLayout.VERTICAL);
                 root.setBackgroundColor(that.getIntegerProperty("backgroundColor", Color.BLACK));
                 root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-                        ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+                        ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
                 root.setBackgroundResource(that.splashscreen);
-
+                
                 // Create and show the dialog
                 splashDialog = new Dialog(that, android.R.style.Theme_Translucent_NoTitleBar);
                 // check to see if the splash screen should be full screen
@@ -1053,7 +1055,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             }
             else {
                 // If the splash dialog is showing don't try to show it again
-                if (this.splashDialog != null && !this.splashDialog.isShowing()) {
+                if (this.splashDialog != null && !this.splashDialog.isShowing() || this.splashDialog == null) {
 	                this.splashscreen = this.getIntegerProperty("splashscreen", 0);
 	                this.showSplashScreen(this.splashscreenTime);
                 }
