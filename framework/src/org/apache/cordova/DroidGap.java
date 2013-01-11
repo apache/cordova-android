@@ -40,6 +40,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -170,7 +171,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     // Draw a splash screen using an image located in the drawable resource directory.
     // This is not the same as calling super.loadSplashscreen(url)
     protected int splashscreen = 0;
-    protected int splashscreenTime = 0;
+    protected int splashscreenTime = 3000;
 
     // LoadUrl timeout value in msec (default of 20 sec)
     protected int loadUrlTimeoutValue = 20000;
@@ -1053,9 +1054,9 @@ public class DroidGap extends Activity implements CordovaInterface {
             }
             else {
                 // If the splash dialog is showing don't try to show it again
-                if (this.splashDialog != null && !this.splashDialog.isShowing()) {
-	                this.splashscreen = this.getIntegerProperty("splashscreen", 0);
-	                this.showSplashScreen(this.splashscreenTime);
+                if (this.splashDialog == null || !this.splashDialog.isShowing()) {
+                    this.splashscreen = this.getIntegerProperty("splashscreen", 0);
+                    this.showSplashScreen(this.splashscreenTime);
                 }
             }
         }
