@@ -676,10 +676,11 @@ public class FileTransfer extends CordovaPlugin {
                         progress.setTotal(connection.getContentLength());
                     }
                     
-                    FileOutputStream outputStream = new FileOutputStream(file);
+                    FileOutputStream outputStream = null;
                     InputStream inputStream = null;
                     
                     try {
+                        outputStream = new FileOutputStream(file);
                         inputStream = getInputStream(connection);
                         synchronized (context) {
                             if (context.aborted) {
