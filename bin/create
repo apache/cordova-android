@@ -69,7 +69,7 @@ function on_error {
     echo "An unexpected error occurred: $previous_command exited with $?"
     echo "Deleting project..."
     [ -d "$PROJECT_PATH" ] && rm -rf "$PROJECT_PATH"
-    exit "$?"
+    exit 1
 }
 
 function replace {
