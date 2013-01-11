@@ -18,7 +18,6 @@
 */
 package org.apache.cordova;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -29,12 +28,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.text.InputType;
 import android.util.Log;
@@ -56,18 +55,18 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+@SuppressLint("SetJavaScriptEnabled")
 public class InAppBrowser extends CordovaPlugin {
 
     private static final String NULL = "null";
     protected static final String LOG_TAG = "InAppBrowser";
     private static final String SELF = "_self";
     private static final String SYSTEM = "_system";
-    private static final String BLANK = "_blank";
+    // private static final String BLANK = "_blank";
     private static final String LOCATION = "location";
-    private static int CLOSE_EVENT = 0;
-    private static int LOCATION_CHANGED_EVENT = 1;
-
-    private String browserCallbackId = null;
+    private static final String EXIT_EVENT = "exit";
+    private static final String LOAD_START_EVENT = "loadstart";
+    private static final String LOAD_STOP_EVENT = "loadstop";
 
     private Dialog dialog;
     private WebView inAppWebView;
@@ -128,17 +127,16 @@ public class InAppBrowser extends CordovaPlugin {
             else if (action.equals("close")) {
                 closeDialog();
 
-                JSONObject obj = new JSONObject();
-                obj.put("type", CLOSE_EVENT);
-
-                PluginResult pluginResult = new PluginResult(status, obj);
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
                 pluginResult.setKeepCallback(false);
                 this.callbackContext.sendPluginResult(pluginResult);
             }
             else {
                 status = PluginResult.Status.INVALID_ACTION;
             }
-            this.callbackContext.sendPluginResult(new PluginResult(status, result));
+            PluginResult pluginResult = new PluginResult(status, result);
+            pluginResult.setKeepCallback(true);
+            this.callbackContext.sendPluginResult(pluginResult);
         } catch (JSONException e) {
             this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
@@ -208,8 +206,15 @@ public class InAppBrowser extends CordovaPlugin {
      * Closes the dialog
      */
     private void closeDialog() {
-        // TODO: fire 'exit' event 
-        this.webView.sendJavascript("cordova.fireWindowEvent('exit');");
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("type", EXIT_EVENT);
+
+            sendUpdate(obj, false);
+        } catch (JSONException ex) {
+            Log.d(LOG_TAG, "Should never happen");
+        }
+        
         if (dialog != null) {
             dialog.dismiss();
         }
@@ -301,7 +306,7 @@ public class InAppBrowser extends CordovaPlugin {
                         public void onDismiss(DialogInterface dialog) {
                             try {
                                 JSONObject obj = new JSONObject();
-                                obj.put("type", CLOSE_EVENT);
+                                obj.put("type", EXIT_EVENT);
 
                                 sendUpdate(obj, false);
                             } catch (JSONException e) {
@@ -316,7 +321,7 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // Toolbar layout
                 RelativeLayout toolbar = new RelativeLayout(cordova.getActivity());
-                toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, this.dpToPixels(44)));
+                toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, this.dpToPixels(44)));
                 toolbar.setPadding(this.dpToPixels(2), this.dpToPixels(2), this.dpToPixels(2), this.dpToPixels(2));
                 toolbar.setHorizontalGravity(Gravity.LEFT);
                 toolbar.setVerticalGravity(Gravity.TOP);
@@ -330,7 +335,7 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // Back button
                 Button back = new Button(cordova.getActivity());
-                RelativeLayout.LayoutParams backLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT);
+                RelativeLayout.LayoutParams backLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
                 backLayoutParams.addRule(RelativeLayout.ALIGN_LEFT);
                 back.setLayoutParams(backLayoutParams);
                 back.setContentDescription("Back Button");
@@ -344,7 +349,7 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // Forward button
                 Button forward = new Button(cordova.getActivity());
-                RelativeLayout.LayoutParams forwardLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT);
+                RelativeLayout.LayoutParams forwardLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
                 forwardLayoutParams.addRule(RelativeLayout.RIGHT_OF, 2);
                 forward.setLayoutParams(forwardLayoutParams);
                 forward.setContentDescription("Forward Button");
@@ -358,7 +363,7 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // Edit Text Box
                 edittext = new EditText(cordova.getActivity());
-                RelativeLayout.LayoutParams textLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+                RelativeLayout.LayoutParams textLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
                 textLayoutParams.addRule(RelativeLayout.RIGHT_OF, 1);
                 textLayoutParams.addRule(RelativeLayout.LEFT_OF, 5);
                 edittext.setLayoutParams(textLayoutParams);
@@ -381,7 +386,7 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // Close button
                 Button close = new Button(cordova.getActivity());
-                RelativeLayout.LayoutParams closeLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT);
+                RelativeLayout.LayoutParams closeLayoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
                 closeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                 close.setLayoutParams(closeLayoutParams);
                 forward.setContentDescription("Close Button");
@@ -395,7 +400,7 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // WebView
                 inAppWebView = new WebView(cordova.getActivity());
-                inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+                inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                 inAppWebView.setWebChromeClient(new WebChromeClient());
                 WebViewClient client = new InAppBrowserClient(thatWebView, edittext);
                 inAppWebView.setWebViewClient(client);
@@ -403,7 +408,15 @@ public class InAppBrowser extends CordovaPlugin {
                 settings.setJavaScriptEnabled(true);
                 settings.setJavaScriptCanOpenWindowsAutomatically(true);
                 settings.setBuiltInZoomControls(true);
+                /** 
+                 * We need to be careful of this line as a future Android release may deprecate it out of existence.
+                 * Can't replace it with the API 8 level call right now as our minimum SDK is 7 until May 2013
+                 */
+                // @TODO: replace with settings.setPluginState(android.webkit.WebSettings.PluginState.ON)
                 settings.setPluginsEnabled(true);
+                settings.setDatabaseEnabled(true);
+                String databasePath = cordova.getActivity().getApplicationContext().getDir("inAppBrowserDB", Context.MODE_PRIVATE).getPath();
+                settings.setDatabasePath(databasePath);
                 settings.setDomStorageEnabled(true);
                 inAppWebView.loadUrl(url);
                 inAppWebView.setId(6);
@@ -432,18 +445,13 @@ public class InAppBrowser extends CordovaPlugin {
 
                 WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
                 lp.copyFrom(dialog.getWindow().getAttributes());
-                lp.width = WindowManager.LayoutParams.FILL_PARENT;
-                lp.height = WindowManager.LayoutParams.FILL_PARENT;
+                lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+                lp.height = WindowManager.LayoutParams.MATCH_PARENT;
 
                 dialog.setContentView(main);
                 dialog.show();
                 dialog.getWindow().setAttributes(lp);
             }
-
-          private Bitmap loadDrawable(String filename) throws java.io.IOException {
-              InputStream input = cordova.getActivity().getAssets().open(filename);
-              return BitmapFactory.decodeStream(input);
-          }
         };
         this.cordova.getActivity().runOnUiThread(runnable);
         return "";
@@ -455,11 +463,9 @@ public class InAppBrowser extends CordovaPlugin {
      * @param obj a JSONObject contain event payload information
      */
     private void sendUpdate(JSONObject obj, boolean keepCallback) {
-        if (this.browserCallbackId != null) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
-            result.setKeepCallback(keepCallback);
-            this.callbackContext.sendPluginResult(result);
-        }
+        PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+        result.setKeepCallback(keepCallback);
+        this.callbackContext.sendPluginResult(result);
     }
 
     /**
@@ -500,14 +506,29 @@ public class InAppBrowser extends CordovaPlugin {
                 edittext.setText(newloc);
             }
 
-            // TODO: Fire 'loadstart' event only on the InAppBrowser object
-            this.webView.sendJavascript("cordova.fireWindowEvent('loadstart', '" + url + "');");
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("type", LOAD_START_EVENT);
+                obj.put("url", newloc);
+    
+                sendUpdate(obj, true);
+            } catch (JSONException ex) {
+                Log.d(LOG_TAG, "Should never happen");
+            }
         }
         
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            // TODO: Fire 'loadstop' event only on the InAppBrowser object
-            this.webView.sendJavascript("cordova.fireWindowEvent('loadstop', '" + url + "');");
+            
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("type", LOAD_STOP_EVENT);
+                obj.put("url", url);
+    
+                sendUpdate(obj, true);
+            } catch (JSONException ex) {
+                Log.d(LOG_TAG, "Should never happen");
+            }
         }
     }
 }

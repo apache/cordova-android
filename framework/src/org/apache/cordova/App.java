@@ -64,7 +64,7 @@ public class App extends CordovaPlugin {
                 this.loadUrl(args.getString(0), args.optJSONObject(1));
             }
             else if (action.equals("cancelLoadUrl")) {
-                this.cancelLoadUrl();
+                //this.cancelLoadUrl();
             }
             else if (action.equals("clearHistory")) {
                 this.clearHistory();
@@ -158,14 +158,6 @@ public class App extends CordovaPlugin {
             }
         }
         this.webView.showWebPage(url, openExternal, clearHistory, params);
-    }
-
-    /**
-     * Cancel loadUrl before it has been loaded (Only works on a CordovaInterface class)
-     */
-    @Deprecated
-    public void cancelLoadUrl() {
-        this.cordova.cancelLoadUrl();
     }
 
     /**
