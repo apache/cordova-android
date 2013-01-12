@@ -98,6 +98,13 @@ MANIFEST_PATH="$PROJECT_PATH"/AndroidManifest.xml
 TARGET=$("$ANDROID_BIN" list targets | grep id: | tail -1 | cut -f 2 -d ' ' )
 API_LEVEL=$("$ANDROID_BIN" list target | grep "API level:" | tail -n 1 | cut -f 2 -d ':' | tr -d ' ')
 
+# check that build targets exist
+if [ -z "$TARGET" ] || [ -z "$API_LEVEL" ]
+then
+    echo "No Android Targets are installed. Please install at least one via the android SDK"
+    exit 1
+fi
+
 # if this a distribution release no need to build a jar
 if [ ! -e "$BUILD_PATH"/cordova-$VERSION.jar ] && [ -d "$BUILD_PATH"/framework ]
 then
