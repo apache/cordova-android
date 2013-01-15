@@ -25,8 +25,6 @@ import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.util.Base64;
-
 public class BinaryEcho extends CordovaPlugin {
 
     /**
@@ -40,9 +38,7 @@ public class BinaryEcho extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         try {
             if (action.equals("echo")) {
-                //CordovaJSONArray cdvArgs = (CordovaJSONArray) args;
-                //byte[] data = cdvArgs.getArrayBuffer(0);
-                byte[] data = Base64.decode(args.getString(0), Base64.DEFAULT);
+                byte[] data = CordovaArguments.getArrayBuffer(args, 0);
 
                 // Don't return any result now, since status results will be sent when events come in from broadcast receiver
                 PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, data);
