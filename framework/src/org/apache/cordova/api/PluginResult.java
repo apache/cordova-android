@@ -21,6 +21,7 @@ package org.apache.cordova.api;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.util.Base64;
 import android.util.Log;
 
 public class PluginResult {
@@ -73,7 +74,7 @@ public class PluginResult {
     public PluginResult(Status status, byte[] data) {
         this.status = status.ordinal();
         this.messageType = MESSAGE_TYPE_ARRAYBUFFER;
-        this.encodedMessage = new String(data);
+        this.encodedMessage = Base64.encodeToString(data, Base64.NO_WRAP);
         Log.i("Braden", "Message.length() = " + this.encodedMessage.length());
     }
 
