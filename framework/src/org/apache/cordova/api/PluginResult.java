@@ -22,7 +22,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.util.Base64;
-import android.util.Log;
 
 public class PluginResult {
     private final int status;
@@ -75,7 +74,6 @@ public class PluginResult {
         this.status = status.ordinal();
         this.messageType = MESSAGE_TYPE_ARRAYBUFFER;
         this.encodedMessage = Base64.encodeToString(data, Base64.NO_WRAP);
-        Log.i("Braden", "Message.length() = " + this.encodedMessage.length());
     }
 
     public void setKeepCallback(boolean b) {

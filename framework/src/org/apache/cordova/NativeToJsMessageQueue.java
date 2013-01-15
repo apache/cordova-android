@@ -131,12 +131,9 @@ public class NativeToJsMessageQueue {
     
     private void packMessage(JsMessage message, StringBuilder sb) {
         int len = message.calculateEncodedLength();
-        Log.i("Braden", "Length " + len);
         sb.append(len)
           .append(' ');
         message.encodeAsMessage(sb);
-        Log.i("Braden", "End of packMessage");
-        Log.i("Braden", sb.toString());
     }
     
     /**
@@ -455,11 +452,8 @@ public class NativeToJsMessageQueue {
                     sb.append(pluginResult.getStrMessage());
                     break;
                 case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
-                    Log.i("Braden", "ArrayBuffer response encoding");
                     sb.append('A');
-                    String temp = pluginResult.getMessage();
-                    Log.i("Braden", temp);
-                    sb.append(temp);
+                    sb.append(pluginResult.getMessage());
                     break;
                 case PluginResult.MESSAGE_TYPE_JSON:
                 default:

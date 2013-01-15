@@ -26,7 +26,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.util.Base64;
-import android.util.Log;
 
 public class BinaryEcho extends CordovaPlugin {
 
@@ -43,15 +42,11 @@ public class BinaryEcho extends CordovaPlugin {
             if (action.equals("echo")) {
                 //CordovaJSONArray cdvArgs = (CordovaJSONArray) args;
                 //byte[] data = cdvArgs.getArrayBuffer(0);
-                Log.i("Braden", "BinaryEcho top");
                 byte[] data = Base64.decode(args.getString(0), Base64.DEFAULT);
-                Log.i("Braden", "byte[] retrieved: " + data.length);
 
                 // Don't return any result now, since status results will be sent when events come in from broadcast receiver
                 PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, data);
-                Log.i("Braden", "PluginResult created");
                 callbackContext.sendPluginResult(pluginResult);
-                Log.i("Braden", "sendPluginResult() complete");
                 return true;
             }
         } catch (JSONException e) {
