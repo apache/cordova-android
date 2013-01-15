@@ -22,13 +22,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.util.Base64;
-import android.util.Log;
 
 public class CordovaArguments {
     public static byte[] getArrayBuffer(JSONArray args, int index) throws JSONException {
-        Log.i("Braden", "getting array buffer at index " + index);
         String encoded = args.getString(index);
-        Log.i("Braden", encoded);
         return Base64.decode(encoded, Base64.DEFAULT);
     }
 }
