@@ -130,9 +130,13 @@ public class NativeToJsMessageQueue {
     }
     
     private void packMessage(JsMessage message, StringBuilder sb) {
-        sb.append(message.calculateEncodedLength())
+        int len = message.calculateEncodedLength();
+        Log.i("Braden", "Length " + len);
+        sb.append(len)
           .append(' ');
         message.encodeAsMessage(sb);
+        Log.i("Braden", "End of packMessage");
+        Log.i("Braden", sb.toString());
     }
     
     /**
@@ -166,7 +170,8 @@ public class NativeToJsMessageQueue {
                 // Attach a char to indicate that there are more messages pending.
                 sb.append('*');
             }
-            return sb.toString();
+            String ret = sb.toString();
+            return ret;
         }
     }
     
@@ -209,7 +214,8 @@ public class NativeToJsMessageQueue {
             for (int i = willSendAllMessages ? 1 : 0; i < numMessagesToSend; ++i) {
                 sb.append('}');
             }
-            return sb.toString();
+            String ret = sb.toString();
+            return ret;
         }
     }   
 
@@ -406,6 +412,9 @@ public class NativeToJsMessageQueue {
                 case PluginResult.MESSAGE_TYPE_STRING: // s
                     ret += 1 + pluginResult.getStrMessage().length();
                     break;
+                case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+                    ret += 1 + pluginResult.getMessage().length();
+                    break;
                 case PluginResult.MESSAGE_TYPE_JSON:
                 default:
                     ret += pluginResult.getMessage().length();
@@ -444,6 +453,13 @@ public class NativeToJsMessageQueue {
                 case PluginResult.MESSAGE_TYPE_STRING: // s
                     sb.append('s');
                     sb.append(pluginResult.getStrMessage());
+                    break;
+                case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+                    Log.i("Braden", "ArrayBuffer response encoding");
+                    sb.append('A');
+                    String temp = pluginResult.getMessage();
+                    Log.i("Braden", temp);
+                    sb.append(temp);
                     break;
                 case PluginResult.MESSAGE_TYPE_JSON:
                 default:

@@ -21,6 +21,8 @@ package org.apache.cordova.api;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.util.Log;
+
 public class PluginResult {
     private final int status;
     private final int messageType;
@@ -68,6 +70,13 @@ public class PluginResult {
         this.encodedMessage = Boolean.toString(b);
     }
 
+    public PluginResult(Status status, byte[] data) {
+        this.status = status.ordinal();
+        this.messageType = MESSAGE_TYPE_ARRAYBUFFER;
+        this.encodedMessage = new String(data);
+        Log.i("Braden", "Message.length() = " + this.encodedMessage.length());
+    }
+
     public void setKeepCallback(boolean b) {
         this.keepCallback = b;
     }
@@ -79,7 +88,7 @@ public class PluginResult {
     public int getMessageType() {
         return messageType;
     }
-    
+
     public String getMessage() {
         if (encodedMessage == null) {
             encodedMessage = JSONObject.quote(strMessage);
@@ -134,7 +143,8 @@ public class PluginResult {
     public static final int MESSAGE_TYPE_NUMBER = 3;
     public static final int MESSAGE_TYPE_BOOLEAN = 4;
     public static final int MESSAGE_TYPE_NULL = 5;
-    
+    public static final int MESSAGE_TYPE_ARRAYBUFFER = 6;
+
     public static String[] StatusMessages = new String[] {
         "No result",
         "OK",
