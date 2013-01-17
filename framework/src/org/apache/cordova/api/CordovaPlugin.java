@@ -18,11 +18,11 @@
 */
 package org.apache.cordova.api;
 
+import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.content.Intent;
-
 
 /**
  * Plugins must extend this class and override one of the execute methods.
@@ -76,9 +76,28 @@ public class CordovaPlugin {
      * @return                Whether the action was valid.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        CordovaArgs cordovaArgs = new CordovaArgs(args);
+        return execute(action, cordovaArgs, callbackContext);
+    }
+
+    /**
+     * Executes the request.
+     *
+     * This method is called from the WebView thread. To do a non-trivial amount of work, use:
+     *     cordova.getThreadPool().execute(runnable);
+     *
+     * To run on the UI thread, use:
+     *     cordova.getActivity().runOnUiThread(runnable);
+     *
+     * @param action          The action to execute.
+     * @param args            The exec() arguments, wrapped with some Cordova helpers.
+     * @param callbackContext The callback context used when calling back into JavaScript.
+     * @return                Whether the action was valid.
+     */
+    public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
         return false;
     }
-    
+
     /**
      * Called when the system is about to start resuming a previous activity.
      *

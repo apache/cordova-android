@@ -20,23 +20,27 @@ package org.apache.cordova;
 
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
-import org.json.JSONArray;
 import org.json.JSONException;
 
 public class Echo extends CordovaPlugin {
 
     @Override
-    public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
-        final String result = args.isNull(0) ? null : args.getString(0);
+    public boolean execute(String action, CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
         if ("echo".equals(action)) {
+            final String result = args.isNull(0) ? null : args.getString(0);
             callbackContext.success(result);
             return true;
         } else if ("echoAsync".equals(action)) {
+            final String result = args.isNull(0) ? null : args.getString(0);
             cordova.getThreadPool().execute(new Runnable() {
                 public void run() {
                     callbackContext.success(result);
                 }
             });
+            return true;
+        } else if ("binaryEcho".equals(action)) {
+            final byte[] result = args.getArrayBuffer(0);
+            callbackContext.success(result);
             return true;
         }
         return false;
