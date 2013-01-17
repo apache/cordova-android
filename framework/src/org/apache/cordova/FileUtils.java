@@ -239,9 +239,15 @@ public class FileUtils extends CordovaPlugin {
      */
     private void notifyDelete(String filePath) {
         String newFilePath = stripFileProtocol(filePath);
-        this.cordova.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            MediaStore.Images.Media.DATA + " = ?",
-            new String[] { newFilePath });
+        try {
+            this.cordova.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                MediaStore.Images.Media.DATA + " = ?",
+                new String[] { newFilePath });
+        } catch (UnsupportedOperationException t) {
+            // Was seeing this on the File mobile-spec tests on 4.0.3 x86 emulator.
+            // The ContentResolver applies only when the file was registered in the
+            // first case, which is generally only the case with images.
+        }
     }
 
     /**
