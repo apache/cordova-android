@@ -385,6 +385,11 @@ public class CordovaChromeClient extends WebChromeClient {
     }
 
     public void openFileChooser( ValueCallback<Uri> uploadMsg, String acceptType ) {
+        this.openFileChooser(uploadMsg, acceptType, null);
+    }
+    
+    public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture)
+    {
         mUploadMessage = uploadMsg;
         Intent i = new Intent(Intent.ACTION_GET_CONTENT);
         i.addCategory(Intent.CATEGORY_OPENABLE);
