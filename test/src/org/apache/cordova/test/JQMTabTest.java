@@ -21,15 +21,39 @@ package org.apache.cordova.test;
 */
 
 
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.test.util.Purity;
 import org.apache.cordova.test.actions.jqmtabbackbutton;
 
+import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 public class JQMTabTest extends ActivityInstrumentationTestCase2<jqmtabbackbutton> {
+
+  private Instrumentation mInstr;
+  private jqmtabbackbutton testActivity;
+  private FrameLayout containerView; 
+  private LinearLayout innerContainer;
+  private CordovaWebView testView;
+  private Purity touchTool;
 
   public JQMTabTest(Class<jqmtabbackbutton> activityClass) {
     super(activityClass);
     // TODO Auto-generated constructor stub
   }
+  
+  protected void setUp() throws Exception {
+      super.setUp();
+      mInstr = this.getInstrumentation();
+      testActivity = this.getActivity();
+      containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
+      innerContainer = (LinearLayout) containerView.getChildAt(0);
+      testView = (CordovaWebView) innerContainer.getChildAt(0);
+      touchTool = new Purity(testActivity, getInstrumentation());
+  }
+  
+  
 
 }
