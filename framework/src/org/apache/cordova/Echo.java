@@ -38,7 +38,7 @@ public class Echo extends CordovaPlugin {
                 }
             });
             return true;
-        } else if ("binaryEcho".equals(action)) {
+        } else if ("echoArrayBuffer".equals(action)) {
             final byte[] result = args.getArrayBuffer(0);
             callbackContext.success(result);
             return true;
