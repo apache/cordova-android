@@ -333,6 +333,10 @@ public class CordovaWebView extends WebView {
         this.chromeClient = client;
         super.setWebChromeClient(client);
     }
+    
+    public CordovaChromeClient getWebChromeClient() {
+        return this.chromeClient;
+    }
 
     /**
      * Load the url into the webview.

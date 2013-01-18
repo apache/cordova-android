@@ -38,6 +38,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -49,6 +50,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ValueCallback;
+import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
@@ -190,6 +193,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
     private String initCallbackClass;
 
+    private Object LOG_TAG;
 
     /**
     * Sets the authentication token.
@@ -818,6 +822,19 @@ public class DroidGap extends Activity implements CordovaInterface {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         LOG.d(TAG, "Incoming Result");
         super.onActivityResult(requestCode, resultCode, intent);
+        Log.d(TAG, "Request code = " + requestCode);
+        ValueCallback<Uri> mUploadMessage = this.appView.getWebChromeClient().getValueCallback();
+        if (requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
+            Log.d(TAG, "did we get here?");
+            if (null == mUploadMessage)
+                return;
+            Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
+            Log.d(TAG, "result = " + result);
+//            Uri filepath = Uri.parse("file://" + FileUtils.getRealPathFromURI(result, this));
+//            Log.d(TAG, "result = " + filepath);
+            mUploadMessage.onReceiveValue(result);
+            mUploadMessage = null;
+        }
         CordovaPlugin callback = this.activityResultCallback;
         if(callback == null)
         {
@@ -869,8 +886,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             final boolean exit = !(errorCode == WebViewClient.ERROR_HOST_LOOKUP);
             me.runOnUiThread(new Runnable() {
                 public void run() {
-                    if (exit)
-                    {
+                    if (exit) {
                         me.appView.setVisibility(View.GONE);
                         me.displayError("Application Error", description + " (" + failingUrl + ")", "OK", exit);
                     }
