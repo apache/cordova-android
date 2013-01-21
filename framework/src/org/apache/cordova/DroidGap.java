@@ -261,7 +261,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
+        Config.init(this);
         LOG.d(TAG, "DroidGap.onCreate()");
         super.onCreate(savedInstanceState);
 
