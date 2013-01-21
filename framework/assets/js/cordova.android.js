@@ -1,6 +1,6 @@
-// commit f43f1dfbced6bde0048efd77d7632aaed3cac7fa
+// commit 71223711fb1591b1255d871140d959fd9095f0c3
 
-// File generated at :: Fri Jan 18 2013 15:30:17 GMT-0800 (PST)
+// File generated at :: Mon Jan 21 2013 13:45:08 GMT-0800 (PST)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -78,6 +78,7 @@ var require,
         delete modules[id];
     };
 
+    define.moduleMap = modules;
 })();
 
 //Export for use in node
@@ -409,6 +410,8 @@ function assignOrWrapInDeprecateGetter(obj, key, value, message) {
     if (message) {
         utils.defineGetter(obj, key, function() {
             console.log(message);
+            delete obj[key];
+            clobber(obj, key, value);
             return value;
         });
     } else {
@@ -438,10 +441,6 @@ function include(parent, objects, clobber, merge) {
             // Overwrite if not currently defined.
             if (typeof parent[key] == 'undefined') {
               assignOrWrapInDeprecateGetter(parent, key, result, obj.deprecated);
-            } else if (merge && typeof obj.path !== 'undefined') {
-              // If merging, merge parent onto result
-              recursiveMerge(result, parent[key]);
-              parent[key] = result;
             } else {
               // Set result to what already exists, so we can build children into it if they exist.
               result = parent[key];
@@ -467,19 +466,18 @@ function include(parent, objects, clobber, merge) {
 function recursiveMerge(target, src) {
     for (var prop in src) {
         if (src.hasOwnProperty(prop)) {
-            if (typeof target.prototype !== 'undefined' && target.prototype.constructor === target) {
+            if (target.prototype && target.prototype.constructor === target) {
                 // If the target object is a constructor override off prototype.
-                target.prototype[prop] = src[prop];
+                clobber(target.prototype, prop, src[prop]);
             } else {
-                if (typeof src[prop] === 'object') {
-                    target[prop] = recursiveMerge(target[prop], src[prop]);
+                if (typeof src[prop] === 'object' && typeof target[prop] === 'object') {
+                    recursiveMerge(target[prop], src[prop]);
                 } else {
                     clobber(target, prop, src[prop]);
                 }
             }
         }
     }
-    return target;
 }
 
 module.exports = {
@@ -491,7 +489,9 @@ module.exports = {
     },
     buildIntoAndMerge: function(objects, target) {
         include(target, objects, true, true);
-    }
+    },
+    recursiveMerge: recursiveMerge,
+    assignOrWrapInDeprecateGetter: assignOrWrapInDeprecateGetter
 };
 
 });
@@ -904,53 +904,8 @@ module.exports = {
         device: {
             path: 'cordova/plugin/device'
         },
-        DirectoryEntry: {
-            path: 'cordova/plugin/DirectoryEntry'
-        },
-        DirectoryReader: {
-            path: 'cordova/plugin/DirectoryReader'
-        },
-        Entry: {
-            path: 'cordova/plugin/Entry'
-        },
-        File: {
-            path: 'cordova/plugin/File'
-        },
-        FileEntry: {
-            path: 'cordova/plugin/FileEntry'
-        },
-        FileError: {
-            path: 'cordova/plugin/FileError'
-        },
-        FileReader: {
-            path: 'cordova/plugin/FileReader'
-        },
-        FileSystem: {
-            path: 'cordova/plugin/FileSystem'
-        },
-        FileTransfer: {
-            path: 'cordova/plugin/FileTransfer'
-        },
-        FileTransferError: {
-            path: 'cordova/plugin/FileTransferError'
-        },
-        FileUploadOptions: {
-            path: 'cordova/plugin/FileUploadOptions'
-        },
-        FileUploadResult: {
-            path: 'cordova/plugin/FileUploadResult'
-        },
-        FileWriter: {
-            path: 'cordova/plugin/FileWriter'
-        },
-        Flags: {
-            path: 'cordova/plugin/Flags'
-        },
         GlobalizationError: {
             path: 'cordova/plugin/GlobalizationError'
-        },
-        LocalFileSystem: {
-            path: 'cordova/plugin/LocalFileSystem'
         },
         Media: {
             path: 'cordova/plugin/Media'
@@ -964,9 +919,6 @@ module.exports = {
         MediaFileData:{
             path: 'cordova/plugin/MediaFileData'
         },
-        Metadata:{
-            path: 'cordova/plugin/Metadata'
-        },
         Position: {
             path: 'cordova/plugin/Position'
         },
@@ -975,12 +927,6 @@ module.exports = {
         },
         ProgressEvent: {
             path: 'cordova/plugin/ProgressEvent'
-        },
-        requestFileSystem:{
-            path: 'cordova/plugin/requestFileSystem'
-        },
-        resolveLocalFileSystemURI:{
-            path: 'cordova/plugin/resolveLocalFileSystemURI'
         }
     },
     clobbers: {
@@ -1015,6 +961,7 @@ define("cordova/exec", function(require, exports, module) {
  */
 var cordova = require('cordova'),
     nativeApiProvider = require('cordova/plugin/android/nativeapiprovider'),
+    utils = require('cordova/utils'),
     jsToNativeModes = {
         PROMPT: 0,
         JS_OBJECT: 1,
@@ -1052,7 +999,7 @@ function androidExec(success, fail, service, action, args) {
 
     // Process any ArrayBuffers in the args into a string.
     for (var i = 0; i < args.length; i++) {
-        if (args[i].constructor == ArrayBuffer || (args[i].buffer && args[i].buffer.constructor == ArrayBuffer)) {
+        if (utils.typeName(args[i]) == 'ArrayBuffer') {
             args[i] = window.btoa(String.fromCharCode.apply(null, new Uint8Array(args[i])));
         }
     }
@@ -1230,6 +1177,107 @@ module.exports = androidExec;
 
 });
 
+// file: lib/common/modulemapper.js
+define("cordova/modulemapper", function(require, exports, module) {
+
+var builder = require('cordova/builder'),
+    moduleMap = define.moduleMap,
+    symbolList,
+    deprecationMap;
+
+exports.reset = function() {
+    symbolList = [];
+    deprecationMap = {};
+};
+
+function addEntry(strategy, moduleName, symbolPath, opt_deprecationMessage) {
+    if (!(moduleName in moduleMap)) {
+        throw new Error('Module ' + moduleName + ' does not exist.');
+    }
+    symbolList.push(strategy, moduleName, symbolPath);
+    if (opt_deprecationMessage) {
+        deprecationMap[symbolPath] = opt_deprecationMessage;
+    }
+}
+
+// Note: Android 2.3 does have Function.bind().
+exports.clobbers = function(moduleName, symbolPath, opt_deprecationMessage) {
+    addEntry('c', moduleName, symbolPath, opt_deprecationMessage);
+};
+
+exports.merges = function(moduleName, symbolPath, opt_deprecationMessage) {
+    addEntry('m', moduleName, symbolPath, opt_deprecationMessage);
+};
+
+exports.defaults = function(moduleName, symbolPath, opt_deprecationMessage) {
+    addEntry('d', moduleName, symbolPath, opt_deprecationMessage);
+};
+
+function prepareNamespace(symbolPath, context) {
+    if (!symbolPath) {
+        return context;
+    }
+    var parts = symbolPath.split('.');
+    var cur = context;
+    for (var i = 0, part; part = parts[i]; ++i) {
+        cur[part] = cur[part] || {};
+    }
+    return cur[parts[i-1]];
+}
+
+exports.mapModules = function(context) {
+    var origSymbols = {};
+    context.CDV_origSymbols = origSymbols;
+    for (var i = 0, len = symbolList.length; i < len; i += 3) {
+        var strategy = symbolList[i];
+        var moduleName = symbolList[i + 1];
+        var symbolPath = symbolList[i + 2];
+        var lastDot = symbolPath.lastIndexOf('.');
+        var namespace = symbolPath.substr(0, lastDot);
+        var lastName = symbolPath.substr(lastDot + 1);
+
+        var module = require(moduleName);
+        var deprecationMsg = symbolPath in deprecationMap ? 'Access made to deprecated symbol: ' + symbolPath + '. ' + deprecationMsg : null;
+        var parentObj = prepareNamespace(namespace, context);
+        var target = parentObj[lastName];
+
+        if (strategy == 'm' && target) {
+            builder.recursiveMerge(target, module);
+        } else if ((strategy == 'd' && !target) || (strategy != 'd')) {
+            if (target) {
+                origSymbols[symbolPath] = target;
+            }
+            builder.assignOrWrapInDeprecateGetter(parentObj, lastName, module, deprecationMsg);
+        }
+    }
+};
+
+exports.getOriginalSymbol = function(context, symbolPath) {
+    var origSymbols = context.CDV_origSymbols;
+    if (origSymbols && (symbolPath in origSymbols)) {
+        return origSymbols[symbolPath];
+    }
+    var parts = symbolPath.split('.');
+    var obj = context;
+    for (var i = 0; i < parts.length; ++i) {
+        obj = obj && obj[parts[i]];
+    }
+    return obj;
+};
+
+exports.loadMatchingModules = function(matchingRegExp) {
+    for (var k in moduleMap) {
+        if (matchingRegExp.exec(k)) {
+            require(k);
+        }
+    }
+};
+
+exports.reset();
+
+
+});
+
 // file: lib/android/platform.js
 define("cordova/platform", function(require, exports, module) {
 
@@ -1238,7 +1286,11 @@ module.exports = {
     initialize:function() {
         var channel = require("cordova/channel"),
             cordova = require('cordova'),
-            exec = require('cordova/exec');
+            exec = require('cordova/exec'),
+            modulemapper = require('cordova/modulemapper');
+
+        modulemapper.loadMatchingModules(/cordova.*\/symbols$/);
+        modulemapper.mapModules(window);
 
         // Inject a listener for the backbutton on the document.
         var backButtonChannel = cordova.addDocumentEventHandler('backbutton');
@@ -2492,11 +2544,12 @@ module.exports = FileError;
 define("cordova/plugin/FileReader", function(require, exports, module) {
 
 var exec = require('cordova/exec'),
+    modulemapper = require('cordova/modulemapper'),
     utils = require('cordova/utils'),
     File = require('cordova/plugin/File'),
     FileError = require('cordova/plugin/FileError'),
     ProgressEvent = require('cordova/plugin/ProgressEvent'),
-    origFileReader = this.FileReader;
+    origFileReader = modulemapper.getOriginalSymbol(this, 'FileReader');
 
 /**
  * This class reads the mobile device file system.
@@ -5084,6 +5137,43 @@ module.exports = function(successCallback, errorCallback, message, forceAsync) {
 
 });
 
+// file: lib/android/plugin/file/symbols.js
+define("cordova/plugin/file/symbols", function(require, exports, module) {
+
+
+var modulemapper = require('cordova/modulemapper'),
+    symbolshelper = require('cordova/plugin/file/symbolshelper');
+
+symbolshelper(modulemapper.clobbers);
+
+});
+
+// file: lib/common/plugin/file/symbolshelper.js
+define("cordova/plugin/file/symbolshelper", function(require, exports, module) {
+
+module.exports = function(exportFunc) {
+    exportFunc('cordova/plugin/DirectoryEntry', 'DirectoryEntry');
+    exportFunc('cordova/plugin/DirectoryReader', 'DirectoryReader');
+    exportFunc('cordova/plugin/Entry', 'Entry');
+    exportFunc('cordova/plugin/File', 'File');
+    exportFunc('cordova/plugin/FileEntry', 'FileEntry');
+    exportFunc('cordova/plugin/FileError', 'FileError');
+    exportFunc('cordova/plugin/FileReader', 'FileReader');
+    exportFunc('cordova/plugin/FileSystem', 'FileSystem');
+    exportFunc('cordova/plugin/FileTransfer', 'FileTransfer');
+    exportFunc('cordova/plugin/FileTransferError', 'FileTransferError');
+    exportFunc('cordova/plugin/FileUploadOptions', 'FileUploadOptions');
+    exportFunc('cordova/plugin/FileUploadResult', 'FileUploadResult');
+    exportFunc('cordova/plugin/FileWriter', 'FileWriter');
+    exportFunc('cordova/plugin/Flags', 'Flags');
+    exportFunc('cordova/plugin/LocalFileSystem', 'LocalFileSystem');
+    exportFunc('cordova/plugin/Metadata', 'Metadata');
+    exportFunc('cordova/plugin/requestFileSystem', 'requestFileSystem');
+    exportFunc('cordova/plugin/resolveLocalFileSystemURI', 'resolveLocalFileSystemURI');
+};
+
+});
+
 // file: lib/common/plugin/geolocation.js
 define("cordova/plugin/geolocation", function(require, exports, module) {
 
@@ -6141,7 +6231,10 @@ var utils = exports;
  */
 utils.defineGetterSetter = function(obj, key, getFunc, opt_setFunc) {
     if (Object.defineProperty) {
-        var desc = {get:getFunc};
+        var desc = {
+            get: getFunc,
+            configurable: true
+        };
         if (opt_setFunc) {
             desc.set = opt_setFunc;
         }
