@@ -146,7 +146,8 @@ if(fso.FolderExists(PROJECT_PATH)) {
 }
 
 var PACKAGE_AS_PATH=PACKAGE.replace(/\./g, '\\');
-var ACTIVITY_PATH=PROJECT_PATH+'\\src\\'+PACKAGE_AS_PATH+'\\'+ACTIVITY+'.java';
+var PACKAGE_PATH=PROJECT_PATH+'\\src\\'+PACKAGE_AS_PATH;
+var ACTIVITY_PATH=PACKAGE_PATH+'\\'+ACTIVITY+'.java';
 var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
 var TARGET=setTarget();
 var API_LEVEL=setApiLevel();
@@ -171,6 +172,7 @@ WScript.Echo("Copying template files...");
 exec('%comspec% /c xcopy "'+ ROOT + '"\\bin\\templates\\project\\res '+PROJECT_PATH+'\\res\\ /E /Y');
 exec('%comspec% /c xcopy "'+ ROOT + '"\\bin\\templates\\project\\assets '+PROJECT_PATH+'\\assets\\ /E /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\project\\AndroidManifest.xml ' + PROJECT_PATH + '\\AndroidManifest.xml /Y');
+exec('%comspec% /c md '+PACKAGE_PATH);
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\project\\Activity.java '+ ACTIVITY_PATH +' /Y');
 
 // check if we have the source or the distro files
