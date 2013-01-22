@@ -38,10 +38,10 @@ public class JQMTabTest extends ActivityInstrumentationTestCase2<jqmtabbackbutto
   private LinearLayout innerContainer;
   private CordovaWebView testView;
   private Purity touchTool;
-
-  public JQMTabTest(Class<jqmtabbackbutton> activityClass) {
-    super(activityClass);
-    // TODO Auto-generated constructor stub
+  
+  public JQMTabTest()
+  {
+      super("org.apache.cordova.test.activity", jqmtabbackbutton.class);
   }
   
   protected void setUp() throws Exception {
@@ -54,6 +54,22 @@ public class JQMTabTest extends ActivityInstrumentationTestCase2<jqmtabbackbutto
       touchTool = new Purity(testActivity, getInstrumentation());
   }
   
+
+  public void testTouch()
+  {
+      sleep(5000);
+      int viewportHeight = touchTool.getViewportHeight() - 40;
+      int viewportWidth = touchTool.getViewportWidth();
+      touchTool.touch(50, viewportHeight);
+      sleep(10000);
+  }
   
+  private void sleep(int timeout) {
+      try {
+        Thread.sleep(timeout);
+      } catch (InterruptedException e) {
+        fail("Unexpected Timeout");
+      }
+  }
 
 }

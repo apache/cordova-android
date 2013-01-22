@@ -60,6 +60,16 @@ public class Purity {
         return (int) (coord * density);
     }
 
+    public int getViewportWidth()
+    {
+        return (int) (width/density);
+    }
+    
+    public int getViewportHeight()
+    {
+        return (int) (height/density);
+    }
+    
     public void touch(int x, int y)
     {
         int realX = getRealCoord(x);
