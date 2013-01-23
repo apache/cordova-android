@@ -18,7 +18,7 @@
        under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:windowSoftInputMode="adjustPan"
-      package="org.apache.cordova.test" android:versionName="1.1" android:versionCode="5">
+      package="org.apache.cordova.test" android:versionName="1.0" android:versionCode="1">
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
