@@ -7,6 +7,7 @@ at the core, applications written with web technology: HTML, CSS and JavaScript.
 
 Apache Cordova is a project at The Apache Software Foundation (ASF).
 
+
 Requires
 ---
 
