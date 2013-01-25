@@ -571,7 +571,13 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(imagePath, options);
-
+        
+        //CB-2292: WTF? Why is the width null?
+        if(options.outWidth == 0 || options.outHeight == 0)
+        {
+            return null;
+        }
+        
         // determine the correct aspect ratio
         int[] widthHeight = calculateAspectRatio(options.outWidth, options.outHeight);
 
