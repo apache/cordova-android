@@ -40,6 +40,7 @@ public class Purity {
     int width, height;
     float density;
     Bitmap state;
+    boolean fingerDown = false;
    
     public Purity(Context ctx, Instrumentation i)
     {
@@ -77,8 +78,61 @@ public class Purity {
         long downTime = SystemClock.uptimeMillis();
         // event time MUST be retrieved only by this way!
         long eventTime = SystemClock.uptimeMillis();
+        if(!fingerDown)
+        {
+            MotionEvent downEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, realX, realY, 0);
+            inst.sendPointerSync(downEvent);
+        }
+        MotionEvent upEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, realX, realY, 0);
+        inst.sendPointerSync(upEvent);
+    }
+    
+    public void touchStart(int x, int y)
+    {
+        int realX = getRealCoord(x);
+        int realY = getRealCoord(y);
+        long downTime = SystemClock.uptimeMillis();
+        // event time MUST be retrieved only by this way!
+        long eventTime = SystemClock.uptimeMillis();
         MotionEvent event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, realX, realY, 0);
         inst.sendPointerSync(event);
+        fingerDown = true;
+    }
+    
+    //Move from the touch start
+    public void touchMove(int x, int y)
+    {
+        if(!fingerDown)
+            touchStart(x,y);
+        else
+        {
+            int realX = getRealCoord(x);
+            int realY = getRealCoord(y);
+            long downTime = SystemClock.uptimeMillis();
+            // event time MUST be retrieved only by this way!
+            long eventTime = SystemClock.uptimeMillis();
+            MotionEvent event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_MOVE, realX, realY, 0);
+            inst.sendPointerSync(event);
+        }
+    }
+    
+    public void touchEnd(int x, int y)
+    {
+        if(!fingerDown)
+        {
+            touch(x, y);
+        }
+        else
+        {
+            int realX = getRealCoord(x);
+            int realY = getRealCoord(y);
+            long downTime = SystemClock.uptimeMillis();
+            // event time MUST be retrieved only by this way!
+            long eventTime = SystemClock.uptimeMillis();
+            MotionEvent event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, realX, realY, 0);
+            inst.sendPointerSync(event);
+            fingerDown = false;
+        }
     }
     
     public void setBitmap(WebView view)
@@ -106,6 +160,12 @@ public class Purity {
     
     public void clearBitmap()
     {
-        state.recycle();
+        if(state != null)
+            state.recycle();
+    }
+    
+    protected void finalize()
+    {
+            clearBitmap();
     }
 }
