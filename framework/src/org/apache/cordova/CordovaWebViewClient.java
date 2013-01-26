@@ -230,6 +230,10 @@ public class CordovaWebViewClient extends WebViewClient {
         AuthenticationToken token = this.getAuthenticationToken(host, realm);
         if (token != null) {
             handler.proceed(token.getUserName(), token.getPassword());
+        } 
+        else {
+            // Handle 401 like we'd normally do!
+            super.onReceivedHttpAuthRequest(view, handler, host, realm);
         }
     }
 
