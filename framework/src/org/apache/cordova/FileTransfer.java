@@ -215,6 +215,8 @@ public class FileTransfer extends CordovaPlugin {
                 HttpURLConnection conn = null;
                 HostnameVerifier oldHostnameVerifier = null;
                 SSLSocketFactory oldSocketFactory = null;
+                int totalBytes = 0;
+                int fixedLength = -1;
                 try {
                     // Create return object
                     FileUploadResult result = new FileUploadResult();
@@ -320,7 +322,6 @@ public class FileTransfer extends CordovaPlugin {
                     
                     int stringLength = extraBytes.length + midParams.length() + tailParams.length() + fileNameBytes.length;
                     Log.d(LOG_TAG, "String Length: " + stringLength);
-                    int fixedLength = -1;
                     if (sourceInputStream instanceof FileInputStream) {
                         fixedLength = (int) ((FileInputStream)sourceInputStream).getChannel().size() + stringLength;
                         progress.setLengthComputable(true);
@@ -363,13 +364,12 @@ public class FileTransfer extends CordovaPlugin {
     
                         // read file and write it into form...
                         int bytesRead = sourceInputStream.read(buffer, 0, bufferSize);
-                        long totalBytes = 0;
     
                         long prevBytesRead = 0;
                         while (bytesRead > 0) {
                             totalBytes += bytesRead;
                             result.setBytesSent(totalBytes);
-                            dos.write(buffer, 0, bufferSize);
+                            dos.write(buffer, 0, bytesRead);
                             if (totalBytes > prevBytesRead + 102400) {
                                 prevBytesRead = totalBytes;
                                 Log.d(LOG_TAG, "Uploaded " + totalBytes + " of " + fixedLength + " bytes");
@@ -436,6 +436,7 @@ public class FileTransfer extends CordovaPlugin {
                 } catch (IOException e) {
                     JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, conn);
                     Log.e(LOG_TAG, error.toString(), e);
+                    Log.e(LOG_TAG, "Failed after uploading " + totalBytes + " of " + fixedLength + " bytes.");
                     context.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
                 } catch (JSONException e) {
                     Log.e(LOG_TAG, e.getMessage(), e);
