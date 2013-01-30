@@ -591,6 +591,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param value
      */
     public void setBooleanProperty(String name, boolean value) {
+        Log.d(TAG, "Setting boolean properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -601,6 +602,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param value
      */
     public void setIntegerProperty(String name, int value) {
+        Log.d(TAG, "Setting integer properties in DroidGap will be deprecated in 3.1 on August 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -611,6 +613,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param value
      */
     public void setStringProperty(String name, String value) {
+        Log.d(TAG, "Setting string properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -621,6 +624,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param value
      */
     public void setDoubleProperty(String name, double value) {
+        Log.d(TAG, "Setting double properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
