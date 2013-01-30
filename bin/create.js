@@ -33,12 +33,22 @@ function read(filename) {
     f.Close();
     return s;
 }
+
+function checkTargets(targets) {
+    if(!targets) {
+        WScript.Echo("You do not have any android targets setup. Please create at least one target with the `android` command");
+        WScript.Quit(69);
+    }
+}
+
 function setTarget() {
     var targets = shell.Exec('android.bat list targets').StdOut.ReadAll().match(/id:\s\d+/g);
+    checkTargets(targets);
     return targets[targets.length - 1].replace(/id: /, ""); // TODO: give users the option to set their target 
 }
 function setApiLevel() {
     var targets = shell.Exec('android.bat list targets').StdOut.ReadAll().match(/API level:\s\d+/g);
+    checkTargets(targets);
     return targets[targets.length - 1].replace(/API level: /, "");
 }
 function write(filename, contents) {
