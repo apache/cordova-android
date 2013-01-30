@@ -35,6 +35,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.app.Activity;
 
 import android.content.res.XmlResourceParser;
+import android.graphics.Color;
 
 import android.util.Log;
 
@@ -103,12 +104,49 @@ public class Config {
                 }
                 else if (strNode.equals("preference")) {
                     String name = xml.getAttributeValue(null, "name");
-                    String value = xml.getAttributeValue(null, "value");
-
+                    /* Java 1.6 does not support switch-based strings
+                       Java 7 does, but we're using Dalvik, which is apparently not Java.
+                       Since we're reading XML, this has to be an ugly if/else.
+                       
+                       Also, due to cast issues, each of them has to call their separate putExtra!  
+                       Wheee!!! Isn't Java FUN!?!?!?
+                       
+                       Note: We should probably pass in the classname for the variable splash on splashscreen!
+                       */
+                    if(name.equals("splashscreen")) {
+                        int value = xml.getAttributeIntValue(null, "value", R.drawable.splash);
+                        action.getIntent().putExtra(name, value);
+                        LOG.i("CordovaLog", "Found preference for %s=%d", name, value);
+                        Log.d("CordovaLog", "Found preference for " + name + "=" + Integer.toString(value));
+                    }
+                    else if(name.equals("backgroundColor")) {
+                        int value = xml.getAttributeIntValue(null, "value", Color.BLACK);
+                        action.getIntent().putExtra(name, value);
+                        LOG.i("CordovaLog", "Found preference for %s=%d", name, value);
+                        Log.d("CordovaLog", "Found preference for " + name + "=" + Integer.toString(value));
+                    }
+                    else if(name.equals("loadUrlTimeoutValue")) {
+                        int value = xml.getAttributeIntValue(null, "value", 20000);
+                        action.getIntent().putExtra(name, value);
+                        LOG.i("CordovaLog", "Found preference for %s=%d", name, value);
+                        Log.d("CordovaLog", "Found preference for " + name + "=" + Integer.toString(value));
+                    }
+                    else if(name.equals("keepRunning"))
+                    {
+                        boolean value = xml.getAttributeValue(null, "value").equals("true");
+                        action.getIntent().putExtra(name, value);
+                    }
+                    else
+                    {
+                        String value = xml.getAttributeValue(null, "value");
+                        action.getIntent().putExtra(name, value);
+                        LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
+                        Log.d("CordovaLog", "Found preference for " + name + "=" + value);
+                    }
+                    /*
                     LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
                     Log.d("CordovaLog", "Found preference for " + name + "=" + value);
-
-                    action.getIntent().putExtra(name, value);
+                     */
                 }
                 else if (strNode.equals("content")) {
                     String src = xml.getAttributeValue(null, "src");
