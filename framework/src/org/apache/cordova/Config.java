@@ -114,10 +114,17 @@ public class Config {
                        Note: We should probably pass in the classname for the variable splash on splashscreen!
                        */
                     if(name.equals("splashscreen")) {
-                        int value = xml.getAttributeIntValue(null, "value", R.drawable.splash);
-                        action.getIntent().putExtra(name, value);
-                        LOG.i("CordovaLog", "Found preference for %s=%d", name, value);
-                        Log.d("CordovaLog", "Found preference for " + name + "=" + Integer.toString(value));
+                        String value = xml.getAttributeValue(null, "value");
+                        int resource = 0;
+                        if (value != null)
+                        {
+                            value = "splash";
+                        }
+                        resource = action.getResources().getIdentifier(value, "drawable", action.getPackageName());
+                        
+                        action.getIntent().putExtra(name, resource);
+                        LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
+                        Log.d("CordovaLog", "Found preference for " + name + "=" + value);
                     }
                     else if(name.equals("backgroundColor")) {
                         int value = xml.getAttributeIntValue(null, "value", Color.BLACK);
