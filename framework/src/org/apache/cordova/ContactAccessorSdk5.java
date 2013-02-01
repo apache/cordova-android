@@ -860,8 +860,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             im.put("id", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im._ID)));
             im.put("pref", false); // Android does not store pref attribute
             im.put("value", cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.DATA)));
-            String type = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.PROTOCOL));
-            im.put("type", getImType(new Integer(type).intValue()));
+            im.put("type", getImType(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Im.PROTOCOL))));
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
         }
