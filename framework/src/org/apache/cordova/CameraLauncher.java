@@ -58,6 +58,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
     private static final int DATA_URL = 0;              // Return base64 encoded string
     private static final int FILE_URI = 1;              // Return file uri (content://media/external/images/media/2 for Android)
+    private static final int NATIVE_URI = 2;			// On Android, this is the same as FILE_URI
 
     private static final int PHOTOLIBRARY = 0;          // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
     private static final int CAMERA = 1;                // Take picture from camera
@@ -310,7 +311,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     }
 
                     // If sending filename back
-                    else if (destType == FILE_URI) {
+                    else if (destType == FILE_URI || destType == NATIVE_URI) {
                         if (!this.saveToPhotoAlbum) {
                             uri = Uri.fromFile(new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), System.currentTimeMillis() + ".jpg"));
                         } else {
@@ -434,7 +435,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         }
 
                         // If sending filename back
-                        else if (destType == FILE_URI) {
+                        else if (destType == FILE_URI || destType == NATIVE_URI) {
                             // Do we need to scale the returned file
                             if (this.targetHeight > 0 && this.targetWidth > 0) {
                                 try {
