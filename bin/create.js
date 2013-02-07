@@ -185,7 +185,7 @@ else {
 }
 
 if(fso.FolderExists(PROJECT_PATH)) {
-    Log("Project already exists!", true);
+    Log("Project path already exists!", true);
     WScript.Quit(2);
 }
 
@@ -197,41 +197,41 @@ var API_LEVEL=setApiLevel();
 var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 // create the project
 Log("Creating new android project...");
-exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --package '+PACKAGE+' --activity '+ACTIVITY);
+exec('android.bat create project --target "'+TARGET+'" --path "'+PROJECT_PATH+'" --package "'+PACKAGE+'" --activity "'+ACTIVITY+'"');
 
 // build from source. distro should have these files
 if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
     !fso.FileExists(ROOT+'\\cordova-'+VERSION+'.js')) {
     Log("Building jar and js files...");
     // update the cordova framework project to a target that exists on this machine
-    exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
+    exec('android.bat update project --target "'+TARGET+'" --path "'+ROOT+'\\framework"');
     // pull down commons codec if necessary
     downloadCommonsCodec();
-    exec('ant.bat -f \"'+ ROOT +'\\framework\\build.xml\" jar');
+    exec('ant.bat -f "'+ ROOT +'\\framework\\build.xml" jar');
 }
 
 // copy in the project template
 Log("Copying template files...");
-exec('%comspec% /c xcopy "'+ ROOT + '"\\bin\\templates\\project\\res '+PROJECT_PATH+'\\res\\ /E /Y');
-exec('%comspec% /c xcopy "'+ ROOT + '"\\bin\\templates\\project\\assets '+PROJECT_PATH+'\\assets\\ /E /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\project\\AndroidManifest.xml ' + PROJECT_PATH + '\\AndroidManifest.xml /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\project\\Activity.java '+ ACTIVITY_PATH +' /Y');
+exec('%comspec% /c xcopy "'+ ROOT + '\\bin\\templates\\project\\res" "'+PROJECT_PATH+'\\res\\" /E /Y');
+exec('%comspec% /c xcopy "'+ ROOT + '\\bin\\templates\\project\\assets" "'+PROJECT_PATH+'\\assets\\" /E /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\project\\AndroidManifest.xml" "' + PROJECT_PATH + '\\AndroidManifest.xml" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\project\\Activity.java" "'+ ACTIVITY_PATH +'" /Y');
 
 // check if we have the source or the distro files
 Log("Copying js, jar & config.xml files...");
 if(fso.FolderExists(ROOT + '\\framework')) {
-    exec('%comspec% /c copy "'+ROOT+'"\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
-    exec('%comspec% /c copy "'+ROOT+'"\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
+    exec('%comspec% /c copy "'+ROOT+'\\framework\\assets\\www\\cordova-'+VERSION+'.js" "'+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js" /Y');
+    exec('%comspec% /c copy "'+ROOT+'\\framework\\cordova-'+VERSION+'.jar" "'+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar" /Y');
     fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-    exec('%comspec% /c copy "'+ROOT+'"\\framework\\res\\xml\\config.xml ' + PROJECT_PATH + '\\res\\xml\\config.xml /Y');
+    exec('%comspec% /c copy "'+ROOT+'\\framework\\res\\xml\\config.xml" "' + PROJECT_PATH + '\\res\\xml\\config.xml" /Y');
 } else {
     // copy in cordova.js
-    exec('%comspec% /c copy "'+ROOT+'"\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
+    exec('%comspec% /c copy "'+ROOT+'\\cordova-'+VERSION+'.js" "'+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js" /Y');
     // copy in cordova.jar
-    exec('%comspec% /c copy "'+ROOT+'"\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
+    exec('%comspec% /c copy "'+ROOT+'\\cordova-'+VERSION+'.jar" "'+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar" /Y');
     // copy in xml
     fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-    exec('%comspec% /c copy "'+ROOT+'"\\xml\\config.xml ' + PROJECT_PATH + '\\res\\xml\\config.xml /Y');
+    exec('%comspec% /c copy "'+ROOT+'\\xml\\config.xml" "' + PROJECT_PATH + '\\res\\xml\\config.xml" /Y');
 }
 
 // copy cordova scripts
@@ -239,19 +239,19 @@ fso.CreateFolder(PROJECT_PATH + '\\cordova');
 fso.CreateFolder(PROJECT_PATH + '\\cordova\\lib');
 createAppInfoJar();
 Log("Copying cordova command tools...");
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\appinfo.jar ' + PROJECT_PATH + '\\cordova\\appinfo.jar /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\cordova.js ' + PROJECT_PATH + '\\cordova\\lib\\cordova.js /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\install-device.bat ' + PROJECT_PATH + '\\cordova\\lib\\install-device.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\install-emulator.bat ' + PROJECT_PATH + '\\cordova\\lib\\install-emulator.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-emulator-images.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-emulator-images.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-devices.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-devices.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-started-emulators.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-started-emulators.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\start-emulator.bat ' + PROJECT_PATH + '\\cordova\\lib\\start-emulator.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\clean.bat ' + PROJECT_PATH + '\\cordova\\clean.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\build.bat ' + PROJECT_PATH + '\\cordova\\build.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\log.bat ' + PROJECT_PATH + '\\cordova\\log.bat /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\run.bat ' + PROJECT_PATH + '\\cordova\\run.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\appinfo.jar" "' + PROJECT_PATH + '\\cordova\\appinfo.jar" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\cordova.js" "' + PROJECT_PATH + '\\cordova\\cordova.js" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\lib\\install-device.bat" "' + PROJECT_PATH + '\\cordova\\lib\\install-device.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\lib\\install-emulator.bat" "' + PROJECT_PATH + '\\cordova\\lib\\install-emulator.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\lib\\list-emulator-images.bat" "' + PROJECT_PATH + '\\cordova\\lib\\list-emulator-images.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\lib\\list-devices.bat" "' + PROJECT_PATH + '\\cordova\\lib\\list-devices.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\lib\\list-started-emulators.bat" "' + PROJECT_PATH + '\\cordova\\lib\\list-started-emulators.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\lib\\start-emulator.bat" "' + PROJECT_PATH + '\\cordova\\lib\\start-emulator.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\cordova.bat" "' + PROJECT_PATH + '\\cordova\\cordova.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\clean.bat" "' + PROJECT_PATH + '\\cordova\\clean.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\build.bat" "' + PROJECT_PATH + '\\cordova\\build.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\log.bat" "' + PROJECT_PATH + '\\cordova\\log.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\run.bat" "' + PROJECT_PATH + '\\cordova\\run.bat" /Y');
 
 // interpolate the activity name and package
 Log("Updating AndroidManifest.xml and Main Activity...");
