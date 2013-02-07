@@ -151,7 +151,7 @@ if (args.Count() == 3) {
 }
 
 if(fso.FolderExists(PROJECT_PATH)) {
-    WScript.Echo("Project already exists!");
+    WScript.Echo("Project path already exists!");
     WScript.Quit(1);
 }
 
