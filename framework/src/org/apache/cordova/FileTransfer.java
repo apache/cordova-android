@@ -77,6 +77,7 @@ public class FileTransfer extends CordovaPlugin {
     private static final class RequestContext {
         String source;
         String target;
+        File targetFile;
         CallbackContext callbackContext;
         InputStream currentInputStream;
         OutputStream currentOutputStream;
@@ -626,11 +627,13 @@ public class FileTransfer extends CordovaPlugin {
                 URLConnection connection = null;
                 HostnameVerifier oldHostnameVerifier = null;
                 SSLSocketFactory oldSocketFactory = null;
+                File file = null;
+                PluginResult result = null;
 
                 try {
-
+                    file = getFileFromPath(target);
+                    context.targetFile = file;
                     // create needed directories
-                    File file = getFileFromPath(target);
                     file.getParentFile().mkdirs();
         
                     // connect to server
@@ -718,22 +721,22 @@ public class FileTransfer extends CordovaPlugin {
                     FileUtils fileUtil = new FileUtils();
                     JSONObject fileEntry = fileUtil.getEntry(file);
                     
-                    context.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileEntry));
+                    result = new PluginResult(PluginResult.Status.OK, fileEntry);
                 } catch (FileNotFoundException e) {
                     JSONObject error = createFileTransferError(FILE_NOT_FOUND_ERR, source, target, connection);
                     Log.e(LOG_TAG, error.toString(), e);
-                    context.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
+                    result = new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
                 } catch (IOException e) {
                     JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, connection);
                     Log.e(LOG_TAG, error.toString(), e);
-                    context.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
+                    result = new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
                 } catch (JSONException e) {
                     Log.e(LOG_TAG, e.getMessage(), e);
-                    context.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+                    result = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
                 } catch (Throwable e) {
                     JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, connection);
                     Log.e(LOG_TAG, error.toString(), e);
-                    context.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
+                    result = new PluginResult(PluginResult.Status.IO_EXCEPTION, error);
                 } finally {
                     synchronized (activeRequests) {
                         activeRequests.remove(objectId);
@@ -747,6 +750,15 @@ public class FileTransfer extends CordovaPlugin {
                             https.setSSLSocketFactory(oldSocketFactory);
                         }
                     }
+
+                    if (result == null) {
+                        result = new PluginResult(PluginResult.Status.ERROR, createFileTransferError(CONNECTION_ERR, source, target, connection));
+                    }
+                    // Remove incomplete download.
+                    if (result.getStatus() != PluginResult.Status.OK.ordinal() && file != null) {
+                        file.delete();
+                    }
+                    context.sendPluginResult(result);
                 }
             }
         });
@@ -809,6 +821,10 @@ public class FileTransfer extends CordovaPlugin {
             context = activeRequests.remove(objectId);
         }
         if (context != null) {
+            File file = context.targetFile;
+            if (file != null) {
+                file.delete();
+            }
             // Trigger the abort callback immediately to minimize latency between it and abort() being called.
             JSONObject error = createFileTransferError(ABORTED_ERR, context.source, context.target, -1);
             synchronized (context) {
