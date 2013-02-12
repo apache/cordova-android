@@ -554,15 +554,14 @@ public class CordovaWebView extends WebView {
 
         // Check webview first to see if there is a history
         // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
-        if (super.canGoBack()) {
+        if (super.canGoBack() && this.useBrowserHistory) {
             printBackForwardList();
             super.goBack();
             
             return true;
         }
-
         // If our managed history has prev url
-        if (this.urls.size() > 1 && !this.useBrowserHistory) {
+        else if (this.urls.size() > 1 && !this.useBrowserHistory) {
             this.urls.pop();                // Pop current url
             String url = this.urls.pop();   // Pop prev url that we want to load, since it will be added back by loadUrl()
             this.loadUrl(url);
@@ -578,10 +577,10 @@ public class CordovaWebView extends WebView {
      * @return
      */
     public boolean canGoBack() {
-        if (super.canGoBack()) {
+        if (super.canGoBack() && this.useBrowserHistory) {
             return true;
         }
-        if (this.urls.size() > 1) {
+        else if (this.urls.size() > 1) {
             return true;
         }
         return false;
