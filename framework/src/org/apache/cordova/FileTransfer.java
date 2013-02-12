@@ -830,7 +830,14 @@ public class FileTransfer extends CordovaPlugin {
             synchronized (context) {
                 context.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, error));
                 context.aborted = true;
+	
+                //Delete incomplete file
+                File file = new File(context.target.replaceAll("^file://", ""));
+                if(file.exists()){
+                    file.delete();
+                }
             }
+
             // Closing the streams can block, so execute on a background thread.
             cordova.getThreadPool().execute(new Runnable() {
                 public void run() {
