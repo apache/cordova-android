@@ -263,6 +263,7 @@ public class CordovaWebView extends WebView {
         settings.setDatabaseEnabled(true);
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         settings.setDatabasePath(databasePath);
+        settings.setGeolocationDatabasePath(databasePath);
 
         // Enable DOM storage
         settings.setDomStorageEnabled(true);
