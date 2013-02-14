@@ -389,9 +389,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 }
                 else {
                     // This is a special case to just return the path as no scaling,
-                    // rotating or compression needs to be done
+                    // rotating, nor compressing needs to be done
                     if (this.targetHeight == -1 && this.targetWidth == -1 &&
-                            this.mQuality == 100 && destType == FILE_URI && !this.correctOrientation) {
+                            (destType == FILE_URI || destType == NATIVE_URI) && !this.correctOrientation) {
                         this.callbackContext.success(uri.toString());
                     } else {
                         // Get the path to the image. Makes loading so much easier.
