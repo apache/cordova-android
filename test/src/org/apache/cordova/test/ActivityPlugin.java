@@ -18,12 +18,14 @@
 */
 package org.apache.cordova.test;
 
+import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.api.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.content.Intent;
 
+import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 
@@ -48,19 +50,21 @@ public class ActivityPlugin extends CordovaPlugin {
      * @param callbackId    The callback id used when calling back into JavaScript.
      * @return              A PluginResult object with a status and message.
      */
-    @Override
-    public PluginResult execute(String action, JSONArray args, String callbackId) {
-        PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";
-
+    public boolean execute(String action, CordovaArgs args, final CallbackContext callbackContext) {
+        PluginResult result = new PluginResult(PluginResult.Status.OK, "");
         try {
             if (action.equals("start")) {
                 this.startActivity(args.getString(0));
+                callbackContext.sendPluginResult(result);
+                callbackContext.success();
+                return true;
             }
-            return new PluginResult(status, result);
         } catch (JSONException e) {
-            return new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+            result = new PluginResult(PluginResult.Status.JSON_EXCEPTION, "JSON Exception");
+            callbackContext.sendPluginResult(result);
+            return false;
         }
+        return false;
     }
 
     // --------------------------------------------------------------------------
@@ -69,9 +73,9 @@ public class ActivityPlugin extends CordovaPlugin {
 
     public void startActivity(String className) {
         try {
-            Intent intent = new Intent().setClass(this.ctx.getActivity(), Class.forName(className));
+            Intent intent = new Intent().setClass(this.cordova.getActivity(), Class.forName(className));
             LOG.d(TAG, "Starting activity %s", className);
-            this.ctx.getActivity().startActivity(intent);
+            this.cordova.getActivity().startActivity(intent);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             LOG.e(TAG, "Error starting activity %s", className);
