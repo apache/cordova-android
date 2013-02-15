@@ -5,7 +5,7 @@ Cordova Android is an Android application library that allows for Cordova-based
 projects to be built for the Android Platform. Cordova based applications are,
 at the core, applications written with web technology: HTML, CSS and JavaScript. 
 
-Apache Cordova is a project at The Apache Software Foundation (ASF).
+[Apache Cordova](http://cordova.io) is a project at The Apache Software Foundation (ASF).
 
 
 Requires
