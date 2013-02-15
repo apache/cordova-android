@@ -24,13 +24,13 @@ import org.json.JSONException;
 
 import android.content.Intent;
 
-import org.apache.cordova.api.Plugin;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 
 /**
  * This class provides a service.
  */
-public class ActivityPlugin extends Plugin {
+public class ActivityPlugin extends CordovaPlugin {
 
     static String TAG = "ActivityPlugin";
 
