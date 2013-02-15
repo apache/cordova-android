@@ -23,7 +23,7 @@ Test Requirements
 Building
 ---
 
-To create your cordova.jar, copy the commons codec:
+To create your `cordova.jar` file, copy the commons codec:
 
     mv commons-codec-1.7.jar framework/libs
 
