@@ -27,7 +27,6 @@ import java.util.Stack;
 
 import org.apache.cordova.Config;
 import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginManager;
 import org.apache.cordova.api.PluginResult;

@@ -18,7 +18,6 @@ package org.apache.cordova;
 
 import java.util.HashMap;
 
-import android.content.Context;
 import android.util.Log;
 import android.webkit.WebView;
 

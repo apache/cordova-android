@@ -22,17 +22,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.cordova.CordovaWebView;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
-import android.util.Log;
 
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
