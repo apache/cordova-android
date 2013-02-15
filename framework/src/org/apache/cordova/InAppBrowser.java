@@ -23,6 +23,7 @@ import java.util.StringTokenizer;
 
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
+import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -107,6 +108,17 @@ public class InAppBrowser extends CordovaPlugin {
                     if (url.startsWith("file://") || url.startsWith("javascript:") 
                             || Config.isUrlWhiteListed(url)) {
                         this.webView.loadUrl(url);
+                    }
+                    //Load the dialer
+                    else if (url.startsWith(WebView.SCHEME_TEL))
+                    {
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_DIAL);
+                            intent.setData(Uri.parse(url));
+                            this.cordova.getActivity().startActivity(intent);
+                        } catch (android.content.ActivityNotFoundException e) {
+                            LOG.e(LOG_TAG, "Error dialing " + url + ": " + e.toString());
+                        }
                     }
                     // load in InAppBrowser
                     else {
