@@ -22,6 +22,7 @@ FOR %%X in (java.exe javac.exe ant.bat android.bat) do (
     IF [%%~$PATH:X]==[] (
       ECHO Cannot locate %%X using the PATH environment variable.
       ECHO Retry after adding directory containing %%X to the PATH variable.
+      ECHO Remember to open a new command window after updating the PATH variable.
       IF "%%X"=="java.exe" GOTO GET_JAVA
       IF "%%X"=="javac.exe" GOTO GET_JAVA
       IF "%%X"=="ant.bat" GOTO GET_ANT
@@ -33,7 +34,9 @@ cscript "%~dp0\create.js" %*
 GOTO END
 :MISSING_JAVA_HOME
 	ECHO The JAVA_HOME environment variable is not set.
-	ECHO Retry after setting JAVA_HOME to an existing JRE directory.
+	ECHO Set JAVA_HOME to an existing JRE directory.
+	ECHO Remember to also add JAVA_HOME to the PATH variable.
+	ECHO After updating system variables, open a new command window and retry.
 	GOTO ERROR
 :GET_JAVA
         ECHO Visit http://java.oracle.com if you need to install Java (JDK).
