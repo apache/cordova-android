@@ -38,7 +38,7 @@ import android.location.LocationManager;
 public class GeoBroker extends CordovaPlugin {
     private GPSListener gpsListener;
     private NetworkListener networkListener;
-    private LocationManager locationManager;
+    private LocationManager locationManager;    
 
     /**
      * Constructor.
@@ -73,7 +73,7 @@ public class GeoBroker extends CordovaPlugin {
                     PluginResult result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(last));
                     callbackContext.sendPluginResult(result);
                 } else {
-                    this.getCurrentLocation(callbackContext, enableHighAccuracy);
+                    this.getCurrentLocation(callbackContext, enableHighAccuracy, args.optInt(2, 60000));
                 }
             }
             else if (action.equals("addWatch")) {
@@ -102,11 +102,11 @@ public class GeoBroker extends CordovaPlugin {
         this.networkListener.clearWatch(id);
     }
 
-    private void getCurrentLocation(CallbackContext callbackContext, boolean enableHighAccuracy) {
+    private void getCurrentLocation(CallbackContext callbackContext, boolean enableHighAccuracy, int timeout) {
         if (enableHighAccuracy) {
-            this.gpsListener.addCallback(callbackContext);
+            this.gpsListener.addCallback(callbackContext, timeout);
         } else {
-            this.networkListener.addCallback(callbackContext);
+            this.networkListener.addCallback(callbackContext, timeout);
         }
     }
 
@@ -160,8 +160,9 @@ public class GeoBroker extends CordovaPlugin {
         return o;
     }
 
-    public void win(Location loc, CallbackContext callbackContext) {
-        PluginResult result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(loc));
+    public void win(Location loc, CallbackContext callbackContext, boolean keepCallback) {
+    	PluginResult result = new PluginResult(PluginResult.Status.OK, this.returnLocationJSON(loc));
+    	result.setKeepCallback(keepCallback);
         callbackContext.sendPluginResult(result);
     }
 
@@ -172,7 +173,7 @@ public class GeoBroker extends CordovaPlugin {
      * @param msg			The error message
      * @throws JSONException 
      */
-    public void fail(int code, String msg, CallbackContext callbackContext) {
+    public void fail(int code, String msg, CallbackContext callbackContext, boolean keepCallback) {
         JSONObject obj = new JSONObject();
         String backup = null;
         try {
@@ -189,6 +190,7 @@ public class GeoBroker extends CordovaPlugin {
             result = new PluginResult(PluginResult.Status.ERROR, backup);
         }
 
+        result.setKeepCallback(keepCallback);
         callbackContext.sendPluginResult(result);
     }
 
