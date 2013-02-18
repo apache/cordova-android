@@ -755,7 +755,9 @@ public class CordovaWebView extends WebView {
                     // If not, then invoke default behaviour
                     else {
                         //this.activityState = ACTIVITY_EXITING;
-                        return false;
+                    	//return false;
+                    	// If they hit back button when app is initializing, app should exit instead of hang until initilazation (CB2-458)
+                    	this.cordova.getActivity().finish();
                     }
                 }
             }
@@ -853,7 +855,8 @@ public class CordovaWebView extends WebView {
     public void handleDestroy()
     {
         // Send destroy event to JavaScript
-        this.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
+    	// Since baseUrl is set in loadUrlIntoView, if user hit Back button before loadUrl was called, we'll get an NPE on baseUrl (CB-2458)
+        this.loadUrlIntoView("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
 
         // Load blank page so that JavaScript onunload is called
         this.loadUrl("about:blank");
@@ -916,11 +919,14 @@ public class CordovaWebView extends WebView {
     {
         WebBackForwardList currentList = this.copyBackForwardList();
         WebHistoryItem item = currentList.getItemAtIndex(0);
-        String url = item.getUrl();
-        String currentUrl = this.getUrl();
-        LOG.d(TAG, "The current URL is: " + currentUrl);
-        LOG.d(TAG, "The URL at item 0 is:" + url);
-        return currentUrl.equals(url);
+        if( item!=null){	// Null-fence in case they haven't called loadUrl yet (CB-2458)
+	        String url = item.getUrl();
+	        String currentUrl = this.getUrl();
+	        LOG.d(TAG, "The current URL is: " + currentUrl);
+	        LOG.d(TAG, "The URL at item 0 is:" + url);
+	        return currentUrl.equals(url);
+        }
+        return false;
     }
 
     public void showCustomView(View view, WebChromeClient.CustomViewCallback callback) {
