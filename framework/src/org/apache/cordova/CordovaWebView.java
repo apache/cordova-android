@@ -270,6 +270,13 @@ public class CordovaWebView extends WebView {
         // Enable built-in geolocation
         settings.setGeolocationEnabled(true);
         
+        // Enable AppCache
+        // Fix for CB-2282
+        settings.setAppCacheMaxSize(5 * 1048576);
+        String pathToCache = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
+        settings.setAppCachePath(pathToCache);
+        settings.setAppCacheEnabled(true);
+        
         // Fix for CB-1405
         // Google issue 4641
         this.updateUserAgentString();
