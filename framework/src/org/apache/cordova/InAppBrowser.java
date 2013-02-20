@@ -48,6 +48,7 @@ import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
+import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
@@ -513,6 +514,18 @@ public class InAppBrowser extends CordovaPlugin {
                 // TODO: get docs on how to handle this properly
                 quotaUpdater.updateQuota(currentQuota);
             }
+        }
+
+        @Override
+        /**
+         * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin.
+         *
+         * @param origin
+         * @param callback
+         */
+        public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
+            super.onGeolocationPermissionsShowPrompt(origin, callback);
+            callback.invoke(origin, true, false);
         }
     }
     
