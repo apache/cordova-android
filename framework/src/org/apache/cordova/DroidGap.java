@@ -28,6 +28,7 @@ import org.apache.cordova.api.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -257,7 +258,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      *
      * @param savedInstanceState
      */
-    @SuppressWarnings("deprecation")
+	@SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Config.init(this);
@@ -268,7 +269,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         {
             initCallbackClass = savedInstanceState.getString("callbackClass");
         }
-        
+
         if(!this.getBooleanProperty("showTitle", false))
         {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -284,6 +285,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         }
+
         // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
         Display display = getWindowManager().getDefaultDisplay();
         int width = display.getWidth();
@@ -332,7 +334,8 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param webViewClient
      * @param webChromeClient
      */
-    public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
+    @SuppressLint("NewApi")
+	public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
         LOG.d(TAG, "DroidGap.init()");
 
         // Set up web container
@@ -349,6 +352,14 @@ public class DroidGap extends Activity implements CordovaInterface {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 1.0F));
 
+        if(this.getBooleanProperty("disallowOverscroll", false))
+        {
+        	if(android.os.Build.VERSION.SDK_INT >=
+            		android.os.Build.VERSION_CODES.GINGERBREAD) {
+        		this.appView.setOverScrollMode(CordovaWebView.OVER_SCROLL_NEVER);
+        	}
+        }
+
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
         this.root.addView(this.appView);
@@ -356,7 +367,7 @@ public class DroidGap extends Activity implements CordovaInterface {
 
         // Clear cancel flag
         this.cancelLoadUrl = false;
-        
+
     }
 
     /**
@@ -1060,14 +1071,14 @@ public class DroidGap extends Activity implements CordovaInterface {
             return super.onKeyUp(keyCode, event);
     	}
     }
-    
+
     /*
      * Android 2.x needs to be able to check where the cursor is.  Android 4.x does not
-     * 
+     *
      * (non-Javadoc)
      * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
      */
-    
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
@@ -1080,8 +1091,8 @@ public class DroidGap extends Activity implements CordovaInterface {
         else
             return super.onKeyDown(keyCode, event);
     }
-    
-    
+
+
     /**
      * Called when a message is sent to plugin.
      *
@@ -1126,7 +1137,7 @@ public class DroidGap extends Activity implements CordovaInterface {
     public ExecutorService getThreadPool() {
         return threadPool;
     }
-    
+
     protected void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
@@ -1137,4 +1148,4 @@ public class DroidGap extends Activity implements CordovaInterface {
         }
     }
 }
-    
+
