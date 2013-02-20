@@ -1,8 +1,8 @@
 // Platform: android
 
-// commit 04e4ceafdcd59cdd937e873cc9006766c1e5940a
+// commit 521bbd64ed729ca76b6646d25bb01b76ee8a54b5
 
-// File generated at :: Tue Feb 19 2013 11:50:49 GMT-0800 (PST)
+// File generated at :: Wed Feb 20 2013 13:49:25 GMT-0800 (PST)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -4973,6 +4973,17 @@ module.exports = function(exportFunc) {
     exportFunc('cordova/plugin/requestFileSystem', 'requestFileSystem');
     exportFunc('cordova/plugin/resolveLocalFileSystemURI', 'resolveLocalFileSystemURI');
 };
+
+});
+
+// file: lib/common/plugin/filetransfer/symbols.js
+define("cordova/plugin/filetransfer/symbols", function(require, exports, module) {
+
+
+var modulemapper = require('cordova/modulemapper');
+
+modulemapper.clobbers('cordova/plugin/FileTransfer', 'FileTransfer');
+modulemapper.clobbers('cordova/plugin/FileTransferError', 'FileTransferError');
 
 });
 
