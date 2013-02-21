@@ -849,7 +849,7 @@ public class FileUtils extends CordovaPlugin {
 
         JSONObject metadata = new JSONObject();
         metadata.put("size", file.length());
-        metadata.put("type", getMimeType(filePath));
+        metadata.put("type", getMimeType(filePath, this.cordova));
         metadata.put("name", file.getName());
         metadata.put("fullPath", filePath);
         metadata.put("lastModifiedDate", file.lastModified());
@@ -1016,7 +1016,7 @@ public class FileUtils extends CordovaPlugin {
             contentType = this.cordova.getActivity().getContentResolver().getType(fileUri);
         }
         else {
-            contentType = getMimeType(filename);
+            contentType = getMimeType(filename, this.cordova);
         }
 
         byte[] base64 = Base64.encodeBase64(bos.toByteArray());
@@ -1030,20 +1030,21 @@ public class FileUtils extends CordovaPlugin {
      * @param filename
      * @return a mime type
      */
-    public static String getMimeType(String filename) {
+    public static String getMimeType(String filename, CordovaInterface cordova) {
         if (filename != null) {
-            // Stupid bug in getFileExtensionFromUrl when the file name has a space
-            // So we need to replace the space with a url encoded %20
-
-            // CB-2185: Stupid bug not putting JPG extension in the mime-type map
-            String url = filename.replace(" ", "%20").toLowerCase();
-            MimeTypeMap map = MimeTypeMap.getSingleton();
-            String extension = MimeTypeMap.getFileExtensionFromUrl(url);
-            if (extension.toLowerCase().equals("3ga")) {
-                return "audio/3gpp";
-            } else {
-                return map.getMimeTypeFromExtension(extension);
-            }
+        	if (filename.startsWith("content")) {
+        		return cordova.getActivity().getContentResolver().getType(Uri.parse(filename));
+        	} else {
+        		// MimeTypeMap.getFileExtensionFromUrl has a bug that occurs when the filename has a space, so we encode it.
+        		String url = filename.replace(" ", "%20");
+        		String extension = MimeTypeMap.getFileExtensionFromUrl(url).toLowerCase();
+        		if (extension.equals("3ga")) {
+                    return "audio/3gpp";
+                } else {
+                	MimeTypeMap map = MimeTypeMap.getSingleton();
+                    return map.getMimeTypeFromExtension(extension);
+                }
+        	}
         } else {
             return "";
         }
