@@ -18,6 +18,7 @@
 */
 package org.apache.cordova;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -27,7 +28,9 @@ import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -196,7 +199,7 @@ public class FileTransfer extends CordovaPlugin {
         try {
             url = new URL(target);
         } catch (MalformedURLException e) {
-            JSONObject error = createFileTransferError(INVALID_URL_ERR, source, target, 0);
+            JSONObject error = createFileTransferError(INVALID_URL_ERR, source, target, null, 0);
             Log.e(LOG_TAG, error.toString(), e);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
             return;
@@ -530,18 +533,32 @@ public class FileTransfer extends CordovaPlugin {
     private static JSONObject createFileTransferError(int errorCode, String source, String target, URLConnection connection) {
 
         int httpStatus = 0;
-
+        StringBuilder bodyBuilder = new StringBuilder();
+        String body = null;
         if (connection != null) {
             try {
                 if (connection instanceof HttpURLConnection) {
                     httpStatus = ((HttpURLConnection)connection).getResponseCode();
+                    InputStream err = ((HttpURLConnection) connection).getErrorStream();
+                    if(err != null)
+                    {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(err, "UTF-8"));
+                        String line = reader.readLine();
+                        while(line != null)
+                        {
+                            bodyBuilder.append(line);
+                            bodyBuilder.append('\n');
+                            line = reader.readLine();
+                        }
+                        body = bodyBuilder.toString();
+                    }
                 }
             } catch (IOException e) {
                 Log.w(LOG_TAG, "Error getting HTTP status code from connection.", e);
             }
         }
 
-        return createFileTransferError(errorCode, source, target, httpStatus);
+        return createFileTransferError(errorCode, source, target, body, httpStatus);
     }
 
         /**
@@ -549,13 +566,17 @@ public class FileTransfer extends CordovaPlugin {
         * @param errorCode 	the error
         * @return JSONObject containing the error
         */
-    private static JSONObject createFileTransferError(int errorCode, String source, String target, Integer httpStatus) {
+    private static JSONObject createFileTransferError(int errorCode, String source, String target, String body, Integer httpStatus) {
         JSONObject error = null;
         try {
             error = new JSONObject();
             error.put("code", errorCode);
             error.put("source", source);
             error.put("target", target);
+            if(body != null)
+            {
+                error.put("body", body);
+            }   
             if (httpStatus != null) {
                 error.put("http_status", httpStatus);
             }
@@ -599,7 +620,7 @@ public class FileTransfer extends CordovaPlugin {
         try {
             url = new URL(source);
         } catch (MalformedURLException e) {
-            JSONObject error = createFileTransferError(INVALID_URL_ERR, source, target, 0);
+            JSONObject error = createFileTransferError(INVALID_URL_ERR, source, target, null, 0);
             Log.e(LOG_TAG, error.toString(), e);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
             return;
@@ -608,7 +629,7 @@ public class FileTransfer extends CordovaPlugin {
 
         if (!Config.isUrlWhiteListed(source)) {
             Log.w(LOG_TAG, "Source URL is not in white list: '" + source + "'");
-            JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, 401);
+            JSONObject error = createFileTransferError(CONNECTION_ERR, source, target, null, 401);
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, error));
             return;
         }
@@ -826,7 +847,7 @@ public class FileTransfer extends CordovaPlugin {
                 file.delete();
             }
             // Trigger the abort callback immediately to minimize latency between it and abort() being called.
-            JSONObject error = createFileTransferError(ABORTED_ERR, context.source, context.target, -1);
+            JSONObject error = createFileTransferError(ABORTED_ERR, context.source, context.target, null, -1);
             synchronized (context) {
                 context.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, error));
                 context.aborted = true;
