@@ -254,6 +254,10 @@ public class CordovaWebView extends WebView {
             Log.d(TAG, "This should never happen: InvocationTargetException means this isn't Android anymore.");
         }
 
+        //We don't save any form data in the application
+        settings.setSaveFormData(false);
+        settings.setSavePassword(false);
+        
         // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         // while we do this
         if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
