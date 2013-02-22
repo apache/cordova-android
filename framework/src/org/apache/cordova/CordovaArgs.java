@@ -20,6 +20,7 @@ package org.apache.cordova;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.util.Base64;
 
@@ -52,7 +53,7 @@ public class CordovaArgs {
         return baseArgs.getJSONArray(index);
     }
 
-    public Object getJSONObject(int index) throws JSONException {
+    public JSONObject getJSONObject(int index) throws JSONException {
         return baseArgs.getJSONObject(index);
     }
 
@@ -85,7 +86,7 @@ public class CordovaArgs {
         return baseArgs.optJSONArray(index);
     }
 
-    public Object optJSONObject(int index) {
+    public JSONObject optJSONObject(int index) {
         return baseArgs.optJSONObject(index);
     }
 
