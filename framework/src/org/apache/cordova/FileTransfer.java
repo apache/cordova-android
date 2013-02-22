@@ -547,8 +547,9 @@ public class FileTransfer extends CordovaPlugin {
                         while(line != null)
                         {
                             bodyBuilder.append(line);
-                            bodyBuilder.append('\n');
                             line = reader.readLine();
+                            if(line != null)
+                                bodyBuilder.append('\n');
                         }
                         body = bodyBuilder.toString();
                     }
