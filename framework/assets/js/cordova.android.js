@@ -2368,7 +2368,7 @@ function initRead(reader, file) {
 
     if (typeof file == 'string') {
         // Deprecated in Cordova 2.4.
-        console.warning('Using a string argument with FileReader.readAs functions is deprecated.');
+        console.warn('Using a string argument with FileReader.readAs functions is deprecated.');
         reader._fileName = file;
     } else if (typeof file.fullPath == 'string') {
         reader._fileName = file.fullPath;
