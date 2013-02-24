@@ -615,7 +615,9 @@ public class FileTransfer extends CordovaPlugin {
         Log.d(LOG_TAG, "download " + source + " to " +  target);
 
         final boolean trustEveryone = args.optBoolean(2);
-        final String objectId = args.getString(3);
+        final JSONObject headers = args.optJSONObject(3);
+        Log.d(LOG_TAG, "headers: " + headers);
+        final String objectId = args.getString(4);
 
         final URL url;
         try {
@@ -692,6 +694,26 @@ public class FileTransfer extends CordovaPlugin {
                     if(cookie != null)
                     {
                         connection.setRequestProperty("cookie", cookie);
+                    }
+
+                    // Handle the other headers
+                    if (headers != null) {
+                        try {
+                            for (Iterator<?> iter = headers.keys(); iter.hasNext(); ) {
+                                String headerKey = iter.next().toString();
+                                JSONArray headerValues = headers.optJSONArray(headerKey);
+                                if (headerValues == null) {
+                                    headerValues = new JSONArray();
+                                    headerValues.put(headers.getString(headerKey));
+                                }
+                                connection.setRequestProperty(headerKey, headerValues.getString(0));
+                                for (int i = 1; i < headerValues.length(); ++i) {
+                                    connection.addRequestProperty(headerKey, headerValues.getString(i));
+                                }
+                            }
+                        } catch (JSONException e1) {
+                          // No headers to be manipulated!
+                        }
                     }
     
                     connection.connect();
