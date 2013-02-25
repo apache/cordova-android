@@ -79,6 +79,15 @@ public class CallbackContext {
     public void success(byte[] message) {
         sendPluginResult(new PluginResult(PluginResult.Status.OK, message));
     }
+    
+    /**
+     * Helper for success callbacks that just returns the Status.OK by default
+     *
+     * @param message           The message to add to the success result.
+     */
+    public void success(int message) {
+        sendPluginResult(new PluginResult(PluginResult.Status.OK, message));
+    }
 
     /**
      * Helper for success callbacks that just returns the Status.OK by default
