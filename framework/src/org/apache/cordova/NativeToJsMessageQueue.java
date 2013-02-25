@@ -473,9 +473,9 @@ public class NativeToJsMessageQueue {
                   .append(success)
                   .append(",")
                   .append(status)
-                  .append(",")
+                  .append(",[")
                   .append(pluginResult.getMessage())
-                  .append(",")
+                  .append("],")
                   .append(pluginResult.getKeepCallback())
                   .append(");");
             }
