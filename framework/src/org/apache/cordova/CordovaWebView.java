@@ -254,14 +254,23 @@ public class CordovaWebView extends WebView {
             Log.d(TAG, "This should never happen: InvocationTargetException means this isn't Android anymore.");
         }
 
+        //We don't save any form data in the application
+        settings.setSaveFormData(false);
+        settings.setSavePassword(false);
+        
         // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         // while we do this
         if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
             Level16Apis.enableUniversalAccess(settings);
         // Enable database
-        settings.setDatabaseEnabled(true);
+        // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
-        settings.setDatabasePath(databasePath);
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+        {
+            settings.setDatabaseEnabled(true);
+            settings.setDatabasePath(databasePath);
+        }
+        
         settings.setGeolocationDatabasePath(databasePath);
 
         // Enable DOM storage

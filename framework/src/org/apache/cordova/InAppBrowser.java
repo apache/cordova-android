@@ -35,7 +35,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
@@ -48,6 +50,7 @@ import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
+import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
@@ -428,10 +431,18 @@ public class InAppBrowser extends CordovaPlugin {
                  */
                 // @TODO: replace with settings.setPluginState(android.webkit.WebSettings.PluginState.ON)
                 settings.setPluginsEnabled(true);
-                settings.setDatabaseEnabled(true);
-                String databasePath = cordova.getActivity().getApplicationContext().getDir("inAppBrowserDB", Context.MODE_PRIVATE).getPath();
-                settings.setDatabasePath(databasePath);
+                
+                //Toggle whether this is enabled or not!
+                Bundle appSettings = cordova.getActivity().getIntent().getExtras();
+                boolean enableDatabase = appSettings.getBoolean("InAppBrowserStorageEnabled", true);
+                if(enableDatabase)
+                {
+                    String databasePath = cordova.getActivity().getApplicationContext().getDir("inAppBrowserDB", Context.MODE_PRIVATE).getPath();
+                    settings.setDatabasePath(databasePath);
+                    settings.setDatabaseEnabled(true);
+                }
                 settings.setDomStorageEnabled(true);
+               
                 inAppWebView.loadUrl(url);
                 inAppWebView.setId(6);
                 inAppWebView.getSettings().setLoadWithOverviewMode(true);
@@ -513,6 +524,18 @@ public class InAppBrowser extends CordovaPlugin {
                 // TODO: get docs on how to handle this properly
                 quotaUpdater.updateQuota(currentQuota);
             }
+        }
+
+        /**
+         * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin.
+         *
+         * @param origin
+         * @param callback
+         */
+        @Override
+        public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
+            super.onGeolocationPermissionsShowPrompt(origin, callback);
+            callback.invoke(origin, true, false);
         }
     }
     

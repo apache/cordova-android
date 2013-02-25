@@ -143,6 +143,16 @@ public class Config {
                         boolean value = xml.getAttributeValue(null, "value").equals("true");
                         action.getIntent().putExtra(name, value);
                     }
+                    else if(name.equals("InAppBrowserStorageEnabled"))
+                    {
+                        boolean value = xml.getAttributeValue(null, "value").equals("true");
+                        action.getIntent().putExtra(name, value);
+                    }
+                    else if(name.equals("disallowOverscroll"))
+                    {
+                        boolean value = xml.getAttributeValue(null, "value").equals("true");
+                        action.getIntent().putExtra(name, value);
+                    }
                     else
                     {
                         String value = xml.getAttributeValue(null, "value");
