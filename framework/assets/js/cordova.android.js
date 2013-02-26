@@ -1,8 +1,8 @@
 // Platform: android
 
-// commit 521bbd64ed729ca76b6646d25bb01b76ee8a54b5
+// commit f50d20a87431c79a54572263729461883f611a53
 
-// File generated at :: Wed Feb 20 2013 13:49:25 GMT-0800 (PST)
+// File generated at :: Tue Feb 26 2013 13:37:51 GMT-0800 (PST)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -1167,7 +1167,8 @@ define("cordova/plugin/Camera", function(require, exports, module) {
 
 var argscheck = require('cordova/argscheck'),
     exec = require('cordova/exec'),
-    Camera = require('cordova/plugin/CameraConstants');
+    Camera = require('cordova/plugin/CameraConstants'),
+    CameraPopoverHandle = require('cordova/plugin/CameraPopoverHandle');
 
 var cameraExport = {};
 
@@ -1207,6 +1208,7 @@ cameraExport.getPicture = function(successCallback, errorCallback, options) {
                 mediaType, allowEdit, correctOrientation, saveToPhotoAlbum, popoverOptions];
 
     exec(successCallback, errorCallback, "Camera", "takePicture", args);
+    return new CameraPopoverHandle();
 };
 
 cameraExport.cleanup = function(successCallback, errorCallback) {
@@ -1248,6 +1250,24 @@ module.exports = {
       ARROW_ANY : 15
   }
 };
+
+});
+
+// file: lib/common/plugin/CameraPopoverHandle.js
+define("cordova/plugin/CameraPopoverHandle", function(require, exports, module) {
+
+var exec = require('cordova/exec');
+
+/**
+ * A handle to an image picker popover.
+ */
+var CameraPopoverHandle = function() {
+    this.setPosition = function(popoverOptions) {
+        console.log('CameraPopoverHandle.setPosition is only supported on iOS.');
+    };
+};
+
+module.exports = CameraPopoverHandle;
 
 });
 
