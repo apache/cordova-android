@@ -158,6 +158,25 @@ public class FileTransfer extends CordovaPlugin {
         return false;
     }
 
+    private static void addHeadersToRequest(URLConnection connection, JSONObject headers) {
+        try {
+            for (Iterator<?> iter = headers.keys(); iter.hasNext(); ) {
+                String headerKey = iter.next().toString();
+                JSONArray headerValues = headers.optJSONArray(headerKey);
+                if (headerValues == null) {
+                    headerValues = new JSONArray();
+                    headerValues.put(headers.getString(headerKey));
+                }
+                connection.setRequestProperty(headerKey, headerValues.getString(0));
+                for (int i = 1; i < headerValues.length(); ++i) {
+                    connection.addRequestProperty(headerKey, headerValues.getString(i));
+                }
+            }
+        } catch (JSONException e1) {
+          // No headers to be manipulated!
+        }
+    }
+
     /**
      * Uploads the specified file to the server URL provided using an HTTP multipart request.
      * @param source        Full path of the file on the file system
@@ -272,22 +291,7 @@ public class FileTransfer extends CordovaPlugin {
 
                     // Handle the other headers
                     if (headers != null) {
-                        try {
-                            for (Iterator<?> iter = headers.keys(); iter.hasNext(); ) {
-                                String headerKey = iter.next().toString();
-                                JSONArray headerValues = headers.optJSONArray(headerKey);
-                                if (headerValues == null) {
-                                    headerValues = new JSONArray();
-                                    headerValues.put(headers.getString(headerKey));
-                                }
-                                conn.setRequestProperty(headerKey, headerValues.getString(0));
-                                for (int i = 1; i < headerValues.length(); ++i) {
-                                    conn.addRequestProperty(headerKey, headerValues.getString(i));
-                                }
-                            }
-                        } catch (JSONException e1) {
-                          // No headers to be manipulated!
-                        }
+                        addHeadersToRequest(conn, headers);
                     }
 
                     /*
@@ -615,9 +619,8 @@ public class FileTransfer extends CordovaPlugin {
         Log.d(LOG_TAG, "download " + source + " to " +  target);
 
         final boolean trustEveryone = args.optBoolean(2);
-        final JSONObject headers = args.optJSONObject(3);
-        Log.d(LOG_TAG, "headers: " + headers);
-        final String objectId = args.getString(4);
+        final String objectId = args.getString(3);
+        final JSONObject headers = args.optJSONObject(4);
 
         final URL url;
         try {
@@ -698,22 +701,7 @@ public class FileTransfer extends CordovaPlugin {
 
                     // Handle the other headers
                     if (headers != null) {
-                        try {
-                            for (Iterator<?> iter = headers.keys(); iter.hasNext(); ) {
-                                String headerKey = iter.next().toString();
-                                JSONArray headerValues = headers.optJSONArray(headerKey);
-                                if (headerValues == null) {
-                                    headerValues = new JSONArray();
-                                    headerValues.put(headers.getString(headerKey));
-                                }
-                                connection.setRequestProperty(headerKey, headerValues.getString(0));
-                                for (int i = 1; i < headerValues.length(); ++i) {
-                                    connection.addRequestProperty(headerKey, headerValues.getString(i));
-                                }
-                            }
-                        } catch (JSONException e1) {
-                          // No headers to be manipulated!
-                        }
+                        addHeadersToRequest(connection, headers);
                     }
     
                     connection.connect();
