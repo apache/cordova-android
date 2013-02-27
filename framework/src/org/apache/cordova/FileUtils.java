@@ -100,23 +100,27 @@ public class FileUtils {
 	 * @param uriString the URI string of the data
 	 * @return the mime type of the specified data
 	 */
-	public static String getMimeType(String uriString) {
-	    if (uriString != null) {
-	        // Stupid bug in getFileExtensionFromUrl when the file name has a space
-	        // So we need to replace the space with a url encoded %20
+	public static String getMimeType(String uriString, CordovaInterface cordova) {
+		String mimeType = null;
 
-	        // CB-2185: Stupid bug not putting JPG extension in the mime-type map
-	        String url = uriString.replace(" ", "%20").toLowerCase();
-	        MimeTypeMap map = MimeTypeMap.getSingleton();
-	        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
-	        if (extension.toLowerCase().equals("3ga")) {
-	            return "audio/3gpp";
+		if (uriString == null) {
+			mimeType = "";
+		} else if (uriString.startsWith("content://")) {
+			Uri uri = Uri.parse(uriString);
+            mimeType = cordova.getActivity().getContentResolver().getType(uri);
+		} else {
+			// MimeTypeMap.getFileExtensionFromUrl has a bug that occurs when the filename has a space, so we encode it.
+			// We also convert the URI string to lower case to ensure compatibility with MimeTypeMap (see CB-2185).
+			String encodedUriString = uriString.replace(" ", "%20").toLowerCase();
+	        String extension = MimeTypeMap.getFileExtensionFromUrl(encodedUriString);
+	        if (extension.equals("3ga")) {
+	            mimeType = "audio/3gpp";
 	        } else {
-	            return map.getMimeTypeFromExtension(extension);
+	            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
 	        }
-	    } else {
-	        return "";
-	    }
+		}
+
+		return mimeType;
 	}
 
 	/**

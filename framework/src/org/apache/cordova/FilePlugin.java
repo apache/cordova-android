@@ -856,7 +856,7 @@ public class FilePlugin extends CordovaPlugin {
 
         JSONObject metadata = new JSONObject();
         metadata.put("size", file.length());
-        metadata.put("type", FileUtils.getMimeType(filePath));
+        metadata.put("type", FileUtils.getMimeType(filePath, cordova));
         metadata.put("name", file.getName());
         metadata.put("fullPath", filePath);
         metadata.put("lastModifiedDate", file.lastModified());
@@ -1012,14 +1012,7 @@ public class FilePlugin extends CordovaPlugin {
      */
     public String readAsDataURL(String filename, int start, int end) throws FileNotFoundException, IOException {
         // Determine content type from file name
-        String contentType = null;
-        if (filename.startsWith("content:")) {
-            Uri fileUri = Uri.parse(filename);
-            contentType = this.cordova.getActivity().getContentResolver().getType(fileUri);
-        }
-        else {
-            contentType = FileUtils.getMimeType(filename);
-        }
+        String contentType = FileUtils.getMimeType(filename, cordova);
 
         byte[] base64 = Base64.encodeBase64(readAsBinary(filename, start, end));
         String data = "data:" + contentType + ";base64," + new String(base64);
