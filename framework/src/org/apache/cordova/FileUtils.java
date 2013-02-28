@@ -25,14 +25,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.cordova.api.CordovaInterface;
+import org.apache.cordova.api.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
 
 public class FileUtils {
+	private static final String LOG_TAG = "FileUtils";
 	private static final String _DATA = "_data";
 
 	/**
@@ -55,6 +58,10 @@ public class FileUtils {
 	        realPath = cursor.getString(column_index);
 	    } else if (uriString.startsWith("file://")) {
 	        realPath = uriString.substring(7);
+	        if (realPath.startsWith("/android_asset/")) {
+	        	LOG.e(LOG_TAG, "Cannot get real path for file:///android_asset/ URI.");
+	        	realPath = null;
+	        }
 	    } else {
 	        realPath = uriString;
 	    }
@@ -86,6 +93,14 @@ public class FileUtils {
 	    if (uriString.startsWith("content")) {
 	        Uri uri = Uri.parse(uriString);
 	        return cordova.getActivity().getContentResolver().openInputStream(uri);
+	    } else if (uriString.startsWith("file:///android_asset/")) {
+        	String relativePath = uriString.substring(22);
+        	try {
+				return cordova.getActivity().getAssets().open(relativePath);
+			} catch (IOException e) {
+				LOG.e(LOG_TAG, e.getMessage(), e);
+				return null;
+			}
         } else {
 	        return new FileInputStream(getRealPath(uriString, cordova));
 	    }
