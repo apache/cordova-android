@@ -21,6 +21,7 @@ package org.apache.cordova;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.cordova.api.CordovaInterface;
@@ -35,6 +36,33 @@ public class FileUtils {
 	private static final String _DATA = "_data";
 
 	/**
+	 * Returns the real path of the given URI string.
+	 * If the given URI string represents a content:// URI, the real path is retrieved from the media store.
+	 *
+	 * @param uriString the URI string of the audio/image/video
+	 * @param cordova the current application context
+	 * @return the full path to the file
+	 */
+	@SuppressWarnings("deprecation")
+	public static String getRealPath(String uriString, CordovaInterface cordova) {
+		String realPath = null;
+
+	    if (uriString.startsWith("content://")) {
+	        String[] proj = { _DATA };
+	        Cursor cursor = cordova.getActivity().managedQuery(Uri.parse(uriString), proj, null, null, null);
+	        int column_index = cursor.getColumnIndexOrThrow(_DATA);
+	        cursor.moveToFirst();
+	        realPath = cursor.getString(column_index);
+	    } else if (uriString.startsWith("file://")) {
+	        realPath = uriString.substring(7);
+	    } else {
+	        realPath = uriString;
+	    }
+
+	    return realPath;
+	}
+
+	/**
 	 * Returns the real path of the given URI.
 	 * If the given URI is a content:// URI, the real path is retrieved from the media store.
 	 *
@@ -42,23 +70,8 @@ public class FileUtils {
 	 * @param cordova the current application context
 	 * @return the full path to the file
 	 */
-	@SuppressWarnings("deprecation")
-	public static String getRealPathFromUri(Uri uri, CordovaInterface cordova) {
-	    final String scheme = uri.getScheme();
-
-	    if (scheme == null) {
-	    	return uri.toString();
-		} else if (scheme.compareTo("content") == 0) {
-	        String[] proj = { _DATA };
-	        Cursor cursor = cordova.getActivity().managedQuery(uri, proj, null, null, null);
-	        int column_index = cursor.getColumnIndexOrThrow(_DATA);
-	        cursor.moveToFirst();
-	        return cursor.getString(column_index);
-	    } else if (scheme.compareTo("file") == 0) {
-	        return uri.getPath();
-	    } else {
-	        return uri.toString();
-	    }
+	public static String getRealPath(Uri uri, CordovaInterface cordova) {
+		return FileUtils.getRealPath(uri.toString(), cordova);
 	}
 
 	/**
@@ -66,17 +79,15 @@ public class FileUtils {
 	 *
 	 * @param uriString the URI string from which to obtain the input stream
 	 * @param cordova the current application context
-	 * @return an input stream into the data at the given URI
+	 * @return an input stream into the data at the given URI or null if given an invalid URI string
 	 * @throws FileNotFoundException
 	 */
 	public static InputStream getInputStreamFromUriString(String uriString, CordovaInterface cordova) throws FileNotFoundException {
 	    if (uriString.startsWith("content")) {
 	        Uri uri = Uri.parse(uriString);
 	        return cordova.getActivity().getContentResolver().openInputStream(uri);
-	    }
-	    else {
-	        uriString = getRealPathFromUri(Uri.parse(uriString), cordova);
-	        return new FileInputStream(uriString);
+        } else {
+	        return new FileInputStream(getRealPath(uriString, cordova));
 	    }
 	}
 

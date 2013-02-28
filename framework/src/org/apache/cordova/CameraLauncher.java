@@ -344,7 +344,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                             if (this.encodingType == JPEG) {
                                 String exifPath;
                                 if (this.saveToPhotoAlbum) {
-                                    exifPath = FileUtils.getRealPathFromUri(uri, this.cordova);
+                                    exifPath = FileUtils.getRealPath(uri, this.cordova);
                                 } else {
                                     exifPath = uri.getPath();
                                 }
@@ -395,7 +395,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         this.callbackContext.success(uri.toString());
                     } else {
                         // Get the path to the image. Makes loading so much easier.
-                        String imagePath = FileUtils.getRealPathFromUri(uri, this.cordova);
+                        String imagePath = FileUtils.getRealPath(uri, this.cordova);
                         String mimeType = FileUtils.getMimeType(imagePath, this.cordova);
                         // Log.d(LOG_TAG, "Real path = " + imagePath);
                         // Log.d(LOG_TAG, "mime type = " + mimeType);
@@ -458,7 +458,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                                     // Restore exif data to file
                                     if (this.encodingType == JPEG) {
-                                        exif.createOutFile(FileUtils.getRealPathFromUri(uri, this.cordova));
+                                        exif.createOutFile(FileUtils.getRealPath(uri, this.cordova));
                                         exif.writeExifData();
                                     }
 

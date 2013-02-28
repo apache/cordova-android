@@ -257,7 +257,7 @@ public class FilePlugin extends CordovaPlugin {
      * @param filePath the path to check
      */
     private void notifyDelete(String filePath) {
-        String newFilePath = FileUtils.getRealPathFromUri(Uri.parse(filePath), cordova);
+        String newFilePath = FileUtils.getRealPath(filePath, cordova);
         try {
             this.cordova.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 MediaStore.Images.Media.DATA + " = ?",
@@ -364,8 +364,8 @@ public class FilePlugin extends CordovaPlugin {
      * @throws FileExistsException
      */
     private JSONObject transferTo(String fileName, String newParent, String newName, boolean move) throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException, FileExistsException {
-        String newFileName = FileUtils.getRealPathFromUri(Uri.parse(fileName), cordova);
-        newParent = FileUtils.getRealPathFromUri(Uri.parse(newParent), cordova);
+        String newFileName = FileUtils.getRealPath(fileName, cordova);
+        newParent = FileUtils.getRealPath(newParent, cordova);
 
         // Check for invalid file name
         if (newName != null && newName.contains(":")) {
@@ -768,7 +768,7 @@ public class FilePlugin extends CordovaPlugin {
         if (fileName.startsWith("/")) {
             fp = new File(fileName);
         } else {
-            dirPath = FileUtils.getRealPathFromUri(Uri.parse(dirPath), cordova);
+            dirPath = FileUtils.getRealPath(dirPath, cordova);
             fp = new File(dirPath + File.separator + fileName);
         }
         return fp;
@@ -783,7 +783,7 @@ public class FilePlugin extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONObject getParent(String filePath) throws JSONException {
-        filePath = FileUtils.getRealPathFromUri(Uri.parse(filePath), cordova);
+        filePath = FileUtils.getRealPath(filePath, cordova);
 
         if (atRootDirectory(filePath)) {
             return getEntry(filePath);
@@ -799,7 +799,7 @@ public class FilePlugin extends CordovaPlugin {
      * @return true if we are at the root, false otherwise.
      */
     private boolean atRootDirectory(String filePath) {
-        filePath = FileUtils.getRealPathFromUri(Uri.parse(filePath), cordova);
+        filePath = FileUtils.getRealPath(filePath, cordova);
 
         if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + cordova.getActivity().getPackageName() + "/cache") ||
                 filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) ||
@@ -816,7 +816,7 @@ public class FilePlugin extends CordovaPlugin {
      * @return
      */
     private File createFileObject(String filePath) {
-    	filePath = FileUtils.getRealPathFromUri(Uri.parse(filePath), cordova);
+    	filePath = FileUtils.getRealPath(filePath, cordova);
 
         File file = new File(filePath);
         return file;
@@ -1034,7 +1034,7 @@ public class FilePlugin extends CordovaPlugin {
     		throw new NoModificationAllowedException("Couldn't write to file given its content URI");
     	}
 
-        filename = FileUtils.getRealPathFromUri(Uri.parse(filename), cordova);
+        filename = FileUtils.getRealPath(filename, cordova);
 
         boolean append = false;
         if (offset > 0) {
@@ -1067,7 +1067,7 @@ public class FilePlugin extends CordovaPlugin {
     		throw new NoModificationAllowedException("Couldn't truncate file given its content URI");
     	}
 
-        filename = FileUtils.getRealPathFromUri(Uri.parse(filename), cordova);
+        filename = FileUtils.getRealPath(filename, cordova);
 
         RandomAccessFile raf = new RandomAccessFile(filename, "rw");
         try {
