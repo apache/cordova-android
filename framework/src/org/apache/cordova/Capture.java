@@ -128,7 +128,7 @@ public class Capture extends CordovaPlugin {
         // If the mimeType isn't set the rest will fail
         // so let's see if we can determine it.
         if (mimeType == null || mimeType.equals("") || "null".equals(mimeType)) {
-            mimeType = FileUtils.getMimeType(filePath);
+            mimeType = FileUtils.getMimeType(filePath, this.cordova);
         }
         Log.d(LOG_TAG, "Mime type = " + mimeType);
 
@@ -363,7 +363,7 @@ public class Capture extends CordovaPlugin {
                     obj.put("type", VIDEO_3GPP);
                 }
             } else {
-                obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath()));
+                obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath(), this.cordova));
             }
 
             obj.put("lastModifiedDate", fp.lastModified());

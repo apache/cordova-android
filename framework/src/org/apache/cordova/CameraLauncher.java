@@ -396,7 +396,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     } else {
                         // Get the path to the image. Makes loading so much easier.
                         String imagePath = FileUtils.getRealPathFromURI(uri, this.cordova);
-                        String mimeType = FileUtils.getMimeType(imagePath);
+                        String mimeType = FileUtils.getMimeType(imagePath, this.cordova);
                         // Log.d(LOG_TAG, "Real path = " + imagePath);
                         // Log.d(LOG_TAG, "mime type = " + mimeType);
                         // If we don't have a valid image so quit.
