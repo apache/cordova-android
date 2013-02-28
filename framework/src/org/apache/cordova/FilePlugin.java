@@ -61,7 +61,7 @@ import android.provider.MediaStore;
  */
 public class FilePlugin extends CordovaPlugin {
     @SuppressWarnings("unused")
-    private static final String LOG_TAG = "FileUtils";
+    private static final String LOG_TAG = "FilePlugin";
 
     public static int NOT_FOUND_ERR = 1;
     public static int SECURITY_ERR = 2;
