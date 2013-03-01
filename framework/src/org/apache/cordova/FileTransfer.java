@@ -750,7 +750,7 @@ public class FileTransfer extends CordovaPlugin {
                     Log.d(LOG_TAG, "Saved file: " + target);
     
                     // create FileEntry object
-                    JSONObject fileEntry = FileUtils.getEntry(file);
+                    JSONObject fileEntry = FilePlugin.getEntry(file);
                     
                     result = new PluginResult(PluginResult.Status.OK, fileEntry);
                 } catch (FileNotFoundException e) {

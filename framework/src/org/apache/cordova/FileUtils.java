@@ -18,21 +18,16 @@
 */
 package org.apache.cordova;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.LOG;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
+
+import org.apache.cordova.api.CordovaInterface;
+import org.apache.cordova.api.LOG;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class FileUtils {
 	private static final String LOG_TAG = "FileUtils";
@@ -56,10 +51,13 @@ public class FileUtils {
 	        int column_index = cursor.getColumnIndexOrThrow(_DATA);
 	        cursor.moveToFirst();
 	        realPath = cursor.getString(column_index);
+	        if (realPath == null) {
+	        	LOG.e(LOG_TAG, "Could get real path for URI string %s", uriString);
+	        }
 	    } else if (uriString.startsWith("file://")) {
 	        realPath = uriString.substring(7);
 	        if (realPath.startsWith("/android_asset/")) {
-	        	LOG.e(LOG_TAG, "Cannot get real path for file:///android_asset/ URI.");
+	        	LOG.e(LOG_TAG, "Cannot get real path for URI string %s because it is a file:///android_asset/ URI.", uriString);
 	        	realPath = null;
 	        }
 	    } else {
@@ -87,20 +85,15 @@ public class FileUtils {
 	 * @param uriString the URI string from which to obtain the input stream
 	 * @param cordova the current application context
 	 * @return an input stream into the data at the given URI or null if given an invalid URI string
-	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
-	public static InputStream getInputStreamFromUriString(String uriString, CordovaInterface cordova) throws FileNotFoundException {
+	public static InputStream getInputStreamFromUriString(String uriString, CordovaInterface cordova) throws IOException {
 	    if (uriString.startsWith("content")) {
 	        Uri uri = Uri.parse(uriString);
 	        return cordova.getActivity().getContentResolver().openInputStream(uri);
 	    } else if (uriString.startsWith("file:///android_asset/")) {
-        	String relativePath = uriString.substring(22);
-        	try {
-				return cordova.getActivity().getAssets().open(relativePath);
-			} catch (IOException e) {
-				LOG.e(LOG_TAG, e.getMessage(), e);
-				return null;
-			}
+	        String relativePath = uriString.substring(22);
+	        return cordova.getActivity().getAssets().open(relativePath);
         } else {
 	        return new FileInputStream(getRealPath(uriString, cordova));
 	    }
@@ -129,9 +122,7 @@ public class FileUtils {
 	public static String getMimeType(String uriString, CordovaInterface cordova) {
 		String mimeType = null;
 
-		if (uriString == null) {
-			mimeType = "";
-		} else if (uriString.startsWith("content://")) {
+		if (uriString.startsWith("content://")) {
 			Uri uri = Uri.parse(uriString);
             mimeType = cordova.getActivity().getContentResolver().getType(uri);
 		} else {
@@ -147,25 +138,5 @@ public class FileUtils {
 		}
 
 		return mimeType;
-	}
-
-	/**
-	 * Returns a JSON object representing the given File.
-	 *
-	 * @param file the File to convert
-	 * @return a JSON representation of the given File
-	 * @throws JSONException
-	 */
-	public static JSONObject getEntry(File file) throws JSONException {
-	    JSONObject entry = new JSONObject();
-
-	    entry.put("isFile", file.isFile());
-	    entry.put("isDirectory", file.isDirectory());
-	    entry.put("name", file.getName());
-	    entry.put("fullPath", "file://" + file.getAbsolutePath());
-	    // The file system can't be specified, as it would lead to an infinite loop.
-	    // entry.put("filesystem", null);
-
-	    return entry;
 	}
 }

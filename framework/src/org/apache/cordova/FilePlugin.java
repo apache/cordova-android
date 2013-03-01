@@ -18,21 +18,10 @@
 */
 package org.apache.cordova;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.channels.FileChannel;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.cordova.api.CallbackContext;
@@ -47,10 +36,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
 //import android.content.Context;
 
 //import android.app.Activity;
@@ -81,9 +79,6 @@ public class FilePlugin extends CordovaPlugin {
     public static int PERSISTENT = 1;
     public static int RESOURCE = 2;
     public static int APPLICATION = 3;
-
-    FileReader f_in;
-    FileWriter f_out;
 
     /**
      * Constructor.
@@ -315,7 +310,7 @@ public class FilePlugin extends CordovaPlugin {
         if (!fp.canRead()) {
             throw new IOException();
         }
-        return FileUtils.getEntry(fp);
+        return getEntry(fp);
     }
 
     /**
@@ -340,7 +335,7 @@ public class FilePlugin extends CordovaPlugin {
             File[] files = fp.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (files[i].canRead()) {
-                    entries.put(FileUtils.getEntry(files[i]));
+                    entries.put(getEntry(files[i]));
                 }
             }
         }
@@ -460,7 +455,7 @@ public class FilePlugin extends CordovaPlugin {
 
         copyAction(srcFile, destFile);
 
-        return FileUtils.getEntry(destFile);
+        return getEntry(destFile);
     }
 
     /**
@@ -522,7 +517,7 @@ public class FilePlugin extends CordovaPlugin {
             }
         }
 
-        return FileUtils.getEntry(destinationDir);
+        return getEntry(destinationDir);
     }
 
     /**
@@ -575,7 +570,7 @@ public class FilePlugin extends CordovaPlugin {
             }
         }
 
-        return FileUtils.getEntry(destFile);
+        return getEntry(destFile);
     }
 
     /**
@@ -622,7 +617,7 @@ public class FilePlugin extends CordovaPlugin {
             }
         }
 
-        return FileUtils.getEntry(destinationDir);
+        return getEntry(destinationDir);
     }
 
     /**
@@ -752,7 +747,7 @@ public class FilePlugin extends CordovaPlugin {
         }
 
         // Return the directory
-        return FileUtils.getEntry(fp);
+        return getEntry(fp);
     }
 
     /**
@@ -894,7 +889,7 @@ public class FilePlugin extends CordovaPlugin {
         else if (type == PERSISTENT) {
             fs.put("name", "persistent");
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                fs.put("root", FileUtils.getEntry(Environment.getExternalStorageDirectory()));
+                fs.put("root", getEntry(Environment.getExternalStorageDirectory()));
             } else {
                 fs.put("root", getEntry("/data/data/" + cordova.getActivity().getPackageName()));
             }
@@ -907,6 +902,26 @@ public class FilePlugin extends CordovaPlugin {
     }
 
     /**
+     * Returns a JSON object representing the given File.
+     *
+     * @param file the File to convert
+     * @return a JSON representation of the given File
+     * @throws JSONException
+     */
+    public static JSONObject getEntry(File file) throws JSONException {
+        JSONObject entry = new JSONObject();
+
+        entry.put("isFile", file.isFile());
+        entry.put("isDirectory", file.isDirectory());
+        entry.put("name", file.getName());
+        entry.put("fullPath", "file://" + file.getAbsolutePath());
+        // The file system can't be specified, as it would lead to an infinite loop.
+        // entry.put("filesystem", null);
+
+        return entry;
+    }
+
+    /**
      * Returns a JSON Object representing a directory on the device's file system
      *
      * @param path to the directory
@@ -914,7 +929,7 @@ public class FilePlugin extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONObject getEntry(String path) throws JSONException {
-        return FileUtils.getEntry(new File(path));
+        return getEntry(new File(path));
     }
 
     /**
