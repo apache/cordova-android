@@ -136,6 +136,19 @@ public class FileUtils extends CordovaPlugin {
                 String s = this.readAsDataURL(args.getString(0), start, end);
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
             }
+            else if (action.equals("readAsArrayBuffer")) {
+                int start = 0;
+                int end = Integer.MAX_VALUE;
+                if (args.length() >= 2) {
+                    start = args.getInt(1);
+                }
+                if (args.length() >= 3) {
+                    end = args.getInt(2);
+                }
+
+                byte[] s = this.readAsBinary(args.getString(0), start, end);
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
+            }
             else if (action.equals("write")) {
                 long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
@@ -987,13 +1000,14 @@ public class FileUtils extends CordovaPlugin {
     }
 
     /**
-     * Read content of text file and return as base64 encoded data url.
-     *
-     * @param filename			The name of the file.
-     * @return					Contents of file = data:<media type>;base64,<data>
+     * Helper method to read a text file and return its contents as a byte[].
+     * @param filename          The name of the file.
+     * @param start             Start position in the file.
+     * @param end               End position to stop at (exclusive).
+     * @return                  Contents of the file as a byte[].
      * @throws FileNotFoundException, IOException
      */
-    public String readAsDataURL(String filename, int start, int end) throws FileNotFoundException, IOException {
+    public byte[] readAsBinary(String filename, int start, int end) throws FileNotFoundException, IOException {
         int diff = end - start;
         byte[] bytes = new byte[1000];
         BufferedInputStream bis = new BufferedInputStream(getPathFromUri(filename), 1024);
@@ -1009,7 +1023,20 @@ public class FileUtils extends CordovaPlugin {
             bos.write(bytes, 0, numRead);
         }
 
-        // Determine content type from file name
+        return bos.toByteArray();
+    }
+
+    /**
+     * Read content of a file and return as base64 encoded data url.
+     *
+     * @param filename			The name of the file.
+     * @param start             Start position in the file.
+     * @param end               End position to stop at (exclusive).
+     * @return					Contents of file = data:<media type>;base64,<data>
+     * @throws FileNotFoundException, IOException
+     */
+    public String readAsDataURL(String filename, int start, int end) throws FileNotFoundException, IOException {
+    	// Determine content type from file name
         String contentType = null;
         if (filename.startsWith("content:")) {
             Uri fileUri = Uri.parse(filename);
@@ -1019,7 +1046,7 @@ public class FileUtils extends CordovaPlugin {
             contentType = getMimeType(filename);
         }
 
-        byte[] base64 = Base64.encodeBase64(bos.toByteArray());
+    	byte[] base64 = Base64.encodeBase64(readAsBinary(filename, start, end));
         String data = "data:" + contentType + ";base64," + new String(base64);
         return data;
     }
