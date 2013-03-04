@@ -1062,7 +1062,8 @@ public class DroidGap extends Activity implements CordovaInterface {
     {
         //Get whatever has focus!
         View childView = appView.getFocusedChild();
-        if ((appView.isCustomViewShowing() || childView != null ) && keyCode == KeyEvent.KEYCODE_BACK) {
+        if ((appView.isCustomViewShowing() || childView != null ) &&
+                (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
             return appView.onKeyUp(keyCode, event);
         } else {
             return super.onKeyUp(keyCode, event);
@@ -1082,7 +1083,7 @@ public class DroidGap extends Activity implements CordovaInterface {
         //Get whatever has focus!
         View childView = appView.getFocusedChild();
         //Determine if the focus is on the current view or not
-        if (childView != null && keyCode == KeyEvent.KEYCODE_BACK) {
+        if (childView != null && (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
                     return appView.onKeyDown(keyCode, event);
         }
         else

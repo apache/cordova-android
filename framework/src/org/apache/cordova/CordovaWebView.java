@@ -47,6 +47,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebHistoryItem;
 import android.webkit.WebChromeClient;
@@ -735,6 +736,19 @@ public class CordovaWebView extends WebView {
                 return !(this.startOfHistory()) || this.bound;
             else
                 return this.urls.size() > 1 || this.bound;
+        }
+        else if(keyCode == KeyEvent.KEYCODE_MENU)
+        {
+            //How did we get here?  Is there a childView?
+            View childView = this.getFocusedChild();
+            if(childView != null)
+            {
+                //Make sure we close the keyboard if it's present
+                InputMethodManager imm = (InputMethodManager) cordova.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(childView.getWindowToken(), 0);
+                cordova.getActivity().openOptionsMenu();
+            }
+            return true;
         }
         
         return super.onKeyDown(keyCode, event);
