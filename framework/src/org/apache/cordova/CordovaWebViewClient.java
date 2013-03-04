@@ -38,6 +38,7 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -66,7 +67,7 @@ public class CordovaWebViewClient extends WebViewClient {
 
     /**
      * Constructor.
-     * 
+     *
      * @param cordova
      * @param view
      */
@@ -77,7 +78,7 @@ public class CordovaWebViewClient extends WebViewClient {
 
     /**
      * Constructor.
-     * 
+     *
      * @param view
      */
     public void setWebView(CordovaWebView view) {
@@ -101,8 +102,8 @@ public class CordovaWebViewClient extends WebViewClient {
 		String callbackId = url.substring(idx3 + 1, idx4);
 		String jsonArgs   = url.substring(idx4 + 1);
         appView.pluginManager.exec(service, action, callbackId, jsonArgs);
-	}    
-	
+	}
+
     /**
      * Give the host application a chance to take over the control when a new url
      * is about to be loaded in the current WebView.
@@ -211,6 +212,21 @@ public class CordovaWebViewClient extends WebViewClient {
     }
 
     /**
+     * Check for intercepting any requests for resources.
+     * This includes images and scripts and so on, not just top-level pages.
+     * @param view          The WebView.
+     * @param url           The URL to be loaded.
+     * @return              Either null to proceed as normal, or a WebResourceResponse.
+     */
+    @Override
+    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+    	if (this.appView.pluginManager != null) {
+            return this.appView.pluginManager.shouldInterceptRequest(url);
+        }
+        return null;
+    }
+
+    /**
      * On received http auth request.
      * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination
      *
@@ -226,7 +242,7 @@ public class CordovaWebViewClient extends WebViewClient {
         AuthenticationToken token = this.getAuthenticationToken(host, realm);
         if (token != null) {
             handler.proceed(token.getUserName(), token.getPassword());
-        } 
+        }
         else {
             // Handle 401 like we'd normally do!
             super.onReceivedHttpAuthRequest(view, handler, host, realm);
@@ -234,11 +250,11 @@ public class CordovaWebViewClient extends WebViewClient {
     }
 
     /**
-     * Notify the host application that a page has started loading. 
-     * This method is called once for each main frame load so a page with iframes or framesets will call onPageStarted 
-     * one time for the main frame. This also means that onPageStarted will not be called when the contents of an 
-     * embedded frame changes, i.e. clicking a link whose target is an iframe. 
-     * 
+     * Notify the host application that a page has started loading.
+     * This method is called once for each main frame load so a page with iframes or framesets will call onPageStarted
+     * one time for the main frame. This also means that onPageStarted will not be called when the contents of an
+     * embedded frame changes, i.e. clicking a link whose target is an iframe.
+     *
      * @param view          The webview initiating the callback.
      * @param url           The url of the page.
      */
@@ -260,7 +276,7 @@ public class CordovaWebViewClient extends WebViewClient {
     /**
      * Notify the host application that a page has finished loading.
      * This method is called only for main frame. When onPageFinished() is called, the rendering picture may not be updated yet.
-     * 
+     *
      *
      * @param view          The webview initiating the callback.
      * @param url           The url of the page.
@@ -349,11 +365,11 @@ public class CordovaWebViewClient extends WebViewClient {
     }
 
     /**
-     * Notify the host application that an SSL error occurred while loading a resource. 
-     * The host application must call either handler.cancel() or handler.proceed(). 
-     * Note that the decision may be retained for use in response to future SSL errors. 
+     * Notify the host application that an SSL error occurred while loading a resource.
+     * The host application must call either handler.cancel() or handler.proceed().
+     * Note that the decision may be retained for use in response to future SSL errors.
      * The default behavior is to cancel the load.
-     * 
+     *
      * @param view          The WebView that is initiating the callback.
      * @param handler       An SslErrorHandler object that will handle the user's response.
      * @param error         The SSL error object.
@@ -385,7 +401,7 @@ public class CordovaWebViewClient extends WebViewClient {
 
     /**
      * Sets the authentication token.
-     * 
+     *
      * @param authenticationToken
      * @param host
      * @param realm
@@ -402,10 +418,10 @@ public class CordovaWebViewClient extends WebViewClient {
 
     /**
      * Removes the authentication token.
-     * 
+     *
      * @param host
      * @param realm
-     * 
+     *
      * @return the authentication token or null if did not exist
      */
     public AuthenticationToken removeAuthenticationToken(String host, String realm) {
@@ -414,16 +430,16 @@ public class CordovaWebViewClient extends WebViewClient {
 
     /**
      * Gets the authentication token.
-     * 
+     *
      * In order it tries:
      * 1- host + realm
      * 2- host
      * 3- realm
      * 4- no host, no realm
-     * 
+     *
      * @param host
      * @param realm
-     * 
+     *
      * @return the authentication token
      */
     public AuthenticationToken getAuthenticationToken(String host, String realm) {

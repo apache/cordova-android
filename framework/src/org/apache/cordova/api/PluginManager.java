@@ -30,6 +30,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
 
+import android.webkit.WebResourceResponse;
+
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
  *
@@ -118,7 +120,7 @@ public class PluginManager {
                     // System.out.println("Plugin: "+name+" => "+value);
                     onload = "true".equals(xml.getAttributeValue(null, "onload"));
                     entry = new PluginEntry(service, pluginClass, onload);
-                    this.addService(entry);                   
+                    this.addService(entry);
                 }
                 //What is this?
                 else if (strNode.equals("url-filter")) {
@@ -364,6 +366,25 @@ public class PluginManager {
             }
         }
         return false;
+    }
+
+    /**
+     * Called when the WebView is loading any resource, top-level or not.
+     *
+     * Uses the same url-filter tag as onOverrideUrlLoading.
+     *
+     * @param url               The URL of the resource to be loaded.
+     * @return                  Return a WebResourceResponse with the resource, or null if the WebView should handle it.
+     */
+    public WebResourceResponse shouldInterceptRequest(String url) {
+        Iterator<Entry<String, String>> it = this.urlMap.entrySet().iterator();
+        while (it.hasNext()) {
+            HashMap.Entry<String, String> pairs = it.next();
+            if (url.startsWith(pairs.getKey())) {
+                return this.getPlugin(pairs.getValue()).shouldInterceptRequest(url);
+            }
+        }
+        return null;
     }
 
     /**
