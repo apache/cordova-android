@@ -75,12 +75,8 @@ public class CordovaWebView extends WebView {
     @SuppressWarnings("unused")
     private CordovaChromeClient chromeClient;
 
-    //This is for the polyfill history
     private String url;
     String baseUrl;
-    private Stack<String> urls = new Stack<String>();
-
-    boolean useBrowserHistory = true;
 
     // Flag to track that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
@@ -370,7 +366,7 @@ public class CordovaWebView extends WebView {
             String initUrl = this.getProperty("url", null);
 
             // If first page of app, then set URL to load to be the one passed in
-            if (initUrl == null || (this.urls.size() > 0)) {
+            if (initUrl == null) {
                 this.loadUrlIntoView(url);
             }
             // Otherwise use the URL specified in the activity's extras bundle
@@ -391,7 +387,7 @@ public class CordovaWebView extends WebView {
         String initUrl = this.getProperty("url", null);
 
         // If first page of app, then set URL to load to be the one passed in
-        if (initUrl == null || (this.urls.size() > 0)) {
+        if (initUrl == null) {
             this.loadUrlIntoView(url, time);
         }
         // Otherwise use the URL specified in the activity's extras bundle
@@ -419,10 +415,6 @@ public class CordovaWebView extends WebView {
             }
 
             this.pluginManager.init();
-
-            if (!this.useBrowserHistory) {
-                this.urls.push(url);
-            }
         }
 
         // Create a timeout timer for loadUrl
@@ -494,7 +486,7 @@ public class CordovaWebView extends WebView {
 
         // If not first page of app, then load immediately
         // Add support for browser history if we use it.
-        if ((url.startsWith("javascript:")) || this.urls.size() > 0 || this.canGoBack()) {
+        if ((url.startsWith("javascript:")) || this.canGoBack()) {
         }
 
         // If first page, then show splashscreen
@@ -542,25 +534,6 @@ public class CordovaWebView extends WebView {
         }
     }
 
-    /**
-     * Returns the top url on the stack without removing it from
-     * the stack.
-     */
-    public String peekAtUrlStack() {
-        if (this.urls.size() > 0) {
-            return this.urls.peek();
-        }
-        return "";
-    }
-
-    /**
-     * Add a url to the stack
-     *
-     * @param url
-     */
-    public void pushUrl(String url) {
-        this.urls.push(url);
-    }
 
     /**
      * Go to previous page in history.  (We manage our own history)
@@ -571,37 +544,15 @@ public class CordovaWebView extends WebView {
 
         // Check webview first to see if there is a history
         // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
-        if (super.canGoBack() && this.useBrowserHistory) {
+        if (super.canGoBack()) {
             printBackForwardList();
             super.goBack();
             
             return true;
         }
-        // If our managed history has prev url
-        else if (this.urls.size() > 1 && !this.useBrowserHistory) {
-            this.urls.pop();                // Pop current url
-            String url = this.urls.pop();   // Pop prev url that we want to load, since it will be added back by loadUrl()
-            this.loadUrl(url);
-            return true;
-        }
-
         return false;
     }
 
-    /**
-     * Return true if there is a history item.
-     *
-     * @return
-     */
-    public boolean canGoBack() {
-        if (super.canGoBack() && this.useBrowserHistory) {
-            return true;
-        }
-        else if (this.urls.size() > 1) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * Load the specified URL in the Cordova webview or a new browser instance.
@@ -627,12 +578,6 @@ public class CordovaWebView extends WebView {
             // Make sure url is in whitelist
             if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || Config.isUrlWhiteListed(url)) {
                 // TODO: What about params?
-
-                // Clear out current url from history, since it will be replacing it
-                if (clearHistory) {
-                    this.urls.clear();
-                }
-
                 // Load new URL
                 this.loadUrl(url);
             }
@@ -669,13 +614,6 @@ public class CordovaWebView extends WebView {
      *      <log level="DEBUG" />
      */
     private void loadConfiguration() {
-        // Config has already been loaded, and it stores these preferences on the Intent.
-        if("false".equals(this.getProperty("useBrowserHistory", "true")))
-        {
-            //Switch back to the old browser history and state the six month policy
-            this.useBrowserHistory = false;
-            Log.w(TAG, "useBrowserHistory=false is deprecated as of Cordova 2.2.0 and will be removed six months after the 2.2.0 release.  Please use the browser history and use history.back().");
-        }
  
         if ("true".equals(this.getProperty("fullscreen", "false"))) {
             this.cordova.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -729,13 +667,7 @@ public class CordovaWebView extends WebView {
         }
         else if(keyCode == KeyEvent.KEYCODE_BACK)
         {
-            //Because exit is fired on the keyDown and not the key up on Android 4.x
-            //we need to check for this.
-            //Also, I really wished "canGoBack" worked!
-            if(this.useBrowserHistory)
-                return !(this.startOfHistory()) || this.bound;
-            else
-                return this.urls.size() > 1 || this.bound;
+            return !(this.startOfHistory()) || this.bound;
         }
         else if(keyCode == KeyEvent.KEYCODE_MENU)
         {

@@ -193,11 +193,7 @@ public class CordovaWebViewClient extends WebViewClient {
             // If our app or file:, then load into a new Cordova webview container by starting a new instance of our activity.
             // Our app continues to run.  When BACK is pressed, our app is redisplayed.
             if (url.startsWith("file://") || url.startsWith("data:") || url.indexOf(this.appView.baseUrl) == 0 || Config.isUrlWhiteListed(url)) {
-                //This will fix iFrames
-                if (appView.useBrowserHistory || url.startsWith("data:"))
-                    return false;
-                else
-                    this.appView.loadUrl(url);
+                return false;
             }
 
             // If not our application, let default viewer handle
@@ -248,12 +244,6 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
-        // Clear history so history.back() doesn't do anything.
-        // So we can reinit() native side CallbackServer & PluginManager.
-        if (!this.appView.useBrowserHistory) {
-            view.clearHistory();
-            this.doClearHistory = true;
-        }
 
         // Flush stale messages.
         this.appView.jsMessageQueue.reset();
@@ -392,23 +382,6 @@ public class CordovaWebViewClient extends WebViewClient {
         }
     }
 
-    /**
-     * Notify the host application to update its visited links database.
-     * 
-     * @param view          The WebView that is initiating the callback.
-     * @param url           The url being visited.
-     * @param isReload      True if this url is being reloaded.
-     */
-    @Override
-    public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
-        /*
-         * If you do a document.location.href the url does not get pushed on the stack
-         * so we do a check here to see if the url should be pushed.
-         */
-        if (!this.appView.peekAtUrlStack().equals(url)) {
-            this.appView.pushUrl(url);
-        }
-    }
 
     /**
      * Sets the authentication token.
