@@ -137,26 +137,20 @@ function downloadCommonsCodec() {
 }
 
 var args = WScript.Arguments, PROJECT_PATH="example", 
-    PACKAGE="org.apache.cordova.example", ACTIVITY="cordovaExample",
     shell=WScript.CreateObject("WScript.Shell");
     
 // working dir
-var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
+var ROOT = WScript.ScriptFullName.split('\\bin\\update.js').join('');
 
-if (args.Count() == 3) {
+if (args.Count() == 1) {
     PROJECT_PATH=args(0);
-    PACKAGE=args(1);
-    ACTIVITY=args(2);
 }
 
-if(fso.FolderExists(PROJECT_PATH)) {
-    WScript.Echo("Project already exists!");
+if(!fso.FolderExists(PROJECT_PATH)) {
+    WScript.Echo("Project doesn't exist!");
     WScript.Quit(1);
 }
 
-var PACKAGE_AS_PATH=PACKAGE.replace(/\./g, '\\');
-var ACTIVITY_PATH=PROJECT_PATH+'\\src\\'+PACKAGE_AS_PATH+'\\'+ACTIVITY+'.java';
-var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
 var TARGET=setTarget();
 var API_LEVEL=setApiLevel();
 var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
@@ -177,16 +171,12 @@ WScript.Echo("Copying js, jar & config.xml files...");
 if(fso.FolderExists(ROOT + '\\framework')) {
     exec('%comspec% /c copy "'+ROOT+'"\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
     exec('%comspec% /c copy "'+ROOT+'"\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
-    fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-    exec('%comspec% /c copy "'+ROOT+'"\\framework\\res\\xml\\config.xml ' + PROJECT_PATH + '\\res\\xml\\config.xml /Y');
 } else {
     // copy in cordova.js
     exec('%comspec% /c copy "'+ROOT+'"\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
     // copy in cordova.jar
     exec('%comspec% /c copy "'+ROOT+'"\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
     // copy in xml
-    fso.CreateFolder(PROJECT_PATH + '\\res\\xml');
-    exec('%comspec% /c copy "'+ROOT+'"\\xml\\config.xml ' + PROJECT_PATH + '\\res\\xml\\config.xml /Y');
 }
 
 // update cordova scripts
