@@ -18,6 +18,7 @@
 */
 package org.apache.cordova;
 
+import java.io.ByteArrayInputStream;
 import java.util.Hashtable;
 
 import org.apache.cordova.api.CordovaInterface;
@@ -220,10 +221,23 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+        //If something isn't whitelisted, just send a blank response
+        if(!Config.isUrlWhiteListed(url))
+        {
+            return getWhitelistResponse();
+        }
     	if (this.appView.pluginManager != null) {
             return this.appView.pluginManager.shouldInterceptRequest(url);
         }
         return null;
+    }
+    
+    private WebResourceResponse getWhitelistResponse()
+    {
+        WebResourceResponse emptyResponse;
+        String empty = "";
+        ByteArrayInputStream data = new ByteArrayInputStream(empty.getBytes());
+        return new WebResourceResponse("text/plain", "UTF-8", data);
     }
 
     /**
