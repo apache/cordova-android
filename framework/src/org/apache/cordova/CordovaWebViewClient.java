@@ -221,8 +221,8 @@ public class CordovaWebViewClient extends WebViewClient {
      */
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        //If something isn't whitelisted, just send a blank response
-        if(!Config.isUrlWhiteListed(url))
+      //If something isn't whitelisted, just send a blank response
+        if(!Config.isUrlWhiteListed(url) && (url.startsWith("http://") || url.startsWith("https://")))
         {
             return getWhitelistResponse();
         }
