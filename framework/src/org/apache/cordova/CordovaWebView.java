@@ -76,7 +76,6 @@ public class CordovaWebView extends WebView {
     private CordovaChromeClient chromeClient;
 
     private String url;
-    String baseUrl;
 
     // Flag to track that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
@@ -208,7 +207,8 @@ public class CordovaWebView extends WebView {
 
 
     private void initWebViewClient(CordovaInterface cordova) {
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB ||
+                android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
         {
             this.setWebViewClient(new CordovaWebViewClient(this.cordova, this));
         }
@@ -405,17 +405,8 @@ public class CordovaWebView extends WebView {
         LOG.d(TAG, ">>> loadUrl(" + url + ")");
 
         this.url = url;
-        if (this.baseUrl == null) {
-            int i = url.lastIndexOf('/');
-            if (i > 0) {
-                this.baseUrl = url.substring(0, i + 1);
-            }
-            else {
-                this.baseUrl = this.url + "/";
-            }
+        this.pluginManager.init();
 
-            this.pluginManager.init();
-        }
 
         // Create a timeout timer for loadUrl
         final CordovaWebView me = this;
@@ -470,7 +461,7 @@ public class CordovaWebView extends WebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || url.startsWith("javascript:") || Config.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.startsWith("javascript:") || Config.isUrlWhiteListed(url)) {
             super.loadUrl(url);
         }
     }
@@ -576,7 +567,7 @@ public class CordovaWebView extends WebView {
         if (!openExternal) {
 
             // Make sure url is in whitelist
-            if (url.startsWith("file://") || url.indexOf(this.baseUrl) == 0 || Config.isUrlWhiteListed(url)) {
+            if (url.startsWith("file://") || Config.isUrlWhiteListed(url)) {
                 // TODO: What about params?
                 // Load new URL
                 this.loadUrl(url);
