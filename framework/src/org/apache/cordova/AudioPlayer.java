@@ -167,13 +167,18 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     public void moveFile(String file) {
         /* this is a hack to save the file as the specified name */
         File f = new File(this.tempFile);
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            f.renameTo(new File(Environment.getExternalStorageDirectory().getAbsolutePath()
-                    + File.separator + file));
-        } else {
-            f.renameTo(new File("/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/" + file));
+
+        if (!file.startsWith("/")) {
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                file = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + file;
+            } else {
+                file = "/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/" + file;
+            }
         }
 
+        String logMsg = "renaming " + this.tempFile + " to " + file;
+        Log.d(LOG_TAG, logMsg);
+        if (!f.renameTo(new File(file))) Log.e(LOG_TAG, "FAILED " + logMsg);
     }
 
     /**
