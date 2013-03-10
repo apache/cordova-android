@@ -72,6 +72,7 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String EXIT_EVENT = "exit";
     private static final String LOAD_START_EVENT = "loadstart";
     private static final String LOAD_STOP_EVENT = "loadstop";
+    private static final String CLOSE_BUTTON_CAPTION = "closebuttoncaption";
     private long MAX_QUOTA = 100 * 1024 * 1024;
 
     private Dialog dialog;
@@ -79,6 +80,7 @@ public class InAppBrowser extends CordovaPlugin {
     private EditText edittext;
     private boolean showLocationBar = true;
     private CallbackContext callbackContext;
+    private String buttonLabel = "Done";
     
     /**
      * Executes the request and returns PluginResult.
@@ -177,8 +179,12 @@ public class InAppBrowser extends CordovaPlugin {
                 option = new StringTokenizer(features.nextToken(), "=");
                 if (option.hasMoreElements()) {
                     String key = option.nextToken();
-                    Boolean value = option.nextToken().equals("no") ? Boolean.FALSE : Boolean.TRUE;
-                    map.put(key, value);
+                    if (key.equalsIgnoreCase(CLOSE_BUTTON_CAPTION)) {
+                        this.buttonLabel = option.nextToken();
+                    } else {
+                        Boolean value = option.nextToken().equals("no") ? Boolean.FALSE : Boolean.TRUE;
+                        map.put(key, value);
+                    }
                 }
             }
             return map;
@@ -292,7 +298,10 @@ public class InAppBrowser extends CordovaPlugin {
         // Determine if we should hide the location bar.
         showLocationBar = true;
         if (features != null) {
-            showLocationBar = features.get(LOCATION).booleanValue();
+            Boolean show = features.get(LOCATION);
+            if (show != null) {
+                showLocationBar = show.booleanValue();
+            }
         }
         
         final CordovaWebView thatWebView = this.webView;
@@ -408,7 +417,7 @@ public class InAppBrowser extends CordovaPlugin {
                 close.setLayoutParams(closeLayoutParams);
                 forward.setContentDescription("Close Button");
                 close.setId(5);
-                close.setText("Done");
+                close.setText(buttonLabel);
                 close.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
                         closeDialog();
