@@ -289,7 +289,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                     // If sending base64 image back
                     if (destType == DATA_URL) {
-                        bitmap = getScaledBitmap(FileUtils.stripFileProtocol(imageUri.toString()));
+                        bitmap = getScaledBitmap(FileHelper.stripFileProtocol(imageUri.toString()));
                         if (bitmap == null) {
                             // Try to get the bitmap from intent.
                             bitmap = (Bitmap)intent.getExtras().get("data");
@@ -329,7 +329,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                             this.callbackContext.success(uri.toString());
                         } else {
-                            bitmap = getScaledBitmap(FileUtils.stripFileProtocol(imageUri.toString()));
+                            bitmap = getScaledBitmap(FileHelper.stripFileProtocol(imageUri.toString()));
 
                             if (rotate != 0 && this.correctOrientation) {
                                 bitmap = getRotatedBitmap(rotate, bitmap, exif);
@@ -344,7 +344,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                             if (this.encodingType == JPEG) {
                                 String exifPath;
                                 if (this.saveToPhotoAlbum) {
-                                    exifPath = FileUtils.getRealPathFromURI(uri, this.cordova);
+                                    exifPath = FileHelper.getRealPath(uri, this.cordova);
                                 } else {
                                     exifPath = uri.getPath();
                                 }
@@ -395,8 +395,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         this.callbackContext.success(uri.toString());
                     } else {
                         // Get the path to the image. Makes loading so much easier.
-                        String imagePath = FileUtils.getRealPathFromURI(uri, this.cordova);
-                        String mimeType = FileUtils.getMimeType(imagePath);
+                        String imagePath = FileHelper.getRealPath(uri, this.cordova);
+                        String mimeType = FileHelper.getMimeType(imagePath, this.cordova);
                         // Log.d(LOG_TAG, "Real path = " + imagePath);
                         // Log.d(LOG_TAG, "mime type = " + mimeType);
                         // If we don't have a valid image so quit.
@@ -458,7 +458,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                                     // Restore exif data to file
                                     if (this.encodingType == JPEG) {
-                                        exif.createOutFile(FileUtils.getRealPathFromURI(uri, this.cordova));
+                                        exif.createOutFile(FileHelper.getRealPath(uri, this.cordova));
                                         exif.writeExifData();
                                     }
 
@@ -521,7 +521,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     private void writeUncompressedImage(Uri uri) throws FileNotFoundException,
             IOException {
-        FileInputStream fis = new FileInputStream(FileUtils.stripFileProtocol(imageUri.toString()));
+        FileInputStream fis = new FileInputStream(FileHelper.stripFileProtocol(imageUri.toString()));
         OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
         byte[] buffer = new byte[4096];
         int len;
@@ -685,7 +685,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         }
 
         // Clean up initial camera-written image file.
-        (new File(FileUtils.stripFileProtocol(oldImage.toString()))).delete();
+        (new File(FileHelper.stripFileProtocol(oldImage.toString()))).delete();
 
         checkForDuplicateImage(imageType);
         // Scan for the gallery to update pic refs in gallery

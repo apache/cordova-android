@@ -128,7 +128,7 @@ public class Capture extends CordovaPlugin {
         // If the mimeType isn't set the rest will fail
         // so let's see if we can determine it.
         if (mimeType == null || mimeType.equals("") || "null".equals(mimeType)) {
-            mimeType = FileUtils.getMimeType(filePath);
+            mimeType = FileHelper.getMimeType(filePath, cordova);
         }
         Log.d(LOG_TAG, "Mime type = " + mimeType);
 
@@ -155,7 +155,7 @@ public class Capture extends CordovaPlugin {
     private JSONObject getImageData(String filePath, JSONObject obj) throws JSONException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(FileUtils.stripFileProtocol(filePath), options);
+        BitmapFactory.decodeFile(FileHelper.stripFileProtocol(filePath), options);
         obj.put("height", options.outHeight);
         obj.put("width", options.outWidth);
         return obj;
@@ -346,7 +346,7 @@ public class Capture extends CordovaPlugin {
      * @throws IOException
      */
     private JSONObject createMediaFile(Uri data) {
-        File fp = new File(FileUtils.getRealPathFromURI(data, this.cordova));
+        File fp = new File(FileHelper.getRealPath(data, this.cordova));
         JSONObject obj = new JSONObject();
 
         try {
@@ -363,7 +363,7 @@ public class Capture extends CordovaPlugin {
                     obj.put("type", VIDEO_3GPP);
                 }
             } else {
-                obj.put("type", FileUtils.getMimeType(fp.getAbsolutePath()));
+                obj.put("type", FileHelper.getMimeType(fp.getAbsolutePath(), cordova));
             }
 
             obj.put("lastModifiedDate", fp.lastModified());
