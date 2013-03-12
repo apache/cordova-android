@@ -346,7 +346,7 @@ public class Capture extends CordovaPlugin {
      * @throws IOException
      */
     private JSONObject createMediaFile(Uri data) {
-        File fp = new File(FileUtils.getRealPathFromURI(data, this.cordova));
+        File fp = new File(FileUtils.getRealPathFromUri(data, this.cordova));
         JSONObject obj = new JSONObject();
 
         try {
