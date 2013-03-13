@@ -42,7 +42,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        if(url.contains("?") || url.contains("#")){
+        if(url.contains("?") || url.contains("#") || needsSpaceInAssetUrlFix(url)){
             return generateWebResourceResponse(url);
         } else {
             return super.shouldInterceptRequest(view, url);
@@ -78,6 +78,20 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
             }
         }
         return null;
+    }
+    
+    private static boolean needsIceCreamSpaceInAssetUrlFix(String url) {
+        if (!url.contains("%20")){
+            return false;
+        }
+
+        switch(android.os.Build.VERSION.SDK_INT){
+            case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH:
+            case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1:
+                return true;
+            default:
+                return false;
+        }
     }
     
 }
