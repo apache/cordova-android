@@ -150,7 +150,7 @@ public class GeoBroker extends CordovaPlugin {
             o.put("altitude", (loc.hasAltitude() ? loc.getAltitude() : null));
             o.put("accuracy", loc.getAccuracy());
             o.put("heading", (loc.hasBearing() ? (loc.hasSpeed() ? loc.getBearing() : null) : null));
-            o.put("speed", loc.getSpeed());
+            o.put("velocity", loc.getSpeed());
             o.put("timestamp", loc.getTime());
         } catch (JSONException e) {
             // TODO Auto-generated catch block
