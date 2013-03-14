@@ -20,11 +20,13 @@ package org.apache.cordova;
 
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.apache.cordova.file.EncodingException;
@@ -80,10 +82,13 @@ public class FileUtils extends CordovaPlugin {
     public static int RESOURCE = 2;
     public static int APPLICATION = 3;
 
+    private CallbackContext callbackContext;
+
     /**
      * Constructor.
      */
     public FileUtils() {
+        this.callbackContext = null;
     }
 
     /**
@@ -95,6 +100,8 @@ public class FileUtils extends CordovaPlugin {
      * @return 			True if the action was valid, false otherwise.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        this.callbackContext = callbackContext;
+
         try {
             if (action.equals("testSaveLocationExists")) {
                 boolean b = DirectoryManager.testSaveLocationExists();
@@ -122,8 +129,7 @@ public class FileUtils extends CordovaPlugin {
                     end = args.getInt(3);
                 }
 
-                String s = this.readAsText(args.getString(0), args.getString(1), start, end);
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
+                this.readAsText(args.getString(0), args.getString(1), start, end);
             }
             else if (action.equals("readAsDataURL")) {
                 int start = 0;
@@ -135,8 +141,7 @@ public class FileUtils extends CordovaPlugin {
                     end = args.getInt(2);
                 }
 
-                String s = this.readAsDataURL(args.getString(0), start, end);
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
+                this.readAsDataURL(args.getString(0), start, end);
             }
             else if (action.equals("readAsArrayBuffer")) {
                 int start = 0;
@@ -148,8 +153,7 @@ public class FileUtils extends CordovaPlugin {
                     end = args.getInt(2);
                 }
 
-                byte[] s = this.readAsBinary(args.getString(0), start, end);
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
+                this.readAsBinary(args.getString(0), start, end);
             }
             else if (action.equals("write")) {
                 long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
@@ -961,31 +965,57 @@ public class FileUtils extends CordovaPlugin {
     /**
      * Read content of text file.
      *
-     * @param filename			The name of the file.
-     * @param encoding			The encoding to return contents as.  Typical value is UTF-8.
-     * 							(see http://www.iana.org/assignments/character-sets)
-     * @param start                     Start position in the file.
-     * @param end                       End position to stop at (exclusive).
-     * @return					Contents of file.
-     * @throws FileNotFoundException, IOException
+     * @param filename          The name of the file.
+     * @param encoding          The encoding to return contents as.  Typical value is UTF-8.
+     *                          (see http://www.iana.org/assignments/character-sets)
+     * @param start             Start position in the file.
+     * @param end               End position to stop at (exclusive).
+     * @return                  Contents of file.
+     * @throws IOException
      */
-    public String readAsText(String filename, String encoding, int start, int end) throws FileNotFoundException, IOException {
-        int diff = end - start;
-        byte[] bytes = new byte[1000];
-        BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int numRead = 0;
+    public void readAsText(String filename, String encoding, int start, int end) throws IOException {
+        new ReadAsTextTask().execute(filename, encoding, start, end);
+    }
 
-        if (start > 0) {
-            bis.skip(start);
+    private class ReadAsTextTask extends AsyncTask<Object, Void, String> {
+        protected String doInBackground(Object... objects) {
+            String filename = objects[0].toString();
+            String encoding = objects[1].toString();
+            int start = ((Integer) objects[2]).intValue();
+            int end = ((Integer) objects[3]).intValue();
+            String result = null;
+            try {
+                result = this.readAsText(filename, encoding, start, end, cordova);
+            } catch (IOException e) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
+            }
+            return result;
         }
 
-        while ( diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
-            diff -= numRead;
-            bos.write(bytes, 0, numRead);
+        protected void onPostExecute(String result) {
+            if (result != null) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+            }
         }
 
-        return new String(bos.toByteArray(), encoding);
+        protected String readAsText(String filename, String encoding, int start, int end, CordovaInterface cordova) throws IOException {
+            int diff = end - start;
+            byte[] bytes = new byte[1000];
+            BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            int numRead = 0;
+
+            if (start > 0) {
+                bis.skip(start);
+            }
+
+            while ( diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
+                diff -= numRead;
+                bos.write(bytes, 0, numRead);
+            }
+
+            return new String(bos.toByteArray(), encoding);
+        }
     }
 
     /**
@@ -995,25 +1025,50 @@ public class FileUtils extends CordovaPlugin {
      * @param start             Start position in the file.
      * @param end               End position to stop at (exclusive).
      * @return                  Contents of the file as a byte[].
-     * @throws FileNotFoundException, IOException
+     * @throws IOException
      */
-    public byte[] readAsBinary(String filename, int start, int end) throws FileNotFoundException, IOException {
-        int diff = end - start;
-        byte[] bytes = new byte[1000];
-        BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int numRead = 0;
+    public void readAsBinary(String filename, int start, int end) throws IOException {
+        new ReadAsBinaryTask().execute(filename, start, end);
+    }
 
-        if (start > 0) {
-            bis.skip(start);
+    private class ReadAsBinaryTask extends AsyncTask<Object, Void, String> {
+        protected String doInBackground(Object... objects) {
+            String filename = objects[0].toString();
+            int start = ((Integer) objects[1]).intValue();
+            int end = ((Integer) objects[2]).intValue();
+            String result = null;
+            try {
+                result = new String(this.readAsBinary(filename, start, end));
+            } catch (IOException e) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
+            }
+            return result;
         }
 
-        while (diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
-            diff -= numRead;
-            bos.write(bytes, 0, numRead);
+        protected void onPostExecute(String result) {
+            if (result != null) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result.getBytes()));
+            }
         }
 
-        return bos.toByteArray();
+        protected byte[] readAsBinary(String filename, int start, int end) throws IOException {
+            int diff = end - start;
+            byte[] bytes = new byte[1000];
+            BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            int numRead = 0;
+
+            if (start > 0) {
+                bis.skip(start);
+            }
+
+            while (diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
+                diff -= numRead;
+                bos.write(bytes, 0, numRead);
+            }
+
+            return bos.toByteArray();
+        }
     }
 
     /**
@@ -1023,15 +1078,40 @@ public class FileUtils extends CordovaPlugin {
      * @param start           Start position in the file.
      * @param end             End position to stop at (exclusive).
      * @return                Contents of file = data:<media type>;base64,<data>
-     * @throws FileNotFoundException, IOException
+     * @throws IOException
      */
-    public String readAsDataURL(String filename, int start, int end) throws FileNotFoundException, IOException {
-        // Determine content type from file name
-        String contentType = FileHelper.getMimeType(filename, cordova);
+    public void readAsDataURL(String filename, int start, int end) throws IOException {
+        new ReadAsDataUrlTask().execute(filename, start, end);
+    }
 
-        byte[] base64 = Base64.encodeBase64(readAsBinary(filename, start, end));
-        String data = "data:" + contentType + ";base64," + new String(base64);
-        return data;
+    private class ReadAsDataUrlTask extends AsyncTask<Object, Void, String> {
+        protected String doInBackground(Object... objects) {
+            String filename = objects[0].toString();
+            int start = ((Integer) objects[1]).intValue();
+            int end = ((Integer) objects[2]).intValue();
+            String result = null;
+            try {
+                result = this.readAsDataUrl(filename, start, end);
+            } catch (IOException e) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
+            }
+            return result;
+        }
+
+        protected void onPostExecute(String result) {
+            if (result != null) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+            }
+        }
+
+        protected String readAsDataUrl(String filename, int start, int end) throws IOException {
+            // Determine content type from file name
+            String contentType = FileHelper.getMimeType(filename, cordova);
+
+            byte[] base64 = Base64.encodeBase64(new ReadAsBinaryTask().readAsBinary(filename, start, end));
+            String data = "data:" + contentType + ";base64," + new String(base64);
+            return data;
+        }
     }
 
     /**
