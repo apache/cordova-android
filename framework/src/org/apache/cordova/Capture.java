@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import android.os.Build;
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.LOG;
@@ -216,9 +217,10 @@ public class Capture extends CordovaPlugin {
      */
     private void captureVideo(double duration) {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
-        // Introduced in API 8
-        //intent.putExtra(android.provider.MediaStore.EXTRA_DURATION_LIMIT, duration);
 
+        if(Build.VERSION.SDK_INT > 8){
+            intent.putExtra(android.provider.MediaStore.EXTRA_DURATION_LIMIT, duration);
+        }
         this.cordova.startActivityForResult((CordovaPlugin) this, intent, CAPTURE_VIDEO);
     }
 
