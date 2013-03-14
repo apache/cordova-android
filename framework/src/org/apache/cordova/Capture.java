@@ -219,7 +219,7 @@ public class Capture extends CordovaPlugin {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
 
         if(Build.VERSION.SDK_INT > 8){
-            intent.putExtra(android.provider.MediaStore.EXTRA_DURATION_LIMIT, duration);
+            intent.putExtra("android.intent.extra.durationLimit", duration);
         }
         this.cordova.startActivityForResult((CordovaPlugin) this, intent, CAPTURE_VIDEO);
     }
