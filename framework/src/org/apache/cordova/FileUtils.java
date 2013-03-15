@@ -22,6 +22,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.cordova.api.CallbackContext;
@@ -49,9 +50,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
-//import android.content.Context;
-
-//import android.app.Activity;
 
 /**
  * This class provides SD card file and directory services to JavaScript.
@@ -113,40 +111,29 @@ public class FileUtils extends CordovaPlugin {
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, b));
             }
             else if (action.equals("readAsText")) {
-                int start = 0;
-                int end = Integer.MAX_VALUE;
-                if (args.length() >= 3) {
-                    start = args.getInt(2);
-                }
-                if (args.length() >= 4) {
-                    end = args.getInt(3);
-                }
+                String encoding = args.getString(1);
+                int start = args.getInt(2);
+                int end = args.getInt(3);
 
-                this.readAsText(args.getString(0), args.getString(1), start, end, callbackContext);
+                this.readFileAs(args.getString(0), start, end, callbackContext, encoding, PluginResult.MESSAGE_TYPE_STRING);
             }
             else if (action.equals("readAsDataURL")) {
-                int start = 0;
-                int end = Integer.MAX_VALUE;
-                if (args.length() >= 2) {
-                    start = args.getInt(1);
-                }
-                if (args.length() >= 3) {
-                    end = args.getInt(2);
-                }
+                int start = args.getInt(1);
+                int end = args.getInt(2);
 
-                this.readAsDataURL(args.getString(0), start, end, callbackContext);
+                this.readFileAs(args.getString(0), start, end, callbackContext, null, -1);
             }
             else if (action.equals("readAsArrayBuffer")) {
-                int start = 0;
-                int end = Integer.MAX_VALUE;
-                if (args.length() >= 2) {
-                    start = args.getInt(1);
-                }
-                if (args.length() >= 3) {
-                    end = args.getInt(2);
-                }
+                int start = args.getInt(1);
+                int end = args.getInt(2);
 
-                this.readAsBinary(args.getString(0), start, end, callbackContext);
+                this.readFileAs(args.getString(0), start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_ARRAYBUFFER);
+            }
+            else if (action.equals("readAsBinaryString")) {
+                int start = args.getInt(1);
+                int end = args.getInt(2);
+
+                this.readFileAs(args.getString(0), start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_BINARYSTRING);
             }
             else if (action.equals("write")) {
                 long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
@@ -929,27 +916,6 @@ public class FileUtils extends CordovaPlugin {
         return getEntry(new File(path));
     }
 
-    /**
-     * Identifies if action to be executed returns a value and should be run synchronously.
-     *
-     * @param action	The action to execute
-     * @return			T=returns value
-     */
-    public boolean isSynch(String action) {
-        if (action.equals("testSaveLocationExists")) {
-            return true;
-        }
-        else if (action.equals("getFreeDiskSpace")) {
-            return true;
-        }
-        else if (action.equals("testFileExists")) {
-            return true;
-        }
-        else if (action.equals("testDirectoryExists")) {
-            return true;
-        }
-        return false;
-    }
 
     //--------------------------------------------------------------------------
     // LOCAL METHODS
@@ -965,59 +931,39 @@ public class FileUtils extends CordovaPlugin {
      * @param end               End position to stop at (exclusive).
      * @return                  Contents of file.
      */
-    public void readAsText(final String filename, final String encoding, final int start, final int end, final CallbackContext callbackContext) {
-        Runnable readAsTextRunnable = new Runnable() {
+    public void readFileAs(final String filename, final int start, final int end, final CallbackContext callbackContext, final String encoding, final int resultType) {
+        this.cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 try {
-                    int diff = end - start;
-                    byte[] bytes = new byte[1000];
-                    BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    int numRead = 0;
-
-                    if (start > 0) {
-                        bis.skip(start);
+                    byte[] bytes = readAsBinaryHelper(filename, start, end);
+                    
+                    PluginResult result;
+                    switch (resultType) {
+                        case PluginResult.MESSAGE_TYPE_STRING:
+                            result = new PluginResult(PluginResult.Status.OK, new String(bytes, encoding));
+                            break;
+                        case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+                            result = new PluginResult(PluginResult.Status.OK, bytes);
+                            break;
+                        case PluginResult.MESSAGE_TYPE_BINARYSTRING:
+                            result = new PluginResult(PluginResult.Status.OK, bytes, true);
+                            break;
+                        default: // Base64.
+                            String contentType = FileHelper.getMimeType(filename, cordova);
+                            byte[] base64 = Base64.encodeBase64(bytes);
+                            String s = "data:" + contentType + ";base64," + new String(base64, "US-ASCII");
+                            result = new PluginResult(PluginResult.Status.OK, s);
                     }
 
-                    while ( diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
-                        diff -= numRead;
-                        bos.write(bytes, 0, numRead);
-                    }
-
-                    String result = new String(bos.toByteArray(), encoding);
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                    callbackContext.sendPluginResult(result);
+                } catch (FileNotFoundException e) {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_FOUND_ERR));
                 } catch (IOException e) {
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
+                    Log.d(LOG_TAG, e.getLocalizedMessage());
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, NOT_READABLE_ERR));
                 }
             }
-        };
-
-        this.cordova.getThreadPool().execute(readAsTextRunnable);
-    }
-
-    /**
-     * Read the contents of a file as binary.
-     * This is done in a background thread; the result is sent to the callback.
-     *
-     * @param filename          The name of the file.
-     * @param encoding          The encoding to return contents as.  Typical value is UTF-8. (see http://www.iana.org/assignments/character-sets)
-     * @param start             Start position in the file.
-     * @param end               End position to stop at (exclusive).
-     * @return                  Contents of file.
-     */
-    public void readAsBinary(final String filename, final int start, final int end, final CallbackContext callbackContext) {
-        Runnable readAsBinaryRunnable = new Runnable() {
-            public void run() {
-                try {
-                    byte[] result = readAsBinaryHelper(filename, start, end);
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
-                } catch (IOException e) {
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
-                }
-            }
-        };
-
-        this.cordova.getThreadPool().execute(readAsBinaryRunnable);
+        });
     }
 
     /**
@@ -1047,33 +993,6 @@ public class FileUtils extends CordovaPlugin {
         }
 
         return bos.toByteArray();
-    }
-
-    /**
-     * Read the contents of a file as a base64 encoded data URL.
-     *
-     * @param filename        The name of the file.
-     * @param start           Start position in the file.
-     * @param end             End position to stop at (exclusive).
-     * @return                Contents of file = data:<media type>;base64,<data>
-     */
-    public void readAsDataURL(final String filename, final int start, final int end, final CallbackContext callbackContext) {
-        Runnable readAsDataUrlRunnable = new Runnable() {
-            public void run() {
-                try {
-                    // Determine content type from file name
-                    String contentType = FileHelper.getMimeType(filename, cordova);
-
-                    byte[] base64 = Base64.encodeBase64(readAsBinaryHelper(filename, start, end));
-                    String result = "data:" + contentType + ";base64," + new String(base64);
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
-                } catch (IOException e) {
-                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
-                }
-            }
-        };
-
-        this.cordova.getThreadPool().execute(readAsDataUrlRunnable);
     }
 
     /**
