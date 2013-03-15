@@ -409,6 +409,9 @@ public class NativeToJsMessageQueue {
                 case PluginResult.MESSAGE_TYPE_STRING: // s
                     ret += 1 + pluginResult.getStrMessage().length();
                     break;
+                case PluginResult.MESSAGE_TYPE_BINARYSTRING:
+                    ret += 1 + pluginResult.getMessage().length();
+                    break;
                 case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
                     ret += 1 + pluginResult.getMessage().length();
                     break;
@@ -451,7 +454,11 @@ public class NativeToJsMessageQueue {
                     sb.append('s');
                     sb.append(pluginResult.getStrMessage());
                     break;
-                case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+                case PluginResult.MESSAGE_TYPE_BINARYSTRING: // S
+                    sb.append('S');
+                    sb.append(pluginResult.getMessage());
+                    break;                    
+                case PluginResult.MESSAGE_TYPE_ARRAYBUFFER: // A
                     sb.append('A');
                     sb.append(pluginResult.getMessage());
                     break;

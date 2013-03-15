@@ -71,11 +71,15 @@ public class PluginResult {
     }
 
     public PluginResult(Status status, byte[] data) {
-        this.status = status.ordinal();
-        this.messageType = MESSAGE_TYPE_ARRAYBUFFER;
-        this.encodedMessage = Base64.encodeToString(data, Base64.NO_WRAP);
+        this(status, data, false);
     }
 
+    public PluginResult(Status status, byte[] data, boolean binaryString) {
+        this.status = status.ordinal();
+        this.messageType = binaryString ? MESSAGE_TYPE_BINARYSTRING : MESSAGE_TYPE_ARRAYBUFFER;
+        this.encodedMessage = Base64.encodeToString(data, Base64.NO_WRAP);
+    }
+    
     public void setKeepCallback(boolean b) {
         this.keepCallback = b;
     }
@@ -143,6 +147,9 @@ public class PluginResult {
     public static final int MESSAGE_TYPE_BOOLEAN = 4;
     public static final int MESSAGE_TYPE_NULL = 5;
     public static final int MESSAGE_TYPE_ARRAYBUFFER = 6;
+    // Use BINARYSTRING when your string may contain null characters.
+    // This is required to work around a bug in the platform :(.
+    public static final int MESSAGE_TYPE_BINARYSTRING = 7;
 
     public static String[] StatusMessages = new String[] {
         "No result",
