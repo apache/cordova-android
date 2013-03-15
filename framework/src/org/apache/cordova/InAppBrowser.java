@@ -72,6 +72,7 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String EXIT_EVENT = "exit";
     private static final String LOAD_START_EVENT = "loadstart";
     private static final String LOAD_STOP_EVENT = "loadstop";
+    private static final String LOAD_ERROR_EVENT = "loaderror";
     private static final String CLOSE_BUTTON_CAPTION = "closebuttoncaption";
     private long MAX_QUOTA = 100 * 1024 * 1024;
 
@@ -492,16 +493,24 @@ public class InAppBrowser extends CordovaPlugin {
     }
 
     /**
-     * Create a new plugin result and send it back to JavaScript
+     * Create a new plugin success result and send it back to JavaScript
      *
      * @param obj a JSONObject contain event payload information
      */
     private void sendUpdate(JSONObject obj, boolean keepCallback) {
-        PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+        sendUpdate(obj, keepCallback, PluginResult.Status.OK);
+    }
+
+    /**
+     * Create a new plugin result and send it back to JavaScript
+     *
+     * @param obj a JSONObject contain event payload information
+     * @param status the status code to return to the JavaScript environment
+     */    private void sendUpdate(JSONObject obj, boolean keepCallback, PluginResult.Status status) {
+        PluginResult result = new PluginResult(status, obj);
         result.setKeepCallback(keepCallback);
         this.callbackContext.sendPluginResult(result);
     }
-
     public class InAppChromeClient extends WebChromeClient {
 
         /**
@@ -661,6 +670,23 @@ public class InAppBrowser extends CordovaPlugin {
             } catch (JSONException ex) {
                 Log.d(LOG_TAG, "Should never happen");
             }
+        }
+        
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            super.onReceivedError(view, errorCode, description, failingUrl);
+            
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("type", LOAD_ERROR_EVENT);
+                obj.put("url", failingUrl);
+                obj.put("code", errorCode);
+                obj.put("message", description);
+    
+                sendUpdate(obj, true, PluginResult.Status.ERROR);
+            } catch (JSONException ex) {
+                Log.d(LOG_TAG, "Should never happen");
+            }
+        	
         }
     }
 }
