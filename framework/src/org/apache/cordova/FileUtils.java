@@ -122,8 +122,7 @@ public class FileUtils extends CordovaPlugin {
                     end = args.getInt(3);
                 }
 
-                String s = this.readAsText(args.getString(0), args.getString(1), start, end);
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
+                this.readAsText(args.getString(0), args.getString(1), start, end, callbackContext);
             }
             else if (action.equals("readAsDataURL")) {
                 int start = 0;
@@ -135,8 +134,7 @@ public class FileUtils extends CordovaPlugin {
                     end = args.getInt(2);
                 }
 
-                String s = this.readAsDataURL(args.getString(0), start, end);
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
+                this.readAsDataURL(args.getString(0), start, end, callbackContext);
             }
             else if (action.equals("readAsArrayBuffer")) {
                 int start = 0;
@@ -148,8 +146,7 @@ public class FileUtils extends CordovaPlugin {
                     end = args.getInt(2);
                 }
 
-                byte[] s = this.readAsBinary(args.getString(0), start, end);
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, s));
+                this.readAsBinary(args.getString(0), start, end, callbackContext);
             }
             else if (action.equals("write")) {
                 long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
@@ -959,45 +956,81 @@ public class FileUtils extends CordovaPlugin {
     //--------------------------------------------------------------------------
 
     /**
-     * Read content of text file.
+     * Read the contents of a file as text.
+     * This is done in a background thread; the result is sent to the callback.
      *
-     * @param filename			The name of the file.
-     * @param encoding			The encoding to return contents as.  Typical value is UTF-8.
-     * 							(see http://www.iana.org/assignments/character-sets)
-     * @param start                     Start position in the file.
-     * @param end                       End position to stop at (exclusive).
-     * @return					Contents of file.
-     * @throws FileNotFoundException, IOException
+     * @param filename          The name of the file.
+     * @param encoding          The encoding to return contents as.  Typical value is UTF-8. (see http://www.iana.org/assignments/character-sets)
+     * @param start             Start position in the file.
+     * @param end               End position to stop at (exclusive).
+     * @return                  Contents of file.
      */
-    public String readAsText(String filename, String encoding, int start, int end) throws FileNotFoundException, IOException {
-        int diff = end - start;
-        byte[] bytes = new byte[1000];
-        BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int numRead = 0;
+    public void readAsText(final String filename, final String encoding, final int start, final int end, final CallbackContext callbackContext) {
+        Runnable readAsTextRunnable = new Runnable() {
+            public void run() {
+                try {
+                    int diff = end - start;
+                    byte[] bytes = new byte[1000];
+                    BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    int numRead = 0;
 
-        if (start > 0) {
-            bis.skip(start);
-        }
+                    if (start > 0) {
+                        bis.skip(start);
+                    }
 
-        while ( diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
-            diff -= numRead;
-            bos.write(bytes, 0, numRead);
-        }
+                    while ( diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
+                        diff -= numRead;
+                        bos.write(bytes, 0, numRead);
+                    }
 
-        return new String(bos.toByteArray(), encoding);
+                    String result = new String(bos.toByteArray(), encoding);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                } catch (IOException e) {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
+                }
+            }
+        };
+
+        this.cordova.getThreadPool().execute(readAsTextRunnable);
     }
 
     /**
-     * Helper method to read a text file and return its contents as a byte[].
+     * Read the contents of a file as binary.
+     * This is done in a background thread; the result is sent to the callback.
+     *
+     * @param filename          The name of the file.
+     * @param encoding          The encoding to return contents as.  Typical value is UTF-8. (see http://www.iana.org/assignments/character-sets)
+     * @param start             Start position in the file.
+     * @param end               End position to stop at (exclusive).
+     * @return                  Contents of file.
+     */
+    public void readAsBinary(final String filename, final int start, final int end, final CallbackContext callbackContext) {
+        Runnable readAsBinaryRunnable = new Runnable() {
+            public void run() {
+                try {
+                    byte[] result = readAsBinaryHelper(filename, start, end);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                } catch (IOException e) {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
+                }
+            }
+        };
+
+        this.cordova.getThreadPool().execute(readAsBinaryRunnable);
+    }
+
+    /**
+     * Read the contents of a file as binary.
+     * This is done synchronously; the result is returned.
      *
      * @param filename          The name of the file.
      * @param start             Start position in the file.
      * @param end               End position to stop at (exclusive).
      * @return                  Contents of the file as a byte[].
-     * @throws FileNotFoundException, IOException
+     * @throws IOException
      */
-    public byte[] readAsBinary(String filename, int start, int end) throws FileNotFoundException, IOException {
+    private byte[] readAsBinaryHelper(String filename, int start, int end) throws IOException {
         int diff = end - start;
         byte[] bytes = new byte[1000];
         BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
@@ -1017,21 +1050,30 @@ public class FileUtils extends CordovaPlugin {
     }
 
     /**
-     * Read content of a file and return as base64 encoded data url.
+     * Read the contents of a file as a base64 encoded data URL.
      *
      * @param filename        The name of the file.
      * @param start           Start position in the file.
      * @param end             End position to stop at (exclusive).
      * @return                Contents of file = data:<media type>;base64,<data>
-     * @throws FileNotFoundException, IOException
      */
-    public String readAsDataURL(String filename, int start, int end) throws FileNotFoundException, IOException {
-        // Determine content type from file name
-        String contentType = FileHelper.getMimeType(filename, cordova);
+    public void readAsDataURL(final String filename, final int start, final int end, final CallbackContext callbackContext) {
+        Runnable readAsDataUrlRunnable = new Runnable() {
+            public void run() {
+                try {
+                    // Determine content type from file name
+                    String contentType = FileHelper.getMimeType(filename, cordova);
 
-        byte[] base64 = Base64.encodeBase64(readAsBinary(filename, start, end));
-        String data = "data:" + contentType + ";base64," + new String(base64);
-        return data;
+                    byte[] base64 = Base64.encodeBase64(readAsBinaryHelper(filename, start, end));
+                    String result = "data:" + contentType + ";base64," + new String(base64);
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                } catch (IOException e) {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.IO_EXCEPTION, e.getLocalizedMessage()));
+                }
+            }
+        };
+
+        this.cordova.getThreadPool().execute(readAsDataUrlRunnable);
     }
 
     /**
