@@ -37,14 +37,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,8 +55,7 @@ import java.nio.channels.FileChannel;
  * Only files on the SD card can be accessed.
  */
 public class FileUtils extends CordovaPlugin {
-    @SuppressWarnings("unused")
-    private static final String LOG_TAG = "FilePlugin";
+    private static final String LOG_TAG = "FileUtils";
 
     public static int NOT_FOUND_ERR = 1;
     public static int SECURITY_ERR = 2;
@@ -922,13 +920,15 @@ public class FileUtils extends CordovaPlugin {
     //--------------------------------------------------------------------------
 
     /**
-     * Read the contents of a file as text.
+     * Read the contents of a file.
      * This is done in a background thread; the result is sent to the callback.
      *
      * @param filename          The name of the file.
-     * @param encoding          The encoding to return contents as.  Typical value is UTF-8. (see http://www.iana.org/assignments/character-sets)
      * @param start             Start position in the file.
      * @param end               End position to stop at (exclusive).
+     * @param callbackContext   The context through which to send the result.
+     * @param encoding          The encoding to return contents as.  Typical value is UTF-8. (see http://www.iana.org/assignments/character-sets)
+     * @param resultType        The desired type of data to send to the callback.
      * @return                  Contents of file.
      */
     public void readFileAs(final String filename, final int start, final int end, final CallbackContext callbackContext, final String encoding, final int resultType) {
@@ -977,22 +977,20 @@ public class FileUtils extends CordovaPlugin {
      * @throws IOException
      */
     private byte[] readAsBinaryHelper(String filename, int start, int end) throws IOException {
-        int diff = end - start;
-        byte[] bytes = new byte[1000];
-        BufferedInputStream bis = new BufferedInputStream(FileHelper.getInputStreamFromUriString(filename, cordova), 1024);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int numRead = 0;
+        int numBytesToRead = end - start;
+        byte[] bytes = new byte[numBytesToRead];
+        InputStream inputStream = FileHelper.getInputStreamFromUriString(filename, cordova);
+        int numBytesRead = 0;
 
         if (start > 0) {
-            bis.skip(start);
+            inputStream.skip(start);
         }
 
-        while (diff > 0 && (numRead = bis.read(bytes, 0, Math.min(1000, diff))) >= 0) {
-            diff -= numRead;
-            bos.write(bytes, 0, numRead);
+        while (numBytesToRead > 0 && (numBytesRead = inputStream.read(bytes, numBytesRead, numBytesToRead)) >= 0) {
+            numBytesToRead -= numBytesRead;
         }
 
-        return bos.toByteArray();
+        return bytes;
     }
 
     /**
