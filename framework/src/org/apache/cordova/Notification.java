@@ -24,6 +24,7 @@ import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -32,6 +33,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Vibrator;
+import android.widget.EditText;
 
 /**
  * This class provides access to notifications on the device.
@@ -69,6 +71,10 @@ public class Notification extends CordovaPlugin {
         }
         else if (action.equals("confirm")) {
             this.confirm(args.getString(0), args.getString(1), args.getJSONArray(2), callbackContext);
+            return true;
+        }
+        else if (action.equals("prompt")) {
+            this.prompt(args.getString(0), args.getString(1), args.getJSONArray(2), callbackContext);
             return true;
         }
         else if (action.equals("activityStart")) {
@@ -253,6 +259,104 @@ public class Notification extends CordovaPlugin {
         this.cordova.getActivity().runOnUiThread(runnable);
     }
 
+    /**
+     * Builds and shows a native Android prompt dialog with given title, message, buttons.
+     * This dialog only shows up to 3 buttons.  Any labels after that will be ignored.
+     * The following results are returned to the JavaScript callback identified by callbackId:
+     *     buttonIndex			Index number of the button selected
+     *     input1				The text entered in the prompt dialog box
+     *
+     * @param message           The message the dialog should display
+     * @param title             The title of the dialog
+     * @param buttonLabels      A comma separated list of button labels (Up to 3 buttons)
+     * @param callbackContext   The callback context.
+     */
+    public synchronized void prompt(final String message, final String title, final JSONArray buttonLabels, final CallbackContext callbackContext) {
+    	
+        final CordovaInterface cordova = this.cordova;
+        final EditText promptInput =  new EditText(cordova.getActivity());
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                AlertDialog.Builder dlg = new AlertDialog.Builder(cordova.getActivity());
+                dlg.setMessage(message);
+                dlg.setTitle(title);
+                dlg.setCancelable(true);
+                
+                dlg.setView(promptInput);
+                
+                final JSONObject result = new JSONObject();
+                
+                // First button
+                if (buttonLabels.length() > 0) {
+                    try {
+						dlg.setNegativeButton(buttonLabels.getString(0),
+						        new AlertDialog.OnClickListener() {
+						            public void onClick(DialogInterface dialog, int which) {
+						                dialog.dismiss();
+						                try {
+											result.put("buttonIndex",1);
+							                result.put("input1", promptInput.getText());
+										} catch (JSONException e) { e.printStackTrace(); }
+						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+						            }
+						        });
+					} catch (JSONException e) { }
+                }
+
+                // Second button
+                if (buttonLabels.length() > 1) {
+                    try {
+						dlg.setNeutralButton(buttonLabels.getString(1),
+						        new AlertDialog.OnClickListener() {
+						            public void onClick(DialogInterface dialog, int which) {
+						                dialog.dismiss();
+						                try {
+											result.put("buttonIndex",2);
+							                result.put("input1", promptInput.getText());
+										} catch (JSONException e) { e.printStackTrace(); }
+						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+						            }
+						        });
+					} catch (JSONException e) { }
+                }
+
+                // Third button
+                if (buttonLabels.length() > 2) {
+                    try {
+						dlg.setPositiveButton(buttonLabels.getString(2),
+						        new AlertDialog.OnClickListener() {
+						            public void onClick(DialogInterface dialog, int which) {
+						                dialog.dismiss();
+						                try {
+											result.put("buttonIndex",3);
+							                result.put("input1", promptInput.getText());
+										} catch (JSONException e) { e.printStackTrace(); }
+						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+						            }
+						        }
+						        );
+					} catch (JSONException e) { }
+                }
+                dlg.setOnCancelListener(new AlertDialog.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog)
+                    {
+                        dialog.dismiss();
+		                try {
+							result.put("buttonIndex",0);
+			                result.put("input1", promptInput.getText());
+						} catch (JSONException e) { e.printStackTrace(); }
+		                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                    }
+                });
+
+                dlg.create();
+                dlg.show();
+                
+            };
+        };
+        this.cordova.getActivity().runOnUiThread(runnable);
+    }
     /**
      * Show the spinner.
      *
