@@ -231,6 +231,7 @@ public class InAppBrowser extends CordovaPlugin {
      */
     private void closeDialog() {
         try {
+            this.inAppWebView.loadUrl("about:blank");
             JSONObject obj = new JSONObject();
             obj.put("type", EXIT_EVENT);
 
