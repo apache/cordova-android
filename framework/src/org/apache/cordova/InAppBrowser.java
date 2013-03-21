@@ -163,7 +163,6 @@ public class InAppBrowser extends CordovaPlugin {
                 this.inAppWebView.loadUrl("javascript:" + scriptEnclosure);
 
                 PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
-                pluginResult.setKeepCallback(false);
                 this.callbackContext.sendPluginResult(pluginResult);
             }
             else {
