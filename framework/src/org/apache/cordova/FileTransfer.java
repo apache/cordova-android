@@ -204,6 +204,7 @@ public class FileTransfer extends CordovaPlugin {
         // Look for headers on the params map for backwards compatibility with older Cordova versions.
         final JSONObject headers = args.optJSONObject(8) == null ? params.optJSONObject("headers") : args.optJSONObject(8);
         final String objectId = args.getString(9);
+        final String httpMethod = getArgument(args, 10, "POST");
 
         Log.d(LOG_TAG, "fileKey: " + fileKey);
         Log.d(LOG_TAG, "fileName: " + fileName);
@@ -213,6 +214,7 @@ public class FileTransfer extends CordovaPlugin {
         Log.d(LOG_TAG, "chunkedMode: " + chunkedMode);
         Log.d(LOG_TAG, "headers: " + headers);
         Log.d(LOG_TAG, "objectId: " + objectId);
+        Log.d(LOG_TAG, "httpMethod: " + httpMethod);
         
         final URL url;
         try {
@@ -280,7 +282,7 @@ public class FileTransfer extends CordovaPlugin {
                     conn.setUseCaches(false);
 
                     // Use a post method.
-                    conn.setRequestMethod("POST");
+                    conn.setRequestMethod(httpMethod);
                     conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
 
                     // Set the cookies on the response
