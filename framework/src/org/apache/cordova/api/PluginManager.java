@@ -30,6 +30,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
 
+import android.util.Log;
 import android.webkit.WebResourceResponse;
 
 /**
@@ -213,6 +214,7 @@ public class PluginManager {
     public boolean exec(String service, String action, String callbackId, String rawArgs) {
         CordovaPlugin plugin = this.getPlugin(service);
         if (plugin == null) {
+            Log.d(TAG, "exec() call to unknown plugin: " + service);
             PluginResult cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
             app.sendPluginResult(cr, callbackId);
             return true;
