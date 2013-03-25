@@ -151,6 +151,21 @@ public class InAppBrowser extends CordovaPlugin {
                 pluginResult.setKeepCallback(false);
                 this.callbackContext.sendPluginResult(pluginResult);
             }
+            else if (action.equals("injectScriptCode")) {
+                String source = args.getString(0);
+
+                org.json.JSONArray jsonEsc = new org.json.JSONArray();
+                jsonEsc.put(source);
+                String jsonRepr = jsonEsc.toString();
+                String jsonSourceString = jsonRepr.substring(1, jsonRepr.length()-1);
+                String scriptEnclosure = "(function(d){var c=d.createElement('script');c.type='text/javascript';c.innerText="
+                                       + jsonSourceString
+                                       + ";d.getElementsByTagName('head')[0].appendChild(c);})(document)";
+                this.inAppWebView.loadUrl("javascript:" + scriptEnclosure);
+
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+                this.callbackContext.sendPluginResult(pluginResult);
+            }
             else {
                 status = PluginResult.Status.INVALID_ACTION;
             }
@@ -445,7 +460,7 @@ public class InAppBrowser extends CordovaPlugin {
                 
                 //Toggle whether this is enabled or not!
                 Bundle appSettings = cordova.getActivity().getIntent().getExtras();
-                boolean enableDatabase = appSettings.getBoolean("InAppBrowserStorageEnabled", true);
+                boolean enableDatabase = appSettings == null ? true : appSettings.getBoolean("InAppBrowserStorageEnabled", true);
                 if(enableDatabase)
                 {
                     String databasePath = cordova.getActivity().getApplicationContext().getDir("inAppBrowserDB", Context.MODE_PRIVATE).getPath();
