@@ -444,7 +444,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                                     ExifHelper exif = new ExifHelper();
                                     try {
                                         if (this.encodingType == JPEG) {
-                                            exif.createInFile(resizePath);
+                                            exif.createInFile(FileHelper.getRealPath(uri, this.cordova));
                                             exif.readExifData();
                                             rotate = exif.getOrientation();
                                         }
@@ -458,7 +458,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                                     // Restore exif data to file
                                     if (this.encodingType == JPEG) {
-                                        exif.createOutFile(FileHelper.getRealPath(uri, this.cordova));
+                                        exif.createOutFile(resizePath);
                                         exif.writeExifData();
                                     }
 
