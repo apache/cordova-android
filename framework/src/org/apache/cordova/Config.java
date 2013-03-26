@@ -171,7 +171,7 @@ public class Config {
                     LOG.i("CordovaLog", "Found start page location: %s", src);
 
                     if (src != null) {
-                        Pattern schemeRegex = Pattern.compile("^[a-z]+://");
+                        Pattern schemeRegex = Pattern.compile("^[a-z-]+://");
                         Matcher matcher = schemeRegex.matcher(src);
                         if (matcher.find()) {
                             startUrl = src;
@@ -220,19 +220,33 @@ public class Config {
             } else { // specific access
                 // check if subdomains should be included
                 // TODO: we should not add more domains if * has already been added
+                Pattern schemeRegex = Pattern.compile("^[a-z-]+://");
+                Matcher matcher = schemeRegex.matcher(origin);
                 if (subdomains) {
-                    // XXX making it stupid friendly for people who forget to include protocol/SSL
+                    // Check for http or https protocols
                     if (origin.startsWith("http")) {
                         this.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://(.*\\.)?")));
-                    } else {
+                    }
+                    // Check for other protocols
+                    else if(matcher.find()){
+                        this.whiteList.add(Pattern.compile("^" + origin.replaceFirst("//", "//(.*\\.)?")));
+                    }
+                    // XXX making it stupid friendly for people who forget to include protocol/SSL
+                    else {
                         this.whiteList.add(Pattern.compile("^https?://(.*\\.)?" + origin));
                     }
                     LOG.d(TAG, "Origin to allow with subdomains: %s", origin);
                 } else {
-                    // XXX making it stupid friendly for people who forget to include protocol/SSL
+                    // Check for http or https protocols
                     if (origin.startsWith("http")) {
                         this.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://")));
-                    } else {
+                    }
+                    // Check for other protocols
+                    else if(matcher.find()){
+                        this.whiteList.add(Pattern.compile("^" + origin));
+                    }
+                    // XXX making it stupid friendly for people who forget to include protocol/SSL
+                    else {
                         this.whiteList.add(Pattern.compile("^https?://" + origin));
                     }
                     LOG.d(TAG, "Origin to allow: %s", origin);
