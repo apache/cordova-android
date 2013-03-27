@@ -1,8 +1,8 @@
 // Platform: android
 
-// commit bbf1562d4934b1331ffb263424b6ae054cedeb71
+// commit 104709b2130a29e7ad8596d1a6cee1ed48138803
 
-// File generated at :: Thu Mar 21 2013 10:34:05 GMT-0700 (PDT)
+// File generated at :: Wed Mar 27 2013 13:25:10 GMT-0700 (PDT)
 
 /*
  Licensed to the Apache Software Foundation (ASF) under one
@@ -6753,27 +6753,32 @@ window.cordova = require('cordova');
     }
 
     // Try to XHR the cordova_plugins.json file asynchronously.
-    var xhr = new context.XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (this.readyState != 4) { // not DONE
-            return;
-        }
+    try { // we commented we were going to try, so let us actually try and catch 
+        var xhr = new context.XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (this.readyState != 4) { // not DONE
+                return;
+            }
 
-        // If the response is a JSON string which composes an array, call handlePluginsObject.
-        // If the request fails, or the response is not a JSON array, just call finishPluginLoading.
-        if (this.status == 200) {
-            var obj = JSON.parse(this.responseText);
-            if (obj && obj instanceof Array && obj.length > 0) {
-                handlePluginsObject(obj);
+            // If the response is a JSON string which composes an array, call handlePluginsObject.
+            // If the request fails, or the response is not a JSON array, just call finishPluginLoading.
+            if (this.status == 200) {
+                var obj = JSON.parse(this.responseText);
+                if (obj && obj instanceof Array && obj.length > 0) {
+                    handlePluginsObject(obj);
+                } else {
+                    finishPluginLoading();
+                }
             } else {
                 finishPluginLoading();
             }
-        } else {
-            finishPluginLoading();
-        }
-    };
-    xhr.open('GET', 'cordova_plugins.json', true); // Async
-    xhr.send();
+        };
+        xhr.open('GET', 'cordova_plugins.json', true); // Async
+        xhr.send();
+    }
+    catch(err) {
+        finishPluginLoading();
+    }
 }(window));
 
 
