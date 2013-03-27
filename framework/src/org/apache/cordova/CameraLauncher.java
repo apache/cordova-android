@@ -312,10 +312,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                     // If sending filename back
                     else if (destType == FILE_URI || destType == NATIVE_URI) {
-                        if (!this.saveToPhotoAlbum) {
-                            uri = Uri.fromFile(new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), System.currentTimeMillis() + ".jpg"));
+                        if (this.saveToPhotoAlbum) {
+                            Uri inputUri = getUriFromMediaStore();
+                            //Just because we have a media URI doesn't mean we have a real file, we need to make it
+                            uri = Uri.fromFile(new File(FileHelper.getRealPath(inputUri, this.cordova)));
                         } else {
-                            uri = getUriFromMediaStore();
+                            uri = Uri.fromFile(new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), System.currentTimeMillis() + ".jpg"));
                         }
 
                         if (uri == null) {
