@@ -1,57 +1,127 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-       Licensed to the Apache Software Foundation (ASF) under one
-       or more contributor license agreements.  See the NOTICE file
-       distributed with this work for additional information
-       regarding copyright ownership.  The ASF licenses this file
-       to you under the Apache License, Version 2.0 (the
-       "License"); you may not use this file except in compliance
-       with the License.  You may obtain a copy of the License at
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns     = "http://www.w3.org/ns/widgets"
+        id        = "io.cordova.hello-cordova"
+        version   = "2.0.0">
+    <name>Hello Cordova</name>
 
-         http://www.apache.org/licenses/LICENSE-2.0
+    <description>
+        A sample Apache Cordova application that responds to the deviceready event.
+    </description>
 
-       Unless required by applicable law or agreed to in writing,
-       software distributed under the License is distributed on an
-       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-       KIND, either express or implied.  See the License for the
-       specific language governing permissions and limitations
-       under the License.
--->
-<cordova>
-    <!--
-    access elements control the Android whitelist.
-    Domains are assumed blocked unless set otherwise
-     -->
+    <author href="http://cordova.io" email="callback-dev@incubator.apache.org">
+        Apache Cordova Team
+    </author>
 
-    <access origin="http://127.0.0.1*"/> <!-- allow local pages -->
-
-    <!-- <access origin="https://example.com" /> allow any secure requests to example.com -->
-    <!-- <access origin="https://example.com" subdomains="true" /> such as above, but including subdomains, such as www -->
     <access origin=".*"/>
+    <access origin="http://127.0.0.1*"/> <!-- allow local pages -->`
+
+    <!-- <content src="http://mysite.com/myapp.html" /> for external pages -->
+    <content src="index.html" />
 
     <log level="DEBUG"/>
-    <preference name="useBrowserHistory" value="true" />
-<plugins>
-    <plugin name="App" value="org.apache.cordova.App"/>
-    <plugin name="Activity" value="org.apache.cordova.test.ActivityPlugin"/>
-    <plugin name="Geolocation" value="org.apache.cordova.GeoBroker"/>
-    <plugin name="Device" value="org.apache.cordova.Device"/>
-    <plugin name="Accelerometer" value="org.apache.cordova.AccelListener"/>
-    <plugin name="Compass" value="org.apache.cordova.CompassListener"/>
-    <plugin name="Media" value="org.apache.cordova.AudioHandler"/>
-    <plugin name="Camera" value="org.apache.cordova.CameraLauncher"/>
-    <plugin name="Contacts" value="org.apache.cordova.ContactManager"/>
-    <plugin name="File" value="org.apache.cordova.FileUtils"/>
-    <plugin name="NetworkStatus" value="org.apache.cordova.NetworkManager"/>
-    <plugin name="Notification" value="org.apache.cordova.Notification"/>
-    <plugin name="Storage" value="org.apache.cordova.Storage"/>
-    <plugin name="FileTransfer" value="org.apache.cordova.FileTransfer"/>
-    <plugin name="Capture" value="org.apache.cordova.Capture"/>
-    <plugin name="Battery" value="org.apache.cordova.BatteryListener"/>
-    <plugin name="SplashScreen" value="org.apache.cordova.SplashScreen"/>
-    <plugin name="Echo" value="org.apache.cordova.Echo" />
-    <plugin name="Globalization" value="org.apache.cordova.Globalization"/>
-    <plugin name="InAppBrowser" value="org.apache.cordova.InAppBrowser"/>
-</plugins>
-</cordova>
 
+    <!-- Preferences for Android -->
+    <preference name="useBrowserHistory" value="true" />
+    <preference name="exit-on-suspend" value="false" />
+
+    <!-- Preferences for iOS -->
+    <preference name="AllowInlineMediaPlayback" value="false" />
+    <preference name="AutoHideSplashScreen" value="true" />
+    <preference name="BackupWebStorage" value="cloud" />
+    <preference name="DisallowOverscroll" value="false" />
+    <preference name="EnableLocation" value="false" /><!-- DEPRECATED -->
+    <preference name="EnableViewportScale" value="false" />
+    <preference name="FadeSplashScreen" value="true" />
+    <preference name="FadeSplashScreenDuration" value=".25" />
+    <preference name="HideKeyboardFormAccessoryBar" value="false" />
+    <preference name="KeyboardDisplayRequiresUserAction" value="true" />
+    <preference name="KeyboardShrinksView" value="false" />
+    <preference name="MediaPlaybackRequiresUserAction" value="false" />
+    <preference name="ShowSplashScreenSpinner" value="true" />
+    <preference name="SuppressesIncrementalRendering" value="false" />
+    <preference name="TopActivityIndicator" value="gray" />
+
+
+
+    <feature name="App">
+      <param name="android-package" value="org.apache.cordova.App"/>
+    </feature>
+    <feature name="Geolocation">
+      <param name="ios-package" value="CDVLocation"/>
+      <param name="android-package" value="org.apache.cordova.GeoBroker"/>
+    </feature>
+    <feature name="Device">
+      <param name="ios-package" value="CDVDevice"/>
+      <param name="android-package" value="org.apache.cordova.Device"/>
+    </feature>
+    <feature name="Accelerometer">
+      <param name="ios-package" value="CDVAccelerometer"/>
+      <param name="android-package" value="org.apache.cordova.AccelListener"/>
+    </feature>
+    <feature name="Compass">
+      <param name="ios-package" value="CDVLocation"/>
+      <param name="android-package" value="org.apache.cordova.CompassListener"/>
+    </feature>
+    <feature name="Media">
+      <param name="ios-package" value="CDVSound"/>
+      <param name="android-package" value="org.apache.cordova.AudioHandler"/>
+    </feature>
+    <feature name="Camera">
+      <param name="ios-package" value="CDVCamera"/>
+      <param name="android-package" value="org.apache.cordova.CameraLauncher"/>
+    </feature>
+    <feature name="Contacts">
+      <param name="ios-package" value="CDVContacts"/>
+      <param name="android-package" value="org.apache.cordova.ContactManager"/>
+    </feature>
+    <feature name="File">
+      <param name="ios-package"  value="CDVFile"/>
+      <param name="android-package" value="org.apache.cordova.FileUtils"/>
+    </feature>
+    <feature name="NetworkStatus">
+      <param name="ios-package" value="CDVConnection"/>
+      <param name="android-package" value="org.apache.cordova.NetworkManager"/>
+    </feature>
+    <feature name="Notification">
+      <param name="ios-package" value="CDVNotification"/>
+      <param name="android-package" value="org.apache.cordova.Notification"/>
+    </feature>
+    <feature name="Storage">
+      <param name="android-package" value="org.apache.cordova.Storage"/>
+    </feature>
+    <feature name="FileTransfer">
+      <param name="ios-package" value="CDVFileTransfer"/>
+      <param name="android-package" value="org.apache.cordova.FileTransfer"/>
+    </feature>
+    <feature name="Capture">
+      <param name="ios-package" value="CDVCapture"/>
+      <param name="android-package" value="org.apache.cordova.Capture"/>
+    </feature>
+    <feature name="Battery">
+      <param name="ios-package" value="CDVBattery"/>
+      <param name="android-package" value="org.apache.cordova.BatteryListener"/>
+    </feature>
+    <feature name="SplashScreen">
+      <param name="ios-package" value="CDVSplashScreen"/>
+      <param name="android-package" value="org.apache.cordova.SplashScreen"/>
+    </feature>
+    <feature name="Echo">
+      <param name="ios-package" value="CDVEcho"/>
+      <param name="android-package" value="org.apache.cordova.Echo"/>
+    </feature>
+    <feature name="Globalization">
+      <param name="ios-package" value="CDVGlobalization"/>
+      <param name="android-package" value="org.apache.cordova.Globalization"/>
+    </feature>
+    <feature name="InAppBrowser">
+      <param name="ios-package" value="CDVInAppBrowser"/>
+      <param name="android-package" value="org.apache.cordova.InAppBrowser"/>
+    </feature>
+    <feature name="Logger">
+      <param name="ios-package" value="CDVLogger"/>
+    </feature>
+    <feature name="Debug Console">
+      <param name="ios-package" value="CDVDebugConsole"/>
+    </feature>
+         
+</widget>
