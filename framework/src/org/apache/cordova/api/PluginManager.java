@@ -107,7 +107,7 @@ public class PluginManager {
         }
         XmlResourceParser xml = this.ctx.getActivity().getResources().getXml(id);
         int eventType = -1;
-        String service = "", pluginClass = "", paramType = "";
+        String service = "", pluginClass = "", paramType = "", featureName="";
         boolean onload = false;
         PluginEntry entry = null;
         boolean insideFeature = false;
@@ -130,26 +130,28 @@ public class PluginManager {
                 }
                 else if (strNode.equals("feature")) {
                     insideFeature = true;
-                    //Check for supported feature sets (Accelerometer, Geolocation, etc)
+                    //Check for supported feature sets  aka. plugins (Accelerometer, Geolocation, etc)
                     //Set the bit for reading params
-                    String uri = xml.getAttributeValue(null,"name");
+                   featureName = xml.getAttributeValue(null,"name");
                 }
-                else if(strNode.equals("param")) {
-                    if(insideFeature)
+                else if( insideFeature && strNode.equals("param")) {
+                    paramType = xml.getAttributeValue(null, "name");
+                    if (paramType.equals("service")) // check if it is using the older service param
+                        service = xml.getAttributeValue(null, "value");
+                    else if (paramType.equals("package"))
+                        pluginClass = xml.getAttributeValue(null, "value");
+                    else if (paramType.equals("android-package"))
                     {
-                        paramType = xml.getAttributeValue(null, "name");
-                        if(paramType.equals("service"))
-                            service = xml.getAttributeValue(null, "value");
-                        else if(paramType.equals("package"))
-                            pluginClass = xml.getAttributeValue(null, "value");
-                        if(service.length() > 0  && pluginClass.length() > 0)
-                        {
-                            onload = "true".equals(xml.getAttributeValue(null, "onload"));
-                            entry = new PluginEntry(service, pluginClass, onload);
-                            this.addService(entry);
-                            service = "";
-                            pluginClass = "";
-                        }
+                        service = featureName;
+                        pluginClass = xml.getAttributeValue(null,"value");
+                    }
+                    if (service.length() > 0 && pluginClass.length() > 0) {
+                        onload = "true".equals(xml.getAttributeValue(null,
+                                "onload"));
+                        entry = new PluginEntry(service, pluginClass, onload);
+                        this.addService(entry);
+                        service = "";
+                        pluginClass = "";
                     }
                 }
             }
@@ -161,6 +163,7 @@ public class PluginManager {
                     //Empty the strings to prevent plugin loading bugs
                     service = "";
                     pluginClass = "";
+                    featureName ="";
                     insideFeature = false;
                 }
             }
