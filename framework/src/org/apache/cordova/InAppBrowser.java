@@ -622,8 +622,20 @@ public class InAppBrowser extends CordovaPlugin {
          * If the client returns true, WebView will assume that the client will
          * handle the prompt dialog and call the appropriate JsPromptResult method.
          *
-         * Since we are hacking prompts for our own purposes, we should not be using them for
-         * this purpose, perhaps we should hack console.log to do this instead!
+         * The prompt bridge provided for the InAppBrowser is capable of executing any
+         * oustanding callback belonging to the InAppBrowser plugin. Care has been
+         * taken that other callbacks cannot be triggered, and that no other code
+         * execution is possible.
+         *
+         * To trigger the bridge, the prompt default value should be of the form:
+         *
+         * gap-iab://<callbackId>
+         *
+         * where <callbackId> is the string id of the callback to trigger (something
+         * like "InAppBrowser0123456789")
+         *
+         * If present, the prompt message is expected to be a JSON-encoded value to
+         * pass to the callback. A JSON_EXCEPTION is returned if the JSON is invalid.
          *
          * @param view
          * @param url
