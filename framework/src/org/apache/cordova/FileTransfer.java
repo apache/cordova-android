@@ -41,6 +41,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.Inflater;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -100,10 +102,83 @@ public class FileTransfer extends CordovaPlugin {
     }
 
     /**
+     * Adds an interface method to an InputStream to return the number of bytes
+     * read from the raw stream. This is used to track total progress against
+     * the HTTP Content-Length header value from the server.
+     */
+    private static abstract class TrackingInputStream extends FilterInputStream {
+    	public TrackingInputStream(final InputStream in) {
+    		super(in);
+    	}
+        public abstract long getTotalRawBytesRead();
+	}
+
+    private static class ExposedGZIPInputStream extends GZIPInputStream {
+	    public ExposedGZIPInputStream(final InputStream in) throws IOException {
+	    	super(in);
+	    }
+	    public Inflater getInflater() {
+	    	return inf;
+	    }
+	}
+
+    /**
+     * Provides raw bytes-read tracking for a GZIP input stream. Reports the
+     * total number of compressed bytes read from the input, rather than the
+     * number of uncompressed bytes.
+     */
+    private static class TrackingGZIPInputStream extends TrackingInputStream {
+    	private ExposedGZIPInputStream gzin;
+	    public TrackingGZIPInputStream(final ExposedGZIPInputStream gzin) throws IOException {
+	    	super(gzin);
+	    	this.gzin = gzin;
+	    }
+	    public long getTotalRawBytesRead() {
+	    	return gzin.getInflater().getBytesRead();
+	    }
+	}
+
+    /**
+     * Provides simple total-bytes-read tracking for an existing InputStream
+     */
+    private static class TrackingHTTPInputStream extends TrackingInputStream {
+        private long bytesRead = 0;
+        public TrackingHTTPInputStream(InputStream stream) {
+            super(stream);
+        }
+
+        private int updateBytesRead(int newBytesRead) {
+        	if (newBytesRead != -1) {
+        		bytesRead += newBytesRead;
+        	}
+        	return newBytesRead;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return updateBytesRead(super.read());
+        }
+
+        @Override
+        public int read(byte[] buffer) throws IOException {
+            return updateBytesRead(super.read(buffer));
+        }
+
+        @Override
+        public int read(byte[] bytes, int offset, int count) throws IOException {
+            return updateBytesRead(super.read(bytes, offset, count));
+        }
+
+        public long getTotalRawBytesRead() {
+        	return bytesRead;
+        }
+    }
+
+    /**
      * Works around a bug on Android 2.3.
      * http://code.google.com/p/android/issues/detail?id=14562
      */
-    private static final class DoneHandlerInputStream extends FilterInputStream {
+    private static final class DoneHandlerInputStream extends TrackingHTTPInputStream {
         private boolean done;
         
         public DoneHandlerInputStream(InputStream stream) {
@@ -204,6 +279,7 @@ public class FileTransfer extends CordovaPlugin {
         // Look for headers on the params map for backwards compatibility with older Cordova versions.
         final JSONObject headers = args.optJSONObject(8) == null ? params.optJSONObject("headers") : args.optJSONObject(8);
         final String objectId = args.getString(9);
+        final String httpMethod = getArgument(args, 10, "POST");
 
         Log.d(LOG_TAG, "fileKey: " + fileKey);
         Log.d(LOG_TAG, "fileName: " + fileName);
@@ -213,6 +289,7 @@ public class FileTransfer extends CordovaPlugin {
         Log.d(LOG_TAG, "chunkedMode: " + chunkedMode);
         Log.d(LOG_TAG, "headers: " + headers);
         Log.d(LOG_TAG, "objectId: " + objectId);
+        Log.d(LOG_TAG, "httpMethod: " + httpMethod);
         
         final URL url;
         try {
@@ -280,7 +357,7 @@ public class FileTransfer extends CordovaPlugin {
                     conn.setUseCaches(false);
 
                     // Use a post method.
-                    conn.setRequestMethod("POST");
+                    conn.setRequestMethod(httpMethod);
                     conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
 
                     // Set the cookies on the response
@@ -407,7 +484,7 @@ public class FileTransfer extends CordovaPlugin {
                     int responseCode = conn.getResponseCode();
                     Log.d(LOG_TAG, "response code: " + responseCode);
                     Log.d(LOG_TAG, "response headers: " + conn.getHeaderFields());
-                    InputStream inStream = null;
+                    TrackingInputStream inStream = null;
                     try {
                         inStream = getInputStream(conn);
                         synchronized (context) {
@@ -483,11 +560,15 @@ public class FileTransfer extends CordovaPlugin {
         }
     }
 
-    private static InputStream getInputStream(URLConnection conn) throws IOException {
+    private static TrackingInputStream getInputStream(URLConnection conn) throws IOException {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             return new DoneHandlerInputStream(conn.getInputStream());
         }
-        return conn.getInputStream();
+        String encoding = conn.getContentEncoding();
+        if (encoding != null && encoding.equalsIgnoreCase("gzip")) {
+        	return new TrackingGZIPInputStream(new ExposedGZIPInputStream(conn.getInputStream()));
+        }
+        return new TrackingHTTPInputStream(conn.getInputStream());
     }
 
     // always verify the host - don't check for certificate
@@ -698,6 +779,9 @@ public class FileTransfer extends CordovaPlugin {
                     {
                         connection.setRequestProperty("cookie", cookie);
                     }
+                    
+                    // This must be explicitly set for gzip progress tracking to work.
+                    connection.setRequestProperty("Accept-Encoding", "gzip");
 
                     // Handle the other headers
                     if (headers != null) {
@@ -709,14 +793,15 @@ public class FileTransfer extends CordovaPlugin {
                     Log.d(LOG_TAG, "Download file:" + url);
 
                     FileProgressResult progress = new FileProgressResult();
-                    if (connection.getContentEncoding() == null) {
-                        // Only trust content-length header if no gzip etc
+                    if (connection.getContentEncoding() == null || connection.getContentEncoding().equalsIgnoreCase("gzip")) {
+                        // Only trust content-length header if we understand
+                        // the encoding -- identity or gzip
                         progress.setLengthComputable(true);
                         progress.setTotal(connection.getContentLength());
                     }
                     
                     FileOutputStream outputStream = null;
-                    InputStream inputStream = null;
+                    TrackingInputStream inputStream = null;
                     
                     try {
                         inputStream = getInputStream(connection);
@@ -731,12 +816,10 @@ public class FileTransfer extends CordovaPlugin {
                         // write bytes to file
                         byte[] buffer = new byte[MAX_BUFFER_SIZE];
                         int bytesRead = 0;
-                        long totalBytes = 0;
                         while ((bytesRead = inputStream.read(buffer)) > 0) {
                             outputStream.write(buffer, 0, bytesRead);
-                            totalBytes += bytesRead;
                             // Send a progress event.
-                            progress.setLoaded(totalBytes);
+                            progress.setLoaded(inputStream.getTotalRawBytesRead());
                             PluginResult progressResult = new PluginResult(PluginResult.Status.OK, progress.toJSONObject());
                             progressResult.setKeepCallback(true);
                             context.sendPluginResult(progressResult);
