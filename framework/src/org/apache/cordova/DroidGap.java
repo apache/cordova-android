@@ -718,7 +718,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             appView.handleDestroy();
         }
         else {
-            this.endActivity();
+            this.activityState = ACTIVITY_EXITING; 
         }
     }
 
