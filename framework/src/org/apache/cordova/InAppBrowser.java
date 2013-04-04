@@ -144,6 +144,9 @@ public class InAppBrowser extends CordovaPlugin {
                     Log.d(LOG_TAG, "in blank");
                     result = this.showWebPage(url, features);
                 }
+                PluginResult pluginResult = new PluginResult(status, result);
+                pluginResult.setKeepCallback(true);
+                this.callbackContext.sendPluginResult(pluginResult);
             }
             else if (action.equals("close")) {
                 this.callbackContext = callbackContext;
@@ -191,10 +194,10 @@ public class InAppBrowser extends CordovaPlugin {
             }
             else {
                 status = PluginResult.Status.INVALID_ACTION;
+                PluginResult pluginResult = new PluginResult(status, result);
+                pluginResult.setKeepCallback(true);
+                this.callbackContext.sendPluginResult(pluginResult);
             }
-            PluginResult pluginResult = new PluginResult(status, result);
-            pluginResult.setKeepCallback(true);
-            this.callbackContext.sendPluginResult(pluginResult);
         } catch (JSONException e) {
             this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
