@@ -51,6 +51,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.webkit.GeolocationPermissions.Callback;
+import android.webkit.JsPromptResult;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
@@ -92,12 +93,9 @@ public class InAppBrowser extends CordovaPlugin {
      * @return              A PluginResult object with a status and message.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";
-        this.callbackContext = callbackContext;
-        
         try {
             if (action.equals("open")) {
+                this.callbackContext = callbackContext;
                 String url = args.getString(0);
                 String target = args.optString(1);
                 if (target == null || target.equals("") || target.equals(NULL)) {
@@ -108,6 +106,7 @@ public class InAppBrowser extends CordovaPlugin {
                 Log.d(LOG_TAG, "target = " + target);
 
                 url = updateUrl(url);
+                String result = "";
 
                 // SELF
                 if (SELF.equals(target)) {
@@ -143,39 +142,87 @@ public class InAppBrowser extends CordovaPlugin {
                     Log.d(LOG_TAG, "in blank");
                     result = this.showWebPage(url, features);
                 }
+
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
+                pluginResult.setKeepCallback(true);
+                this.callbackContext.sendPluginResult(pluginResult);
             }
             else if (action.equals("close")) {
                 closeDialog();
-
-                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
-                pluginResult.setKeepCallback(false);
-                this.callbackContext.sendPluginResult(pluginResult);
+                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
             }
             else if (action.equals("injectScriptCode")) {
-                String source = args.getString(0);
-
-                org.json.JSONArray jsonEsc = new org.json.JSONArray();
-                jsonEsc.put(source);
-                String jsonRepr = jsonEsc.toString();
-                String jsonSourceString = jsonRepr.substring(1, jsonRepr.length()-1);
-                String scriptEnclosure = "(function(d){var c=d.createElement('script');c.type='text/javascript';c.innerText="
-                                       + jsonSourceString
-                                       + ";d.getElementsByTagName('head')[0].appendChild(c);})(document)";
-                this.inAppWebView.loadUrl("javascript:" + scriptEnclosure);
-
-                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
-                this.callbackContext.sendPluginResult(pluginResult);
+                String jsWrapper = null;
+                if (args.getBoolean(1)) {
+                    jsWrapper = String.format("prompt(JSON.stringify([eval(%%s)]), 'gap-iab://%s')", callbackContext.getCallbackId());
+                }
+                injectDeferredObject(args.getString(0), jsWrapper);
+            }
+            else if (action.equals("injectScriptFile")) {
+                String jsWrapper;
+                if (args.getBoolean(1)) {
+                    jsWrapper = String.format("(function(d) { var c = d.createElement('script'); c.src = %%s; c.onload = function() { prompt('', 'gap-iab://%s'); }; d.body.appendChild(c); })(document)", callbackContext.getCallbackId());
+                } else {
+                    jsWrapper = "(function(d) { var c = d.createElement('script'); c.src = %s; d.body.appendChild(c); })(document)";
+                }
+                injectDeferredObject(args.getString(0), jsWrapper);
+            }
+            else if (action.equals("injectStyleCode")) {
+                String jsWrapper;
+                if (args.getBoolean(1)) {
+                    jsWrapper = String.format("(function(d) { var c = d.createElement('style'); c.innerHTML = %%s; d.body.appendChild(c); prompt('', 'gap-iab://%s');})(document)", callbackContext.getCallbackId());
+                } else {
+                    jsWrapper = "(function(d) { var c = d.createElement('style'); c.innerHTML = %s; d.body.appendChild(c); })(document)";
+                }
+                injectDeferredObject(args.getString(0), jsWrapper);
+            }
+            else if (action.equals("injectStyleFile")) {
+                String jsWrapper;
+                if (args.getBoolean(1)) {
+                    jsWrapper = String.format("(function(d) { var c = d.createElement('link'); c.rel='stylesheet'; c.type='text/css'; c.href = %%s; d.head.appendChild(c); prompt('', 'gap-iab://%s');})(document)", callbackContext.getCallbackId());
+                } else {
+                    jsWrapper = "(function(d) { var c = d.createElement('link'); c.rel='stylesheet'; c.type='text/css'; c.href = %s; d.head.appendChild(c); })(document)";
+                }
+                injectDeferredObject(args.getString(0), jsWrapper);
             }
             else {
-                status = PluginResult.Status.INVALID_ACTION;
+                return false;
             }
-            PluginResult pluginResult = new PluginResult(status, result);
-            pluginResult.setKeepCallback(true);
-            this.callbackContext.sendPluginResult(pluginResult);
         } catch (JSONException e) {
             this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
         return true;
+    }
+
+    /**
+     * Inject an object (script or style) into the InAppBrowser WebView.
+     *
+     * This is a helper method for the inject{Script|Style}{Code|File} API calls, which
+     * provides a consistent method for injecting JavaScript code into the document.
+     *
+     * If a wrapper string is supplied, then the source string will be JSON-encoded (adding
+     * quotes) and wrapped using string formatting. (The wrapper string should have a single
+     * '%s' marker)
+     *
+     * @param source      The source object (filename or script/style text) to inject into
+     *                    the document.
+     * @param jsWrapper   A JavaScript string to wrap the source string in, so that the object
+     *                    is properly injected, or null if the source string is JavaScript text
+     *                    which should be executed directly.
+     */
+    private void injectDeferredObject(String source, String jsWrapper) {
+        String scriptToInject;
+        if (jsWrapper != null) {
+            org.json.JSONArray jsonEsc = new org.json.JSONArray();
+            jsonEsc.put(source);
+            String jsonRepr = jsonEsc.toString();
+            String jsonSourceString = jsonRepr.substring(1, jsonRepr.length()-1);
+            scriptToInject = String.format(jsWrapper, jsonSourceString);
+        } else {
+            scriptToInject = source;
+        }
+        // This action will have the side-effect of blurring the currently focused element
+        this.inAppWebView.loadUrl("javascript:" + scriptToInject);
     }
 
     /**
@@ -444,7 +491,7 @@ public class InAppBrowser extends CordovaPlugin {
                 // WebView
                 inAppWebView = new WebView(cordova.getActivity());
                 inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-                inAppWebView.setWebChromeClient(new InAppChromeClient());
+                inAppWebView.setWebChromeClient(new InAppChromeClient(thatWebView));
                 WebViewClient client = new InAppBrowserClient(thatWebView, edittext);
                 inAppWebView.setWebViewClient(client);
                 WebSettings settings = inAppWebView.getSettings();
@@ -527,8 +574,15 @@ public class InAppBrowser extends CordovaPlugin {
         result.setKeepCallback(keepCallback);
         this.callbackContext.sendPluginResult(result);
     }
+
     public class InAppChromeClient extends WebChromeClient {
 
+        private CordovaWebView webView;
+
+        public InAppChromeClient(CordovaWebView webView) {
+            super();
+            this.webView = webView;
+        }
         /**
          * Handle database quota exceeded notification.
          *
@@ -571,6 +625,57 @@ public class InAppBrowser extends CordovaPlugin {
             super.onGeolocationPermissionsShowPrompt(origin, callback);
             callback.invoke(origin, true, false);
         }
+
+        /**
+         * Tell the client to display a prompt dialog to the user.
+         * If the client returns true, WebView will assume that the client will
+         * handle the prompt dialog and call the appropriate JsPromptResult method.
+         *
+         * The prompt bridge provided for the InAppBrowser is capable of executing any
+         * oustanding callback belonging to the InAppBrowser plugin. Care has been
+         * taken that other callbacks cannot be triggered, and that no other code
+         * execution is possible.
+         *
+         * To trigger the bridge, the prompt default value should be of the form:
+         *
+         * gap-iab://<callbackId>
+         *
+         * where <callbackId> is the string id of the callback to trigger (something
+         * like "InAppBrowser0123456789")
+         *
+         * If present, the prompt message is expected to be a JSON-encoded value to
+         * pass to the callback. A JSON_EXCEPTION is returned if the JSON is invalid.
+         *
+         * @param view
+         * @param url
+         * @param message
+         * @param defaultValue
+         * @param result
+         */
+        @Override
+        public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
+            // See if the prompt string uses the 'gap-iab' protocol. If so, the remainder should be the id of a callback to execute.
+            if (defaultValue != null && defaultValue.startsWith("gap-iab://")) {
+                PluginResult scriptResult;
+                String scriptCallbackId = defaultValue.substring(10);
+                if (scriptCallbackId.startsWith("InAppBrowser")) {
+                    if(message == null || message.length() == 0) {
+                        scriptResult = new PluginResult(PluginResult.Status.OK, new JSONArray());
+                    } else {
+                        try {
+                            scriptResult = new PluginResult(PluginResult.Status.OK, new JSONArray(message));
+                        } catch(JSONException e) {
+                            scriptResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, e.getMessage());
+                        }
+                    }
+                    this.webView.sendPluginResult(scriptResult, scriptCallbackId);
+                    result.confirm("");
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
     
     /**

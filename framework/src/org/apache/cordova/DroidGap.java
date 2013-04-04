@@ -51,6 +51,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.webkit.ValueCallback;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
@@ -717,7 +718,7 @@ public class DroidGap extends Activity implements CordovaInterface {
             appView.handleDestroy();
         }
         else {
-            this.endActivity();
+            this.activityState = ACTIVITY_EXITING; 
         }
     }
 
@@ -1031,7 +1032,13 @@ public class DroidGap extends Activity implements CordovaInterface {
                 root.setBackgroundColor(that.getIntegerProperty("backgroundColor", Color.BLACK));
                 root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
                         ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
-                root.setBackgroundResource(that.splashscreen);
+                // We want the splashscreen to keep its ratio, 
+                // for this we need to use an ImageView and not simply the background of the LinearLayout
+                ImageView splashscreenView = new ImageView(that.getActivity());
+                splashscreenView.setImageResource(that.splashscreen);
+                splashscreenView.setScaleType(ImageView.ScaleType.CENTER_CROP); // similar to the background-size:cover CSS property
+                splashscreenView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
+                root.addView(splashscreenView);
 
                 // Create and show the dialog
                 splashDialog = new Dialog(that, android.R.style.Theme_Translucent_NoTitleBar);
