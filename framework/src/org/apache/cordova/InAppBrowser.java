@@ -176,7 +176,7 @@ public class InAppBrowser extends CordovaPlugin {
                 if (callbackContext != null) {
                     jsWrapper = String.format("(function(d) { var c = d.createElement('style'); c.innerHTML = %%s; d.body.appendChild(c); prompt('', 'gap-iab://%s');})(document)", callbackContext.getCallbackId());
                 } else {
-                    jsWrapper = "(function(d) { var c = d.createElement('style'); c.src = %s; d.body.appendChild(c); })(document)";
+                    jsWrapper = "(function(d) { var c = d.createElement('style'); c.innerHTML = %s; d.body.appendChild(c); })(document)";
                 }
                 injectDeferredObject(args.getString(0), jsWrapper);
             }
