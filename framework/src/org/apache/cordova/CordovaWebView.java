@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 import org.apache.cordova.Config;
 import org.apache.cordova.api.CordovaInterface;
@@ -237,7 +238,11 @@ public class CordovaWebView extends WebView {
         // Set the nav dump for HTC 2.x devices (disabling for ICS, deprecated entirely for Jellybean 4.2)
         try {
             Method gingerbread_getMethod =  WebSettings.class.getMethod("setNavDump", new Class[] { boolean.class });
-            if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
+            
+            String manufacturer = android.os.Build.MANUFACTURER;
+            Log.d(TAG, "CordovaWebView is running on device made by: " + manufacturer);
+            if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB &&
+                    android.os.Build.MANUFACTURER.contains("HTC"))
             {
                 gingerbread_getMethod.invoke(settings, true);
             }
