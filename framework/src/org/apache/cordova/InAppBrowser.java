@@ -158,14 +158,14 @@ public class InAppBrowser extends CordovaPlugin {
             }
             else if (action.equals("injectScriptCode")) {
                 String jsWrapper = null;
-                if (callbackContext != null) {
+                if (args.getBoolean(1)) {
                     jsWrapper = String.format("prompt(JSON.stringify([eval(%%s)]), 'gap-iab://%s')", callbackContext.getCallbackId());
                 }
                 injectDeferredObject(args.getString(0), jsWrapper);
             }
             else if (action.equals("injectScriptFile")) {
                 String jsWrapper;
-                if (callbackContext != null) {
+                if (args.getBoolean(1)) {
                     jsWrapper = String.format("(function(d) { var c = d.createElement('script'); c.src = %%s; c.onload = function() { prompt('', 'gap-iab://%s'); }; d.body.appendChild(c); })(document)", callbackContext.getCallbackId());
                 } else {
                     jsWrapper = "(function(d) { var c = d.createElement('script'); c.src = %s; d.body.appendChild(c); })(document)";
@@ -174,7 +174,7 @@ public class InAppBrowser extends CordovaPlugin {
             }
             else if (action.equals("injectStyleCode")) {
                 String jsWrapper;
-                if (callbackContext != null) {
+                if (args.getBoolean(1)) {
                     jsWrapper = String.format("(function(d) { var c = d.createElement('style'); c.innerHTML = %%s; d.body.appendChild(c); prompt('', 'gap-iab://%s');})(document)", callbackContext.getCallbackId());
                 } else {
                     jsWrapper = "(function(d) { var c = d.createElement('style'); c.innerHTML = %s; d.body.appendChild(c); })(document)";
@@ -183,7 +183,7 @@ public class InAppBrowser extends CordovaPlugin {
             }
             else if (action.equals("injectStyleFile")) {
                 String jsWrapper;
-                if (callbackContext != null) {
+                if (args.getBoolean(1)) {
                     jsWrapper = String.format("(function(d) { var c = d.createElement('link'); c.rel='stylesheet'; c.type='text/css'; c.href = %%s; d.head.appendChild(c); prompt('', 'gap-iab://%s');})(document)", callbackContext.getCallbackId());
                 } else {
                     jsWrapper = "(function(d) { var c = d.createElement('link'); c.rel='stylesheet'; c.type='text/css'; c.href = %s; d.head.appendChild(c); })(document)";
