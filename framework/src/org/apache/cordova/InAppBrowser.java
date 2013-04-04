@@ -84,8 +84,6 @@ public class InAppBrowser extends CordovaPlugin {
     private CallbackContext callbackContext;
     private String buttonLabel = "Done";
     
-    private HashMap<String, CallbackContext> oustandingCallbacks = new HashMap<String, CallbackContext>();
-
     /**
      * Executes the request and returns PluginResult.
      *
@@ -158,7 +156,6 @@ public class InAppBrowser extends CordovaPlugin {
             else if (action.equals("injectScriptCode")) {
                 String jsWrapper;
                 if (callbackContext != null) {
-                    oustandingCallbacks.put(callbackContext.getCallbackId(), callbackContext);
                     jsWrapper = String.format("prompt(JSON.stringify([eval(%%s)]), 'gap-iab://%s')", callbackContext.getCallbackId());
                 } else {
                     jsWrapper = "eval(%s)";
@@ -168,7 +165,6 @@ public class InAppBrowser extends CordovaPlugin {
             else if (action.equals("injectScriptFile")) {
                 String jsWrapper;
                 if (callbackContext != null) {
-                    oustandingCallbacks.put(callbackContext.getCallbackId(), callbackContext);
                     jsWrapper = String.format("(function(d) { var c = d.createElement('script'); c.src = %%s; c.onload = function() { prompt('', 'gap-iab://%s'); }; d.body.appendChild(c); })(document)", callbackContext.getCallbackId());
                 } else {
                     jsWrapper = "(function(d) { var c = d.createElement('script'); c.src = %s; d.body.appendChild(c); })(document)";
@@ -178,7 +174,6 @@ public class InAppBrowser extends CordovaPlugin {
             else if (action.equals("injectStyleCode")) {
                 String jsWrapper;
                 if (callbackContext != null) {
-                    oustandingCallbacks.put(callbackContext.getCallbackId(), callbackContext);
                     jsWrapper = String.format("(function(d) { var c = d.createElement('style'); c.innerHTML = %%s; d.body.appendChild(c); prompt('', 'gap-iab://%s');})(document)", callbackContext.getCallbackId());
                 } else {
                     jsWrapper = "(function(d) { var c = d.createElement('style'); c.src = %s; d.body.appendChild(c); })(document)";
@@ -188,7 +183,6 @@ public class InAppBrowser extends CordovaPlugin {
             else if (action.equals("injectStyleFile")) {
                 String jsWrapper;
                 if (callbackContext != null) {
-                    oustandingCallbacks.put(callbackContext.getCallbackId(), callbackContext);
                     jsWrapper = String.format("(function(d) { var c = d.createElement('link'); c.rel='stylesheet'; c.type='text/css'; c.href = %%s; d.head.appendChild(c); prompt('', 'gap-iab://%s');})(document)", callbackContext.getCallbackId());
                 } else {
                     jsWrapper = "(function(d) { var c = d.createElement('link'); c.rel='stylesheet'; c.type='text/css'; c.href = %s; d.head.appendChild(c); })(document)";
