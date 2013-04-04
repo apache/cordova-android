@@ -93,9 +93,6 @@ public class InAppBrowser extends CordovaPlugin {
      * @return              A PluginResult object with a status and message.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        PluginResult.Status status = PluginResult.Status.OK;
-        String result = "";
-        
         try {
             if (action.equals("open")) {
                 this.callbackContext = callbackContext;
@@ -109,6 +106,7 @@ public class InAppBrowser extends CordovaPlugin {
                 Log.d(LOG_TAG, "target = " + target);
 
                 url = updateUrl(url);
+                String result = "";
 
                 // SELF
                 if (SELF.equals(target)) {
@@ -144,17 +142,14 @@ public class InAppBrowser extends CordovaPlugin {
                     Log.d(LOG_TAG, "in blank");
                     result = this.showWebPage(url, features);
                 }
-                PluginResult pluginResult = new PluginResult(status, result);
+
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
                 pluginResult.setKeepCallback(true);
                 this.callbackContext.sendPluginResult(pluginResult);
             }
             else if (action.equals("close")) {
-                this.callbackContext = callbackContext;
                 closeDialog();
-
-                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
-                pluginResult.setKeepCallback(false);
-                this.callbackContext.sendPluginResult(pluginResult);
+                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
             }
             else if (action.equals("injectScriptCode")) {
                 String jsWrapper = null;
@@ -191,10 +186,7 @@ public class InAppBrowser extends CordovaPlugin {
                 injectDeferredObject(args.getString(0), jsWrapper);
             }
             else {
-                status = PluginResult.Status.INVALID_ACTION;
-                PluginResult pluginResult = new PluginResult(status, result);
-                pluginResult.setKeepCallback(true);
-                this.callbackContext.sendPluginResult(pluginResult);
+                return false;
             }
         } catch (JSONException e) {
             this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
