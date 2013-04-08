@@ -267,11 +267,8 @@ public class CordovaWebView extends WebView {
         // Enable database
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
-        {
-            settings.setDatabaseEnabled(true);
-            settings.setDatabasePath(databasePath);
-        }
+        settings.setDatabaseEnabled(true);
+        settings.setDatabasePath(databasePath);
         
         settings.setGeolocationDatabasePath(databasePath);
 
