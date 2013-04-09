@@ -57,7 +57,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
             if(niceUrl.contains("?")){
                 niceUrl = niceUrl.split("\\?")[0];
             }
-            else if(niceUrl.contains("#"))
+            if(niceUrl.contains("#"))
             {
                 niceUrl = niceUrl.split("#")[0];
             }
