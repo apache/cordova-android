@@ -77,7 +77,6 @@ public class Device extends CordovaPlugin {
             r.put("uuid", Device.uuid);
             r.put("version", this.getOSVersion());
             r.put("platform", Device.platform);
-            r.put("name", this.getProductName());
             r.put("cordova", Device.cordovaVersion);
             r.put("model", this.getModel());
             callbackContext.success(r);
