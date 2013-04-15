@@ -685,7 +685,7 @@ public class FileTransfer extends CordovaPlugin {
      */
     private static String getArgument(JSONArray args, int position, String defaultString) {
         String arg = defaultString;
-        if (args.length() >= position) {
+        if (args.length() > position) {
             arg = args.optString(position);
             if (arg == null || "null".equals(arg)) {
                 arg = defaultString;
