@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.cordova.api.CallbackContext;
 
@@ -42,6 +44,8 @@ public class CordovaLocationListener implements LocationListener {
 
     public HashMap<String, CallbackContext> watches = new HashMap<String, CallbackContext>();
     private List<CallbackContext> callbacks = new ArrayList<CallbackContext>();
+    
+    private Timer timer = null;
 
     private String TAG = "[Cordova Location Listener]";
 
@@ -52,11 +56,12 @@ public class CordovaLocationListener implements LocationListener {
     }
 
     protected void fail(int code, String message) {
+    	this.cancelTimer();
         for (CallbackContext callbackContext: this.callbacks)
         {
-            this.owner.fail(code, message, callbackContext);
+            this.owner.fail(code, message, callbackContext, false);
         }
-        if(this.owner.isGlobalListener(this))
+        if(this.owner.isGlobalListener(this) && this.watches.size() == 0)
         {
         	Log.d(TAG, "Stopping global listener");
         	this.stop();
@@ -65,16 +70,17 @@ public class CordovaLocationListener implements LocationListener {
 
         Iterator<CallbackContext> it = this.watches.values().iterator();
         while (it.hasNext()) {
-            this.owner.fail(code, message, it.next());
+            this.owner.fail(code, message, it.next(), true);
         }
     }
 
     private void win(Location loc) {
+    	this.cancelTimer();
         for (CallbackContext callbackContext: this.callbacks)
         {
-            this.owner.win(loc, callbackContext);
+            this.owner.win(loc, callbackContext, false);
         }
-        if(this.owner.isGlobalListener(this))
+        if(this.owner.isGlobalListener(this) && this.watches.size() == 0)
         {
         	Log.d(TAG, "Stopping global listener");
         	this.stop();
@@ -83,7 +89,7 @@ public class CordovaLocationListener implements LocationListener {
 
         Iterator<CallbackContext> it = this.watches.values().iterator();
         while (it.hasNext()) {
-            this.owner.win(loc, it.next());
+            this.owner.win(loc, it.next(), true);
         }
     }
 
@@ -155,8 +161,12 @@ public class CordovaLocationListener implements LocationListener {
             this.start();
         }
     }
-    public void addCallback(CallbackContext callbackContext) {
-        this.callbacks.add(callbackContext);
+    public void addCallback(CallbackContext callbackContext, int timeout) {
+    	if(this.timer == null) {
+    		this.timer = new Timer();
+    	}
+    	this.timer.schedule(new LocationTimeoutTask(callbackContext, this), timeout);
+        this.callbacks.add(callbackContext);        
         if (this.size() == 1) {
             this.start();
         }
@@ -173,7 +183,7 @@ public class CordovaLocationListener implements LocationListener {
     /**
      * Destroy listener.
      */
-    public void destroy() {
+    public void destroy() {    	
         this.stop();
     }
 
@@ -199,9 +209,43 @@ public class CordovaLocationListener implements LocationListener {
      * Stop receiving location updates.
      */
     private void stop() {
+    	this.cancelTimer();
         if (this.running) {
             this.locationManager.removeUpdates(this);
             this.running = false;
         }
+    }
+    
+    private void cancelTimer() {
+    	if(this.timer != null) {
+    		this.timer.cancel();
+        	this.timer.purge();
+        	this.timer = null;
+    	}
+    }
+    
+    private class LocationTimeoutTask extends TimerTask {
+    	
+    	private CallbackContext callbackContext = null;
+    	private CordovaLocationListener listener = null;
+    	
+    	public LocationTimeoutTask(CallbackContext callbackContext, CordovaLocationListener listener) {
+    		this.callbackContext = callbackContext;
+    		this.listener = listener;
+    	}
+
+		@Override
+		public void run() {
+			for (CallbackContext callbackContext: listener.callbacks) {
+				if(this.callbackContext == callbackContext) {
+					listener.callbacks.remove(callbackContext);
+					break;
+				}
+			}
+			
+			if(listener.size() == 0) {
+				listener.stop();
+			}
+		}    	
     }
 }
