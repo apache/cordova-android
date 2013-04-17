@@ -28,6 +28,8 @@ import org.apache.cordova.api.LOG;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
+import java.util.Locale;
 
 public class FileHelper {
     private static final String LOG_TAG = "FileUtils";
@@ -92,7 +94,8 @@ public class FileHelper {
             Uri uri = Uri.parse(uriString);
             return cordova.getActivity().getContentResolver().openInputStream(uri);
         } else if (uriString.startsWith("file:///android_asset/")) {
-            String relativePath = uriString.substring(22);
+            Uri uri = Uri.parse(uriString);
+            String relativePath = uri.getPath().substring(15);
             return cordova.getActivity().getAssets().open(relativePath);
         } else {
             return new FileInputStream(getRealPath(uriString, cordova));
@@ -122,14 +125,18 @@ public class FileHelper {
     public static String getMimeType(String uriString, CordovaInterface cordova) {
         String mimeType = null;
 
+        Uri uri = Uri.parse(uriString);
         if (uriString.startsWith("content://")) {
-            Uri uri = Uri.parse(uriString);
             mimeType = cordova.getActivity().getContentResolver().getType(uri);
         } else {
-            // MimeTypeMap.getFileExtensionFromUrl has a bug that occurs when the filename has a space, so we encode it.
-            // We also convert the URI string to lower case to ensure compatibility with MimeTypeMap (see CB-2185).
-            String encodedUriString = uriString.replace(" ", "%20").toLowerCase();
-            String extension = MimeTypeMap.getFileExtensionFromUrl(encodedUriString);
+            // MimeTypeMap.getFileExtensionFromUrl() fails when there are query parameters.
+            String extension = uri.getPath();
+            int lastDot = extension.lastIndexOf('.');
+            if (lastDot != -1) {
+                extension = extension.substring(lastDot + 1);
+            }
+            // Convert the URI string to lower case to ensure compatibility with MimeTypeMap (see CB-2185).
+            extension = extension.toLowerCase();
             if (extension.equals("3ga")) {
                 mimeType = "audio/3gpp";
             } else {
