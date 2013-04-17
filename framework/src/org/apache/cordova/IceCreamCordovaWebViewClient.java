@@ -24,11 +24,12 @@ import java.io.InputStream;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 
-import android.content.res.AssetManager;
-import android.net.Uri;
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
 
@@ -43,34 +44,20 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
         if(url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url)){
-            return generateWebResourceResponse(url);
-        } else {
-            return super.shouldInterceptRequest(view, url);
+            WebResourceResponse ret = generateWebResourceResponse(url);
+            if (ret != null) {
+                return ret;
+            }
         }
+        return super.shouldInterceptRequest(view, url);
     }
 
     private WebResourceResponse generateWebResourceResponse(String url) {
-        final String ANDROID_ASSET = "file:///android_asset/";
-        if (url.startsWith(ANDROID_ASSET)) {
-            String niceUrl = url;
-            niceUrl = url.replaceFirst(ANDROID_ASSET, "");
-            if(niceUrl.contains("?")){
-                niceUrl = niceUrl.split("\\?")[0];
-            }
-            if(niceUrl.contains("#"))
-            {
-                niceUrl = niceUrl.split("#")[0];
-            }
-
-            String mimetype = null;
-            if(niceUrl.endsWith(".html")){
-                mimetype = "text/html";
-            }
+        if (url.startsWith("file:///android_asset/")) {
+            String mimetype = FileHelper.getMimeType(url, cordova);
 
             try {
-                AssetManager assets = cordova.getActivity().getAssets();
-                Uri uri = Uri.parse(niceUrl);
-                InputStream stream = assets.open(uri.getPath(), AssetManager.ACCESS_STREAMING);
+                InputStream stream = FileHelper.getInputStreamFromUriString(url, cordova);
                 WebResourceResponse response = new WebResourceResponse(mimetype, "UTF-8", stream);
                 return response;
             } catch (IOException e) {
