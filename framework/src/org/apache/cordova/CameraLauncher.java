@@ -419,14 +419,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         }
 
                         if (this.correctOrientation) {
-                            String[] cols = { MediaStore.Images.Media.ORIENTATION };
-                            Cursor cursor = this.cordova.getActivity().getContentResolver().query(uri,
-                                    cols, null, null, null);
-                            if (cursor != null) {
-                                cursor.moveToPosition(0);
-                                rotate = cursor.getInt(0);
-                                cursor.close();
-                            }
+                            rotate = getImageOrientation(uri);
                             if (rotate != 0) {
                                 Matrix matrix = new Matrix();
                                 matrix.setRotate(rotate);
@@ -446,15 +439,17 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                                 try {
                                     // Create an ExifHelper to save the exif data that is lost during compression
                                     String resizePath = DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/resize.jpg";
+                                    // Some content: URIs do not map to file paths (e.g. picasa).
+                                    String realPath = FileHelper.getRealPath(uri, this.cordova);
                                     ExifHelper exif = new ExifHelper();
-                                    try {
-                                        if (this.encodingType == JPEG) {
-                                            exif.createInFile(FileHelper.getRealPath(uri, this.cordova));
+                                    if (realPath != null && this.encodingType == JPEG) {
+                                        try {
+                                            exif.createInFile(realPath);
                                             exif.readExifData();
                                             rotate = exif.getOrientation();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
                                         }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
                                     }
 
                                     OutputStream os = new FileOutputStream(resizePath);
@@ -462,7 +457,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                                     os.close();
 
                                     // Restore exif data to file
-                                    if (this.encodingType == JPEG) {
+                                    if (realPath != null && this.encodingType == JPEG) {
                                         exif.createOutFile(resizePath);
                                         exif.writeExifData();
                                     }
@@ -494,6 +489,19 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.failPicture("Selection did not complete!");
             }
         }
+    }
+
+    private int getImageOrientation(Uri uri) {
+        String[] cols = { MediaStore.Images.Media.ORIENTATION };
+        Cursor cursor = cordova.getActivity().getContentResolver().query(uri,
+                cols, null, null, null);
+        int rotate = 0;
+        if (cursor != null) {
+            cursor.moveToPosition(0);
+            rotate = cursor.getInt(0);
+            cursor.close();
+        }
+        return rotate;
     }
 
     /**
