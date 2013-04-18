@@ -1,0 +1,386 @@
+#!/bin/bash
+#   Licensed to the Apache Software Foundation (ASF) under one
+#   or more contributor license agreements.  See the NOTICE file
+#   distributed with this work for additional information
+#   regarding copyright ownership.  The ASF licenses this file
+#   to you under the Apache License, Version 2.0 (the
+#   "License"); you may not use this file except in compliance
+#   with the License.  You may obtain a copy of the License at
+# 
+#   http://www.apache.org/licenses/LICENSE-2.0
+# 
+#   Unless required by applicable law or agreed to in writing,
+#   software distributed under the License is distributed on an
+#   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#   KIND, either express or implied.  See the License for the
+#   specific language governing permissions and limitations
+#   under the License.
+
+PROJECT_PATH=$( cd "$( dirname "$0" )/../.." && pwd )
+
+function list_devices {
+    IFS=$'\n'
+    devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'device' | grep -v 'emulator'`
+    device_list=($devices)
+    if [[ ${#device_list[@]} > 0 ]] ; then
+        for i in ${devices[@]}
+        do
+            # remove space and 'device'
+            echo ${i/[^a-zA-Z0-9._]device/}
+        done
+    else
+        echo "No devices found."
+        exit 2
+    fi
+}
+
+function list_started_emulators {
+    IFS=$'\n'
+    devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'device' | grep 'emulator'`
+    emulator_list=($devices)
+    if [[ ${#emulator_list[@]} > 0 ]] ; then
+        for i in ${emulator_list[@]}
+        do
+            # remove space and 'device'
+            echo ${i/[^a-zA-Z0-9._]device/}
+        done
+    else
+        echo "No started emulators found, you can start an emulator by using the command"
+        echo " 'cordova/lib/start-emulator'"
+        exit 2
+    fi
+}
+
+function list_emulator_images {
+    emulator_images=`android list avds | grep "Name:" | cut -f 2 -d ":"`
+    emulator_list=($emulator_images)
+    if [[ ${#emulator_list[@]} > 0 ]] ; then
+        for i in ${emulator_list[@]}
+        do
+            echo ${i/[^a-zA-Z0-9._]/}
+        done
+    else
+        echo "No emulators found, if you would like to create an emulator follow the instructions"
+        echo " provided here : http://developer.android.com/tools/devices/index.html"
+        echo " Or run 'android create avd --name <name> --target <targetID>' in on the command line."
+        exit 2
+    fi
+}
+
+function start_emulator {
+    emulator_images=`android list avds | grep "Name:" | cut -f 2 -d ":"`
+    # if target emulator is provided
+    if [[ "$#" -eq 1 ]] ; then
+        # check that it exists
+        if [[ $emulator_images =~ $1 ]] ; then
+            #xterm -e emulator -avd $1 &
+            emulator -avd $1 1> /dev/null 2>&1 &
+        else
+            echo "Could not find the provided emulator, make sure the emulator exists"
+            echo " by checking 'cordova/lib/list-emulator-images'"
+            exit 2
+        fi
+    else
+        # start first emulator
+        emulator_list=($emulator_images)
+        if [[ ${#emulator_list[@]} > 0 ]] ; then
+            #xterm -e emulator -avd ${emulator_list[0]} &
+            emulator -avd ${emulator_list[0]/[^a-zA-Z0-9._]/} 1> /dev/null 2>&1 &
+        else
+            echo "No emulators found, if you would like to create an emulator follow the instructions"
+            echo " provided here : http://developer.android.com/tools/devices/index.html"
+            echo " Or run 'android create avd --name <name> --target <targetID>' in on the command line."
+            exit 2
+        fi
+    fi
+}
+
+function install_device {
+    IFS=$'\n'
+    devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'device' | grep -v 'emulator'`
+    device_list=($devices)
+    if [[ ${#device_list[@]} > 0 ]] ; then
+        apks=`find $PROJECT_PATH/bin -type f -maxdepth 1 | egrep '\.apk$'`
+        apk_list=($apks)
+        if [[ ${#apk_list[@]} > 0 ]] ; then
+            local target
+            # handle target emulator
+            if [[ "$#" -eq 1 ]] ; then
+                # deploy to given target
+                target=${1/--target=/}
+            else
+                # delete trailing space and 'device' after device ID
+                target=${device_list[0]/[^a-zA-Z0-9._]device/}
+            fi
+            echo "Installing ${apk_list[0]} onto device $target..."
+            adb -s $target install -r ${apk_list[0]};
+            echo "Launching application..."
+            local launch_str=$(java -jar "$PROJECT_PATH"/cordova/appinfo.jar "$PROJECT_PATH"/AndroidManifest.xml)
+            adb -s $target shell am start -W -a android.intent.action.MAIN -n $launch_str
+        else
+            echo "Application package not found, could not install to device"
+            echo " make sure your application is built before deploying."
+            exit 2
+        fi
+    else
+        echo "No devices found to deploy to. Please make sure your device is connected"
+        echo " and you can view it using the 'cordova/lib/list-devices' command."
+        exit 2
+    fi
+}
+
+function install_emulator {
+    IFS=$'\n'
+    # check that there is an emulator to deploy to
+    emulator_string=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'emulator'`
+    emulator_list=($emulator_string)
+    if [[ ${#emulator_list[@]} > 0 ]] ; then
+        apks=`find $PROJECT_PATH/bin -type f -maxdepth 1 | egrep '\.apk$'`
+        apk_list=($apks)
+        if [[ ${#apk_list[@]} > 0 ]] ; then
+            local target
+            # handle target emulator
+            if [[ "$#" -eq 1 ]] ; then
+                # deploy to given target
+                target=${1/--target=/}
+            else
+                # delete trailing space and 'device' after emulator ID
+                target=${emulator_list[0]/[^a-zA-Z0-9._]device/}
+            fi
+            echo "Installing ${apk_list[0]} onto $target..."
+            adb -s $target install -r ${apk_list[0]};
+            echo "Launching application..."
+            local launch_str=$(java -jar "$PROJECT_PATH"/cordova/appinfo.jar "$PROJECT_PATH"/AndroidManifest.xml)
+            adb -s $target shell am start -W -a android.intent.action.MAIN -n $launch_str
+
+        else
+            echo "Application package not found, could not install to device"
+            echo " make sure your application is built before deploying."
+            exit 2
+        fi
+    else
+        echo "No emulators found to deploy to. Please make sure your emulator is started"
+        echo " and you can view it using the 'cordova/lib/list-started-emulators' command."
+        exit 2
+    fi
+}
+
+# cleans the project
+function clean {
+    echo "Cleaning project..."
+    ant clean
+}
+
+# has to be used independently and not in conjunction with other commands
+function log {
+    # filter out nativeGetEnabledTags spam from latest sdk bug.
+    adb logcat | grep -v nativeGetEnabledTags
+}
+
+
+function build {
+    if [[ "$#" -eq 1 ]] ; then
+        if [[ $1 == "--debug" ]] ; then
+            clean
+            ant debug -f "$PROJECT_PATH"/build.xml
+        elif [[ $1 == "--release" ]] ; then
+            clean
+            ant release -f "$PROJECT_PATH"/build.xml
+        elif [[ $1 == "--nobuild" ]] ; then
+            echo "Skipping build..."
+        else
+            echo "Error : Build command '$1' not recognized."
+            exit 2
+        fi
+    else
+        echo "Warning : [ --debug | --release | --nobuild ] not specified, defaulting to --debug"
+        clean
+        ant debug -f "$PROJECT_PATH"/build.xml
+    fi
+}
+
+
+function wait_for_emulator {
+    emulator_string=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'device' | grep 'emulator'`
+    old_started=($emulator_string)
+    local new_started
+    local new_emulator_name
+    local i="0"
+    echo -n "Waiting for emulator..."
+    while [ $i -lt 300 ]
+    do
+        emulator_string=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'device' | grep 'emulator'`
+        new_started=($emulator_string)
+        if [[ ${#new_started[@]} > ${#old_started[@]} && -z "$new_emulator_name" ]] ; then
+            # get the name of the started emulator
+            local count="0"
+            if [[ ${#old_started[@]} == 0 ]] ; then
+                new_emulator_name=${new_started[$count]/[^a-zA-Z0-9._]device/}
+            else
+                for count in {0...${#old_started[@]}}
+                do
+                    if [[ ! ${new_started[$count]} == ${old_started[$count]} ]] ; then
+                        new_emulator_name=${new_started[$count]/[^a-zA-Z0-9._]device/}
+                    fi
+                done
+                if [[ -z "$new_emulator_name" ]] ; then
+                    count=$[count+1]
+                    new_emulator_name=${new_started[$count]/[^a-zA-Z0-9._]device/}
+                fi
+            fi
+        elif [[ "$new_emulator_name" ]] ; then
+            boot_anim=`adb -s $new_emulator_name shell getprop init.svc.bootanim`
+            if [[ $boot_anim =~ "stopped" ]] ; then
+                break
+            else
+                sleep 1
+                i=$[i+1]
+                echo -n "."
+            fi
+        else
+            sleep 1
+            i=$[i+1]
+            echo -n "."
+        fi
+    done
+    # Device timeout: emulator has not started in time
+    if [ $i -eq 300 ]
+    then
+        echo "emulator timeout!"
+        exit 69
+    else
+        echo "connected!"
+    fi
+}
+
+function run {
+    IFS=$'\n'
+    if [[ "$#" -eq 2 ]] ; then
+        build $2
+        if [[ $1 == "--device" ]] ; then
+            install_device
+        elif [[ $1 == "--emulator" ]] ; then
+            install_emulator
+        elif [[ $1 =~ "--target=" ]]; then
+            install_device $1
+        else
+            echo "Error : '$1' is not recognized as an install option"
+        fi
+    elif [[ "$#" -eq 1 ]] ; then
+        if [[ $1 == "--debug" || $1 == "--release" || $1 == "--nobuild" ]] ; then
+            build $1
+        elif [[ $1 == "--device" ]] ; then
+            install_device
+        elif [[ $1 == "--emulator" ]] ; then
+            install_emulator
+        elif [[ $1 =~ "--target=" ]]; then
+            install_device $1
+        else
+            echo "Error : '$1' is not recognized as an install option"
+        fi
+    else
+        echo "Warning : [ --device | --emulate | --target=<targetID> ] not specified, using defaults."
+        build
+        devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'device' | grep -v 'emulator'`
+        device_list=($devices)
+        emulator_string=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'device' | grep 'emulator'`
+        emulator_list=($emulator_string)
+        if [[ ${#device_list[@]} > 0 ]] ; then
+            install_device
+        elif [[ ${#emulator_list[@]} > 0 ]] ; then
+            install_emulator
+        else
+            emulator_images=`android list avds | grep "Name:" | cut -f 2 -d ":"`
+            echo $emulator_images
+            emulator_image_list=($emulator_images)
+            if [[ ${#emulator_image_list[@]} > 0 ]] ; then
+                echo "Starting emulator : ${emulator_image_list[0]}" 
+                emulator -avd ${emulator_image_list[0]/[^.\w]/} 1> /dev/null 2>&1 &
+                wait_for_emulator
+                install_emulator
+            else
+                # TODO : look for emulator images and start one if it's availible
+                echo "Error : there are no availible devices or emulators to deploy to."
+                echo " create an emulator or connect your device to run this command."
+                echo "If you would like to create an emulator follow the instructions"
+                echo " provided here : http://developer.android.com/tools/devices/index.html"
+                echo " Or run 'android create avd --name <name> --target <targetID>' in on the command line."
+                exit 2
+            fi
+        fi
+    fi
+}
+
+# parse command line arguments
+
+if [[ $# > 3 ]] ; then 
+    echo "Error :  too many arguments."
+    exit 2
+elif [[ $# == 3 ]] ; then
+    if [[ $1 == "run" ]] ; then
+        run $2 $3
+    else
+        echo "Error : too many arguments for '$1'"
+        exit 2
+    fi
+elif [[ $# == 2 ]] ; then
+    if [[ $1 == "run" ]] ; then
+        if [[ $2 == "--emulator" || $2 == "--device" || $2 =~ "--target=" ]] ; then
+            run $2 ''
+        elif [[ $2 == "--debug" || $2 == "--release" || $2 == "--nobuild" ]] ; then
+            run '' $2
+        else 
+            echo "Error : '$2' is not recognized as a run option."
+            exit 2
+        fi
+    elif [[ $1 == "build" ]] ; then
+        build $2
+    elif [[ $1 == "start-emulator" ]] ; then
+        start_emulator $2
+    elif [[ $1 == "install-device" ]] ; then
+        if [[ $2 =~ "--target=" ]] ; then
+            install_device $2
+        else
+            echo "Error : '$2' is not recognized as an install option"
+            exit 2
+        fi
+    elif [[ $1 == "install-emulator" ]] ; then
+        if [[ $2 =~ "--target=" ]] ; then
+            install_emulator $2
+        else
+            echo "Error : '$2' is not recognized as an install option"
+            exit 2
+        fi
+    else
+        echo "Error : '$1' is not recognized as an option that takes arguments"
+        exit 2
+    fi
+elif [[ $# == 1 ]] ; then
+    if [[ $1 == "run" ]] ; then
+        run
+    elif [[ $1 == "build" ]]; then
+        build
+    elif [[ $1 == "clean" ]]; then
+        clean
+    elif [[ $1 == "log" ]]; then
+        log
+    elif [[ $1 == "list-devices" ]]; then
+        list_devices
+    elif [[ $1 == "list-emulator-images" ]]; then
+        list_emulator_images
+    elif [[ $1 == "list-started-emulators" ]]; then
+        list_started_emulators
+    elif [[ $1 == "install-device" ]]; then
+        install_device
+    elif [[ $1 == "install-emulator" ]]; then
+        install_emulator
+    elif [[ $1 == "start-emulator" ]]; then
+        start_emulator
+    else
+        echo "Error : '$1' is not recognized as a tooling command."
+        exit 2
+    fi
+else
+    echo "Error : No command recieved, exiting..."
+    exit 2
+fi

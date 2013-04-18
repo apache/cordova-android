@@ -183,11 +183,17 @@ if(fso.FolderExists(ROOT + '\\framework')) {
 createAppInfoJar();
 WScript.Echo("Copying cordova command tools...");
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\appinfo.jar ' + PROJECT_PATH + '\\cordova\\appinfo.jar /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\cordova.js ' + PROJECT_PATH + '\\cordova\\cordova.js /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\clean.bat ' + PROJECT_PATH + '\\cordova\\clean.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\build.bat ' + PROJECT_PATH + '\\cordova\\build.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\log.bat ' + PROJECT_PATH + '\\cordova\\log.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\run.bat ' + PROJECT_PATH + '\\cordova\\run.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\cordova.js ' + PROJECT_PATH + '\\cordova\\lib\\cordova.js /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\install-device.bat ' + PROJECT_PATH + '\\cordova\\lib\\install-device.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\install-emulator.bat ' + PROJECT_PATH + '\\cordova\\lib\\install-emulator.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-emulator-images.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-emulator-images.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-devices.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-devices.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-started-emulators.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-started-emulators.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\start-emulator.bat ' + PROJECT_PATH + '\\cordova\\lib\\start-emulator.bat /Y');
 
 cleanup();

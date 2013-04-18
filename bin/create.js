@@ -24,7 +24,30 @@
  *  ./create [path package activity]
  */
 
-var fso = WScript.CreateObject('Scripting.FileSystemObject');
+var args = WScript.Arguments, PROJECT_PATH="example", 
+    PACKAGE="org.apache.cordova.example", ACTIVITY="cordovaExample",
+    shell=WScript.CreateObject("WScript.Shell"),
+    fso = WScript.CreateObject('Scripting.FileSystemObject');
+
+function Usage() {
+    Log("Usage: create PathTONewProject [ PackageName AppName ]");
+    Log("    PathTONewProject : The path to where you wish to create the project");
+    Log("    PackageName      : The package for the project (default is org.apache.cordova.example)")
+    Log("    AppName          : The name of the application/activity (default is cordovaExample)");
+    Log("examples:");
+    Log("    create C:\\Users\\anonymous\\Desktop\\MyProject");
+    Log("    create C:\\Users\\anonymous\\Desktop\\MyProject io.Cordova.Example AnApp");
+}
+
+// logs messaged to stdout and stderr
+function Log(msg, error) {
+    if (error) {
+        WScript.StdErr.WriteLine(msg);
+    }
+    else {
+        WScript.StdOut.WriteLine(msg);
+    }
+}
 
 function read(filename) {
     var fso=WScript.CreateObject("Scripting.FileSystemObject");
@@ -36,7 +59,7 @@ function read(filename) {
 
 function checkTargets(targets) {
     if(!targets) {
-        WScript.Echo("You do not have any android targets setup. Please create at least one target with the `android` command");
+        Log("You do not have any android targets setup. Please create at least one target with the `android` command", true);
         WScript.Quit(69);
     }
 }
@@ -74,7 +97,7 @@ function exec(command) {
 
 function createAppInfoJar() {
     if(!fso.FileExists(ROOT+"\\bin\\templates\\cordova\\appinfo.jar")) {
-        WScript.Echo("Creating appinfo.jar...");
+        Log("Creating appinfo.jar...");
         var cur = shell.CurrentDirectory;
         shell.CurrentDirectory = ROOT+"\\bin\\templates\\cordova\\ApplicationInfo";
         exec("javac ApplicationInfo.java");
@@ -120,7 +143,7 @@ function downloadCommonsCodec() {
           stream.SaveToFile(savePath);
           stream.Close();
         } else {
-          WScript.Echo('Could not retrieve the commons-codec. Please download it yourself and put into the framework/libs directory. This process may fail now. Sorry.');
+          Log('Could not retrieve the commons-codec. Please download it yourself and put into the framework/libs directory. This process may fail now. Sorry.');
         }
       }
       var app = WScript.CreateObject('Shell.Application');
@@ -136,23 +159,34 @@ function downloadCommonsCodec() {
       fso.DeleteFolder(ROOT + '\\framework\\libs\\commons-codec-1.7', true);
     }
 }
-
-var args = WScript.Arguments, PROJECT_PATH="example", 
-    PACKAGE="org.apache.cordova.example", ACTIVITY="cordovaExample",
-    shell=WScript.CreateObject("WScript.Shell");
     
 // working dir
 var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
+if (args.Count() > 0) {
+    // support help flags
+    if (args(0) == "--help" || args(0) == "/?" ||
+            args(0) == "help" || args(0) == "-help" || args(0) == "/help" || args(0) == "-h") {
+        Usage();
+        WScript.Quit(2);
+    }
 
-if (args.Count() == 3) {
     PROJECT_PATH=args(0);
-    PACKAGE=args(1);
-    ACTIVITY=args(2);
+    if (args.Count() > 1) {
+        PACKAGE = args(1);
+    }
+    if (args.Count() > 2) {
+        ACTIVITY = args(2);
+    }
+}
+else {
+    Log("Error : No project path provided.");
+    Usage();
+    WScript.Quit(2);
 }
 
 if(fso.FolderExists(PROJECT_PATH)) {
-    WScript.Echo("Project already exists!");
-    WScript.Quit(1);
+    Log("Project already exists!", true);
+    WScript.Quit(2);
 }
 
 var PACKAGE_AS_PATH=PACKAGE.replace(/\./g, '\\');
@@ -162,13 +196,13 @@ var TARGET=setTarget();
 var API_LEVEL=setApiLevel();
 var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 // create the project
-WScript.Echo("Creating new android project...");
+Log("Creating new android project...");
 exec('android.bat create project --target '+TARGET+' --path '+PROJECT_PATH+' --package '+PACKAGE+' --activity '+ACTIVITY);
 
 // build from source. distro should have these files
 if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
     !fso.FileExists(ROOT+'\\cordova-'+VERSION+'.js')) {
-    WScript.Echo("Building jar and js files...");
+    Log("Building jar and js files...");
     // update the cordova framework project to a target that exists on this machine
     exec('android.bat update project --target '+TARGET+' --path '+ROOT+'\\framework');
     // pull down commons codec if necessary
@@ -177,14 +211,14 @@ if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
 }
 
 // copy in the project template
-WScript.Echo("Copying template files...");
+Log("Copying template files...");
 exec('%comspec% /c xcopy "'+ ROOT + '"\\bin\\templates\\project\\res '+PROJECT_PATH+'\\res\\ /E /Y');
 exec('%comspec% /c xcopy "'+ ROOT + '"\\bin\\templates\\project\\assets '+PROJECT_PATH+'\\assets\\ /E /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\project\\AndroidManifest.xml ' + PROJECT_PATH + '\\AndroidManifest.xml /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\project\\Activity.java '+ ACTIVITY_PATH +' /Y');
 
 // check if we have the source or the distro files
-WScript.Echo("Copying js, jar & config.xml files...");
+Log("Copying js, jar & config.xml files...");
 if(fso.FolderExists(ROOT + '\\framework')) {
     exec('%comspec% /c copy "'+ROOT+'"\\framework\\assets\\www\\cordova-'+VERSION+'.js '+PROJECT_PATH+'\\assets\\www\\cordova-'+VERSION+'.js /Y');
     exec('%comspec% /c copy "'+ROOT+'"\\framework\\cordova-'+VERSION+'.jar '+PROJECT_PATH+'\\libs\\cordova-'+VERSION+'.jar /Y');
@@ -202,10 +236,17 @@ if(fso.FolderExists(ROOT + '\\framework')) {
 
 // copy cordova scripts
 fso.CreateFolder(PROJECT_PATH + '\\cordova');
+fso.CreateFolder(PROJECT_PATH + '\\cordova\\lib');
 createAppInfoJar();
-WScript.Echo("Copying cordova command tools...");
+Log("Copying cordova command tools...");
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\appinfo.jar ' + PROJECT_PATH + '\\cordova\\appinfo.jar /Y');
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\cordova.js ' + PROJECT_PATH + '\\cordova\\cordova.js /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\cordova.js ' + PROJECT_PATH + '\\cordova\\lib\\cordova.js /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\install-device.bat ' + PROJECT_PATH + '\\cordova\\lib\\install-device.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\install-emulator.bat ' + PROJECT_PATH + '\\cordova\\lib\\install-emulator.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-emulator-images.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-emulator-images.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-devices.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-devices.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\list-started-emulators.bat ' + PROJECT_PATH + '\\cordova\\lib\\list-started-emulators.bat /Y');
+exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\lib\\start-emulator.bat ' + PROJECT_PATH + '\\cordova\\lib\\start-emulator.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\clean.bat ' + PROJECT_PATH + '\\cordova\\clean.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\build.bat ' + PROJECT_PATH + '\\cordova\\build.bat /Y');
@@ -213,7 +254,7 @@ exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\log.bat ' + PROJECT
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\run.bat ' + PROJECT_PATH + '\\cordova\\run.bat /Y');
 
 // interpolate the activity name and package
-WScript.Echo("Updating AndroidManifest.xml and Main Activity...");
+Log("Updating AndroidManifest.xml and Main Activity...");
 replaceInFile(ACTIVITY_PATH, /__ACTIVITY__/, ACTIVITY);
 replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 
