@@ -314,15 +314,6 @@ public class CordovaWebViewClient extends WebViewClient {
         // Clear timeout flag
         this.appView.loadUrlTimeout++;
 
-        // Try firing the onNativeReady event in JS. If it fails because the JS is
-        // not loaded yet then just set a flag so that the onNativeReady can be fired
-        // from the JS side when the JS gets to that code.
-        if (!url.equals("about:blank")) {
-            LOG.d(TAG, "Trying to fire onNativeReady");
-            this.appView.loadUrl("javascript:try{ cordova.require('cordova/channel').onNativeReady.fire();}catch(e){_nativeReady = true;}");
-            this.appView.postMessage("onNativeReady", null);
-        }
-
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageFinished", url);
 
