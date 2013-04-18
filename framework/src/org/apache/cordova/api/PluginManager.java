@@ -119,6 +119,7 @@ public class PluginManager {
                     service = xml.getAttributeValue(null, "name");
                     pluginClass = xml.getAttributeValue(null, "value");
                     // System.out.println("Plugin: "+name+" => "+value);
+                    Log.d(TAG, "<plugin> tags are deprecated, please use <features> instead. <plugin> will no longer work as of Cordova 3.0");
                     onload = "true".equals(xml.getAttributeValue(null, "onload"));
                     entry = new PluginEntry(service, pluginClass, onload);
                     this.addService(entry);
