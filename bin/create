@@ -158,11 +158,18 @@ replace "s/__APILEVEL__/${API_LEVEL}/g" "$MANIFEST_PATH"
 
 # creating cordova folder and copying run/build/log/launch scripts
 mkdir "$PROJECT_PATH"/cordova
+mkdir "$PROJECT_PATH"/cordova/lib
 createAppInfoJar
 cp "$BUILD_PATH"/bin/templates/cordova/appinfo.jar "$PROJECT_PATH"/cordova/appinfo.jar
-cp "$BUILD_PATH"/bin/templates/cordova/cordova "$PROJECT_PATH"/cordova/cordova
 cp "$BUILD_PATH"/bin/templates/cordova/build "$PROJECT_PATH"/cordova/build
-cp "$BUILD_PATH"/bin/templates/cordova/release "$PROJECT_PATH"/cordova/release
 cp "$BUILD_PATH"/bin/templates/cordova/clean "$PROJECT_PATH"/cordova/clean
 cp "$BUILD_PATH"/bin/templates/cordova/log "$PROJECT_PATH"/cordova/log
 cp "$BUILD_PATH"/bin/templates/cordova/run "$PROJECT_PATH"/cordova/run
+cp "$BUILD_PATH"/bin/templates/cordova/lib/cordova "$PROJECT_PATH"/cordova/lib/cordova
+cp "$BUILD_PATH"/bin/templates/cordova/lib/install-device "$PROJECT_PATH"/cordova/lib/install-device
+cp "$BUILD_PATH"/bin/templates/cordova/lib/install-emulator "$PROJECT_PATH"/cordova/lib/install-emulator
+cp "$BUILD_PATH"/bin/templates/cordova/lib/list-devices "$PROJECT_PATH"/cordova/lib/list-devices
+cp "$BUILD_PATH"/bin/templates/cordova/lib/list-emulator-images "$PROJECT_PATH"/cordova/lib/list-emulator-images
+cp "$BUILD_PATH"/bin/templates/cordova/lib/list-started-emulators "$PROJECT_PATH"/cordova/lib/list-started-emulators
+cp "$BUILD_PATH"/bin/templates/cordova/lib/start-emulator "$PROJECT_PATH"/cordova/lib/start-emulator
+

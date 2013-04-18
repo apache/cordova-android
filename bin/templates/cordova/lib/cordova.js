@@ -119,7 +119,6 @@ function list_devices() {
 function get_emulator_images() {
     // discription contains all data recieved squashed onto one line
     var add_description = true;
-    var oExec = shell.Exec("%comspec% /c android.bat list avd");
     var avd_list = [];
     var local_emulators = shell.Exec("%comspec% /c android list avds").StdOut.ReadAll();
     if (local_emulators.match(/Name\:/)) {

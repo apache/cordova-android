@@ -18,6 +18,6 @@
 
 set -e
 
-CORDOVA_PATH=$( cd "$( dirname "$0" )/.." && pwd )
+CORDOVA_LIB_PATH=$( cd "$( dirname "$0" )" && pwd )
 
-bash "$CORDOVA_PATH"/cordova/lib/cordova log "$@"
+bash "$CORDOVA_LIB_PATH"/cordova list-started-emulators
