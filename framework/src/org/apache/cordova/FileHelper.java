@@ -124,6 +124,9 @@ public class FileHelper {
      */
     public static String getMimeType(String uriString, CordovaInterface cordova) {
         String mimeType = null;
+        if (uriString == null) {
+            return null;
+        }
 
         Uri uri = Uri.parse(uriString);
         if (uriString.startsWith("content://")) {
