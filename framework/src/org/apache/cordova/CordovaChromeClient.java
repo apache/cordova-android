@@ -322,8 +322,8 @@ public class CordovaChromeClient extends WebChromeClient {
     public boolean onConsoleMessage(ConsoleMessage consoleMessage)
     {
         if (consoleMessage.message() != null)
-            LOG.d(TAG, consoleMessage.message());
-        return super.onConsoleMessage(consoleMessage);
+            LOG.d(TAG, "%s: Line %d : %s" , consoleMessage.sourceId() , consoleMessage.lineNumber(), consoleMessage.message());
+         return super.onConsoleMessage(consoleMessage);
     }
 
     @Override
