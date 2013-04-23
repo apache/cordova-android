@@ -464,51 +464,52 @@ function log() {
 }
 
 function run(target, build_type) {
-    var use_target = false;
-    if (!target) {
-        Log("WARNING: [ --target=<ID> | --emulator | --device ] not specified, using defaults");
-    }
     // build application
     build(build_type);
-    // attempt to deploy to connected device 
-    var devices = get_devices();
-    if (devices.length > 0 || target == "--device") {
-        if (target) {
-            if (target.substr(0,9) == "--target=") {
-                install_device(target.split('--target=').join(''))
-            } else if (target == "--device") {
-                install_device();
-            } else {
-                Log("Did not regognize " + target + " as a run option.", true);
-                WScript.Quit(2);
-            }
-        }
-        else {
-            Log("WARNING: [ --target=<ID> | --emulator | --device ] not specified, using defaults");
+    if (target && target.substr(0,9) == "--target=") {
+        install_device(target.split('--target=').join(''))
+    } else if (target && target != "--emulator") {
+        if (target == "--device") {
             install_device();
+        } else {
+            Log("Did not regognize " + target + " as a run option.", true);
+            WScript.Quit(2);
         }
-    }
-    else {
-        var emulators = get_started_emulators();
-        if (emulators.length > 0) {
-            install_emulator();
-        }
-        else {
-            var emulator_images = get_emulator_images();
-            if (emulator_images.length < 1) {
-                Log('No emulators found, if you would like to create an emulator follow the instructions', true);
-                Log(' provided here : http://developer.android.com/tools/devices/index.html', true);
-                Log(' Or run \'android create avd --name <name> --target <targetID>\' in on the command line.', true);
-                WScript.Quit(2);
+    } else {
+        var installed_device = false;
+        if (!target) {
+            Log("WARNING: [ --target=<ID> | --emulator | --device ] not specified, using defaults");
+            // attempt to deploy to connected device
+            var devices = get_devices();
+            if (devices.length > 0) {
+                install_device();
+                installed_device = true;
             }
-            start_emulator(emulator_images[0].split(' ')[0]);
-            emulators = get_started_emulators();
+        }
+        // no devices availible so deploy to emulator
+        if(!installed_device) {
+            var emulators = get_started_emulators();
             if (emulators.length > 0) {
                 install_emulator();
             }
+            // no emulators availible so start one
             else {
-                Log("Error : emulator failed to start.", true);
-                WScript.Quit(2);
+                var emulator_images = get_emulator_images();
+                if (emulator_images.length < 1) { // no AVDs availible so error out.
+                    Log('No emulators found, if you would like to create an emulator follow the instructions', true);
+                    Log(' provided here : http://developer.android.com/tools/devices/index.html', true);
+                    Log(' Or run \'android create avd --name <name> --target <targetID>\' in on the command line.', true);
+                    WScript.Quit(2);
+                }
+                start_emulator(emulator_images[0].split(' ')[0]);
+                emulators = get_started_emulators();
+                if (emulators.length > 0) {
+                    install_emulator();
+                }
+                else {
+                    Log("Error : emulator failed to start.", true);
+                    WScript.Quit(2);
+                }
             }
         }
     }
