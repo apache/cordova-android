@@ -33,7 +33,6 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Vibrator;
-import android.util.Log;
 import android.widget.EditText;
 
 /**
@@ -209,41 +208,40 @@ public class Notification extends CordovaPlugin {
                 // First button
                 if (buttonLabels.length() > 0) {
                     try {
-						dlg.setNegativeButton(buttonLabels.getString(0),
-						        new AlertDialog.OnClickListener() {
-						            public void onClick(DialogInterface dialog, int which) {
-						                dialog.dismiss();
-						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 1));
-						            }
-						        });
-					} catch (JSONException e) { }
+                        dlg.setNegativeButton(buttonLabels.getString(0),
+                            new AlertDialog.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 1));
+                                }
+                            });
+                    } catch (JSONException e) { }
                 }
 
                 // Second button
                 if (buttonLabels.length() > 1) {
                     try {
-						dlg.setNeutralButton(buttonLabels.getString(1),
-						        new AlertDialog.OnClickListener() {
-						            public void onClick(DialogInterface dialog, int which) {
-						                dialog.dismiss();
-						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 2));
-						            }
-						        });
-					} catch (JSONException e) { }
+                        dlg.setNeutralButton(buttonLabels.getString(1),
+                            new AlertDialog.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 2));
+                                }
+                            });
+                    } catch (JSONException e) { }
                 }
 
                 // Third button
                 if (buttonLabels.length() > 2) {
                     try {
-						dlg.setPositiveButton(buttonLabels.getString(2),
-						        new AlertDialog.OnClickListener() {
-						            public void onClick(DialogInterface dialog, int which) {
-						                dialog.dismiss();
-						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 3));
-						            }
-						        }
-						        );
-					} catch (JSONException e) { }
+                        dlg.setPositiveButton(buttonLabels.getString(2),
+                            new AlertDialog.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                  dialog.dismiss();
+                                  callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, 3));
+                                }
+                            });
+                    } catch (JSONException e) { }
                 }
                 dlg.setOnCancelListener(new AlertDialog.OnCancelListener() {
                     public void onCancel(DialogInterface dialog)
@@ -292,74 +290,72 @@ public class Notification extends CordovaPlugin {
                 // First button
                 if (buttonLabels.length() > 0) {
                     try {
-						dlg.setNegativeButton(buttonLabels.getString(0),
-						        new AlertDialog.OnClickListener() {
-						            public void onClick(DialogInterface dialog, int which) {
-						                dialog.dismiss();
-						                try {
-											result.put("buttonIndex",1);
-	                                        result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());											
-										} catch (JSONException e) { e.printStackTrace(); }
-						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
-						            }
-						        });
-					} catch (JSONException e) { }
+                        dlg.setNegativeButton(buttonLabels.getString(0),
+                            new AlertDialog.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    try {
+                                        result.put("buttonIndex",1);
+                                        result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());											
+                                    } catch (JSONException e) { e.printStackTrace(); }
+                                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                                }
+                            });
+                    } catch (JSONException e) { }
                 }
 
                 // Second button
                 if (buttonLabels.length() > 1) {
                     try {
-						dlg.setNeutralButton(buttonLabels.getString(1),
-						        new AlertDialog.OnClickListener() {
-						            public void onClick(DialogInterface dialog, int which) {
-						                dialog.dismiss();
-						                try {
-											result.put("buttonIndex",2);
-											result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
-										} catch (JSONException e) { e.printStackTrace(); }
-						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
-						            }
-						        });
-					} catch (JSONException e) { }
+                        dlg.setNeutralButton(buttonLabels.getString(1),
+                            new AlertDialog.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    try {
+                                        result.put("buttonIndex",2);
+                                        result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
+                                    } catch (JSONException e) { e.printStackTrace(); }
+                                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                                }
+                            });
+                    } catch (JSONException e) { }
                 }
 
                 // Third button
                 if (buttonLabels.length() > 2) {
                     try {
-						dlg.setPositiveButton(buttonLabels.getString(2),
-						        new AlertDialog.OnClickListener() {
-						            public void onClick(DialogInterface dialog, int which) {
-						                dialog.dismiss();
-						                try {
-											result.put("buttonIndex",3);
-											result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
-										} catch (JSONException e) { e.printStackTrace(); }
-						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
-						            }
-						        }
-						        );
-					} catch (JSONException e) { }
+                        dlg.setPositiveButton(buttonLabels.getString(2),
+                            new AlertDialog.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                    try {
+                                        result.put("buttonIndex",3);
+                                        result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
+                                    } catch (JSONException e) { e.printStackTrace(); }
+                                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                                }
+                            });
+                    } catch (JSONException e) { }
                 }
                 dlg.setOnCancelListener(new AlertDialog.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog)
-                    {
+                    public void onCancel(DialogInterface dialog){
                         dialog.dismiss();
-		                try {
-							result.put("buttonIndex",0);
-							result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
-						} catch (JSONException e) { e.printStackTrace(); }
-		                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                        try {
+                            result.put("buttonIndex",0);
+                            result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
+                        } catch (JSONException e) { e.printStackTrace(); }
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
                     }
                 });
 
                 dlg.create();
                 dlg.show();
-                
+
             };
         };
-        this.cordova.getActivity().runOnUiThread(runnable);        
+        this.cordova.getActivity().runOnUiThread(runnable);
     }
-    
+
     /**
      * Show the spinner.
      *
