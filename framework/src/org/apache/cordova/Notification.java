@@ -33,6 +33,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Vibrator;
+import android.util.Log;
 import android.widget.EditText;
 
 /**
@@ -74,7 +75,7 @@ public class Notification extends CordovaPlugin {
             return true;
         }
         else if (action.equals("prompt")) {
-            this.prompt(args.getString(0), args.getString(1), args.getJSONArray(2), callbackContext);
+            this.prompt(args.getString(0), args.getString(1), args.getJSONArray(2), args.getString(3), callbackContext);
             return true;
         }
         else if (action.equals("activityStart")) {
@@ -271,11 +272,12 @@ public class Notification extends CordovaPlugin {
      * @param buttonLabels      A comma separated list of button labels (Up to 3 buttons)
      * @param callbackContext   The callback context.
      */
-    public synchronized void prompt(final String message, final String title, final JSONArray buttonLabels, final CallbackContext callbackContext) {
+    public synchronized void prompt(final String message, final String title, final JSONArray buttonLabels, final String defaultText, final CallbackContext callbackContext) {
     	
         final CordovaInterface cordova = this.cordova;
         final EditText promptInput =  new EditText(cordova.getActivity());
-
+        promptInput.setHint(defaultText);
+       
         Runnable runnable = new Runnable() {
             public void run() {
                 AlertDialog.Builder dlg = new AlertDialog.Builder(cordova.getActivity());
@@ -296,7 +298,7 @@ public class Notification extends CordovaPlugin {
 						                dialog.dismiss();
 						                try {
 											result.put("buttonIndex",1);
-							                result.put("input1", promptInput.getText());
+	                                        result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());											
 										} catch (JSONException e) { e.printStackTrace(); }
 						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
 						            }
@@ -313,7 +315,7 @@ public class Notification extends CordovaPlugin {
 						                dialog.dismiss();
 						                try {
 											result.put("buttonIndex",2);
-							                result.put("input1", promptInput.getText());
+											result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
 										} catch (JSONException e) { e.printStackTrace(); }
 						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
 						            }
@@ -330,7 +332,7 @@ public class Notification extends CordovaPlugin {
 						                dialog.dismiss();
 						                try {
 											result.put("buttonIndex",3);
-							                result.put("input1", promptInput.getText());
+											result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
 										} catch (JSONException e) { e.printStackTrace(); }
 						                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
 						            }
@@ -344,7 +346,7 @@ public class Notification extends CordovaPlugin {
                         dialog.dismiss();
 		                try {
 							result.put("buttonIndex",0);
-			                result.put("input1", promptInput.getText());
+							result.put("input1", promptInput.getText().toString().trim().length()==0 ? defaultText : promptInput.getText());
 						} catch (JSONException e) { e.printStackTrace(); }
 		                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
                     }
@@ -355,8 +357,9 @@ public class Notification extends CordovaPlugin {
                 
             };
         };
-        this.cordova.getActivity().runOnUiThread(runnable);
+        this.cordova.getActivity().runOnUiThread(runnable);        
     }
+    
     /**
      * Show the spinner.
      *
@@ -446,5 +449,4 @@ public class Notification extends CordovaPlugin {
             this.progressDialog = null;
         }
     }
-
 }
