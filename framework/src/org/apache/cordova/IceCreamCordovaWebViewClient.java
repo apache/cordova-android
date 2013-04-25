@@ -43,13 +43,12 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        if(url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url)){
-            WebResourceResponse ret = generateWebResourceResponse(url);
-            if (ret != null) {
-                return ret;
-            }
+        //Check if plugins intercept the request
+        WebResourceResponse ret = super.shouldInterceptRequest(view, url);
+        if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url))){
+            ret = generateWebResourceResponse(url);
         }
-        return super.shouldInterceptRequest(view, url);
+        return ret;
     }
 
     private WebResourceResponse generateWebResourceResponse(String url) {
