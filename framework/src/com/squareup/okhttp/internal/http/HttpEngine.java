@@ -19,7 +19,6 @@ package com.squareup.okhttp.internal.http;
 
 import com.squareup.okhttp.Address;
 import com.squareup.okhttp.Connection;
-import com.squareup.okhttp.OkResponseCache;
 import com.squareup.okhttp.ResponseSource;
 import com.squareup.okhttp.TunnelRequest;
 import com.squareup.okhttp.internal.Dns;
@@ -154,7 +153,7 @@ public class HttpEngine {
     try {
       uri = Platform.get().toUriLenient(policy.getURL());
     } catch (URISyntaxException e) {
-      throw new IOException(e);
+      throw new IOException(e.getMessage());
     }
 
     this.requestHeaders = new RequestHeaders(uri, new RawHeaders(requestHeaders));
@@ -176,8 +175,8 @@ public class HttpEngine {
 
     prepareRawRequestHeaders();
     initResponseSource();
-    if (policy.responseCache instanceof OkResponseCache) {
-      ((OkResponseCache) policy.responseCache).trackResponse(responseSource);
+    if (policy.responseCache != null) {
+      policy.responseCache.trackResponse(responseSource);
     }
 
     // The raw response source may require the network, but the request
@@ -198,6 +197,7 @@ public class HttpEngine {
       sendSocketRequest();
     } else if (connection != null) {
       policy.connectionPool.recycle(connection);
+      policy.getFailedRoutes().remove(connection.getRoute());
       connection = null;
     }
   }
@@ -279,16 +279,17 @@ public class HttpEngine {
       }
       Address address = new Address(uriHost, getEffectivePort(uri), sslSocketFactory,
           hostnameVerifier, policy.requestedProxy);
-      routeSelector =
-          new RouteSelector(address, uri, policy.proxySelector, policy.connectionPool, Dns.DEFAULT);
+      routeSelector = new RouteSelector(address, uri, policy.proxySelector, policy.connectionPool,
+          Dns.DEFAULT, policy.getFailedRoutes());
     }
     connection = routeSelector.next();
     if (!connection.isConnected()) {
       connection.connect(policy.getConnectTimeout(), policy.getReadTimeout(), getTunnelConfig());
       policy.connectionPool.maybeShare(connection);
+      policy.getFailedRoutes().remove(connection.getRoute());
     }
     connected(connection);
-    if (connection.getProxy() != policy.requestedProxy) {
+    if (connection.getRoute().getProxy() != policy.requestedProxy) {
       // Update the request line if the proxy changed; it may need a host name.
       requestHeaders.getHeaders().setRequestLine(getRequestLine());
     }
@@ -574,7 +575,7 @@ public class HttpEngine {
   protected boolean includeAuthorityInRequestLine() {
     return connection == null
         ? policy.usingProxy() // A proxy was requested.
-        : connection.getProxy().type() == Proxy.Type.HTTP; // A proxy was selected.
+        : connection.getRoute().getProxy().type() == Proxy.Type.HTTP; // A proxy was selected.
   }
 
   public static String getDefaultUserAgent() {
@@ -635,11 +636,8 @@ public class HttpEngine {
         release(false);
         ResponseHeaders combinedHeaders = cachedResponseHeaders.combine(responseHeaders);
         setResponse(combinedHeaders, cachedResponseBody);
-        if (policy.responseCache instanceof OkResponseCache) {
-          OkResponseCache httpResponseCache = (OkResponseCache) policy.responseCache;
-          httpResponseCache.trackConditionalCacheHit();
-          httpResponseCache.update(cacheResponse, policy.getHttpConnectionToCache());
-        }
+        policy.responseCache.trackConditionalCacheHit();
+        policy.responseCache.update(cacheResponse, policy.getHttpConnectionToCache());
         return;
       } else {
         Util.closeQuietly(cachedResponseBody);

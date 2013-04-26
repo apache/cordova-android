@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import static com.squareup.okhttp.internal.Util.equal;
 
 /** Parsed HTTP response headers. */
-final class ResponseHeaders {
+public final class ResponseHeaders {
 
   /** HTTP header name for the local time when the request was sent. */
   private static final String SENT_MILLIS = "X-Android-Sent-Millis";
@@ -410,7 +410,8 @@ final class ResponseHeaders {
       if (ageMillis + minFreshMillis >= freshMillis) {
         headers.add("Warning", "110 HttpURLConnection \"Response is stale\"");
       }
-      if (ageMillis > TimeUnit.HOURS.toMillis(24) && isFreshnessLifetimeHeuristic()) {
+      long oneDayMillis = 24 * 60 * 60 * 1000L;
+      if (ageMillis > oneDayMillis && isFreshnessLifetimeHeuristic()) {
         headers.add("Warning", "113 HttpURLConnection \"Heuristic expiration\"");
       }
       return ResponseSource.CACHE;
