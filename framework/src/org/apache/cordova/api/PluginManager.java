@@ -107,9 +107,8 @@ public class PluginManager {
         }
         XmlResourceParser xml = this.ctx.getActivity().getResources().getXml(id);
         int eventType = -1;
-        String service = "", pluginClass = "", paramType = "", featureName="";
+        String service = "", pluginClass = "", paramType = "";
         boolean onload = false;
-        PluginEntry entry = null;
         boolean insideFeature = false;
         while (eventType != XmlResourceParser.END_DOCUMENT) {
             if (eventType == XmlResourceParser.START_TAG) {
@@ -118,52 +117,40 @@ public class PluginManager {
                 if (strNode.equals("plugin")) {
                     service = xml.getAttributeValue(null, "name");
                     pluginClass = xml.getAttributeValue(null, "value");
-                    // System.out.println("Plugin: "+name+" => "+value);
                     Log.d(TAG, "<plugin> tags are deprecated, please use <features> instead. <plugin> will no longer work as of Cordova 3.0");
                     onload = "true".equals(xml.getAttributeValue(null, "onload"));
-                    entry = new PluginEntry(service, pluginClass, onload);
-                    this.addService(entry);
                 }
                 //What is this?
                 else if (strNode.equals("url-filter")) {
                     this.urlMap.put(xml.getAttributeValue(null, "value"), service);
                 }
                 else if (strNode.equals("feature")) {
-                    insideFeature = true;
                     //Check for supported feature sets  aka. plugins (Accelerometer, Geolocation, etc)
                     //Set the bit for reading params
-                   featureName = xml.getAttributeValue(null,"name");
+                    insideFeature = true;
+                    service = xml.getAttributeValue(null, "name");
                 }
-                else if( insideFeature && strNode.equals("param")) {
+                else if (insideFeature && strNode.equals("param")) {
                     paramType = xml.getAttributeValue(null, "name");
                     if (paramType.equals("service")) // check if it is using the older service param
                         service = xml.getAttributeValue(null, "value");
-                    else if (paramType.equals("package"))
-                        pluginClass = xml.getAttributeValue(null, "value");
-                    else if (paramType.equals("android-package"))
-                    {
-                        service = featureName;
+                    else if (paramType.equals("package") || paramType.equals("android-package"))
                         pluginClass = xml.getAttributeValue(null,"value");
-                    }
-                    if (service.length() > 0 && pluginClass.length() > 0) {
-                        onload = "true".equals(xml.getAttributeValue(null,
-                                "onload"));
-                        entry = new PluginEntry(service, pluginClass, onload);
-                        this.addService(entry);
-                        service = "";
-                        pluginClass = "";
-                    }
+                    else if (paramType.equals("onload"))
+                        onload = "true".equals(xml.getAttributeValue(null, "onload"));
                 }
             }
             else if (eventType == XmlResourceParser.END_TAG)
             {
                 String strNode = xml.getName();
-                if(strNode.equals("feature"))
+                if (strNode.equals("feature") || strNode.equals("plugin"))
                 {
+                    PluginEntry entry = new PluginEntry(service, pluginClass, onload);
+                    this.addService(entry);
+
                     //Empty the strings to prevent plugin loading bugs
                     service = "";
                     pluginClass = "";
-                    featureName ="";
                     insideFeature = false;
                 }
             }
