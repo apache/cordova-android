@@ -1040,14 +1040,8 @@ public class DroidGap extends Activity implements CordovaInterface {
                 root.setBackgroundColor(that.getIntegerProperty("backgroundColor", Color.BLACK));
                 root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
                         ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
-                // We want the splashscreen to keep its ratio, 
-                // for this we need to use an ImageView and not simply the background of the LinearLayout
-                ImageView splashscreenView = new ImageView(that.getActivity());
-                splashscreenView.setImageResource(that.splashscreen);
-                splashscreenView.setScaleType(ImageView.ScaleType.CENTER_CROP); // similar to the background-size:cover CSS property
-                splashscreenView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
-                root.addView(splashscreenView);
-
+                root.setBackgroundResource(that.splashscreen);
+                
                 // Create and show the dialog
                 splashDialog = new Dialog(that, android.R.style.Theme_Translucent_NoTitleBar);
                 // check to see if the splash screen should be full screen
