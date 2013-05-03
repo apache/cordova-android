@@ -97,7 +97,7 @@ public class Config {
                 }
                 else if (strNode.equals("log")) {
                     String level = xml.getAttributeValue(null, "level");
-                    LOG.i("CordovaLog", "Found log level %s", level);
+                    Log.d(TAG, "The <log> tags is deprecated. Use <preference name=\"loglevel\" value=\"" + level + "\"/> instead.");
                     if (level != null) {
                         LOG.setLogLevel(level);
                     }
@@ -113,7 +113,10 @@ public class Config {
                        
                        Note: We should probably pass in the classname for the variable splash on splashscreen!
                        */
-                    if(name.equals("splashscreen")) {
+                    if (name.equals("loglevel")) {
+                        String level = xml.getAttributeValue(null, "value");
+                        LOG.setLogLevel(level);
+                    } else if (name.equals("splashscreen")) {
                         String value = xml.getAttributeValue(null, "value");
                         int resource = 0;
                         if (value != null)
@@ -123,20 +126,14 @@ public class Config {
                         resource = action.getResources().getIdentifier(value, "drawable", action.getPackageName());
                         
                         action.getIntent().putExtra(name, resource);
-                        LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
-                        Log.d("CordovaLog", "Found preference for " + name + "=" + value);
                     }
                     else if(name.equals("backgroundColor")) {
                         int value = xml.getAttributeIntValue(null, "value", Color.BLACK);
                         action.getIntent().putExtra(name, value);
-                        LOG.i("CordovaLog", "Found preference for %s=%d", name, value);
-                        Log.d("CordovaLog", "Found preference for " + name + "=" + Integer.toString(value));
                     }
                     else if(name.equals("loadUrlTimeoutValue")) {
                         int value = xml.getAttributeIntValue(null, "value", 20000);
                         action.getIntent().putExtra(name, value);
-                        LOG.i("CordovaLog", "Found preference for %s=%d", name, value);
-                        Log.d("CordovaLog", "Found preference for " + name + "=" + Integer.toString(value));
                     }
                     else if(name.equals("keepRunning"))
                     {
@@ -157,12 +154,9 @@ public class Config {
                     {
                         String value = xml.getAttributeValue(null, "value");
                         action.getIntent().putExtra(name, value);
-                        LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
-                        Log.d("CordovaLog", "Found preference for " + name + "=" + value);
                     }
                     /*
                     LOG.i("CordovaLog", "Found preference for %s=%s", name, value);
-                    Log.d("CordovaLog", "Found preference for " + name + "=" + value);
                      */
                 }
                 else if (strNode.equals("content")) {
