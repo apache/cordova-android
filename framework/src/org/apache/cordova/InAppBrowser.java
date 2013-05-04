@@ -49,6 +49,7 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.JsPromptResult;
@@ -75,6 +76,9 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String LOAD_STOP_EVENT = "loadstop";
     private static final String LOAD_ERROR_EVENT = "loaderror";
     private static final String CLOSE_BUTTON_CAPTION = "closebuttoncaption";
+    private static final String CLEAR_ALL_CACHE="clearallcache";
+    private static final String CLEAR_SESSION_CACHE="clearsessioncache";
+
     private long MAX_QUOTA = 100 * 1024 * 1024;
 
     private Dialog dialog;
@@ -83,7 +87,9 @@ public class InAppBrowser extends CordovaPlugin {
     private boolean showLocationBar = true;
     private CallbackContext callbackContext;
     private String buttonLabel = "Done";
-    
+    private boolean clearAllCache= false;//clear all cache
+    private boolean clearSessionCache=false;
+
     /**
      * Executes the request and returns PluginResult.
      *
@@ -366,6 +372,15 @@ public class InAppBrowser extends CordovaPlugin {
             if (show != null) {
                 showLocationBar = show.booleanValue();
             }
+            Boolean cache = features.get(CLEAR_ALL_CACHE);
+            if(cache!=null){
+                Log.d(LOG_TAG, "clear all cache");
+                clearAllCache=cache.booleanValue();
+            }else{
+                Log.d(LOG_TAG, "clear session cache");
+                cache = features.get(CLEAR_SESSION_CACHE);
+                if(cache!=null)clearSessionCache=features.get(CLEAR_SESSION_CACHE);
+            }
         }
         
         final CordovaWebView thatWebView = this.webView;
@@ -515,7 +530,14 @@ public class InAppBrowser extends CordovaPlugin {
                     settings.setDatabaseEnabled(true);
                 }
                 settings.setDomStorageEnabled(true);
-               
+
+                if(clearAllCache){
+                    CookieManager.getInstance().removeAllCookie();
+                }else{
+                    if(clearSessionCache)
+                        CookieManager.getInstance().removeSessionCookie();
+                }
+
                 inAppWebView.loadUrl(url);
                 inAppWebView.setId(6);
                 inAppWebView.getSettings().setLoadWithOverviewMode(true);
