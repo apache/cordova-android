@@ -400,4 +400,30 @@ public class PluginManager {
         LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
         LOG.e(TAG, "=====================================================================================");
     }
+
+    /**
+     * Called when the any resource is going to be loaded - either from the webview, files or any other resource
+     *
+     *
+     * @param dataResource          The resource request to be loaded.
+     * @param dataResourceContext   The context of the dataResource request
+     * @return                      Return the resource request that will be loaded. The returned request may be modified or unchanged.
+     */
+    public DataResource shouldInterceptDataResourceRequest(DataResource dataResource, DataResourceContext dataResourceContext){
+        boolean requestModified = true;
+        while(requestModified) {
+            requestModified = false;
+            for (PluginEntry entry : this.entries.values()) {
+                if (entry.plugin != null) {
+                    DataResource ret = entry.plugin.shouldInterceptDataResourceRequest(dataResource, dataResourceContext);
+                    if(ret != null) {
+                        dataResource = ret;
+                        requestModified = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return dataResource;
+    }
 }
