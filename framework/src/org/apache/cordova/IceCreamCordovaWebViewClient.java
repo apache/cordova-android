@@ -49,6 +49,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
                 new DataResourceContext("WebViewClient.shouldInterceptRequest", true /* this is from a browser request*/));
         url = dataResource.getUri().toString();
 
+        // This mechanism is no longer needed due to the dataResource mechanism. It would be awesome to just get rid of it.
         //Check if plugins intercept the request
         WebResourceResponse ret = super.shouldInterceptRequest(view, url);
 //      The below bugfix is taken care of by the dataResource mechanism

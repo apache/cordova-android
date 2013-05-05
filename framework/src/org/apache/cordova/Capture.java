@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import android.os.Build;
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
+import org.apache.cordova.api.DataResource;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
@@ -129,7 +130,8 @@ public class Capture extends CordovaPlugin {
         // If the mimeType isn't set the rest will fail
         // so let's see if we can determine it.
         if (mimeType == null || mimeType.equals("") || "null".equals(mimeType)) {
-            mimeType = FileHelper.getMimeType(filePath, cordova);
+            DataResource dataResource = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "Capture.dataResource");
+            mimeType = dataResource.getMimeType();
         }
         Log.d(LOG_TAG, "Mime type = " + mimeType);
 
@@ -156,7 +158,8 @@ public class Capture extends CordovaPlugin {
     private JSONObject getImageData(String filePath, JSONObject obj) throws JSONException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(FileHelper.stripFileProtocol(filePath), options);
+        DataResource dataResource = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "Capture.getImageData");
+        BitmapFactory.decodeFile(dataResource.getRealFile().getPath(), options);
         obj.put("height", options.outHeight);
         obj.put("width", options.outWidth);
         return obj;
@@ -348,7 +351,8 @@ public class Capture extends CordovaPlugin {
      * @throws IOException
      */
     private JSONObject createMediaFile(Uri data) {
-        File fp = new File(FileHelper.getRealPath(data, this.cordova));
+        DataResource dataResource = DataResource.initiateNewDataRequestForUri(data, webView.pluginManager, cordova, "Capture.createMediaFile");
+        File fp = dataResource.getRealFile();
         JSONObject obj = new JSONObject();
 
         try {
@@ -358,6 +362,7 @@ public class Capture extends CordovaPlugin {
             // Because of an issue with MimeTypeMap.getMimeTypeFromExtension() all .3gpp files
             // are reported as video/3gpp. I'm doing this hacky check of the URI to see if it
             // is stored in the audio or video content store.
+
             if (fp.getAbsoluteFile().toString().endsWith(".3gp") || fp.getAbsoluteFile().toString().endsWith(".3gpp")) {
                 if (data.toString().contains("/audio/")) {
                     obj.put("type", AUDIO_3GPP);
@@ -365,7 +370,7 @@ public class Capture extends CordovaPlugin {
                     obj.put("type", VIDEO_3GPP);
                 }
             } else {
-                obj.put("type", FileHelper.getMimeType(fp.getAbsolutePath(), cordova));
+                obj.put("type", dataResource.getMimeType());
             }
 
             obj.put("lastModifiedDate", fp.lastModified());
