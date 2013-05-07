@@ -119,7 +119,7 @@ public class Config {
                     } else if (name.equals("splashscreen")) {
                         String value = xml.getAttributeValue(null, "value");
                         int resource = 0;
-                        if (value != null)
+                        if (value == null)
                         {
                             value = "splash";
                         }
