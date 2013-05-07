@@ -137,7 +137,7 @@ import android.widget.LinearLayout;
  *          ...
  *      </plugins>
  */
-public class DroidGap extends Activity implements CordovaInterface {
+public class CordovaActivity extends Activity implements CordovaInterface {
     public static String TAG = "DroidGap";
 
     // The webview for our app
@@ -314,7 +314,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * Create and initialize web container with default web view objects.
      */
     public void init() {
-        CordovaWebView webView = new CordovaWebView(DroidGap.this);
+        CordovaWebView webView = new CordovaWebView(CordovaActivity.this);
         CordovaWebViewClient webViewClient;
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
         {
@@ -780,8 +780,8 @@ public class DroidGap extends Activity implements CordovaInterface {
             this.spinnerDialog.dismiss();
             this.spinnerDialog = null;
         }
-        final DroidGap me = this;
-        this.spinnerDialog = ProgressDialog.show(DroidGap.this, title, message, true, true,
+        final CordovaActivity me = this;
+        this.spinnerDialog = ProgressDialog.show(CordovaActivity.this, title, message, true, true,
                 new DialogInterface.OnCancelListener() {
                     public void onCancel(DialogInterface dialog) {
                         me.spinnerDialog = null;
@@ -886,7 +886,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param failingUrl   The url that failed to load.
      */
     public void onReceivedError(final int errorCode, final String description, final String failingUrl) {
-        final DroidGap me = this;
+        final CordovaActivity me = this;
 
         // If errorUrl specified, then load it
         final String errorUrl = me.getStringProperty("errorUrl", null);
@@ -924,7 +924,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      * @param exit
      */
     public void displayError(final String title, final String message, final String button, final boolean exit) {
-        final DroidGap me = this;
+        final CordovaActivity me = this;
         me.runOnUiThread(new Runnable() {
             public void run() {
                 try {
@@ -1025,7 +1025,7 @@ public class DroidGap extends Activity implements CordovaInterface {
      */
     @SuppressWarnings("deprecation")
     protected void showSplashScreen(final int time) {
-        final DroidGap that = this;
+        final CordovaActivity that = this;
 
         Runnable runnable = new Runnable() {
             public void run() {
