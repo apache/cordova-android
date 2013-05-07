@@ -122,33 +122,27 @@ public class FileHelper {
      */
     public static boolean isUriWritable(String uriString) {
         String scheme = uriString.split(":")[0];
-        String writableSchemes[] = new String[]{ "content" };
 
         if(scheme.equals("file")){
             // special case file
-            if(uriString.startsWith("file:///android_asset/")){
-                return false;
-            } else {
-                return true;
-            }
+            return !uriString.startsWith("file:///android_asset/");
         }
-        for(int i = writableSchemes.length - 1; i >= 0 ; i--){
-            if(writableSchemes[i].equals(scheme)){
-                return true;
-            }
-        }
-        return false;
+        return "content".equals(scheme);
     }
 
     /**
      * Ensures the "file://" prefix exists for the given string
-     * If the given URI string has a "file://" prefix, it is returned unchanged
+     * If the given URI string already has a scheme, it is returned unchanged
      *
      * @param path - the path string to operate on
      * @return a String with the "file://" scheme set
      */
     public static String insertFileProtocol(String path) {
         if(!path.matches("^[a-z0-9+.-]+:.*")){
+            //Ensure it is not a relative path
+            if(!path.startsWith("/")){
+                throw new IllegalArgumentException("Relative paths" + path + "are not allowed.");
+            }
             path = "file://" + path;
         }
         return path;
