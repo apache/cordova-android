@@ -26,8 +26,7 @@
         </filterchain>
     </loadfile>
 
-    <!-- check that the version of ant is at least 1.8.0, as is needed
-         for the dblQuote property -->
+    <!-- check that the version of ant is at least 1.8.0 -->
     <antversion property="thisantversion" atleast="1.8.0" />
     <fail message="The required minimum version of ant is 1.8.0, you have ${ant.version}"
           unless="thisantversion" />
@@ -79,9 +78,6 @@
 
          -->
     <property file="ant.properties" />
-
-    <!-- We need to setup the double quote. -->
-    <property name="dblQuote">"</property>
 
     <!-- The project.properties file is created and updated by the 'android'
          tool, as well as ADT.
@@ -136,33 +132,10 @@
     -->
     <import file="${sdk.dir}/tools/ant/build.xml" />
 
-    <!-- Combine JavaScript files into one cordova-uncompressed.js file. -->
-    <target name="build-javascript" depends="clean">
-
-      <!-- Clean up existing files -->
-      <!--<delete file="assets/www/cordova_${version}.js"/>-->
-
-      <!-- Create uncompressed JS file -->
-      <concat destfile="assets/www/cordova-${version}.js">
-        <filelist dir="assets/js" files="cordova.android.js"/>
-      </concat>
-
-      <!-- update project files to reference cordova-x.x.x.min.js -->
-      <replaceregexp match="cordova(.*)\.js" replace="cordova-${version}.js" byline="true">
-         <fileset file="assets/www/index.html" />
-         <fileset file="../bin/templates/project/assets/www/index.html" />
-      </replaceregexp>
-
-      <!-- This is sketchy, but it works, ${dblQuote} does not -->
-      <replaceregexp match="cordovaVersion = [\u0022].*[\u0022];" replace='cordovaVersion = ${dblQuote}${version}${dblQuote};' byline="true">
-        <fileset file="src/org/apache/cordova/Device.java" />
-      </replaceregexp>
-    </target>
-
     <!-- Build Cordova jar file that includes all native code, and Cordova JS file
          that includes all JavaScript code.
     -->
-    <target name="jar" depends="build-javascript, -compile">
+    <target name="jar" depends="-compile">
       <jar jarfile="cordova-${version}.jar" basedir="bin/classes" excludes="org/apache/cordova/R.class,org/apache/cordova/R$*.class"/>
     </target>
 
@@ -195,10 +168,10 @@
         </junit>
     </target>
 
-    <target name="cordova_debug" depends="build-javascript, debug">
+    <target name="cordova_debug" depends="debug">
     </target>
 
-    <target name="cordova_release" depends="build-javascript, release">
+    <target name="cordova_release" depends="release">
     </target>
 
 </project>
