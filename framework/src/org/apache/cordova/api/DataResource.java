@@ -24,10 +24,13 @@ public class DataResource {
     private String mimeType;
     private Boolean writable;
     private File realFile;
-    private boolean retryLoad = true;
+    private boolean retryIsLoad = true;
+    private boolean retryOsLoad = true;
+    private boolean retryMimeTypeLoad = true;
+    private boolean retryWritableLoad = true;
+    private boolean retryRealFileLoad = true;
 
     public DataResource(CordovaInterface cordova, Uri uri) {
-        super();
         this.cordova = cordova;
         this.uri = uri;
     }
@@ -43,61 +46,61 @@ public class DataResource {
         // Uri is always provided
         return uri;
     }
-    public InputStream getIs() throws IOException {
-        if(is == null && retryLoad) {
+    public InputStream getInputStream() throws IOException {
+        if(is == null && retryIsLoad) {
             try {
                 is = FileHelper.getInputStreamFromUriString(uri.toString(), cordova);
             } finally {
                 // We failed loading once, don't try loading anymore
                 if(is == null) {
-                    retryLoad = false;
+                    retryIsLoad = false;
                 }
             }
         }
         return is;
     }
-    public OutputStream getOs() throws FileNotFoundException {
-        if(os == null && retryLoad) {
+    public OutputStream getOutputStream() throws FileNotFoundException {
+        if(os == null && retryOsLoad) {
             try {
                 os = FileHelper.getOutputStreamFromUriString(uri.toString(), cordova);
             } finally {
                 // We failed loading once, don't try loading anymore
                 if(os == null) {
-                    retryLoad = false;
+                    retryOsLoad = false;
                 }
             }
         }
         return os;
     }
     public String getMimeType() {
-        if(mimeType == null && retryLoad) {
+        if(mimeType == null && retryMimeTypeLoad) {
             try {
                 mimeType = FileHelper.getMimeType(uri.toString(), cordova);
             } finally {
                 // We failed loading once, don't try loading anymore
                 if(mimeType == null) {
-                    retryLoad = false;
+                    retryMimeTypeLoad = false;
                 }
             }
         }
         return mimeType;
     }
     public boolean isWritable() {
-        if(writable == null && retryLoad) {
+        if(writable == null && retryWritableLoad) {
             try {
                 writable = FileHelper.isUriWritable(uri.toString());
             } finally {
                 // We failed loading once, don't try loading anymore
                 if(writable == null) {
-                    retryLoad = false;
+                    retryWritableLoad = false;
                 }
             }
         }
         // default to false
-        return writable != null? writable.booleanValue() : false;
+        return writable != null && writable.booleanValue();
     }
     public File getRealFile() {
-        if(realFile == null && retryLoad) {
+        if(realFile == null && retryRealFileLoad) {
             try {
                 String realPath = FileHelper.getRealPath(uri, cordova);
                 if(realPath != null) {
@@ -106,7 +109,7 @@ public class DataResource {
             } finally {
                 // We failed loading once, don't try loading anymore
                 if(realFile == null) {
-                    retryLoad = false;
+                    retryRealFileLoad = false;
                 }
             }
         }
@@ -120,7 +123,7 @@ public class DataResource {
         return initiateNewDataRequestForUri(Uri.parse(uriString), pluginManager, cordova, requestSourceTag);
     }
     public static DataResource initiateNewDataRequestForUri(Uri uri, PluginManager pluginManager, CordovaInterface cordova, String requestSourceTag){
-        return initiateNewDataRequestForUri(uri, pluginManager, cordova, new DataResourceContext(requestSourceTag, false /* Assume, not a browser request by default */ ));
+        return initiateNewDataRequestForUri(uri, pluginManager, cordova, new DataResourceContext(requestSourceTag));
     }
     public static DataResource initiateNewDataRequestForUri(String uriString, PluginManager pluginManager, CordovaInterface cordova, DataResourceContext dataResourceContext){
      // if no protocol is specified, assume its file:
@@ -131,7 +134,7 @@ public class DataResource {
         DataResource dataResource = new DataResource(cordova, uri);
         if (pluginManager != null) {
             // get the resource as returned by plugins
-            dataResource = pluginManager.shouldInterceptDataResourceRequest(dataResource, dataResourceContext);
+            dataResource = pluginManager.handleDataResourceRequestWithPlugins(dataResource, dataResourceContext);
         }
         return dataResource;
     }

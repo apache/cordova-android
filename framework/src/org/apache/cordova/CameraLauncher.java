@@ -342,7 +342,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                             // Add compressed version of captured image to returned media store Uri
                             DataResource dataResource = DataResource.initiateNewDataRequestForUri(uri, webView.pluginManager, cordova, "CameraLauncher.CameraExitIntent");
-                            OutputStream os = dataResource.getOs();
+                            OutputStream os = dataResource.getOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
                             os.close();
 
@@ -540,9 +540,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private void writeUncompressedImage(Uri uri) throws FileNotFoundException,
             IOException {
         DataResource inputDataResource = DataResource.initiateNewDataRequestForUri(imageUri, webView.pluginManager, cordova, "CameraLauncher.writeUncompressedImage");
-        InputStream fis = inputDataResource.getIs();
+        InputStream fis = inputDataResource.getInputStream();
         DataResource outDataResource = DataResource.initiateNewDataRequestForUri(uri, webView.pluginManager, cordova, "CameraLauncher.writeUncompressedImage");
-        OutputStream os = outDataResource.getOs();
+        OutputStream os = outDataResource.getOutputStream();
         if(fis == null) {
             throw new FileNotFoundException("Could not get the input file");
         } else if(os == null) {
@@ -592,13 +592,13 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // If no new width or height were specified return the original bitmap
         DataResource dataResource = DataResource.initiateNewDataRequestForUri(imageUrl, webView.pluginManager, cordova, "CameraLauncher.getScaledBitmap");
         if (this.targetWidth <= 0 && this.targetHeight <= 0) {
-            return BitmapFactory.decodeStream(dataResource.getIs());
+            return BitmapFactory.decodeStream(dataResource.getInputStream());
         }
 
         // figure out the original width and height of the image
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(dataResource.getIs(), null, options);
+        BitmapFactory.decodeStream(dataResource.getInputStream(), null, options);
         
         //CB-2292: WTF? Why is the width null?
         if(options.outWidth == 0 || options.outHeight == 0)
@@ -612,7 +612,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // Load in the smallest bitmap possible that is closest to the size we want
         options.inJustDecodeBounds = false;
         options.inSampleSize = calculateSampleSize(options.outWidth, options.outHeight, this.targetWidth, this.targetHeight);
-        Bitmap unscaledBitmap = BitmapFactory.decodeStream(dataResource.getIs(), null, options);
+        Bitmap unscaledBitmap = BitmapFactory.decodeStream(dataResource.getInputStream(), null, options);
         if (unscaledBitmap == null) {
             return null;
         }

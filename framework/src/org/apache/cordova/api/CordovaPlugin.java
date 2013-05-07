@@ -182,10 +182,10 @@ public class CordovaPlugin {
      *
      * @param dataResource          The resource to be loaded.
      * @param dataResourceContext   Context associated with the resource load
-     * @return                      Return a new DataResource if the plugin wants o assist in loading the request or null if it doesn't.
+     * @return                      Return a new DataResource if the plugin wants to assist in loading the request or null if it doesn't.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public DataResource shouldInterceptDataResourceRequest(DataResource dataResource, DataResourceContext dataResourceContext) {
+    public DataResource handleDataResourceRequest(DataResource dataResource, DataResourceContext dataResourceContext) {
         return null;
     }
 
