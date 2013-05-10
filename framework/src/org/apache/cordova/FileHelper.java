@@ -98,8 +98,10 @@ public class FileHelper {
             Uri uri = Uri.parse(uriString);
             String relativePath = uri.getPath().substring(15);
             return cordova.getActivity().getAssets().open(relativePath);
-        } else {
+        } else if (uriString.startsWith("file://")) {
             return new FileInputStream(getRealPath(uriString, cordova));
+        } else {
+            return null;
         }
     }
 
