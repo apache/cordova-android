@@ -47,20 +47,6 @@ then
     exit 1
 fi
 
-# cleanup after exit and/or on error
-function on_exit {
-    # [ -f "$BUILD_PATH"/framework/libs/commons-codec-1.6.jar ] && rm "$BUILD_PATH"/framework/libs/commons-codec-1.6.jar
-    # [ -d "$BUILD_PATH"/framework/libs ] && rmdir "$BUILD_PATH"/framework/libs
-    if [ -f "$BUILD_PATH"/framework/assets/www/cordova-$VERSION.js ]
-    then
-        rm "$BUILD_PATH"/framework/assets/www/cordova-$VERSION.js
-    fi
-    if [ -f "$BUILD_PATH"/framework/cordova-$VERSION.jar ]
-    then
-        rm "$BUILD_PATH"/framework/cordova-$VERSION.jar
-    fi
-}
-
 function createAppInfoJar {
     pushd "$BUILD_PATH"/bin/templates/cordova/ApplicationInfo > /dev/null
     javac ApplicationInfo.java
@@ -91,7 +77,6 @@ function replace {
 # we do not want the script to silently fail
 trap 'previous_command=$this_command; this_command=$BASH_COMMAND' DEBUG
 trap on_error ERR
-trap on_exit EXIT
 
 ANDROID_BIN="${ANDROID_BIN:=$( which android )}"
 PACKAGE_AS_PATH=$(echo $PACKAGE | sed 's/\./\//g')
@@ -141,11 +126,11 @@ cp -r "$BUILD_PATH"/bin/templates/project/res "$PROJECT_PATH"
 if [ -d "$BUILD_PATH"/framework ]
 then
     cp -r "$BUILD_PATH"/framework/res/xml "$PROJECT_PATH"/res
-    cp "$BUILD_PATH"/framework/assets/www/cordova-$VERSION.js "$PROJECT_PATH"/assets/www/cordova-$VERSION.js
+    cp "$BUILD_PATH"/framework/assets/www/cordova.js "$PROJECT_PATH"/assets/www/cordova.js
     cp "$BUILD_PATH"/framework/cordova-$VERSION.jar "$PROJECT_PATH"/libs/cordova-$VERSION.jar
 else
     cp -r "$BUILD_PATH"/xml "$PROJECT_PATH"/res/xml
-    cp "$BUILD_PATH"/cordova-$VERSION.js "$PROJECT_PATH"/assets/www/cordova-$VERSION.js
+    cp "$BUILD_PATH"/cordova.js "$PROJECT_PATH"/assets/www/cordova.js
     cp "$BUILD_PATH"/cordova-$VERSION.jar "$PROJECT_PATH"/libs/cordova-$VERSION.jar
 fi
 
