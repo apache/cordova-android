@@ -672,8 +672,10 @@ public class CordovaWebView extends WebView {
                 InputMethodManager imm = (InputMethodManager) cordova.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(childView.getWindowToken(), 0);
                 cordova.getActivity().openOptionsMenu();
+                return true;
+            } else {
+                return super.onKeyDown(keyCode, event);
             }
-            return true;
         }
         
         return super.onKeyDown(keyCode, event);
