@@ -138,7 +138,7 @@ public class PluginManager {
                     else if (paramType.equals("package") || paramType.equals("android-package"))
                         pluginClass = xml.getAttributeValue(null,"value");
                     else if (paramType.equals("onload"))
-                        onload = "true".equals(xml.getAttributeValue(null, "onload"));
+                        onload = "true".equals(xml.getAttributeValue(null, "value"));
                 }
             }
             else if (eventType == XmlResourceParser.END_TAG)
