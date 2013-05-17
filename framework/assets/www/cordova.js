@@ -1,9 +1,5 @@
 // Platform: android
-
-// commit d0ffb852378ff018bac2f3b12c38098a19b8ce00
-
-// File generated at :: Thu Apr 18 2013 15:10:54 GMT-0400 (EDT)
-
+// 2.7.0rc1-53-gbb10068
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -22,26 +18,36 @@
  specific language governing permissions and limitations
  under the License.
 */
-
 ;(function() {
-
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-53-gbb10068';
 // file: lib/scripts/require.js
 
 var require,
     define;
 
 (function () {
-    var modules = {};
+    var modules = {},
     // Stack of moduleIds currently being built.
-    var requireStack = [];
+        requireStack = [],
     // Map of module ID -> index into requireStack of modules currently being built.
-    var inProgressModules = {};
+        inProgressModules = {},
+        SEPERATOR = ".";
+
+
 
     function build(module) {
-        var factory = module.factory;
+        var factory = module.factory,
+            localRequire = function (id) {
+                var resultantId = id;
+                //Its a relative path, so lop off the last portion and add the id (minus "./")
+                if (id.charAt(0) === ".") {
+                    resultantId = module.id.slice(0, module.id.lastIndexOf(SEPERATOR)) + SEPERATOR + id.slice(2);
+                }
+                return require(resultantId);
+            };
         module.exports = {};
         delete module.factory;
-        factory(require, module.exports, module);
+        factory(localRequire, module.exports, module);
         return module.exports;
     }
 
@@ -1153,20 +1159,6 @@ module.exports = {
 
 });
 
-// file: lib/common/plugin/Acceleration.js
-define("cordova/plugin/Acceleration", function(require, exports, module) {
-
-var Acceleration = function(x, y, z, timestamp) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.timestamp = timestamp || (new Date()).getTime();
-};
-
-module.exports = Acceleration;
-
-});
-
 // file: lib/common/plugin/Camera.js
 define("cordova/plugin/Camera", function(require, exports, module) {
 
@@ -1314,8 +1306,6 @@ var CaptureAudioOptions = function(){
     this.limit = 1;
     // Maximum duration of a single sound clip in seconds.
     this.duration = 0;
-    // The selected audio mode. Must match with one of the elements in supportedAudioModes array.
-    this.mode = null;
 };
 
 module.exports = CaptureAudioOptions;
@@ -1356,8 +1346,6 @@ define("cordova/plugin/CaptureImageOptions", function(require, exports, module) 
 var CaptureImageOptions = function(){
     // Upper limit of images user can take. Value must be equal or greater than 1.
     this.limit = 1;
-    // The selected image mode. Must match with one of the elements in supportedImageModes array.
-    this.mode = null;
 };
 
 module.exports = CaptureImageOptions;
@@ -1375,44 +1363,9 @@ var CaptureVideoOptions = function(){
     this.limit = 1;
     // Maximum duration of a single video clip in seconds.
     this.duration = 0;
-    // The selected video mode. Must match with one of the elements in supportedVideoModes array.
-    this.mode = null;
 };
 
 module.exports = CaptureVideoOptions;
-
-});
-
-// file: lib/common/plugin/CompassError.js
-define("cordova/plugin/CompassError", function(require, exports, module) {
-
-/**
- *  CompassError.
- *  An error code assigned by an implementation when an error has occurred
- * @constructor
- */
-var CompassError = function(err) {
-    this.code = (err !== undefined ? err : null);
-};
-
-CompassError.COMPASS_INTERNAL_ERR = 0;
-CompassError.COMPASS_NOT_SUPPORTED = 20;
-
-module.exports = CompassError;
-
-});
-
-// file: lib/common/plugin/CompassHeading.js
-define("cordova/plugin/CompassHeading", function(require, exports, module) {
-
-var CompassHeading = function(magneticHeading, trueHeading, headingAccuracy, timestamp) {
-  this.magneticHeading = magneticHeading;
-  this.trueHeading = trueHeading;
-  this.headingAccuracy = headingAccuracy;
-  this.timestamp = timestamp || new Date().getTime();
-};
-
-module.exports = CompassHeading;
 
 });
 
@@ -3780,172 +3733,6 @@ module.exports = ProgressEvent;
 
 });
 
-// file: lib/common/plugin/accelerometer.js
-define("cordova/plugin/accelerometer", function(require, exports, module) {
-
-/**
- * This class provides access to device accelerometer data.
- * @constructor
- */
-var argscheck = require('cordova/argscheck'),
-    utils = require("cordova/utils"),
-    exec = require("cordova/exec"),
-    Acceleration = require('cordova/plugin/Acceleration');
-
-// Is the accel sensor running?
-var running = false;
-
-// Keeps reference to watchAcceleration calls.
-var timers = {};
-
-// Array of listeners; used to keep track of when we should call start and stop.
-var listeners = [];
-
-// Last returned acceleration object from native
-var accel = null;
-
-// Tells native to start.
-function start() {
-    exec(function(a) {
-        var tempListeners = listeners.slice(0);
-        accel = new Acceleration(a.x, a.y, a.z, a.timestamp);
-        for (var i = 0, l = tempListeners.length; i < l; i++) {
-            tempListeners[i].win(accel);
-        }
-    }, function(e) {
-        var tempListeners = listeners.slice(0);
-        for (var i = 0, l = tempListeners.length; i < l; i++) {
-            tempListeners[i].fail(e);
-        }
-    }, "Accelerometer", "start", []);
-    running = true;
-}
-
-// Tells native to stop.
-function stop() {
-    exec(null, null, "Accelerometer", "stop", []);
-    running = false;
-}
-
-// Adds a callback pair to the listeners array
-function createCallbackPair(win, fail) {
-    return {win:win, fail:fail};
-}
-
-// Removes a win/fail listener pair from the listeners array
-function removeListeners(l) {
-    var idx = listeners.indexOf(l);
-    if (idx > -1) {
-        listeners.splice(idx, 1);
-        if (listeners.length === 0) {
-            stop();
-        }
-    }
-}
-
-var accelerometer = {
-    /**
-     * Asynchronously acquires the current acceleration.
-     *
-     * @param {Function} successCallback    The function to call when the acceleration data is available
-     * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
-     * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
-     */
-    getCurrentAcceleration: function(successCallback, errorCallback, options) {
-        argscheck.checkArgs('fFO', 'accelerometer.getCurrentAcceleration', arguments);
-
-        var p;
-        var win = function(a) {
-            removeListeners(p);
-            successCallback(a);
-        };
-        var fail = function(e) {
-            removeListeners(p);
-            errorCallback && errorCallback(e);
-        };
-
-        p = createCallbackPair(win, fail);
-        listeners.push(p);
-
-        if (!running) {
-            start();
-        }
-    },
-
-    /**
-     * Asynchronously acquires the acceleration repeatedly at a given interval.
-     *
-     * @param {Function} successCallback    The function to call each time the acceleration data is available
-     * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
-     * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
-     * @return String                       The watch id that must be passed to #clearWatch to stop watching.
-     */
-    watchAcceleration: function(successCallback, errorCallback, options) {
-        argscheck.checkArgs('fFO', 'accelerometer.watchAcceleration', arguments);
-        // Default interval (10 sec)
-        var frequency = (options && options.frequency && typeof options.frequency == 'number') ? options.frequency : 10000;
-
-        // Keep reference to watch id, and report accel readings as often as defined in frequency
-        var id = utils.createUUID();
-
-        var p = createCallbackPair(function(){}, function(e) {
-            removeListeners(p);
-            errorCallback && errorCallback(e);
-        });
-        listeners.push(p);
-
-        timers[id] = {
-            timer:window.setInterval(function() {
-                if (accel) {
-                    successCallback(accel);
-                }
-            }, frequency),
-            listeners:p
-        };
-
-        if (running) {
-            // If we're already running then immediately invoke the success callback
-            // but only if we have retrieved a value, sample code does not check for null ...
-            if (accel) {
-                successCallback(accel);
-            }
-        } else {
-            start();
-        }
-
-        return id;
-    },
-
-    /**
-     * Clears the specified accelerometer watch.
-     *
-     * @param {String} id       The id of the watch returned from #watchAcceleration.
-     */
-    clearWatch: function(id) {
-        // Stop javascript timer & remove from timer list
-        if (id && timers[id]) {
-            window.clearInterval(timers[id].timer);
-            removeListeners(timers[id].listeners);
-            delete timers[id];
-        }
-    }
-};
-
-module.exports = accelerometer;
-
-});
-
-// file: lib/common/plugin/accelerometer/symbols.js
-define("cordova/plugin/accelerometer/symbols", function(require, exports, module) {
-
-
-var modulemapper = require('cordova/modulemapper');
-
-modulemapper.defaults('cordova/plugin/Acceleration', 'Acceleration');
-modulemapper.defaults('cordova/plugin/accelerometer', 'navigator.accelerometer');
-
-});
-
 // file: lib/android/plugin/android/app.js
 define("cordova/plugin/android/app", function(require, exports, module) {
 
@@ -4082,65 +3869,6 @@ module.exports = {
     // Used only by tests.
     set: function(value) {
         currentApi = value;
-    }
-};
-
-});
-
-// file: lib/android/plugin/android/notification.js
-define("cordova/plugin/android/notification", function(require, exports, module) {
-
-var exec = require('cordova/exec');
-
-/**
- * Provides Android enhanced notification API.
- */
-module.exports = {
-    activityStart : function(title, message) {
-        // If title and message not specified then mimic Android behavior of
-        // using default strings.
-        if (typeof title === "undefined" && typeof message == "undefined") {
-            title = "Busy";
-            message = 'Please wait...';
-        }
-
-        exec(null, null, 'Notification', 'activityStart', [ title, message ]);
-    },
-
-    /**
-     * Close an activity dialog
-     */
-    activityStop : function() {
-        exec(null, null, 'Notification', 'activityStop', []);
-    },
-
-    /**
-     * Display a progress dialog with progress bar that goes from 0 to 100.
-     *
-     * @param {String}
-     *            title Title of the progress dialog.
-     * @param {String}
-     *            message Message to display in the dialog.
-     */
-    progressStart : function(title, message) {
-        exec(null, null, 'Notification', 'progressStart', [ title, message ]);
-    },
-
-    /**
-     * Close the progress dialog.
-     */
-    progressStop : function() {
-        exec(null, null, 'Notification', 'progressStop', []);
-    },
-
-    /**
-     * Set the progress dialog value.
-     *
-     * @param {Number}
-     *            value 0-100
-     */
-    progressValue : function(value) {
-        exec(null, null, 'Notification', 'progressValue', [ value ]);
     }
 };
 
@@ -4703,105 +4431,6 @@ modulemapper.clobbers('cordova/plugin/capture', 'navigator.device.capture');
 
 });
 
-// file: lib/common/plugin/compass.js
-define("cordova/plugin/compass", function(require, exports, module) {
-
-var argscheck = require('cordova/argscheck'),
-    exec = require('cordova/exec'),
-    utils = require('cordova/utils'),
-    CompassHeading = require('cordova/plugin/CompassHeading'),
-    CompassError = require('cordova/plugin/CompassError'),
-    timers = {},
-    compass = {
-        /**
-         * Asynchronously acquires the current heading.
-         * @param {Function} successCallback The function to call when the heading
-         * data is available
-         * @param {Function} errorCallback The function to call when there is an error
-         * getting the heading data.
-         * @param {CompassOptions} options The options for getting the heading data (not used).
-         */
-        getCurrentHeading:function(successCallback, errorCallback, options) {
-            argscheck.checkArgs('fFO', 'compass.getCurrentHeading', arguments);
-
-            var win = function(result) {
-                var ch = new CompassHeading(result.magneticHeading, result.trueHeading, result.headingAccuracy, result.timestamp);
-                successCallback(ch);
-            };
-            var fail = errorCallback && function(code) {
-                var ce = new CompassError(code);
-                errorCallback(ce);
-            };
-
-            // Get heading
-            exec(win, fail, "Compass", "getHeading", [options]);
-        },
-
-        /**
-         * Asynchronously acquires the heading repeatedly at a given interval.
-         * @param {Function} successCallback The function to call each time the heading
-         * data is available
-         * @param {Function} errorCallback The function to call when there is an error
-         * getting the heading data.
-         * @param {HeadingOptions} options The options for getting the heading data
-         * such as timeout and the frequency of the watch. For iOS, filter parameter
-         * specifies to watch via a distance filter rather than time.
-         */
-        watchHeading:function(successCallback, errorCallback, options) {
-            argscheck.checkArgs('fFO', 'compass.watchHeading', arguments);
-            // Default interval (100 msec)
-            var frequency = (options !== undefined && options.frequency !== undefined) ? options.frequency : 100;
-            var filter = (options !== undefined && options.filter !== undefined) ? options.filter : 0;
-
-            var id = utils.createUUID();
-            if (filter > 0) {
-                // is an iOS request for watch by filter, no timer needed
-                timers[id] = "iOS";
-                compass.getCurrentHeading(successCallback, errorCallback, options);
-            } else {
-                // Start watch timer to get headings
-                timers[id] = window.setInterval(function() {
-                    compass.getCurrentHeading(successCallback, errorCallback);
-                }, frequency);
-            }
-
-            return id;
-        },
-
-        /**
-         * Clears the specified heading watch.
-         * @param {String} watchId The ID of the watch returned from #watchHeading.
-         */
-        clearWatch:function(id) {
-            // Stop javascript timer & remove from timer list
-            if (id && timers[id]) {
-                if (timers[id] != "iOS") {
-                    clearInterval(timers[id]);
-                } else {
-                    // is iOS watch by filter so call into device to stop
-                    exec(null, null, "Compass", "stopHeading", []);
-                }
-                delete timers[id];
-            }
-        }
-    };
-
-module.exports = compass;
-
-});
-
-// file: lib/common/plugin/compass/symbols.js
-define("cordova/plugin/compass/symbols", function(require, exports, module) {
-
-
-var modulemapper = require('cordova/modulemapper');
-
-modulemapper.clobbers('cordova/plugin/CompassHeading', 'CompassHeading');
-modulemapper.clobbers('cordova/plugin/CompassError', 'CompassError');
-modulemapper.clobbers('cordova/plugin/compass', 'navigator.compass');
-
-});
-
 // file: lib/common/plugin/console-via-logger.js
 define("cordova/plugin/console-via-logger", function(require, exports, module) {
 
@@ -5081,12 +4710,16 @@ function Device() {
 
     channel.onCordovaReady.subscribe(function() {
         me.getInfo(function(info) {
+            var buildLabel = info.cordova;
+            if (buildLabel != CORDOVA_JS_BUILD_LABEL) {
+                buildLabel += ' JS=' + CORDOVA_JS_BUILD_LABEL;
+            }
             me.available = true;
             me.platform = info.platform;
             me.version = info.version;
             me.name = info.name;
             me.uuid = info.uuid;
-            me.cordova = info.cordova;
+            me.cordova = buildLabel;
             me.model = info.model;
             channel.onCordovaInfoReady.fire();
         },function(e) {
@@ -5843,9 +5476,12 @@ var exec    = require('cordova/exec');
 var utils   = require('cordova/utils');
 
 var UseConsole   = true;
+var UseLogger    = true;
 var Queued       = [];
 var DeviceReady  = false;
 var CurrentLevel;
+
+var originalConsole = console;
 
 /**
  * Logging levels
@@ -5907,8 +5543,7 @@ logger.level = function (value) {
  * Getter/Setter for the useConsole functionality
  *
  * When useConsole is true, the logger will log via the
- * browser 'console' object.  Otherwise, it will use the
- * native Logger plugin.
+ * browser 'console' object.
  */
 logger.useConsole = function (value) {
     if (arguments.length) UseConsole = !!value;
@@ -5930,6 +5565,18 @@ logger.useConsole = function (value) {
     }
 
     return UseConsole;
+};
+
+/**
+ * Getter/Setter for the useLogger functionality
+ *
+ * When useLogger is true, the logger will log via the
+ * native Logger plugin.
+ */
+logger.useLogger = function (value) {
+    // Enforce boolean
+    if (arguments.length) UseLogger = !!value;
+    return UseLogger;
 };
 
 /**
@@ -6001,24 +5648,26 @@ logger.logLevel = function(level /* , ... */) {
         return;
     }
 
-    // if not using the console, use the native logger
-    if (!UseConsole) {
+    // Log using the native logger if that is enabled
+    if (UseLogger) {
         exec(null, null, "Logger", "logLevel", [level, message]);
-        return;
     }
 
-    // make sure console is not using logger
-    if (console.__usingCordovaLogger) {
-        throw new Error("console and logger are too intertwingly");
-    }
+    // Log using the console if that is enabled
+    if (UseConsole) {
+        // make sure console is not using logger
+        if (console.__usingCordovaLogger) {
+            throw new Error("console and logger are too intertwingly");
+        }
 
-    // log to the console
-    switch (level) {
-        case logger.LOG:   console.log(message); break;
-        case logger.ERROR: console.log("ERROR: " + message); break;
-        case logger.WARN:  console.log("WARN: "  + message); break;
-        case logger.INFO:  console.log("INFO: "  + message); break;
-        case logger.DEBUG: console.log("DEBUG: " + message); break;
+        // log to the console
+        switch (level) {
+            case logger.LOG:   originalConsole.log(message); break;
+            case logger.ERROR: originalConsole.log("ERROR: " + message); break;
+            case logger.WARN:  originalConsole.log("WARN: "  + message); break;
+            case logger.INFO:  originalConsole.log("INFO: "  + message); break;
+            case logger.DEBUG: originalConsole.log("DEBUG: " + message); break;
+        }
     }
 };
 
@@ -6229,118 +5878,6 @@ var modulemapper = require('cordova/modulemapper');
 modulemapper.clobbers('cordova/plugin/network', 'navigator.network.connection', 'navigator.network.connection is deprecated. Use navigator.connection instead.');
 modulemapper.clobbers('cordova/plugin/network', 'navigator.connection');
 modulemapper.defaults('cordova/plugin/Connection', 'Connection');
-
-});
-
-// file: lib/common/plugin/notification.js
-define("cordova/plugin/notification", function(require, exports, module) {
-
-var exec = require('cordova/exec');
-var platform = require('cordova/platform');
-
-/**
- * Provides access to notifications on the device.
- */
-
-module.exports = {
-
-    /**
-     * Open a native alert dialog, with a customizable title and button text.
-     *
-     * @param {String} message              Message to print in the body of the alert
-     * @param {Function} completeCallback   The callback that is called when user clicks on a button.
-     * @param {String} title                Title of the alert dialog (default: Alert)
-     * @param {String} buttonLabel          Label of the close button (default: OK)
-     */
-    alert: function(message, completeCallback, title, buttonLabel) {
-        var _title = (title || "Alert");
-        var _buttonLabel = (buttonLabel || "OK");
-        exec(completeCallback, null, "Notification", "alert", [message, _title, _buttonLabel]);
-    },
-
-    /**
-     * Open a native confirm dialog, with a customizable title and button text.
-     * The result that the user selects is returned to the result callback.
-     *
-     * @param {String} message              Message to print in the body of the alert
-     * @param {Function} resultCallback     The callback that is called when user clicks on a button.
-     * @param {String} title                Title of the alert dialog (default: Confirm)
-     * @param {Array} buttonLabels          Array of the labels of the buttons (default: ['OK', 'Cancel'])
-     */
-    confirm: function(message, resultCallback, title, buttonLabels) {
-        var _title = (title || "Confirm");
-        var _buttonLabels = (buttonLabels || ["OK", "Cancel"]);
-
-        // Strings are deprecated!
-        if (typeof _buttonLabels === 'string') {
-            console.log("Notification.confirm(string, function, string, string) is deprecated.  Use Notification.confirm(string, function, string, array).");
-        }
-
-        // Some platforms take an array of button label names.
-        // Other platforms take a comma separated list.
-        // For compatibility, we convert to the desired type based on the platform.
-        if (platform.id == "android" || platform.id == "ios" || platform.id == "windowsphone") {
-            if (typeof _buttonLabels === 'string') {
-                var buttonLabelString = _buttonLabels;
-                _buttonLabels = _buttonLabels.split(","); // not crazy about changing the var type here
-            }
-        } else {
-            if (Array.isArray(_buttonLabels)) {
-                var buttonLabelArray = _buttonLabels;
-                _buttonLabels = buttonLabelArray.toString();
-            }
-        }
-        exec(resultCallback, null, "Notification", "confirm", [message, _title, _buttonLabels]);
-    },
-
-    /**
-     * Open a native prompt dialog, with a customizable title and button text.
-     * The following results are returned to the result callback:
-     *  buttonIndex     Index number of the button selected.
-     *  input1          The text entered in the prompt dialog box.
-     *
-     * @param {String} message              Dialog message to display (default: "Prompt message")
-     * @param {Function} resultCallback     The callback that is called when user clicks on a button.
-     * @param {String} title                Title of the dialog (default: "Prompt")
-     * @param {Array} buttonLabels          Array of strings for the button labels (default: ["OK","Cancel"])
-     */
-    prompt: function(message, resultCallback, title, buttonLabels) {
-        var _message = (message || "Prompt message");
-        var _title = (title || "Prompt");
-        var _buttonLabels = (buttonLabels || ["OK","Cancel"]);
-        exec(resultCallback, null, "Notification", "prompt", [_message, _title, _buttonLabels]);
-    },
-
-    /**
-     * Causes the device to vibrate.
-     *
-     * @param {Integer} mills       The number of milliseconds to vibrate for.
-     */
-    vibrate: function(mills) {
-        exec(null, null, "Notification", "vibrate", [mills]);
-    },
-
-    /**
-     * Causes the device to beep.
-     * On Android, the default notification ringtone is played "count" times.
-     *
-     * @param {Integer} count       The number of beeps.
-     */
-    beep: function(count) {
-        exec(null, null, "Notification", "beep", [count]);
-    }
-};
-
-});
-
-// file: lib/android/plugin/notification/symbols.js
-define("cordova/plugin/notification/symbols", function(require, exports, module) {
-
-
-var modulemapper = require('cordova/modulemapper');
-
-modulemapper.clobbers('cordova/plugin/notification', 'navigator.notification');
-modulemapper.merges('cordova/plugin/android/notification', 'navigator.notification');
 
 });
 
@@ -6650,9 +6187,7 @@ function UUIDcreatePart(length) {
 
 });
 
-
 window.cordova = require('cordova');
-
 // file: lib/scripts/bootstrap.js
 
 (function (context) {
@@ -6808,29 +6343,32 @@ require('cordova/channel').onNativeReady.fire();
 
 
     // Try to XHR the cordova_plugins.json file asynchronously.
-    try { // we commented we were going to try, so let us actually try and catch
-        var xhr = new context.XMLHttpRequest();
-        xhr.onload = function() {
-            // If the response is a JSON string which composes an array, call handlePluginsObject.
-            // If the request fails, or the response is not a JSON array, just call finishPluginLoading.
-            var obj = JSON.parse(this.responseText);
-            if (obj && obj instanceof Array && obj.length > 0) {
-                handlePluginsObject(obj);
-            } else {
-                finishPluginLoading();
-            }
-        };
-        xhr.onerror = function() {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        // If the response is a JSON string which composes an array, call handlePluginsObject.
+        // If the request fails, or the response is not a JSON array, just call finishPluginLoading.
+        var obj;
+        try {
+            obj = (this.status == 0 || this.status == 200) && this.responseText && JSON.parse(this.responseText);
+        } catch (err) {
+            // obj will be undefined.
+        }
+        if (Array.isArray(obj) && obj.length > 0) {
+            handlePluginsObject(obj);
+        } else {
             finishPluginLoading();
-        };
+        }
+    };
+    xhr.onerror = function() {
+        finishPluginLoading();
+    };
+    try { // we commented we were going to try, so let us actually try and catch
         xhr.open('GET', 'cordova_plugins.json', true); // Async
         xhr.send();
-    }
-    catch(err){
+    } catch(err){
         finishPluginLoading();
     }
 }(window));
-
 
 
 })();
