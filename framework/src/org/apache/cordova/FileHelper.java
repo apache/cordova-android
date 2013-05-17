@@ -24,7 +24,15 @@ import android.webkit.MimeTypeMap;
 
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -100,6 +108,22 @@ public class FileHelper {
             return cordova.getActivity().getAssets().open(relativePath);
         } else if (uriString.startsWith("file://")) {
             return new FileInputStream(getRealPath(uriString, cordova));
+        } else if (uriString.startsWith("http://") || uriString.startsWith("https://")) {
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpResponse response = httpclient.execute(new HttpGet(uriString));
+            StatusLine statusLine = response.getStatusLine();
+            if(statusLine.getStatusCode() == HttpStatus.SC_OK){
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                response.getEntity().writeTo(out);
+                byte[] arr = out.toByteArray();
+                out.close();
+                ByteArrayInputStream in = new ByteArrayInputStream(arr);
+                return in;
+            } else{
+                //Closes the connection.
+                response.getEntity().getContent().close();
+                throw new IOException(statusLine.getReasonPhrase());
+            }
         } else {
             return null;
         }

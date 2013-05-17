@@ -56,9 +56,9 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
         if(ret == null) {
             try {
-                InputStream is;
-                String mimeType;
-                if((is = dataResource.getInputStream()) != null && (mimeType = dataResource.getMimeType()) != null) {
+                InputStream is = dataResource.getInputStream();
+                if(is != null) {
+                    String mimeType = dataResource.getMimeType();
                     // If we don't know how to open this file, let the browser continue loading
                     ret = new WebResourceResponse(mimeType, "UTF-8", is);
                 }
