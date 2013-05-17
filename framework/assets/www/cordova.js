@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-72-g6ec24b1
+// 2.7.0rc1-79-g8ac64ca
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-72-g6ec24b1';
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-79-g8ac64ca';
 // file: lib/scripts/require.js
 
 var require,
@@ -1722,60 +1722,6 @@ var ContactOrganization = function(pref, type, name, dept, title) {
 };
 
 module.exports = ContactOrganization;
-
-});
-
-// file: lib/common/plugin/Coordinates.js
-define("cordova/plugin/Coordinates", function(require, exports, module) {
-
-/**
- * This class contains position information.
- * @param {Object} lat
- * @param {Object} lng
- * @param {Object} alt
- * @param {Object} acc
- * @param {Object} head
- * @param {Object} vel
- * @param {Object} altacc
- * @constructor
- */
-var Coordinates = function(lat, lng, alt, acc, head, vel, altacc) {
-    /**
-     * The latitude of the position.
-     */
-    this.latitude = lat;
-    /**
-     * The longitude of the position,
-     */
-    this.longitude = lng;
-    /**
-     * The accuracy of the position.
-     */
-    this.accuracy = acc;
-    /**
-     * The altitude of the position.
-     */
-    this.altitude = (alt !== undefined ? alt : null);
-    /**
-     * The direction the device is moving at the position.
-     */
-    this.heading = (head !== undefined ? head : null);
-    /**
-     * The velocity with which the device is moving at the position.
-     */
-    this.speed = (vel !== undefined ? vel : null);
-
-    if (this.speed === 0 || this.speed === null) {
-        this.heading = NaN;
-    }
-
-    /**
-     * The altitude accuracy of the position.
-     */
-    this.altitudeAccuracy = (altacc !== undefined) ? altacc : null;
-};
-
-module.exports = Coordinates;
 
 });
 
@@ -3640,47 +3586,6 @@ module.exports = Metadata;
 
 });
 
-// file: lib/common/plugin/Position.js
-define("cordova/plugin/Position", function(require, exports, module) {
-
-var Coordinates = require('cordova/plugin/Coordinates');
-
-var Position = function(coords, timestamp) {
-    if (coords) {
-        this.coords = new Coordinates(coords.latitude, coords.longitude, coords.altitude, coords.accuracy, coords.heading, coords.velocity, coords.altitudeAccuracy);
-    } else {
-        this.coords = new Coordinates();
-    }
-    this.timestamp = (timestamp !== undefined) ? timestamp : new Date();
-};
-
-module.exports = Position;
-
-});
-
-// file: lib/common/plugin/PositionError.js
-define("cordova/plugin/PositionError", function(require, exports, module) {
-
-/**
- * Position error object
- *
- * @constructor
- * @param code
- * @param message
- */
-var PositionError = function(code, message) {
-    this.code = code || null;
-    this.message = message || '';
-};
-
-PositionError.PERMISSION_DENIED = 1;
-PositionError.POSITION_UNAVAILABLE = 2;
-PositionError.TIMEOUT = 3;
-
-module.exports = PositionError;
-
-});
-
 // file: lib/common/plugin/ProgressEvent.js
 define("cordova/plugin/ProgressEvent", function(require, exports, module) {
 
@@ -4837,215 +4742,6 @@ var modulemapper = require('cordova/modulemapper');
 
 modulemapper.clobbers('cordova/plugin/FileTransfer', 'FileTransfer');
 modulemapper.clobbers('cordova/plugin/FileTransferError', 'FileTransferError');
-
-});
-
-// file: lib/common/plugin/geolocation.js
-define("cordova/plugin/geolocation", function(require, exports, module) {
-
-var argscheck = require('cordova/argscheck'),
-    utils = require('cordova/utils'),
-    exec = require('cordova/exec'),
-    PositionError = require('cordova/plugin/PositionError'),
-    Position = require('cordova/plugin/Position');
-
-var timers = {};   // list of timers in use
-
-// Returns default params, overrides if provided with values
-function parseParameters(options) {
-    var opt = {
-        maximumAge: 0,
-        enableHighAccuracy: false,
-        timeout: Infinity
-    };
-
-    if (options) {
-        if (options.maximumAge !== undefined && !isNaN(options.maximumAge) && options.maximumAge > 0) {
-            opt.maximumAge = options.maximumAge;
-        }
-        if (options.enableHighAccuracy !== undefined) {
-            opt.enableHighAccuracy = options.enableHighAccuracy;
-        }
-        if (options.timeout !== undefined && !isNaN(options.timeout)) {
-            if (options.timeout < 0) {
-                opt.timeout = 0;
-            } else {
-                opt.timeout = options.timeout;
-            }
-        }
-    }
-
-    return opt;
-}
-
-// Returns a timeout failure, closed over a specified timeout value and error callback.
-function createTimeout(errorCallback, timeout) {
-    var t = setTimeout(function() {
-        clearTimeout(t);
-        t = null;
-        errorCallback({
-            code:PositionError.TIMEOUT,
-            message:"Position retrieval timed out."
-        });
-    }, timeout);
-    return t;
-}
-
-var geolocation = {
-    lastPosition:null, // reference to last known (cached) position returned
-    /**
-   * Asynchronously acquires the current position.
-   *
-   * @param {Function} successCallback    The function to call when the position data is available
-   * @param {Function} errorCallback      The function to call when there is an error getting the heading position. (OPTIONAL)
-   * @param {PositionOptions} options     The options for getting the position data. (OPTIONAL)
-   */
-    getCurrentPosition:function(successCallback, errorCallback, options) {
-        argscheck.checkArgs('fFO', 'geolocation.getCurrentPosition', arguments);
-        options = parseParameters(options);
-
-        // Timer var that will fire an error callback if no position is retrieved from native
-        // before the "timeout" param provided expires
-        var timeoutTimer = {timer:null};
-
-        var win = function(p) {
-            clearTimeout(timeoutTimer.timer);
-            if (!(timeoutTimer.timer)) {
-                // Timeout already happened, or native fired error callback for
-                // this geo request.
-                // Don't continue with success callback.
-                return;
-            }
-            var pos = new Position(
-                {
-                    latitude:p.latitude,
-                    longitude:p.longitude,
-                    altitude:p.altitude,
-                    accuracy:p.accuracy,
-                    heading:p.heading,
-                    velocity:p.velocity,
-                    altitudeAccuracy:p.altitudeAccuracy
-                },
-                (p.timestamp === undefined ? new Date() : ((p.timestamp instanceof Date) ? p.timestamp : new Date(p.timestamp)))
-            );
-            geolocation.lastPosition = pos;
-            successCallback(pos);
-        };
-        var fail = function(e) {
-            clearTimeout(timeoutTimer.timer);
-            timeoutTimer.timer = null;
-            var err = new PositionError(e.code, e.message);
-            if (errorCallback) {
-                errorCallback(err);
-            }
-        };
-
-        // Check our cached position, if its timestamp difference with current time is less than the maximumAge, then just
-        // fire the success callback with the cached position.
-        if (geolocation.lastPosition && options.maximumAge && (((new Date()).getTime() - geolocation.lastPosition.timestamp.getTime()) <= options.maximumAge)) {
-            successCallback(geolocation.lastPosition);
-        // If the cached position check failed and the timeout was set to 0, error out with a TIMEOUT error object.
-        } else if (options.timeout === 0) {
-            fail({
-                code:PositionError.TIMEOUT,
-                message:"timeout value in PositionOptions set to 0 and no cached Position object available, or cached Position object's age exceeds provided PositionOptions' maximumAge parameter."
-            });
-        // Otherwise we have to call into native to retrieve a position.
-        } else {
-            if (options.timeout !== Infinity) {
-                // If the timeout value was not set to Infinity (default), then
-                // set up a timeout function that will fire the error callback
-                // if no successful position was retrieved before timeout expired.
-                timeoutTimer.timer = createTimeout(fail, options.timeout);
-            } else {
-                // This is here so the check in the win function doesn't mess stuff up
-                // may seem weird but this guarantees timeoutTimer is
-                // always truthy before we call into native
-                timeoutTimer.timer = true;
-            }
-            exec(win, fail, "Geolocation", "getLocation", [options.enableHighAccuracy, options.maximumAge]);
-        }
-        return timeoutTimer;
-    },
-    /**
-     * Asynchronously watches the geolocation for changes to geolocation.  When a change occurs,
-     * the successCallback is called with the new location.
-     *
-     * @param {Function} successCallback    The function to call each time the location data is available
-     * @param {Function} errorCallback      The function to call when there is an error getting the location data. (OPTIONAL)
-     * @param {PositionOptions} options     The options for getting the location data such as frequency. (OPTIONAL)
-     * @return String                       The watch id that must be passed to #clearWatch to stop watching.
-     */
-    watchPosition:function(successCallback, errorCallback, options) {
-        argscheck.checkArgs('fFO', 'geolocation.getCurrentPosition', arguments);
-        options = parseParameters(options);
-
-        var id = utils.createUUID();
-
-        // Tell device to get a position ASAP, and also retrieve a reference to the timeout timer generated in getCurrentPosition
-        timers[id] = geolocation.getCurrentPosition(successCallback, errorCallback, options);
-
-        var fail = function(e) {
-            clearTimeout(timers[id].timer);
-            var err = new PositionError(e.code, e.message);
-            if (errorCallback) {
-                errorCallback(err);
-            }
-        };
-
-        var win = function(p) {
-            clearTimeout(timers[id].timer);
-            if (options.timeout !== Infinity) {
-                timers[id].timer = createTimeout(fail, options.timeout);
-            }
-            var pos = new Position(
-                {
-                    latitude:p.latitude,
-                    longitude:p.longitude,
-                    altitude:p.altitude,
-                    accuracy:p.accuracy,
-                    heading:p.heading,
-                    velocity:p.velocity,
-                    altitudeAccuracy:p.altitudeAccuracy
-                },
-                (p.timestamp === undefined ? new Date() : ((p.timestamp instanceof Date) ? p.timestamp : new Date(p.timestamp)))
-            );
-            geolocation.lastPosition = pos;
-            successCallback(pos);
-        };
-
-        exec(win, fail, "Geolocation", "addWatch", [id, options.enableHighAccuracy]);
-
-        return id;
-    },
-    /**
-     * Clears the specified heading watch.
-     *
-     * @param {String} id       The ID of the watch returned from #watchPosition
-     */
-    clearWatch:function(id) {
-        if (id && timers[id] !== undefined) {
-            clearTimeout(timers[id].timer);
-            timers[id].timer = false;
-            exec(null, null, "Geolocation", "clearWatch", [id]);
-        }
-    }
-};
-
-module.exports = geolocation;
-
-});
-
-// file: lib/common/plugin/geolocation/symbols.js
-define("cordova/plugin/geolocation/symbols", function(require, exports, module) {
-
-
-var modulemapper = require('cordova/modulemapper');
-
-modulemapper.defaults('cordova/plugin/geolocation', 'navigator.geolocation');
-modulemapper.clobbers('cordova/plugin/PositionError', 'PositionError');
-modulemapper.clobbers('cordova/plugin/Position', 'Position');
-modulemapper.clobbers('cordova/plugin/Coordinates', 'Coordinates');
 
 });
 
