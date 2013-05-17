@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-53-gbb10068
+// 2.7.0rc1-72-g6ec24b1
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-53-gbb10068';
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-72-g6ec24b1';
 // file: lib/scripts/require.js
 
 var require,
@@ -6303,7 +6303,7 @@ require('cordova/channel').onNativeReady.fire();
     // See plugman's plugin_loader.js for the details of this object.
     // This function is only called if the really is a plugins array that isn't empty.
     // Otherwise the XHR response handler will just call finishPluginLoading().
-    function handlePluginsObject(modules) {
+    function handlePluginsObject(modules, path) {
         // First create the callback for when all plugins are loaded.
         var mapper = context.cordova.require('cordova/modulemapper');
         onScriptLoadingComplete = function() {
@@ -6337,11 +6337,21 @@ require('cordova/channel').onNativeReady.fire();
 
         // Now inject the scripts.
         for (var i = 0; i < modules.length; i++) {
-            injectScript(modules[i].file);
+            injectScript(path + modules[i].file);
         }
     }
 
-
+    // Find the root of the app
+    var path = '';
+    var scripts = document.getElementsByTagName('script');
+    var term = 'cordova.js';
+    for (var n = scripts.length-1; n>-1; n--) {
+        var src = scripts[n].src;
+        if (src.indexOf(term) == (src.length - term.length)) {
+            path = src.substring(0, src.length - term.length);
+            break;
+        }
+    }
     // Try to XHR the cordova_plugins.json file asynchronously.
     var xhr = new XMLHttpRequest();
     xhr.onload = function() {
@@ -6354,7 +6364,7 @@ require('cordova/channel').onNativeReady.fire();
             // obj will be undefined.
         }
         if (Array.isArray(obj) && obj.length > 0) {
-            handlePluginsObject(obj);
+            handlePluginsObject(obj, path);
         } else {
             finishPluginLoading();
         }
@@ -6362,8 +6372,9 @@ require('cordova/channel').onNativeReady.fire();
     xhr.onerror = function() {
         finishPluginLoading();
     };
+    var plugins_json = path + 'cordova_plugins.json';
     try { // we commented we were going to try, so let us actually try and catch
-        xhr.open('GET', 'cordova_plugins.json', true); // Async
+        xhr.open('GET', plugins_json, true); // Async
         xhr.send();
     } catch(err){
         finishPluginLoading();
