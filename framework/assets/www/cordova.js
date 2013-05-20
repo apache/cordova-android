@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-79-g8ac64ca
+// 2.7.0rc1-80-geda98d1
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-79-g8ac64ca';
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-80-geda98d1';
 // file: lib/scripts/require.js
 
 var require,
@@ -1725,6 +1725,60 @@ module.exports = ContactOrganization;
 
 });
 
+// file: lib/common/plugin/Coordinates.js
+define("cordova/plugin/Coordinates", function(require, exports, module) {
+
+/**
+ * This class contains position information.
+ * @param {Object} lat
+ * @param {Object} lng
+ * @param {Object} alt
+ * @param {Object} acc
+ * @param {Object} head
+ * @param {Object} vel
+ * @param {Object} altacc
+ * @constructor
+ */
+var Coordinates = function(lat, lng, alt, acc, head, vel, altacc) {
+    /**
+     * The latitude of the position.
+     */
+    this.latitude = lat;
+    /**
+     * The longitude of the position,
+     */
+    this.longitude = lng;
+    /**
+     * The accuracy of the position.
+     */
+    this.accuracy = acc;
+    /**
+     * The altitude of the position.
+     */
+    this.altitude = (alt !== undefined ? alt : null);
+    /**
+     * The direction the device is moving at the position.
+     */
+    this.heading = (head !== undefined ? head : null);
+    /**
+     * The velocity with which the device is moving at the position.
+     */
+    this.speed = (vel !== undefined ? vel : null);
+
+    if (this.speed === 0 || this.speed === null) {
+        this.heading = NaN;
+    }
+
+    /**
+     * The altitude accuracy of the position.
+     */
+    this.altitudeAccuracy = (altacc !== undefined) ? altacc : null;
+};
+
+module.exports = Coordinates;
+
+});
+
 // file: lib/common/plugin/DirectoryEntry.js
 define("cordova/plugin/DirectoryEntry", function(require, exports, module) {
 
@@ -3188,82 +3242,6 @@ GlobalizationError.PARSING_ERROR = 2;
 GlobalizationError.PATTERN_ERROR = 3;
 
 module.exports = GlobalizationError;
-
-});
-
-// file: lib/common/plugin/InAppBrowser.js
-define("cordova/plugin/InAppBrowser", function(require, exports, module) {
-
-var exec = require('cordova/exec');
-var channel = require('cordova/channel');
-var modulemapper = require('cordova/modulemapper');
-
-function InAppBrowser() {
-   this.channels = {
-        'loadstart': channel.create('loadstart'),
-        'loadstop' : channel.create('loadstop'),
-        'loaderror' : channel.create('loaderror'),
-        'exit' : channel.create('exit')
-   };
-}
-
-InAppBrowser.prototype = {
-    _eventHandler: function (event) {
-        if (event.type in this.channels) {
-            this.channels[event.type].fire(event);
-        }
-    },
-    close: function (eventname) {
-        exec(null, null, "InAppBrowser", "close", []);
-    },
-    addEventListener: function (eventname,f) {
-        if (eventname in this.channels) {
-            this.channels[eventname].subscribe(f);
-        }
-    },
-    removeEventListener: function(eventname, f) {
-        if (eventname in this.channels) {
-            this.channels[eventname].unsubscribe(f);
-        }
-    },
-
-    executeScript: function(injectDetails, cb) {
-        if (injectDetails.code) {
-            exec(cb, null, "InAppBrowser", "injectScriptCode", [injectDetails.code, !!cb]);
-        } else if (injectDetails.file) {
-            exec(cb, null, "InAppBrowser", "injectScriptFile", [injectDetails.file, !!cb]);
-        } else {
-            throw new Error('executeScript requires exactly one of code or file to be specified');
-        }
-    },
-
-    insertCSS: function(injectDetails, cb) {
-        if (injectDetails.code) {
-            exec(cb, null, "InAppBrowser", "injectStyleCode", [injectDetails.code, !!cb]);
-        } else if (injectDetails.file) {
-            exec(cb, null, "InAppBrowser", "injectStyleFile", [injectDetails.file, !!cb]);
-        } else {
-            throw new Error('insertCSS requires exactly one of code or file to be specified');
-        }
-    }
-};
-
-module.exports = function(strUrl, strWindowName, strWindowFeatures) {
-    var iab = new InAppBrowser();
-    var cb = function(eventname) {
-       iab._eventHandler(eventname);
-    };
-
-    // Don't catch calls that write to existing frames (e.g. named iframes).
-    if (window.frames && window.frames[strWindowName]) {
-        var origOpenFunc = modulemapper.getOriginalSymbol(window, 'open');
-        return origOpenFunc.apply(window, arguments);
-    }
-
-    exec(cb, cb, "InAppBrowser", "open", [strUrl, strWindowName, strWindowFeatures]);
-    return iab;
-};
-
 
 });
 
@@ -5129,16 +5107,6 @@ var modulemapper = require('cordova/modulemapper');
 
 modulemapper.clobbers('cordova/plugin/globalization', 'navigator.globalization');
 modulemapper.clobbers('cordova/plugin/GlobalizationError', 'GlobalizationError');
-
-});
-
-// file: lib/android/plugin/inappbrowser/symbols.js
-define("cordova/plugin/inappbrowser/symbols", function(require, exports, module) {
-
-
-var modulemapper = require('cordova/modulemapper');
-
-modulemapper.clobbers('cordova/plugin/InAppBrowser', 'open');
 
 });
 
