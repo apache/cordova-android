@@ -50,9 +50,8 @@ public class Config {
     private static Config self = null;
 
     public static void init(Activity action) {
-        if (self == null) {
-            self = new Config(action);
-        }
+        //Just re-initialize this! Seriously, we lose this all the time
+        self = new Config(action);
     }
 
     // Intended to be used for testing only; creates an empty configuration.
