@@ -16,23 +16,7 @@ Requires
 - Android SDK [http://developer.android.com](http://developer.android.com)
 - Apache Commons Codec [http://commons.apache.org/codec/](http://commons.apache.org/codec/)
 
-Test Requirements
----
-- JUnit - [https://github.com/KentBeck/junit](https://github.com/KentBeck/junit)
  
-Building
----
-
-To create your `cordova.jar` file, copy the commons codec:
-
-    mv commons-codec-1.7.jar framework/libs
-
-then run in the framework directory:
-
-    android update project -p . -t android-17
-    ant jar
-
-
 Cordova Android Developer Tools
 ---
 
@@ -93,6 +77,22 @@ Importing a Cordova Android Project into Eclipse
 5. Right click on the project root: Run as > Run Configurations
 6. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
 
+Building without the Tooling
+---
+Note: The Developer Tools handle this.  This is only to be done if the tooling fails, or if 
+you are developing directly against the framework.
+
+
+To create your `cordova.jar` file, copy the commons codec:
+
+    mv commons-codec-1.7.jar framework/libs
+
+then run in the framework directory:
+
+    android update project -p . -t android-17
+    ant jar
+
+
 Running Tests
 ----
 Please see details under test/README.md.
@@ -101,5 +101,5 @@ Further Reading
 ---
 
 - [http://developer.android.com](http://developer.android.com)
-- [http://incubator.apache.org/cordova/](http://incubator.apache.org/cordova/)
+- [http://cordova.apache.org/](http://cordova.apache.org)
 - [http://wiki.apache.org/cordova/](http://wiki.apache.org/cordova/)
