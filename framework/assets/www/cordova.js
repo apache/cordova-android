@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-81-gc09114e
+// 2.7.0rc1-82-g32587e6
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-81-gc09114e';
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-82-g32587e6';
 // file: lib/scripts/require.js
 
 var require,
@@ -5543,34 +5543,6 @@ module.exports = function(uri, successCallback, errorCallback) {
 
     exec(success, fail, "File", "resolveLocalFileSystemURI", [uri]);
 };
-
-});
-
-// file: lib/common/plugin/splashscreen.js
-define("cordova/plugin/splashscreen", function(require, exports, module) {
-
-var exec = require('cordova/exec');
-
-var splashscreen = {
-    show:function() {
-        exec(null, null, "SplashScreen", "show", []);
-    },
-    hide:function() {
-        exec(null, null, "SplashScreen", "hide", []);
-    }
-};
-
-module.exports = splashscreen;
-
-});
-
-// file: lib/common/plugin/splashscreen/symbols.js
-define("cordova/plugin/splashscreen/symbols", function(require, exports, module) {
-
-
-var modulemapper = require('cordova/modulemapper');
-
-modulemapper.clobbers('cordova/plugin/splashscreen', 'navigator.splashscreen');
 
 });
 
