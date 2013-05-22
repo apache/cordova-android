@@ -178,39 +178,6 @@ public class FileTransfer extends CordovaPlugin {
         }
     }
 
-    /**
-     * Works around a bug on Android 2.3.
-     * http://code.google.com/p/android/issues/detail?id=14562
-     */
-    private static final class DoneHandlerInputStream extends TrackingHTTPInputStream {
-        private boolean done;
-        
-        public DoneHandlerInputStream(InputStream stream) {
-            super(stream);
-        }
-        
-        @Override
-        public int read() throws IOException {
-            int result = done ? -1 : super.read();
-            done = (result == -1);
-            return result;
-        }
-
-        @Override
-        public int read(byte[] buffer) throws IOException {
-            int result = done ? -1 : super.read(buffer);
-            done = (result == -1);
-            return result;
-        }
-
-        @Override
-        public int read(byte[] bytes, int offset, int count) throws IOException {
-            int result = done ? -1 : super.read(bytes, offset, count);
-            done = (result == -1);
-            return result;
-        }
-    }
-    
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
         if (action.equals("upload") || action.equals("download")) {
@@ -565,9 +532,6 @@ public class FileTransfer extends CordovaPlugin {
     }
 
     private static TrackingInputStream getInputStream(URLConnection conn) throws IOException {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            return new DoneHandlerInputStream(conn.getInputStream());
-        }
         String encoding = conn.getContentEncoding();
         if (encoding != null && encoding.equalsIgnoreCase("gzip")) {
         	return new TrackingGZIPInputStream(new ExposedGZIPInputStream(conn.getInputStream()));
