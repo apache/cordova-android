@@ -863,7 +863,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                 this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
                 callback = activityResultCallback;
                 LOG.d(TAG, "We have a callback to send this result to");
-                callback.onActivityResult(requestCode, resultCode, intent);
+                if(callback != null) {
+                    callback.onActivityResult(requestCode, resultCode, intent);
+                }
             }
         }
         else
