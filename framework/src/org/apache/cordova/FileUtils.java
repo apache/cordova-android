@@ -20,9 +20,9 @@ package org.apache.cordova;
 
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.DataResource;
@@ -912,7 +912,7 @@ public class FileUtils extends CordovaPlugin {
                             break;
                         default: // Base64.
                             String contentType = dataResource.getMimeType();
-                            byte[] base64 = Base64.encodeBase64(bytes);
+                            byte[] base64 = Base64.encode(bytes, Base64.DEFAULT);
                             String s = "data:" + contentType + ";base64," + new String(base64, "US-ASCII");
                             result = new PluginResult(PluginResult.Status.OK, s);
                     }

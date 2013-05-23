@@ -120,46 +120,6 @@ function cleanup() {
     }
 }
 
-function downloadCommonsCodec() {
-    if (!fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.7.jar')) {
-      // We need the .jar
-      var url = 'http://archive.apache.org/dist/commons/codec/binaries/commons-codec-1.7-bin.zip';
-      var libsPath = ROOT + '\\framework\\libs';
-      var savePath = libsPath + '\\commons-codec-1.7-bin.zip';
-      if (!fso.FileExists(savePath)) {
-        if(!fso.FolderExists(ROOT + '\\framework\\libs')) {
-            fso.CreateFolder(libsPath);
-        }
-        // We need the zip to get the jar
-        var xhr = WScript.CreateObject('MSXML2.XMLHTTP');
-        xhr.open('GET', url, false);
-        xhr.send();
-        if (xhr.status == 200) {
-          var stream = WScript.CreateObject('ADODB.Stream');
-          stream.Open();
-          stream.Type = 1;
-          stream.Write(xhr.ResponseBody);
-          stream.Position = 0;
-          stream.SaveToFile(savePath);
-          stream.Close();
-        } else {
-          Log('Could not retrieve the commons-codec. Please download it yourself and put into the framework/libs directory. This process may fail now. Sorry.');
-        }
-      }
-      var app = WScript.CreateObject('Shell.Application');
-      var source = app.NameSpace(savePath).Items();
-      var target = app.NameSpace(ROOT + '\\framework\\libs');
-      target.CopyHere(source, 256);
-      
-      // Move the jar into libs
-      fso.MoveFile(ROOT + '\\framework\\libs\\commons-codec-1.7\\commons-codec-1.7.jar', ROOT + '\\framework\\libs\\commons-codec-1.7.jar');
-      
-      // Clean up
-      fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.7-bin.zip');
-      fso.DeleteFolder(ROOT + '\\framework\\libs\\commons-codec-1.7', true);
-    }
-}
-    
 // working dir
 var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
 if (args.Count() > 0) {
@@ -206,8 +166,6 @@ if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
     Log("Building jar and js files...");
     // update the cordova framework project to a target that exists on this machine
     exec('android.bat update project --target "'+TARGET+'" --path "'+ROOT+'\\framework"');
-    // pull down commons codec if necessary
-    downloadCommonsCodec();
     exec('ant.bat -f "'+ ROOT +'\\framework\\build.xml" jar');
 }
 
