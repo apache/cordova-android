@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.DataResource;
@@ -48,6 +47,7 @@ import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 
 /**
@@ -778,7 +778,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         try {
             if (bitmap.compress(CompressFormat.JPEG, mQuality, jpeg_data)) {
                 byte[] code = jpeg_data.toByteArray();
-                byte[] output = Base64.encodeBase64(code);
+                byte[] output = Base64.encode(code, Base64.DEFAULT);
                 String js_out = new String(output);
                 this.callbackContext.success(js_out);
                 js_out = null;
