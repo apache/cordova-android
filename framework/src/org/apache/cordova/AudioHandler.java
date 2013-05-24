@@ -58,7 +58,10 @@ public class AudioHandler extends CordovaPlugin {
 
     public String getFilePath(String url, String source){
         DataResource dataResource = DataResource.initiateNewDataRequestForUri(url, this.webView.pluginManager, cordova, source);
-        return dataResource.getRealFile().getPath();
+        if(dataResource.getUri().getScheme().equals("http") || dataResource.getUri().getScheme().equals("https"))
+            return dataResource.getUri().toString();
+        else
+            return dataResource.getRealFile().getPath();
     }
 
     /**
