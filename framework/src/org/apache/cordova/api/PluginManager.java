@@ -54,7 +54,6 @@ public class PluginManager {
     // Map URL schemes like foo: to plugins that want to handle those schemes
     // This would allow how all URLs are handled to be offloaded to a plugin
     protected HashMap<String, String> urlMap = new HashMap<String, String>();
-    private int MAX_REPITIONS = 1000;
 
     /**
      * Constructor.
@@ -410,15 +409,13 @@ public class PluginManager {
      * @param dataResourceContext   The context of the dataResource request
      * @return                      Return the resource request that will be loaded. The returned request may be modified or unchanged.
      */
-    public DataResource handleDataResourceRequestWithPlugins(DataResource dataResource, DataResourceContext dataResourceContext){
-        int repetitions = 0;
+    public DataResource shouldInterceptDataResourceRequest(DataResource dataResource, DataResourceContext dataResourceContext){
         boolean requestModified = true;
-        while(requestModified && repetitions < MAX_REPITIONS) {
+        while(requestModified) {
             requestModified = false;
-            repetitions ++;
             for (PluginEntry entry : this.entries.values()) {
                 if (entry.plugin != null) {
-                    DataResource ret = entry.plugin.handleDataResourceRequest(dataResource, dataResourceContext);
+                    DataResource ret = entry.plugin.shouldInterceptDataResourceRequest(dataResource, dataResourceContext);
                     if(ret != null) {
                         dataResource = ret;
                         requestModified = true;
