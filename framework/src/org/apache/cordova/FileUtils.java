@@ -18,6 +18,8 @@
  */
 package org.apache.cordova;
 
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
@@ -25,7 +27,6 @@ import android.util.Log;
 
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
-import org.apache.cordova.api.DataResource;
 import org.apache.cordova.api.PluginResult;
 import org.apache.cordova.file.EncodingException;
 import org.apache.cordova.file.FileExistsException;
@@ -45,6 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 
 /**
@@ -231,7 +234,7 @@ public class FileUtils extends CordovaPlugin {
      * @param filePath the path to check
      */
     private void notifyDelete(String filePath) {
-        String newFilePath = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "FileUtils.notifyDelete").getRealFile().getPath();
+        String newFilePath = FileHelper.getRealPath(filePath, cordova);
         try {
             this.cordova.getActivity().getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     MediaStore.Images.Media.DATA + " = ?",
@@ -253,10 +256,37 @@ public class FileUtils extends CordovaPlugin {
      * @throws IOException if the user can't read the file
      * @throws JSONException
      */
+    @SuppressWarnings("deprecation")
     private JSONObject resolveLocalFileSystemURI(String url) throws IOException, JSONException {
-        File fp = DataResource.initiateNewDataRequestForUri(url, webView.pluginManager, cordova, "FileUtils.resolveLocalFileSystemURI").getRealFile();
+        String decoded = URLDecoder.decode(url, "UTF-8");
 
-        if (fp == null || !fp.exists()) {
+        File fp = null;
+
+        // Handle the special case where you get an Android content:// uri.
+        if (decoded.startsWith("content:")) {
+            Cursor cursor = this.cordova.getActivity().managedQuery(Uri.parse(decoded), new String[] { MediaStore.Images.Media.DATA }, null, null, null);
+            // Note: MediaStore.Images/Audio/Video.Media.DATA is always "_data"
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            fp = new File(cursor.getString(column_index));
+        } else {
+            // Test to see if this is a valid URL first
+            @SuppressWarnings("unused")
+            URL testUrl = new URL(decoded);
+
+            if (decoded.startsWith("file://")) {
+                int questionMark = decoded.indexOf("?");
+                if (questionMark < 0) {
+                    fp = new File(decoded.substring(7, decoded.length()));
+                } else {
+                    fp = new File(decoded.substring(7, questionMark));
+                }
+            } else {
+                fp = new File(decoded);
+            }
+        }
+
+        if (!fp.exists()) {
             throw new FileNotFoundException();
         }
         if (!fp.canRead()) {
@@ -274,9 +304,9 @@ public class FileUtils extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONArray readEntries(String fileName) throws FileNotFoundException, JSONException {
-        File fp = DataResource.initiateNewDataRequestForUri(fileName, webView.pluginManager, cordova, "FileUtils.readEntries").getRealFile();
+        File fp = createFileObject(fileName);
 
-        if (fp == null || !fp.exists()) {
+        if (!fp.exists()) {
             // The directory we are listing doesn't exist so we should fail.
             throw new FileNotFoundException();
         }
@@ -311,10 +341,8 @@ public class FileUtils extends CordovaPlugin {
      * @throws FileExistsException
      */
     private JSONObject transferTo(String fileName, String newParent, String newName, boolean move) throws JSONException, NoModificationAllowedException, IOException, InvalidModificationException, EncodingException, FileExistsException {
-        DataResource dataResourceFrom = DataResource.initiateNewDataRequestForUri(fileName, webView.pluginManager, cordova, "FileUtils.transferTo");
-        String newFileName = dataResourceFrom.getRealFile().getPath();
-        DataResource dataResourceTo = DataResource.initiateNewDataRequestForUri(newParent, webView.pluginManager, cordova, "FileUtils.transferTo");
-        newParent = dataResourceTo.getRealFile().getPath();
+        String newFileName = FileHelper.getRealPath(fileName, cordova);
+        newParent = FileHelper.getRealPath(newParent, cordova);
 
         // Check for invalid file name
         if (newName != null && newName.contains(":")) {
@@ -585,7 +613,7 @@ public class FileUtils extends CordovaPlugin {
      * @throws FileExistsException
      */
     private boolean removeRecursively(String filePath) throws FileExistsException {
-        File fp = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "FileUtils.readEntries").getRealFile();
+        File fp = createFileObject(filePath);
 
         // You can't delete the root directory.
         if (atRootDirectory(filePath)) {
@@ -626,7 +654,7 @@ public class FileUtils extends CordovaPlugin {
      * @throws InvalidModificationException
      */
     private boolean remove(String filePath) throws NoModificationAllowedException, InvalidModificationException {
-        File fp = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "FileUtils.readEntries").getRealFile();
+        File fp = createFileObject(filePath);
 
         // You can't delete the root directory.
         if (atRootDirectory(filePath)) {
@@ -670,8 +698,7 @@ public class FileUtils extends CordovaPlugin {
             throw new EncodingException("This file has a : in it's name");
         }
 
-        String filePath = getFullFilePath(dirPath, fileName);
-        File fp = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "FileUtils.getFile").getRealFile();
+        File fp = createFileObject(dirPath, fileName);
 
         if (create) {
             if (exclusive && fp.exists()) {
@@ -713,14 +740,15 @@ public class FileUtils extends CordovaPlugin {
      * @param fileName new file name
      * @return
      */
-    private String getFullFilePath(String dirPath, String fileName) {
+    private File createFileObject(String dirPath, String fileName) {
+        File fp = null;
         if (fileName.startsWith("/")) {
-            return fileName;
+            fp = new File(fileName);
         } else {
-            DataResource dataResource = DataResource.initiateNewDataRequestForUri(dirPath, webView.pluginManager, cordova, "FileUtils.getFullFilePath");
-            dirPath = dataResource.getRealFile().getPath();
-            return dirPath + File.separator + fileName;
+            dirPath = FileHelper.getRealPath(dirPath, cordova);
+            fp = new File(dirPath + File.separator + fileName);
         }
+        return fp;
     }
 
     /**
@@ -732,13 +760,12 @@ public class FileUtils extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONObject getParent(String filePath) throws JSONException {
-        DataResource dataResource = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "FileUtils.getParent");
-        filePath = dataResource.getRealFile().getPath();
+        filePath = FileHelper.getRealPath(filePath, cordova);
 
         if (atRootDirectory(filePath)) {
             return getEntry(filePath);
         }
-        return getEntry(dataResource.getRealFile().getParent());
+        return getEntry(new File(filePath).getParent());
     }
 
     /**
@@ -749,7 +776,7 @@ public class FileUtils extends CordovaPlugin {
      * @return true if we are at the root, false otherwise.
      */
     private boolean atRootDirectory(String filePath) {
-        filePath = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "FileUtils.atRootDirectory").getRealFile().getPath();
+        filePath = FileHelper.getRealPath(filePath, cordova);
 
         if (filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + cordova.getActivity().getPackageName() + "/cache") ||
                 filePath.equals(Environment.getExternalStorageDirectory().getAbsolutePath()) ||
@@ -760,6 +787,19 @@ public class FileUtils extends CordovaPlugin {
     }
 
     /**
+     * Create a File object from the passed in path
+     *
+     * @param filePath
+     * @return
+     */
+    private File createFileObject(String filePath) {
+        filePath = FileHelper.getRealPath(filePath, cordova);
+
+        File file = new File(filePath);
+        return file;
+    }
+
+    /**
      * Look up metadata about this entry.
      *
      * @param filePath to entry
@@ -767,9 +807,9 @@ public class FileUtils extends CordovaPlugin {
      * @throws FileNotFoundException
      */
     private long getMetadata(String filePath) throws FileNotFoundException {
-        File file = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "FileUtils.getMetadata").getRealFile();
+        File file = createFileObject(filePath);
 
-        if (file == null || !file.exists()) {
+        if (!file.exists()) {
             throw new FileNotFoundException("Failed to find file in getMetadata");
         }
 
@@ -785,16 +825,15 @@ public class FileUtils extends CordovaPlugin {
      * @throws JSONException
      */
     private JSONObject getFileMetadata(String filePath) throws FileNotFoundException, JSONException {
-        DataResource dataResource = DataResource.initiateNewDataRequestForUri(filePath, webView.pluginManager, cordova, "FileUtils.getMetadata");
-        File file = dataResource.getRealFile();
+        File file = createFileObject(filePath);
 
-        if (file == null || !file.exists()) {
+        if (!file.exists()) {
             throw new FileNotFoundException("File: " + filePath + " does not exist.");
         }
 
         JSONObject metadata = new JSONObject();
         metadata.put("size", file.length());
-        metadata.put("type", dataResource.getMimeType());
+        metadata.put("type", FileHelper.getMimeType(filePath, cordova));
         metadata.put("name", file.getName());
         metadata.put("fullPath", filePath);
         metadata.put("lastModifiedDate", file.lastModified());
@@ -896,8 +935,7 @@ public class FileUtils extends CordovaPlugin {
         this.cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 try {
-                    DataResource dataResource = DataResource.initiateNewDataRequestForUri(filename, webView.pluginManager, cordova, "FileUtils.readFileAs");
-                    byte[] bytes = readAsBinaryHelper(dataResource.getIs(), start, end);
+                    byte[] bytes = readAsBinaryHelper(filename, start, end);
                     
                     PluginResult result;
                     switch (resultType) {
@@ -938,9 +976,10 @@ public class FileUtils extends CordovaPlugin {
      * @return                  Contents of the file as a byte[].
      * @throws IOException
      */
-    private byte[] readAsBinaryHelper(InputStream inputStream, int start, int end) throws IOException {
+    private byte[] readAsBinaryHelper(String filename, int start, int end) throws IOException {
         int numBytesToRead = end - start;
         byte[] bytes = new byte[numBytesToRead];
+        InputStream inputStream = FileHelper.getInputStreamFromUriString(filename, cordova);
         int numBytesRead = 0;
 
         if (start > 0) {
@@ -969,8 +1008,7 @@ public class FileUtils extends CordovaPlugin {
             throw new NoModificationAllowedException("Couldn't write to file given its content URI");
         }
 
-        DataResource dataResource = DataResource.initiateNewDataRequestForUri(filename, webView.pluginManager, cordova, "FileUtils.write");
-        filename = dataResource.getRealFile().getPath();
+        filename = FileHelper.getRealPath(filename, cordova);
 
         boolean append = false;
         if (offset > 0) {
@@ -999,16 +1037,13 @@ public class FileUtils extends CordovaPlugin {
      * @throws NoModificationAllowedException
      */
     private long truncateFile(String filename, long size) throws FileNotFoundException, IOException, NoModificationAllowedException {
-        DataResource dataResource = DataResource.initiateNewDataRequestForUri(filename, webView.pluginManager, cordova, "FileUtils.truncateFile");
-        if(!dataResource.isWritable()) {
-            throw new NoModificationAllowedException("Couldn't truncate file as it is not writable");
-        }
-        File file = dataResource.getRealFile();
-        if(file == null) {
-            throw new FileNotFoundException("Couldn't get the file");
+        if (filename.startsWith("content://")) {
+            throw new NoModificationAllowedException("Couldn't truncate file given its content URI");
         }
 
-        RandomAccessFile raf = new RandomAccessFile(file, "rw");
+        filename = FileHelper.getRealPath(filename, cordova);
+
+        RandomAccessFile raf = new RandomAccessFile(filename, "rw");
         try {
             if (raf.length() >= size) {
                 FileChannel channel = raf.getChannel();

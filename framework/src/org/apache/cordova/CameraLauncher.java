@@ -20,15 +20,14 @@ package org.apache.cordova;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
-import org.apache.cordova.api.DataResource;
 import org.apache.cordova.api.LOG;
 import org.apache.cordova.api.PluginResult;
 import org.json.JSONArray;
@@ -42,6 +41,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Rect;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
@@ -290,7 +290,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                     // If sending base64 image back
                     if (destType == DATA_URL) {
-                        bitmap = getScaledBitmap(imageUri.toString());
+                        bitmap = getScaledBitmap(FileHelper.stripFileProtocol(imageUri.toString()));
                         if (bitmap == null) {
                             // Try to get the bitmap from intent.
                             bitmap = (Bitmap)intent.getExtras().get("data");
@@ -316,9 +316,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         if (this.saveToPhotoAlbum) {
                             Uri inputUri = getUriFromMediaStore();
                             //Just because we have a media URI doesn't mean we have a real file, we need to make it
-                            DataResource dataResource = DataResource.initiateNewDataRequestForUri(inputUri, webView.pluginManager, cordova, "CameraLauncher.CameraExitIntent");
-                            File file = dataResource.getRealFile();
-                            uri = Uri.fromFile(file);
+                            uri = Uri.fromFile(new File(FileHelper.getRealPath(inputUri, this.cordova)));
                         } else {
                             uri = Uri.fromFile(new File(DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()), System.currentTimeMillis() + ".jpg"));
                         }
@@ -334,15 +332,14 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                             this.callbackContext.success(uri.toString());
                         } else {
-                            bitmap = getScaledBitmap(imageUri.toString());
+                            bitmap = getScaledBitmap(FileHelper.stripFileProtocol(imageUri.toString()));
 
                             if (rotate != 0 && this.correctOrientation) {
                                 bitmap = getRotatedBitmap(rotate, bitmap, exif);
                             }
 
                             // Add compressed version of captured image to returned media store Uri
-                            DataResource dataResource = DataResource.initiateNewDataRequestForUri(uri, webView.pluginManager, cordova, "CameraLauncher.CameraExitIntent");
-                            OutputStream os = dataResource.getOs();
+                            OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
                             bitmap.compress(Bitmap.CompressFormat.JPEG, this.mQuality, os);
                             os.close();
 
@@ -350,7 +347,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                             if (this.encodingType == JPEG) {
                                 String exifPath;
                                 if (this.saveToPhotoAlbum) {
-                                    exifPath = dataResource.getRealFile().getPath();
+                                    exifPath = FileHelper.getRealPath(uri, this.cordova);
                                 } else {
                                     exifPath = uri.getPath();
                                 }
@@ -401,9 +398,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         this.callbackContext.success(uri.toString());
                     } else {
                         String uriString = uri.toString();
-                        DataResource dataResource = DataResource.initiateNewDataRequestForUri(uri, webView.pluginManager, cordova, "CameraLauncher.CameraExitIntent");
                         // Get the path to the image. Makes loading so much easier.
-                        String mimeType = dataResource.getMimeType();
+                        String mimeType = FileHelper.getMimeType(uriString, this.cordova);
                         // If we don't have a valid image so quit.
                         if (!("image/jpeg".equalsIgnoreCase(mimeType) || "image/png".equalsIgnoreCase(mimeType))) {
                         	Log.d(LOG_TAG, "I either have a null image path or bitmap");
@@ -444,8 +440,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                                     // Create an ExifHelper to save the exif data that is lost during compression
                                     String resizePath = DirectoryManager.getTempDirectoryPath(this.cordova.getActivity()) + "/resize.jpg";
                                     // Some content: URIs do not map to file paths (e.g. picasa).
-                                    File realFile = DataResource.initiateNewDataRequestForUri(uri, webView.pluginManager, cordova, "CameraLauncher.CameraExitIntent").getRealFile();
-                                    String realPath = realFile != null? realFile.getPath() : null;
+                                    String realPath = FileHelper.getRealPath(uri, this.cordova);
                                     ExifHelper exif = new ExifHelper();
                                     if (realPath != null && this.encodingType == JPEG) {
                                         try {
@@ -539,15 +534,8 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     private void writeUncompressedImage(Uri uri) throws FileNotFoundException,
             IOException {
-        DataResource inputDataResource = DataResource.initiateNewDataRequestForUri(imageUri, webView.pluginManager, cordova, "CameraLauncher.writeUncompressedImage");
-        InputStream fis = inputDataResource.getIs();
-        DataResource outDataResource = DataResource.initiateNewDataRequestForUri(uri, webView.pluginManager, cordova, "CameraLauncher.writeUncompressedImage");
-        OutputStream os = outDataResource.getOs();
-        if(fis == null) {
-            throw new FileNotFoundException("Could not get the input file");
-        } else if(os == null) {
-            throw new FileNotFoundException("Could not get the output file");
-        }
+        FileInputStream fis = new FileInputStream(FileHelper.stripFileProtocol(imageUri.toString()));
+        OutputStream os = this.cordova.getActivity().getContentResolver().openOutputStream(uri);
         byte[] buffer = new byte[4096];
         int len;
         while ((len = fis.read(buffer)) != -1) {
@@ -590,15 +578,14 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
      */
     private Bitmap getScaledBitmap(String imageUrl) throws IOException {
         // If no new width or height were specified return the original bitmap
-        DataResource dataResource = DataResource.initiateNewDataRequestForUri(imageUrl, webView.pluginManager, cordova, "CameraLauncher.getScaledBitmap");
         if (this.targetWidth <= 0 && this.targetHeight <= 0) {
-            return BitmapFactory.decodeStream(dataResource.getIs());
+            return BitmapFactory.decodeStream(FileHelper.getInputStreamFromUriString(imageUrl, cordova));
         }
 
         // figure out the original width and height of the image
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(dataResource.getIs(), null, options);
+        BitmapFactory.decodeStream(FileHelper.getInputStreamFromUriString(imageUrl, cordova), null, options);
         
         //CB-2292: WTF? Why is the width null?
         if(options.outWidth == 0 || options.outHeight == 0)
@@ -612,7 +599,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // Load in the smallest bitmap possible that is closest to the size we want
         options.inJustDecodeBounds = false;
         options.inSampleSize = calculateSampleSize(options.outWidth, options.outHeight, this.targetWidth, this.targetHeight);
-        Bitmap unscaledBitmap = BitmapFactory.decodeStream(dataResource.getIs(), null, options);
+        Bitmap unscaledBitmap = BitmapFactory.decodeStream(FileHelper.getInputStreamFromUriString(imageUrl, cordova), null, options);
         if (unscaledBitmap == null) {
             return null;
         }
@@ -711,20 +698,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             bitmap.recycle();
         }
 
-        DataResource dataResource = DataResource.initiateNewDataRequestForUri(oldImage, webView.pluginManager, cordova, "CameraLauncher.cleanup");
-        File file = dataResource.getRealFile();
-        if(file != null) {
-            // Clean up initial camera-written image file.
-            file.delete();
+        // Clean up initial camera-written image file.
+        (new File(FileHelper.stripFileProtocol(oldImage.toString()))).delete();
 
-            checkForDuplicateImage(imageType);
-            // Scan for the gallery to update pic refs in gallery
-            if (this.saveToPhotoAlbum && newImage != null) {
-                this.scanForGallery(newImage);
-            }
-
-            System.gc();
+        checkForDuplicateImage(imageType);
+        // Scan for the gallery to update pic refs in gallery
+        if (this.saveToPhotoAlbum && newImage != null) {
+            this.scanForGallery(newImage);
         }
+
+        System.gc();
     }
 
     /**
