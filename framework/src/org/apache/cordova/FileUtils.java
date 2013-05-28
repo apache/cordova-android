@@ -897,7 +897,7 @@ public class FileUtils extends CordovaPlugin {
             public void run() {
                 try {
                     DataResource dataResource = DataResource.initiateNewDataRequestForUri(filename, webView.pluginManager, cordova, "FileUtils.readFileAs");
-                    byte[] bytes = readAsBinaryHelper(dataResource.getInputStream(), start, end);
+                    byte[] bytes = readAsBinaryHelper(dataResource.getIs(), start, end);
                     
                     PluginResult result;
                     switch (resultType) {

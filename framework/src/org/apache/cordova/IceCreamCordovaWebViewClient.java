@@ -46,13 +46,16 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
         // We need to support the new DataResource intercepts without breaking the shouldInterceptRequest mechanism.
         DataResource dataResource = DataResource.initiateNewDataRequestForUri(url, this.appView.pluginManager, cordova,
-                "WebViewClient.shouldInterceptRequest");
+                new DataResourceContext("WebViewClient.shouldInterceptRequest", true /* this is from a browser request*/));
         url = dataResource.getUri().toString();
 
         // This mechanism is no longer needed due to the dataResource mechanism. It would be awesome to just get rid of it.
         //Check if plugins intercept the request
         WebResourceResponse ret = super.shouldInterceptRequest(view, url);
-
+//      The below bugfix is taken care of by the dataResource mechanism
+//        if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url))){
+//            ret = generateWebResourceResponse(url);
+//        }
         if(ret == null) {
             try {
                ret = new WebResourceResponse(dataResource.getMimeType(), "UTF-8", dataResource.getInputStream());
