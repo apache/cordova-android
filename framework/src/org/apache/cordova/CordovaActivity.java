@@ -856,18 +856,13 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             mUploadMessage = null;
         }
         CordovaPlugin callback = this.activityResultCallback;
-        if(callback == null)
-        {
-            if(initCallbackClass != null)
-            {
-                this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
-                callback = activityResultCallback;
-                LOG.d(TAG, "We have a callback to send this result to");
-                callback.onActivityResult(requestCode, resultCode, intent);
-            }
+        if(callback == null && initCallbackClass != null) {
+            // The application was restarted, but had defined an initial callback
+            // before being shut down.
+            this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
+            callback = this.activityResultCallback;
         }
-        else
-        {
+        if(callback != null) {
             LOG.d(TAG, "We have a callback to send this result to");
             callback.onActivityResult(requestCode, resultCode, intent);
         }
