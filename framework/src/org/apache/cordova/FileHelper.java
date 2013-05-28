@@ -26,11 +26,10 @@ import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.URLConnection;
+import java.util.Locale;
 
 public class FileHelper {
     private static final String LOG_TAG = "FileUtils";
@@ -91,7 +90,7 @@ public class FileHelper {
      * @throws IOException
      */
     public static InputStream getInputStreamFromUriString(String uriString, CordovaInterface cordova) throws IOException {
-        if (uriString.startsWith("content:")) {
+        if (uriString.startsWith("content")) {
             Uri uri = Uri.parse(uriString);
             return cordova.getActivity().getContentResolver().openInputStream(uri);
         } else if (uriString.startsWith("file://")) {
@@ -109,57 +108,6 @@ public class FileHelper {
         } else {
             return new FileInputStream(getRealPath(uriString, cordova));
         }
-    }
-
-    public static OutputStream getOutputStreamFromUriString(String uriString, CordovaInterface cordova) throws FileNotFoundException{
-        if (uriString.startsWith("content:")) {
-            Uri uri = Uri.parse(uriString);
-            return cordova.getActivity().getContentResolver().openOutputStream(uri);
-        } else if (uriString.startsWith("file:") && !uriString.startsWith("file:///android_asset/")) {
-            String realPath = uriString.substring(7);
-            return new FileOutputStream(realPath);
-        } else {
-            return null;
-        }
-    }
-    /**
-     * Returns whether the uri can be written to by openeing a File to that uri
-     *
-     * @param the URI to test
-     * @return boolean indicating whether the uri is writable
-     */
-    public static boolean isUriWritable(String uriString) {
-        String scheme = uriString.split(":")[0];
-        String writableSchemes[] = new String[]{ "content" };
-
-        if(scheme.equals("file")){
-            // special case file
-            if(uriString.startsWith("file:///android_asset/")){
-                return false;
-            } else {
-                return true;
-            }
-        }
-        for(int i = writableSchemes.length - 1; i >= 0 ; i--){
-            if(writableSchemes[i].equals(scheme)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Ensures the "file://" prefix exists for the given string
-     * If the given URI string has a "file://" prefix, it is returned unchanged
-     *
-     * @param path - the path string to operate on
-     * @return a String with the "file://" scheme set
-     */
-    public static String insertFileProtocol(String path) {
-        if(!path.matches("^[a-z0-9+.-]+:.*")){
-            path = "file://" + path;
-        }
-        return path;
     }
 
     /**

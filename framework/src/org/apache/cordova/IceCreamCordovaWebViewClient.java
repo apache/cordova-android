@@ -19,10 +19,9 @@
 package org.apache.cordova;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.DataResource;
-import org.apache.cordova.api.DataResourceContext;
 import org.apache.cordova.api.LOG;
 
 import android.annotation.TargetApi;
@@ -44,24 +43,41 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        // We need to support the new DataResource intercepts without breaking the shouldInterceptRequest mechanism.
-        DataResource dataResource = DataResource.initiateNewDataRequestForUri(url, this.appView.pluginManager, cordova,
-                new DataResourceContext("WebViewClient.shouldInterceptRequest", true /* this is from a browser request*/));
-        url = dataResource.getUri().toString();
-
         //Check if plugins intercept the request
         WebResourceResponse ret = super.shouldInterceptRequest(view, url);
-//      The below bugfix is taken care of by the dataResource mechanism
-//        if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url))){
-//            ret = generateWebResourceResponse(url);
-//        }
-        if(ret == null) {
-            try {
-               ret = new WebResourceResponse(dataResource.getMimeType(), "UTF-8", dataResource.getInputStream());
-            } catch(IOException e) {
-                LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file.", e);
-            }
+        if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url))){
+            ret = generateWebResourceResponse(url);
         }
         return ret;
     }
+
+    private WebResourceResponse generateWebResourceResponse(String url) {
+        if (url.startsWith("file:///android_asset/")) {
+            String mimetype = FileHelper.getMimeType(url, cordova);
+
+            try {
+                InputStream stream = FileHelper.getInputStreamFromUriString(url, cordova);
+                WebResourceResponse response = new WebResourceResponse(mimetype, "UTF-8", stream);
+                return response;
+            } catch (IOException e) {
+                LOG.e("generateWebResourceResponse", e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+    
+    private static boolean needsIceCreamSpaceInAssetUrlFix(String url) {
+        if (!url.contains("%20")){
+            return false;
+        }
+
+        switch(android.os.Build.VERSION.SDK_INT){
+            case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH:
+            case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1:
+                return true;
+            default:
+                return false;
+        }
+    }
+    
 }
