@@ -20,7 +20,7 @@ package org.apache.cordova;
 
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
-import org.apache.cordova.api.DataResource;
+
 import android.content.Context;
 import android.media.AudioManager;
 
@@ -56,11 +56,6 @@ public class AudioHandler extends CordovaPlugin {
         this.pausedForPhone = new ArrayList<AudioPlayer>();
     }
 
-    public String getFilePath(String url, String source){
-        DataResource dataResource = DataResource.initiateNewDataRequestForUri(url, this.webView.pluginManager, cordova, source);
-        return dataResource.getRealFile().getPath();
-    }
-
     /**
      * Executes the request and returns PluginResult.
      * @param action 		The action to execute.
@@ -73,13 +68,13 @@ public class AudioHandler extends CordovaPlugin {
         String result = "";
 
         if (action.equals("startRecordingAudio")) {
-            this.startRecordingAudio(args.getString(0), getFilePath(args.getString(1), "AudioHandler.startRecordingAudio"));
+            this.startRecordingAudio(args.getString(0), FileHelper.stripFileProtocol(args.getString(1)));
         }
         else if (action.equals("stopRecordingAudio")) {
             this.stopRecordingAudio(args.getString(0));
         }
         else if (action.equals("startPlayingAudio")) {
-            this.startPlayingAudio(args.getString(0), getFilePath(args.getString(1), "AudioHandler.startPlayingAudio"));
+            this.startPlayingAudio(args.getString(0), FileHelper.stripFileProtocol(args.getString(1)));
         }
         else if (action.equals("seekToAudio")) {
             this.seekToAudio(args.getString(0), args.getInt(1));
@@ -107,7 +102,7 @@ public class AudioHandler extends CordovaPlugin {
         }
         else if (action.equals("create")) {
             String id = args.getString(0);
-            String src = getFilePath(args.getString(1), "AudioHandler.create");
+            String src = FileHelper.stripFileProtocol(args.getString(1));
             AudioPlayer audio = new AudioPlayer(this, id, src);
             this.players.put(id, audio);
         }
