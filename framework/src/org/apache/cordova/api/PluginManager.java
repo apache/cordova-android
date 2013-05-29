@@ -54,7 +54,6 @@ public class PluginManager {
     // Map URL schemes like foo: to plugins that want to handle those schemes
     // This would allow how all URLs are handled to be offloaded to a plugin
     protected HashMap<String, String> urlMap = new HashMap<String, String>();
-    private int MAX_REPITIONS = 1000;
 
     /**
      * Constructor.
@@ -400,33 +399,5 @@ public class PluginManager {
         LOG.e(TAG, "ERROR: plugin.xml is missing.  Add res/xml/plugins.xml to your project.");
         LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
         LOG.e(TAG, "=====================================================================================");
-    }
-
-    /**
-     * Called when the any resource is going to be loaded - either from the webview, files or any other resource
-     *
-     *
-     * @param dataResource          The resource request to be loaded.
-     * @param dataResourceContext   The context of the dataResource request
-     * @return                      Return the resource request that will be loaded. The returned request may be modified or unchanged.
-     */
-    public DataResource handleDataResourceRequestWithPlugins(DataResource dataResource, DataResourceContext dataResourceContext){
-        int repetitions = 0;
-        boolean requestModified = true;
-        while(requestModified && repetitions < MAX_REPITIONS) {
-            requestModified = false;
-            repetitions ++;
-            for (PluginEntry entry : this.entries.values()) {
-                if (entry.plugin != null) {
-                    DataResource ret = entry.plugin.handleDataResourceRequest(dataResource, dataResourceContext);
-                    if(ret != null) {
-                        dataResource = ret;
-                        requestModified = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return dataResource;
     }
 }
