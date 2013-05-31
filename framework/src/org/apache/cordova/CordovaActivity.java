@@ -117,7 +117,7 @@ import android.widget.LinearLayout;
  * Cordova.xml configuration:
  *      Cordova uses a configuration file at res/xml/cordova.xml to specify the following settings.
  *
- *      Approved list of URLs that can be loaded into DroidGap
+ *      Approved list of URLs that can be loaded into Cordova
  *          <access origin="http://server regexp" subdomains="true" />
  *      Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
  *          <log level="DEBUG" />
@@ -952,7 +952,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     }
 
     /*
-     * Hook in DroidGap for menu plugins
+     * Hook in Cordova for menu plugins
      *
      */
     @Override
@@ -991,7 +991,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param url           The url to load.
      * @param openExternal  Load url in browser instead of Cordova webview.
      * @param clearHistory  Clear the history stack, so new page becomes top of history
-     * @param params        DroidGap parameters for new app
+     * @param params        Parameters for new app
      */
     public void showWebPage(String url, boolean openExternal, boolean clearHistory, HashMap<String, Object> params) {
         if (this.appView != null) {

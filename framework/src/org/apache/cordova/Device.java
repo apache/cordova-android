@@ -101,7 +101,7 @@ public class Device extends CordovaPlugin {
     /**
      * Listen for telephony events: RINGING, OFFHOOK and IDLE
      * Send these events to all plugins using
-     *      DroidGap.onMessage("telephone", "ringing" | "offhook" | "idle")
+     *      CordovaActivity.onMessage("telephone", "ringing" | "offhook" | "idle")
      */
     private void initTelephonyReceiver() {
         IntentFilter intentFilter = new IntentFilter();
