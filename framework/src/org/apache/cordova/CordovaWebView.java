@@ -485,7 +485,7 @@ public class CordovaWebView extends WebView {
         // If first page, then show splashscreen
         else {
 
-            LOG.d(TAG, "DroidGap.loadUrl(%s, %d)", url, time);
+            LOG.d(TAG, "loadUrlIntoView(%s, %d)", url, time);
 
             // Send message to show splashscreen now if desired
             this.postMessage("splashscreen", "show");

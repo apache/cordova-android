@@ -259,7 +259,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Config.init(this);
-        LOG.d(TAG, "DroidGap.onCreate()");
+        LOG.d(TAG, "CordovaActivity.onCreate()");
         super.onCreate(savedInstanceState);
 
         if(savedInstanceState != null)
@@ -332,7 +332,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     @SuppressLint("NewApi")
     public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
-        LOG.d(TAG, "DroidGap.init()");
+        LOG.d(TAG, "CordovaActivity.init()");
 
         // Set up web container
         this.appView = webView;
@@ -595,7 +595,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setBooleanProperty(String name, boolean value) {
-        Log.d(TAG, "Setting boolean properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
+        Log.d(TAG, "Setting boolean properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -606,7 +606,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setIntegerProperty(String name, int value) {
-        Log.d(TAG, "Setting integer properties in DroidGap will be deprecated in 3.1 on August 2013, please use config.xml");
+        Log.d(TAG, "Setting integer properties in CordovaActivity will be deprecated in 3.1 on August 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -617,7 +617,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setStringProperty(String name, String value) {
-        Log.d(TAG, "Setting string properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
+        Log.d(TAG, "Setting string properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -628,7 +628,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setDoubleProperty(String name, double value) {
-        Log.d(TAG, "Setting double properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
+        Log.d(TAG, "Setting double properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -712,7 +712,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * The final call you receive before your activity is destroyed.
      */
     public void onDestroy() {
-        LOG.d(TAG, "onDestroy()");
+        LOG.d(TAG, "CordovaActivity.onDestroy()");
         super.onDestroy();
 
         // hide the splash screen to avoid leaking a window

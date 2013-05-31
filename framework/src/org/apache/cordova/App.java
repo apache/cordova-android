@@ -198,7 +198,7 @@ public class App extends CordovaPlugin {
      * @param override      T=override, F=cancel override
      */
     public void overrideButton(String button, boolean override) {
-        LOG.i("DroidGap", "WARNING: Volume Button Default Behaviour will be overridden.  The volume event will be fired!");
+        LOG.i("App", "WARNING: Volume Button Default Behaviour will be overridden.  The volume event will be fired!");
         webView.bindButton(button, override);
     }
 
