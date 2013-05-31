@@ -134,7 +134,7 @@ import android.widget.LinearLayout;
  *      </plugins>
  */
 public class CordovaActivity extends Activity implements CordovaInterface {
-    public static String TAG = "DroidGap";
+    public static String TAG = "CordovaActivity";
 
     // The webview for our app
     protected CordovaWebView appView;
