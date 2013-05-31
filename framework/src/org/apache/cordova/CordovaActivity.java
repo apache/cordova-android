@@ -64,11 +64,10 @@ import android.widget.LinearLayout;
  * As an example:
  *
  *     package org.apache.cordova.examples;
- *     import android.app.Activity;
  *     import android.os.Bundle;
  *     import org.apache.cordova.*;
  *
- *     public class Examples extends DroidGap {
+ *     public class Example extends CordovaActivity {
  *       @Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
@@ -76,9 +75,6 @@ import android.widget.LinearLayout;
  *         // Set properties for activity
  *         super.setStringProperty("loadingDialog", "Title,Message"); // show loading dialog
  *         super.setStringProperty("errorUrl", "file:///android_asset/www/error.html"); // if error loading file in super.loadUrl().
- *
- *         // Initialize activity
- *         super.init();
  *
  *         // Clear cache if you want
  *         super.appView.clearCache(true);
