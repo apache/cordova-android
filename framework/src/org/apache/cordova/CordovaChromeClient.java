@@ -222,6 +222,7 @@ public class CordovaChromeClient extends WebChromeClient {
                 result.confirm(r == null ? "" : r);
             } catch (JSONException e) {
                 e.printStackTrace();
+                return false;
             }
         }
 
