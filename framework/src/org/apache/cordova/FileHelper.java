@@ -94,12 +94,18 @@ public class FileHelper {
         if (uriString.startsWith("content:")) {
             Uri uri = Uri.parse(uriString);
             return cordova.getActivity().getContentResolver().openInputStream(uri);
-        } else if (uriString.startsWith("file:///android_asset/")) {
-            Uri uri = Uri.parse(uriString);
-            String relativePath = uri.getPath().substring(15);
-            return cordova.getActivity().getAssets().open(relativePath);
         } else if (uriString.startsWith("file://")) {
-            return new FileInputStream(getRealPath(uriString, cordova));
+            int question = uriString.indexOf("?");
+            if (question > -1) {
+            	uriString = uriString.substring(0,question);
+            }
+            if (uriString.startsWith("file:///android_asset/")) {
+                Uri uri = Uri.parse(uriString);
+                String relativePath = uri.getPath().substring(15);
+                return cordova.getActivity().getAssets().open(relativePath);
+            } else {
+                return new FileInputStream(getRealPath(uriString, cordova));
+            }
         } else {
             return null;
         }

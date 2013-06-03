@@ -855,20 +855,15 @@ public class FileTransfer extends CordovaPlugin {
      * @throws FileNotFoundException
      */
     private InputStream getPathFromUri(String path) throws FileNotFoundException {
-        if (path.startsWith("content:")) {
-            Uri uri = Uri.parse(path);
-            return cordova.getActivity().getContentResolver().openInputStream(uri);
-        }
-        else if (path.startsWith("file://")) {
-            int question = path.indexOf("?");
-            if (question == -1) {
-                return new FileInputStream(path.substring(7));
+        try {
+            InputStream stream = FileHelper.getInputStreamFromUriString(path, cordova);
+            if (stream == null) {
+                return new FileInputStream(path);
             } else {
-                return new FileInputStream(path.substring(7, question));
+                return stream;
             }
-        }
-        else {
-            return new FileInputStream(path);
+        } catch (IOException e) {
+        	throw new FileNotFoundException();
         }
     }
 
