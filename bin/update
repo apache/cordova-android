@@ -64,8 +64,6 @@ function createAppInfoJar {
 
 function on_error {
     echo "An unexpected error occurred: $previous_command exited with $?"
-    echo "Deleting project..."
-    [ -d "$PROJECT_PATH" ] && rm -rf "$PROJECT_PATH"
     exit 1
 }
 
@@ -104,6 +102,16 @@ if [ ! -e "$BUILD_PATH"/cordova-$VERSION.jar ] && [ -d "$BUILD_PATH"/framework ]
 then
 # update the cordova-android framework for the desired target
     "$ANDROID_BIN" update project --target $TARGET --path "$BUILD_PATH"/framework &> /dev/null
+
+    if [ ! -e "$BUILD_PATH"/framework/libs/commons-codec-1.7.jar ]; then
+        # Use curl to get the jar (TODO: Support Apache Mirrors)
+        curl -OL http://archive.apache.org/dist/commons/codec/binaries/commons-codec-1.7-bin.zip &> /dev/null
+        unzip commons-codec-1.7-bin.zip &> /dev/null
+        mkdir -p "$BUILD_PATH"/framework/libs
+        cp commons-codec-1.7/commons-codec-1.7.jar "$BUILD_PATH"/framework/libs
+        # cleanup yo
+        rm commons-codec-1.7-bin.zip && rm -rf commons-codec-1.7
+    fi
 
 # compile cordova.js and cordova.jar
     (cd "$BUILD_PATH"/framework && ant jar &> /dev/null )
