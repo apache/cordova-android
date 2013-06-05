@@ -188,13 +188,13 @@ public class InAppBrowser extends CordovaPlugin {
                 injectDeferredObject(args.getString(0), jsWrapper);
             }
             else if (action.equals("show")) {
-            	Runnable runnable = new Runnable() {
-					@Override
-					public void run() {
-            			dialog.show();
-					}
-            	};
-            	this.cordova.getActivity().runOnUiThread(runnable);
+                Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                        dialog.show();
+                    }
+                };
+                this.cordova.getActivity().runOnUiThread(runnable);
                 this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK));
             }
             else {
@@ -566,6 +566,8 @@ public class InAppBrowser extends CordovaPlugin {
                 dialog.setContentView(main);
                 dialog.show();
                 dialog.getWindow().setAttributes(lp);
+                // the goal of openhidden is to load the url and not display it
+                // Show() needs to be called to cause the URL to be loaded 
                 if(openWindowHidden) {
                 	dialog.hide();
                 }
