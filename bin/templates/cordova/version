@@ -24,7 +24,7 @@ PROJECT_PATH="$(dirname "$CORDOVA_PATH")"
 VERSION_FILE_PATH="$PROJECT_PATH/assets/www/cordova.js"
 
 if [ -f "$VERSION_FILE_PATH" ]; then
-    JSVersion=$(sed -n '2,2p' assets/www/cordova.js)
+    JSVersion=$(sed -n '2,2p' $VERSION_FILE_PATH)
     echo $JSVersion | sed -e 's/\/\/ //'| cut -f 1 -d '-'
 else
     echo "The file \"$VERSION_FILE_PATH\" does not exist."
