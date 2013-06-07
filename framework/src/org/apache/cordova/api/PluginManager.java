@@ -26,12 +26,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.UriResolver;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
 
+import android.net.Uri;
 import android.util.Log;
 import android.webkit.WebResourceResponse;
 
@@ -380,25 +382,6 @@ public class PluginManager {
     }
 
     /**
-     * Called when the WebView is loading any resource, top-level or not.
-     *
-     * Uses the same url-filter tag as onOverrideUrlLoading.
-     *
-     * @param url               The URL of the resource to be loaded.
-     * @return                  Return a WebResourceResponse with the resource, or null if the WebView should handle it.
-     */
-    public WebResourceResponse shouldInterceptRequest(String url) {
-        Iterator<Entry<String, String>> it = this.urlMap.entrySet().iterator();
-        while (it.hasNext()) {
-            HashMap.Entry<String, String> pairs = it.next();
-            if (url.startsWith(pairs.getKey())) {
-                return this.getPlugin(pairs.getValue()).shouldInterceptRequest(url);
-            }
-        }
-        return null;
-    }
-
-    /**
      * Called when the app navigates or refreshes.
      */
     public void onReset() {
@@ -417,6 +400,18 @@ public class PluginManager {
         LOG.e(TAG, "ERROR: config.xml is missing.  Add res/xml/config.xml to your project.");
         LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
         LOG.e(TAG, "=====================================================================================");
+    }
+
+    /* Should be package private */ public UriResolver resolveUri(Uri uri) {
+        for (PluginEntry entry : this.entries.values()) {
+            if (entry.plugin != null) {
+                UriResolver ret = entry.plugin.resolveUri(uri);
+                if (ret != null) {
+                    return ret;
+                }
+            }
+        }
+        return null;
     }
 
     private class PluginManagerService extends CordovaPlugin {

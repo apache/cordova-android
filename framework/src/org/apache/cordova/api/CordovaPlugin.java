@@ -20,14 +20,12 @@ package org.apache.cordova.api;
 
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.UriResolver;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.os.Build;
-import android.util.Log;
-import android.webkit.WebResourceResponse;
+import android.net.Uri;
 
 /**
  * Plugins must extend this class and override one of the execute methods.
@@ -165,13 +163,10 @@ public class CordovaPlugin {
     }
 
     /**
-     * By specifying a <url-filter> in config.xml you can map a URL prefix to this method. It applies to all resources loaded in the WebView, not just top-level navigation.
-     *
-     * @param url               The URL of the resource to be loaded.
-     * @return                  Return a WebResourceResponse for the resource, or null to let the WebView handle it normally.
+     * Hook for overriding the default URI handling mechanism.
+     * Applies to WebView requests as well as requests made by plugins.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public WebResourceResponse shouldInterceptRequest(String url) {
+    public UriResolver resolveUri(Uri uri) {
         return null;
     }
 
