@@ -379,7 +379,7 @@ public class InAppBrowser extends CordovaPlugin {
             }else{
                 Log.d(LOG_TAG, "clear session cache");
                 cache = features.get(CLEAR_SESSION_CACHE);
-                if(cache!=null)clearSessionCache=features.get(CLEAR_SESSION_CACHE);
+                if(cache!=null)clearSessionCache=cache.booleanValue();
             }
         }
         
