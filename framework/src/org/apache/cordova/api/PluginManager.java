@@ -100,6 +100,16 @@ public class PluginManager {
             id = this.ctx.getActivity().getResources().getIdentifier("plugins", "xml", this.ctx.getActivity().getPackageName());
             LOG.i(TAG, "Using plugins.xml instead of config.xml.  plugins.xml will eventually be deprecated");
         }
+        if(id == 0)
+        {
+            id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getClass().getPackage().getName());
+            LOG.i(TAG, "Using config.xml from class name instead of the package name's config.xml.");
+        }
+        if(id == 0)
+        {
+            id = this.ctx.getActivity().getResources().getIdentifier("plugins", "xml", this.ctx.getActivity().getClass().getPackage().getName());
+            LOG.i(TAG, "Using plugins.xml from class name instead of the package name's plugins.xml. plugins.xml will eventually be deprecated");
+        }
         if (id == 0) {
             this.pluginConfigurationMissing();
             //We have the error, we need to exit without crashing!

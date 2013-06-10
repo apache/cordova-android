@@ -77,6 +77,16 @@ public class Config {
             id = action.getResources().getIdentifier("cordova", "xml", action.getPackageName());
             LOG.i("CordovaLog", "config.xml missing, reverting to cordova.xml");
         }
+        if(id == 0)
+        {
+            id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getClass().getPackage().getName());
+            LOG.i(TAG, "Using config.xml from class name instead of the package name's config.xml.");
+        }
+        if(id == 0)
+        {
+            id = this.ctx.getActivity().getResources().getIdentifier("cordova", "xml", this.ctx.getActivity().getClass().getPackage().getName());
+            LOG.i(TAG, "Using cordova.xml from class name instead of the package name's cordova.xml.");
+        }
         if (id == 0) {
             LOG.i("CordovaLog", "cordova.xml missing. Ignoring...");
             return;
