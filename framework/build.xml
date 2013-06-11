@@ -31,22 +31,6 @@
     <fail message="The required minimum version of ant is 1.8.0, you have ${ant.version}"
           unless="thisantversion" />
 
-    <!-- check that commons codec is available. You should copy the codec jar to
-         framework/libs, as it is not included in the Cordova distribution. 
-         The name of the jar file in framework/libs does not matter. -->
-    <available classname="org.apache.commons.codec.binary.Base64"
-               property="exists.base64"
-               ignoresystemclasses="true">
-        <classpath>
-            <pathelement path="${classpath}" />
-            <fileset dir="libs">
-                <include name="*.jar" />
-            </fileset>
-        </classpath>
-    </available>
-    <fail message="You need to put a copy of Apache Commons Codec jar in the framework/libs directory"
-          unless="exists.base64" />
-
     <!-- The local.properties file is created and updated by the 'android' 
          tool. (For example "sdkdir/tools/android update project -p ." inside
          of this directory where the AndroidManifest.xml file exists. This

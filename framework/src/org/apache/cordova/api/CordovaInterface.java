@@ -24,7 +24,7 @@ import android.content.Intent;
 import java.util.concurrent.ExecutorService;
 
 /**
- * The Cordova activity abstract class that is extended by DroidGap.
+ * The Activity interface that is implemented by CordovaActivity.
  * It is used to isolate plugin development, and remove dependency on entire Cordova library.
  */
 public interface CordovaInterface {

@@ -176,20 +176,6 @@ public class CordovaPlugin {
     }
 
     /**
-     * All plugins can now choose if they want to modify any uri requests. This includes all webview requests, opening of files, content uri's etc.
-     * This mechanism allows several plugins to modify the same request
-     * @param requestSource The source of the incoming request
-     *
-     * @param dataResource          The resource to be loaded.
-     * @param dataResourceContext   Context associated with the resource load
-     * @return                      Return a new DataResource if the plugin wants to assist in loading the request or null if it doesn't.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public DataResource handleDataResourceRequest(DataResource dataResource, DataResourceContext dataResourceContext) {
-        return null;
-    }
-
-    /**
      * Called when the WebView does a top-level navigation or refreshes.
      *
      * Plugins should stop any long-running processes and clean up internal state.

@@ -64,11 +64,10 @@ import android.widget.LinearLayout;
  * As an example:
  *
  *     package org.apache.cordova.examples;
- *     import android.app.Activity;
  *     import android.os.Bundle;
  *     import org.apache.cordova.*;
  *
- *     public class Examples extends DroidGap {
+ *     public class Example extends CordovaActivity {
  *       @Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
@@ -76,9 +75,6 @@ import android.widget.LinearLayout;
  *         // Set properties for activity
  *         super.setStringProperty("loadingDialog", "Title,Message"); // show loading dialog
  *         super.setStringProperty("errorUrl", "file:///android_asset/www/error.html"); // if error loading file in super.loadUrl().
- *
- *         // Initialize activity
- *         super.init();
  *
  *         // Clear cache if you want
  *         super.appView.clearCache(true);
@@ -121,7 +117,7 @@ import android.widget.LinearLayout;
  * Cordova.xml configuration:
  *      Cordova uses a configuration file at res/xml/cordova.xml to specify the following settings.
  *
- *      Approved list of URLs that can be loaded into DroidGap
+ *      Approved list of URLs that can be loaded into Cordova
  *          <access origin="http://server regexp" subdomains="true" />
  *      Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
  *          <log level="DEBUG" />
@@ -138,7 +134,7 @@ import android.widget.LinearLayout;
  *      </plugins>
  */
 public class CordovaActivity extends Activity implements CordovaInterface {
-    public static String TAG = "DroidGap";
+    public static String TAG = "CordovaActivity";
 
     // The webview for our app
     protected CordovaWebView appView;
@@ -263,7 +259,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Config.init(this);
-        LOG.d(TAG, "DroidGap.onCreate()");
+        LOG.d(TAG, "CordovaActivity.onCreate()");
         super.onCreate(savedInstanceState);
 
         if(savedInstanceState != null)
@@ -336,7 +332,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     @SuppressLint("NewApi")
     public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
-        LOG.d(TAG, "DroidGap.init()");
+        LOG.d(TAG, "CordovaActivity.init()");
 
         // Set up web container
         this.appView = webView;
@@ -599,7 +595,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setBooleanProperty(String name, boolean value) {
-        Log.d(TAG, "Setting boolean properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
+        Log.d(TAG, "Setting boolean properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -610,7 +606,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setIntegerProperty(String name, int value) {
-        Log.d(TAG, "Setting integer properties in DroidGap will be deprecated in 3.1 on August 2013, please use config.xml");
+        Log.d(TAG, "Setting integer properties in CordovaActivity will be deprecated in 3.1 on August 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -621,7 +617,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setStringProperty(String name, String value) {
-        Log.d(TAG, "Setting string properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
+        Log.d(TAG, "Setting string properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -632,7 +628,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setDoubleProperty(String name, double value) {
-        Log.d(TAG, "Setting double properties in DroidGap will be deprecated in 3.0 on July 2013, please use config.xml");
+        Log.d(TAG, "Setting double properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
@@ -716,7 +712,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * The final call you receive before your activity is destroyed.
      */
     public void onDestroy() {
-        LOG.d(TAG, "onDestroy()");
+        LOG.d(TAG, "CordovaActivity.onDestroy()");
         super.onDestroy();
 
         // hide the splash screen to avoid leaking a window
@@ -856,18 +852,13 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             mUploadMessage = null;
         }
         CordovaPlugin callback = this.activityResultCallback;
-        if(callback == null)
-        {
-            if(initCallbackClass != null)
-            {
-                this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
-                callback = activityResultCallback;
-                LOG.d(TAG, "We have a callback to send this result to");
-                callback.onActivityResult(requestCode, resultCode, intent);
-            }
+        if(callback == null && initCallbackClass != null) {
+            // The application was restarted, but had defined an initial callback
+            // before being shut down.
+            this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
+            callback = this.activityResultCallback;
         }
-        else
-        {
+        if(callback != null) {
             LOG.d(TAG, "We have a callback to send this result to");
             callback.onActivityResult(requestCode, resultCode, intent);
         }
@@ -961,7 +952,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     }
 
     /*
-     * Hook in DroidGap for menu plugins
+     * Hook in Cordova for menu plugins
      *
      */
     @Override
@@ -1000,7 +991,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param url           The url to load.
      * @param openExternal  Load url in browser instead of Cordova webview.
      * @param clearHistory  Clear the history stack, so new page becomes top of history
-     * @param params        DroidGap parameters for new app
+     * @param params        Parameters for new app
      */
     public void showWebPage(String url, boolean openExternal, boolean clearHistory, HashMap<String, Object> params) {
         if (this.appView != null) {
