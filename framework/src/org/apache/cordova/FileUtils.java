@@ -134,7 +134,7 @@ public class FileUtils extends CordovaPlugin {
                 this.readFileAs(args.getString(0), start, end, callbackContext, null, PluginResult.MESSAGE_TYPE_BINARYSTRING);
             }
             else if (action.equals("write")) {
-                long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2));
+                long fileSize = this.write(args.getString(0), args.getString(1), args.getInt(2), args.getBoolean(3));
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, fileSize));
             }
             else if (action.equals("truncate")) {
@@ -999,11 +999,12 @@ public class FileUtils extends CordovaPlugin {
      * @param filename			The name of the file.
      * @param data				The contents of the file.
      * @param offset			The position to begin writing the file.
+     * @param isBinary          True if the file contents are base64-encoded binary data
      * @throws FileNotFoundException, IOException
      * @throws NoModificationAllowedException
      */
     /**/
-    public long write(String filename, String data, int offset) throws FileNotFoundException, IOException, NoModificationAllowedException {
+    public long write(String filename, String data, int offset, boolean isBinary) throws FileNotFoundException, IOException, NoModificationAllowedException {
         if (filename.startsWith("content://")) {
             throw new NoModificationAllowedException("Couldn't write to file given its content URI");
         }
@@ -1016,7 +1017,12 @@ public class FileUtils extends CordovaPlugin {
             append = true;
         }
 
-        byte[] rawData = data.getBytes();
+        byte[] rawData;
+        if (isBinary) {
+            rawData = Base64.decode(data, Base64.DEFAULT);
+        } else {
+            rawData = data.getBytes();
+        }
         ByteArrayInputStream in = new ByteArrayInputStream(rawData);
         FileOutputStream out = new FileOutputStream(filename, append);
         byte buff[] = new byte[rawData.length];
