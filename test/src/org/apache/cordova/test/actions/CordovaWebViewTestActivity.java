@@ -97,7 +97,6 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
         super.onDestroy();
         if (cordovaWebView != null) {
             // Send destroy event to JavaScript
-            cordovaWebView.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
             cordovaWebView.handleDestroy();
         }
     }
