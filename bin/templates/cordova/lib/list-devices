@@ -16,8 +16,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -e
-
-CORDOVA_LIB_PATH=$( cd "$( dirname "$0" )" && pwd )
-
-bash "$CORDOVA_LIB_PATH"/cordova list-devices
+devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print }}' | grep 'device' | grep -v 'emulator' | awk '{ print $1; }'`
+device_list=($devices)
+if [[ ${#device_list[@]} > 0 ]] ; then
+    for i in ${devices[@]}
+    do
+        echo $i
+    done
+    exit 0
+else
+    echo "No devices found."
+    exit 2
+fi

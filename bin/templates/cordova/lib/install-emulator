@@ -16,8 +16,35 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -e
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_PATH=$( cd "$DIR/../.." && pwd )
+emulator_list=$("$DIR/list-started-emulators")
+if [ $? != 0 ]; then
+    echo "No emulators found to deploy to. Please make sure your emulator is started"
+    echo " You can view it using the 'cordova/lib/list-started-emulators' command."
+    echo " You can view created emulator images using the 'cordova/lib/list-emulator-images' command."
+    echo " You can start an emulator image using the 'cordova/lib/start-emulator' command."
+    exit 2
+fi
 
-CORDOVA_LIB_PATH=$( cd "$( dirname "$0" )" && pwd )
-
-bash "$CORDOVA_LIB_PATH"/cordova install-emulator "$@"
+apks=`find $PROJECT_PATH/bin -type f -maxdepth 1 | egrep '\.apk$'`
+apk_list=($apks)
+if [[ ${#apk_list[@]} > 0 ]] ; then
+    # handle target emulator
+    if [[ "$#" -eq 1 ]] ; then
+        # deploy to given target
+        target=${1/--target=/}
+    else
+        # delete trailing space and 'device' after emulator ID
+        target=${emulator_list[0]}
+    fi
+    echo "Installing ${apk_list[0]} onto emulator $target..."
+    adb -s $target install -r ${apk_list[0]};
+    echo "Launching application..."
+    launch_str=$(java -jar "$PROJECT_PATH"/cordova/appinfo.jar "$PROJECT_PATH"/AndroidManifest.xml)
+    adb -s $target shell am start -W -a android.intent.action.MAIN -n $launch_str
+else
+    echo "Application package not found, could not install to device"
+    echo " make sure your application is built before deploying."
+    exit 2
+fi

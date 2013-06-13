@@ -16,8 +16,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -e
-
-CORDOVA_LIB_PATH=$( cd "$( dirname "$0" )" && pwd )
-
-bash "$CORDOVA_LIB_PATH"/cordova list-emulator-images
+emulator_images=`android list avds | grep "Name:" | cut -f 2 -d ":"`
+emulator_list=($emulator_images)
+if [[ ${#emulator_list[@]} > 0 ]] ; then
+    for i in ${emulator_list[@]}
+    do
+        echo $i
+    done
+    exit 0
+else
+    echo "No emulators found, if you would like to create an emulator follow the instructions"
+    echo " provided here : http://developer.android.com/tools/devices/index.html"
+    echo " Or run 'android create avd --name <name> --target <targetID>' in on the command line."
+    exit 2
+fi

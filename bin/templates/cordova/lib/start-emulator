@@ -16,8 +16,30 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -e
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_PATH=$( cd "$( dirname "$0" )/../.." && pwd )
+emulator_images=$("$DIR/list-emulator-images")
+if [ $? != 0 ]; then
+    echo "No emulators found, if you would like to create an emulator follow the instructions"
+    echo " provided here : http://developer.android.com/tools/devices/index.html"
+    echo " Or run 'android create avd --name <name> --target <targetID>' in on the command line."
+    exit 2
+fi
 
-CORDOVA_LIB_PATH=$( cd "$( dirname "$0" )" && pwd )
-
-bash "$CORDOVA_LIB_PATH"/cordova start-emulator "$@"
+# if target emulator is provided
+if [[ "$#" -eq 1 ]] ; then
+    # check that it exists
+    if [[ $emulator_images =~ $1 ]] ; then
+        #xterm -e emulator -avd $1 &
+        emulator -avd $1 1> /dev/null 2>&1 &
+    else
+        echo "Could not find the provided emulator '$1', make sure the emulator exists"
+        echo " by checking 'cordova/lib/list-emulator-images'"
+        exit 2
+    fi
+else
+    # start first emulator
+    read -ra emulator_list <<< "$emulator_images"
+    #xterm -e emulator -avd ${emulator_list[0]} &
+    emulator -avd ${emulator_list[0]} 1> /dev/null 2>&1 &
+fi

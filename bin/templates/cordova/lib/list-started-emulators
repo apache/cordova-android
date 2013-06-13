@@ -16,8 +16,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -e
-
-CORDOVA_LIB_PATH=$( cd "$( dirname "$0" )" && pwd )
-
-bash "$CORDOVA_LIB_PATH"/cordova list-started-emulators
+devices=`adb devices | awk '/List of devices attached/ { while(getline > 0) { print  $1;}}' | grep 'emulator'`
+read -ra emulator_list <<< "$devices"
+if [[ ${#emulator_list[@]} > 0 ]] ; then
+    for i in ${emulator_list[@]}
+    do
+        # remove space and 'device'
+        echo $i 
+    done
+    exit 0
+else
+    echo "No started emulators found, you can start an emulator by using the command"
+    echo " 'cordova/lib/start-emulator'"
+    exit 2
+fi

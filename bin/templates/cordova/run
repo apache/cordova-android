@@ -16,8 +16,109 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -e
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_PATH=$( cd "$DIR/.." && pwd )
 
-CORDOVA_PATH=$( cd "$( dirname "$0" )" && pwd )
+function wait_for_emulator {
+# TODO: this doesnt seem to work
+    emulator_string=$("$DIR/lib/list-started-emulators")
+    old_started=($emulator_string)
+    local new_started
+    local new_emulator_name
+    local i="0"
+    echo -n "Waiting for emulator..."
+    while [ $i -lt 300 ]
+    do
+        emulator_string=$("$DIR/lib/list-started-emulators")
+        new_started=($emulator_string)
+        if [[ ${#new_started[@]} > ${#old_started[@]} && -z "$new_emulator_name" ]] ; then
+            # get the name of the started emulator
+            local count="0"
+            if [[ ${#old_started[@]} == 0 ]] ; then
+                new_emulator_name=${new_started[$count]}
+            else
+                for count in {0...${#old_started[@]}}
+                do
+                    if [[ ! ${new_started[$count]} == ${old_started[$count]} ]] ; then
+                        new_emulator_name=${new_started[$count]}
+                    fi
+                done
+                if [[ -z "$new_emulator_name" ]] ; then
+                    count=$[count+1]
+                    new_emulator_name=${new_started[$count]}
+                fi
+            fi
+        elif [[ "$new_emulator_name" ]] ; then
+            boot_anim=`adb -s $new_emulator_name shell getprop init.svc.bootanim`
+            if [[ $boot_anim =~ "stopped" ]] ; then
+                break
+            else
+                sleep 1
+                i=$[i+1]
+                echo -n "."
+            fi
+        else
+            sleep 1
+            i=$[i+1]
+            echo -n "."
+        fi
+    done
+    # Device timeout: emulator has not started in time
+    if [ $i -eq 300 ]
+    then
+        echo "emulator timeout!"
+        exit 69
+    else
+        echo "connected!"
+    fi
+}
 
-bash "$CORDOVA_PATH"/lib/cordova run "$@"
+if [[ "$#" -eq 2 ]] ; then
+    $DIR/build $2
+    if [[ $1 == "--device" ]] ; then
+        $DIR/lib/install_device
+    elif [[ $1 == "--emulator" ]] ; then
+        $DIR/lib/install_emulator
+    elif [[ $1 =~ "--target=" ]]; then
+        $DIR/lib/install_device $1
+    else
+        echo "Error : '$1' is not recognized as an install option"
+    fi
+elif [[ "$#" -eq 1 ]] ; then
+    if [[ $1 == "--debug" || $1 == "--release" || $1 == "--nobuild" ]] ; then
+        $DIR/build $1
+    elif [[ $1 == "--device" ]] ; then
+        $DIR/build
+        $DIR/lib/install_device
+    elif [[ $1 == "--emulator" ]] ; then
+        $DIR/build
+        $DIR/lib/install_emulator
+    elif [[ $1 =~ "--target=" ]]; then
+        $DIR/build
+        $DIR/lib/install_device $1
+    else
+        echo "Error : '$1' is not recognized as an install option"
+    fi
+else
+    echo "Warning : [ --device | --emulate | --target=<targetID> ] not specified, using defaults."
+    #$DIR/build
+    devices=$("$DIR/lib/list-devices")
+    if [ $? = 0 ]; then
+        $DIR/lib/install_device
+    else
+        emulators=$("$DIR/lib/list-started-emulators")
+        if [ $? = 0 ] ; then
+            $DIR/lib/install_emulator
+        else
+            images=$("$DIR/lib/list-emulator-images")
+            if [ $? = 0 ] ; then
+                $DIR/lib/start-emulator
+                wait_for_emulator
+                $DIR/lib/install_emulator
+            else
+                echo "No Android devices attached, nor emulator images available to start. How are we supposed to do this, then?"
+                exit 2
+            fi
+        fi
+    fi
+fi
