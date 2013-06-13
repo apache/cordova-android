@@ -138,7 +138,7 @@ public class DirectoryManager {
      *
      * @return the absolute path of where to store the file
      */
-    protected static String getTempDirectoryPath(Context ctx) {
+    public static String getTempDirectoryPath(Context ctx) {
         File cache = null;
 
         // SD Card Mounted
