@@ -82,10 +82,10 @@ function start_emulator {
         fi
     else
         # start first emulator
-        emulator_list=($emulator_images)
+        read -ra emulator_list <<< "$emulator_images"
         if [[ ${#emulator_list[@]} > 0 ]] ; then
             #xterm -e emulator -avd ${emulator_list[0]} &
-            emulator -avd ${emulator_list[0]/[^a-zA-Z0-9._]/} 1> /dev/null 2>&1 &
+            emulator -avd ${emulator_list[0]/[^a-zA-Z0-9._-]/} 1> /dev/null 2>&1 &
         else
             echo "No emulators found, if you would like to create an emulator follow the instructions"
             echo " provided here : http://developer.android.com/tools/devices/index.html"
