@@ -40,7 +40,7 @@ public class DirectoryManager {
      * @param name				The name of the file to check.
      * @return					T=exists, F=not found
      */
-    protected static boolean testFileExists(String name) {
+    public static boolean testFileExists(String name) {
         boolean status;
 
         // If SD card exists
@@ -61,7 +61,7 @@ public class DirectoryManager {
      * 
      * @return 		Size in KB or -1 if not available
      */
-    protected static long getFreeDiskSpace(boolean checkInternal) {
+    public static long getFreeDiskSpace(boolean checkInternal) {
         String status = Environment.getExternalStorageState();
         long freeSpace = 0;
 
@@ -98,7 +98,7 @@ public class DirectoryManager {
      * 
      * @return				T=exists, F=not found
      */
-    protected static boolean testSaveLocationExists() {
+    public static boolean testSaveLocationExists() {
         String sDCardStatus = Environment.getExternalStorageState();
         boolean status;
 
