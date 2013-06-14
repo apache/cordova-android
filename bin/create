@@ -144,7 +144,6 @@ cp "$BUILD_PATH"/bin/templates/cordova/clean "$PROJECT_PATH"/cordova/clean
 cp "$BUILD_PATH"/bin/templates/cordova/log "$PROJECT_PATH"/cordova/log
 cp "$BUILD_PATH"/bin/templates/cordova/run "$PROJECT_PATH"/cordova/run
 cp "$BUILD_PATH"/bin/templates/cordova/version "$PROJECT_PATH"/cordova/version
-cp "$BUILD_PATH"/bin/templates/cordova/lib/cordova "$PROJECT_PATH"/cordova/lib/cordova
 cp "$BUILD_PATH"/bin/templates/cordova/lib/install-device "$PROJECT_PATH"/cordova/lib/install-device
 cp "$BUILD_PATH"/bin/templates/cordova/lib/install-emulator "$PROJECT_PATH"/cordova/lib/install-emulator
 cp "$BUILD_PATH"/bin/templates/cordova/lib/list-devices "$PROJECT_PATH"/cordova/lib/list-devices
