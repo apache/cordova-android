@@ -76,11 +76,11 @@ function wait_for_emulator {
 if [[ "$#" -eq 2 ]] ; then
     $DIR/build $2
     if [[ $1 == "--device" ]] ; then
-        $DIR/lib/install_device
+        $DIR/lib/install-device
     elif [[ $1 == "--emulator" ]] ; then
-        $DIR/lib/install_emulator
+        $DIR/lib/install-emulator
     elif [[ $1 =~ "--target=" ]]; then
-        $DIR/lib/install_device $1
+        $DIR/lib/install-device $1
     else
         echo "Error : '$1' is not recognized as an install option"
     fi
@@ -89,13 +89,13 @@ elif [[ "$#" -eq 1 ]] ; then
         $DIR/build $1
     elif [[ $1 == "--device" ]] ; then
         $DIR/build
-        $DIR/lib/install_device
+        $DIR/lib/install-device
     elif [[ $1 == "--emulator" ]] ; then
         $DIR/build
-        $DIR/lib/install_emulator
+        $DIR/lib/install-emulator
     elif [[ $1 =~ "--target=" ]]; then
         $DIR/build
-        $DIR/lib/install_device $1
+        $DIR/lib/install-device $1
     else
         echo "Error : '$1' is not recognized as an install option"
     fi
@@ -104,17 +104,17 @@ else
     #$DIR/build
     devices=$("$DIR/lib/list-devices")
     if [ $? = 0 ]; then
-        $DIR/lib/install_device
+        $DIR/lib/install-device
     else
         emulators=$("$DIR/lib/list-started-emulators")
         if [ $? = 0 ] ; then
-            $DIR/lib/install_emulator
+            $DIR/lib/install-emulator
         else
             images=$("$DIR/lib/list-emulator-images")
             if [ $? = 0 ] ; then
                 $DIR/lib/start-emulator
                 wait_for_emulator
-                $DIR/lib/install_emulator
+                $DIR/lib/install-emulator
             else
                 echo "No Android devices attached, nor emulator images available to start. How are we supposed to do this, then?"
                 exit 2
