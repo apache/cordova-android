@@ -30,8 +30,7 @@
         Apache Cordova Team
     </author>
 
-    <access origin="*"/>
- 
+    <access origin="*.apache.org"/>
 
     <!-- <content src="http://mysite.com/myapp.html" /> for external pages -->
     <content src="index.html" />
@@ -42,6 +41,9 @@
     <preference name="useBrowserHistory" value="true" />
     <preference name="exit-on-suspend" value="false" />
 
+    <feature name="Activity">
+        <param name="android-package" value="org.apache.cordova.test.ActivityPlugin" />
+    </feature>
     <feature name="App">
       <param name="android-package" value="org.apache.cordova.App"/>
     </feature>
