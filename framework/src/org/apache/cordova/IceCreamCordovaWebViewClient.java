@@ -51,7 +51,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
         {
             ret =  getWhitelistResponse();
         }
-        else if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url))){
+        else if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpecialsInAssetUrlFix(url))){
             ret = generateWebResourceResponse(url);
         }
         else if (ret == null && this.appView.pluginManager != null) {
@@ -82,12 +82,18 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
         }
         return null;
     }
-    
-    private static boolean needsIceCreamSpaceInAssetUrlFix(String url) {
+
+    private static boolean needsIceCreamSpecialsInAssetUrlFix(String url) {
+        // Encoded Spaces
         if (!url.contains("%20")){
             return false;
         }
-
+        
+        // colons
+        if(url.split(":").length <= 2) {
+            return false;
+        }
+        
         switch(android.os.Build.VERSION.SDK_INT){
             case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH:
             case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1:
