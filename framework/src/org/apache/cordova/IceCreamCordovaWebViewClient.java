@@ -18,6 +18,7 @@
 */
 package org.apache.cordova;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -45,10 +46,26 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
         //Check if plugins intercept the request
         WebResourceResponse ret = super.shouldInterceptRequest(view, url);
-        if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url))){
+        
+        if(!Config.isUrlWhiteListed(url) && (url.startsWith("http://") || url.startsWith("https://")))
+        {
+            ret =  getWhitelistResponse();
+        }
+        else if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpaceInAssetUrlFix(url))){
             ret = generateWebResourceResponse(url);
         }
+        else if (ret == null && this.appView.pluginManager != null) {
+            ret = this.appView.pluginManager.shouldInterceptRequest(url);
+        }
         return ret;
+    }
+    
+    private WebResourceResponse getWhitelistResponse()
+    {
+        WebResourceResponse emptyResponse;
+        String empty = "";
+        ByteArrayInputStream data = new ByteArrayInputStream(empty.getBytes());
+        return new WebResourceResponse("text/plain", "UTF-8", data);
     }
 
     private WebResourceResponse generateWebResourceResponse(String url) {

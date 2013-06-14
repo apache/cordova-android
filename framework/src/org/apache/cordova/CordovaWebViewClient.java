@@ -211,35 +211,7 @@ public class CordovaWebViewClient extends WebViewClient {
         }
         return true;
     }
-
-    /**
-     * Check for intercepting any requests for resources.
-     * This includes images and scripts and so on, not just top-level pages.
-     * @param view          The WebView.
-     * @param url           The URL to be loaded.
-     * @return              Either null to proceed as normal, or a WebResourceResponse.
-     */
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-      //If something isn't whitelisted, just send a blank response
-        if(!Config.isUrlWhiteListed(url) && (url.startsWith("http://") || url.startsWith("https://")))
-        {
-            return getWhitelistResponse();
-        }
-    	if (this.appView.pluginManager != null) {
-            return this.appView.pluginManager.shouldInterceptRequest(url);
-        }
-        return null;
-    }
     
-    private WebResourceResponse getWhitelistResponse()
-    {
-        WebResourceResponse emptyResponse;
-        String empty = "";
-        ByteArrayInputStream data = new ByteArrayInputStream(empty.getBytes());
-        return new WebResourceResponse("text/plain", "UTF-8", data);
-    }
-
     /**
      * On received http auth request.
      * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination
