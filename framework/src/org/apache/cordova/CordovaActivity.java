@@ -606,7 +606,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param value
      */
     public void setIntegerProperty(String name, int value) {
-        Log.d(TAG, "Setting integer properties in CordovaActivity will be deprecated in 3.1 on August 2013, please use config.xml");
+        Log.d(TAG, "Setting integer properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name, value);
     }
 
