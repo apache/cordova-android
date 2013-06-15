@@ -84,16 +84,10 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
     }
 
     private static boolean needsIceCreamSpecialsInAssetUrlFix(String url) {
-        // Encoded Spaces
         if (!url.contains("%20")){
             return false;
         }
-        
-        // colons
-        if(url.split(":").length <= 2) {
-            return false;
-        }
-        
+
         switch(android.os.Build.VERSION.SDK_INT){
             case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH:
             case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1:
