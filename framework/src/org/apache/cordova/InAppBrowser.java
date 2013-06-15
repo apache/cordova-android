@@ -37,6 +37,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -52,6 +53,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.JsPromptResult;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
@@ -76,6 +78,7 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String LOAD_STOP_EVENT = "loadstop";
     private static final String LOAD_ERROR_EVENT = "loaderror";
     private static final String CLOSE_BUTTON_CAPTION = "closebuttoncaption";
+    private static final String VALIDATE_SSL = "validatessl";
     private long MAX_QUOTA = 100 * 1024 * 1024;
 
     private Dialog dialog;
@@ -84,6 +87,7 @@ public class InAppBrowser extends CordovaPlugin {
     private CallbackContext callbackContext;
     private boolean showLocationBar = true;
     private boolean openWindowHidden = false;
+    private boolean validateSsl = true;
     private String buttonLabel = "Done";
     
     /**
@@ -256,9 +260,12 @@ public class InAppBrowser extends CordovaPlugin {
                     String key = option.nextToken();
                     if (key.equalsIgnoreCase(CLOSE_BUTTON_CAPTION)) {
                         this.buttonLabel = option.nextToken();
+                    } else if (key.equalsIgnoreCase(VALIDATE_SSL)) {
+                    	Boolean value = option.nextToken().equals("no") ? Boolean.FALSE : Boolean.TRUE;
+                    	map.put(key, value);
                     } else {
-                        Boolean value = option.nextToken().equals("no") ? Boolean.FALSE : Boolean.TRUE;
-                        map.put(key, value);
+                    	Boolean value = option.nextToken().equals("no") ? Boolean.FALSE : Boolean.TRUE;
+                    	map.put(key, value);
                     }
                 }
             }
@@ -374,6 +381,8 @@ public class InAppBrowser extends CordovaPlugin {
         // Determine if we should hide the location bar.
         showLocationBar = true;
         openWindowHidden = false;
+        validateSsl = true;
+
         if (features != null) {
             Boolean show = features.get(LOCATION);
             if (show != null) {
@@ -382,6 +391,10 @@ public class InAppBrowser extends CordovaPlugin {
             Boolean hidden = features.get(HIDDEN);
             if(hidden != null) {
                 openWindowHidden = hidden.booleanValue();
+            }
+            Boolean sslValidation = features.get(VALIDATE_SSL);
+            if(sslValidation != null) {
+            	validateSsl = sslValidation.booleanValue();
             }
         }
         
@@ -510,6 +523,8 @@ public class InAppBrowser extends CordovaPlugin {
                 inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                 inAppWebView.setWebChromeClient(new InAppChromeClient(thatWebView));
                 WebViewClient client = new InAppBrowserClient(thatWebView, edittext);
+                ((InAppBrowserClient) client).setSslValidationFlag(validateSsl);
+                
                 inAppWebView.setWebViewClient(client);
                 WebSettings settings = inAppWebView.getSettings();
                 settings.setJavaScriptEnabled(true);
@@ -706,7 +721,7 @@ public class InAppBrowser extends CordovaPlugin {
     public class InAppBrowserClient extends WebViewClient {
         EditText edittext;
         CordovaWebView webView;
-
+        boolean validateSsl = true;
         /**
          * Constructor.
          *
@@ -830,6 +845,20 @@ public class InAppBrowser extends CordovaPlugin {
                 Log.d(LOG_TAG, "Should never happen");
             }
         	
+        }
+        
+        @Override
+        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+        	if (this.validateSsl) {
+        		super.onReceivedSslError(view, handler, error);
+        	} else {
+        		Log.d(LOG_TAG, "Ignoring SSL certificate validation");
+        		handler.proceed();
+        	}
+        }
+        
+        public void setSslValidationFlag(boolean flag) {
+        	this.validateSsl = flag;
         }
     }
 }
