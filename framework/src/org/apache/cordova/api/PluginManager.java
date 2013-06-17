@@ -73,7 +73,7 @@ public class PluginManager {
     public void init() {
         LOG.d(TAG, "init()");
 
-        // If first time, then load plugins from plugins.xml file
+        // If first time, then load plugins from config.xml file
         if (this.firstRun) {
             this.loadPlugins();
             this.firstRun = false;
@@ -91,7 +91,7 @@ public class PluginManager {
     }
 
     /**
-     * Load plugins from res/xml/plugins.xml
+     * Load plugins from res/xml/config.xml
      */
     public void loadPlugins() {
         int id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getPackageName());
@@ -396,7 +396,7 @@ public class PluginManager {
 
     private void pluginConfigurationMissing() {
         LOG.e(TAG, "=====================================================================================");
-        LOG.e(TAG, "ERROR: plugin.xml is missing.  Add res/xml/plugins.xml to your project.");
+        LOG.e(TAG, "ERROR: config.xml is missing.  Add res/xml/plugins.xml to your project.");
         LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
         LOG.e(TAG, "=====================================================================================");
     }
