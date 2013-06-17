@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-117-g208b97a
+// 2.7.0rc1-120-g8731b31
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-117-g208b97a';
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-120-g8731b31';
 // file: lib/scripts/require.js
 
 var require,
@@ -524,8 +524,6 @@ var utils = require('cordova/utils'),
  * onDOMContentLoaded*         Internal event that is received when the web page is loaded and parsed.
  * onNativeReady*              Internal event that indicates the Cordova native side is ready.
  * onCordovaReady*             Internal event fired when all Cordova JavaScript objects have been created.
- * onCordovaInfoReady*         Internal event fired when device properties are available.
- * onCordovaConnectionReady*   Internal event fired when the connection property has been set.
  * onDeviceReady*              User event fired to indicate that Cordova is ready
  * onResume                    User event fired to indicate a start/resume lifecycle event
  * onPause                     User event fired to indicate a pause lifecycle event
@@ -727,9 +725,6 @@ channel.createSticky('onNativeReady');
 // Event to indicate that all Cordova JavaScript objects have been created
 // and it's time to run plugin constructors.
 channel.createSticky('onCordovaReady');
-
-// Event to indicate that device properties are available
-channel.createSticky('onCordovaInfoReady');
 
 // Event to indicate that all automatically loaded JS plugins are loaded and ready.
 channel.createSticky('onPluginsReady');
@@ -3134,51 +3129,6 @@ module.exports = {
 
 });
 
-// file: lib/android/plugin/android/device.js
-define("cordova/plugin/android/device", function(require, exports, module) {
-
-var channel = require('cordova/channel'),
-    utils = require('cordova/utils'),
-    exec = require('cordova/exec'),
-    app = require('cordova/plugin/android/app');
-
-module.exports = {
-    /*
-     * DEPRECATED
-     * This is only for Android.
-     *
-     * You must explicitly override the back button.
-     */
-    overrideBackButton:function() {
-        console.log("Device.overrideBackButton() is deprecated.  Use App.overrideBackbutton(true).");
-        app.overrideBackbutton(true);
-    },
-
-    /*
-     * DEPRECATED
-     * This is only for Android.
-     *
-     * This resets the back button to the default behavior
-     */
-    resetBackButton:function() {
-        console.log("Device.resetBackButton() is deprecated.  Use App.overrideBackbutton(false).");
-        app.overrideBackbutton(false);
-    },
-
-    /*
-     * DEPRECATED
-     * This is only for Android.
-     *
-     * This terminates the activity!
-     */
-    exitApp:function() {
-        console.log("Device.exitApp() is deprecated.  Use App.exitApp().");
-        app.exitApp();
-    }
-};
-
-});
-
 // file: lib/android/plugin/android/nativeapiprovider.js
 define("cordova/plugin/android/nativeapiprovider", function(require, exports, module) {
 
@@ -3827,78 +3777,6 @@ for (var key in console) {
         console[key] = wrappedOrigCall(WinConsole[key], console[key]);
     }
 }
-
-});
-
-// file: lib/common/plugin/device.js
-define("cordova/plugin/device", function(require, exports, module) {
-
-var argscheck = require('cordova/argscheck'),
-    channel = require('cordova/channel'),
-    utils = require('cordova/utils'),
-    exec = require('cordova/exec');
-
-// Tell cordova channel to wait on the CordovaInfoReady event
-channel.waitForInitialization('onCordovaInfoReady');
-
-/**
- * This represents the mobile device, and provides properties for inspecting the model, version, UUID of the
- * phone, etc.
- * @constructor
- */
-function Device() {
-    this.available = false;
-    this.platform = null;
-    this.version = null;
-    this.uuid = null;
-    this.cordova = null;
-    this.model = null;
-
-    var me = this;
-
-    channel.onCordovaReady.subscribe(function() {
-        me.getInfo(function(info) {
-            var buildLabel = info.cordova;
-            if (buildLabel != CORDOVA_JS_BUILD_LABEL) {
-                buildLabel += ' JS=' + CORDOVA_JS_BUILD_LABEL;
-            }
-            me.available = true;
-            me.platform = info.platform;
-            me.version = info.version;
-            me.uuid = info.uuid;
-            me.cordova = buildLabel;
-            me.model = info.model;
-            channel.onCordovaInfoReady.fire();
-        },function(e) {
-            me.available = false;
-            utils.alert("[ERROR] Error initializing Cordova: " + e);
-        });
-    });
-}
-
-/**
- * Get device info
- *
- * @param {Function} successCallback The function to call when the heading data is available
- * @param {Function} errorCallback The function to call when there is an error getting the heading data. (OPTIONAL)
- */
-Device.prototype.getInfo = function(successCallback, errorCallback) {
-    argscheck.checkArgs('fF', 'Device.getInfo', arguments);
-    exec(successCallback, errorCallback, "Device", "getDeviceInfo", []);
-};
-
-module.exports = new Device();
-
-});
-
-// file: lib/android/plugin/device/symbols.js
-define("cordova/plugin/device/symbols", function(require, exports, module) {
-
-
-var modulemapper = require('cordova/modulemapper');
-
-modulemapper.clobbers('cordova/plugin/device', 'device');
-modulemapper.merges('cordova/plugin/android/device', 'device');
 
 });
 
