@@ -52,7 +52,6 @@ the dependencies:
 General Commands
 
     ./bin/create [path package activity] ... create the ./example app or a cordova android project
-    ./bin/bench ............................ generate a bench proj
     ./bin/autotest ......................... test the cli tools
     ./bin/test ............................. run mobile-spec
 
