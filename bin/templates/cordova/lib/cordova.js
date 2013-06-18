@@ -18,6 +18,21 @@
 var ROOT  = WScript.ScriptFullName.split('\\cordova\\lib\\cordova.js').join(''),
     shell = WScript.CreateObject("WScript.Shell"),
     fso   = WScript.CreateObject('Scripting.FileSystemObject');
+//device_id for targeting specific device
+var device_id;
+//build types
+var NONE = 0,
+    DEBUG = '--debug',
+    RELEASE = '--release',
+    NO_BUILD = '--nobuild';
+var build_type = NONE;
+
+//deploy tpyes
+var NONE = 0,
+    EMULATOR = 1,
+    DEVICE = 2,
+    TARGET = 3;
+var deploy_type = NONE;
 
 
 // log to stdout or stderr
@@ -86,6 +101,25 @@ function exec_verbose(command) {
     }
 }
 
+function version(path) {
+    var cordovajs_path = path + "\\assets\\www\\cordova.js";
+    if(fso.FileExists(cordovajs_path)) {
+        var f = fso.OpenTextFile(cordovajs_path, 1,2);
+        var cordovajs = f.ReadAll();
+        f.Close();
+        var version_regex = /^.*CORDOVA_JS_BUILD_LABEL.*$/m;
+        var version_line = cordovajs.match(version_regex) + "";
+        var version = version_line.match(/(\d+)\.(\d+)\.(\d+)(rc\d)?/) + "";
+        // TODO : figure out why this isn't matching properly so we can remove this substring workaround.
+        Log(version.substr(0, ((version.length/2) -1)));
+    } else {
+        Log("Error : Could not find cordova js.", true);
+        Log("Expected Location : " + cordovajs_path, true);
+        WScript.Quit(2);
+    }
+
+}
+
 function get_devices() {
     var device_list = []
     var local_devices = shell.Exec("%comspec% /c adb devices").StdOut.ReadAll();
@@ -117,38 +151,18 @@ function list_devices() {
 }
 
 function get_emulator_images() {
-    // discription contains all data recieved squashed onto one line
-    var add_description = true;
     var avd_list = [];
     var local_emulators = shell.Exec("%comspec% /c android list avds").StdOut.ReadAll();
     if (local_emulators.match(/Name\:/)) {
         emulators = local_emulators.split('\n');
-        //format (ID DESCRIPTION)
         var count = 0;
         var output = '';
         for (i in emulators) {
+            // Find the line with the emulator name.
             if (emulators[i].match(/Name\:/)) {
+                // strip description
                 var emulator_name = emulators[i].replace(/\s*Name\:\s/, '') + ' ';
-                if (add_description) {
-                    count = 1;
-                    output += emulator_name
-                }
-                else {
-                    avd_list.push(emulator_name);
-                }
-            }
-            // add description if indicated (all data squeezed onto one line)
-            if (count > 0) {
-                var emulator_description = emulators[i].replace(/\s*/g, '');
-                if (count > 4) {
-                    avd_list.push(output + emulator_description);
-                    count = 0;
-                    output = '';
-                }
-                else {
-                    count++;
-                    output += emulator_description + ' '
-                }
+                avd_list.push(emulator_name);
             }
         }
     }
@@ -192,8 +206,21 @@ function list_started_emulators() {
         }
     }
     else {
-        Log('No started emulators found, if you would like to start an emulator call \'list-emulator-images\'');
-        Log(' to get the name of an emulator and then start the emulator with \'start-emulator <Name>\'');
+        Log('No started emulators found, if you would like to start an emulator call ');
+        Log('\'list-emulator-images\'');
+        Log(' to get the name of an emulator and then start the emulator with');
+        Log('\'start-emulator <Name>\'');
+    }
+}
+
+function create_emulator() {
+    //get targets
+    var targets = shell.Exec('android.bat list targets').StdOut.ReadAll().match(/id:\s\d+/g);
+    if(targets) {
+        exec('%comspec% /c android create avd --name cordova_emulator --target ' + targets[targets.length - 1].replace(/id: /, ""));
+    } else {
+        Log("You do not have any android targets setup. Please create at least one target with the `android` command so that an emulator can be created.", true);
+        WScript.Quit(69);
     }
 }
 
@@ -207,14 +234,14 @@ function start_emulator(name) {
         for (i in emulators) {
             if (emulators[i].substr(0,name.length) == name) {
                 Log("Starting emulator : " + name);
-                shell.Run("%comspec% /c start cmd /c emulator -avd " + name);
+                shell.Exec("%comspec% /c emulator -avd " + name + " &");
                 //shell.Run("%comspec% /c start cmd /c emulator -cpu-delay 0 -no-boot-anim -cache %Temp%\cache -avd " + name);
                 started = true;
             }
         }
     }
     else {
-        if (emulators.length > 0 && started_emulators < 1) {
+        if (emulators.length > 0 && started_emulators.length == 0) {
             emulator_name = emulators[0].split(' ', 1)[0];
             start_emulator(emulator_name);
             return;
@@ -230,15 +257,16 @@ function start_emulator(name) {
         Log("Error : unable to start emulator, ensure you have emulators availible by checking \'list-emulator-images\'", true);
         WScript.Quit(2);
     }
-    else { // wait for emulator to boot before returning
-        WScript.Stdout.Write('Booting up emulator..');
+    else { 
+        // wait for emulator to get the ID
+        Log('Waiting for emulator...');
         var boot_anim = null;
         var emulator_ID = null;
-        var new_started = get_started_emulators();
+        var new_started = null;
         var i = 0;
-        // use boot animation property to tell when boot is complete.
-        while ((boot_anim == null || !boot_anim.output.match(/stopped/)) && i < 100) {
-            if (new_started.length > started_emulators.length && emulator_ID == null) {
+        while(emulator_ID == null && i < 10) {
+            new_started = get_started_emulators();
+            if(new_started.length > started_emulators.length) {
                 // find new emulator that was just started to get it's ID
                 for(var i = 0; i < new_started.length; i++) {
                     if (new_started[i] != started_emulators[i]) {
@@ -248,18 +276,25 @@ function start_emulator(name) {
                     }
                 }
             }
-            else if (boot_anim == null) {
-                new_started = get_started_emulators(); 
-            }
-            else {
-                boot_anim = exec_out('%comspec% /c adb -s ' + emulator_ID + ' shell getprop init.svc.bootanim'); 
-            }
+        }
+        if (i == 10) {
+             Log('\nEmulator start timed out.');
+             WScript.Quit(2);
+        }
+        i = 0;
+        WScript.Stdout.Write('Booting up emulator (this may take a while).');
+        // use boot animation property to tell when boot is complete.
+        while (!boot_anim.output.match(/stopped/) && i < 100) {
+            boot_anim = exec_out('%comspec% /c adb -s ' + emulator_ID + ' shell getprop init.svc.bootanim');
             i++;
             WScript.Stdout.Write('.');
             WScript.Sleep(2000);
         }
+
         if (i < 100) {
             Log('\nBoot Complete!');
+            // Unlock the device
+            shell.Exec("%comspec% /c adb -s " + emulator_ID + " shell input keyevent 82");
         } else {
              Log('\nEmulator boot timed out. Failed to load emulator');
              WScript.Quit(2);
@@ -267,34 +302,11 @@ function start_emulator(name) {
     }
 }
 
-function install_device(target) {
-    var devices = get_devices();
-    var use_target = false;
-    if (devices.length < 1) {
-        Log("Error : No devices found to install to, make sure there are devices", true);
-        Log(" availible by checking \'<project_dir>\\cordova\\lib\\list-devices\'", true);
-        WScript.Quit(2);
-    }
-    if (target) {
-        var exists = false;
-        for (i in devices) {
-            if (devices[i].substr(0,target.length) == target)
-            {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            Log("Error : Unable to find target " + target, true);
-            Log("Please ensure the target exists by checking \'<project>\\cordova\\lib\\list-devices'");
-            WScript.Quit(2);
-        }
-        use_target = true;
-    }
+function get_apk(path) {
     // check if file .apk has been created
-    if (fso.FolderExists(ROOT + '\\bin')) {
+    if (fso.FolderExists(path + '\\bin')) {
         var path_to_apk;
-        var out_folder = fso.GetFolder(ROOT + '\\bin');
+        var out_folder = fso.GetFolder(path + '\\bin');
         var out_files = new Enumerator(out_folder.Files);
         for (;!out_files.atEnd(); out_files.moveNext()) {
             var path = out_files.item() + '';
@@ -304,38 +316,7 @@ function install_device(target) {
             }
         }
         if (path_to_apk) {
-            var launch_name = exec_out("%comspec% /c java -jar "+ROOT+"\\cordova\\appinfo.jar "+ROOT+"\\AndroidManifest.xml");
-            if (launch_name.error) {
-                Log("Failed to get application name from appinfo.jar + AndroidManifest : ", true);
-                Log("Output : " + launch_name.output, true);
-                WScript.Quit(2);
-            }
-            // install on device (-d)
-            Log("Installing app on device...");
-            var cmd;
-            if (use_target) {
-                cmd = '%comspec% /c adb -s ' + target + ' install -r ' + path_to_apk;
-            } else {
-                cmd = '%comspec% /c adb -s ' + devices[0].split(' ', 1)[0] + ' install -r ' + path_to_apk;
-            }
-            var install = exec_out(cmd);
-            if ( install.error && install.output.match(/Failure/)) {
-                Log("Error : Could not install apk to device : ", true);
-                Log(install.output, true);
-                WScript.Quit(2);
-            }
-            else {
-                Log(install.output);
-            }
-            // run on device
-            Log("Launching application...");
-            cmd;
-            if (use_target) {
-                cmd = '%comspec% /c adb -s ' + target + ' shell am start -W -a android.intent.action.MAIN -n ' + launch_name.output;
-            } else {
-                cmd = '%comspec% /c adb -s ' + devices[0].split(' ', 1)[0] + ' shell am start -W -a android.intent.action.MAIN -n ' + launch_name.output;
-            }
-            exec_verbose(cmd);
+            return path_to_apk;
         }
         else {
             Log('Failed to find apk, make sure you project is built and there is an ', true);
@@ -345,7 +326,18 @@ function install_device(target) {
     }
 }
 
-function install_emulator(target) {
+function install_device(path) {
+    var devices = get_devices();
+    var use_target = false;
+    if (devices.length < 1) {
+        Log("Error : No devices found to install to, make sure there are devices", true);
+        Log(" availible by checking \'<project_dir>\\cordova\\lib\\list-devices\'", true);
+        WScript.Quit(2);
+    }
+    launch(path, devices[0].split(' ', 1)[0], true);
+}
+
+function install_emulator(path) {
     var emulators = get_started_emulators();
     var use_target = false;
     if (emulators.length < 1) {
@@ -353,46 +345,59 @@ function install_emulator(target) {
         Log(" availible by checking \'<project_dir>\\cordova\\lib\\list-started-emulators\'", true);
         WScript.Quit(2);
     }
-    if (target) {
+    launch(path, emulators[0].split(' ', 1)[0], false);
+}
+
+function install_target(path) {
+    if(device_id) {
+        var device = false;
+        var emulators = get_started_emulators();
+        var devices = get_devices();
         var exists = false;
         for (i in emulators) {
-            if (emulators[i].substr(0,target.length) == target)
-            {
+            if (emulators[i].substr(0,device_id.length) == device_id) {
                 exists = true;
                 break;
             }
         }
-        if (!exists) {
-            Log("Error : Unable to find target " + target, true);
-            Log("Please ensure the target exists by checking \'<project>\\cordova\\lib\\list-started-emulators'")
-        }
-        use_target = true;
-    } else {
-        target = emulators[0].split(' ', 1)[0];
-        Log("Deploying to emulator : " + target);
-    }
-    // check if file .apk has been created
-    if (fso.FolderExists(ROOT + '\\bin')) {
-        var path_to_apk;
-        var out_folder = fso.GetFolder(ROOT + '\\bin');
-        var out_files = new Enumerator(out_folder.Files);
-        for (;!out_files.atEnd(); out_files.moveNext()) {
-            var path = out_files.item() + '';
-            if (fso.GetExtensionName(path) == 'apk' && !path.match(/unaligned/)) {
-                path_to_apk = out_files.item();
+        for (i in devices) {
+            if (devices[i].substr(0,device_id.length) == device_id) {
+                exists = true;
+                device = true
                 break;
             }
         }
+        if (!exists) {
+            Log("Error : Unable to find target " + device_id, true);
+            Log("Please ensure the target exists by checking \'<project>\\cordova\\lib\\list-started-emulators'");
+            Log(" Or  \'<project>\\cordova\\lib\\list-devices'");
+        }
+        launch(path, device_id, device);
+    }
+    else {
+        Log("You cannot install to a target without providing a valid target ID.", true);
+        WScript.Quit(2);
+    }
+}
+
+function launch(path, id, device) {
+     if(id) {
+        var path_to_apk = get_apk(path);
         if (path_to_apk) {
-            var launch_name = exec_out("%comspec% /c java -jar "+ROOT+"\\cordova\\appinfo.jar "+ROOT+"\\AndroidManifest.xml");
+            var launch_name = exec_out("%comspec% /c java -jar "+path+"\\cordova\\appinfo.jar "+path+"\\AndroidManifest.xml");
             if (launch_name.error) {
                 Log("Failed to get application name from appinfo.jar + AndroidManifest : ", true);
                 Log("Output : " + launch_name.output, true);
                 WScript.Quit(2);
             }
-            // install on emulator (-e)
-            Log("Installing app on emulator...");
-            var cmd = '%comspec% /c adb -s ' + target + ' install -r ' + path_to_apk;
+            if (device) {
+                // install on device (-d)
+                Log("Installing app on device...");
+            } else {
+                // install on emulator (-e)
+                Log("Installing app on emulator...");
+            }
+            var cmd = '%comspec% /c adb -s ' + id + ' install -r ' + path_to_apk;
             var install = exec_out(cmd);
             if ( install.error && install.output.match(/Failure/)) {
                 Log("Error : Could not install apk to emulator : ", true);
@@ -402,14 +407,9 @@ function install_emulator(target) {
             else {
                 Log(install.output);
             }
-            // run on emulator
+            // launch the application
             Log("Launching application...");
-            cmd;
-            if (use_target) {
-                cmd = '%comspec% /c adb -s ' + target + ' shell am start -W -a android.intent.action.MAIN -n ' + launch_name.output;
-            } else {
-                cmd = '%comspec% /c adb -s ' + emulators[0].split(' ', 1)[0] + ' shell am start -W -a android.intent.action.MAIN -n ' + launch_name.output
-            }
+            cmd = '%comspec% /c adb -s ' + id + ' shell am start -W -a android.intent.action.MAIN -n ' + launch_name.output;
             exec_verbose(cmd);
         }
         else {
@@ -419,43 +419,14 @@ function install_emulator(target) {
         }
     }
     else {
-        Log('Failed to find apk, make sure you project is built and there is an ', true);
-        Log(' apk in <project>\\bin\\.  To build your project use \'<project>\\cordova\\build\'', true);
+        Log("You cannot install to a target without providing a valid target ID.", true);
         WScript.Quit(2);
     }
 }
 
-function clean() {
+function clean(path) {
     Log("Cleaning project...");
-    exec("%comspec% /c ant.bat clean -f "+ROOT+"\\build.xml 2>&1");
-}
-
-function build(build_type) {
-    if (build_type) {
-        switch (build_type) {
-            case "--debug" :
-                clean();
-                Log("Building project...");
-                exec_verbose("%comspec% /c ant.bat debug -f "+ROOT+"\\build.xml 2>&1");
-                break;
-            case "--release" :
-                clean();
-                Log("Building project...");
-                exec_verbose("%comspec% /c ant.bat release -f "+ROOT+"\\build.xml 2>&1");
-                break;
-            case "--nobuild" :
-                Log("Skipping build process.");
-                break;
-            default :
-                Log("Build option not recognized: " + build_type, true);
-                WScript.Quit(2);
-                break;
-        }
-    }
-    else {
-        Log("WARNING: [ --debug | --release | --nobuild ] not specified, defaulting to --debug.");
-        exec_verbose("%comspec% /c ant.bat debug -f "+ROOT+"\\build.xml 2>&1");
-    }
+    exec("%comspec% /c ant.bat clean -f "+path+"\\build.xml 2>&1");
 }
 
 function log() {
@@ -463,56 +434,68 @@ function log() {
     shell.Run("%comspec% /c adb logcat | grep -v nativeGetEnabledTags");
 }
 
-function run(target, build_type) {
-    var use_target = false;
-    if (!target) {
-        Log("WARNING: [ --target=<ID> | --emulator | --device ] not specified, using defaults");
-    }
-    // build application
-    build(build_type);
-    // attempt to deploy to connected device 
-    var devices = get_devices();
-    if (devices.length > 0 || target == "--device") {
-        if (target) {
-            if (target.substr(0,9) == "--target=") {
-                install_device(target.split('--target=').join(''))
-            } else if (target == "--device") {
-                install_device();
-            } else {
-                Log("Did not regognize " + target + " as a run option.", true);
-                WScript.Quit(2);
-            }
-        }
-        else {
-            Log("WARNING: [ --target=<ID> | --emulator | --device ] not specified, using defaults");
-            install_device();
-        }
-    }
-    else {
-        var emulators = get_started_emulators();
-        if (emulators.length > 0) {
-            install_emulator();
-        }
-        else {
-            var emulator_images = get_emulator_images();
-            if (emulator_images.length < 1) {
-                Log('No emulators found, if you would like to create an emulator follow the instructions', true);
-                Log(' provided here : http://developer.android.com/tools/devices/index.html', true);
-                Log(' Or run \'android create avd --name <name> --target <targetID>\' in on the command line.', true);
-                WScript.Quit(2);
-            }
-            start_emulator(emulator_images[0].split(' ')[0]);
-            emulators = get_started_emulators();
-            if (emulators.length > 0) {
-                install_emulator();
-            }
-            else {
-                Log("Error : emulator failed to start.", true);
-                WScript.Quit(2);
-            }
-        }
+function build(path) {
+    switch (build_type) {
+        case DEBUG :
+            clean(path);
+            Log("Building project...");
+            exec_verbose("%comspec% /c ant.bat debug -f "+path+"\\build.xml 2>&1");
+            break;
+        case RELEASE :
+            clean(path);
+            Log("Building project...");
+            exec_verbose("%comspec% /c ant.bat release -f "+path+"\\build.xml 2>&1");
+            break;
+        case NO_BUILD :
+            Log("Skipping build process.");
+            break;
+        case NONE :
+            clean(path);
+            Log("WARNING: [ --debug | --release | --nobuild ] not specified, defaulting to --debug.");
+            exec_verbose("%comspec% /c ant.bat debug -f "+path+"\\build.xml 2>&1");
+            break;
+        default :
+            Log("Build option not recognized: " + build_type, true);
+            WScript.Quit(2);
+            break;
     }
 }
+
+function run(path) {
+    switch(deploy_type) {
+        case EMULATOR :
+            build(path);
+            if(get_started_emulators().length == 0) {
+                start_emulator();
+            }
+            //TODO : Start emulator if one isn't started, and create one if none exists.
+            install_emulator(path);
+            break;
+        case DEVICE :
+            build(path);
+            install_device(path);
+            break;
+        case TARGET :
+            build(path);
+            install_target(path);
+            break;
+        case NONE :
+            if (get_devices().length > 0) {
+                Log("WARNING: [ --target=<ID> | --emulator | --device ] not specified, defaulting to --device");
+                deploy_type = DEVICE;
+            } else {
+                Log("WARNING: [ --target=<ID> | --emulator | --device ] not specified, defaulting to --emulator");
+                deploy_type = EMULATOR;
+            }
+            run(path);
+            break;
+        default :
+            Log("Deploy option not recognized: " + deploy_type, true);
+            WScript.Quit(2);
+            break;
+    }
+}
+
 
 var args = WScript.Arguments;
 if (args.count() == 0) {
@@ -520,74 +503,107 @@ if (args.count() == 0) {
     WScript.Quit(2);
 }
 else {
-    if (args(0) == "build") {
-        if (args.Count() > 1) {
-            build(args(1))
-        } else {
-            build();
-        }
-    } else if (args(0) == "clean") {
-        clean();
-    } else if (args(0) == "list-devices") {
-        list_devices();
-    } else if (args(0) == "list-emulator-images") {
-        list_emulator_images();
-    } else if (args(0) == "list-started-emulators") {
-        list_started_emulators();
-    } else if (args(0) == "start-emulator") {
-        if (args.Count() > 1) {
-            start_emulator(args(1))
-        } else {
-            start_emulator();
-        }
-    } else if (args(0) == "log") {
-        log();
-    } else if (args(0) == "install-emulator") {
-        if (args.Count() == 2) {
-            if (args(1).substr(0,9) == "--target=") {
-                install_emulator(args(1).split('--target=').join(''));
-            } else {
-                Log('Error: \"' + args(1) + '\" is not recognized as an install option', true);
-                WScript.Quit(2);
+    // parse command
+    switch(args(0)) {
+        case "version" :
+            version(ROOT);
+            break;
+        case "build" :
+            if(args.Count() > 1) {
+                if (args(1) == "--release") {
+                    build_type = RELEASE;
+                }
+                else if (args(1) == "--debug") {
+                    build_type = DEBUG;
+                }
+                else if (args(1) == "--nobuild") {
+                    build_type = NO_BUILD;
+                }
+                else {
+                    Log('Error: \"' + args(i) + '\" is not recognized as a build option', true);
+                    WScript.Quit(2);
+                }
             }
-        } else {
-            install_emulator();
-        }
-    } else if (args(0) == "install-device") {
-        if (args.Count() == 2) {
-            if (args(1).substr(0,9) == "--target=") {
-                install_device(args(1).split('--target=').join(''));
+            build(ROOT);
+            break;
+        case "clean" :
+            clean();
+            break;
+        case "list-devices" :
+            list_devices();
+            break;
+        case "list-emulator-images" :
+            list_emulator_images();
+            break;
+        case "list-started-emulators" :
+            list_started_emulators();
+            break;
+        case "start-emulator" :
+            if (args.Count() > 1) {
+                start_emulator(args(1))
             } else {
-                Log('Error: \"' + args(1) + '\" is not recognized as an install option', true);
-                WScript.Quit(2);
+                start_emulator();
             }
-        } else {
-            install_device();
-        }
-    } else if (args(0) == "run") {
-        if (args.Count() == 3) {
-            run(args(1), args(2));
-        }
-        else if (args.Count() == 2) {
-            if (args(1).substr(0,9) == "--target=" ||
-               args(1) == "--emulator" ||
-               args(1) == "--device") {
-                run(args(1));
-            } else if (args(1) == "--debug" ||
-                       args(1) == "--release" ||
-                       args(1) == "--nobuild") {
-                run(null, args(1))
+            break;
+        case "install-emulator" :
+            if (args.Count() == 2) {
+                if (args(1).substr(0,9) == "--target=") {
+                    device_id = args(1).split('--target=').join('');
+                    install_emulator(ROOT);
+                } else {
+                    Log('Error: \"' + args(1) + '\" is not recognized as an install option', true);
+                    WScript.Quit(2);
+                }
             } else {
-                Log('Error: \"' + args(1) + '\" is not recognized as a run option', true);
-                WScript.Quit(2);
+                install_emulator(ROOT);
             }
-        }
-        else {
-            run();
-        }
-    } else {
-        Log('Error: \"' + args(0) + '\" is not recognized as a tooling command', true);
-        WScript.Quit(2);
+            break;
+        case "install-device" :
+            if (args.Count() == 2) {
+                if (args(1).substr(0,9) == "--target=") {
+                    device_id = args(1).split('--target=').join('');
+                    install_target(ROOT);
+                } else {
+                    Log('Error: \"' + args(1) + '\" is not recognized as an install option', true);
+                    WScript.Quit(2);
+                }
+            } else {
+                install_device(ROOT);
+            }
+            break;
+        case "run" :
+            //parse args
+            for(var i = 1; i < args.Count(); i++) {
+                if (args(i) == "--release") {
+                    build_type = RELEASE;
+                }
+                else if (args(i) == "--debug") {
+                    build_type = DEBUG;
+                }
+                else if (args(i) == "--nobuild") {
+                    build_type = NO_BUILD;
+                }
+                else if (args(i) == "--emulator" || args(i) == "-e") {
+                    deploy_type = EMULATOR;
+                }
+                else if (args(i) == "--device" || args(i) == "-d") {
+                    deploy_type = DEVICE;
+                }
+                else if (args(i).substr(0,9) == "--target=") {
+                    device_id = args(i).split("--target=").join("");
+                    deploy_type = TARGET;
+                }
+                else {
+                    Log('Error: \"' + args(i) + '\" is not recognized as a run option', true);
+                    WScript.Quit(2);
+                }
+            }
+            run(ROOT);
+            break;
+        default :
+            Log("Cordova does not regognize the command " + args(0), true);
+            WScript.Quit(2);
+            break;
     }
 }
 
