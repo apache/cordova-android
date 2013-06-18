@@ -1,5 +1,5 @@
 // Platform: android
-// 2.8.0rc1-0-g22bc4d8
+// 2.7.0rc1-75-g76065a1
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.8.0rc1-0-g22bc4d8';
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-75-g76065a1';
 // file: lib/scripts/require.js
 
 var require,
@@ -4071,6 +4071,10 @@ module.exports = {
 // file: lib/android/plugin/android/nativeapiprovider.js
 define("cordova/plugin/android/nativeapiprovider", function(require, exports, module) {
 
+/**
+ * Exports the ExposedJsApi.java object if available, otherwise exports the PromptBasedNativeApi.
+ */
+
 var nativeApi = this._cordovaNative || require('cordova/plugin/android/promptbasednativeapi');
 var currentApi = nativeApi;
 
@@ -4148,6 +4152,11 @@ module.exports = {
 
 // file: lib/android/plugin/android/promptbasednativeapi.js
 define("cordova/plugin/android/promptbasednativeapi", function(require, exports, module) {
+
+/**
+ * Implements the API of ExposedJsApi.java, but uses prompt() to communicate.
+ * This is used only on the 2.3 simulator, where addJavascriptInterface() is broken.
+ */
 
 module.exports = {
     exec: function(service, action, callbackId, argsJson) {
@@ -5072,7 +5081,6 @@ function Device() {
     this.available = false;
     this.platform = null;
     this.version = null;
-    this.name = null;
     this.uuid = null;
     this.cordova = null;
     this.model = null;
@@ -5088,7 +5096,6 @@ function Device() {
             me.available = true;
             me.platform = info.platform;
             me.version = info.version;
-            me.name = info.name;
             me.uuid = info.uuid;
             me.cordova = buildLabel;
             me.model = info.model;
@@ -6676,6 +6683,11 @@ window.cordova = require('cordova');
 // file: lib/scripts/bootstrap.js
 
 (function (context) {
+    if (context._cordovaJsLoaded) {
+        throw new Error('cordova.js included multiple times.');
+    }
+    context._cordovaJsLoaded = true;
+
     var channel = require('cordova/channel');
     var platformInitChannelsArray = [channel.onNativeReady, channel.onPluginsReady];
 
