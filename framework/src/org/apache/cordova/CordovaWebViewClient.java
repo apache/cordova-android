@@ -188,6 +188,17 @@ public class CordovaWebViewClient extends WebViewClient {
                 LOG.e(TAG, "Error sending sms " + url + ":" + e.toString());
             }
         }
+        
+        //Android Market
+        else if(url.startsWith("market:")) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                this.cordova.getActivity().startActivity(intent);
+            } catch (android.content.ActivityNotFoundException e) {
+                LOG.e(TAG, "Error loading Google Play Store: " + url, e);
+            }
+        }
 
         // All else
         else {
