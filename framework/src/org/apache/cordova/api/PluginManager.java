@@ -396,7 +396,7 @@ public class PluginManager {
 
     private void pluginConfigurationMissing() {
         LOG.e(TAG, "=====================================================================================");
-        LOG.e(TAG, "ERROR: config.xml is missing.  Add res/xml/plugins.xml to your project.");
+        LOG.e(TAG, "ERROR: config.xml is missing.  Add res/xml/config.xml to your project.");
         LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
         LOG.e(TAG, "=====================================================================================");
     }
