@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-75-g76065a1
+// 2.9.0rc1-0-g11df4b7
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-75-g76065a1';
+var CORDOVA_JS_BUILD_LABEL = '2.9.0rc1-0-g11df4b7';
 // file: lib/scripts/require.js
 
 var require,
@@ -2396,11 +2396,7 @@ function initRead(reader, file) {
     reader._error = null;
     reader._readyState = FileReader.LOADING;
 
-    if (typeof file == 'string') {
-        // Deprecated in Cordova 2.4.
-        console.warn('Using a string argument with FileReader.readAs functions is deprecated.');
-        reader._fileName = file;
-    } else if (typeof file.fullPath == 'string') {
+    if (typeof file.fullPath == 'string') {
         reader._fileName = file.fullPath;
     } else {
         reader._fileName = '';
@@ -3063,9 +3059,31 @@ FileWriter.prototype.abort = function() {
 /**
  * Writes data to the file
  *
- * @param text to be written
+ * @param data text or blob to be written
  */
-FileWriter.prototype.write = function(text) {
+FileWriter.prototype.write = function(data) {
+
+    var isBinary = false;
+
+    // If we don't have Blob or ArrayBuffer support, don't bother.
+    if (typeof window.Blob !== 'undefined' && typeof window.ArrayBuffer !== 'undefined') {
+
+        // Check to see if the incoming data is a blob
+        if (data instanceof Blob) {
+            var that=this;
+            var fileReader = new FileReader();
+            fileReader.onload = function() {
+                // Call this method again, with the arraybuffer as argument
+                FileWriter.prototype.write.call(that, this.result);
+            };
+            fileReader.readAsArrayBuffer(data);
+            return;
+        }
+
+        // Mark data type for safer transport over the binary bridge
+        isBinary = (data instanceof ArrayBuffer);
+    }
+
     // Throw an exception if we are already writing a file
     if (this.readyState === FileWriter.WRITING) {
         throw new FileError(FileError.INVALID_STATE_ERR);
@@ -3131,7 +3149,7 @@ FileWriter.prototype.write = function(text) {
             if (typeof me.onwriteend === "function") {
                 me.onwriteend(new ProgressEvent("writeend", {"target":me}));
             }
-        }, "File", "write", [this.fileName, text, this.position]);
+        }, "File", "write", [this.fileName, data, this.position, isBinary]);
 };
 
 /**
@@ -3316,6 +3334,9 @@ InAppBrowser.prototype = {
     },
     close: function (eventname) {
         exec(null, null, "InAppBrowser", "close", []);
+    },
+    show: function (eventname) {
+      exec(null, null, "InAppBrowser", "show", []);
     },
     addEventListener: function (eventname,f) {
         if (eventname in this.channels) {
