@@ -43,9 +43,7 @@
       <preference name="InAppBrowserStorageEnabled" value="true" />
       <preference name="disallowOverscroll" value="true" />
     -->
-    <feature name="Device">
-      <param name="android-package" value="org.apache.cordova.Device"/>
-    </feature>
+
     <!-- Deprecated plugins element. Remove in 3.0 -->
     <plugins>
     </plugins>
