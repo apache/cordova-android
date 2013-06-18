@@ -106,20 +106,6 @@ function createAppInfoJar() {
     }
 }
 
-function cleanup() {
-    // Cleanup
-//    if(fso.FileExists(ROOT + '\\framework\\libs\\commons-codec-1.6.jar')) {
-//        fso.DeleteFile(ROOT + '\\framework\\libs\\commons-codec-1.6.jar');
-//        fso.DeleteFolder(ROOT + '\\framework\\libs', true);
-//    }
-    if(fso.FileExists(ROOT + '\\framework\\cordova-'+VERSION+'.jar')) {
-        fso.DeleteFile(ROOT + '\\framework\\cordova-'+VERSION+'.jar');
-    }
-    if(fso.FileExists(ROOT + '\\framework\\assets\\www\\cordova-'+VERSION+'.js')) {
-        fso.DeleteFile(ROOT + '\\framework\\assets\\www\\cordova-'+VERSION+'.js');
-    }
-}
-
 // working dir
 var ROOT = WScript.ScriptFullName.split('\\bin\\create.js').join('');
 if (args.Count() > 0) {
@@ -212,6 +198,7 @@ exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\clean.bat" "' + PROJ
 exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\build.bat" "' + PROJECT_PATH + '\\cordova\\build.bat" /Y');
 exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\log.bat" "' + PROJECT_PATH + '\\cordova\\log.bat" /Y');
 exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\run.bat" "' + PROJECT_PATH + '\\cordova\\run.bat" /Y');
+exec('%comspec% /c copy "'+ROOT+'\\bin\\templates\\cordova\\version.bat" "' + PROJECT_PATH + '\\cordova\\version.bat" /Y');
 
 // interpolate the activity name and package
 Log("Updating AndroidManifest.xml and Main Activity...");
@@ -221,5 +208,3 @@ replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, ACTIVITY);
 replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__APILEVEL__/, API_LEVEL);
-
-cleanup();
