@@ -1,5 +1,5 @@
 // Platform: android
-// 2.9.0rc1-0-g11df4b7
+// 2.9.0rc1-0-g002f33d
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.9.0rc1-0-g11df4b7';
+var CORDOVA_JS_BUILD_LABEL = '2.9.0rc1-0-g002f33d';
 // file: lib/scripts/require.js
 
 var require,
@@ -6801,11 +6801,21 @@ require('cordova/channel').onNativeReady.fire();
         }
     }
 
+    function scriptErrorCallback(err) {
+        // Open Question: If a script path specified in cordova_plugins.js does not exist, do we fail for all?
+        // this is currently just continuing.
+        scriptCounter--;
+        if (scriptCounter === 0) {
+            onScriptLoadingComplete && onScriptLoadingComplete();
+        }
+    }
+
     // Helper function to inject a <script> tag.
     function injectScript(path) {
         scriptCounter++;
         var script = document.createElement("script");
         script.onload = scriptLoadedCallback;
+        script.onerror = scriptErrorCallback;
         script.src = path;
         document.head.appendChild(script);
     }
@@ -6817,10 +6827,10 @@ require('cordova/channel').onNativeReady.fire();
         context.cordova.require('cordova/channel').onPluginsReady.fire();
     }
 
-    // Handler for the cordova_plugins.json content.
+    // Handler for the cordova_plugins.js content.
     // See plugman's plugin_loader.js for the details of this object.
     // This function is only called if the really is a plugins array that isn't empty.
-    // Otherwise the XHR response handler will just call finishPluginLoading().
+    // Otherwise the onerror response handler will just call finishPluginLoading().
     function handlePluginsObject(modules, path) {
         // First create the callback for when all plugins are loaded.
         var mapper = context.cordova.require('cordova/modulemapper');
@@ -6828,25 +6838,30 @@ require('cordova/channel').onNativeReady.fire();
             // Loop through all the plugins and then through their clobbers and merges.
             for (var i = 0; i < modules.length; i++) {
                 var module = modules[i];
-                if (!module) continue;
+                if (module) {
+                    try { 
+                        if (module.clobbers && module.clobbers.length) {
+                            for (var j = 0; j < module.clobbers.length; j++) {
+                                mapper.clobbers(module.id, module.clobbers[j]);
+                            }
+                        }
 
-                if (module.clobbers && module.clobbers.length) {
-                    for (var j = 0; j < module.clobbers.length; j++) {
-                        mapper.clobbers(module.id, module.clobbers[j]);
+                        if (module.merges && module.merges.length) {
+                            for (var k = 0; k < module.merges.length; k++) {
+                                mapper.merges(module.id, module.merges[k]);
+                            }
+                        }
+
+                        // Finally, if runs is truthy we want to simply require() the module.
+                        // This can be skipped if it had any merges or clobbers, though,
+                        // since the mapper will already have required the module.
+                        if (module.runs && !(module.clobbers && module.clobbers.length) && !(module.merges && module.merges.length)) {
+                            context.cordova.require(module.id);
+                        }
                     }
-                }
-
-                if (module.merges && module.merges.length) {
-                    for (var k = 0; k < module.merges.length; k++) {
-                        mapper.merges(module.id, module.merges[k]);
+                    catch(err) {
+                        // error with module, most likely clobbers, should we continue?
                     }
-                }
-
-                // Finally, if runs is truthy we want to simply require() the module.
-                // This can be skipped if it had any merges or clobbers, though,
-                // since the mapper will already have required the module.
-                if (module.runs && !(module.clobbers && module.clobbers.length) && !(module.merges && module.merges.length)) {
-                    context.cordova.require(module.id);
                 }
             }
 
@@ -6870,6 +6885,33 @@ require('cordova/channel').onNativeReady.fire();
             break;
         }
     }
+
+    var plugins_json = path + 'cordova_plugins.json';
+    var plugins_js = path + 'cordova_plugins.js';
+
+    // One some phones (Windows) this xhr.open throws an Access Denied exception
+    // So lets keep trying, but with a script tag injection technique instead of XHR
+    var injectPluginScript = function injectPluginScript() {
+        try {
+            var script = document.createElement("script");
+            script.onload = function(){
+                var list = cordova.require("cordova/plugin_list");
+                handlePluginsObject(list,path);
+            };
+            script.onerror = function() {
+                // Error loading cordova_plugins.js, file not found or something
+                // this is an acceptable error, pre-3.0.0, so we just move on.
+                finishPluginLoading();
+            };
+            script.src = plugins_js;
+            document.head.appendChild(script);
+
+        } catch(err){
+            finishPluginLoading();
+        }
+    } 
+
+
     // Try to XHR the cordova_plugins.json file asynchronously.
     var xhr = new XMLHttpRequest();
     xhr.onload = function() {
@@ -6888,14 +6930,16 @@ require('cordova/channel').onNativeReady.fire();
         }
     };
     xhr.onerror = function() {
-        finishPluginLoading();
+        // In this case, the json file was not present, but XHR was allowed, 
+        // so we should still try the script injection technique with the js file
+        // in case that is there.
+        injectPluginScript();
     };
-    var plugins_json = path + 'cordova_plugins.json';
     try { // we commented we were going to try, so let us actually try and catch
         xhr.open('GET', plugins_json, true); // Async
         xhr.send();
     } catch(err){
-        finishPluginLoading();
+        injectPluginScript();
     }
 }(window));
 
