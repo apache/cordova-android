@@ -805,7 +805,6 @@ public class CordovaWebView extends WebView {
     public void handleDestroy()
     {
         // Send destroy event to JavaScript
-    	// Since baseUrl is set in loadUrlIntoView, if user hit Back button before loadUrl was called, we'll get an NPE on baseUrl (CB-2458)
         this.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
 
         // Load blank page so that JavaScript onunload is called
