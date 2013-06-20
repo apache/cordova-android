@@ -203,6 +203,20 @@ public class Config {
         self._addWhiteListEntry(origin, subdomains);
     }
 
+    /*
+     * Trying to figure out how to match * is a pain
+     * So, we don't use a regex here
+     */
+    
+    private boolean originHasWildcard(String origin){
+        //First, check for a protocol, then split it if it has one.
+        if(origin.contains("//"))
+        {
+            origin = origin.split("//")[1];
+        }
+        origin.matches("\\*\\.[a-z]+\\.[a-z]+");
+        return origin.startsWith("*");
+    }
 
     private void _addWhiteListEntry(String origin, boolean subdomains) {
         try {
@@ -210,8 +224,16 @@ public class Config {
             if (origin.compareTo("*") == 0) {
                 LOG.d(TAG, "Unlimited access to network resources");
                 this.whiteList.add(Pattern.compile(".*"));
-            } else { // specific access
+            }
+            else { // specific access
                 // check if subdomains should be included
+                if(originHasWildcard(origin))
+                {
+                    subdomains = true;
+                    //Remove the wildcard so this works properly
+                    origin = origin.replace("*.", "");
+                }
+                
                 // TODO: we should not add more domains if * has already been added
                 Pattern schemeRegex = Pattern.compile("^[a-z-]+://");
                 Matcher matcher = schemeRegex.matcher(origin);
@@ -249,6 +271,7 @@ public class Config {
             LOG.d(TAG, "Failed to add origin %s", origin);
         }
     }
+
 
     /**
      * Determine if URL is in approved list of URLs to load.
