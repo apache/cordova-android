@@ -214,7 +214,6 @@ public class Config {
         {
             origin = origin.split("//")[1];
         }
-        origin.matches("\\*\\.[a-z]+\\.[a-z]+");
         return origin.startsWith("*");
     }
 
