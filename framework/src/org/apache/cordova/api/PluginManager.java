@@ -200,15 +200,14 @@ public class PluginManager {
      *                      this is an async plugin call.
      * @param rawArgs       An Array literal string containing any arguments needed in the
      *                      plugin execute method.
-     * @return Whether the task completed synchronously.
      */
-    public boolean exec(String service, String action, String callbackId, String rawArgs) {
+    public void exec(String service, String action, String callbackId, String rawArgs) {
         CordovaPlugin plugin = this.getPlugin(service);
         if (plugin == null) {
             Log.d(TAG, "exec() call to unknown plugin: " + service);
             PluginResult cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
             app.sendPluginResult(cr, callbackId);
-            return true;
+            return;
         }
         try {
             CallbackContext callbackContext = new CallbackContext(callbackId, app);
@@ -216,19 +215,16 @@ public class PluginManager {
             if (!wasValidAction) {
                 PluginResult cr = new PluginResult(PluginResult.Status.INVALID_ACTION);
                 app.sendPluginResult(cr, callbackId);
-                return true;
             }
-            return callbackContext.isFinished();
         } catch (JSONException e) {
             PluginResult cr = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
             app.sendPluginResult(cr, callbackId);
-            return true;
         }
     }
 
     @Deprecated
-    public boolean exec(String service, String action, String callbackId, String jsonArgs, boolean async) {
-        return exec(service, action, callbackId, jsonArgs);
+    public void exec(String service, String action, String callbackId, String jsonArgs, boolean async) {
+        exec(service, action, callbackId, jsonArgs);
     }
 
     /**
