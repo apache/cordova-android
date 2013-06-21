@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -55,6 +57,8 @@ public class PluginManager {
     // This would allow how all URLs are handled to be offloaded to a plugin
     protected HashMap<String, String> urlMap = new HashMap<String, String>();
 
+    private AtomicInteger numPendingUiExecs;
+
     /**
      * Constructor.
      *
@@ -65,6 +69,7 @@ public class PluginManager {
         this.ctx = ctx;
         this.app = app;
         this.firstRun = true;
+        this.numPendingUiExecs = new AtomicInteger(0);
     }
 
     /**
@@ -85,6 +90,9 @@ public class PluginManager {
             this.onDestroy();
             this.clearPluginObjects();
         }
+
+        // Insert PluginManager service
+        this.addService(new PluginEntry("PluginManager", new PluginManagerService()));
 
         // Start up all plugins that have onload specified
         this.startupPlugins();
@@ -201,8 +209,23 @@ public class PluginManager {
      * @param rawArgs       An Array literal string containing any arguments needed in the
      *                      plugin execute method.
      */
-    public void exec(String service, String action, String callbackId, String rawArgs) {
-        CordovaPlugin plugin = this.getPlugin(service);
+    public void exec(final String service, final String action, final String callbackId, final String rawArgs) {
+        if (numPendingUiExecs.get() > 0) {
+            numPendingUiExecs.getAndIncrement();
+            this.ctx.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    execHelper(service, action, callbackId, rawArgs);
+                    numPendingUiExecs.getAndDecrement();
+                }
+            });
+        } else {
+            Log.d(TAG, "running exec normally");
+            execHelper(service, action, callbackId, rawArgs);
+        }
+    }
+
+    private void execHelper(final String service, final String action, final String callbackId, final String rawArgs) {
+        CordovaPlugin plugin = getPlugin(service);
         if (plugin == null) {
             Log.d(TAG, "exec() call to unknown plugin: " + service);
             PluginResult cr = new PluginResult(PluginResult.Status.CLASS_NOT_FOUND_EXCEPTION);
@@ -395,5 +418,27 @@ public class PluginManager {
         LOG.e(TAG, "ERROR: config.xml is missing.  Add res/xml/config.xml to your project.");
         LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
         LOG.e(TAG, "=====================================================================================");
+    }
+
+    private class PluginManagerService extends CordovaPlugin {
+        @Override
+        public boolean execute(String action, CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+            if ("startup".equals(action)) {
+                // The onPageStarted event of CordovaWebViewClient resets the queue of messages to be returned to javascript in response
+                // to exec calls. Since this event occurs on the UI thread and exec calls happen on the WebCore thread it is possible
+                // that onPageStarted occurs after exec calls have started happening on a new page, which can cause the message queue
+                // to be reset between the queuing of a new message and its retrieval by javascript. To avoid this from happening,
+                // javascript always sends a "startup" exec upon loading a new page which causes all future exec calls to happen on the UI
+                // thread (and hence after onPageStarted) until there are no more pending exec calls remaining.
+                numPendingUiExecs.getAndIncrement();
+                ctx.getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        numPendingUiExecs.getAndDecrement();
+                    }
+                });
+                return true;
+            }
+            return false;
+        }
     }
 }
