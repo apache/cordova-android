@@ -250,6 +250,19 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
     }
 
+    //CB-3949: Workaround for weird Android Launcher Bug!
+    private void checkIntents()
+    {
+        Intent intent = getIntent();
+        String intentAction = intent.getAction();
+        if (!isTaskRoot() && intent.hasCategory(Intent.CATEGORY_LAUNCHER) && intentAction != null) {
+            if(intentAction.equals(Intent.ACTION_MAIN)) {
+                Log.d("Cordova", "This isn't the root activity. Clearing it and returning to the root activity.");
+                finish();
+                return;
+            }
+        }
+    }
     /**
      * Called when the activity is first created.
      *
@@ -258,6 +271,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        checkIntents();
         Config.init(this);
         LOG.d(TAG, "CordovaActivity.onCreate()");
         super.onCreate(savedInstanceState);
