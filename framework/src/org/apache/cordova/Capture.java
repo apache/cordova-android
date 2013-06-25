@@ -62,7 +62,7 @@ public class Capture extends CordovaPlugin {
 
     private CallbackContext callbackContext;        // The callback context from which we were invoked.
     private long limit;                             // the number of pics/vids/clips to take
-    private double duration;                        // optional duration parameter for video recording
+    private int duration;                           // optional max duration of video recording in seconds
     private JSONArray results;                      // The array of results to be returned to the user
     private int numPics;                            // Number of pictures before capture activity
 
@@ -80,13 +80,13 @@ public class Capture extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
         this.limit = 1;
-        this.duration = 0.0f;
+        this.duration = 0;
         this.results = new JSONArray();
 
         JSONObject options = args.optJSONObject(0);
         if (options != null) {
             limit = options.optLong("limit", 1);
-            duration = options.optDouble("duration", 0.0f);
+            duration = options.optInt("duration", 0);
         }
 
         if (action.equals("getFormatData")) {
@@ -215,10 +215,10 @@ public class Capture extends CordovaPlugin {
     /**
      * Sets up an intent to capture video.  Result handled by onActivityResult()
      */
-    private void captureVideo(double duration) {
+    private void captureVideo(int duration) {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
 
-        if(Build.VERSION.SDK_INT > 8){
+        if(Build.VERSION.SDK_INT > 7){
             intent.putExtra("android.intent.extra.durationLimit", duration);
         }
         this.cordova.startActivityForResult((CordovaPlugin) this, intent, CAPTURE_VIDEO);
