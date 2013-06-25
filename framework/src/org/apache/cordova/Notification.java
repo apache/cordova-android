@@ -62,9 +62,6 @@ public class Notification extends CordovaPlugin {
         if (action.equals("beep")) {
             this.beep(args.getLong(0));
         }
-        else if (action.equals("vibrate")) {
-            this.vibrate(args.getLong(0));
-        }
         else if (action.equals("alert")) {
             this.alert(args.getString(0), args.getString(1), args.getString(2), callbackContext);
             return true;
@@ -128,20 +125,6 @@ public class Notification extends CordovaPlugin {
                 }
             }
         }
-    }
-
-    /**
-     * Vibrates the device for the specified amount of time.
-     *
-     * @param time      Time to vibrate in ms.
-     */
-    public void vibrate(long time) {
-        // Start the vibration, 0 defaults to half a second.
-        if (time == 0) {
-            time = 500;
-        }
-        Vibrator vibrator = (Vibrator) this.cordova.getActivity().getSystemService(Context.VIBRATOR_SERVICE);
-        vibrator.vibrate(time);
     }
 
     /**
