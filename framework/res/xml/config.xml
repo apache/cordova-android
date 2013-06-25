@@ -98,4 +98,7 @@
     <feature name="InAppBrowser">
       <param name="android-package" value="org.apache.cordova.InAppBrowser"/>
     </feature>
+        <feature name="Vibration">
+      <param name="android-package" value="org.apache.cordova.Vibration"/>
+    </feature>
 </widget>
