@@ -54,6 +54,9 @@ import org.json.JSONException;
                 ret = jsMessageQueue.popAndEncode();
             }
             return ret;
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return "";
         } finally {
             jsMessageQueue.setPaused(false);
         }
