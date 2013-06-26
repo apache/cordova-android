@@ -17,7 +17,7 @@
 #       under the License.
 #
 # create a cordova/android project
-# 
+#
 # USAGE
 #   ./create [path package activity]
 #
@@ -27,7 +27,7 @@ if [ -z "$1" ] || [ "$1" == "-h" ]
 then
     echo "Usage: $0 <path_to_new_project> <package_name> <project_name>"
     echo "Make sure the Android SDK tools folder is in your PATH!"
-    echo "    <path_to_new_project>: Path to your new Cordova iOS project"
+    echo "    <path_to_new_project>: Path to your new Cordova Android project"
     echo "    <package_name>: Package name, following reverse-domain style convention"
     echo "    <project_name>: Project name"
     exit 0
