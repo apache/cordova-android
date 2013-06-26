@@ -219,7 +219,6 @@ public class PluginManager {
                 }
             });
         } else {
-            Log.d(TAG, "running exec normally");
             execHelper(service, action, callbackId, rawArgs);
         }
     }
