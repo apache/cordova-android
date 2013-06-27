@@ -57,7 +57,7 @@ public class UserWebViewTest extends ActivityInstrumentationTestCase2<userwebvie
       assertNotNull(testView);
   }
   
-  public void customTest()
+  public void testCustom()
   {
     assertTrue(CordovaWebView.class.isInstance(testView));
     assertTrue(CordovaWebViewClient.class.isInstance(testActivity.testViewClient));
