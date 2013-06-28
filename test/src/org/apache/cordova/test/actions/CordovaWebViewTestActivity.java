@@ -36,7 +36,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 public class CordovaWebViewTestActivity extends Activity implements CordovaInterface {
-    CordovaWebView cordovaWebView;
+    public CordovaWebView cordovaWebView;
 
     private final ExecutorService threadPool = Executors.newCachedThreadPool();
     

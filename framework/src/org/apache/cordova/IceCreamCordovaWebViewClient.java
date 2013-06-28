@@ -18,7 +18,6 @@
 */
 package org.apache.cordova;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -26,6 +25,7 @@ import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 
 import android.annotation.TargetApi;
+import android.net.Uri;
 import android.os.Build;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -44,45 +44,29 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        //Check if plugins intercept the request
-        WebResourceResponse ret = super.shouldInterceptRequest(view, url);
+        UriResolver uriResolver = appView.resolveUri(Uri.parse(url), true);
         
-        if(!Config.isUrlWhiteListed(url) && (url.startsWith("http://") || url.startsWith("https://")))
-        {
-            ret =  getWhitelistResponse();
+        if (uriResolver == null && url.startsWith("file:///android_asset/")) {
+            if (url.contains("?") || url.contains("#") || needsIceCreamSpecialsInAssetUrlFix(url)) {
+                uriResolver = appView.resolveUri(Uri.parse(url), false);
+            }
         }
-        else if(ret == null && (url.contains("?") || url.contains("#") || needsIceCreamSpecialsInAssetUrlFix(url))){
-            ret = generateWebResourceResponse(url);
-        }
-        else if (ret == null && this.appView.pluginManager != null) {
-            ret = this.appView.pluginManager.shouldInterceptRequest(url);
-        }
-        return ret;
-    }
-    
-    private WebResourceResponse getWhitelistResponse()
-    {
-        WebResourceResponse emptyResponse;
-        String empty = "";
-        ByteArrayInputStream data = new ByteArrayInputStream(empty.getBytes());
-        return new WebResourceResponse("text/plain", "UTF-8", data);
-    }
-
-    private WebResourceResponse generateWebResourceResponse(String url) {
-        if (url.startsWith("file:///android_asset/")) {
-            String mimetype = FileHelper.getMimeType(url, cordova);
-
+        
+        if (uriResolver != null) {
             try {
-                InputStream stream = FileHelper.getInputStreamFromUriString(url, cordova);
-                WebResourceResponse response = new WebResourceResponse(mimetype, "UTF-8", stream);
-                return response;
+                InputStream stream = uriResolver.getInputStream();
+                String mimeType = uriResolver.getMimeType();
+                // If we don't know how to open this file, let the browser continue loading
+                return new WebResourceResponse(mimeType, "UTF-8", stream);
             } catch (IOException e) {
-                LOG.e("generateWebResourceResponse", e.getMessage(), e);
+                LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file.", e);
+                // Results in a 404.
+                return new WebResourceResponse("text/plain", "UTF-8", null);
             }
         }
         return null;
     }
-
+        
     private static boolean needsIceCreamSpecialsInAssetUrlFix(String url) {
         if (!url.contains("%20")){
             return false;
@@ -96,5 +80,4 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
                 return false;
         }
     }
-    
 }

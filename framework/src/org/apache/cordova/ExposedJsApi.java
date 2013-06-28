@@ -48,12 +48,15 @@ import org.json.JSONException;
 
         jsMessageQueue.setPaused(true);
         try {
-            boolean wasSync = pluginManager.exec(service, action, callbackId, arguments);
+            pluginManager.exec(service, action, callbackId, arguments);
             String ret = "";
-            if (!NativeToJsMessageQueue.DISABLE_EXEC_CHAINING || wasSync) {
+            if (!NativeToJsMessageQueue.DISABLE_EXEC_CHAINING) {
                 ret = jsMessageQueue.popAndEncode();
             }
             return ret;
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return "";
         } finally {
             jsMessageQueue.setPaused(false);
         }

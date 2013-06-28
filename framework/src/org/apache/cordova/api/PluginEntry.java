@@ -64,6 +64,19 @@ public class PluginEntry {
     }
 
     /**
+     * Alternate constructor
+     *
+     * @param service               The name of the service
+     * @param plugin                The plugin associated with this entry
+     */
+    public PluginEntry(String service, CordovaPlugin plugin) {
+        this.service = service;
+        this.plugin = plugin;
+        this.pluginClass = plugin.getClass().getName();
+        this.onload = false;
+    }
+
+    /**
      * Create plugin object.
      * If plugin is already created, then just return it.
      *

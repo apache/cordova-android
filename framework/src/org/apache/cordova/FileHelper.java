@@ -26,9 +26,12 @@ import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.LOG;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLConnection;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Locale;
 
 public class FileHelper {
@@ -124,6 +127,20 @@ public class FileHelper {
         return uriString;
     }
 
+    public static String getMimeTypeForExtension(String path) {
+        String extension = path;
+        int lastDot = extension.lastIndexOf('.');
+        if (lastDot != -1) {
+            extension = extension.substring(lastDot + 1);
+        }
+        // Convert the URI string to lower case to ensure compatibility with MimeTypeMap (see CB-2185).
+        extension = extension.toLowerCase(Locale.getDefault());
+        if (extension.equals("3ga")) {
+            return "audio/3gpp";
+        }
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+    }
+    
     /**
      * Returns the mime type of the data specified by the given URI string.
      *
@@ -137,19 +154,7 @@ public class FileHelper {
         if (uriString.startsWith("content://")) {
             mimeType = cordova.getActivity().getContentResolver().getType(uri);
         } else {
-            // MimeTypeMap.getFileExtensionFromUrl() fails when there are query parameters.
-            String extension = uri.getPath();
-            int lastDot = extension.lastIndexOf('.');
-            if (lastDot != -1) {
-                extension = extension.substring(lastDot + 1);
-            }
-            // Convert the URI string to lower case to ensure compatibility with MimeTypeMap (see CB-2185).
-            extension = extension.toLowerCase();
-            if (extension.equals("3ga")) {
-                mimeType = "audio/3gpp";
-            } else {
-                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-            }
+            mimeType = getMimeTypeForExtension(uri.getPath());
         }
 
         return mimeType;

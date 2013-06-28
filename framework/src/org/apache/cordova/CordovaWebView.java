@@ -805,7 +805,6 @@ public class CordovaWebView extends WebView {
     public void handleDestroy()
     {
         // Send destroy event to JavaScript
-    	// Since baseUrl is set in loadUrlIntoView, if user hit Back button before loadUrl was called, we'll get an NPE on baseUrl (CB-2458)
         this.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
 
         // Load blank page so that JavaScript onunload is called
@@ -943,5 +942,39 @@ public class CordovaWebView extends WebView {
 
     public void storeResult(int requestCode, int resultCode, Intent intent) {
         mResult = new ActivityResult(requestCode, resultCode, intent);
+    }
+    
+    /**
+     * Resolves the given URI, giving plugins a chance to re-route or customly handle the URI.
+     * A white-list rejection will be returned if the URI does not pass the white-list.
+     * @return Never returns null.
+     * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
+     *     resolved before being passed into this function.
+     */
+    public UriResolver resolveUri(Uri uri) {
+        return resolveUri(uri, false);
+    }
+    
+    UriResolver resolveUri(Uri uri, boolean fromWebView) {
+        if (!uri.isAbsolute()) {
+            throw new IllegalArgumentException("Relative URIs are not yet supported by resolveUri.");
+        }
+        // Check the against the white-list before delegating to plugins.
+        if (("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())) && !Config.isUrlWhiteListed(uri.toString()))
+        {
+            LOG.w(TAG, "resolveUri - URL is not in whitelist: " + uri);
+            return new UriResolvers.ErrorUriResolver(uri, "Whitelist rejection");
+        }
+
+        // Give plugins a chance to handle the request.
+        UriResolver resolver = pluginManager.resolveUri(uri);
+        if (resolver == null && !fromWebView) {
+            resolver = UriResolvers.forUri(uri, cordova.getActivity());
+            if (resolver == null) {
+                resolver = new UriResolvers.ErrorUriResolver(uri, "Unresolvable URI");
+            }
+        }
+
+        return resolver;
     }
 }
