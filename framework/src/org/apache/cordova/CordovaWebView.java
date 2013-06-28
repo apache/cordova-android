@@ -967,7 +967,7 @@ public class CordovaWebView extends WebView {
         }
 
         // Give plugins a chance to handle the request.
-        UriResolver resolver = pluginManager.resolveUri(uri);
+        UriResolver resolver = ((org.apache.cordova.PluginManager)pluginManager).resolveUri(uri);
         if (resolver == null && !fromWebView) {
             resolver = UriResolvers.forUri(uri, cordova.getActivity());
             if (resolver == null) {
