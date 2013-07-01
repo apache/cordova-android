@@ -227,9 +227,10 @@ public class CordovaWebView extends WebView {
     private void setup() {
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
-        this.requestFocusFromTouch();
-
-        // Enable JavaScript
+        if (shouldRequestFocusOnInit()) {
+			this.requestFocusFromTouch();
+		}
+		// Enable JavaScript
         WebSettings settings = this.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
@@ -307,8 +308,18 @@ public class CordovaWebView extends WebView {
         exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
         exposeJsInterface();
     }
-    
-    private void updateUserAgentString() {
+
+	/**
+	 * Override this method to decide wether or not you need to request the
+	 * focus when your application start
+	 * 
+	 * @return
+	 */
+    protected boolean shouldRequestFocusOnInit() {
+		return true;
+	}
+
+	private void updateUserAgentString() {
         this.getSettings().getUserAgentString();
     }
 
