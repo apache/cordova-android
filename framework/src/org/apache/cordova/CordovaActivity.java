@@ -858,8 +858,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         LOG.d(TAG, "Incoming Result");
         super.onActivityResult(requestCode, resultCode, intent);
         Log.d(TAG, "Request code = " + requestCode);
-        ValueCallback<Uri> mUploadMessage = this.appView.getWebChromeClient().getValueCallback();
-        if (requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
+        if (appView != null && requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
+        	ValueCallback<Uri> mUploadMessage = this.appView.getWebChromeClient().getValueCallback();
             Log.d(TAG, "did we get here?");
             if (null == mUploadMessage)
                 return;
@@ -1079,9 +1079,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
     {
-        //Get whatever has focus!
-        View childView = appView.getFocusedChild();
-        if ((appView.isCustomViewShowing() || childView != null ) &&
+        if (appView != null && (appView.isCustomViewShowing() || appView.getFocusedChild() != null ) &&
                 (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
             return appView.onKeyUp(keyCode, event);
         } else {
@@ -1099,10 +1097,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        //Get whatever has focus!
-        View childView = appView.getFocusedChild();
         //Determine if the focus is on the current view or not
-        if (childView != null && (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
+        if (appView != null && appView.getFocusedChild() != null && (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
                     return appView.onKeyDown(keyCode, event);
         }
         else
