@@ -529,6 +529,9 @@ else {
         case "clean" :
             clean();
             break;
+        case "log" :
+            log();
+            break;
         case "list-devices" :
             list_devices();
             break;
