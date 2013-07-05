@@ -34,74 +34,62 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.net.Uri;
+import android.os.Looper;
 
 /*
  * UriResolver implementations.
  */
 public final class UriResolvers {
+    static Thread webCoreThread;
+
     private UriResolvers() {}
 
     private static final class FileUriResolver implements UriResolver {
-        private final Uri uri;
+        private final File localFile;
         private String mimeType;
-        private File localFile;
     
         FileUriResolver(Uri uri) {
-            this.uri = uri;
-        }
-        
-        public Uri getUri() {
-            return uri;
+            localFile = new File(uri.getPath());
         }
         
         public InputStream getInputStream() throws IOException {
-            return new FileInputStream(getLocalFile());
+            return new FileInputStream(localFile);
         }
         
         public OutputStream getOutputStream() throws FileNotFoundException {
-            return new FileOutputStream(getLocalFile());
+            return new FileOutputStream(localFile);
         }
         
         public String getMimeType() {
             if (mimeType == null) {
-                mimeType = FileHelper.getMimeTypeForExtension(getLocalFile().getName());
+                mimeType = FileHelper.getMimeTypeForExtension(localFile.getName());
             }
             return mimeType;
         }
         
         public boolean isWritable() {
-            File f = getLocalFile();
-            if (f.isDirectory()) {
+            if (localFile.isDirectory()) {
                 return false;
             }
-            if (f.exists()) {
-                return f.canWrite();
+            if (localFile.exists()) {
+                return localFile.canWrite();
             }
-            return f.getParentFile().canWrite();
+            return localFile.getParentFile().canWrite();
         }
         
         public File getLocalFile() {
-            if (localFile == null) {
-                localFile = new File(uri.getPath());
-            }
             return localFile;
         }
     }
     
     private static final class AssetUriResolver implements UriResolver {
-        private final Uri uri;
         private final AssetManager assetManager;
         private final String assetPath;
         private String mimeType;
     
         AssetUriResolver(Uri uri, AssetManager assetManager) {
-            this.uri = uri;
             this.assetManager = assetManager;
             this.assetPath = uri.getPath().substring(15);
-        }
-        
-        public Uri getUri() {
-            return uri;
         }
         
         public InputStream getInputStream() throws IOException {
@@ -138,10 +126,6 @@ public final class UriResolvers {
             this.contentResolver = contentResolver;
         }
         
-        public Uri getUri() {
-            return uri;
-        }
-        
         public InputStream getInputStream() throws IOException {
             return contentResolver.openInputStream(uri);
         }
@@ -166,85 +150,105 @@ public final class UriResolvers {
         }
     }
     
-    static final class ErrorUriResolver implements UriResolver {
-        final Uri uri;
+    private static final class ErrorUriResolver implements UriResolver {
         final String errorMsg;
         
-        ErrorUriResolver(Uri uri, String errorMsg) {
-            this.uri = uri;
+        ErrorUriResolver(String errorMsg) {
             this.errorMsg = errorMsg;
         }
         
-        @Override
         public boolean isWritable() {
             return false;
         }
         
-        @Override
-        public Uri getUri() {
-            return uri;
-        }
-        
-        @Override
         public File getLocalFile() {
             return null;
         }
         
-        @Override
         public OutputStream getOutputStream() throws IOException {
             throw new FileNotFoundException(errorMsg);
         }
         
-        @Override
         public String getMimeType() {
             return null;
         }
         
-        @Override
         public InputStream getInputStream() throws IOException {
             throw new FileNotFoundException(errorMsg);
         }
     }
     
     private static final class ReadOnlyResolver implements UriResolver {
-        private Uri uri;
         private InputStream inputStream;
         private String mimeType;
         
         public ReadOnlyResolver(Uri uri, InputStream inputStream, String mimeType) {
-            this.uri = uri;
             this.inputStream = inputStream;
             this.mimeType = mimeType;
         }
         
-        @Override
         public boolean isWritable() {
             return false;
         }
         
-        @Override
-        public Uri getUri() {
-            return uri;
-        }
-        
-        @Override
         public File getLocalFile() {
             return null;
         }
         
-        @Override
         public OutputStream getOutputStream() throws IOException {
             throw new FileNotFoundException("URI is not writable");
         }
         
-        @Override
         public String getMimeType() {
             return mimeType;
         }
         
-        @Override
         public InputStream getInputStream() throws IOException {
             return inputStream;
+        }
+    }
+    
+    private static final class ThreadCheckingResolver implements UriResolver {
+        final UriResolver delegate;
+        
+        ThreadCheckingResolver(UriResolver delegate) {
+            this.delegate = delegate;
+        }
+
+        private static void checkThread() {
+            Thread curThread = Thread.currentThread();
+            if (curThread == Looper.getMainLooper().getThread()) {
+                throw new IllegalStateException("Do not perform IO operations on the UI thread. Use CordovaInterface.getThreadPool() instead.");
+            }
+            if (curThread == webCoreThread) {
+                throw new IllegalStateException("Tried to perform an IO operation on the WebCore thread. Use CordovaInterface.getThreadPool() instead.");
+            }
+        }
+        
+        public boolean isWritable() {
+            checkThread();
+            return delegate.isWritable();
+        }
+        
+
+        public File getLocalFile() {
+            checkThread();
+            return delegate.getLocalFile();
+        }
+        
+        public OutputStream getOutputStream() throws IOException {
+            checkThread();
+            return delegate.getOutputStream();
+        }
+        
+        public String getMimeType() {
+            checkThread();
+            return delegate.getMimeType();
+        }
+        
+        public InputStream getInputStream() throws IOException {
+            checkThread();
+            return delegate.getInputStream();
         }
     }
     
@@ -260,6 +264,10 @@ public final class UriResolvers {
         return new ReadOnlyResolver(uri, inputStream, mimeType);
     }
     
+    public static UriResolver createError(String errorMsg) {
+        return new ErrorUriResolver(errorMsg);
+    }
+    
     /* Package-private to force clients to go through CordovaWebView.resolveUri(). */
     static UriResolver forUri(Uri uri, Context context) {
         String scheme = uri.getScheme();
@@ -273,5 +281,13 @@ public final class UriResolvers {
             return new FileUriResolver(uri);
         }
         return null;
+    }
+    
+    /* Used only by CordovaWebView.resolveUri(). */
+    static UriResolver makeThreadChecking(UriResolver resolver) {
+        if (resolver instanceof ThreadCheckingResolver) {
+            return resolver;
+        }
+        return new ThreadCheckingResolver(resolver);
     }
 }

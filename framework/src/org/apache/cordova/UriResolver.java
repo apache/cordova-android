@@ -31,9 +31,6 @@ import android.net.Uri;
  */
 public interface UriResolver {
 
-    /** Returns the URI that this instance will resolve. */
-    Uri getUri();
-    
     /** 
      * Returns the InputStream for the resource. 
      * Throws an exception if it cannot be read. 

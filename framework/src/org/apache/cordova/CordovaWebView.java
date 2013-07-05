@@ -959,22 +959,22 @@ public class CordovaWebView extends WebView {
         if (!uri.isAbsolute()) {
             throw new IllegalArgumentException("Relative URIs are not yet supported by resolveUri.");
         }
+        UriResolver ret = null;
         // Check the against the white-list before delegating to plugins.
         if (("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())) && !Config.isUrlWhiteListed(uri.toString()))
         {
             LOG.w(TAG, "resolveUri - URL is not in whitelist: " + uri);
-            return new UriResolvers.ErrorUriResolver(uri, "Whitelist rejection");
+            ret = UriResolvers.createError("Whitelist rejection for: " + uri);
+        } else {
+            // Give plugins a chance to handle the request.
+            ret = ((org.apache.cordova.PluginManager)pluginManager).resolveUri(uri);
         }
-
-        // Give plugins a chance to handle the request.
-        UriResolver resolver = ((org.apache.cordova.PluginManager)pluginManager).resolveUri(uri);
-        if (resolver == null && !fromWebView) {
-            resolver = UriResolvers.forUri(uri, cordova.getActivity());
-            if (resolver == null) {
-                resolver = new UriResolvers.ErrorUriResolver(uri, "Unresolvable URI");
+        if (ret == null && !fromWebView) {
+            ret = UriResolvers.forUri(uri, cordova.getActivity());
+            if (ret == null) {
+                ret = UriResolvers.createError("Unresolvable URI: " + uri);
             }
         }
-
-        return resolver;
+        return ret == null ? null : UriResolvers.makeThreadChecking(ret);
     }
 }
