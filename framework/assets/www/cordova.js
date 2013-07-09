@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-154-g98a62ff
+// 2.7.0rc1-161-g0c80083
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-154-g98a62ff';
+var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-161-g0c80083';
 // file: lib/scripts/require.js
 
 var require,
@@ -392,6 +392,62 @@ moduleExports.checkArgs = checkArgs;
 moduleExports.getValue = getValue;
 moduleExports.enableChecks = true;
 
+
+});
+
+// file: lib/common/base64.js
+define("cordova/base64", function(require, exports, module) {
+
+var base64 = exports;
+
+base64.fromArrayBuffer = function(arrayBuffer) {
+  var array = new Uint8Array(arrayBuffer);
+  return uint8ToBase64(array);
+};
+
+//------------------------------------------------------------------------------
+
+/* This code is based on the performance tests at http://jsperf.com/b64tests
+ * This 12-bit-at-a-time algorithm was the best performing version on all
+ * platforms tested.
+ */
+
+var b64_6bit = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+var b64_12bit;
+
+var b64_12bitTable = function() {
+    b64_12bit = [];
+    for (var i=0; i<64; i++) {
+        for (var j=0; j<64; j++) {
+            b64_12bit[i*64+j] = b64_6bit[i] + b64_6bit[j];
+        }
+    }
+    b64_12bitTable = function() { return b64_12bit; };
+    return b64_12bit;
+}
+
+function uint8ToBase64(rawData) {
+    var numBytes = rawData.byteLength;
+    var output="";
+    var segment;
+    var table = b64_12bitTable();
+    for (var i=0;i<numBytes-2;i+=3) {
+        segment = (rawData[i] << 16) + (rawData[i+1] << 8) + rawData[i+2];
+        output += table[segment >> 12];
+        output += table[segment & 0xfff];
+    }
+    if (numBytes - i == 2) {
+        segment = (rawData[i] << 16) + (rawData[i+1] << 8);
+        output += table[segment >> 12];
+        output += b64_6bit[(segment & 0xfff) >> 6];
+        output += '=';
+    } else if (numBytes - i == 1) {
+        segment = (rawData[i] << 16);
+        output += table[segment >> 12];
+        output += '==';
+    }
+    return output;
+}
 
 });
 
@@ -799,6 +855,7 @@ define("cordova/exec", function(require, exports, module) {
 var cordova = require('cordova'),
     nativeApiProvider = require('cordova/plugin/android/nativeapiprovider'),
     utils = require('cordova/utils'),
+    base64 = require('cordova/base64'),
     jsToNativeModes = {
         PROMPT: 0,
         JS_OBJECT: 1,
@@ -837,7 +894,7 @@ function androidExec(success, fail, service, action, args) {
     // Process any ArrayBuffers in the args into a string.
     for (var i = 0; i < args.length; i++) {
         if (utils.typeName(args[i]) == 'ArrayBuffer') {
-            args[i] = window.btoa(String.fromCharCode.apply(null, new Uint8Array(args[i])));
+            args[i] = base64.fromArrayBuffer(args[i]);
         }
     }
 
@@ -1047,6 +1104,10 @@ exports.defaults = function(moduleName, symbolPath, opt_deprecationMessage) {
     addEntry('d', moduleName, symbolPath, opt_deprecationMessage);
 };
 
+exports.runs = function(moduleName) {
+    addEntry('r', moduleName, null);
+};
+
 function prepareNamespace(symbolPath, context) {
     if (!symbolPath) {
         return context;
@@ -1065,12 +1126,16 @@ exports.mapModules = function(context) {
     for (var i = 0, len = symbolList.length; i < len; i += 3) {
         var strategy = symbolList[i];
         var moduleName = symbolList[i + 1];
+        var module = require(moduleName);
+        // <runs/>
+        if (strategy == 'r') {
+            continue;
+        }
         var symbolPath = symbolList[i + 2];
         var lastDot = symbolPath.lastIndexOf('.');
         var namespace = symbolPath.substr(0, lastDot);
         var lastName = symbolPath.substr(lastDot + 1);
 
-        var module = require(moduleName);
         var deprecationMsg = symbolPath in deprecationMap ? 'Access made to deprecated symbol: ' + symbolPath + '. ' + deprecationMsg : null;
         var parentObj = prepareNamespace(namespace, context);
         var target = parentObj[lastName];
@@ -2162,6 +2227,155 @@ modulemapper.clobbers('cordova/plugin/logger', 'cordova.logger');
 
 });
 
+// file: lib/common/pluginloader.js
+define("cordova/pluginloader", function(require, exports, module) {
+
+var channel = require('cordova/channel');
+var modulemapper = require('cordova/modulemapper');
+
+var scriptCounter = 0;
+var moduleList = null;
+
+function scriptLoadedCallback() {
+    scriptCounter--;
+    if (scriptCounter === 0) {
+        onScriptLoadingComplete();
+    }
+}
+
+// Helper function to inject a <script> tag.
+function injectScript(url, onload) {
+    scriptCounter++;
+    var script = document.createElement("script");
+    // onload fires even when script fails loads with an error.
+    script.onload = onload;
+    script.src = url;
+    document.head.appendChild(script);
+}
+
+function onScriptLoadingComplete() {
+    // Loop through all the plugins and then through their clobbers and merges.
+    for (var i = 0; i < moduleList.length; i++) {
+        var module = moduleList[i];
+        if (module) {
+            try {
+                if (module.clobbers && module.clobbers.length) {
+                    for (var j = 0; j < module.clobbers.length; j++) {
+                        modulemapper.clobbers(module.id, module.clobbers[j]);
+                    }
+                }
+
+                if (module.merges && module.merges.length) {
+                    for (var k = 0; k < module.merges.length; k++) {
+                        modulemapper.merges(module.id, module.merges[k]);
+                    }
+                }
+
+                // Finally, if runs is truthy we want to simply require() the module.
+                // This can be skipped if it had any merges or clobbers, though,
+                // since the mapper will already have required the module.
+                if (module.runs && !(module.clobbers && module.clobbers.length) && !(module.merges && module.merges.length)) {
+                    modulemapper.runs(module.id);
+                }
+            }
+            catch(err) {
+                // error with module, most likely clobbers, should we continue?
+            }
+        }
+    }
+
+    finishPluginLoading();
+}
+
+// Called when:
+// * There are plugins defined and all plugins are finished loading.
+// * There are no plugins to load.
+function finishPluginLoading() {
+    channel.onPluginsReady.fire();
+}
+
+// Handler for the cordova_plugins.js content.
+// See plugman's plugin_loader.js for the details of this object.
+// This function is only called if the really is a plugins array that isn't empty.
+// Otherwise the onerror response handler will just call finishPluginLoading().
+function handlePluginsObject(path) {
+    // Now inject the scripts.
+    for (var i = 0; i < moduleList.length; i++) {
+        injectScript(path + moduleList[i].file, scriptLoadedCallback);
+    }
+}
+
+function injectPluginScript(pathPrefix) {
+    injectScript(pathPrefix + 'cordova_plugins.js', function(){
+        try {
+            moduleList = require("cordova/plugin_list");
+            handlePluginsObject(pathPrefix);
+        } catch (e) {
+            // Error loading cordova_plugins.js, file not found or something
+            // this is an acceptable error, pre-3.0.0, so we just move on.
+            finishPluginLoading();
+        }
+    });
+}
+
+function findCordovaPath() {
+    var path = null;
+    var scripts = document.getElementsByTagName('script');
+    var term = 'cordova.js';
+    for (var n = scripts.length-1; n>-1; n--) {
+        var src = scripts[n].src;
+        if (src.indexOf(term) == (src.length - term.length)) {
+            path = src.substring(0, src.length - term.length);
+            break;
+        }
+    }
+    return path;
+}
+
+// Tries to load all plugins' js-modules.
+// This is an async process, but onDeviceReady is blocked on onPluginsReady.
+// onPluginsReady is fired when there are no plugins to load, or they are all done.
+exports.load = function() {
+    var pathPrefix = findCordovaPath();
+    if (pathPrefix === null) {
+        console.warn('Could not find cordova.js script tag. Plugin loading may fail.');
+        pathPrefix = '';
+    }
+
+    // Try to XHR the cordova_plugins.json file asynchronously.
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        // If the response is a JSON string which composes an array, call handlePluginsObject.
+        // If the request fails, or the response is not a JSON array, just call finishPluginLoading.
+        var obj;
+        try {
+            obj = (this.status === 0 || this.status === 200) && this.responseText && JSON.parse(this.responseText);
+        } catch (err) {
+            // obj will be undefined.
+        }
+        if (Array.isArray(obj) && obj.length > 0) {
+            moduleList = obj;
+            handlePluginsObject(pathPrefix);
+        } else {
+            finishPluginLoading();
+        }
+    };
+    xhr.onerror = function() {
+        // One some phones (Windows) this xhr.open throws an Access Denied exception
+        // So lets keep trying, but with a script tag injection technique instead of XHR
+        injectPluginScript(pathPrefix);
+    };
+    try {
+        xhr.open('GET', pathPrefix + 'cordova_plugins.json', true); // Async
+        xhr.send();
+    } catch(err){
+        injectPluginScript(pathPrefix);
+    }
+};
+
+
+});
+
 // file: lib/common/symbols.js
 define("cordova/symbols", function(require, exports, module) {
 
@@ -2355,6 +2569,8 @@ window.cordova = require('cordova');
     context._cordovaJsLoaded = true;
 
     var channel = require('cordova/channel');
+    var pluginloader = require('cordova/pluginloader');
+
     var platformInitChannelsArray = [channel.onNativeReady, channel.onPluginsReady];
 
     function logUnfiredChannels(arr) {
@@ -2423,6 +2639,10 @@ window.cordova = require('cordova');
 
     }, platformInitChannelsArray);
 
+    // Don't attempt to load when running unit tests.
+    if (typeof XMLHttpRequest != 'undefined') {
+        pluginloader.load();
+    }
 }(window));
 
 // file: lib/scripts/bootstrap-android.js
@@ -2430,165 +2650,5 @@ window.cordova = require('cordova');
 // Tell the native code that a page change has occurred.
 require('cordova/exec')(null, null, 'PluginManager', 'startup', []);
 require('cordova/channel').onNativeReady.fire();
-
-// file: lib/scripts/plugin_loader.js
-
-// Tries to load all plugins' js-modules.
-// This is an async process, but onDeviceReady is blocked on onPluginsReady.
-// onPluginsReady is fired when there are no plugins to load, or they are all done.
-(function (context) {
-    // To be populated with the handler by handlePluginsObject.
-    var onScriptLoadingComplete;
-
-    var scriptCounter = 0;
-    function scriptLoadedCallback() {
-        scriptCounter--;
-        if (scriptCounter === 0) {
-            onScriptLoadingComplete && onScriptLoadingComplete();
-        }
-    }
-
-    function scriptErrorCallback(err) {
-        // Open Question: If a script path specified in cordova_plugins.js does not exist, do we fail for all?
-        // this is currently just continuing.
-        scriptCounter--;
-        if (scriptCounter === 0) {
-            onScriptLoadingComplete && onScriptLoadingComplete();
-        }
-    }
-
-    // Helper function to inject a <script> tag.
-    function injectScript(path) {
-        scriptCounter++;
-        var script = document.createElement("script");
-        script.onload = scriptLoadedCallback;
-        script.onerror = scriptErrorCallback;
-        script.src = path;
-        document.head.appendChild(script);
-    }
-
-    // Called when:
-    // * There are plugins defined and all plugins are finished loading.
-    // * There are no plugins to load.
-    function finishPluginLoading() {
-        context.cordova.require('cordova/channel').onPluginsReady.fire();
-    }
-
-    // Handler for the cordova_plugins.js content.
-    // See plugman's plugin_loader.js for the details of this object.
-    // This function is only called if the really is a plugins array that isn't empty.
-    // Otherwise the onerror response handler will just call finishPluginLoading().
-    function handlePluginsObject(modules, path) {
-        // First create the callback for when all plugins are loaded.
-        var mapper = context.cordova.require('cordova/modulemapper');
-        onScriptLoadingComplete = function() {
-            // Loop through all the plugins and then through their clobbers and merges.
-            for (var i = 0; i < modules.length; i++) {
-                var module = modules[i];
-                if (module) {
-                    try { 
-                        if (module.clobbers && module.clobbers.length) {
-                            for (var j = 0; j < module.clobbers.length; j++) {
-                                mapper.clobbers(module.id, module.clobbers[j]);
-                            }
-                        }
-
-                        if (module.merges && module.merges.length) {
-                            for (var k = 0; k < module.merges.length; k++) {
-                                mapper.merges(module.id, module.merges[k]);
-                            }
-                        }
-
-                        // Finally, if runs is truthy we want to simply require() the module.
-                        // This can be skipped if it had any merges or clobbers, though,
-                        // since the mapper will already have required the module.
-                        if (module.runs && !(module.clobbers && module.clobbers.length) && !(module.merges && module.merges.length)) {
-                            context.cordova.require(module.id);
-                        }
-                    }
-                    catch(err) {
-                        // error with module, most likely clobbers, should we continue?
-                    }
-                }
-            }
-
-            finishPluginLoading();
-        };
-
-        // Now inject the scripts.
-        for (var i = 0; i < modules.length; i++) {
-            injectScript(path + modules[i].file);
-        }
-    }
-
-    // Find the root of the app
-    var path = '';
-    var scripts = document.getElementsByTagName('script');
-    var term = 'cordova.js';
-    for (var n = scripts.length-1; n>-1; n--) {
-        var src = scripts[n].src;
-        if (src.indexOf(term) == (src.length - term.length)) {
-            path = src.substring(0, src.length - term.length);
-            break;
-        }
-    }
-
-    var plugins_json = path + 'cordova_plugins.json';
-    var plugins_js = path + 'cordova_plugins.js';
-
-    // One some phones (Windows) this xhr.open throws an Access Denied exception
-    // So lets keep trying, but with a script tag injection technique instead of XHR
-    var injectPluginScript = function injectPluginScript() {
-        try {
-            var script = document.createElement("script");
-            script.onload = function(){
-                var list = cordova.require("cordova/plugin_list");
-                handlePluginsObject(list,path);
-            };
-            script.onerror = function() {
-                // Error loading cordova_plugins.js, file not found or something
-                // this is an acceptable error, pre-3.0.0, so we just move on.
-                finishPluginLoading();
-            };
-            script.src = plugins_js;
-            document.head.appendChild(script);
-
-        } catch(err){
-            finishPluginLoading();
-        }
-    } 
-
-
-    // Try to XHR the cordova_plugins.json file asynchronously.
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        // If the response is a JSON string which composes an array, call handlePluginsObject.
-        // If the request fails, or the response is not a JSON array, just call finishPluginLoading.
-        var obj;
-        try {
-            obj = (this.status == 0 || this.status == 200) && this.responseText && JSON.parse(this.responseText);
-        } catch (err) {
-            // obj will be undefined.
-        }
-        if (Array.isArray(obj) && obj.length > 0) {
-            handlePluginsObject(obj, path);
-        } else {
-            finishPluginLoading();
-        }
-    };
-    xhr.onerror = function() {
-        // In this case, the json file was not present, but XHR was allowed, 
-        // so we should still try the script injection technique with the js file
-        // in case that is there.
-        injectPluginScript();
-    };
-    try { // we commented we were going to try, so let us actually try and catch
-        xhr.open('GET', plugins_json, true); // Async
-        xhr.send();
-    } catch(err){
-        injectPluginScript();
-    }
-}(window));
-
 
 })();
