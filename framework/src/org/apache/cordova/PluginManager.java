@@ -123,15 +123,7 @@ public class PluginManager {
         while (eventType != XmlResourceParser.END_DOCUMENT) {
             if (eventType == XmlResourceParser.START_TAG) {
                 String strNode = xml.getName();
-                //This is for the old scheme
-                if (strNode.equals("plugin")) {
-                    service = xml.getAttributeValue(null, "name");
-                    pluginClass = xml.getAttributeValue(null, "value");
-                    Log.d(TAG, "<plugin> tags are deprecated, please use <features> instead. <plugin> will no longer work as of Cordova 3.0");
-                    onload = "true".equals(xml.getAttributeValue(null, "onload"));
-                }
-                //What is this?
-                else if (strNode.equals("url-filter")) {
+                if (strNode.equals("url-filter")) {
                     this.urlMap.put(xml.getAttributeValue(null, "value"), service);
                 }
                 else if (strNode.equals("feature")) {
