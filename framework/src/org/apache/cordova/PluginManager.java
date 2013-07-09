@@ -110,11 +110,6 @@ public class PluginManager {
      */
     public void loadPlugins() {
         int id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getPackageName());
-        if(id == 0)
-        {
-            id = this.ctx.getActivity().getResources().getIdentifier("plugins", "xml", this.ctx.getActivity().getPackageName());
-            LOG.i(TAG, "Using plugins.xml instead of config.xml.  plugins.xml will eventually be deprecated");
-        }
         if (id == 0) {
             this.pluginConfigurationMissing();
             //We have the error, we need to exit without crashing!
