@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,7 +103,7 @@ public class Config {
                     }
                 }
                 else if (strNode.equals("preference")) {
-                    String name = xml.getAttributeValue(null, "name");
+                    String name = xml.getAttributeValue(null, "name").toLowerCase(Locale.getDefault());
                     /* Java 1.6 does not support switch-based strings
                        Java 7 does, but we're using Dalvik, which is apparently not Java.
                        Since we're reading XML, this has to be an ugly if/else.
@@ -112,10 +113,10 @@ public class Config {
                        
                        Note: We should probably pass in the classname for the variable splash on splashscreen!
                        */
-                    if (name.equals("loglevel")) {
+                    if (name.equalsIgnoreCase("LogLevel")) {
                         String level = xml.getAttributeValue(null, "value");
                         LOG.setLogLevel(level);
-                    } else if (name.equals("splashscreen")) {
+                    } else if (name.equalsIgnoreCase("SplashScreen")) {
                         String value = xml.getAttributeValue(null, "value");
                         int resource = 0;
                         if (value == null)
@@ -126,25 +127,25 @@ public class Config {
                         
                         action.getIntent().putExtra(name, resource);
                     }
-                    else if(name.equals("backgroundColor")) {
+                    else if(name.equalsIgnoreCase("BackgroundColor")) {
                         int value = xml.getAttributeIntValue(null, "value", Color.BLACK);
                         action.getIntent().putExtra(name, value);
                     }
-                    else if(name.equals("loadUrlTimeoutValue")) {
+                    else if(name.equalsIgnoreCase("LoadUrlTimeoutValue")) {
                         int value = xml.getAttributeIntValue(null, "value", 20000);
                         action.getIntent().putExtra(name, value);
                     }
-                    else if(name.equals("keepRunning"))
+                    else if(name.equalsIgnoreCase("KeepRunning"))
                     {
                         boolean value = xml.getAttributeValue(null, "value").equals("true");
                         action.getIntent().putExtra(name, value);
                     }
-                    else if(name.equals("InAppBrowserStorageEnabled"))
+                    else if(name.equalsIgnoreCase("InAppBrowserStorageEnabled"))
                     {
                         boolean value = xml.getAttributeValue(null, "value").equals("true");
                         action.getIntent().putExtra(name, value);
                     }
-                    else if(name.equals("disallowOverscroll"))
+                    else if(name.equalsIgnoreCase("DisallowOverscroll"))
                     {
                         boolean value = xml.getAttributeValue(null, "value").equals("true");
                         action.getIntent().putExtra(name, value);
