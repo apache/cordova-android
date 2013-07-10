@@ -44,19 +44,38 @@ public final class UriResolvers {
 
     private UriResolvers() {}
 
-    private static final class FileUriResolver implements UriResolver {
+    private static long computeSizeFromResolver(UriResolver resolver) throws IOException {
+        InputStream inputStream = resolver.getInputStream();
+        if (inputStream instanceof FileInputStream) {
+            return ((FileInputStream)inputStream).getChannel().size();
+        }
+        if (inputStream instanceof ByteArrayInputStream) {
+            return ((ByteArrayInputStream)inputStream).available();
+        }
+        return -1;
+    }
+    
+    private static final class FileUriResolver extends UriResolver {
         private final File localFile;
         private String mimeType;
+        private FileInputStream cachedInputStream;
     
         FileUriResolver(Uri uri) {
             localFile = new File(uri.getPath());
         }
         
         public InputStream getInputStream() throws IOException {
-            return new FileInputStream(localFile);
+            if (cachedInputStream == null) {
+                cachedInputStream = new FileInputStream(localFile);
+            }
+            return cachedInputStream;
         }
         
         public OutputStream getOutputStream() throws FileNotFoundException {
+            File parent = localFile.getParentFile();
+            if (parent != null) {
+                localFile.getParentFile().mkdirs();
+            }
             return new FileOutputStream(localFile);
         }
         
@@ -80,12 +99,17 @@ public final class UriResolvers {
         public File getLocalFile() {
             return localFile;
         }
+        
+        public long computeLength() throws IOException {
+            return localFile.length();
+        }
     }
     
-    private static final class AssetUriResolver implements UriResolver {
+    private static final class AssetUriResolver extends UriResolver {
         private final AssetManager assetManager;
         private final String assetPath;
         private String mimeType;
+        private InputStream cachedInputStream;
     
         AssetUriResolver(Uri uri, AssetManager assetManager) {
             this.assetManager = assetManager;
@@ -93,7 +117,10 @@ public final class UriResolvers {
         }
         
         public InputStream getInputStream() throws IOException {
-            return assetManager.open(assetPath);
+            if (cachedInputStream == null) {
+                cachedInputStream = assetManager.open(assetPath);
+            }
+            return cachedInputStream;
         }
         
         public OutputStream getOutputStream() throws FileNotFoundException {
@@ -114,12 +141,17 @@ public final class UriResolvers {
         public File getLocalFile() {
             return null;
         }
+
+        public long computeLength() throws IOException {
+            return computeSizeFromResolver(this);
+        }
     }
     
-    private static final class ContentUriResolver implements UriResolver {
+    private static final class ContentUriResolver extends UriResolver {
         private final Uri uri;
         private final ContentResolver contentResolver;
         private String mimeType;
+        private InputStream cachedInputStream;
     
         ContentUriResolver(Uri uri, ContentResolver contentResolver) {
             this.uri = uri;
@@ -127,7 +159,10 @@ public final class UriResolvers {
         }
         
         public InputStream getInputStream() throws IOException {
-            return contentResolver.openInputStream(uri);
+            if (cachedInputStream == null) {
+                cachedInputStream = contentResolver.openInputStream(uri);
+            }
+            return cachedInputStream;
         }
         
         public OutputStream getOutputStream() throws FileNotFoundException {
@@ -148,9 +183,13 @@ public final class UriResolvers {
         public File getLocalFile() {
             return null;
         }
+        
+        public long computeLength() throws IOException {
+            return computeSizeFromResolver(this);
+        }
     }
     
-    private static final class ErrorUriResolver implements UriResolver {
+    private static final class ErrorUriResolver extends UriResolver {
         final String errorMsg;
         
         ErrorUriResolver(String errorMsg) {
@@ -178,7 +217,7 @@ public final class UriResolvers {
         }
     }
     
-    private static final class ReadOnlyResolver implements UriResolver {
+    private static final class ReadOnlyResolver extends UriResolver {
         private InputStream inputStream;
         private String mimeType;
         
@@ -206,9 +245,13 @@ public final class UriResolvers {
         public InputStream getInputStream() throws IOException {
             return inputStream;
         }
+        
+        public long computeLength() throws IOException {
+            return computeSizeFromResolver(this);
+        }
     }
     
-    private static final class ThreadCheckingResolver implements UriResolver {
+    private static final class ThreadCheckingResolver extends UriResolver {
         final UriResolver delegate;
         
         ThreadCheckingResolver(UriResolver delegate) {
@@ -249,6 +292,11 @@ public final class UriResolvers {
         public InputStream getInputStream() throws IOException {
             checkThread();
             return delegate.getInputStream();
+        }
+        
+        public long computeLength() throws IOException {
+            checkThread();
+            return delegate.computeLength();
         }
     }
     

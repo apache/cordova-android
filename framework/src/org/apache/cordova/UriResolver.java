@@ -23,40 +23,47 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import android.net.Uri;
-
 /*
  * Interface for a class that can resolve URIs.
  * See CordovaUriResolver for an example.
  */
-public interface UriResolver {
+public abstract class UriResolver {
 
     /** 
      * Returns the InputStream for the resource. 
      * Throws an exception if it cannot be read. 
      * Never returns null.
      */
-    InputStream getInputStream() throws IOException;
+    public abstract InputStream getInputStream() throws IOException;
+
+    /** 
+     * Returns the MIME type of the resource.
+     * Returns null if the MIME type cannot be determined (e.g. content: that doesn't exist).
+     */
+    public abstract String getMimeType();
+
+    /** Returns whether the resource is writable. */
+    public abstract boolean isWritable();
+
+    /**
+     * Returns a File that points to the resource, or null if the resource
+     * is not on the local file system.
+     */
+    public abstract File getLocalFile();
 
     /** 
      * Returns the OutputStream for the resource. 
      * Throws an exception if it cannot be written to. 
      * Never returns null.
      */
-    OutputStream getOutputStream() throws IOException; 
+    public OutputStream getOutputStream() throws IOException {
+        throw new IOException("Writing is not suppported");
+    }
     
-    /** 
-     * Returns the MIME type of the resource.
-     * Returns null if the MIME type cannot be determined (e.g. content: that doesn't exist).
-     */
-    String getMimeType();
-
-    /** Returns whether the resource is writable. */
-    boolean isWritable();
-
     /**
-     * Returns a File that points to the resource, or null if the resource
-     * is not on the local file system.
+     * Returns the length of the input stream, or -1 if it is not computable.
      */
-    File getLocalFile();
+    public long computeLength() throws IOException {
+        return -1;
+    }
 }
