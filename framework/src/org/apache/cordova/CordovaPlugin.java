@@ -20,8 +20,8 @@ package org.apache.cordova;
 
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CallbackContext;
 import org.apache.cordova.UriResolver;
 import org.json.JSONArray;
 import org.json.JSONException;

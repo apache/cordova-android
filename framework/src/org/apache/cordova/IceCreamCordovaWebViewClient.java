@@ -21,8 +21,8 @@ package org.apache.cordova;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.LOG;
 
 import android.annotation.TargetApi;
 import android.net.Uri;
