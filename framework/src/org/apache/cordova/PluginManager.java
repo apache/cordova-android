@@ -225,7 +225,12 @@ public class PluginManager {
         }
         try {
             CallbackContext callbackContext = new CallbackContext(callbackId, app);
+            long pluginStartTime = System.currentTimeMillis();
             boolean wasValidAction = plugin.execute(action, rawArgs, callbackContext);
+            long duration = System.currentTimeMillis() - pluginStartTime;
+            if (duration > 16) {
+                Log.w(TAG, "THREAD WARNING: exec() call to " + service + "." + action + " blocked the main thread for " + duration + "ms. Plugin should use CordovaInterface.getThreadPool().");
+            }
             if (!wasValidAction) {
                 PluginResult cr = new PluginResult(PluginResult.Status.INVALID_ACTION);
                 app.sendPluginResult(cr, callbackId);
