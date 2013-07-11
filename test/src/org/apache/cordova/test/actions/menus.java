@@ -26,7 +26,7 @@ import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 
 import org.apache.cordova.*;
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.LOG;
 
 public class menus extends DroidGap {
     @Override

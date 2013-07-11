@@ -23,7 +23,7 @@ import android.webkit.WebView;
 import android.webkit.GeolocationPermissions.Callback;
 
 import org.apache.cordova.*;
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.LOG;
 
 public class userwebview extends DroidGap {
     

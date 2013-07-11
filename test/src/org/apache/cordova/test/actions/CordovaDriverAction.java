@@ -21,8 +21,8 @@ package org.apache.cordova.test.actions;
 
 import java.util.concurrent.ExecutorService;
 
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.CordovaPlugin;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
 
 import android.app.Activity;
 import android.content.Context;

@@ -20,28 +20,32 @@
 package org.apache.cordova.test;
 
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.PluginManager;
 import org.apache.cordova.test.actions.CordovaActivity;
+import org.apache.cordova.test.actions.backbuttonmultipage;
 
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-public class CordovaActivityTest extends ActivityInstrumentationTestCase2<CordovaActivity> {
+public class BlacklistTest extends ActivityInstrumentationTestCase2<CordovaActivity> {
 
+    private int TIMEOUT = 1000;
+    private Instrumentation mInstr;
     private CordovaActivity testActivity;
     private FrameLayout containerView;
     private LinearLayout innerContainer;
     private CordovaWebView testView;
-    private Instrumentation mInstr;
-    private int TIMEOUT = 1000;
     
-    @SuppressWarnings("deprecation")
-    public CordovaActivityTest()
+    public BlacklistTest()
     {
-        super("org.apache.cordova.test",CordovaActivity.class);
+        super("org.apache.cordova.test", CordovaActivity.class);
     }
+    
+    public BlacklistTest(Class<CordovaActivity> activityClass) {
+        super(activityClass);
+    }
+
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -58,33 +62,26 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<Cordov
         assertNotNull(testView);
     }
     
-
-    public void testForCordovaView() {
-        String className = testView.getClass().getSimpleName();
-        assertTrue(className.equals("CordovaWebView"));
+    public void testWhitelist(){
+        testView.loadUrl("http://cordova.apache.org");
+        sleep();
+        String url = testView.getUrl();
+        assertTrue(url.equals("http://cordova.apache.org"));
     }
     
-    public void testForLinearLayout() {
-        String className = innerContainer.getClass().getSimpleName();
-        assertTrue(className.equals("LinearLayoutSoftKeyboardDetect"));
-    }
-    
-
-    public void testPauseAndResume()
+    public void testBlacklist()
     {
-        mInstr.callActivityOnPause(testActivity);
+        testView.loadUrl("http://phonegap.com");
         sleep();
-        assertTrue(testView.isPaused());
-        mInstr.callActivityOnResume(testActivity);
-        sleep();
-        assertFalse(testView.isPaused());
+        String url = testView.getUrl();
+        assertTrue(url.equals("http://phonegap.com"));
     }
     
     private void sleep() {
         try {
-          Thread.sleep(TIMEOUT);
+            Thread.sleep(TIMEOUT);
         } catch (InterruptedException e) {
-          fail("Unexpected Timeout");
+            fail("Unexpected Timeout");
         }
     }
 }
