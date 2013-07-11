@@ -97,7 +97,11 @@ public class App extends CordovaPlugin {
      * Clear the resource cache.
      */
     public void clearCache() {
-        this.webView.clearCache(true);
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                webView.clearCache(true);
+            }
+        });
     }
 
     /**
@@ -164,7 +168,11 @@ public class App extends CordovaPlugin {
      * Clear page history for the app.
      */
     public void clearHistory() {
-        this.webView.clearHistory();
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                webView.clearHistory();
+            }
+        });
     }
 
     /**
