@@ -16,17 +16,4 @@
 # specific language governing permissions and limitations
 # under the License.
 
-set -e
-
-CORDOVA_PATH=$( cd "$( dirname "$0" )" && pwd -P)
-PROJECT_PATH="$(dirname "$CORDOVA_PATH")"
-
-VERSION_FILE_PATH="$PROJECT_PATH/assets/www/cordova.js"
-
-if [ -f "$VERSION_FILE_PATH" ]; then
-    JSVersion=$(sed -n '2,2p' $VERSION_FILE_PATH)
-    echo $JSVersion | sed -e 's/\/\/ //'| cut -f 1 -d '-'
-else
-    echo "The file \"$VERSION_FILE_PATH\" does not exist."
-    exit 1
-fi
+echo "3.0.0-dev"
