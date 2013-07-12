@@ -83,8 +83,8 @@ PACKAGE_AS_PATH=$(echo $PACKAGE | sed 's/\./\//g')
 ACTIVITY_PATH="$PROJECT_PATH"/src/$PACKAGE_AS_PATH/$ACTIVITY.java
 MANIFEST_PATH="$PROJECT_PATH"/AndroidManifest.xml
 
-TARGET=$("$ANDROID_BIN" list targets | grep id: | tail -1 | cut -f 2 -d ' ' )
-API_LEVEL=$("$ANDROID_BIN" list target | grep "API level:" | tail -n 1 | cut -f 2 -d ':' | tr -d ' ')
+TARGET=$("$ANDROID_BIN" list targets -c | grep '^android-' | tail -1 )
+API_LEVEL=${TARGET##android-}
 
 # check that build targets exist
 if [ -z "$TARGET" ] || [ -z "$API_LEVEL" ]
