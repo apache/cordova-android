@@ -78,6 +78,11 @@ public class Config {
             return;
         }
 
+        // Add implicitly allowed URLs
+        whitelist.addWhiteListEntry("file:///*", false);
+        whitelist.addWhiteListEntry("content:///*", false);
+        whitelist.addWhiteListEntry("data:*", false);
+
         XmlResourceParser xml = action.getResources().getXml(id);
         int eventType = -1;
         while (eventType != XmlResourceParser.END_DOCUMENT) {
