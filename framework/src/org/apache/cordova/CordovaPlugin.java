@@ -22,7 +22,6 @@ import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CallbackContext;
-import org.apache.cordova.UriResolver;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -165,13 +164,12 @@ public class CordovaPlugin {
     }
 
     /**
-     * Hook for overriding the default URI handling mechanism.
-     * Applies to WebView requests as well as requests made by plugins.
+     * Hook for redirecting requests. Applies to WebView requests as well as requests made by plugins.
      */
-    public UriResolver resolveUri(Uri uri) {
+    public Uri remapUri(Uri uri) {
         return null;
     }
-
+    
     /**
      * Called when the WebView does a top-level navigation or refreshes.
      *
