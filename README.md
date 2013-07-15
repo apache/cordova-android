@@ -41,49 +41,21 @@ Cordova Android Developer Tools
 
 The Cordova developer tooling is split between general tooling and project level tooling. 
 
-To enable the command-line tools available in the ./bin directory, make
-sure you have all of the dependencies installed. You will need
-[NodeJS](http://nodejs.org) (which should come with `npm`). To install
-the dependencies:
-
-    $ cd bin
-    $ npm install
-
 General Commands
 
     ./bin/create [path package activity] ... create the ./example app or a cordova android project
-    ./bin/autotest ......................... test the cli tools
-    ./bin/test ............................. run mobile-spec
+    ./bin/check_reqs ....................... checks that your environment is set up for cordova-android development
+    ./bin/update [path] .................... updates an existing cordova-android project to the version of the framework
 
 Project Commands
 
-These commands live in a generated Cordova Android project.
+These commands live in a generated Cordova Android project. Any interactions with the emulator require you to have an AVD defined.
 
-    ./cordova/debug [path] ..................... install to first device
-    ./cordova/emulate .......................... start avd (emulator) named default
-    ./cordova/log .............................. starts logcat
-
-Running the Example Project
----
-
-Start avd (emulator) named `default`:
-
-    ./bin/emulate
-
-Create the example project and build it to the first device:
-
-    ./bin/create
-    cd example
-    ./cordova/debug
-
-Start adb logcat (console.log calls output here):
-
-    ./cordova/log
-
-Creating a new Cordova Android Project
----
-
-    ./bin/create ~/Desktop/myapp com.myapp.special MyApp
+    ./cordova/clean ........................ cleans the project
+    ./cordova/build ........................ calls `clean` then compiles the project
+    ./cordova/log   ........................ stream device or emulate logs to stdout
+    ./cordova/run   ........................ calls `build` then deploys to a connected Android device. If no Android device is detected, will launch an emulator and deploy to it.
+    ./cordova/version ...................... returns the cordova-android version of the current project
 
 Importing a Cordova Android Project into Eclipse
 ----
