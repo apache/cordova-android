@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.UriResolver;
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.CordovaPlugin;
@@ -40,7 +39,6 @@ import android.content.res.XmlResourceParser;
 
 import android.net.Uri;
 import android.util.Log;
-import android.webkit.WebResourceResponse;
 
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
@@ -407,10 +405,10 @@ public class PluginManager {
         LOG.e(TAG, "=====================================================================================");
     }
 
-    UriResolver resolveUri(Uri uri) {
+    Uri remapUri(Uri uri) {
         for (PluginEntry entry : this.entries.values()) {
             if (entry.plugin != null) {
-                UriResolver ret = entry.plugin.resolveUri(uri);
+                Uri ret = entry.plugin.remapUri(uri);
                 if (ret != null) {
                     return ret;
                 }

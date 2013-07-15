@@ -97,6 +97,8 @@ public class CordovaWebView extends WebView {
 
     private ActivityResult mResult = null;
 
+    private CordovaResourceApi resourceApi;
+
     class ActivityResult {
         
         int request;
@@ -307,6 +309,7 @@ public class CordovaWebView extends WebView {
         pluginManager = new PluginManager(this, this.cordova);
         jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
         exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
+        resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
         exposeJsInterface();
     }
 
@@ -957,37 +960,7 @@ public class CordovaWebView extends WebView {
         mResult = new ActivityResult(requestCode, resultCode, intent);
     }
     
-    /**
-     * Resolves the given URI, giving plugins a chance to re-route or customly handle the URI.
-     * A white-list rejection will be returned if the URI does not pass the white-list.
-     * @return Never returns null.
-     * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
-     *     resolved before being passed into this function.
-     */
-    public UriResolver resolveUri(Uri uri) {
-        return resolveUri(uri, false);
-    }
-    
-    UriResolver resolveUri(Uri uri, boolean fromWebView) {
-        if (!uri.isAbsolute()) {
-            throw new IllegalArgumentException("Relative URIs are not yet supported by resolveUri.");
-        }
-        UriResolver ret = null;
-        // Check the against the white-list before delegating to plugins.
-        if (("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())) && !Config.isUrlWhiteListed(uri.toString()))
-        {
-            LOG.w(TAG, "resolveUri - URL is not in whitelist: " + uri);
-            ret = UriResolvers.createError("Whitelist rejection for: " + uri);
-        } else {
-            // Give plugins a chance to handle the request.
-            ret = ((org.apache.cordova.PluginManager)pluginManager).resolveUri(uri);
-        }
-        if (ret == null && !fromWebView) {
-            ret = UriResolvers.forUri(uri, cordova.getActivity());
-            if (ret == null) {
-                ret = UriResolvers.createError("Unresolvable URI: " + uri);
-            }
-        }
-        return ret == null ? null : UriResolvers.makeThreadChecking(ret);
+    public CordovaResourceApi getResourceApi() {
+        return resourceApi;
     }
 }
