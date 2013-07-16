@@ -1,5 +1,5 @@
 // Platform: android
-// 3.0.0-dev-18-g525e76b
+// 3.0.0rc1-0-g1965a39
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '3.0.0-dev-18-g525e76b';
+var CORDOVA_JS_BUILD_LABEL = '3.0.0rc1-0-g1965a39';
 // file: lib/scripts/require.js
 
 var require,
@@ -900,7 +900,7 @@ function androidExec(success, fail, service, action, args) {
     // Process any ArrayBuffers in the args into a string.
     for (var i = 0; i < args.length; i++) {
         if (utils.typeName(args[i]) == 'ArrayBuffer') {
-            args[i] = utils.encodeBase64(args[i]);
+            args[i] = base64.fromArrayBuffer(args[i]);
         }
     }
 
