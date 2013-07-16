@@ -47,8 +47,4 @@
     <feature name="App">
         <param name="android-package" value="org.apache.cordova.App" />
     </feature>
-    
-    <!-- Deprecated plugins element. Remove in 3.0 -->
-    <plugins>
-    </plugins>
 </widget>
