@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-161-g0c80083
+// 3.0.0rc1-1-g1965a39
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-161-g0c80083';
+var CORDOVA_JS_BUILD_LABEL = '3.0.0rc1-1-g1965a39';
 // file: lib/scripts/require.js
 
 var require,
@@ -181,6 +181,12 @@ if(typeof window.console === "undefined") {
     window.console = {
         log:function(){}
     };
+}
+// there are places in the framework where we call `warn` also, so we should make sure it exists
+if(typeof window.console.warn === "undefined") {
+    window.console.warn = function(msg) {
+        this.log("warn: " + msg);
+    }
 }
 
 var cordova = {
@@ -1677,178 +1683,6 @@ modulemapper.clobbers('cordova/plugin/android/storage/openDatabase', 'openDataba
 
 });
 
-// file: lib/common/plugin/console-via-logger.js
-define("cordova/plugin/console-via-logger", function(require, exports, module) {
-
-//------------------------------------------------------------------------------
-
-var logger = require("cordova/plugin/logger");
-var utils  = require("cordova/utils");
-
-//------------------------------------------------------------------------------
-// object that we're exporting
-//------------------------------------------------------------------------------
-var console = module.exports;
-
-//------------------------------------------------------------------------------
-// copy of the original console object
-//------------------------------------------------------------------------------
-var WinConsole = window.console;
-
-//------------------------------------------------------------------------------
-// whether to use the logger
-//------------------------------------------------------------------------------
-var UseLogger = false;
-
-//------------------------------------------------------------------------------
-// Timers
-//------------------------------------------------------------------------------
-var Timers = {};
-
-//------------------------------------------------------------------------------
-// used for unimplemented methods
-//------------------------------------------------------------------------------
-function noop() {}
-
-//------------------------------------------------------------------------------
-// used for unimplemented methods
-//------------------------------------------------------------------------------
-console.useLogger = function (value) {
-    if (arguments.length) UseLogger = !!value;
-
-    if (UseLogger) {
-        if (logger.useConsole()) {
-            throw new Error("console and logger are too intertwingly");
-        }
-    }
-
-    return UseLogger;
-};
-
-//------------------------------------------------------------------------------
-console.log = function() {
-    if (logger.useConsole()) return;
-    logger.log.apply(logger, [].slice.call(arguments));
-};
-
-//------------------------------------------------------------------------------
-console.error = function() {
-    if (logger.useConsole()) return;
-    logger.error.apply(logger, [].slice.call(arguments));
-};
-
-//------------------------------------------------------------------------------
-console.warn = function() {
-    if (logger.useConsole()) return;
-    logger.warn.apply(logger, [].slice.call(arguments));
-};
-
-//------------------------------------------------------------------------------
-console.info = function() {
-    if (logger.useConsole()) return;
-    logger.info.apply(logger, [].slice.call(arguments));
-};
-
-//------------------------------------------------------------------------------
-console.debug = function() {
-    if (logger.useConsole()) return;
-    logger.debug.apply(logger, [].slice.call(arguments));
-};
-
-//------------------------------------------------------------------------------
-console.assert = function(expression) {
-    if (expression) return;
-
-    var message = logger.format.apply(logger.format, [].slice.call(arguments, 1));
-    console.log("ASSERT: " + message);
-};
-
-//------------------------------------------------------------------------------
-console.clear = function() {};
-
-//------------------------------------------------------------------------------
-console.dir = function(object) {
-    console.log("%o", object);
-};
-
-//------------------------------------------------------------------------------
-console.dirxml = function(node) {
-    console.log(node.innerHTML);
-};
-
-//------------------------------------------------------------------------------
-console.trace = noop;
-
-//------------------------------------------------------------------------------
-console.group = console.log;
-
-//------------------------------------------------------------------------------
-console.groupCollapsed = console.log;
-
-//------------------------------------------------------------------------------
-console.groupEnd = noop;
-
-//------------------------------------------------------------------------------
-console.time = function(name) {
-    Timers[name] = new Date().valueOf();
-};
-
-//------------------------------------------------------------------------------
-console.timeEnd = function(name) {
-    var timeStart = Timers[name];
-    if (!timeStart) {
-        console.warn("unknown timer: " + name);
-        return;
-    }
-
-    var timeElapsed = new Date().valueOf() - timeStart;
-    console.log(name + ": " + timeElapsed + "ms");
-};
-
-//------------------------------------------------------------------------------
-console.timeStamp = noop;
-
-//------------------------------------------------------------------------------
-console.profile = noop;
-
-//------------------------------------------------------------------------------
-console.profileEnd = noop;
-
-//------------------------------------------------------------------------------
-console.count = noop;
-
-//------------------------------------------------------------------------------
-console.exception = console.log;
-
-//------------------------------------------------------------------------------
-console.table = function(data, columns) {
-    console.log("%o", data);
-};
-
-//------------------------------------------------------------------------------
-// return a new function that calls both functions passed as args
-//------------------------------------------------------------------------------
-function wrappedOrigCall(orgFunc, newFunc) {
-    return function() {
-        var args = [].slice.call(arguments);
-        try { orgFunc.apply(WinConsole, args); } catch (e) {}
-        try { newFunc.apply(console,    args); } catch (e) {}
-    };
-}
-
-//------------------------------------------------------------------------------
-// For every function that exists in the original console object, that
-// also exists in the new console object, wrap the new console method
-// with one that calls both
-//------------------------------------------------------------------------------
-for (var key in console) {
-    if (typeof WinConsole[key] == "function") {
-        console[key] = wrappedOrigCall(WinConsole[key], console[key]);
-    }
-}
-
-});
-
 // file: lib/common/plugin/echo.js
 define("cordova/plugin/echo", function(require, exports, module) {
 
@@ -1887,376 +1721,25 @@ module.exports = function(successCallback, errorCallback, message, forceAsync) {
 
 });
 
-// file: lib/common/plugin/logger.js
-define("cordova/plugin/logger", function(require, exports, module) {
-
-//------------------------------------------------------------------------------
-// The logger module exports the following properties/functions:
-//
-// LOG                          - constant for the level LOG
-// ERROR                        - constant for the level ERROR
-// WARN                         - constant for the level WARN
-// INFO                         - constant for the level INFO
-// DEBUG                        - constant for the level DEBUG
-// logLevel()                   - returns current log level
-// logLevel(value)              - sets and returns a new log level
-// useConsole()                 - returns whether logger is using console
-// useConsole(value)            - sets and returns whether logger is using console
-// log(message,...)             - logs a message at level LOG
-// error(message,...)           - logs a message at level ERROR
-// warn(message,...)            - logs a message at level WARN
-// info(message,...)            - logs a message at level INFO
-// debug(message,...)           - logs a message at level DEBUG
-// logLevel(level,message,...)  - logs a message specified level
-//
-//------------------------------------------------------------------------------
-
-var logger = exports;
-
-var exec    = require('cordova/exec');
-var utils   = require('cordova/utils');
-
-var UseConsole   = true;
-var UseLogger    = true;
-var Queued       = [];
-var DeviceReady  = false;
-var CurrentLevel;
-
-var originalConsole = console;
-
-/**
- * Logging levels
- */
-
-var Levels = [
-    "LOG",
-    "ERROR",
-    "WARN",
-    "INFO",
-    "DEBUG"
-];
-
-/*
- * add the logging levels to the logger object and
- * to a separate levelsMap object for testing
- */
-
-var LevelsMap = {};
-for (var i=0; i<Levels.length; i++) {
-    var level = Levels[i];
-    LevelsMap[level] = i;
-    logger[level]    = level;
-}
-
-CurrentLevel = LevelsMap.WARN;
-
-/**
- * Getter/Setter for the logging level
- *
- * Returns the current logging level.
- *
- * When a value is passed, sets the logging level to that value.
- * The values should be one of the following constants:
- *    logger.LOG
- *    logger.ERROR
- *    logger.WARN
- *    logger.INFO
- *    logger.DEBUG
- *
- * The value used determines which messages get printed.  The logging
- * values above are in order, and only messages logged at the logging
- * level or above will actually be displayed to the user.  E.g., the
- * default level is WARN, so only messages logged with LOG, ERROR, or
- * WARN will be displayed; INFO and DEBUG messages will be ignored.
- */
-logger.level = function (value) {
-    if (arguments.length) {
-        if (LevelsMap[value] === null) {
-            throw new Error("invalid logging level: " + value);
-        }
-        CurrentLevel = LevelsMap[value];
-    }
-
-    return Levels[CurrentLevel];
-};
-
-/**
- * Getter/Setter for the useConsole functionality
- *
- * When useConsole is true, the logger will log via the
- * browser 'console' object.
- */
-logger.useConsole = function (value) {
-    if (arguments.length) UseConsole = !!value;
-
-    if (UseConsole) {
-        if (typeof console == "undefined") {
-            throw new Error("global console object is not defined");
-        }
-
-        if (typeof console.log != "function") {
-            throw new Error("global console object does not have a log function");
-        }
-
-        if (typeof console.useLogger == "function") {
-            if (console.useLogger()) {
-                throw new Error("console and logger are too intertwingly");
-            }
-        }
-    }
-
-    return UseConsole;
-};
-
-/**
- * Getter/Setter for the useLogger functionality
- *
- * When useLogger is true, the logger will log via the
- * native Logger plugin.
- */
-logger.useLogger = function (value) {
-    // Enforce boolean
-    if (arguments.length) UseLogger = !!value;
-    return UseLogger;
-};
-
-/**
- * Logs a message at the LOG level.
- *
- * Parameters passed after message are used applied to
- * the message with utils.format()
- */
-logger.log   = function(message) { logWithArgs("LOG",   arguments); };
-
-/**
- * Logs a message at the ERROR level.
- *
- * Parameters passed after message are used applied to
- * the message with utils.format()
- */
-logger.error = function(message) { logWithArgs("ERROR", arguments); };
-
-/**
- * Logs a message at the WARN level.
- *
- * Parameters passed after message are used applied to
- * the message with utils.format()
- */
-logger.warn  = function(message) { logWithArgs("WARN",  arguments); };
-
-/**
- * Logs a message at the INFO level.
- *
- * Parameters passed after message are used applied to
- * the message with utils.format()
- */
-logger.info  = function(message) { logWithArgs("INFO",  arguments); };
-
-/**
- * Logs a message at the DEBUG level.
- *
- * Parameters passed after message are used applied to
- * the message with utils.format()
- */
-logger.debug = function(message) { logWithArgs("DEBUG", arguments); };
-
-// log at the specified level with args
-function logWithArgs(level, args) {
-    args = [level].concat([].slice.call(args));
-    logger.logLevel.apply(logger, args);
-}
-
-/**
- * Logs a message at the specified level.
- *
- * Parameters passed after message are used applied to
- * the message with utils.format()
- */
-logger.logLevel = function(level /* , ... */) {
-    // format the message with the parameters
-    var formatArgs = [].slice.call(arguments, 1);
-    var message    = logger.format.apply(logger.format, formatArgs);
-
-    if (LevelsMap[level] === null) {
-        throw new Error("invalid logging level: " + level);
-    }
-
-    if (LevelsMap[level] > CurrentLevel) return;
-
-    // queue the message if not yet at deviceready
-    if (!DeviceReady && !UseConsole) {
-        Queued.push([level, message]);
-        return;
-    }
-
-    // Log using the native logger if that is enabled
-    if (UseLogger) {
-        exec(null, null, "Logger", "logLevel", [level, message]);
-    }
-
-    // Log using the console if that is enabled
-    if (UseConsole) {
-        // make sure console is not using logger
-        if (console.__usingCordovaLogger) {
-            throw new Error("console and logger are too intertwingly");
-        }
-
-        // log to the console
-        switch (level) {
-            case logger.LOG:   originalConsole.log(message); break;
-            case logger.ERROR: originalConsole.log("ERROR: " + message); break;
-            case logger.WARN:  originalConsole.log("WARN: "  + message); break;
-            case logger.INFO:  originalConsole.log("INFO: "  + message); break;
-            case logger.DEBUG: originalConsole.log("DEBUG: " + message); break;
-        }
-    }
-};
-
-
-/**
- * Formats a string and arguments following it ala console.log()
- *
- * Any remaining arguments will be appended to the formatted string.
- *
- * for rationale, see FireBug's Console API:
- *    http://getfirebug.com/wiki/index.php/Console_API
- */
-logger.format = function(formatString, args) {
-    return __format(arguments[0], [].slice.call(arguments,1)).join(' ');
-};
-
-
-//------------------------------------------------------------------------------
-/**
- * Formats a string and arguments following it ala vsprintf()
- *
- * format chars:
- *   %j - format arg as JSON
- *   %o - format arg as JSON
- *   %c - format arg as ''
- *   %% - replace with '%'
- * any other char following % will format it's
- * arg via toString().
- *
- * Returns an array containing the formatted string and any remaining
- * arguments.
- */
-function __format(formatString, args) {
-    if (formatString === null || formatString === undefined) return [""];
-    if (arguments.length == 1) return [formatString.toString()];
-
-    if (typeof formatString != "string")
-        formatString = formatString.toString();
-
-    var pattern = /(.*?)%(.)(.*)/;
-    var rest    = formatString;
-    var result  = [];
-
-    while (args.length) {
-        var match = pattern.exec(rest);
-        if (!match) break;
-
-        var arg   = args.shift();
-        rest = match[3];
-        result.push(match[1]);
-
-        if (match[2] == '%') {
-            result.push('%');
-            args.unshift(arg);
-            continue;
-        }
-
-        result.push(__formatted(arg, match[2]));
-    }
-
-    result.push(rest);
-
-    var remainingArgs = [].slice.call(args);
-    remainingArgs.unshift(result.join(''));
-    return remainingArgs;
-}
-
-function __formatted(object, formatChar) {
-
-    try {
-        switch(formatChar) {
-            case 'j':
-            case 'o': return JSON.stringify(object);
-            case 'c': return '';
-        }
-    }
-    catch (e) {
-        return "error JSON.stringify()ing argument: " + e;
-    }
-
-    if ((object === null) || (object === undefined)) {
-        return Object.prototype.toString.call(object);
-    }
-
-    return object.toString();
-}
-
-
-//------------------------------------------------------------------------------
-// when deviceready fires, log queued messages
-logger.__onDeviceReady = function() {
-    if (DeviceReady) return;
-
-    DeviceReady = true;
-
-    for (var i=0; i<Queued.length; i++) {
-        var messageArgs = Queued[i];
-        logger.logLevel(messageArgs[0], messageArgs[1]);
-    }
-
-    Queued = null;
-};
-
-// add a deviceready event to log queued messages
-document.addEventListener("deviceready", logger.__onDeviceReady, false);
-
-});
-
-// file: lib/common/plugin/logger/symbols.js
-define("cordova/plugin/logger/symbols", function(require, exports, module) {
-
-
-var modulemapper = require('cordova/modulemapper');
-
-modulemapper.clobbers('cordova/plugin/logger', 'cordova.logger');
-
-});
-
 // file: lib/common/pluginloader.js
 define("cordova/pluginloader", function(require, exports, module) {
 
 var channel = require('cordova/channel');
 var modulemapper = require('cordova/modulemapper');
 
-var scriptCounter = 0;
-var moduleList = null;
-
-function scriptLoadedCallback() {
-    scriptCounter--;
-    if (scriptCounter === 0) {
-        onScriptLoadingComplete();
-    }
-}
-
 // Helper function to inject a <script> tag.
-function injectScript(url, onload) {
-    scriptCounter++;
+function injectScript(url, onload, onerror) {
     var script = document.createElement("script");
     // onload fires even when script fails loads with an error.
     script.onload = onload;
+    script.onerror = onerror || onload;
     script.src = url;
     document.head.appendChild(script);
 }
 
-function onScriptLoadingComplete() {
+function onScriptLoadingComplete(moduleList) {
     // Loop through all the plugins and then through their clobbers and merges.
-    for (var i = 0; i < moduleList.length; i++) {
-        var module = moduleList[i];
+    for (var i = 0, module; module = moduleList[i]; i++) {
         if (module) {
             try {
                 if (module.clobbers && module.clobbers.length) {
@@ -2298,8 +1781,20 @@ function finishPluginLoading() {
 // See plugman's plugin_loader.js for the details of this object.
 // This function is only called if the really is a plugins array that isn't empty.
 // Otherwise the onerror response handler will just call finishPluginLoading().
-function handlePluginsObject(path) {
+function handlePluginsObject(path, moduleList) {
     // Now inject the scripts.
+    var scriptCounter = moduleList.length;
+
+    if (!scriptCounter) {
+        onScriptLoadingComplete();
+        return;
+    }
+    function scriptLoadedCallback() {
+        if (!--scriptCounter) {
+            onScriptLoadingComplete(moduleList);
+        }
+    }
+
     for (var i = 0; i < moduleList.length; i++) {
         injectScript(path + moduleList[i].file, scriptLoadedCallback);
     }
@@ -2308,14 +1803,14 @@ function handlePluginsObject(path) {
 function injectPluginScript(pathPrefix) {
     injectScript(pathPrefix + 'cordova_plugins.js', function(){
         try {
-            moduleList = require("cordova/plugin_list");
-            handlePluginsObject(pathPrefix);
+            var moduleList = require("cordova/plugin_list");
+            handlePluginsObject(pathPrefix, moduleList);
         } catch (e) {
             // Error loading cordova_plugins.js, file not found or something
             // this is an acceptable error, pre-3.0.0, so we just move on.
             finishPluginLoading();
         }
-    });
+    },finishPluginLoading); // also, add script load error handler for file not found
 }
 
 function findCordovaPath() {
@@ -2338,39 +1833,10 @@ function findCordovaPath() {
 exports.load = function() {
     var pathPrefix = findCordovaPath();
     if (pathPrefix === null) {
-        console.warn('Could not find cordova.js script tag. Plugin loading may fail.');
+        console.log('Could not find cordova.js script tag. Plugin loading may fail.');
         pathPrefix = '';
     }
-
-    // Try to XHR the cordova_plugins.json file asynchronously.
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        // If the response is a JSON string which composes an array, call handlePluginsObject.
-        // If the request fails, or the response is not a JSON array, just call finishPluginLoading.
-        var obj;
-        try {
-            obj = (this.status === 0 || this.status === 200) && this.responseText && JSON.parse(this.responseText);
-        } catch (err) {
-            // obj will be undefined.
-        }
-        if (Array.isArray(obj) && obj.length > 0) {
-            moduleList = obj;
-            handlePluginsObject(pathPrefix);
-        } else {
-            finishPluginLoading();
-        }
-    };
-    xhr.onerror = function() {
-        // One some phones (Windows) this xhr.open throws an Access Denied exception
-        // So lets keep trying, but with a script tag injection technique instead of XHR
-        injectPluginScript(pathPrefix);
-    };
-    try {
-        xhr.open('GET', pathPrefix + 'cordova_plugins.json', true); // Async
-        xhr.send();
-    } catch(err){
-        injectPluginScript(pathPrefix);
-    }
+    injectPluginScript(pathPrefix);
 };
 
 
