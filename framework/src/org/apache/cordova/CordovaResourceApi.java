@@ -26,7 +26,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Looper;
 import android.util.Base64;
-import android.util.Base64InputStream;
 
 import com.squareup.okhttp.OkHttpClient;
 
@@ -62,7 +61,7 @@ public class CordovaResourceApi {
     // Creating this is light-weight.
     private static OkHttpClient httpClient = new OkHttpClient();
     
-    static Thread webCoreThread;
+    static Thread jsThread;
 
     private final AssetManager assetManager;
     private final ContentResolver contentResolver;
@@ -294,7 +293,7 @@ public class CordovaResourceApi {
             if (curThread == Looper.getMainLooper().getThread()) {
                 throw new IllegalStateException("Do not perform IO operations on the UI thread. Use CordovaInterface.getThreadPool() instead.");
             }
-            if (curThread == webCoreThread) {
+            if (curThread == jsThread) {
                 throw new IllegalStateException("Tried to perform an IO operation on the WebCore thread. Use CordovaInterface.getThreadPool() instead.");
             }
         }

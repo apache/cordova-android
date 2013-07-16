@@ -27,7 +27,6 @@ import org.apache.cordova.LOG;
 import android.annotation.TargetApi;
 import android.net.Uri;
 import android.os.Build;
-import android.util.Log;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
@@ -46,9 +45,6 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        // Tell the Thread-Checking resolve what thread the WebCore thread is.
-        CordovaResourceApi.webCoreThread = Thread.currentThread();
-        Log.e("WHAAAA", "FOOD " + CordovaResourceApi.webCoreThread);
         try {
             // Check the against the white-list.
             if ((url.startsWith("http:") || url.startsWith("https:")) && !Config.isUrlWhiteListed(url)) {
