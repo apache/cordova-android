@@ -228,8 +228,13 @@ public class CordovaChromeClient extends WebChromeClient {
 
         // Sets the native->JS bridge mode. 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_bridge_mode:")) {
-            this.appView.exposedJsApi.setNativeToJsBridgeMode(Integer.parseInt(message));
-            result.confirm("");
+        	try {
+                this.appView.exposedJsApi.setNativeToJsBridgeMode(Integer.parseInt(message));
+                result.confirm("");
+        	} catch (NumberFormatException e){
+                result.confirm("");
+                e.printStackTrace();
+        	}
         }
 
         // Polling for JavaScript messages 
