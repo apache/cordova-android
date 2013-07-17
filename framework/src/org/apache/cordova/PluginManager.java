@@ -225,7 +225,10 @@ public class PluginManager {
         }
         try {
             CallbackContext callbackContext = new CallbackContext(callbackId, app);
+            long now = System.currentTimeMillis();
             boolean wasValidAction = plugin.execute(action, rawArgs, callbackContext);
+            long duration = System.currentTimeMillis()-now;
+            if(duration>50) Log.d(TAG,"THREAD WARNING: exec() call to "+service+" took "+duration+" ms");
             if (!wasValidAction) {
                 PluginResult cr = new PluginResult(PluginResult.Status.INVALID_ACTION);
                 app.sendPluginResult(cr, callbackId);
