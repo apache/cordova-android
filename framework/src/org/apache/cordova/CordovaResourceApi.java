@@ -156,9 +156,24 @@ public class CordovaResourceApi {
      * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
      *     resolved before being passed into this function.
      * @throws Throws an IOException if the URI cannot be opened.
+     * @throws Throws an IllegalStateException if called on a foreground thread.
      */
     public OpenForReadResult openForRead(Uri uri) throws IOException {
-        assertBackgroundThread();
+        return openForRead(uri, false);
+    }
+
+    /**
+     * Opens a stream to the givne URI, also providing the MIME type & length.
+     * @return Never returns null.
+     * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
+     *     resolved before being passed into this function.
+     * @throws Throws an IOException if the URI cannot be opened.
+     * @throws Throws an IllegalStateException if called on a foreground thread and skipThreadCheck is false.
+     */
+    public OpenForReadResult openForRead(Uri uri, boolean skipThreadCheck) throws IOException {
+        if (!skipThreadCheck) {
+            assertBackgroundThread();
+        }
         switch (getUriType(uri)) {
             case URI_TYPE_FILE: {
                 FileInputStream inputStream = new FileInputStream(uri.getPath());
