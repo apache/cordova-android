@@ -59,7 +59,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
             Uri remappedUri = resourceApi.remapUri(origUri);
             
             if (!origUri.equals(remappedUri) || needsSpecialsInAssetUrlFix(origUri)) {
-                OpenForReadResult result = resourceApi.openForRead(remappedUri);
+                OpenForReadResult result = resourceApi.openForRead(remappedUri, true);
                 return new WebResourceResponse(result.mimeType, "UTF-8", result.inputStream);
             }
             // If we don't need to special-case the request, let the browser load it.
