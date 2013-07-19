@@ -1,5 +1,5 @@
 // Platform: android
-// 2.7.0rc1-169-g87cc336
+// 3.0.0-0-ge670de9
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '2.7.0rc1-169-g87cc336';
+var CORDOVA_JS_BUILD_LABEL = '3.0.0-0-ge670de9';
 // file: lib/scripts/require.js
 
 var require,
@@ -900,7 +900,7 @@ function androidExec(success, fail, service, action, args) {
     // Process any ArrayBuffers in the args into a string.
     for (var i = 0; i < args.length; i++) {
         if (utils.typeName(args[i]) == 'ArrayBuffer') {
-            args[i] = utils.encodeBase64(args[i]);
+            args[i] = base64.fromArrayBuffer(args[i]);
         }
     }
 
@@ -1784,6 +1784,11 @@ function finishPluginLoading() {
 function handlePluginsObject(path, moduleList) {
     // Now inject the scripts.
     var scriptCounter = moduleList.length;
+
+    if (!scriptCounter) {
+        finishPluginLoading();
+        return;
+    }
     function scriptLoadedCallback() {
         if (!--scriptCounter) {
             onScriptLoadingComplete(moduleList);
