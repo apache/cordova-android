@@ -199,6 +199,7 @@ public class Config {
      */
     public static void addWhiteListEntry(String origin, boolean subdomains) {
         if (self == null) {
+            Log.e(TAG, "Config was not initialised. Did you forget to Config.init(this)?");
             return;
         }
         self.whitelist.addWhiteListEntry(origin, subdomains);
@@ -212,6 +213,7 @@ public class Config {
      */
     public static boolean isUrlWhiteListed(String url) {
         if (self == null) {
+            Log.e(TAG, "Config was not initialised. Did you forget to Config.init(this)?");
             return false;
         }
         return self.whitelist.isUrlWhiteListed(url);
