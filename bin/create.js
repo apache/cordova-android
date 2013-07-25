@@ -137,14 +137,16 @@ if(fso.FolderExists(PROJECT_PATH)) {
 
 var PACKAGE_AS_PATH=PACKAGE.replace(/\./g, '\\');
 var ACTIVITY_DIR=PROJECT_PATH + '\\src\\' + PACKAGE_AS_PATH;
-var ACTIVITY_PATH=ACTIVITY_DIR+'\\'+ACTIVITY+'.java';
+var SAFE_ACTIVITY = ACTIVITY.replace(/\W/g, '');
+var ACTIVITY_PATH=ACTIVITY_DIR+'\\'+SAFE_ACTIVITY+'.java';
 var MANIFEST_PATH=PROJECT_PATH+'\\AndroidManifest.xml';
+var STRINGS_PATH=PROJECT_PATH+'\\res\\values\\strings.xml';
 var TARGET=setTarget();
 var API_LEVEL=setApiLevel();
 var VERSION=read(ROOT+'\\VERSION').replace(/\r\n/,'').replace(/\n/,'');
 // create the project
 Log("Creating new android project...");
-exec('android.bat create project --target "'+TARGET+'" --path "'+PROJECT_PATH+'" --package "'+PACKAGE+'" --activity "'+ACTIVITY+'"');
+exec('android.bat create project --target "'+TARGET+'" --path "'+PROJECT_PATH+'" --package "'+PACKAGE+'" --activity "'+SAFE_ACTIVITY+'"');
 
 // build from source. distro should have these files
 if (!fso.FileExists(ROOT+'\\cordova-'+VERSION+'.jar') &&
@@ -208,3 +210,5 @@ replaceInFile(ACTIVITY_PATH, /__ID__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__ACTIVITY__/, ACTIVITY);
 replaceInFile(MANIFEST_PATH, /__PACKAGE__/, PACKAGE);
 replaceInFile(MANIFEST_PATH, /__APILEVEL__/, API_LEVEL);
+
+replaceInFile(STRINGS_PATH, new RegExp('>' + SAFE_ACTIVITY + '<'), '>' + ACTIVITY + '<');

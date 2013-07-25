@@ -38,7 +38,7 @@ VERSION=$(cat "$BUILD_PATH"/VERSION)
 
 PROJECT_PATH="${1:-'./example'}"
 PACKAGE=${2:-"org.apache.cordova.example"}
-ACTIVITY=$(echo ${3:-"cordovaExample"} | tr -d ' ')
+ACTIVITY=$(echo ${3:-"cordovaExample"} | tr -d '[:blank:][:punct:]')
 APP_LABEL=${3:-"Cordova Example"};
 
 # clobber any existing example
