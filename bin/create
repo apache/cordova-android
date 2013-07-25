@@ -38,7 +38,8 @@ VERSION=$(cat "$BUILD_PATH"/VERSION)
 
 PROJECT_PATH="${1:-'./example'}"
 PACKAGE=${2:-"org.apache.cordova.example"}
-ACTIVITY=${3:-"cordovaExample"}
+ACTIVITY=$(echo ${3:-"cordovaExample"} | tr -d ' ')
+APP_LABEL=${3:-"Cordova Example"};
 
 # clobber any existing example
 if [ -d "$PROJECT_PATH" ]
@@ -67,7 +68,7 @@ function replace {
     # Mac OS X requires -i argument
     if [[ "$OSTYPE" =~ "darwin" ]]
     then
-        /usr/bin/sed -i '' -e $pattern "$filename"
+        /usr/bin/sed -i '' -e "$pattern" "$filename"
     elif [[ "$OSTYPE" =~ "linux" ]]
     then
         /bin/sed -i -e $pattern "$filename"
@@ -82,6 +83,7 @@ ANDROID_BIN="${ANDROID_BIN:=$( which android )}"
 PACKAGE_AS_PATH=$(echo $PACKAGE | sed 's/\./\//g')
 ACTIVITY_PATH="$PROJECT_PATH"/src/$PACKAGE_AS_PATH/$ACTIVITY.java
 MANIFEST_PATH="$PROJECT_PATH"/AndroidManifest.xml
+STRINGS_PATH="$PROJECT_PATH"/res/values/strings.xml
 
 TARGET=$("$ANDROID_BIN" list targets -c | grep '^android-' | tail -1 )
 API_LEVEL=${TARGET##android-}
@@ -128,6 +130,9 @@ fi
 cp "$BUILD_PATH"/bin/templates/project/Activity.java "$ACTIVITY_PATH"
 replace "s/__ACTIVITY__/${ACTIVITY}/g" "$ACTIVITY_PATH"
 replace "s/__ID__/${PACKAGE}/g" "$ACTIVITY_PATH"
+
+# interpolate the app name into strings.xml
+replace "s/>${ACTIVITY}</>${APP_LABEL}</g" "$STRINGS_PATH"
 
 cp "$BUILD_PATH"/bin/templates/project/AndroidManifest.xml "$MANIFEST_PATH"
 replace "s/__ACTIVITY__/${ACTIVITY}/g" "$MANIFEST_PATH"
