@@ -776,7 +776,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)
      *
-     * @param message
+     * @param statement
      */
     public void sendJavascript(String statement) {
         if (this.appView != null) {

@@ -511,7 +511,7 @@ public class CordovaWebView extends WebView {
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)
      *
-     * @param message
+     * @param statement
      */
     public void sendJavascript(String statement) {
         this.jsMessageQueue.addJavaScript(statement);
@@ -521,7 +521,8 @@ public class CordovaWebView extends WebView {
      * Send a plugin result back to JavaScript.
      * (This is a convenience method)
      *
-     * @param message
+     * @param result
+     * @param callbackId
      */
     public void sendPluginResult(PluginResult result, String callbackId) {
         this.jsMessageQueue.addPluginResult(result, callbackId);
