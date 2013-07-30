@@ -136,6 +136,10 @@ public class Config {
                         int value = xml.getAttributeIntValue(null, "value", 20000);
                         action.getIntent().putExtra(name, value);
                     }
+                    else if(name.equalsIgnoreCase("SplashScreenDelay")) {
+                        int value = xml.getAttributeIntValue(null, "value", 3000);
+                        action.getIntent().putExtra(name, value);
+                    }
                     else if(name.equalsIgnoreCase("KeepRunning"))
                     {
                         boolean value = xml.getAttributeValue(null, "value").equals("true");

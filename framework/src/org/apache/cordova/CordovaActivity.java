@@ -391,6 +391,16 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             this.init();
         }
 
+        this.splashscreenTime = this.getIntegerProperty("SplashScreenDelay", this.splashscreenTime);
+        if(this.splashscreenTime > 0)
+        {
+            this.splashscreen = this.getIntegerProperty("SplashScreen", 0);
+            if(this.splashscreen != 0)
+            {
+                this.showSplashScreen(this.splashscreenTime);
+            }
+        }
+        
         // Set backgroundColor
         this.backgroundColor = this.getIntegerProperty("BackgroundColor", Color.BLACK);
         this.root.setBackgroundColor(this.backgroundColor);
@@ -401,9 +411,43 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         // Then load the spinner
         this.loadSpinner();
 
-        this.appView.loadUrl(url);
+        //Load the correct splashscreen
+        
+        if(this.splashscreen != 0)
+        {
+            this.appView.loadUrl(url, this.splashscreenTime);
+        }
+        else
+        {
+            this.appView.loadUrl(url);
+        }
     }
 
+    /**
+     * Load the url into the webview after waiting for period of time.
+     * This is used to display the splashscreen for certain amount of time.
+     *
+     * @param url
+     * @param time              The number of ms to wait before loading webview
+     */
+    public void loadUrl(final String url, int time) {
+
+        this.splashscreenTime = time;
+        this.loadUrl(url);
+        
+        /*
+        // Init web view if not already done
+        if (this.appView == null) {
+            this.init();
+        }
+
+        this.splashscreenTime = time;
+        this.splashscreen = this.getIntegerProperty("SplashScreen", 0);
+        this.showSplashScreen(this.splashscreenTime);
+        this.appView.loadUrl(url, time);
+        */
+    }
+    
     /*
      * Load the spinner
      */
@@ -437,25 +481,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
     }
 
-    /**
-     * Load the url into the webview after waiting for period of time.
-     * This is used to display the splashscreen for certain amount of time.
-     *
-     * @param url
-     * @param time              The number of ms to wait before loading webview
-     */
-    public void loadUrl(final String url, int time) {
-
-        // Init web view if not already done
-        if (this.appView == null) {
-            this.init();
-        }
-
-        this.splashscreenTime = time;
-        this.splashscreen = this.getIntegerProperty("SplashScreen", 0);
-        this.showSplashScreen(this.splashscreenTime);
-        this.appView.loadUrl(url, time);
-    }
 
     /**
      * Cancel loadUrl before it has been loaded.
