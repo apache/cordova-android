@@ -425,7 +425,7 @@ public class CordovaWebView extends WebView {
         // Create a timeout timer for loadUrl
         final CordovaWebView me = this;
         final int currentLoadUrlTimeout = me.loadUrlTimeout;
-        final int loadUrlTimeoutValue = Integer.parseInt(this.getProperty("loadUrlTimeoutValue", "20000"));
+        final int loadUrlTimeoutValue = Integer.parseInt(this.getProperty("LoadUrlTimeoutValue", "20000"));
 
         // Timeout error method
         final Runnable loadError = new Runnable() {
@@ -621,7 +621,7 @@ public class CordovaWebView extends WebView {
      */
     private void loadConfiguration() {
  
-        if ("true".equals(this.getProperty("fullscreen", "false"))) {
+        if ("true".equals(this.getProperty("Fullscreen", "false"))) {
             this.cordova.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             this.cordova.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
@@ -639,6 +639,7 @@ public class CordovaWebView extends WebView {
         if (bundle == null) {
             return defaultValue;
         }
+        name = name.toLowerCase(Locale.getDefault());
         Object p = bundle.get(name);
         if (p == null) {
             return defaultValue;
