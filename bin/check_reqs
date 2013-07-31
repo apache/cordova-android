@@ -19,13 +19,13 @@
 ROOT="$( cd "$( dirname "$0" )/.." && pwd )"
 cmd=`android list target`
 if [[ $? != 0 ]]; then
-    echo "The command `android` failed. Make sure you have the latest Android SDK installed, and the `android` command (inside the tools/ folder) added to your path."
+    echo "The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) added to your path."
     exit 2
-elif [[ ! $cmd =~ "android-17" ]]; then
-    echo "Please install Android target 17 (the Android 4.2 SDK). Make sure you have the latest Android tools installed as well. Run `android` from your command-line to install/update any missing SDKs or tools."
+elif [[ ! $cmd =~ "android-18" ]]; then
+    echo "Please install Android target 18 (the Android 4.3 SDK). Make sure you have the latest Android tools installed as well. Run \"android\" from your command-line to install/update any missing SDKs or tools."
     exit 2
 else
-    cmd="android update project -p $ROOT -t android-17 1> /dev/null 2>&1"
+    cmd="android update project -p $ROOT -t android-18 1> /dev/null 2>&1"
     eval $cmd
     if [[ $? != 0 ]]; then
         echo "Error updating the Cordova library to work with your Android environment."
