@@ -63,13 +63,13 @@ function check_requirements() {
         Log('The command `android` failed. Make sure you have the latest Android SDK installed, and the `android` command (inside the tools/ folder) added to your path. Output: ' + result.output, true);
         WScript.Quit(2);
     }
-    else if(!result.output.match(/android[-]17/)) {
-        Log('Please install Android target 17 (the Android 4.2 SDK). Make sure you have the latest Android tools installed as well. Run `android` from your command-line to install/update any missing SDKs or tools.', true);
+    else if(!result.output.match(/android[-]18/)) {
+        Log('Please install Android target 18 (the Android 4.3 SDK). Make sure you have the latest Android tools installed as well. Run `android` from your command-line to install/update any missing SDKs or tools.', true);
         Log('Output : ' + result.output);
         WScript.Quit(2);
     }
     else {
-        var cmd = '%comspec% /c android update project -p ' + ROOT + '\\framework -t android-17';
+        var cmd = '%comspec% /c android update project -p ' + ROOT + '\\framework -t android-18';
         result = exec_out(cmd);
         if(result.error) {
             Log('Error updating the Cordova library to work with your Android environment. Command run: "' + cmd + '", output: ' + result.output, true);
