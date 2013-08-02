@@ -54,22 +54,28 @@ function Log(msg, error) {
     else {
         WScript.StdOut.WriteLine(msg);
     }
-} 
+}
 
 // checks that android requirements are met
 function check_requirements() {
+    var target = get_target();
+    if(target==null) {
+        Log('Unable to find android target in project.properties');
+        WScript.Quit(2);
+    }
     var result = exec_out('%comspec% /c android list target');
     if(result.error) {
         Log('The command `android` failed. Make sure you have the latest Android SDK installed, and the `android` command (inside the tools/ folder) added to your path. Output: ' + result.output, true);
         WScript.Quit(2);
     }
-    else if(!result.output.match(/android[-]18/)) {
-        Log('Please install Android target 18 (the Android 4.3 SDK). Make sure you have the latest Android tools installed as well. Run `android` from your command-line to install/update any missing SDKs or tools.', true);
-        Log('Output : ' + result.output);
+    else if(result.output.indexOf(target) == -1) {
+        Log(result.output.indexOf(target));
+        Log('Please install the latest Android target (' + target + '). Make sure you have the latest Android tools installed as well. Run `android` from your command-line to install/update any missing SDKs or tools.', true);
+        Log(result.output);
         WScript.Quit(2);
     }
     else {
-        var cmd = '%comspec% /c android update project -p ' + ROOT + '\\framework -t android-18';
+        var cmd = '%comspec% /c android update project -p ' + ROOT + '\\framework -t ' + target;
         result = exec_out(cmd);
         if(result.error) {
             Log('Error updating the Cordova library to work with your Android environment. Command run: "' + cmd + '", output: ' + result.output, true);
@@ -78,4 +84,19 @@ function check_requirements() {
     }
 }
 
+function get_target() {
+    var fso=WScript.CreateObject("Scripting.FileSystemObject");
+    var f=fso.OpenTextFile(ROOT + '\\framework\\project.properties', 1);
+    var s=f.ReadAll();
+    var lines = s.split('\n');
+    for (var line in lines) {
+        if(lines[line].match(/target=/))
+        {
+            return lines[line].split('=')[1].replace(' ', '').replace('\r', '');
+        }
+    }
+    return null;
+}
+
 check_requirements();
+
