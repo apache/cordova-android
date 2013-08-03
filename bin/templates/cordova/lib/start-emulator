@@ -24,7 +24,24 @@ function dot {
     echo -n "."
 }
 
-function wait_for_emulator {
+function wait_for_emulator() {
+    local emulator_log_path="$1"
+    local error_string
+    local status
+
+    # Try to detect fatal errors early
+    sleep 1.5
+    error_string=$(grep -F "ERROR: " ${emulator_log_path})
+    status=$?
+
+    if [ $status -eq 0 ]; then
+        echo "Emulator failed to start, fatal error detected"
+        echo "Error: ${error_string}"
+        echo "Full log available at: ${emulator_log_path}"
+        echo "Exiting..."
+        exit 1
+    fi
+
     local i="0"
     echo -n "Waiting for emulator"
     emulator_string=$($DIR/list-started-emulators)
@@ -70,22 +87,25 @@ if [ $? != 0 ]; then
     exit 2
 fi
 
+# start first emulator
+log_path=$(mktemp -t android_emulator)
+
 # if target emulator is provided
 if [[ "$#" -eq 1 ]] ; then
     # check that it exists
     if [[ $emulator_images =~ $1 ]] ; then
         #xterm -e emulator -avd $1 &
-        emulator -avd $1 1> /dev/null 2>&1 &
+        emulator -avd $1 1> "${log_path}" 2>&1 &
     else
         echo "Could not find the provided emulator '$1', make sure the emulator exists"
         echo " by checking 'cordova/lib/list-emulator-images'"
         exit 2
     fi
 else
-    # start first emulator
     read -ra emulator_list <<< "$emulator_images"
     #xterm -e emulator -avd ${emulator_list[0]} &
-    emulator -avd ${emulator_list[0]} 1> /dev/null 2>&1 &
+    emulator -avd ${emulator_list[0]} 1> "${log_path}" 2>&1 &
 fi
 
-wait_for_emulator
+echo "Saving emulator log to: ${log_path}"
+wait_for_emulator "$log_path"
