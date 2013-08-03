@@ -24,7 +24,24 @@ function dot {
     echo -n "."
 }
 
-function wait_for_emulator {
+function wait_for_emulator() {
+    local emulator_log_path=$1
+    local error_string
+    local status
+
+    # Try to detect fatal errors early
+    sleep 1.5
+    error_string=$(grep -F "ERROR: " ${emulator_log_path})
+    status=$?
+
+    if [ $status -eq 0 ]; then
+        echo "Emulator failed to start, fatal error detected"
+        echo "Error: ${error_string}"
+        echo "Full log available at: ${emulator_log_path}"
+        echo "Exiting..."
+        exit 1
+    fi
+
     local i="0"
     echo -n "Waiting for emulator"
     emulator_string=$($DIR/list-started-emulators)
@@ -83,9 +100,11 @@ if [[ "$#" -eq 1 ]] ; then
     fi
 else
     # start first emulator
+    log_path=$(mktemp)
+    echo "Saving emulator log to: ${log_path}"
     read -ra emulator_list <<< "$emulator_images"
     #xterm -e emulator -avd ${emulator_list[0]} &
-    emulator -avd ${emulator_list[0]} 1> /dev/null 2>&1 &
+    emulator -avd ${emulator_list[0]} 1> ${log_path} 2>&1 &
 fi
 
-wait_for_emulator
+wait_for_emulator $log_path
