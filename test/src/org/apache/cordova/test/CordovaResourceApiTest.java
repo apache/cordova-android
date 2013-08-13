@@ -223,11 +223,11 @@ public class CordovaResourceApiTest extends ActivityInstrumentationTestCase2<Cor
     
     public void testDataUriPlain() throws IOException
     {
-        Uri uri = Uri.parse("data:text/plain;charset=utf-8,pass");
+        Uri uri = Uri.parse("data:text/plain;charset=utf-8,pa%20ss");
         OpenForReadResult readResult = resourceApi.openForRead(uri);
         assertEquals("text/plain", readResult.mimeType);
         String data = new Scanner(readResult.inputStream, "UTF-8").useDelimiter("\\A").next();
-        assertEquals("pass", data);
+        assertEquals("pa ss", data);
     }
     
     public void testDataUriBase64() throws IOException
