@@ -315,7 +315,7 @@ public class CordovaResourceApi {
     }
     
     private OpenForReadResult readDataUri(Uri uri) {
-        String uriAsString = uri.toString().substring(5);
+        String uriAsString = uri.getSchemeSpecificPart();
         int commaPos = uriAsString.indexOf(',');
         if (commaPos == -1) {
             return null;
