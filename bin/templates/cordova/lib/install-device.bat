@@ -14,12 +14,13 @@
 :: KIND, either express or implied.  See the License for the
 :: specific language governing permissions and limitations
 :: under the License.
+
 @ECHO OFF
-SET full_path=%~dp0
-IF EXIST %full_path%cordova.js (
-    cscript "%full_path%cordova.js" install-device %* //nologo
+SET script_path="%~dp0install-device"
+IF EXIST %script_path% (
+        node "%script_path%" %*
 ) ELSE (
-    ECHO. 
-    ECHO ERROR: Could not find 'cordova.js' in cordova/lib, aborting...>&2
+    ECHO.
+    ECHO ERROR: Could not find 'install-device' script in 'cordova\lib' folder, aborting...>&2
     EXIT /B 1
 )

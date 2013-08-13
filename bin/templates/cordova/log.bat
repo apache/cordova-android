@@ -14,5 +14,13 @@
 :: KIND, either express or implied.  See the License for the
 :: specific language governing permissions and limitations
 :: under the License.
+
 @ECHO OFF
-%~dp0\cordova.bat log %*
+SET script_path="%~dp0log"
+IF EXIST %script_path% (
+        node "%script_path%" %*
+) ELSE (
+    ECHO.
+    ECHO ERROR: Could not find 'log' script in 'cordova' folder, aborting...>&2
+    EXIT /B 1
+)

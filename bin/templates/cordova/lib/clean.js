@@ -19,14 +19,25 @@
        under the License.
 */
 
-var create = require('./lib/create');
-var args  = process.argv;
+var shell = require('shelljs'),
+    path  = require('path'),
+    ROOT = path.join(__dirname, '..', '..');
 
-// Support basic help commands
-if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
-                    args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
-    create.help();
-} else {
-    create.run(args[2], args[3], args[4]);
+/*
+ * Cleans the project using ant
+ */
+module.exports.run = function() {
+    var cmd = 'ant clean -f ' + path.join(ROOT, 'build.xml');
+    var result = shell.exec(cmd, {silent:false, async:false});
+    if (result.code > 0) {
+        console.error('ERROR: Failed to clean android project.');
+        console.error(result.output);
+        process.exit(2);
+    }
+}
+
+module.exports.help = function() {
+    console.log('Usage: ' + path.relative(process.cwd(), process.argv[1]));
+    console.log('Cleans the project directory.');
     process.exit(0);
 }

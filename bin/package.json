@@ -1,0 +1,32 @@
+{
+    "name": "cordova-android",
+    "description": "Cordova tooling for the android platform.",
+    "version": "0.0.0",
+    "homepage": "http://github.com/apache/cordova-android",
+    "repository": {
+        "type": "git",
+        "url": "https://git-wip-us.apache.org/repos/asf/cordova-andorid.git"
+    },
+    "keywords": [
+        "cli",
+        "cordova",
+        "tooling"
+    ],
+    "engineStrict": "true",
+    "engines": {
+        "node": ">=0.10.0"
+    },
+    "dependencies": {
+        "shelljs" : "0.1.4"
+    },
+    "devDependencies": {
+    },
+    "optionalDependencies": {
+    },
+    "author": {
+        "name": "Benn Mapes",
+        "email": "bennmapes@gmail.com"
+    },
+    "contributors": [
+    ]
+}

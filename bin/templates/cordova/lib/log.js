@@ -19,14 +19,25 @@
        under the License.
 */
 
-var create = require('./lib/create');
-var args  = process.argv;
+var shell = require('shelljs'),
+    path  = require('path'),
+    ROOT = path.join(__dirname, '..', '..');
 
-// Support basic help commands
-if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
-                    args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
-    create.help();
-} else {
-    create.run(args[2], args[3], args[4]);
+/*
+ * Starts running logcat in the shell.
+ */
+module.exports.run = function() {
+    var cmd = 'adb logcat | grep -v nativeGetEnabledTags';
+    var result = shell.exec(cmd, {silent:false, async:false});
+    if (result.code > 0) {
+        console.error('ERROR: Failed to run logcat command.');
+        console.error(result.output);
+        process.exit(2);
+    }
+}
+
+module.exports.help = function() {
+    console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'corodva', 'log')));
+    console.log('Gives the logcat output on the command line.');
     process.exit(0);
 }

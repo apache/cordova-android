@@ -1,81 +1,35 @@
-#!/bin/bash
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-# 
-# http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
+#!/usr/bin/env node
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_PATH=$( cd "$DIR/.." && pwd )
+/*
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
 
-function run_on_device_or_emulator {
-    devices=`$DIR/lib/list-devices`
-    if [ $? = 0 ]; then
-        $DIR/lib/install-device
-    else
-        run_on_emulator
-    fi
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+*/
+
+var run  = require('./lib/run'),
+    reqs = require('./lib/check_reqs'),
+    args = process.argv;
+
+// Support basic help commands
+if (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
+                    args[2] == 'help' || args[2] == '-help' || args[2] == '/help') {
+    run.help();
+} else if(reqs.run()) {
+    run.run(args);
+    process.exit(0);
+} else {
+    process.exit(2);
 }
-
-function run_on_emulator {
-    emulators=`$DIR/lib/list-started-emulators`
-    if [ $? = 0 ] ; then
-        $DIR/lib/install-emulator
-    else
-        images=`$DIR/lib/list-emulator-images`
-        if [ $? = 0 ] ; then
-            $DIR/lib/start-emulator
-            $DIR/lib/install-emulator
-        else
-            echo "No devices/emulators started nor images available to start. How are we supposed to do this, then?"
-            exit 2
-        fi
-    fi
-}
-
-
-
-if [[ "$#" -eq 2 ]] ; then
-    # TODO: the order of arguments here may be reversed from the assumption below
-    $DIR/build $2
-    if [[ $1 == "--device" ]] ; then
-        $DIR/lib/install-device
-    elif [[ $1 == "--emulator" ]] ; then
-        run_on_emulator
-    elif [[ $1 =~ "--target=" ]]; then
-        $DIR/lib/install-device $1
-    else
-        echo "Error : '$1' is not recognized as an install option"
-    fi
-elif [[ "$#" -eq 1 ]] ; then
-    if [[ $1 == "--debug" || $1 == "--release" || $1 == "--nobuild" ]] ; then
-        $DIR/build $1
-        run_on_device_or_emulator
-    elif [[ $1 == "--device" ]] ; then
-        $DIR/build
-        $DIR/lib/install-device
-    elif [[ $1 == "--emulator" ]] ; then
-        $DIR/build
-        run_on_emulator
-    elif [[ $1 =~ "--target=" ]]; then
-        $DIR/build
-        $DIR/lib/install-device $1
-    else
-        echo "Error : '$1' is not recognized as an install option"
-    fi
-else
-    echo "Warning : [ --device | --emulate | --target=<targetID> ] not specified, using defaults."
-    $DIR/build
-    run_on_device_or_emulator
-fi
