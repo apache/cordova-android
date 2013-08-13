@@ -38,6 +38,7 @@ import android.content.Intent;
 import android.content.res.XmlResourceParser;
 
 import android.net.Uri;
+import android.os.Debug;
 import android.util.Log;
 
 /**
@@ -48,6 +49,7 @@ import android.util.Log;
  */
 public class PluginManager {
     private static String TAG = "PluginManager";
+    private static final int SLOW_EXEC_WARNING_THRESHOLD = Debug.isDebuggerConnected() ? 60 : 16;
 
     // List of service entries
     private final HashMap<String, PluginEntry> entries = new HashMap<String, PluginEntry>();
@@ -228,7 +230,8 @@ public class PluginManager {
             long pluginStartTime = System.currentTimeMillis();
             boolean wasValidAction = plugin.execute(action, rawArgs, callbackContext);
             long duration = System.currentTimeMillis() - pluginStartTime;
-            if (duration > 16) {
+            
+            if (duration > SLOW_EXEC_WARNING_THRESHOLD) {
                 Log.w(TAG, "THREAD WARNING: exec() call to " + service + "." + action + " blocked the main thread for " + duration + "ms. Plugin should use CordovaInterface.getThreadPool().");
             }
             if (!wasValidAction) {
