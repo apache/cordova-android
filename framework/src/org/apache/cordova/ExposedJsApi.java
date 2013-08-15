@@ -53,7 +53,7 @@ import org.json.JSONException;
             pluginManager.exec(service, action, callbackId, arguments);
             String ret = "";
             if (!NativeToJsMessageQueue.DISABLE_EXEC_CHAINING) {
-                ret = jsMessageQueue.popAndEncode();
+                ret = jsMessageQueue.popAndEncode(false);
             }
             return ret;
         } catch (Throwable e) {
@@ -70,7 +70,7 @@ import org.json.JSONException;
     }
     
     @JavascriptInterface
-    public String retrieveJsMessages() {
-        return jsMessageQueue.popAndEncode();
+    public String retrieveJsMessages(boolean fromOnlineEvent) {
+        return jsMessageQueue.popAndEncode(fromOnlineEvent);
     }
 }

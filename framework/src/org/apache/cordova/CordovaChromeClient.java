@@ -239,7 +239,7 @@ public class CordovaChromeClient extends WebChromeClient {
 
         // Polling for JavaScript messages 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-            String r = this.appView.exposedJsApi.retrieveJsMessages();
+            String r = this.appView.exposedJsApi.retrieveJsMessages("1".equals(message));
             result.confirm(r == null ? "" : r);
         }
 
