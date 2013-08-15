@@ -18,6 +18,7 @@
 */
 package org.apache.cordova;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.cordova.CordovaInterface;
@@ -65,7 +66,9 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
             // If we don't need to special-case the request, let the browser load it.
             return null;
         } catch (IOException e) {
-            LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file.", e);
+            if (!(e instanceof FileNotFoundException)) {
+                LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file (returning a 404).", e);
+            }
             // Results in a 404.
             return new WebResourceResponse("text/plain", "UTF-8", null);
         }
