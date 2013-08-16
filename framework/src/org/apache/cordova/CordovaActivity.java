@@ -312,20 +312,49 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     }
 
     /**
+     * Construct the default web view object.
+     *
+     * This is intended to be overridable by subclasses of CordovaIntent which
+     * require a more specialized web view.
+     */
+    protected CordovaWebView makeWebView() {
+        return new CordovaWebView(CordovaActivity.this);
+    }
+
+    /**
+     * Construct the client for the default web view object.
+     *
+     * This is intended to be overridable by subclasses of CordovaIntent which
+     * require a more specialized web view.
+     *
+     * @param webView the default constructed web view object
+     */
+    protected CordovaWebViewClient makeWebViewClient(CordovaWebView webView) {
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
+            return new CordovaWebViewClient(this, webView);
+        } else {
+            return new IceCreamCordovaWebViewClient(this, webView);
+        }
+    }
+
+    /**
+     * Construct the chrome client for the default web view object.
+     *
+     * This is intended to be overridable by subclasses of CordovaIntent which
+     * require a more specialized web view.
+     *
+     * @param webView the default constructed web view object
+     */
+    protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
+        return new CordovaChromeClient(this, webView);
+    }
+
+    /**
      * Create and initialize web container with default web view objects.
      */
     public void init() {
-        CordovaWebView webView = new CordovaWebView(CordovaActivity.this);
-        CordovaWebViewClient webViewClient;
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
-        {
-            webViewClient = new CordovaWebViewClient(this, webView);
-        }
-        else
-        {
-            webViewClient = new IceCreamCordovaWebViewClient(this, webView);
-        }
-        this.init(webView, webViewClient, new CordovaChromeClient(this, webView));
+        CordovaWebView webView = makeWebView();
+        this.init(webView, makeWebViewClient(webView), makeChromeClient(webView));
     }
 
     /**
