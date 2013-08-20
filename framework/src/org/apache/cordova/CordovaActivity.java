@@ -123,16 +123,6 @@ import android.widget.LinearLayout;
  *      Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
  *          <log level="DEBUG" />
  *
- * Cordova plugins:
- *      Cordova uses a file at res/xml/plugins.xml to list all plugins that are installed.
- *      Before using a new plugin, a new element must be added to the file.
- *          name attribute is the service name passed to Cordova.exec() in JavaScript
- *          value attribute is the Java class name to call.
- *
- *      <plugins>
- *          <plugin name="App" value="org.apache.cordova.App"/>
- *          ...
- *      </plugins>
  */
 public class CordovaActivity extends Activity implements CordovaInterface {
     public static String TAG = "CordovaActivity";
