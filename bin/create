@@ -40,6 +40,7 @@ PROJECT_PATH="${1:-'./example'}"
 PACKAGE=${2:-"org.apache.cordova.example"}
 ACTIVITY=$(echo ${3:-"cordovaExample"} | tr -d '[:blank:][:punct:]')
 APP_LABEL=${3:-"Cordova Example"};
+PROJECT_TEMPLATE_DIR=${4:-"$BUILD_PATH/bin/templates/project"};
 
 # clobber any existing example
 if [ -d "$PROJECT_PATH" ]
@@ -111,8 +112,8 @@ fi
 "$ANDROID_BIN" create project --target $TARGET --path "$PROJECT_PATH" --package $PACKAGE --activity $ACTIVITY &> /dev/null
 
 # copy project template
-cp -r "$BUILD_PATH"/bin/templates/project/assets "$PROJECT_PATH"
-cp -r "$BUILD_PATH"/bin/templates/project/res "$PROJECT_PATH"
+cp -r "$PROJECT_TEMPLATE_DIR"/assets "$PROJECT_PATH"
+cp -r "$PROJECT_TEMPLATE_DIR"/res "$PROJECT_PATH"
 
 # copy cordova.js, cordova.jar and res/xml
 if [ -d "$BUILD_PATH"/framework ]
@@ -127,14 +128,14 @@ else
 fi
 
 # interpolate the activity name and package
-cp "$BUILD_PATH"/bin/templates/project/Activity.java "$ACTIVITY_PATH"
+cp "$PROJECT_TEMPLATE_DIR"/Activity.java "$ACTIVITY_PATH"
 replace "s/__ACTIVITY__/${ACTIVITY}/g" "$ACTIVITY_PATH"
 replace "s/__ID__/${PACKAGE}/g" "$ACTIVITY_PATH"
 
 # interpolate the app name into strings.xml
 replace "s/>${ACTIVITY}</>${APP_LABEL}</g" "$STRINGS_PATH"
 
-cp "$BUILD_PATH"/bin/templates/project/AndroidManifest.xml "$MANIFEST_PATH"
+cp "$PROJECT_TEMPLATE_DIR"/AndroidManifest.xml "$MANIFEST_PATH"
 replace "s/__ACTIVITY__/${ACTIVITY}/g" "$MANIFEST_PATH"
 replace "s/__PACKAGE__/${PACKAGE}/g" "$MANIFEST_PATH"
 replace "s/__APILEVEL__/${API_LEVEL}/g" "$MANIFEST_PATH"
