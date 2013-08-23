@@ -54,8 +54,8 @@ public class CordovaChromeClient extends WebChromeClient {
     private static final String LOG_TAG = "CordovaChromeClient";
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    private CordovaInterface cordova;
-    private CordovaWebView appView;
+    protected CordovaInterface cordova;
+    protected CordovaWebView appView;
 
     // the video progress view
     private View mVideoProgressView;
