@@ -15,4 +15,4 @@
 :: specific language governing permissions and limitations
 :: under the License.
 @ECHO OFF
-%~dp0\cordova.bat version %*
+echo 3.1.0-dev

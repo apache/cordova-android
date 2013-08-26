@@ -101,25 +101,6 @@ function exec_verbose(command) {
     }
 }
 
-function version(path) {
-    var cordovajs_path = path + "\\assets\\www\\cordova.js";
-    if(fso.FileExists(cordovajs_path)) {
-        var f = fso.OpenTextFile(cordovajs_path, 1,2);
-        var cordovajs = f.ReadAll();
-        f.Close();
-        var version_regex = /^.*CORDOVA_JS_BUILD_LABEL.*$/m;
-        var version_line = cordovajs.match(version_regex) + "";
-        var version = version_line.match(/(\d+)\.(\d+)\.(\d+)(rc\d)?/) + "";
-        // TODO : figure out why this isn't matching properly so we can remove this substring workaround.
-        Log(version.substr(0, ((version.length/2) -1)));
-    } else {
-        Log("Error : Could not find cordova js.", true);
-        Log("Expected Location : " + cordovajs_path, true);
-        WScript.Quit(2);
-    }
-
-}
-
 function get_devices() {
     var device_list = []
     var local_devices = shell.Exec("%comspec% /c adb devices").StdOut.ReadAll();
