@@ -26,6 +26,8 @@ var args  = process.argv;
 if(args.length > 2) {
     version.help();
 } else {
-    console.log(version.run());
+    // TODO : Don't have this hardcoded into the scripts
+    console.log('3.1.0-dev');
+    //console.log(version.run());
     process.exit(0);
 }

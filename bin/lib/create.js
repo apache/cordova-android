@@ -18,13 +18,6 @@
        specific language governing permissions and limitations
        under the License.
 */
-try {
-    require.resolve("shelljs");
-} catch(e) {
-    console.error('Shelljs module was not found, please run \'npm install\' from the bin folder.');
-    process.exit(e.code);
-}
-
 var shell = require('shelljs'),
     path  = require('path'),
     fs    = require('fs'),
