@@ -47,7 +47,7 @@ function create() {
                       args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
       create.help();
   } else {
-      create.run(args[2], args[3], args[4]);
+      create.run(args[2], args[3], args[4], args[5]);
       process.exit(0);
   }
 }

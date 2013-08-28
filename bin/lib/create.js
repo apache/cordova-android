@@ -35,17 +35,20 @@ var shell = require('shelljs'),
  *   - `project_path` 	{String} Path to the new Cordova android project.
  *   - `package_name`{String} Package name, following reverse-domain style convention.
  *   - `project_name` 	{String} Project name.
+ *   - 'project_template_dir' {String} Path to project template (override).
  */
 
-module.exports.run = function(project_path, package_name, project_name) {
+module.exports.run = function(project_path, package_name, project_name, project_template_dir) {
 
     var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8');
-    var project_template_dir = path.join(ROOT, 'bin', 'templates', 'project');
 
     // Set default values for path, package and name
     project_path = typeof project_path !== 'undefined' ? project_path : "CordovaExample";
     package_name = typeof package_name !== 'undefined' ? package_name : 'my.cordova.project';
     project_name = typeof project_name !== 'undefined' ? project_name : 'CordovaExample';
+    project_template_dir = typeof project_template_dir !== 'undefined' ? 
+                           project_template_dir : 
+                           path.join(ROOT, 'bin', 'templates', 'project');
 
     var safe_activity_name = project_name.replace(/\W/, '');
     var package_as_path = package_name.replace(/\./g, path.sep);
