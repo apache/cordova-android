@@ -241,19 +241,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
     }
 
-    //CB-3949: Workaround for weird Android Launcher Bug!
-    private void checkIntents()
-    {
-        Intent intent = getIntent();
-        String intentAction = intent.getAction();
-        if (!isTaskRoot() && intent.hasCategory(Intent.CATEGORY_LAUNCHER) && intentAction != null) {
-            if(intentAction.equals(Intent.ACTION_MAIN)) {
-                Log.d("Cordova", "This isn't the root activity. Clearing it and returning to the root activity.");
-                finish();
-                return;
-            }
-        }
-    }
     /**
      * Called when the activity is first created.
      *
@@ -262,7 +249,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        checkIntents();
         Config.init(this);
         LOG.d(TAG, "CordovaActivity.onCreate()");
         super.onCreate(savedInstanceState);
@@ -1092,8 +1078,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                 root.setMinimumWidth(display.getWidth());
                 root.setOrientation(LinearLayout.VERTICAL);
                 root.setBackgroundColor(that.getIntegerProperty("backgroundColor", Color.BLACK));
-                root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
-                        ViewGroup.LayoutParams.FILL_PARENT, 0.0F));
+                root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
                 root.setBackgroundResource(that.splashscreen);
                 
                 // Create and show the dialog
