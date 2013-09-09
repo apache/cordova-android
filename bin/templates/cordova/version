@@ -19,15 +19,7 @@
        under the License.
 */
 
-var version = require('./lib/version');
-var args  = process.argv;
+// Coho updates this line:
+var VERSION = '3.1.0-dev';
 
-// Usage support for when args are given
-if(args.length > 2) {
-    version.help();
-} else {
-    // TODO : Don't have this hardcoded into the scripts
-    console.log('3.1.0-dev');
-    //console.log(version.run());
-    process.exit(0);
-}
+console.log(VERSION);
