@@ -22,11 +22,18 @@ package org.apache.cordova.test;
  *
  */
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.test.ActivityInstrumentationTestCase2;
+
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaResourceApi;
 import org.apache.cordova.CordovaResourceApi.OpenForReadResult;
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginEntry;
 import org.apache.cordova.test.actions.CordovaWebViewTestActivity;
 import org.json.JSONArray;
@@ -34,16 +41,8 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Scanner;
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.test.ActivityInstrumentationTestCase2;
 
 public class CordovaResourceApiTest extends ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
 
@@ -99,7 +98,9 @@ public class CordovaResourceApiTest extends ActivityInstrumentationTestCase2<Cor
         
         try {
             OpenForReadResult readResult = resourceApi.openForRead(uri);
-            assertEquals(expectedMimeType, readResult.mimeType);
+            String mimeType2 = resourceApi.getMimeType(uri);
+            assertEquals("openForRead mime-type", expectedMimeType, readResult.mimeType);
+            assertEquals("getMimeType mime-type", expectedMimeType, mimeType2);
             readResult.inputStream.read();
             if (!expectRead) {
                 fail("Expected getInputStream to throw.");

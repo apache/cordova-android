@@ -26,6 +26,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Looper;
 import android.util.Base64;
+import android.webkit.MimeTypeMap;
 
 import com.squareup.okhttp.OkHttpClient;
 
@@ -42,6 +43,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.util.Locale;
 
 public class CordovaResourceApi {
     @SuppressWarnings("unused")
@@ -150,6 +152,46 @@ public class CordovaResourceApi {
         return null;
     }
     
+    public String getMimeType(Uri uri) {
+        switch (getUriType(uri)) {
+            case URI_TYPE_FILE:
+            case URI_TYPE_ASSET:
+                return getMimeTypeFromPath(uri.getPath());
+            case URI_TYPE_CONTENT:
+            case URI_TYPE_RESOURCE:
+                return contentResolver.getType(uri);
+            case URI_TYPE_DATA: {
+                return getDataUriMimeType(uri);
+            }
+            case URI_TYPE_HTTP:
+            case URI_TYPE_HTTPS: {
+                try {
+                    HttpURLConnection conn = httpClient.open(new URL(uri.toString()));
+                    conn.setDoInput(false);
+                    conn.setRequestMethod("HEAD");
+                    return conn.getHeaderField("Content-Type");
+                } catch (IOException e) {
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    private String getMimeTypeFromPath(String path) {
+        String extension = path;
+        int lastDot = extension.lastIndexOf('.');
+        if (lastDot != -1) {
+            extension = extension.substring(lastDot + 1);
+        }
+        // Convert the URI string to lower case to ensure compatibility with MimeTypeMap (see CB-2185).
+        extension = extension.toLowerCase(Locale.getDefault());
+        if (extension.equals("3ga")) {
+            return "audio/3gpp";
+        }
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+    }
+    
     /**
      * Opens a stream to the givne URI, also providing the MIME type & length.
      * @return Never returns null.
@@ -177,7 +219,7 @@ public class CordovaResourceApi {
         switch (getUriType(uri)) {
             case URI_TYPE_FILE: {
                 FileInputStream inputStream = new FileInputStream(uri.getPath());
-                String mimeType = FileHelper.getMimeTypeForExtension(uri.getPath());
+                String mimeType = getMimeTypeFromPath(uri.getPath());
                 long length = inputStream.getChannel().size();
                 return new OpenForReadResult(uri, inputStream, mimeType, length, null);
             }
@@ -194,7 +236,7 @@ public class CordovaResourceApi {
                     // Will occur if the file is compressed.
                     inputStream = assetManager.open(assetPath);
                 }
-                String mimeType = FileHelper.getMimeTypeForExtension(assetPath);
+                String mimeType = getMimeTypeFromPath(assetPath);
                 return new OpenForReadResult(uri, inputStream, mimeType, length, assetFd);
             }
             case URI_TYPE_CONTENT:
@@ -314,6 +356,19 @@ public class CordovaResourceApi {
         }
     }
     
+    private String getDataUriMimeType(Uri uri) {
+        String uriAsString = uri.getSchemeSpecificPart();
+        int commaPos = uriAsString.indexOf(',');
+        if (commaPos == -1) {
+            return null;
+        }
+        String[] mimeParts = uriAsString.substring(0, commaPos).split(";");
+        if (mimeParts.length > 0) {
+            return mimeParts[0];
+        }
+        return null;
+    }
+
     private OpenForReadResult readDataUri(Uri uri) {
         String uriAsString = uri.getSchemeSpecificPart();
         int commaPos = uriAsString.indexOf(',');
