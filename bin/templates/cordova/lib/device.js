@@ -22,6 +22,7 @@
 var shell = require('shelljs'),
     path  = require('path'),
     build = require('./build'),
+    appinfo = require('./appinfo'),
     exec  = require('child_process').exec,
     ROOT = path.join(__dirname, '..', '..');
 
@@ -57,14 +58,7 @@ module.exports.install = function(target) {
         target = typeof target !== 'undefined' ? target : device_list[0];
         if (device_list.indexOf(target) > -1) {
             var apk_path = build.get_apk();
-            var cmd = 'java -jar ' + path.join(ROOT, 'cordova', 'appinfo.jar') + '  ' + path.join(ROOT, 'AndroidManifest.xml');
-            var launch_name = shell.exec(cmd, {silent:true, async:false});
-            if (launch_name.error) {
-                console.log('ERROR : Failed to get application name from appinfo.jar + AndroidManifest : ');
-                console.log("Output : " + launch_name.output);
-                process.exit(2);
-            }
-
+            var launchName = appinfo.getActivityName();
             console.log('Installing app on device...');
             cmd = 'adb -s ' + target + ' install -r ' + apk_path;
             var install = shell.exec(cmd, {silent:false, async:false});
@@ -80,7 +74,7 @@ module.exports.install = function(target) {
 
             // launch the application
             console.log('Launching application...');
-            cmd = 'adb -s ' + target + ' shell am start -W -a android.intent.action.MAIN -n ' + launch_name.output.replace('\r', '').replace('\n', '');
+            cmd = 'adb -s ' + target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
             var launch = shell.exec(cmd, {silent:true, async:false});
             if(launch.code > 0) {
                 console.error('ERROR : Failed to launch application on emulator : ' + launch.error);

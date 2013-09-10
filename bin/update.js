@@ -76,17 +76,6 @@ function exec(command) {
     }
 }
 
-function createAppInfoJar() {
-    if(!fso.FileExists(ROOT+"\\bin\\templates\\cordova\\appinfo.jar")) {
-        WScript.Echo("Creating appinfo.jar...");
-        var cur = shell.CurrentDirectory;
-        shell.CurrentDirectory = ROOT+"\\bin\\templates\\cordova\\ApplicationInfo";
-        exec("javac ApplicationInfo.java");
-        exec("jar -cfe ..\\appinfo.jar ApplicationInfo ApplicationInfo.class");
-        shell.CurrentDirectory = cur;
-    }
-}
-
 function cleanup() {
     if(fso.FileExists(ROOT + '\\framework\\cordova-'+VERSION+'.jar')) {
         fso.DeleteFile(ROOT + '\\framework\\cordova-'+VERSION+'.jar');
@@ -138,9 +127,7 @@ if(fso.FolderExists(ROOT + '\\framework')) {
 }
 
 // update cordova scripts
-createAppInfoJar();
 WScript.Echo("Copying cordova command tools...");
-exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\appinfo.jar ' + PROJECT_PATH + '\\cordova\\appinfo.jar /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\cordova.bat ' + PROJECT_PATH + '\\cordova\\cordova.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\clean.bat ' + PROJECT_PATH + '\\cordova\\clean.bat /Y');
 exec('%comspec% /c copy "'+ROOT+'"\\bin\\templates\\cordova\\build.bat ' + PROJECT_PATH + '\\cordova\\build.bat /Y');

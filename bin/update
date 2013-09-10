@@ -51,13 +51,6 @@ function on_exit {
     fi
 }
 
-function createAppInfoJar {
-    (cd "$BUILD_PATH"/bin/templates/cordova/ApplicationInfo &&
-     javac ApplicationInfo.java &&
-     jar -cfe ../appinfo.jar ApplicationInfo ApplicationInfo.class
-    )
-}
-
 function on_error {
     echo "An unexpected error occurred: $previous_command exited with $?"
     exit 1
@@ -119,7 +112,6 @@ then
     mkdir "$PROJECT_PATH"/cordova
     mkdir "$PROJECT_PATH"/cordova/lib
 fi
-cp "$BUILD_PATH"/bin/templates/cordova/appinfo.jar "$PROJECT_PATH"/cordova/appinfo.jar
 cp "$BUILD_PATH"/bin/templates/cordova/build "$PROJECT_PATH"/cordova/build
 cp "$BUILD_PATH"/bin/templates/cordova/clean "$PROJECT_PATH"/cordova/clean
 cp "$BUILD_PATH"/bin/templates/cordova/log "$PROJECT_PATH"/cordova/log

@@ -126,22 +126,11 @@ module.exports.run = function(project_path, package_name, project_name, project_
     replaceInFile(manifest_path, /__APILEVEL__/, target_api.split('-')[1]);
 
     var cordova_path = path.join(ROOT, 'bin', 'templates', 'cordova');
-    // create app info jar
-    if(!fs.existsSync(path.join(cordova_path, 'appinfo.jar'))) {
-        console.log('Creating appinfo.jar...');
-        var cwd = process.cwd();
-        process.chdir(path.join(cordova_path, 'ApplicationInfo'));
-        exec('javac ApplicationInfo.java');
-        exec('jar -cfe ' + path.join(cordova_path, 'appinfo.jar') + ' ApplicationInfo ApplicationInfo.class');
-        process.chdir(cwd);
-    }
-
     // creating cordova folder and copying run/build/log/launch/check_reqs scripts
     var lib_path = path.join(cordova_path, 'lib');
     shell.mkdir(path.join(project_path, 'cordova'));
     shell.mkdir(path.join(project_path, 'cordova', 'lib'));
 
-    shell.cp(path.join(cordova_path, 'appinfo.jar'), path.join(project_path, 'cordova', 'appinfo.jar'));
     shell.cp(path.join(cordova_path, 'build'), path.join(project_path, 'cordova', 'build'));
     shell.chmod(755, path.join(project_path, 'cordova', 'build'));
     shell.cp(path.join(cordova_path, 'clean'), path.join(project_path, 'cordova', 'clean'));
@@ -155,6 +144,7 @@ module.exports.run = function(project_path, package_name, project_name, project_
     shell.cp(path.join(ROOT, 'bin', 'check_reqs'), path.join(project_path, 'cordova', 'check_reqs'));
     shell.chmod(755, path.join(project_path, 'cordova', 'check_reqs'));
 
+    shell.cp(path.join(lib_path, 'appinfo.js'), path.join(project_path, 'cordova', 'lib', 'appinfo.js'));
     shell.cp(path.join(lib_path, 'build.js'), path.join(project_path, 'cordova', 'lib', 'build.js'));
     shell.cp(path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), path.join(project_path, 'cordova', 'lib', 'check_reqs.js'));
     shell.cp(path.join(lib_path, 'clean.js'), path.join(project_path, 'cordova', 'lib', 'clean.js'));
