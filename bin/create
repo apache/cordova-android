@@ -20,34 +20,13 @@
 */
 var path   = require('path');
 var args  = process.argv;
+var create = require('./lib/create');
 
-try {
-    require.resolve("shelljs");
-    create();
-} catch(e) {
-    console.log('Shelljs module was not found, running \'npm install\'.....');
-    var exec = require('child_process').exec;
-    var cwd = process.cwd();
-    process.chdir(__dirname);
-    exec('npm install',  function (error, stdout, stderr) {
-        if (error !== null) {
-          console.error('ERROR : running \'npm install\' is npm installed? ' + error);
-          console.error(stderr);
-          process.exit(error.code);
-        }
-        process.chdir(cwd);
-        create();
-    });
+// Support basic help commands
+if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
+                    args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
+    create.help();
+} else {
+    create.run(args[2], args[3], args[4], args[5]);
 }
 
-function create() {
-  var create = require('./lib/create');
-  // Support basic help commands
-  if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
-                      args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
-      create.help();
-  } else {
-      create.run(args[2], args[3], args[4], args[5]);
-      process.exit(0);
-  }
-}

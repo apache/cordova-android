@@ -20,7 +20,6 @@ example
 test/bin
 test/assets/www/.tmp*
 tmp/**
-bin/node_modules
 .metadata
 tmp/**/*
 Thumbs.db
