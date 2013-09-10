@@ -162,7 +162,6 @@ module.exports.run = function(project_path, package_name, project_name, project_
     shell.cp(path.join(lib_path, 'emulator.js'), path.join(project_path, 'cordova', 'lib', 'emulator.js'));
     shell.cp(path.join(lib_path, 'log.js'), path.join(project_path, 'cordova', 'lib', 'log.js'));
     shell.cp(path.join(lib_path, 'run.js'), path.join(project_path, 'cordova', 'lib', 'run.js'));
-    shell.cp(path.join(lib_path, 'version.js'), path.join(project_path, 'cordova', 'lib', 'version.js'));
     shell.cp(path.join(lib_path, 'install-device'), path.join(project_path, 'cordova', 'lib', 'install-device'));
     shell.chmod(755, path.join(project_path, 'cordova', 'lib', 'install-device'));
     shell.cp(path.join(lib_path, 'install-emulator'), path.join(project_path, 'cordova', 'lib', 'install-emulator'));
