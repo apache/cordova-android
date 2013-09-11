@@ -413,9 +413,12 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         // If keepRunning
         this.keepRunning = this.getBooleanProperty("KeepRunning", true);
 
-        // Then load the spinner
-        this.loadSpinner();
-
+        //Check if the view is attached to anything
+        if(appView.getParent() != null)
+        {
+            // Then load the spinner
+            this.loadSpinner();
+        }
         //Load the correct splashscreen
         
         if(this.splashscreen != 0)
