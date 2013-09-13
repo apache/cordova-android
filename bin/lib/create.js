@@ -25,6 +25,28 @@ var shell = require('shelljs'),
     ROOT    = path.join(__dirname, '..', '..');
 
 
+/*
+ * HELPER FUNCTIONS
+ */
+
+function exec(command) {
+    var result;
+    try {
+        result = shell.exec(command, {silent:false, async:false});
+    } catch(e) {
+        console.error('Command error on execuation : ' + command);
+        console.error(e);
+        process.exit(2);
+    }
+    if(result && result.code > 0) {
+        console.error('Command failed to execute : ' + command);
+        console.error(result.output);
+        process.exit(2);
+    } else {
+        return result;
+    }
+}
+
 /**
  * $ create [options]
  *
@@ -120,16 +142,16 @@ module.exports.run = function(project_path, package_name, project_name, project_
     // interpolate the activity name and package
     shell.mkdir('-p', activity_dir);
     shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
-    replaceInFile(activity_path, /__ACTIVITY__/, safe_activity_name);
-    replaceInFile(activity_path, /__ID__/, package_name);
+    shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
+    shell.sed('-i', /__ID__/, package_name, activity_path);
 
     // interpolate the app name into strings.xml
-    replaceInFile(strings_path, />Cordova</, '>' + project_name + '<');
+    shell.sed('-i', />Cordova</, '>' + project_name + '<', strings_path);
 
     shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
-    replaceInFile(manifest_path, /__ACTIVITY__/, safe_activity_name);
-    replaceInFile(manifest_path, /__PACKAGE__/, package_name);
-    replaceInFile(manifest_path, /__APILEVEL__/, target_api.split('-')[1]);
+    shell.sed('-i', /__ACTIVITY__/, safe_activity_name, manifest_path);
+    shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
+    shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
 
     var cordova_path = path.join(ROOT, 'bin', 'templates', 'cordova');
     // creating cordova folder and copying run/build/log/launch/check_reqs scripts
@@ -193,50 +215,6 @@ module.exports.run = function(project_path, package_name, project_name, project_
     // copy node related files
     shell.cp(path.join(ROOT, 'bin', 'package.json'), path.join(project_path, 'cordova', 'package.json'));
     shell.cp('-r', path.join(ROOT, 'bin', 'node_modules'), path.join(project_path, 'cordova'));
-
-    /*
-     * HELPER FUNCTIONS
-     */
-
-    function exec(command) {
-        var result;
-        try {
-            result = shell.exec(command, {silent:false, async:false});
-        } catch(e) {
-            console.error('Command error on execuation : ' + command);
-            console.error(e);
-            process.exit(2);
-        }
-        if(result && result.code > 0) {
-            console.error('Command failed to execute : ' + command);
-            console.error(result.output);
-            process.exit(2);
-        } else {
-            return result;
-        }
-    }
-
-    function replaceInFile(filename, regex, replacement) {
-        write(filename, read(filename).replace(regex, replacement));
-    }
-
-    function read(filename) {
-        if(fs.existsSync(filename)) {
-            if(fs.lstatSync(filename).isFile()) {
-                return fs.readFileSync(filename, 'utf-8');
-            } else {
-                console.error('Uanble to read directory : ' + filename);
-                process.exit(1);
-            }
-        } else {
-            console.error('Uanble to read file, not found : ' + filename);
-            process.exit(1);
-        }
-    }
-
-    function write(filename, content) {
-        fs.writeFileSync(filename, content, 'utf-8');
-    }
 }
 
 /**
