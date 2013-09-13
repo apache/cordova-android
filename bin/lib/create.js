@@ -99,6 +99,8 @@ module.exports.run = function(project_path, package_name, project_name, project_
     exec(create_cmd);
 
     console.log('Copying template files...');
+    // Automatically fail if any commands fail.
+    shell.config.fatal = true;
 
     // copy project template
     shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
