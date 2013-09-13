@@ -83,7 +83,7 @@ module.exports.run = function(project_path, package_name, project_name, project_
     console.log('\tAndroid target : ' + target_api);
 
     // build from source. distro should have these files
-    if(!fs.existsSync(path.join(ROOT, 'cordova-' + VERSION + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
+    if(!fs.existsSync(path.join(ROOT, 'framework', 'cordova-' + VERSION + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
         console.log('Building jar and js files...');
         // update the cordova-android framework for the desired target
         exec('android update project --target ' + target_api + ' --path ' + path.join(ROOT, 'framework'));
