@@ -71,7 +71,6 @@ module.exports.run = function(project_path, package_name, project_name, project_
 
     // Check that requirements are met and proper targets are installed
     if(!check_reqs.run()) {
-        console.error('Please make sure you meeet the software requirements in order to build an android cordova project');
         process.exit(2);
     }
 
