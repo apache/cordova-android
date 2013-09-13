@@ -64,6 +64,11 @@ module.exports.run = function(project_path, package_name, project_name, project_
         process.exit(2);
     }
 
+    if (!/[a-zA-Z0-9_]+\.[a-zA-Z0-9_](.[a-zA-Z0-9_])*/.test(package_name)) {
+        console.error('Package name must look like: com.company.Name');
+        process.exit(2);
+    }
+
     // Check that requirements are met and proper targets are installed
     if(!check_reqs.run()) {
         console.error('Please make sure you meeet the software requirements in order to build an android cordova project');
