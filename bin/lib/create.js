@@ -127,7 +127,6 @@ exports.createProject = function(project_path, package_name, project_name, proje
     var activity_dir    = path.join(project_path, 'src', package_as_path);
     var activity_path   = path.join(activity_dir, safe_activity_name + '.java');
     var target_api      = check_reqs.get_target();
-    var strings_path    = path.join(project_path, 'res', 'values', 'strings.xml');
     var manifest_path   = path.join(project_path, 'AndroidManifest.xml');
 
     // Check if project already exists
@@ -147,18 +146,14 @@ exports.createProject = function(project_path, package_name, project_name, proje
     }
 
     // Log the given values for the project
-    console.log('Creating Cordova project for the Android platform :');
-    console.log('\tPath : ' + project_path);
-    console.log('\tPackage : ' + package_name);
-    console.log('\tName : ' + project_name);
-    console.log('\tAndroid target : ' + target_api);
+    console.log('Creating Cordova project for the Android platform:');
+    console.log('\tPath: ' + project_path);
+    console.log('\tPackage: ' + package_name);
+    console.log('\tName: ' + project_name);
+    console.log('\tAndroid target: ' + target_api);
 
     // build from source. distro should have these files
     ensureJarIsBuilt(VERSION, target_api);
-
-    // create new android project
-    var create_cmd = 'android create project --target "'+target_api+'" --path "'+ project_path+'" --package "'+package_name+'" --activity "'+safe_activity_name+'"';
-    exec(create_cmd);
 
     console.log('Copying template files...');
 
@@ -166,6 +161,8 @@ exports.createProject = function(project_path, package_name, project_name, proje
         // copy project template
         shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
         shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
+        // Manually create directories that would be empty within the template (since git doesn't track directories).
+        shell.mkdir(path.join(project_path, 'libs'));
 
         // copy cordova.js, cordova.jar and res/xml
         shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
@@ -175,10 +172,8 @@ exports.createProject = function(project_path, package_name, project_name, proje
         shell.mkdir('-p', activity_dir);
         shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
         shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
+        shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
         shell.sed('-i', /__ID__/, package_name, activity_path);
-
-        // interpolate the app name into strings.xml
-        shell.sed('-i', />Cordova</, '>' + project_name + '<', strings_path);
 
         shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
         shell.sed('-i', /__ACTIVITY__/, safe_activity_name, manifest_path);
@@ -186,6 +181,10 @@ exports.createProject = function(project_path, package_name, project_name, proje
         shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
         copyScripts(project_path);
     });
+    // Link it to local android install.
+    console.log('Running "android update project"');
+    exec('android --silent update project --target "'+target_api+'" --path "'+ project_path+'"');
+    console.log('Project successfully created.');
 }
 
 exports.updateProject = function(projectPath) {
