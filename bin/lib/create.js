@@ -47,6 +47,20 @@ function exec(command) {
     }
 }
 
+function ensureJarIsBuilt(version, target_api) {
+    if (!fs.existsSync(path.join(ROOT, 'framework', 'cordova-' + version + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
+        var valid_target = check_reqs.get_target();
+        console.log('Building jar');
+        // update the cordova-android framework for the desired target
+        exec('android --silent update lib-project --target "' + target_api + '" --path "' + path.join(ROOT, 'framework') + '"');
+        // compile cordova.js and cordova.jar
+        var cwd = process.cwd();
+        process.chdir(path.join(ROOT, 'framework'));
+        exec('ant jar');
+        process.chdir(cwd);
+    }
+};
+
 /**
  * $ create [options]
  *
@@ -104,17 +118,7 @@ module.exports.run = function(project_path, package_name, project_name, project_
     console.log('\tAndroid target : ' + target_api);
 
     // build from source. distro should have these files
-    if(!fs.existsSync(path.join(ROOT, 'framework', 'cordova-' + VERSION + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
-        console.log('Building jar and js files...');
-        // update the cordova-android framework for the desired target
-        exec('android update project --target ' + target_api + ' --path ' + path.join(ROOT, 'framework'));
-
-        // compile cordova.js and cordova.jar
-        var cwd = process.cwd();
-        process.chdir(path.join(ROOT, 'framework'));
-        exec('ant jar');
-        process.chdir(cwd);
-    }
+    ensureJarIsBuilt(VERSION, target_api);
 
     // create new android project
     var create_cmd = 'android create project --target "'+target_api+'" --path "'+path.relative(process.cwd(), project_path)+'" --package "'+package_name+'" --activity "'+safe_activity_name+'"';

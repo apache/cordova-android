@@ -69,13 +69,6 @@ module.exports.check_android = function() {
     } else if(!targets.output.match(valid_target)) {
         console.error('Please install Android target ' + valid_target.split('-')[1] + ' (the Android newest SDK). Make sure you have the latest Android tools installed as well. Run \"android\" from your command-line to install/update any missing SDKs or tools.');
         return false;
-    } else {
-        var cmd = 'android update project -p ' + ROOT + ' -t ' + valid_target + ' 1> /dev/null 2>&1';
-        var result = shell.exec(cmd, {silent:false, async:true});
-        if(result.code > 0) {
-          console.error('Error updating the Cordova library to work with your Android environment.');
-          return false;
-        }
     }
     return true;
 }
