@@ -18,15 +18,19 @@
        specific language governing permissions and limitations
        under the License.
 */
-var path   = require('path');
-var args  = process.argv;
+var path = require('path');
 var create = require('./lib/create');
+var args = process.argv;
 
 // Support basic help commands
 if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
                     args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
-    create.help();
+    console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'create')) + ' <path_to_new_project> <package_name> <project_name>');
+    console.log('    <path_to_new_project>: Path to your new Cordova Android project');
+    console.log('    <package_name>: Package name, following reverse-domain style convention');
+    console.log('    <project_name>: Project name');
+    process.exit(1);
 } else {
-    create.run(args[2], args[3], args[4], args[5]);
+    create.createProject(args[2], args[3], args[4], args[5]);
 }
 

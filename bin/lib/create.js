@@ -24,11 +24,6 @@ var shell = require('shelljs'),
     check_reqs = require('./check_reqs'),
     ROOT    = path.join(__dirname, '..', '..');
 
-
-/*
- * HELPER FUNCTIONS
- */
-
 function exec(command) {
     var result;
     try {
@@ -47,6 +42,13 @@ function exec(command) {
     }
 }
 
+function setShellFatal(value, func) {
+    var oldVal = shell.config.fatal;
+    shell.config.fatal = value;
+    func();
+    shell.config.fatal = oldVal;
+}
+
 function ensureJarIsBuilt(version, target_api) {
     if (!fs.existsSync(path.join(ROOT, 'framework', 'cordova-' + version + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
         var valid_target = check_reqs.get_target();
@@ -59,7 +61,41 @@ function ensureJarIsBuilt(version, target_api) {
         exec('ant jar');
         process.chdir(cwd);
     }
-};
+}
+
+function copyJsAndJar(projectPath, version) {
+    shell.cp(path.join(ROOT, 'framework', 'assets', 'www', 'cordova.js'), path.join(projectPath, 'assets', 'www', 'cordova.js'));
+    // Don't fail if there are no old jars.
+    setShellFatal(false, function() {
+        shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function(oldJar) {
+            shell.rm('-f', path.join(projectPath, 'libs', oldJar));
+        });
+    });
+    shell.cp(path.join(ROOT, 'framework', 'cordova-' + version + '.jar'), path.join(projectPath, 'libs', 'cordova-' + version + '.jar'));
+}
+
+function copyScripts(projectPath) {
+    var srcScriptsDir = path.join(ROOT, 'bin', 'templates', 'cordova');
+    var destScriptsDir = path.join(projectPath, 'cordova');
+    // Delete old scripts directory if this is an update.
+    shell.rm('-rf', destScriptsDir);
+    // Copy in the new ones.
+    shell.cp('-r', srcScriptsDir, projectPath);
+    shell.cp('-r', path.join(ROOT, 'bin', 'node_modules'), destScriptsDir);
+    shell.cp(path.join(ROOT, 'bin', 'check_reqs'), path.join(destScriptsDir, 'check_reqs'));
+    shell.cp(path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), path.join(projectPath, 'cordova', 'lib', 'check_reqs.js'));
+
+    if (!/^win/.test(process.platform)) {
+        // Ensure they are all executable and delete .bat files.
+        shell.find(destScriptsDir).forEach(function(p) {
+            if (/\.bat$/.test(p)) {
+                shell.rm(p);
+            } else {
+                shell.chmod(755, p);
+            }
+        });
+    }
+}
 
 /**
  * $ create [options]
@@ -74,12 +110,12 @@ function ensureJarIsBuilt(version, target_api) {
  *   - 'project_template_dir' {String} Path to project template (override).
  */
 
-module.exports.run = function(project_path, package_name, project_name, project_template_dir) {
-
-    var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8');
+exports.createProject = function(project_path, package_name, project_name, project_template_dir) {
+    var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
 
     // Set default values for path, package and name
     project_path = typeof project_path !== 'undefined' ? project_path : "CordovaExample";
+    project_path = path.relative(process.cwd(), project_path);
     package_name = typeof package_name !== 'undefined' ? package_name : 'my.cordova.project';
     project_name = typeof project_name !== 'undefined' ? project_name : 'CordovaExample';
     project_template_dir = typeof project_template_dir !== 'undefined' ? 
@@ -112,7 +148,7 @@ module.exports.run = function(project_path, package_name, project_name, project_
 
     // Log the given values for the project
     console.log('Creating Cordova project for the Android platform :');
-    console.log('\tPath : ' + path.relative(process.cwd(), project_path));
+    console.log('\tPath : ' + project_path);
     console.log('\tPackage : ' + package_name);
     console.log('\tName : ' + project_name);
     console.log('\tAndroid target : ' + target_api);
@@ -121,118 +157,47 @@ module.exports.run = function(project_path, package_name, project_name, project_
     ensureJarIsBuilt(VERSION, target_api);
 
     // create new android project
-    var create_cmd = 'android create project --target "'+target_api+'" --path "'+path.relative(process.cwd(), project_path)+'" --package "'+package_name+'" --activity "'+safe_activity_name+'"';
+    var create_cmd = 'android create project --target "'+target_api+'" --path "'+ project_path+'" --package "'+package_name+'" --activity "'+safe_activity_name+'"';
     exec(create_cmd);
 
     console.log('Copying template files...');
-    // Automatically fail if any commands fail.
-    shell.config.fatal = true;
 
-    // copy project template
-    shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
-    shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
+    setShellFatal(true, function() {
+        // copy project template
+        shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
+        shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
 
-    // copy cordova.js, cordova.jar and res/xml
-    if(fs.existsSync(path.join(ROOT, 'framework'))) {
+        // copy cordova.js, cordova.jar and res/xml
         shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
-        shell.cp(path.join(ROOT, 'framework', 'assets', 'www', 'cordova.js'), path.join(project_path, 'assets', 'www', 'cordova.js'));
-        shell.cp(path.join(ROOT, 'framework', 'cordova-' + VERSION + '.jar'), path.join(project_path, 'libs', 'cordova-' + VERSION + '.jar'));
-    } else {
-        shell.cp('-r', path.join(ROOT, 'xml'), path.join(project_path, 'res'));
-        shell.cp(path.join(ROOT, 'cordova.js'), path.join(project_path, 'assets', 'www', 'cordova.js'));
-        shell.cp(path.join(ROOT, 'cordova-' + VERSION + '.jar'), path.join(project_path, 'libs', 'cordova-' + VERSION + '.jar'));
-    }
+        copyJsAndJar(project_path, VERSION);
 
-    // interpolate the activity name and package
-    shell.mkdir('-p', activity_dir);
-    shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
-    shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
-    shell.sed('-i', /__ID__/, package_name, activity_path);
+        // interpolate the activity name and package
+        shell.mkdir('-p', activity_dir);
+        shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
+        shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
+        shell.sed('-i', /__ID__/, package_name, activity_path);
 
-    // interpolate the app name into strings.xml
-    shell.sed('-i', />Cordova</, '>' + project_name + '<', strings_path);
+        // interpolate the app name into strings.xml
+        shell.sed('-i', />Cordova</, '>' + project_name + '<', strings_path);
 
-    shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
-    shell.sed('-i', /__ACTIVITY__/, safe_activity_name, manifest_path);
-    shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
-    shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
-
-    var cordova_path = path.join(ROOT, 'bin', 'templates', 'cordova');
-    // creating cordova folder and copying run/build/log/launch/check_reqs scripts
-    var lib_path = path.join(cordova_path, 'lib');
-    shell.mkdir(path.join(project_path, 'cordova'));
-    shell.mkdir(path.join(project_path, 'cordova', 'lib'));
-
-    shell.cp(path.join(cordova_path, 'build'), path.join(project_path, 'cordova', 'build'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'build'));
-    shell.cp(path.join(cordova_path, 'clean'), path.join(project_path, 'cordova', 'clean'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'clean'));
-    shell.cp(path.join(cordova_path, 'log'), path.join(project_path, 'cordova', 'log'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'log'));
-    shell.cp(path.join(cordova_path, 'run'), path.join(project_path, 'cordova', 'run'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'run'));
-    shell.cp(path.join(cordova_path, 'version'), path.join(project_path, 'cordova', 'version'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'version'));
-    shell.cp(path.join(ROOT, 'bin', 'check_reqs'), path.join(project_path, 'cordova', 'check_reqs'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'check_reqs'));
-
-    shell.cp(path.join(lib_path, 'appinfo.js'), path.join(project_path, 'cordova', 'lib', 'appinfo.js'));
-    shell.cp(path.join(lib_path, 'build.js'), path.join(project_path, 'cordova', 'lib', 'build.js'));
-    shell.cp(path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), path.join(project_path, 'cordova', 'lib', 'check_reqs.js'));
-    shell.cp(path.join(lib_path, 'clean.js'), path.join(project_path, 'cordova', 'lib', 'clean.js'));
-    shell.cp(path.join(lib_path, 'device.js'), path.join(project_path, 'cordova', 'lib', 'device.js'));
-    shell.cp(path.join(lib_path, 'emulator.js'), path.join(project_path, 'cordova', 'lib', 'emulator.js'));
-    shell.cp(path.join(lib_path, 'log.js'), path.join(project_path, 'cordova', 'lib', 'log.js'));
-    shell.cp(path.join(lib_path, 'run.js'), path.join(project_path, 'cordova', 'lib', 'run.js'));
-    shell.cp(path.join(lib_path, 'install-device'), path.join(project_path, 'cordova', 'lib', 'install-device'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'lib', 'install-device'));
-    shell.cp(path.join(lib_path, 'install-emulator'), path.join(project_path, 'cordova', 'lib', 'install-emulator'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'lib', 'install-emulator'));
-    shell.cp(path.join(lib_path, 'list-devices'), path.join(project_path, 'cordova', 'lib', 'list-devices'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'lib', 'list-devices'));
-    shell.cp(path.join(lib_path, 'list-emulator-images'), path.join(project_path, 'cordova', 'lib', 'list-emulator-images'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'lib', 'list-emulator-images'));
-    shell.cp(path.join(lib_path, 'list-started-emulators'), path.join(project_path, 'cordova', 'lib', 'list-started-emulators'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'lib', 'list-started-emulators'));
-    shell.cp(path.join(lib_path, 'start-emulator'), path.join(project_path, 'cordova', 'lib', 'start-emulator'));
-    shell.chmod(755, path.join(project_path, 'cordova', 'lib', 'start-emulator'));
-
-    // if on windows, copy .bat scripts
-    // TODO : make these not nessesary, they clutter the scripting folder.
-    if(process.platform == 'win32' || process.platform == 'win64') {
-        shell.cp(path.join(cordova_path, 'build.bat'), path.join(project_path, 'cordova', 'build.bat'));
-        shell.cp(path.join(cordova_path, 'clean.bat'), path.join(project_path, 'cordova', 'clean.bat'));
-        shell.cp(path.join(cordova_path, 'log.bat'), path.join(project_path, 'cordova', 'log.bat'));
-        shell.cp(path.join(cordova_path, 'run.bat'), path.join(project_path, 'cordova', 'run.bat'));
-        shell.cp(path.join(cordova_path, 'version.bat'), path.join(project_path, 'cordova', 'version.bat'));
-        shell.cp(path.join(ROOT, 'bin', 'check_reqs.bat'), path.join(project_path, 'cordova', 'check_reqs.bat'));
-
-        // lib scripts
-        shell.cp(path.join(lib_path, 'install-device.bat'), path.join(project_path, 'cordova', 'lib', 'install-device.bat'));
-        shell.cp(path.join(lib_path, 'install-emulator.bat'), path.join(project_path, 'cordova', 'lib', 'install-emulator.bat'));
-        shell.cp(path.join(lib_path, 'list-devices.bat'), path.join(project_path, 'cordova', 'lib', 'list-devices.bat'));
-        shell.cp(path.join(lib_path, 'list-emulator-images.bat'), path.join(project_path, 'cordova', 'lib', 'list-emulator-images.bat'));
-        shell.cp(path.join(lib_path, 'list-started-emulators.bat'), path.join(project_path, 'cordova', 'lib', 'list-started-emulators.bat'));
-        shell.cp(path.join(lib_path, 'start-emulator.bat'), path.join(project_path, 'cordova', 'lib', 'start-emulator.bat'));
-    }
-
-    // copy node related files
-    shell.cp(path.join(ROOT, 'bin', 'package.json'), path.join(project_path, 'cordova', 'package.json'));
-    shell.cp('-r', path.join(ROOT, 'bin', 'node_modules'), path.join(project_path, 'cordova'));
+        shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
+        shell.sed('-i', /__ACTIVITY__/, safe_activity_name, manifest_path);
+        shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
+        shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
+        copyScripts(project_path);
+    });
 }
 
-/**
- * Usage information.
- **/
-
-module.exports.help = function() {
-    console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'bin', 'create')) + ' <path_to_new_project> <package_name> <project_name>');
-    console.log('Make sure the Android SDK tools folder is in your PATH!');
-    console.log('    <path_to_new_project>: Path to your new Cordova Android project');
-    console.log('    <package_name>: Package name, following reverse-domain style convention');
-    console.log('    <project_name>: Project name');
-    process.exit(0);
-}
-
-
+exports.updateProject = function(projectPath) {
+    // Check that requirements are met and proper targets are installed
+    if (!check_reqs.run()) {
+        process.exit(2);
+    }
+    var version = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
+    var target_api = check_reqs.get_target();
+    ensureJarIsBuilt(version, target_api);
+    copyJsAndJar(projectPath, version);
+    copyScripts(projectPath);
+    console.log('Android project is now at version ' + version);
+};
 

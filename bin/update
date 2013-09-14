@@ -1,125 +1,33 @@
-#! /bin/bash
-#       Licensed to the Apache Software Foundation (ASF) under one
-#       or more contributor license agreements.  See the NOTICE file
-#       distributed with this work for additional information
-#       regarding copyright ownership.  The ASF licenses this file
-#       to you under the Apache License, Version 2.0 (the
-#       "License"); you may not use this file except in compliance
-#       with the License.  You may obtain a copy of the License at
-#
-#         http://www.apache.org/licenses/LICENSE-2.0
-#
-#       Unless required by applicable law or agreed to in writing,
-#       software distributed under the License is distributed on an
-#       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#       KIND, either express or implied.  See the License for the
-#       specific language governing permissions and limitations
-#       under the License.
-#
-# update a cordova/android project's command line tools
-# 
-# USAGE
-#   ./update [path]
-#
+#!/usr/bin/env node
 
-set -e
+/*
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
 
-if [ -z "$1" ] || [ "$1" == "-h" ]
-then
-    echo 'usage: update path'
-    echo "Make sure the Android SDK tools folder is in your PATH!"
-    exit 0
-fi
+         http://www.apache.org/licenses/LICENSE-2.0
 
-BUILD_PATH="$( cd "$( dirname "$0" )/.." && pwd )"
-VERSION=$(cat "$BUILD_PATH"/VERSION)
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+*/
+var path   = require('path');
+var args  = process.argv;
+var create = require('./lib/create');
 
-PROJECT_PATH="${1:-'./example'}"
-
-if [ ! -d "$PROJECT_PATH" ]
-then
-    echo "The project path has to exist for it to be updated"
-    exit 0
-fi
-
-
-# cleanup after exit and/or on error
-function on_exit {
-    if [ -f "$BUILD_PATH"/framework/cordova-$VERSION.jar ]
-    then
-        rm "$BUILD_PATH"/framework/cordova-$VERSION.jar
-    fi
+// Support basic help commands
+if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
+                    args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
+    console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'update')) + ' <path_to_project>');
+    process.exit(1);
+} else {
+    create.updateProject(args[2]);
 }
 
-function on_error {
-    echo "An unexpected error occurred: $previous_command exited with $?"
-    exit 1
-}
-
-function replace {
-    local pattern=$1
-    local filename=$2
-    # Mac OS X requires -i argument
-    if [[ "$OSTYPE" =~ "darwin" ]]
-    then
-        /usr/bin/sed -i '' -e $pattern "$filename"
-    elif [[ "$OSTYPE" =~ "linux" ]]
-    then
-        /bin/sed -i -e $pattern "$filename"
-    fi
-}
-
-# we do not want the script to silently fail
-trap 'previous_command=$this_command; this_command=$BASH_COMMAND' DEBUG
-trap on_error ERR
-trap on_exit EXIT
-
-ANDROID_BIN="${ANDROID_BIN:=$( which android )}"
-
-TARGET=$("$ANDROID_BIN" list targets | grep id: | tail -1 | cut -f 2 -d ' ' )
-API_LEVEL=$("$ANDROID_BIN" list target | grep "API level:" | tail -n 1 | cut -f 2 -d ':' | tr -d ' ')
-
-# check that build targets exist
-if [ -z "$TARGET" ] || [ -z "$API_LEVEL" ]
-then
-    echo "No Android Targets are installed. Please install at least one via the android SDK"
-    exit 1
-fi
-
-# if this a distribution release no need to build a jar
-if [ ! -e "$BUILD_PATH"/cordova-$VERSION.jar ] && [ -d "$BUILD_PATH"/framework ]
-then
-# update the cordova-android framework for the desired target
-    "$ANDROID_BIN" update project --target $TARGET --path "$BUILD_PATH"/framework &> /dev/null
-
-# compile cordova.js and cordova.jar
-    (cd "$BUILD_PATH"/framework && ant jar &> /dev/null )
-fi
-
-# copy cordova.js, cordova.jar and res/xml
-if [ -d "$BUILD_PATH"/framework ]
-then
-    cp "$BUILD_PATH"/framework/assets/www/cordova.js "$PROJECT_PATH"/assets/www/cordova.js
-    cp "$BUILD_PATH"/framework/cordova-$VERSION.jar "$PROJECT_PATH"/libs/cordova-$VERSION.jar
-else
-    cp "$BUILD_PATH"/cordova.js "$PROJECT_PATH"/assets/www/cordova.js
-    cp "$BUILD_PATH"/cordova-$VERSION.jar "$PROJECT_PATH"/libs/cordova-$VERSION.jar
-fi
-
-# creating cordova folder and copying run/build/log/launch scripts
-if [ ! -e "$PROJECT_PATH/cordova" ]
-then
-    mkdir "$PROJECT_PATH"/cordova
-    mkdir "$PROJECT_PATH"/cordova/lib
-fi
-cp "$BUILD_PATH"/bin/templates/cordova/build "$PROJECT_PATH"/cordova/build
-cp "$BUILD_PATH"/bin/templates/cordova/clean "$PROJECT_PATH"/cordova/clean
-cp "$BUILD_PATH"/bin/templates/cordova/log "$PROJECT_PATH"/cordova/log
-cp "$BUILD_PATH"/bin/templates/cordova/run "$PROJECT_PATH"/cordova/run
-cp "$BUILD_PATH"/bin/templates/cordova/lib/cordova.js "$PROJECT_PATH"/cordova/lib/cordova.js
-cp "$BUILD_PATH"/bin/templates/cordova/lib/install-device "$PROJECT_PATH"/cordova/lib/install-device
-cp "$BUILD_PATH"/bin/templates/cordova/lib/install-emulator "$PROJECT_PATH"/cordova/lib/install-emulator
-cp "$BUILD_PATH"/bin/templates/cordova/lib/list-devices "$PROJECT_PATH"/cordova/lib/list-devices
-cp "$BUILD_PATH"/bin/templates/cordova/lib/list-emulator-images "$PROJECT_PATH"/cordova/lib/list-emulator-images
-cp "$BUILD_PATH"/bin/templates/cordova/lib/list-started-emulators "$PROJECT_PATH"/cordova/lib/list-started-emulators
-cp "$BUILD_PATH"/bin/templates/cordova/lib/start-emulator "$PROJECT_PATH"/cordova/lib/start-emulator
