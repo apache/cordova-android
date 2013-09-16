@@ -50,9 +50,10 @@ function setShellFatal(value, func) {
 }
 
 function ensureJarIsBuilt(version, target_api) {
-    if (!fs.existsSync(path.join(ROOT, 'framework', 'cordova-' + version + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
+    var isDevVersion = /-dev$/.test(version);
+    if (isDevVersion || !fs.existsSync(path.join(ROOT, 'framework', 'cordova-' + version + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
         var valid_target = check_reqs.get_target();
-        console.log('Building jar');
+        console.log('Building cordova-' + version + '.jar');
         // update the cordova-android framework for the desired target
         exec('android --silent update lib-project --target "' + target_api + '" --path "' + path.join(ROOT, 'framework') + '"');
         // compile cordova.js and cordova.jar
