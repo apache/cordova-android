@@ -61,7 +61,7 @@ public class CordovaWebView extends WebView {
     
     public static final String TAG = "CordovaWebView";
     
-    public static final String CORDOVA_VERSION = "3.1.0-dev";
+    public static final String CORDOVA_VERSION = "3.2.0-dev";
 
     private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
     private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
