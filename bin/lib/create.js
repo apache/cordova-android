@@ -123,7 +123,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
                            project_template_dir : 
                            path.join(ROOT, 'bin', 'templates', 'project');
 
-    var safe_activity_name = project_name.replace(/\W/, '');
+    var safe_activity_name = project_name.replace(/\W/g, '');
     var package_as_path = package_name.replace(/\./g, path.sep);
     var activity_dir    = path.join(project_path, 'src', package_as_path);
     var activity_path   = path.join(activity_dir, safe_activity_name + '.java');
