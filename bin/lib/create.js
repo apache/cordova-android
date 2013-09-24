@@ -86,16 +86,6 @@ function copyScripts(projectPath) {
     shell.cp(path.join(ROOT, 'bin', 'check_reqs'), path.join(destScriptsDir, 'check_reqs'));
     shell.cp(path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), path.join(projectPath, 'cordova', 'lib', 'check_reqs.js'));
 
-    if (!/^win/.test(process.platform)) {
-        // Ensure they are all executable and delete .bat files.
-        shell.find(destScriptsDir).forEach(function(p) {
-            if (/\.bat$/.test(p)) {
-                shell.rm(p);
-            } else {
-                shell.chmod(755, p);
-            }
-        });
-    }
 }
 
 /**
