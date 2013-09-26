@@ -75,7 +75,7 @@ you are developing directly against the framework.
 
 To create your `cordova.jar` file, run in the framework directory:
 
-    android update project -p . -t android-17
+    android update project -p . -t android-18
     ant jar
 
 
