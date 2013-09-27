@@ -22,13 +22,15 @@
 var path  = require('path'),
     build = require('./build'),
     emulator = require('./emulator'),
-    device   = require('./device');
+    device   = require('./device'),
+    Q = require('q');
 
 /*
  * Runs the application on a device if availible.
  * If not device is found, it will use a started emulator.
  * If no started emulators are found it will attempt to start an avd.
  * If no avds are found it will error out.
+ * Returns a promise.
  */
  module.exports.run = function(args) {
     var build_type;
@@ -52,61 +54,75 @@ var path  = require('path'),
             process.exit(2);
         }
     }
-    build.run(build_type);
-    if (install_target == '--device') {
-        device.install();
-    } else if (install_target == '--emulator') {
-        if (emulator.list_started() == 0) {
-            emulator.start();
-        }
-        emulator.install();
-    } else if (install_target) {
-        var devices = device.list();
-        var started_emulators = emulator.list_started();
-        var avds = emulator.list_images();
-        if (devices.indexOf(install_target) > -1) {
-            device.install(install_target);
-        } else if (started_emulators.indexOf(install_target) > -1) {
-            emulator.install(install_target);
-        } else {
-            // if target emulator isn't started, then start it.
-            var emulator_ID;
-            for(avd in avds) {
-                if(avds[avd].name == install_target) {
-                    emulator_ID = emulator.start(install_target);
-                    emulator.install(emulator_ID);
-                    break;
-                }
-            }
-            if(!emulator_ID) {
-                console.error('ERROR : Target \'' + install_target + '\' not found, unalbe to run project');
-                process.exit(2);
-            }
-        }
-    } else {
-        // no target given, deploy to device if availible, otherwise use the emulator.
-        var device_list = device.list();
-        if (device_list.length > 0) {
-            console.log('WARNING : No target specified, deploying to device \'' + device_list[0] + '\'.');
-            device.install(device_list[0])
-        } else {
-            var emulator_list = emulator.list_started();
-            if (emulator_list.length > 0) {
-                console.log('WARNING : No target specified, deploying to emulator \'' + emulator_list[0] + '\'.');
-                emulator.install(emulator_list[0]);
-            } else {
-                console.log('WARNING : No started emulators found, starting an emulator.');
-                var best_avd = emulator.best_image();
-                if(best_avd) {
-                    var emulator_ID = emulator.start(best_avd.name);
-                    console.log('WARNING : No target specified, deploying to emulator \'' + emulator_ID + '\'.');
-                    emulator.install(emulator_ID);
+
+    return build.run(build_type).then(function() {
+        if (install_target == '--device') {
+            return device.install();
+        } else if (install_target == '--emulator') {
+            return emulator.list_started().then(function(started) {
+                var p = started && started.length > 0 ? Q() : emulator.start();
+                return p.then(function() { emulator.install(); });
+            });
+        } else if (install_target) {
+            var devices, started_emulators, avds;
+            return device.list()
+            .then(function(res) {
+                devices = res;
+                return emulator.list_started();
+            }).then(function(res) {
+                started_emulators = res;
+                return emulator.list_images();
+            }).then(function(res) {
+                avds = res;
+                if (devices.indexOf(install_target) > -1) {
+                    return device.install(install_target);
+                } else if (started_emulators.indexOf(install_target) > -1) {
+                    return emulator.install(install_target);
                 } else {
-                    emulator.start();
+                    // if target emulator isn't started, then start it.
+                    var emulator_ID;
+                    for(avd in avds) {
+                        if(avds[avd].name == install_target) {
+                            return emulator.start(install_target)
+                            .then(function() { emulator.install(emulator_ID); });
+                        }
+                    }
+                    return Q.reject('Target \'' + install_target + '\' not found, unable to run project');
                 }
-            }
+            });
+        } else {
+            // no target given, deploy to device if availible, otherwise use the emulator.
+            return device.list()
+            .then(function(device_list) {
+                if (device_list.length > 0) {
+                    console.log('WARNING : No target specified, deploying to device \'' + device_list[0] + '\'.');
+                    return device.install(device_list[0]);
+                } else {
+                    return emulator.list_started()
+                    .then(function(emulator_list) {
+                        if (emulator_list.length > 0) {
+                            console.log('WARNING : No target specified, deploying to emulator \'' + emulator_list[0] + '\'.');
+                            return emulator.install(emulator_list[0]);
+                        } else {
+                            console.log('WARNING : No started emulators found, starting an emulator.');
+                            return emulator.best_image()
+                            .then(function(best_avd) {
+                                if(best_avd) {
+                                    return emulator.start(best_avd.name)
+                                    .then(function(emulator_ID) {
+                                        console.log('WARNING : No target specified, deploying to emulator \'' + emulator_ID + '\'.');
+                                        return emulator.install(emulator_ID);
+                                    });
+                                } else {
+                                    return emulator.start();
+                                }
+                            });
+                        }
+                    });
+                }
+            });
         }
-    }
+    });
 }
 
 module.exports.help = function() {

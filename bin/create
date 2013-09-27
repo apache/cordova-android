@@ -31,6 +31,9 @@ if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h'
     console.log('    <project_name>: Project name');
     process.exit(1);
 } else {
-    create.createProject(args[2], args[3], args[4], args[5]);
+    create.createProject(args[2], args[3], args[4], args[5]).done(null, function(err) {
+        console.error(err);
+        process.exit(2);
+    });
 }
 

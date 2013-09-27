@@ -28,6 +28,9 @@ if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h'
     console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'update')) + ' <path_to_project>');
     process.exit(1);
 } else {
-    create.updateProject(args[2]);
+    create.updateProject(args[2]).done(null, function(err) {
+        console.error(err);
+        process.exit(2);
+    });
 }
 

@@ -19,20 +19,25 @@
        under the License.
 */
 
-var exec  = require('./exec'),
-    path  = require('path'),
-    ROOT = path.join(__dirname, '..', '..');
+var child_process = require('child_process'),
+    Q       = require('q');
 
-/*
- * Cleans the project using ant
- * Returns a promise.
- */
-module.exports.run = function() {
-    return exec('ant clean -f ' + path.join(ROOT, 'build.xml'));
+// Takes a command and optional current working directory.
+// Returns a promise that either resolves with the stdout, or
+// rejects with an error message and the stderr.
+module.exports = function(cmd, opt_cwd) {
+    var d = Q.defer();
+    console.log('exec: ' + cmd);
+    try {
+        child_process.exec(cmd, {cwd: opt_cwd}, function(err, stdout, stderr) {
+            console.log([cmd, err, stdout, stderr]);
+            if (err) d.reject('Error executing "' + cmd + '": ' + stderr);
+            else d.resolve(stdout);
+        });
+    } catch(e) {
+        console.error('error caught: ' + e);
+        d.reject(e);
+    }
+    return d.promise;
 }
 
-module.exports.help = function() {
-    console.log('Usage: ' + path.relative(process.cwd(), process.argv[1]));
-    console.log('Cleans the project directory.');
-    process.exit(0);
-}

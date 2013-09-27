@@ -21,7 +21,8 @@
 
 var check_reqs = require('./lib/check_reqs');
 
-if(!check_reqs.run()) {
-      process.exit(2);
-}
+check_reqs.run().done(null, function(err) {
+    console.log(err);
+    process.exit(2);
+});
 

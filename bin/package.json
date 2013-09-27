@@ -5,7 +5,7 @@
     "homepage": "http://github.com/apache/cordova-android",
     "repository": {
         "type": "git",
-        "url": "https://git-wip-us.apache.org/repos/asf/cordova-andorid.git"
+        "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
     },
     "keywords": [
         "cli",
@@ -17,7 +17,8 @@
         "node": ">=0.10.0"
     },
     "dependencies": {
-        "shelljs" : "0.1.4"
+        "shelljs" : "0.1.4",
+        "q": "~0.9"
     },
     "devDependencies": {
     },

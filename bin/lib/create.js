@@ -19,27 +19,25 @@
        under the License.
 */
 var shell = require('shelljs'),
+    child_process = require('child_process'),
+    Q     = require('q'),
     path  = require('path'),
     fs    = require('fs'),
     check_reqs = require('./check_reqs'),
     ROOT    = path.join(__dirname, '..', '..');
 
-function exec(command) {
-    var result;
+// Returns a promise.
+function exec(command, opt_cwd) {
+    var d = Q.defer();
     try {
-        result = shell.exec(command, {silent:false, async:false});
+        child_process.exec(command, { cwd: opt_cwd }, function(err, stdout, stderr) {
+            if (err) d.reject(err);
+            else d.resolve(stdout);
+        });
     } catch(e) {
-        console.error('Command error on execuation : ' + command);
-        console.error(e);
-        process.exit(2);
+        return Q.reject('Command error on execution: ' + command + '\n' + e);
     }
-    if(result && result.code > 0) {
-        console.error('Command failed to execute : ' + command);
-        console.error(result.output);
-        process.exit(2);
-    } else {
-        return result;
-    }
+    return d.promise;
 }
 
 function setShellFatal(value, func) {
@@ -49,19 +47,20 @@ function setShellFatal(value, func) {
     shell.config.fatal = oldVal;
 }
 
+// Returns a promise.
 function ensureJarIsBuilt(version, target_api) {
     var isDevVersion = /-dev$/.test(version);
     if (isDevVersion || !fs.existsSync(path.join(ROOT, 'framework', 'cordova-' + version + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
         var valid_target = check_reqs.get_target();
         console.log('Building cordova-' + version + '.jar');
         // update the cordova-android framework for the desired target
-        exec('android --silent update lib-project --target "' + target_api + '" --path "' + path.join(ROOT, 'framework') + '"');
-        // compile cordova.js and cordova.jar
-        var cwd = process.cwd();
-        process.chdir(path.join(ROOT, 'framework'));
-        exec('ant jar');
-        process.chdir(cwd);
+        return exec('android --silent update lib-project --target "' + target_api + '" --path "' + path.join(ROOT, 'framework') + '"')
+        .then(function() {
+            // compile cordova.js and cordova.jar
+            return exec('ant jar', path.join(ROOT, 'framework'));
+        });
     }
+    return Q();
 }
 
 function copyJsAndJar(projectPath, version) {
@@ -100,6 +99,8 @@ function copyScripts(projectPath) {
  *   - `package_name`{String} Package name, following reverse-domain style convention.
  *   - `project_name` 	{String} Project name.
  *   - 'project_template_dir' {String} Path to project template (override).
+ *
+ * Returns a promise.
  */
 
 exports.createProject = function(project_path, package_name, project_name, project_template_dir) {
@@ -123,72 +124,72 @@ exports.createProject = function(project_path, package_name, project_name, proje
 
     // Check if project already exists
     if(fs.existsSync(project_path)) {
-        console.error('Project already exists! Delete and recreate');
-        process.exit(2);
+        return Q.reject('Project already exists! Delete and recreate');
     }
 
     if (!/[a-zA-Z0-9_]+\.[a-zA-Z0-9_](.[a-zA-Z0-9_])*/.test(package_name)) {
-        console.error('Package name must look like: com.company.Name');
-        process.exit(2);
+        return Q.reject('Package name must look like: com.company.Name');
     }
 
     // Check that requirements are met and proper targets are installed
-    if(!check_reqs.run()) {
-        process.exit(2);
-    }
+    return check_reqs.run()
+    .then(function() {
+        // Log the given values for the project
+        console.log('Creating Cordova project for the Android platform:');
+        console.log('\tPath: ' + project_path);
+        console.log('\tPackage: ' + package_name);
+        console.log('\tName: ' + project_name);
+        console.log('\tAndroid target: ' + target_api);
 
-    // Log the given values for the project
-    console.log('Creating Cordova project for the Android platform:');
-    console.log('\tPath: ' + project_path);
-    console.log('\tPackage: ' + package_name);
-    console.log('\tName: ' + project_name);
-    console.log('\tAndroid target: ' + target_api);
+        // build from source. distro should have these files
+        return ensureJarIsBuilt(VERSION, target_api);
+    }).then(function() {
+        console.log('Copying template files...');
 
-    // build from source. distro should have these files
-    ensureJarIsBuilt(VERSION, target_api);
+        setShellFatal(true, function() {
+            // copy project template
+            shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
+            shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
+            // Manually create directories that would be empty within the template (since git doesn't track directories).
+            shell.mkdir(path.join(project_path, 'libs'));
 
-    console.log('Copying template files...');
+            // copy cordova.js, cordova.jar and res/xml
+            shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
+            copyJsAndJar(project_path, VERSION);
 
-    setShellFatal(true, function() {
-        // copy project template
-        shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
-        shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
-        // Manually create directories that would be empty within the template (since git doesn't track directories).
-        shell.mkdir(path.join(project_path, 'libs'));
+            // interpolate the activity name and package
+            shell.mkdir('-p', activity_dir);
+            shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
+            shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
+            shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
+            shell.sed('-i', /__ID__/, package_name, activity_path);
 
-        // copy cordova.js, cordova.jar and res/xml
-        shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
-        copyJsAndJar(project_path, VERSION);
-
-        // interpolate the activity name and package
-        shell.mkdir('-p', activity_dir);
-        shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
-        shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
-        shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
-        shell.sed('-i', /__ID__/, package_name, activity_path);
-
-        shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
-        shell.sed('-i', /__ACTIVITY__/, safe_activity_name, manifest_path);
-        shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
-        shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
-        copyScripts(project_path);
+            shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
+            shell.sed('-i', /__ACTIVITY__/, safe_activity_name, manifest_path);
+            shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
+            shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
+            copyScripts(project_path);
+        });
+        // Link it to local android install.
+        console.log('Running "android update project"');
+        return exec('android --silent update project --target "'+target_api+'" --path "'+ project_path+'"');
+    }).then(function() {
+        console.log('Project successfully created.');
     });
-    // Link it to local android install.
-    console.log('Running "android update project"');
-    exec('android --silent update project --target "'+target_api+'" --path "'+ project_path+'"');
-    console.log('Project successfully created.');
 }
 
+// Returns a promise.
 exports.updateProject = function(projectPath) {
     // Check that requirements are met and proper targets are installed
-    if (!check_reqs.run()) {
-        process.exit(2);
-    }
-    var version = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
-    var target_api = check_reqs.get_target();
-    ensureJarIsBuilt(version, target_api);
-    copyJsAndJar(projectPath, version);
-    copyScripts(projectPath);
-    console.log('Android project is now at version ' + version);
+    return check_reqs.run()
+    .then(function() {
+        var version = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
+        var target_api = check_reqs.get_target();
+        return ensureJarIsBuilt(version, target_api);
+    }).then(function() {
+        copyJsAndJar(projectPath, version);
+        copyScripts(projectPath);
+        console.log('Android project is now at version ' + version);
+    });
 };
 

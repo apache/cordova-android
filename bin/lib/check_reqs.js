@@ -20,6 +20,8 @@
 */
 
 var shell = require('shelljs'),
+    child_process = require('child_process'),
+    Q     = require('q'),
     path  = require('path'),
     fs    = require('fs'),
     ROOT  = path.join(__dirname, '..', '..');
@@ -36,43 +38,54 @@ module.exports.get_target = function() {
     }
 }
 
+// Returns a promise.
 module.exports.check_ant = function() {
-    var test = shell.exec('ant -version', {silent:true, async:false});
-    if(test.code > 0) {
-        console.error('ERROR : executing command \'ant\', make sure you have ant installed and added to your path.');
-        return false;
-    }
-    return true;
+    var d = Q.defer();
+    child_process.exec('ant -version', function(err, stdout, stderr) {
+        if (err) d.reject(new Error('ERROR : executing command \'ant\', make sure you have ant installed and added to your path.'));
+        else d.resolve();
+    });
+    return d.promise;
 }
 
+// Returns a promise.
 module.exports.check_java = function() {
     if(process.env.JAVA_HOME) {
-        var test = shell.exec('java', {silent:true, async:false});
-        if(test.code > 0) {
-            console.error('ERROR : executing command \'java\', make sure you java environment is set up. Including your JDK and JRE.');
-            return false;
-        }
-        return true;
+        var d = Q.defer();
+        child_process.exec('java', function(err, stdout, stderr) {
+            if(err) d.reject(new Error('ERROR : executing command \'java\', make sure you java environment is set up. Including your JDK and JRE.'));
+            else d.resolve();
+        });
+        return d.promise;
     } else {
-        console.error('ERROR : Make sure JAVA_HOME is set, as well as paths to your JDK and JRE for java.');
-        return false;
+        return Q.reject(new Error('ERROR : Make sure JAVA_HOME is set, as well as paths to your JDK and JRE for java.'));
     }
 }
 
+// Returns a promise.
 module.exports.check_android = function() {
     var valid_target = this.get_target();
-    var targets = shell.exec('android list targets', {silent:true, async:false});
+    var d = Q.defer();
+    child_process.exec('android list targets', function(err, stdout, stderr) {
+        if (err) d.reject(stderr);
+        else d.resolve(stdout);
+    });
 
-    if(targets.code > 0 && targets.output.match(/command\snot\sfound/)) {
-        console.error('The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) is added to your path.');
-        return false;
-    } else if(!targets.output.match(valid_target)) {
-        console.error('Please install Android target ' + valid_target.split('-')[1] + ' (the Android newest SDK). Make sure you have the latest Android tools installed as well. Run \"android\" from your command-line to install/update any missing SDKs or tools.');
-        return false;
-    }
-    return true;
+    return d.promise.then(function(output) {
+        if (!output.match(valid_target)) {
+            return Q.reject(new Error('Please install Android target ' + valid_target.split('-')[1] + ' (the Android newest SDK). Make sure you have the latest Android tools installed as well. Run \"android\" from your command-line to install/update any missing SDKs or tools.'));
+        }
+        return Q();
+    }, function(stderr) {
+        if (stderr.match(/command\snot\sfound/)) {
+            return Q.reject(new Error('The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) is added to your path.'));
+        } else {
+            return Q.reject(new Error('An error occurred while listing Android targets'));
+        }
+    });
 }
 
+// Returns a promise.
 module.exports.run = function() {
-    return this.check_ant() && this.check_java && this.check_android();
+    return Q.all([this.check_ant(), this.check_java, this.check_android()]);
 }
