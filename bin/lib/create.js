@@ -69,7 +69,8 @@ function copyJsAndJar(projectPath, version) {
     // Don't fail if there are no old jars.
     setShellFatal(false, function() {
         shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function(oldJar) {
-            shell.rm('-f', path.join(projectPath, 'libs', oldJar));
+            console.log("Deleting " + oldJar);
+            shell.rm('-f', path.join(oldJar));
         });
     });
     shell.cp('-f', path.join(ROOT, 'framework', 'cordova-' + version + '.jar'), path.join(projectPath, 'libs', 'cordova-' + version + '.jar'));
