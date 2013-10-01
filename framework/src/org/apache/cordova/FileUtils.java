@@ -28,11 +28,9 @@ import android.util.Log;
 import org.apache.cordova.api.CallbackContext;
 import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
-import org.apache.cordova.file.EncodingException;
-import org.apache.cordova.file.FileExistsException;
-import org.apache.cordova.file.InvalidModificationException;
-import org.apache.cordova.file.NoModificationAllowedException;
-import org.apache.cordova.file.TypeMismatchException;
+import org.apache.cordova.file.*;
+
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -489,12 +487,13 @@ public class FileUtils extends CordovaPlugin {
                 throw new NoModificationAllowedException("Couldn't create the destination directory");
             }
         }
+        
 
         for (File file : srcDir.listFiles()) {
+            File destination = new File(destinationDir.getAbsoluteFile() + File.separator + file.getName());
             if (file.isDirectory()) {
-                copyDirectory(file, destinationDir);
+                copyDirectory(file, destination);
             } else {
-                File destination = new File(destinationDir.getAbsoluteFile() + File.separator + file.getName());
                 copyFile(file, destination);
             }
         }
@@ -914,11 +913,6 @@ public class FileUtils extends CordovaPlugin {
         return getEntry(new File(path));
     }
 
-
-    //--------------------------------------------------------------------------
-    // LOCAL METHODS
-    //--------------------------------------------------------------------------
-
     /**
      * Read the contents of a file.
      * This is done in a background thread; the result is sent to the callback.
@@ -950,7 +944,7 @@ public class FileUtils extends CordovaPlugin {
                             break;
                         default: // Base64.
                             String contentType = FileHelper.getMimeType(filename, cordova);
-                            byte[] base64 = Base64.encode(bytes, Base64.DEFAULT);
+                            byte[] base64 = Base64.encode(bytes, Base64.NO_WRAP);
                             String s = "data:" + contentType + ";base64," + new String(base64, "US-ASCII");
                             result = new PluginResult(PluginResult.Status.OK, s);
                     }
@@ -1024,12 +1018,21 @@ public class FileUtils extends CordovaPlugin {
             rawData = data.getBytes();
         }
         ByteArrayInputStream in = new ByteArrayInputStream(rawData);
-        FileOutputStream out = new FileOutputStream(filename, append);
-        byte buff[] = new byte[rawData.length];
-        in.read(buff, 0, buff.length);
-        out.write(buff, 0, rawData.length);
-        out.flush();
-        out.close();
+        try
+        {
+            FileOutputStream out = new FileOutputStream(filename, append);
+            byte buff[] = new byte[rawData.length];
+            in.read(buff, 0, buff.length);
+            out.write(buff, 0, rawData.length);
+            out.flush();
+            out.close();
+        }
+        catch (NullPointerException e)
+        {
+            // This is a bug in the Android implementation of the Java Stack
+            NoModificationAllowedException realException = new NoModificationAllowedException(filename);
+            throw realException;
+        }
 
         return rawData.length;
     }
