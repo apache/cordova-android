@@ -49,6 +49,4 @@
 * [CB-4198] bin/create should handle spaces in activity better.
 * [CB-4096] Implemented new unified whitelist for android
 * [CB-3384] Fix thread assertion when plugins remap URIs
-* [CB-4133] Add main thread warning for plugins that run too long
-* [CB-3384] Use the ExposedJsApi to detect webCore thread instead of IceCreamCordovaWebViewClient.
 
