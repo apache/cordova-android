@@ -1,5 +1,5 @@
 // Platform: android
-// 3.2.0-dev-8e5a2e7
+// 3.2.0-dev-5ad41a7
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,8 +19,11 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '3.2.0-dev-8e5a2e7';
+var CORDOVA_JS_BUILD_LABEL = '3.2.0-dev-5ad41a7';
 // file: lib/scripts/require.js
+
+/*jshint -W079 */
+/*jshint -W020 */
 
 var require,
     define;
@@ -1528,8 +1531,8 @@ var anchorEl = document.createElement('a');
  * For relative URLs, converts them to absolute ones.
  */
 urlutil.makeAbsolute = function(url) {
-  anchorEl.href = url;
-  return anchorEl.href;
+    anchorEl.href = url;
+    return anchorEl.href;
 };
 
 });
