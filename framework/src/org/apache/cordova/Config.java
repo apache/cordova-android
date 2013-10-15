@@ -70,11 +70,7 @@ public class Config {
 
         int id = action.getResources().getIdentifier("config", "xml", action.getClass().getPackage().getName());
         if (id == 0) {
-            id = action.getResources().getIdentifier("cordova", "xml", action.getPackageName());
-            LOG.i("CordovaLog", "config.xml missing, reverting to cordova.xml");
-        }
-        if (id == 0) {
-            LOG.i("CordovaLog", "cordova.xml missing. Ignoring...");
+            LOG.i("CordovaLog", "config.xml missing. Ignoring...");
             return;
         }
 
