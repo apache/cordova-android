@@ -68,7 +68,7 @@ public class Config {
             return;
         }
 
-        int id = action.getResources().getIdentifier("config", "xml", action.getPackageName());
+        int id = action.getResources().getIdentifier("config", "xml", action.getClass().getPackage().getName());
         if (id == 0) {
             id = action.getResources().getIdentifier("cordova", "xml", action.getPackageName());
             LOG.i("CordovaLog", "config.xml missing, reverting to cordova.xml");
@@ -124,7 +124,7 @@ public class Config {
                         {
                             value = "splash";
                         }
-                        resource = action.getResources().getIdentifier(value, "drawable", action.getPackageName());
+                        resource = action.getResources().getIdentifier(value, "drawable", action.getClass().getPackage().getName());
                         
                         action.getIntent().putExtra(name, resource);
                     }
