@@ -537,6 +537,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                 if (fp.exists()) {
                     FileInputStream fileInputStream = new FileInputStream(file);
                     this.player.setDataSource(fileInputStream.getFD());
+                    fileInputStream.close();
                 }
                 else {
                     this.player.setDataSource("/sdcard/" + file);
