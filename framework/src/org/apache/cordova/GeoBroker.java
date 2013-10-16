@@ -55,14 +55,18 @@ public class GeoBroker extends CordovaPlugin {
      * @return 			True if the action was valid, or false if not.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (this.locationManager == null) {
-            this.locationManager = (LocationManager) this.cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
-            this.networkListener = new NetworkListener(this.locationManager, this);
-            this.gpsListener = new GPSListener(this.locationManager, this);
+        if (locationManager == null) {
+            locationManager = (LocationManager) this.cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
         }
 
         if ( locationManager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ||
                 locationManager.isProviderEnabled( LocationManager.NETWORK_PROVIDER )) {
+            if (networkListener == null) {
+                networkListener = new NetworkListener(locationManager, this);
+            }
+            if (gpsListener == null) {
+                gpsListener = new GPSListener(locationManager, this);
+            }
 
             if (action.equals("getLocation")) {
                 boolean enableHighAccuracy = args.getBoolean(0);
