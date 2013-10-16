@@ -305,14 +305,20 @@ public class Capture extends CordovaPlugin {
                 // Get the uri of the video clip
                 Uri data = intent.getData();
                 // create a file object from the uri
-                results.put(createMediaFile(data));
-
-                if (results.length() >= limit) {
-                    // Send Uri back to JavaScript for viewing video
-                    this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, results));
-                } else {
-                    // still need to capture more video clips
-                    captureVideo(duration);
+                if(data == null)
+                {
+                    this.fail(createErrorObject(CAPTURE_NO_MEDIA_FILES, "Error: data is null"));
+                }
+                else
+                {
+                    results.put(createMediaFile(data));
+                    if (results.length() >= limit) {
+                        // Send Uri back to JavaScript for viewing video
+                        this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, results));
+                    } else {
+                        // still need to capture more video clips
+                        captureVideo(duration);
+                    }
                 }
             }
         }
