@@ -87,5 +87,16 @@ module.exports.check_android = function() {
 
 // Returns a promise.
 module.exports.run = function() {
-    return Q.all([this.check_ant(), this.check_java, this.check_android()]);
+    return Q.allSettled([this.check_ant(), this.check_java, this.check_android()]).then(function (results){
+        var success = true;
+        results.forEach(function (result){
+            if( result.state !== "fulfilled"){
+                success = false;
+            }
+        });
+        if( success ){
+            console.log("Looks like your environment fully supports cordova-android development!");
+        }
+    });
 }
+
