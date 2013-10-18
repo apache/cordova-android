@@ -19,7 +19,9 @@
        under the License.
 */
 
-var shell = require('shelljs');
+var shell = require('shelljs'),
+    child_process = require('child_process'),
+    Q     = require('q');
 
 get_highest_sdk = function(results){
     var reg = /\d+/;
@@ -32,22 +34,32 @@ get_highest_sdk = function(results){
 }
 
 get_sdks = function() {
-    var targets = shell.exec('android list targets', {silent:true, async:false});
+    var d = Q.defer();
+    child_process.exec('android list targets', function(err, stdout, stderr) {
+        if (err) d.reject(stderr);
+        else d.resolve(stdout);
+    });
 
-    if(targets.code > 0 && targets.output.match(/command\snot\sfound/)) {
-        return new Error('The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) is added to your path.');
-    } else {
+    return d.promise.then(function(output) {
         var reg = /android-\d+/gi;
-        var results = targets.output.match(reg);
+        var results = output.match(reg);
         if(results.length===0){
-            return new Error('No android sdks installed.');
+            return Q.reject(new Error('No android sdks installed.'));
         }else{
             get_highest_sdk(results);
         }
-    }
+
+        return Q();
+    }, function(stderr) {
+        if (stderr.match(/command\snot\sfound/)) {
+            return Q.reject(new Error('The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) is added to your path.'));
+        } else {
+            return Q.reject(new Error('An error occurred while listing Android targets'));
+        }
+    });
 }
 
 module.exports.run = function() {
-    get_sdks();
+    return Q.all([get_sdks()]);
 }
 

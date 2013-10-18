@@ -21,5 +21,9 @@
 
 var android_sdk_version = require('./lib/android_sdk_version');
 
-android_sdk_version.run();
+android_sdk_version.run().done(null, function(err) {
+    console.log(err);
+    process.exit(2);
+});
+
 
