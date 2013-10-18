@@ -52,8 +52,8 @@ module.exports.check_ant = function() {
 module.exports.check_java = function() {
     if(process.env.JAVA_HOME) {
         var d = Q.defer();
-        child_process.exec('java', function(err, stdout, stderr) {
-            if(err) d.reject(new Error('ERROR : executing command \'java\', make sure you java environment is set up. Including your JDK and JRE.'));
+        child_process.exec('java -version', function(err, stdout, stderr) {
+            if(err) d.reject(new Error('ERROR : executing command \'java\', make sure you java environment is set up. Including your JDK and JRE.' + err));
             else d.resolve();
         });
         return d.promise;
@@ -87,5 +87,8 @@ module.exports.check_android = function() {
 
 // Returns a promise.
 module.exports.run = function() {
-    return Q.all([this.check_ant(), this.check_java, this.check_android()]);
+    return Q.all([this.check_ant(), this.check_java(), this.check_android()]).then(function() {
+        console.log('Looks like your environment fully supports cordova-android development!');
+    });
 }
+
