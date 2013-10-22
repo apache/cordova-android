@@ -29,6 +29,7 @@ import android.util.Base64;
 
 import com.squareup.okhttp.OkHttpClient;
 
+import org.apache.cordova.api.PluginManager;
 import org.apache.http.util.EncodingUtils;
 
 import java.io.ByteArrayInputStream;

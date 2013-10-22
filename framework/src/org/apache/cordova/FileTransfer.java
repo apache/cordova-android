@@ -49,6 +49,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.cordova.CordovaResourceApi.OpenForReadResult;
 import org.apache.cordova.api.CallbackContext;
+import org.apache.cordova.api.CordovaPlugin;
 import org.apache.cordova.api.PluginResult;
 
 import org.json.JSONArray;
