@@ -32,7 +32,7 @@ Requires
 ---
 
 - Java JDK 1.5 or greater
-- Apache ANT 1.8.0 or greater
+- Apache Ant 1.8.0 or greater
 - Android SDK [http://developer.android.com](http://developer.android.com)
 
 
