@@ -43,7 +43,7 @@ The Cordova developer tooling is split between general tooling and project level
 
 General Commands
 
-    ./bin/create [path package activity] ... create the ./example app or a cordova android project
+    ./bin/create [path package activity] ... creates the ./example app or a cordova android project
     ./bin/check_reqs ....................... checks that your environment is set up for cordova-android development
     ./bin/update [path] .................... updates an existing cordova-android project to the version of the framework
 
@@ -53,7 +53,7 @@ These commands live in a generated Cordova Android project. Any interactions wit
 
     ./cordova/clean ........................ cleans the project
     ./cordova/build ........................ calls `clean` then compiles the project
-    ./cordova/log   ........................ stream device or emulate logs to stdout
+    ./cordova/log   ........................ streams device or emulate logs to stdout
     ./cordova/run   ........................ calls `build` then deploys to a connected Android device. If no Android device is detected, will launch an emulator and deploy to it.
     ./cordova/version ...................... returns the cordova-android version of the current project
 
