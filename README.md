@@ -53,7 +53,7 @@ These commands live in a generated Cordova Android project. Any interactions wit
 
     ./cordova/clean ........................ cleans the project
     ./cordova/build ........................ calls `clean` then compiles the project
-    ./cordova/log   ........................ streams device or emulate logs to stdout
+    ./cordova/log   ........................ streams device or emulator logs to stdout
     ./cordova/run   ........................ calls `build` then deploys to a connected Android device. If no Android device is detected, will launch an emulator and deploy to it.
     ./cordova/version ...................... returns the cordova-android version of the current project
 
