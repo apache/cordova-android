@@ -17,7 +17,7 @@
         "node": ">=0.10.0"
     },
     "dependencies": {
-        "shelljs" : "0.1.4",
+        "shelljs" : "0.2.6",
         "q": "~0.9"
     },
     "devDependencies": {
