@@ -19,9 +19,10 @@
 package org.apache.cordova;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cordova.CordovaArgs;
@@ -60,9 +61,9 @@ public class PluginManager {
     // Flag to track first time through
     private boolean firstRun;
 
-    // Map URL schemes like foo: to plugins that want to handle those schemes
-    // This would allow how all URLs are handled to be offloaded to a plugin
-    protected HashMap<String, String> urlMap = new HashMap<String, String>();
+    // Stores mapping of Plugin Name -> <url-filter> values.
+    // Using <url-filter> is deprecated.
+    protected HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
 
     private AtomicInteger numPendingUiExecs;
 
@@ -124,7 +125,12 @@ public class PluginManager {
             if (eventType == XmlResourceParser.START_TAG) {
                 String strNode = xml.getName();
                 if (strNode.equals("url-filter")) {
-                    this.urlMap.put(xml.getAttributeValue(null, "value"), service);
+                    Log.w(TAG, "Plugin " + service + " is using deprecated tag <url-filter>");
+                    if (urlMap.get(service) == null) {
+                        urlMap.put(service, new ArrayList<String>(2));
+                    }
+                    List<String> filters = urlMap.get(service);
+                    filters.add(xml.getAttributeValue(null, "value"));
                 }
                 else if (strNode.equals("feature")) {
                     //Check for supported feature sets  aka. plugins (Accelerometer, Geolocation, etc)
@@ -369,11 +375,22 @@ public class PluginManager {
      * @return                  Return false to allow the URL to load, return true to prevent the URL from loading.
      */
     public boolean onOverrideUrlLoading(String url) {
-        Iterator<Entry<String, String>> it = this.urlMap.entrySet().iterator();
-        while (it.hasNext()) {
-            HashMap.Entry<String, String> pairs = it.next();
-            if (url.startsWith(pairs.getKey())) {
-                return this.getPlugin(pairs.getValue()).onOverrideUrlLoading(url);
+        // Deprecated way to intercept URLs. (process <url-filter> tags).
+        // Instead, plugins should not include <url-filter> and instead ensure
+        // that they are loaded before this function is called (either by setting
+        // the onload <param> or by making an exec() call to them)
+        for (PluginEntry entry : this.entries.values()) {
+            List<String> urlFilters = urlMap.get(entry.service);
+            if (urlFilters != null) {
+                for (String s : urlFilters) {
+                    if (url.startsWith(s)) {
+                        return getPlugin(entry.service).onOverrideUrlLoading(url);
+                    }
+                }
+            } else if (entry.plugin != null) {
+                if (entry.plugin.onOverrideUrlLoading(url)) {
+                    return true;
+                }
             }
         }
         return false;
