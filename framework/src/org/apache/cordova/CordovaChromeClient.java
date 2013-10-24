@@ -280,33 +280,13 @@ public class CordovaChromeClient extends WebChromeClient {
 
     /**
      * Handle database quota exceeded notification.
-     *
-     * @param url
-     * @param databaseIdentifier
-     * @param currentQuota
-     * @param estimatedSize
-     * @param totalUsedQuota
-     * @param quotaUpdater
      */
     @Override
     public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
             long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
     {
         LOG.d(TAG, "onExceededDatabaseQuota estimatedSize: %d  currentQuota: %d  totalUsedQuota: %d", estimatedSize, currentQuota, totalUsedQuota);
-
-        if (estimatedSize < MAX_QUOTA)
-        {
-            //increase for 1Mb
-            long newQuota = estimatedSize;
-            LOG.d(TAG, "calling quotaUpdater.updateQuota newQuota: %d", newQuota);
-            quotaUpdater.updateQuota(newQuota);
-        }
-        else
-        {
-            // Set the quota to whatever it is and force an error
-            // TODO: get docs on how to handle this properly
-            quotaUpdater.updateQuota(currentQuota);
-        }
+        quotaUpdater.updateQuota(MAX_QUOTA);
     }
 
     // console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html
