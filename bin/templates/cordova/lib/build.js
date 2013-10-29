@@ -37,10 +37,10 @@ module.exports.run = function(build_type) {
     var cmd;
     switch(build_type) {
         case '--debug' :
-            cmd = 'ant debug -f ' + path.join(ROOT, 'build.xml');
+            cmd = 'ant debug -f "' + path.join(ROOT, 'build.xml') + '"';
             break;
         case '--release' :
-            cmd = 'ant release -f ' + path.join(ROOT, 'build.xml');
+            cmd = 'ant release -f "' + path.join(ROOT, 'build.xml') + '"';
             break;
         case '--nobuild' :
             console.log('Skipping build...');

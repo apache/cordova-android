@@ -28,7 +28,7 @@ var exec  = require('./exec'),
  * Returns a promise.
  */
 module.exports.run = function() {
-    return exec('ant clean -f ' + path.join(ROOT, 'build.xml'));
+    return exec('ant clean -f "' + path.join(ROOT, 'build.xml') + '"');
 }
 
 module.exports.help = function() {
