@@ -20,20 +20,17 @@
 */
 var path = require('path');
 var create = require('./lib/create');
-var args = process.argv;
+var args  = require('./lib/simpleargs').getArgs(process.argv);
 
-// Support basic help commands
-if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
-                    args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
-    console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'create')) + ' <path_to_new_project> <package_name> <project_name>');
+if (args['--help'] || args._.length === 0) {
+    console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'create')) + ' <path_to_new_project> <package_name> <project_name> [<template_path>] [--shared]');
     console.log('    <path_to_new_project>: Path to your new Cordova Android project');
     console.log('    <package_name>: Package name, following reverse-domain style convention');
     console.log('    <project_name>: Project name');
+    console.log('    <template_path>: Path to a custom application template to use');
+    console.log('    --shared will use the CordovaLib project directly instead of making a copy.');
     process.exit(1);
-} else {
-    create.createProject(args[2], args[3], args[4], args[5]).done(null, function(err) {
-        console.error(err);
-        process.exit(2);
-    });
 }
+
+create.createProject(args._[0], args._[1], args._[2], args._[3], args['--shared']).done();
 

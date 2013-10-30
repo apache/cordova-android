@@ -29,14 +29,13 @@ var shell = require('shelljs'),
 // Returns a promise.
 function exec(command, opt_cwd) {
     var d = Q.defer();
-    try {
-        child_process.exec(command, { cwd: opt_cwd }, function(err, stdout, stderr) {
-            if (err) d.reject(err);
-            else d.resolve(stdout);
-        });
-    } catch(e) {
-        return Q.reject('Command error on execution: ' + command + '\n' + e);
-    }
+    console.log('Running: ' + command);
+    child_process.exec(command, { cwd: opt_cwd }, function(err, stdout, stderr) {
+        stdout && console.log(stdout);
+        stderr && console.error(stderr);
+        if (err) d.reject(err);
+        else d.resolve(stdout);
+    });
     return d.promise;
 }
 
@@ -47,32 +46,45 @@ function setShellFatal(value, func) {
     shell.config.fatal = oldVal;
 }
 
-// Returns a promise.
-function ensureJarIsBuilt(version, target_api) {
-    var isDevVersion = /-dev$/.test(version);
-    if (isDevVersion || !fs.existsSync(path.join(ROOT, 'framework', 'cordova-' + version + '.jar')) && fs.existsSync(path.join(ROOT, 'framework'))) {
-        var valid_target = check_reqs.get_target();
-        console.log('Building cordova-' + version + '.jar');
-        // update the cordova-android framework for the desired target
-        return exec('android --silent update lib-project --target "' + target_api + '" --path "' + path.join(ROOT, 'framework') + '"')
-        .then(function() {
-            // compile cordova.js and cordova.jar
-            return exec('ant jar', path.join(ROOT, 'framework'));
-        });
-    }
-    return Q();
+function getFrameworkDir(projectPath, shared) {
+    return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-function copyJsAndJar(projectPath, version) {
+function copyJsAndLibrary(projectPath, shared, projectName) {
+    var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     shell.cp('-f', path.join(ROOT, 'framework', 'assets', 'www', 'cordova.js'), path.join(projectPath, 'assets', 'www', 'cordova.js'));
     // Don't fail if there are no old jars.
     setShellFatal(false, function() {
         shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function(oldJar) {
             console.log("Deleting " + oldJar);
-            shell.rm('-f', path.join(oldJar));
+            shell.rm('-f', oldJar);
         });
+        // Delete old library project if it existed.
+        if (shared) {
+            shell.rm('-rf', nestedCordovaLibPath);
+        } else {
+            // Delete only the src, since eclipse can't handle its .project file being deleted.
+            shell.rm('-rf', path.join(nestedCordovaLibPath, 'src'));
+        }
     });
-    shell.cp('-f', path.join(ROOT, 'framework', 'cordova-' + version + '.jar'), path.join(projectPath, 'libs', 'cordova-' + version + '.jar'));
+    if (!shared) {
+        shell.mkdir('-p', nestedCordovaLibPath);
+        shell.cp('-f', path.join(ROOT, 'framework', 'AndroidManifest.xml'), nestedCordovaLibPath);
+        shell.cp('-f', path.join(ROOT, 'framework', 'project.properties'), nestedCordovaLibPath);
+        shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
+        // Create an eclipse project file and set the name of it to something unique.
+        // Without this, you can't import multiple CordovaLib projects into the same workspace.
+        var eclipseProjectFilePath = path.join(nestedCordovaLibPath, '.project');
+        if (!fs.existsSync(eclipseProjectFilePath)) {
+            var data = '<?xml version="1.0" encoding="UTF-8"?><projectDescription><name>' + projectName + '-' + 'CordovaLib</name></projectDescription>';
+            fs.writeFileSync(eclipseProjectFilePath, data, 'utf8');
+        }
+    }
+}
+
+function runAndroidUpdate(projectPath, target_api, shared) {
+    var targetFrameworkDir = getFrameworkDir(projectPath, shared);
+    return exec('android update project --subprojects --path "' + projectPath + '" --target ' + target_api + ' --library "' + path.relative(projectPath, targetFrameworkDir) + '"');
 }
 
 function copyScripts(projectPath) {
@@ -104,7 +116,7 @@ function copyScripts(projectPath) {
  * Returns a promise.
  */
 
-exports.createProject = function(project_path, package_name, project_name, project_template_dir) {
+exports.createProject = function(project_path, package_name, project_name, project_template_dir, use_shared_project) {
     var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
 
     // Set default values for path, package and name
@@ -142,9 +154,6 @@ exports.createProject = function(project_path, package_name, project_name, proje
         console.log('\tName: ' + project_name);
         console.log('\tAndroid target: ' + target_api);
 
-        // build from source. distro should have these files
-        return ensureJarIsBuilt(VERSION, target_api);
-    }).then(function() {
         console.log('Copying template files...');
 
         setShellFatal(true, function() {
@@ -156,7 +165,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
 
             // copy cordova.js, cordova.jar and res/xml
             shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
-            copyJsAndJar(project_path, VERSION);
+            copyJsAndLibrary(project_path, use_shared_project, safe_activity_name);
 
             // interpolate the activity name and package
             shell.mkdir('-p', activity_dir);
@@ -172,8 +181,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
             copyScripts(project_path);
         });
         // Link it to local android install.
-        console.log('Running "android update project"');
-        return exec('android --silent update project --target "'+target_api+'" --path "'+ project_path+'"');
+        return runAndroidUpdate(project_path, target_api, use_shared_project);
     }).then(function() {
         console.log('Project successfully created.');
     });
@@ -186,11 +194,12 @@ exports.updateProject = function(projectPath) {
     .then(function() {
         var version = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
         var target_api = check_reqs.get_target();
-        return ensureJarIsBuilt(version, target_api);
-    }).then(function() {
-        copyJsAndJar(projectPath, version);
+        copyJsAndLibrary(projectPath, false, null);
         copyScripts(projectPath);
-        console.log('Android project is now at version ' + version);
+        return runAndroidUpdate(projectPath, target_api, false)
+        .then(function() {
+            console.log('Android project is now at version ' + version);
+        });
     });
 };
 
