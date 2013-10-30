@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /*
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
@@ -18,14 +16,17 @@
        specific language governing permissions and limitations
        under the License.
 */
-var path   = require('path');
-var create = require('./lib/create');
-var args  = require('./lib/simpleargs').getArgs(process.argv);
 
-if (args['--help'] || args._.length === 0) {
-    console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'update')) + ' <path_to_project> [--shared]');
-    console.log('    --shared will use the CordovaLib project directly instead of making a copy.');
-    process.exit(1);
-}
-create.updateProject(args._[0], args['--shared']).done();
-
+exports.getArgs = function(argv) {
+    var ret = {};
+    var posArgs = [];
+    for (var i = 2, arg; arg = argv[i] || i < argv.length; ++i) {
+        if (/^--/.exec(arg)) {
+            ret[arg] = true;
+        } else {
+            posArgs.push(arg);
+        }
+    }
+    ret._ = posArgs;
+    return ret;
+};
