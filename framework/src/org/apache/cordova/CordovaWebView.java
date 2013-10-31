@@ -724,7 +724,7 @@ public class CordovaWebView extends WebView {
                     else {
                         //this.activityState = ACTIVITY_EXITING;
                     	//return false;
-                    	// If they hit back button when app is initializing, app should exit instead of hang until initilazation (CB2-458)
+                    	// If they hit back button when app is initializing, app should exit instead of hang until initialization (CB2-458)
                     	this.cordova.getActivity().finish();
                     }
                 }
