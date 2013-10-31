@@ -946,7 +946,7 @@ function hookOnlineApis() {
     }
     // The network module takes care of firing online and offline events.
     // It currently fires them only on document though, so we bridge them
-    // to window here (while first listening for exec()-releated online/offline
+    // to window here (while first listening for exec()-related online/offline
     // events).
     window.addEventListener('online', pollOnce, false);
     window.addEventListener('offline', pollOnce, false);
