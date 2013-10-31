@@ -720,7 +720,7 @@ public class CordovaWebView extends WebView {
                     if (this.backHistory()) {
                         return true;
                     }
-                    // If not, then invoke default behaviour
+                    // If not, then invoke default behavior
                     else {
                         //this.activityState = ACTIVITY_EXITING;
                     	//return false;
