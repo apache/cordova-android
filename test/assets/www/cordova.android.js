@@ -5483,7 +5483,7 @@ getLocaleName:function(successCB, failureCB) {
 * successCB callback with a properties object as a parameter. If there is an error
 * formatting the date, then the errorCB callback is invoked.
 *
-* The defaults are: formatLenght="short" and selector="date and time"
+* The defaults are: formatLength="short" and selector="date and time"
 *
 * @param {Date} date
 * @param {Function} successCB
