@@ -51,7 +51,7 @@ module.exports.run = function() {
 }
 
 module.exports.help = function() {
-    console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'corodva', 'log')));
+    console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'cordova', 'log')));
     console.log('Gives the logcat output on the command line.');
     process.exit(0);
 }

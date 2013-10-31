@@ -190,7 +190,7 @@ public class App extends CordovaPlugin {
      * @param override		T=override, F=cancel override
      */
     public void overrideBackbutton(boolean override) {
-        LOG.i("App", "WARNING: Back Button Default Behaviour will be overridden.  The backbutton event will be fired!");
+        LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
         webView.bindButton(override);
     }
 
@@ -202,7 +202,7 @@ public class App extends CordovaPlugin {
      * @param override      T=override, F=cancel override
      */
     public void overrideButton(String button, boolean override) {
-        LOG.i("App", "WARNING: Volume Button Default Behaviour will be overridden.  The volume event will be fired!");
+        LOG.i("App", "WARNING: Volume Button Default Behavior will be overridden.  The volume event will be fired!");
         webView.bindButton(button, override);
     }
 

@@ -143,8 +143,8 @@ module.exports.list_targets = function() {
 /*
  * Starts an emulator with the given ID,
  * and returns the started ID of that emulator.
- * If no ID is given it will used the first image availible,
- * if no image is availible it will error out (maybe create one?).
+ * If no ID is given it will used the first image available,
+ * if no image is available it will error out (maybe create one?).
  *
  * Returns a promise.
  */
@@ -274,7 +274,7 @@ module.exports.create_image = function(name, target) {
         .then(function() {
             // TODO: This seems like another error case, even though it always happens.
             console.error('ERROR : Unable to create an avd emulator, no targets found.');
-            console.error('Please insure you have targets availible by runing the "android" command');
+            console.error('Please insure you have targets available by running the "android" command');
             return Q.reject();
         }, function(error) {
             console.error('ERROR : Failed to create emulator image : ');

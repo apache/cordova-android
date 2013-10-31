@@ -32,7 +32,7 @@
 * [CB-4764] Deprecated DirectoryManager.java (moved into plugins)
 * [CB-4763] Deprecated FileHelper.java (moved into plugins), Move getMimeType() into CordovaResourceApi.
 * [CB-4725] Add CordovaWebView.CORDOVA_VERSION constant
-* Incremeting version check for Android 4.3 API Level 18
+* Incrementing version check for Android 4.3 API Level 18
 * [CB-3542] rewrote cli tooling scripts in node
 * Allow CordovaChromeClient subclasses access to CordovaInterface and CordovaWebView members
 * Refactor CordovaActivity.init so that subclasses can easily override factory methods for webview objects
