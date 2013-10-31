@@ -78,7 +78,7 @@ module.exports.get_apk = function() {
 }
 
 module.exports.help = function() {
-    console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'corodva', 'build')) + ' [build_type]');
+    console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'cordova', 'build')) + ' [build_type]');
     console.log('Build Types : ');
     console.log('    \'--debug\': Default build, will build project in using ant debug');
     console.log('    \'--release\': will build project using ant release');
