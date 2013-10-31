@@ -6180,7 +6180,7 @@ var exec = require('cordova/exec'),
     utils = require('cordova/utils');
 
 // Link the onLine property with the Cordova-supplied network info.
-// This works because we clobber the naviagtor object with our own
+// This works because we clobber the navigator object with our own
 // object in bootstrap.js.
 if (typeof navigator != 'undefined') {
     utils.defineGetter(navigator, 'onLine', function() {
