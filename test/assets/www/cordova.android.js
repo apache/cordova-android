@@ -31,7 +31,7 @@ var require,
         requireStack = [],
     // Map of module ID -> index into requireStack of modules currently being built.
         inProgressModules = {},
-        SEPERATOR = ".";
+        SEPARATOR = ".";
 
 
 
@@ -41,7 +41,7 @@ var require,
                 var resultantId = id;
                 //Its a relative path, so lop off the last portion and add the id (minus "./")
                 if (id.charAt(0) === ".") {
-                    resultantId = module.id.slice(0, module.id.lastIndexOf(SEPERATOR)) + SEPERATOR + id.slice(2);
+                    resultantId = module.id.slice(0, module.id.lastIndexOf(SEPARATOR)) + SEPARATOR + id.slice(2);
                 }
                 return require(resultantId);
             };
