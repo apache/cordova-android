@@ -26,7 +26,7 @@ var path  = require('path'),
     Q = require('q');
 
 /*
- * Runs the application on a device if availible.
+ * Runs the application on a device if available.
  * If not device is found, it will use a started emulator.
  * If no started emulators are found it will attempt to start an avd.
  * If no avds are found it will error out.
@@ -91,7 +91,7 @@ var path  = require('path'),
                 }
             });
         } else {
-            // no target given, deploy to device if availible, otherwise use the emulator.
+            // no target given, deploy to device if available, otherwise use the emulator.
             return device.list()
             .then(function(device_list) {
                 if (device_list.length > 0) {

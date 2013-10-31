@@ -760,11 +760,11 @@ public class CordovaWebView extends WebView {
                     if (this.backHistory()) {
                         return true;
                     }
-                    // If not, then invoke default behaviour
+                    // If not, then invoke default behavior
                     else {
                         //this.activityState = ACTIVITY_EXITING;
                     	//return false;
-                    	// If they hit back button when app is initializing, app should exit instead of hang until initilazation (CB2-458)
+                    	// If they hit back button when app is initializing, app should exit instead of hang until initialization (CB2-458)
                     	this.cordova.getActivity().finish();
                     }
                 }
@@ -963,7 +963,7 @@ public class CordovaWebView extends WebView {
 
     public void hideCustomView() {
         // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
-        Log.d(TAG, "Hidding Custom View");
+        Log.d(TAG, "Hiding Custom View");
         if (mCustomView == null) return;
 
         // Hide the custom view.
