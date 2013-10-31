@@ -923,7 +923,7 @@ public class CordovaWebView extends WebView {
 
     public void hideCustomView() {
         // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
-        Log.d(TAG, "Hidding Custom View");
+        Log.d(TAG, "Hiding Custom View");
         if (mCustomView == null) return;
 
         // Hide the custom view.
