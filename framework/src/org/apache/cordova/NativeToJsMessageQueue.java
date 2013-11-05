@@ -35,7 +35,7 @@ import android.webkit.WebView;
 public class NativeToJsMessageQueue {
     private static final String LOG_TAG = "JsMessageQueue";
 
-    // This must match the default value in incubator-cordova-js/lib/android/exec.js
+    // This must match the default value in cordova-js/lib/android/exec.js
     private static final int DEFAULT_BRIDGE_MODE = 2;
     
     // Set this to true to force plugin results to be encoding as
