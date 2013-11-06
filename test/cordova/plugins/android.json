@@ -1,0 +1,1 @@
+{"prepare_queue":{"installed":[],"uninstalled":[]},"config_munge":{"res/xml/config.xml":{"/*":{"<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>":1}}},"installed_plugins":{"org.apache.cordova.device":{"PACKAGE_NAME":"org.apache.cordova.test"}},"dependent_plugins":{}}
