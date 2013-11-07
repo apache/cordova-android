@@ -526,7 +526,7 @@ function include(parent, objects, clobber, merge) {
             include(result, obj.children, clobber, merge);
           }
         } catch(e) {
-          utils.alert('Exception building cordova JS globals: ' + e + ' for key "' + key + '"');
+          utils.alert('Exception building Cordova JS globals: ' + e + ' for key "' + key + '"');
         }
     });
 }
