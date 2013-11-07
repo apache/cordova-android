@@ -21,6 +21,7 @@
 
 var shell   = require('shelljs'),
     exec    = require('./exec'),
+    exit    = require('exit'),
     Q       = require('q'),
     clean   = require('./clean'),
     path    = require('path'),
@@ -70,10 +71,10 @@ module.exports.get_apk = function() {
             }
         }
         console.error('ERROR : No .apk found in \'bin\' folder');
-        process.exit(2);
+        exit(2);
     } else {
         console.error('ERROR : unable to find project bin folder, could not locate .apk');
-        process.exit(2);
+        exit(2);
     }
 }
 
@@ -83,5 +84,5 @@ module.exports.help = function() {
     console.log('    \'--debug\': Default build, will build project in using ant debug');
     console.log('    \'--release\': will build project using ant release');
     console.log('    \'--nobuild\': will skip build process (can be used with run command)');
-    process.exit(0);
+    exit(0);
 }

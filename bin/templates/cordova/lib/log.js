@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 /*
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
@@ -20,6 +19,7 @@
 */
 
 var shell = require('shelljs'),
+    exit  = require('exit'),
     path  = require('path'),
     Q     = require('q'),
     child_process = require('child_process'),
@@ -53,5 +53,5 @@ module.exports.run = function() {
 module.exports.help = function() {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'cordova', 'log')));
     console.log('Gives the logcat output on the command line.');
-    process.exit(0);
+    exit(0);
 }

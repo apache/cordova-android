@@ -20,6 +20,7 @@
 */
 
 var emulators = require('./emulator');
+var exit    = require('exit');
 
 // Usage support for when args are given
 emulators.list_started().done(function(emulator_list) {
@@ -28,5 +29,5 @@ emulators.list_started().done(function(emulator_list) {
     });
 }, function(err) {
     console.error('ERROR: ' + err);
-    process.exit(2);
+    exit(2);
 });

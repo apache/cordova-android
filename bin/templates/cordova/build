@@ -21,6 +21,7 @@
 
 var build = require('./lib/build'),
     reqs  = require('./lib/check_reqs'),
+    exit  = require('exit'),
     args  = process.argv;
 
 // Support basic help commands
@@ -32,6 +33,6 @@ if(args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
         return build.run(args[2]);
     }).done(null, function(err) {
         console.error(err);
-        process.exit(2);
+        exit(2);
     });
 }

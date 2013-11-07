@@ -20,6 +20,7 @@
 */
 
 var device = require('./device'),
+    exit   = require('exit'),
     args   = process.argv;
 
 if(args.length > 2) {
@@ -28,15 +29,15 @@ if(args.length > 2) {
         install_target = args[2].substring(9, args[2].length);
         device.install(install_target).done(null, function(err) {
             console.error('ERROR: ' + err);
-            process.exit(2);
+            exit(2);
         });
      } else {
         console.error('ERROR : argument \'' + args[2] + '\' not recognized.');
-        process.exit(2);
+        exit(2);
      }
 } else {
     device.install().done(null, function(err) {
         console.error('ERROR: ' + err);
-        process.exit(2);
+        exit(2);
     });
 }
