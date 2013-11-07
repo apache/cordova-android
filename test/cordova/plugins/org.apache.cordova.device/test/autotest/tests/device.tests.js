@@ -43,7 +43,7 @@ describe('Device Information (window.device)', function () {
 		}
 	});
 
-	it("should contain a cordova specification that is a string", function() {
+	it("should contain a Cordova specification that is a string", function() {
         expect(window.device.cordova).toBeDefined();
 		expect((new String(window.device.cordova)).length > 0).toBe(true);
 	});
