@@ -874,7 +874,7 @@ public class CordovaWebView extends WebView {
         {
             WebHistoryItem item = currentList.getItemAtIndex(i);
             String url = item.getUrl();
-            LOG.d(TAG, "The URL at index: " + Integer.toString(i) + "is " + url );
+            LOG.d(TAG, "The URL at index: " + Integer.toString(i) + " is " + url );
         }
     }
     
@@ -888,7 +888,7 @@ public class CordovaWebView extends WebView {
 	        String url = item.getUrl();
 	        String currentUrl = this.getUrl();
 	        LOG.d(TAG, "The current URL is: " + currentUrl);
-	        LOG.d(TAG, "The URL at item 0 is:" + url);
+	        LOG.d(TAG, "The URL at item 0 is: " + url);
 	        return currentUrl.equals(url);
         }
         return false;

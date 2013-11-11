@@ -24,11 +24,11 @@ These tests are designed to verify Android native features and other Android spe
 
 ## Initial Setup ##
 
-Before running the tests, they need to be set up.
+There really isn't any manual setup to do. The ant script takes care of that.
+You don't even need to compile cordova-x.y.z.jar or copy it, because 
+project.properties has a library reference to ../framework.
 
-0. Copy cordova-x.y.z.jar into libs directory
-
-To run from command line:
+To run manually from command line:
 
 0. Build by entering `ant debug install`
 0. Run tests by clicking on "CordovaTest" icon on device
@@ -38,7 +38,7 @@ To run from Eclipse:
 0. Import Android project into Eclipse
 0. Ensure Project properties "Java Build Path" includes the lib/cordova-x.y.z.jar
 0. Create run configuration if not already created
-0. Run tests 
+0. Run As -> Android JUnit Test
 
 ## Automatic Runs ##
 
@@ -46,5 +46,3 @@ Once you have installed the test, you can launch and run the tests
 automatically with the below command:
 
     adb shell am instrument -w org.apache.cordova.test/android.test.InstrumentationTestRunner
-
-(Optionally, you can also run in Eclipse)

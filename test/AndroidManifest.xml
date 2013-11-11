@@ -255,5 +255,5 @@
                 <category android:name="android.intent.category.SAMPLE_CODE" />
             </intent-filter>
         </activity>
-        </application>
+    </application>
 </manifest> 

@@ -9,7 +9,7 @@
     </author>
     <access origin="*.apache.org" />
     <content src="index.html" />
-    <log level="DEBUG" />
+    <preference name="loglevel" value="DEBUG" />
     <preference name="useBrowserHistory" value="true" />
     <preference name="exit-on-suspend" value="false" />
     <feature name="Activity">

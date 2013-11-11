@@ -32,7 +32,7 @@ import android.widget.LinearLayout;
 
 public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<backbuttonmultipage> {
 
-  private int TIMEOUT = 1000;
+  private int TIMEOUT = 2000;
   backbuttonmultipage testActivity;
   private FrameLayout containerView;
   private LinearLayout innerContainer;
@@ -40,7 +40,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
   
 
   public BackButtonMultiPageTest() {
-    super("org.apache.cordova.test", backbuttonmultipage.class);
+    super(backbuttonmultipage.class);
   }
 
   protected void setUp() throws Exception {
@@ -49,11 +49,15 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
       innerContainer = (LinearLayout) containerView.getChildAt(0);
       testView = (CordovaWebView) innerContainer.getChildAt(0);
+      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/index.html");
+      sleep();
   }
 
   public void testPreconditions(){
       assertNotNull(innerContainer);
       assertNotNull(testView);
+      String url = testView.getUrl();
+      assertTrue(url.endsWith("index.html"));
   }
   
   public void testViaHref() {
