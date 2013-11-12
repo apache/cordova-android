@@ -30,6 +30,7 @@ project.properties has a library reference to ../framework.
 
 To run manually from command line:
 
+0. Install the Cordova Device Plugin using plugman
 0. Build by entering `ant debug install`
 0. Run tests by clicking on "CordovaTest" icon on device
 
