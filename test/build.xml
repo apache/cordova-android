@@ -74,24 +74,6 @@
               preservelastmodified="true"
               failonerror="true"
               verbose="true" />
-        <!-- copy the latest device plugin from the parent's peer -->
-        <fail message="Need to have cordova-plugin-device cloned." >
-            <condition>
-                <not>
-                    <available file="../../cordova-plugin-device" type="dir" />
-                </not>
-            </condition>
-        </fail>
-        <copy file="../../cordova-plugin-device/www/device.js"
-              tofile="cordova/plugins/org.apache.cordova.device/www/device.js"
-              preservelastmodified="true"
-              failonerror="true"
-              verbose="true" />
-        <copy file="../../cordova-plugin-device/src/android/Device.java"
-              tofile="cordova/plugins/org.apache.cordova.device/src/android/Device.java"
-              preservelastmodified="true"
-              failonerror="true"
-              verbose="true" />
     </target>
 <!--
     <target name="-pre-compile">
