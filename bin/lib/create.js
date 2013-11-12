@@ -181,10 +181,10 @@ exports.createProject = function(project_path, package_name, project_name, proje
 
 // Returns a promise.
 exports.updateProject = function(projectPath) {
+    var version = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
     // Check that requirements are met and proper targets are installed
     return check_reqs.run()
     .then(function() {
-        var version = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
         var target_api = check_reqs.get_target();
         return ensureJarIsBuilt(version, target_api);
     }).then(function() {
