@@ -4,7 +4,7 @@
     <description>
         A sample Apache Cordova application that responds to the deviceready event.
     </description>
-    <author href="http://cordova.io" email="dev@cordova.apache.org">
+    <author email="dev@cordova.apache.org" href="http://cordova.io">
         Apache Cordova Team
     </author>
     <access origin="*.apache.org" />
@@ -17,8 +17,5 @@
     </feature>
     <feature name="App">
         <param name="android-package" value="org.apache.cordova.App" />
-    </feature>
-    <feature name="Device">
-        <param name="android-package" value="org.apache.cordova.device.Device" />
     </feature>
 </widget>
