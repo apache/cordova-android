@@ -40,14 +40,8 @@
 
     function onDeviceReady() {
         // Register the event listener
-        document.getElementById("platform").innerHTML = device.platform;
-        document.getElementById("version").innerHTML = device.version;
-        document.getElementById("uuid").innerHTML = device.uuid;
-        document.getElementById("name").innerHTML = device.name;
-        document.getElementById("cordova").innerHTML = device.cordova;
-        document.getElementById("width").innerHTML = screen.width;
-        document.getElementById("height").innerHTML = screen.height;
-        document.getElementById("colorDepth").innerHTML = screen.colorDepth;
+        document.getElementById("deviceready").innerHTML = "fired";
+        document.getElementById("cordova").innerHTML = cordova.version;
 
         document.addEventListener("pause", onPause, false);
         document.addEventListener("resume", onResume, false);
