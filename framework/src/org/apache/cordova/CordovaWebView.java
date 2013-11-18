@@ -517,6 +517,15 @@ public class CordovaWebView extends WebView {
         this.loadUrlIntoView(url);
     }
     
+    
+    public void onScrollChanged(int l, int t, int oldl, int oldt)
+    {
+        super.onScrollChanged(l, t, oldl, oldt);
+        //We should post a message that the scroll changed
+        LOG.d(TAG, "Scroll changed: oldl = %d, l = %d", oldl, l);
+        LOG.d(TAG, "Scroll changed: oldt = %d, t = %d", oldt, t);
+    }
+    
     /**
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)
