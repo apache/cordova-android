@@ -33,8 +33,10 @@ module.exports.get_target = function() {
         return target.split('=')[1].replace('\n', '').replace('\r', '').replace(' ', '');
     } else if (fs.existsSync(path.join(ROOT, 'project.properties'))) {
         // if no target found, we're probably in a project and project.properties is in ROOT.
-        var target = shell.grep(/target=android-[\d+]/, path.join(ROOT, 'project.properties'));
-        return target.split('=')[1].replace('\n', '').replace('\r', '').replace(' ', '');
+        // this is called on the project itself, and can support Google APIs AND Vanilla Android
+        var target = shell.grep(/target=android-[\d+]/, path.join(ROOT, 'project.properties')) ||
+          shell.grep(/target=Google Inc.:Google APIs:[\d+]/, path.join(ROOT, 'project.properties'));
+        return target.split('=')[1].replace('\n', '').replace('\r', '');
     }
 }
 
