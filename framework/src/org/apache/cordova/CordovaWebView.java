@@ -56,6 +56,12 @@ import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.FrameLayout;
 
+/*
+ * This class is our web view.
+ *
+ * @see <a href="http://developer.android.com/guide/webapps/webview.html">WebView guide</a>
+ * @see <a href="http://developer.android.com/reference/android/webkit/WebView.html">WebView</a>
+ */
 public class CordovaWebView extends WebView {
 
     public static final String TAG = "CordovaWebView";
@@ -208,7 +214,9 @@ public class CordovaWebView extends WebView {
         this.setup();
     }
 
-
+    /**
+     * set the WebViewClient, but provide special case handling for IceCreamSandwich.
+     */
     private void initWebViewClient(CordovaInterface cordova) {
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB ||
                 android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)

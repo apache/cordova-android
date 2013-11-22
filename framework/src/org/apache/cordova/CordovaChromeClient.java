@@ -47,6 +47,14 @@ import android.widget.RelativeLayout;
 
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
+ * The kind of callbacks that happen here are on the chrome outside the document,
+ * such as onCreateWindow(), onConsoleMessage(), onProgressChanged(), etc. Related
+ * to but different than CordovaWebViewClient.
+ *
+ * @see <a href="http://developer.android.com/reference/android/webkit/WebChromeClient.html">WebChromeClient</a>
+ * @see <a href="http://developer.android.com/guide/webapps/webview.html">WebView guide</a>
+ * @see CordovaWebViewClient
+ * @see CordovaWebView
  */
 public class CordovaChromeClient extends WebChromeClient {
 

@@ -45,6 +45,15 @@ import android.webkit.WebViewClient;
 
 /**
  * This class is the WebViewClient that implements callbacks for our web view.
+ * The kind of callbacks that happen here are regarding the rendering of the
+ * document instead of the chrome surrounding it, such as onPageStarted(), 
+ * shouldOverrideUrlLoading(), etc. Related to but different than
+ * CordovaChromeClient.
+ *
+ * @see <a href="http://developer.android.com/reference/android/webkit/WebViewClient.html">WebViewClient</a>
+ * @see <a href="http://developer.android.com/guide/webapps/webview.html">WebView guide</a>
+ * @see CordovaChromeClient
+ * @see CordovaWebView
  */
 public class CordovaWebViewClient extends WebViewClient {
 
