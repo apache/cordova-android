@@ -17,10 +17,18 @@
        under the License.
 */
 
-// We moved everything to CordovaActivity
-
 package org.apache.cordova;
 
+/**
+ * This used to be the class that should be extended by application
+ * developers, but everything has been moved to CordovaActivity. So
+ * you should extend CordovaActivity instead of DroidGap. This class
+ * will be removed at a future time.
+ *
+ * @see CordovaActivity
+ * @deprecated
+ */
+@Deprecated
 public class DroidGap extends CordovaActivity {
 
 }

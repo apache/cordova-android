@@ -642,10 +642,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     /**
      * Set boolean property on activity.
+     * This method has been deprecated in 3.0 and will be removed at a future
+     * time. Please use config.xml instead.
      *
      * @param name
      * @param value
+     * @deprecated
      */
+    @Deprecated
     public void setBooleanProperty(String name, boolean value) {
         Log.d(TAG, "Setting boolean properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name.toLowerCase(), value);
@@ -653,10 +657,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     /**
      * Set int property on activity.
+     * This method has been deprecated in 3.0 and will be removed at a future
+     * time. Please use config.xml instead.
      *
      * @param name
      * @param value
+     * @deprecated
      */
+    @Deprecated
     public void setIntegerProperty(String name, int value) {
         Log.d(TAG, "Setting integer properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name.toLowerCase(), value);
@@ -664,10 +672,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     /**
      * Set string property on activity.
+     * This method has been deprecated in 3.0 and will be removed at a future
+     * time. Please use config.xml instead.
      *
      * @param name
      * @param value
+     * @deprecated
      */
+    @Deprecated
     public void setStringProperty(String name, String value) {
         Log.d(TAG, "Setting string properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name.toLowerCase(), value);
@@ -675,10 +687,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     /**
      * Set double property on activity.
+     * This method has been deprecated in 3.0 and will be removed at a future
+     * time. Please use config.xml instead.
      *
      * @param name
      * @param value
+     * @deprecated
      */
+    @Deprecated
     public void setDoubleProperty(String name, double value) {
         Log.d(TAG, "Setting double properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
         this.getIntent().putExtra(name.toLowerCase(), value);
