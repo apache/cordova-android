@@ -63,13 +63,14 @@ import android.widget.LinearLayout;
  * html file that contains the application.
  *
  * As an example:
- *
+ * 
+ * <pre>
  *     package org.apache.cordova.examples;
  *     import android.os.Bundle;
  *     import org.apache.cordova.*;
  *
  *     public class Example extends CordovaActivity {
- *       @Override
+ *       &#64;Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
  *
@@ -85,9 +86,11 @@ import android.widget.LinearLayout;
  *         super.loadUrl("file:///android_asset/www/index.html", 3000); // show splash screen 3 sec before loading app
  *       }
  *     }
- *
+ * </pre>
+ * 
  * Properties: The application can be configured using the following properties:
- *
+ * 
+ * <pre>
  *      // Display a native loading dialog when loading app.  Format for value = "Title,Message".
  *      // (String - default=null)
  *      super.setStringProperty("loadingDialog", "Wait,Loading Demo...");
@@ -114,15 +117,19 @@ import android.widget.LinearLayout;
  *
  *      // Enable app to keep running in background. (Boolean - default=true)
  *      super.setBooleanProperty("keepRunning", false);
+ * </pre>
  *
  * Cordova.xml configuration:
+ * 
+ * <pre>
  *      Cordova uses a configuration file at res/xml/cordova.xml to specify the following settings.
  *
  *      Approved list of URLs that can be loaded into Cordova
- *          <access origin="http://server regexp" subdomains="true" />
+ *          &lt;access origin="http://server regexp" subdomains="true" /&gt;
  *      Log level: ERROR, WARN, INFO, DEBUG, VERBOSE (default=ERROR)
- *          <log level="DEBUG" />
- *
+ *          &lt;log level="DEBUG" /&gt;
+ * </pre>
+ * 
  */
 public class CordovaActivity extends Activity implements CordovaInterface {
     public static String TAG = "CordovaActivity";
@@ -291,7 +298,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Get the Android activity.
      *
-     * @return
+     * @return the Activity
      */
     public Activity getActivity() {
         return this;
@@ -544,7 +551,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      *
      * @param name
      * @param defaultValue
-     * @return
+     * @return the boolean value of the named property
      */
     public boolean getBooleanProperty(String name, boolean defaultValue) {
         Bundle bundle = this.getIntent().getExtras();
@@ -575,7 +582,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      *
      * @param name
      * @param defaultValue
-     * @return
+     * @return the int value for the named property
      */
     public int getIntegerProperty(String name, int defaultValue) {
         Bundle bundle = this.getIntent().getExtras();
@@ -600,7 +607,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      *
      * @param name
      * @param defaultValue
-     * @return
+     * @return the String value for the named property
      */
     public String getStringProperty(String name, String defaultValue) {
         Bundle bundle = this.getIntent().getExtras();
@@ -620,7 +627,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      *
      * @param name
      * @param defaultValue
-     * @return
+     * @return the double value for the named property
      */
     public double getDoubleProperty(String name, double defaultValue) {
         Bundle bundle = this.getIntent().getExtras();
@@ -815,6 +822,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param serviceType
      * @param className
      */
+    @Deprecated
     public void addService(String serviceType, String className) {
         if (this.appView != null && this.appView.pluginManager != null) {
             this.appView.pluginManager.addService(serviceType, className);
@@ -1013,7 +1021,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * Determine if URL is in approved list of URLs to load.
      *
      * @param url
-     * @return
+     * @return true if the url is whitelisted
      */
     public boolean isUrlWhiteListed(String url) {
         return Config.isUrlWhiteListed(url);
@@ -1044,8 +1052,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Get Activity context.
      *
-     * @return
+     * @return self
+     * @deprecated
      */
+    @Deprecated
     public Context getContext() {
         LOG.d(TAG, "This will be deprecated December 2012");
         return this;

@@ -149,7 +149,7 @@ public class Whitelist {
      * Determine if URL is in approved list of URLs to load.
      *
      * @param uri
-     * @return
+     * @return true if wide open or whitelisted
      */
     public boolean isUrlWhiteListed(String uri) {
         // If there is no whitelist, then it's wide open

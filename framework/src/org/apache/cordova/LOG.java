@@ -65,7 +65,7 @@ public class LOG {
      * Determine if log level will be logged
      *
      * @param logLevel
-     * @return
+     * @return true if the parameter passed in is greater than or equal to the current log level
      */
     public static boolean isLoggable(int logLevel) {
         return (logLevel >= LOGLEVEL);

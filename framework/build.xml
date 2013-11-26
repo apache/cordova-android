@@ -95,6 +95,13 @@
     <target name="-post-compile">
     </target>
 -->
+    <target name="-pre-clean">
+        <!-- delete generated javadoc -->
+        <delete dir="javadoc-public" failonerror="false" />
+        <delete dir="javadoc-private" failonerror="false" />
+        <!-- delete generated jar -->
+        <delete file="cordova-${version}.jar" failonerror="false" />
+    </target>
 
     <!-- Import the actual build file.
 
@@ -120,7 +127,31 @@
          that includes all JavaScript code.
     -->
     <target name="jar" depends="-compile">
-      <jar jarfile="cordova-${version}.jar" basedir="bin/classes" excludes="org/apache/cordova/R.class,org/apache/cordova/R$*.class"/>
+        <jar
+            basedir="bin/classes"
+            excludes="org/apache/cordova/R.class,org/apache/cordova/R$*.class"
+            jarfile="cordova-${version}.jar" />
+    </target>
+    
+    <target name="javadoc">
+        <delete dir="javadoc-public" failonerror="false" />
+        <javadoc
+            access="public" 
+            destdir="javadoc-public"
+            classpath="${sdk.dir}/platforms/${target}/android.jar">
+            <packageset dir="src">
+                <include name="org/apache/cordova/**" />
+            </packageset>
+        </javadoc>
+        <delete dir="javadoc-private" failonerror="false" />
+        <javadoc
+            access="private" 
+            destdir="javadoc-private"
+            classpath="${sdk.dir}/platforms/${target}/android.jar">
+            <packageset dir="src">
+                <include name="org/apache/cordova/**" />
+            </packageset>
+        </javadoc>
     </target>
 
     <!-- tests for Java files -->

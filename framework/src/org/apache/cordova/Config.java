@@ -208,7 +208,7 @@ public class Config {
      * Determine if URL is in approved list of URLs to load.
      *
      * @param url
-     * @return
+     * @return true if whitelisted
      */
     public static boolean isUrlWhiteListed(String url) {
         if (self == null) {

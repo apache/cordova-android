@@ -339,7 +339,7 @@ public class PluginManager {
      *
      * @param id                The message id
      * @param data              The message data
-     * @return
+     * @return                  Object to stop propagation or null
      */
     public Object postMessage(String id, Object data) {
         Object obj = this.ctx.onMessage(id, data);

@@ -107,7 +107,7 @@ public class PluginEntry {
      * Get the class.
      *
      * @param clazz
-     * @return
+     * @return a reference to the named class
      * @throws ClassNotFoundException
      */
     @SuppressWarnings("rawtypes")
