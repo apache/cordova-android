@@ -52,16 +52,18 @@ module.exports.check_ant = function() {
 
 // Returns a promise.
 module.exports.check_java = function() {
-    if(process.env.JAVA_HOME) {
-        var d = Q.defer();
-        child_process.exec('java -version', function(err, stdout, stderr) {
-            if(err) d.reject(new Error('ERROR : executing command \'java\', make sure you java environment is set up. Including your JDK and JRE.' + err));
-            else d.resolve();
-        });
-        return d.promise;
-    } else {
-        return Q.reject(new Error('ERROR : Make sure JAVA_HOME is set, as well as paths to your JDK and JRE for java.'));
-    }
+    var d = Q.defer();
+    child_process.exec('java -version', function(err, stdout, stderr) {
+        if(err) {
+            var msg =
+                'Failed to run \'java -version\', make sure your java environment is set up\n' +
+                'including JDK and JRE.\n' +
+                'Your JAVA_HOME variable is ' + process.env.JAVA_HOME + '\n';
+            d.reject(new Error(msg + err));
+        }
+        else d.resolve();
+    });
+    return d.promise;
 }
 
 // Returns a promise.
