@@ -37,6 +37,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -280,6 +283,28 @@ public class CordovaWebView extends WebView {
         String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         settings.setDatabaseEnabled(true);
         settings.setDatabasePath(databasePath);
+        
+        
+        //Determine whether we're in debug or release mode, and turn on Debugging!
+        try {
+            final String packageName = this.cordova.getActivity().getPackageName();
+            final PackageManager pm = this.cordova.getActivity().getPackageManager();
+            ApplicationInfo appInfo;
+            
+            appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            
+            if((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 &&  
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT)
+            {
+                setWebContentsDebuggingEnabled(true);
+            }
+        } catch (IllegalArgumentException e) {
+            Log.d(TAG, "You have one job! To turn on Remote Web Debugging! YOU HAVE FAILED! ");
+            e.printStackTrace();
+        } catch (NameNotFoundException e) {
+            Log.d(TAG, "This should never happen: Your application's package can't be found.");
+            e.printStackTrace();
+        }  
         
         settings.setGeolocationDatabasePath(databasePath);
 
