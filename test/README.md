@@ -26,7 +26,8 @@ These tests are designed to verify Android native features and other Android spe
 
 There really isn't any manual setup to do. The ant script takes care of that.
 You don't even need to compile cordova-x.y.z.jar or copy it, because 
-project.properties has a library reference to ../framework.
+project.properties has a library reference to ../framework.  However, Robotium has to be 
+installed for the onScrollChanged tests to work correctly.  It can be found at https://code.google.com/p/robotium/
 
 To run manually from command line:
 
