@@ -91,8 +91,6 @@ module.exports.check_android = function() {
 
 // Returns a promise.
 module.exports.run = function() {
-    return Q.all([this.check_ant(), this.check_java(), this.check_android()]).then(function() {
-        console.log('Looks like your environment fully supports cordova-android development!');
-    });
+    return Q.all([this.check_ant(), this.check_java(), this.check_android()]);
 }
 
