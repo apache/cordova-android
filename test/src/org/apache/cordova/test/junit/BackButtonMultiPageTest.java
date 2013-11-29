@@ -25,6 +25,7 @@ import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.test.backbuttonmultipage;
 
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.UiThreadTest;
 import android.view.KeyEvent;
 import android.view.inputmethod.BaseInputConnection;
 import android.widget.FrameLayout;
@@ -43,6 +44,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
     super(backbuttonmultipage.class);
   }
 
+  @UiThreadTest
   protected void setUp() throws Exception {
       super.setUp();
       testActivity = this.getActivity();
@@ -53,6 +55,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       sleep();
   }
 
+  @UiThreadTest
   public void testPreconditions(){
       assertNotNull(innerContainer);
       assertNotNull(testView);
@@ -60,96 +63,202 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       assertTrue(url.endsWith("index.html"));
   }
   
-  public void testViaHref() {
-      testView.sendJavascript("window.location = 'sample2.html';");
+  public void testViaHref() throws Throwable {
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              testView.sendJavascript("window.location = 'sample2.html';");
+          }
+      });
       sleep();
-      String url = testView.getUrl();
-      assertTrue(url.endsWith("sample2.html"));
-      testView.sendJavascript("window.location = 'sample3.html';");
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample2.html"));
+              testView.sendJavascript("window.location = 'sample3.html';");          }
+      });
+     
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("sample3.html"));
-      boolean didGoBack = testView.backHistory();
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample3.html"));
+              testView.backHistory();
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("sample2.html"));
-      assertTrue(didGoBack);
-      didGoBack = testView.backHistory();
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample2.html"));
+              testView.backHistory();
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("index.html"));
-      assertTrue(didGoBack);
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("index.html"));
+          }
+      });
   }
   
-  public void testViaLoadUrl() {
-      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+  public void testViaLoadUrl() throws Throwable {
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+          }
+      });
       sleep();
-      String url = testView.getUrl();
-      assertTrue(url.endsWith("sample2.html"));
-      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample2.html"));
+              testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("sample3.html"));
-      boolean didGoBack = testView.backHistory();
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample3.html"));
+              testView.backHistory();
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("sample2.html"));
-      assertTrue(didGoBack);
-      didGoBack = testView.backHistory();
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample2.html"));
+              testView.backHistory();
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("index.html"));
-      assertTrue(didGoBack);
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("index.html"));
+              testView.backHistory();
+          }
+      });
   }
 
-  public void testViaBackButtonOnView() {
-      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+  public void testViaBackButtonOnView() throws Throwable {
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+          }
+      });
       sleep();
-      String url = testView.getUrl();
-      assertTrue(url.endsWith("sample2.html"));
-      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample2.html"));
+              testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("sample3.html"));
-      BaseInputConnection viewConnection = new BaseInputConnection(testView, true);
-      KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
-      KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
-      viewConnection.sendKeyEvent(backDown);
-      viewConnection.sendKeyEvent(backUp);
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample3.html"));
+              BaseInputConnection viewConnection = new BaseInputConnection(testView, true);
+              KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
+              KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+              viewConnection.sendKeyEvent(backDown);
+              viewConnection.sendKeyEvent(backUp);
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("sample2.html"));
-      viewConnection.sendKeyEvent(backDown);
-      viewConnection.sendKeyEvent(backUp);
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample2.html"));
+              BaseInputConnection viewConnection = new BaseInputConnection(testView, true);
+              KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
+              KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+              viewConnection.sendKeyEvent(backDown);
+              viewConnection.sendKeyEvent(backUp);
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("index.html"));
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("index.html"));
+          }
+      });
+      
   }
   
-  public void testViaBackButtonOnLayout() {
-      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+  public void testViaBackButtonOnLayout() throws Throwable {
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+          }
+      });
       sleep();
-      String url = testView.getUrl();
-      assertTrue(url.endsWith("sample2.html"));
-      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample2.html"));
+              testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("sample3.html"));
-      BaseInputConnection viewConnection = new BaseInputConnection(containerView, true);
-      KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
-      KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
-      viewConnection.sendKeyEvent(backDown);
-      viewConnection.sendKeyEvent(backUp);
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample3.html"));
+              BaseInputConnection viewConnection = new BaseInputConnection(containerView, true);
+              KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
+              KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+              viewConnection.sendKeyEvent(backDown);
+              viewConnection.sendKeyEvent(backUp);
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("sample2.html"));
-      viewConnection.sendKeyEvent(backDown);
-      viewConnection.sendKeyEvent(backUp);
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("sample2.html"));
+              BaseInputConnection viewConnection = new BaseInputConnection(containerView, true);
+              KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
+              KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
+              viewConnection.sendKeyEvent(backDown);
+              viewConnection.sendKeyEvent(backUp);
+          }
+      });
       sleep();
-      url = testView.getUrl();
-      assertTrue(url.endsWith("index.html"));
+      runTestOnUiThread(new Runnable() {
+          public void run()
+          {
+              String url = testView.getUrl();
+              assertTrue(url.endsWith("index.html"));
+          }
+      });
+      
   }
   
+  @UiThreadTest
   private void sleep() {
       try {
           Thread.sleep(TIMEOUT);

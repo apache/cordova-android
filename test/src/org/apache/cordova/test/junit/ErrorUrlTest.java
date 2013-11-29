@@ -54,13 +54,19 @@ public class ErrorUrlTest extends ActivityInstrumentationTestCase2<errorurl> {
       assertNotNull(testView);
   }
   
-  public void testUrl()
+  public void testUrl() throws Throwable
   {
     sleep();
-    String good_url = "file:///android_asset/www/htmlnotfound/error.html";
-    String url = testView.getUrl();
-    assertNotNull(url);
-    assertTrue(url.equals(good_url));
+    runTestOnUiThread(new Runnable() {
+        public void run()
+        {
+            String good_url = "file:///android_asset/www/htmlnotfound/error.html";
+            String url = testView.getUrl();
+            assertNotNull(url);
+            assertTrue(url.equals(good_url));
+         
+        }
+    });
   }
   
 

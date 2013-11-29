@@ -60,26 +60,62 @@ public class IFrameTest extends ActivityInstrumentationTestCase2 {
     }
   
   
-    public void testIframeDest()
+    public void testIframeDest() throws Throwable
     {
-        testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+        runTestOnUiThread(new Runnable() {
+            public void run()
+            {
+                testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+            }
+        });
         sleep(3000);
-        testView.sendJavascript("loadUrl('index2.html')");
+        runTestOnUiThread(new Runnable() {
+            public void run()
+            {
+                testView.sendJavascript("loadUrl('index2.html')");
+            }
+        });
         sleep(1000);
-        String url = testView.getUrl();
-        assertTrue(url.endsWith("index.html"));
+        runTestOnUiThread(new Runnable() {
+            public void run()
+            {
+                String url = testView.getUrl();
+                assertTrue(url.endsWith("index.html"));
+            }
+        });
     }
     
-    public void testIframeHistory()
+    public void testIframeHistory() throws Throwable
     {
-        testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+        runTestOnUiThread(new Runnable() {
+            public void run()
+            {
+                testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+            }
+        });
         sleep(3000);
-        testView.sendJavascript("loadUrl('index2.html')");
+        runTestOnUiThread(new Runnable() {
+            public void run()
+            {
+                testView.sendJavascript("loadUrl('index2.html')");
+            }
+        });
         sleep(1000);
-        String url = testView.getUrl();
-        testView.backHistory();
+        runTestOnUiThread(new Runnable() {
+            public void run()
+            {
+                String url = testView.getUrl();
+                testView.backHistory();
+            }
+        });
         sleep(1000);
-        assertTrue(url.endsWith("index.html"));
+        runTestOnUiThread(new Runnable() {
+            public void run()
+            {
+                String url = testView.getUrl();
+                assertTrue(url.endsWith("index.html"));
+            }
+        });
     }
     
     private void sleep(int timeout) {
