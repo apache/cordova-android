@@ -68,10 +68,15 @@ public class Config {
             return;
         }
 
+        // First checking the class namespace for config.xml
         int id = action.getResources().getIdentifier("config", "xml", action.getClass().getPackage().getName());
         if (id == 0) {
-            LOG.i("CordovaLog", "config.xml missing. Ignoring...");
-            return;
+            // If we couldn't find config.xml there, we'll look in the namespace from AndroidManifest.xml
+            id = action.getResources().getIdentifier("config", "xml", action.getPackageName());
+            if (id == 0) {
+                LOG.i("CordovaLog", "config.xml missing. Ignoring...");
+                return;
+            }
         }
 
         // Add implicitly allowed URLs
