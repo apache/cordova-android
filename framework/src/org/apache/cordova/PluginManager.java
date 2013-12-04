@@ -110,11 +110,16 @@ public class PluginManager {
      * Load plugins from res/xml/config.xml
      */
     public void loadPlugins() {
+        // First checking the class namespace for config.xml
         int id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getClass().getPackage().getName());
         if (id == 0) {
-            this.pluginConfigurationMissing();
-            //We have the error, we need to exit without crashing!
-            return;
+            // If we couldn't find config.xml there, we'll look in the namespace from AndroidManifest.xml
+            id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getPackageName());
+            if (id == 0) {
+                this.pluginConfigurationMissing();
+                //We have the error, we need to exit without crashing!
+                return;
+            }
         }
         XmlResourceParser xml = this.ctx.getActivity().getResources().getXml(id);
         int eventType = -1;
