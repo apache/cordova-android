@@ -7,9 +7,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -23,27 +23,27 @@ Cordova Android
 
 Cordova Android is an Android application library that allows for Cordova-based
 projects to be built for the Android Platform. Cordova based applications are,
-at the core, applications written with web technology: HTML, CSS and JavaScript. 
+at the core, applications written with web technology: HTML, CSS and JavaScript.
 
-[Apache Cordova](http://cordova.io) is a project at The Apache Software Foundation (ASF).
+[Apache Cordova](http://cordova.io) is a project of The Apache Software Foundation (ASF).
 
 
 Requires
 ---
 
 - Java JDK 1.5 or greater
-- Apache ANT 1.8.0 or greater
+- Apache Ant 1.8.0 or greater
 - Android SDK [http://developer.android.com](http://developer.android.com)
 
- 
+
 Cordova Android Developer Tools
 ---
 
-The Cordova developer tooling is split between general tooling and project level tooling. 
+The Cordova developer tooling is split between general tooling and project level tooling.
 
 General Commands
 
-    ./bin/create [path package activity] ... create the ./example app or a cordova android project
+    ./bin/create [path package activity] ... creates the ./example app or a cordova android project
     ./bin/check_reqs ....................... checks that your environment is set up for cordova-android development
     ./bin/update [path] .................... updates an existing cordova-android project to the version of the framework
 
@@ -53,7 +53,7 @@ These commands live in a generated Cordova Android project. Any interactions wit
 
     ./cordova/clean ........................ cleans the project
     ./cordova/build ........................ calls `clean` then compiles the project
-    ./cordova/log   ........................ stream device or emulate logs to stdout
+    ./cordova/log   ........................ streams device or emulator logs to STDOUT
     ./cordova/run   ........................ calls `build` then deploys to a connected Android device. If no Android device is detected, will launch an emulator and deploy to it.
     ./cordova/version ...................... returns the cordova-android version of the current project
 
@@ -69,7 +69,7 @@ Importing a Cordova Android Project into Eclipse
 
 Building without the Tooling
 ---
-Note: The Developer Tools handle this.  This is only to be done if the tooling fails, or if 
+Note: The Developer Tools handle this.  This is only to be done if the tooling fails, or if
 you are developing directly against the framework.
 
 
