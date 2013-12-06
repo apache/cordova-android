@@ -99,7 +99,7 @@ public class Config {
                 }
                 else if (strNode.equals("log")) {
                     String level = xml.getAttributeValue(null, "level");
-                    Log.d(TAG, "The <log> tags is deprecated. Use <preference name=\"loglevel\" value=\"" + level + "\"/> instead.");
+                    Log.d(TAG, "The <log> tag is deprecated. Use <preference name=\"loglevel\" value=\"" + level + "\"/> instead.");
                     if (level != null) {
                         LOG.setLogLevel(level);
                     }
