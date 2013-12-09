@@ -27,12 +27,34 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.telephony.TelephonyManager;
+
 import java.util.HashMap;
 
 /**
  * This class exposes methods in Cordova that can be called from JavaScript.
  */
 public class App extends CordovaPlugin {
+
+    protected static final String TAG = "CordovaApp";
+    private BroadcastReceiver telephonyReceiver;
+
+    /**
+     * Sets the context of the Command. This can then be used to do things like
+     * get file paths associated with the Activity.
+     *
+     * @param cordova The context of the main Activity.
+     * @param webView The CordovaWebView Cordova is running in.
+     */
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        this.initTelephonyReceiver();
+    }
+
 
     /**
      * Executes the request and returns PluginResult.
@@ -220,6 +242,46 @@ public class App extends CordovaPlugin {
      */
     public void exitApp() {
         this.webView.postMessage("exit", null);
+    }
+    
+
+    /**
+     * Listen for telephony events: RINGING, OFFHOOK and IDLE
+     * Send these events to all plugins using
+     *      CordovaActivity.onMessage("telephone", "ringing" | "offhook" | "idle")
+     */
+    private void initTelephonyReceiver() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+        //final CordovaInterface mycordova = this.cordova;
+        this.telephonyReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                // If state has changed
+                if ((intent != null) && intent.getAction().equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
+                    if (intent.hasExtra(TelephonyManager.EXTRA_STATE)) {
+                        String extraData = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+                        if (extraData.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
+                            LOG.i(TAG, "Telephone RINGING");
+                            webView.postMessage("telephone", "ringing");
+                        }
+                        else if (extraData.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
+                            LOG.i(TAG, "Telephone OFFHOOK");
+                            webView.postMessage("telephone", "offhook");
+                        }
+                        else if (extraData.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
+                            LOG.i(TAG, "Telephone IDLE");
+                            webView.postMessage("telephone", "idle");
+                        }
+                    }
+                }
+            }
+        };
+
+        // Register the receiver
+        this.cordova.getActivity().registerReceiver(this.telephonyReceiver, intentFilter);
     }
 
 }
