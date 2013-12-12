@@ -20,6 +20,7 @@
 */
 
 var exec  = require('./exec'),
+    exit  = require('exit'),
     path  = require('path'),
     ROOT = path.join(__dirname, '..', '..');
 
@@ -34,5 +35,5 @@ module.exports.run = function() {
 module.exports.help = function() {
     console.log('Usage: ' + path.relative(process.cwd(), process.argv[1]));
     console.log('Cleans the project directory.');
-    process.exit(0);
+    exit(0);
 }

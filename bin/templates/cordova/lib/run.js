@@ -20,6 +20,7 @@
 */
 
 var path  = require('path'),
+    exit  = require('exit'),
     build = require('./build'),
     emulator = require('./emulator'),
     device   = require('./device'),
@@ -51,7 +52,7 @@ var path  = require('path'),
             install_target = args[i].substring(9, args[i].length);
         } else {
             console.error('ERROR : Run option \'' + args[i] + '\' not recognized.');
-            process.exit(2);
+            exit(2);
         }
     }
 
@@ -135,5 +136,5 @@ module.exports.help = function() {
     console.log('    --device : Will deploy the built project to a device');
     console.log('    --emulator : Will deploy the built project to an emulator if one exists');
     console.log('    --target=<target_id> : Installs to the target with the specified id.');
-    process.exit(0);
+    exit(0);
 }

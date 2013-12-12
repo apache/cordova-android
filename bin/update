@@ -19,13 +19,15 @@
        under the License.
 */
 var path   = require('path');
+var exit  = require('exit');
+var args  = process.argv;
 var create = require('./lib/create');
 var args  = require('./lib/simpleargs').getArgs(process.argv);
 
 if (args['--help'] || args._.length === 0) {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'update')) + ' <path_to_project> [--shared]');
     console.log('    --shared will use the CordovaLib project directly instead of making a copy.');
-    process.exit(1);
+    exit(1);
 }
 create.updateProject(args._[0], args['--shared']).done();
 
