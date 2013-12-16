@@ -20,6 +20,23 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 3.3.0 (Dec 2013) ###
+
+41 commits from 11 authors. Highlights include:
+
+* CB-5481 Fix for Cordova trying to get config.xml from the wrong namespace
+* CB-5487 Enable Remote Debugging when your Android app is debuggable.
+* CB-5445 Adding onScrollChanged and the ScrollEvent object
+* CB-5422 Don't require JAVA_HOME to be defined
+* CB-5490 Add javadoc target to ant script
+* CB-5471 Deprecated DroidGap class
+* CB-5255 Prefer Google API targets over android-## targets when building.
+* CB-5232 Change create script to use Cordova as a Library Project instead of a .jar
+* CB-5302 Massive movement to get tests working again
+* CB-4996 Fix paths with spaces while launching on emulator and device
+* CB-5209 Cannot build Android app if project path contains spaces
+
+
 ### 3.2.0 (Nov 2013) ###
 
 27 commits from 7 authors. Highlights include:
