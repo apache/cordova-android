@@ -630,29 +630,24 @@ public class CordovaWebView extends WebView {
                 // TODO: What about params?
                 // Load new URL
                 this.loadUrl(url);
+                return;
             }
             // Load in default viewer if not
-            else {
-                LOG.w(TAG, "showWebPage: Cannot load URL into webview since it is not in white list.  Loading into browser instead. (URL=" + url + ")");
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    cordova.getActivity().startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    LOG.e(TAG, "Error loading url " + url, e);
-                }
-            }
+            LOG.w(TAG, "showWebPage: Cannot load URL into webview since it is not in white list.  Loading into browser instead. (URL=" + url + ")");
         }
-
-        // Load in default view intent
-        else {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error loading url " + url, e);
+        try {
+            // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
+            // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            Uri uri = Uri.parse(url);
+            if ("file".equals(uri.getScheme())) {
+                intent.setDataAndType(uri, resourceApi.getMimeType(uri));
+            } else {
+                intent.setData(uri);
             }
+            cordova.getActivity().startActivity(intent);
+        } catch (android.content.ActivityNotFoundException e) {
+            LOG.e(TAG, "Error loading url " + url, e);
         }
     }
 
