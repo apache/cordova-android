@@ -188,6 +188,9 @@ public class CordovaResourceApi {
         extension = extension.toLowerCase(Locale.getDefault());
         if (extension.equals("3ga")) {
             return "audio/3gpp";
+        } else if (extension.equals("js")) {
+            // Missing from the map :(.
+            return "text/javascript";
         }
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
     }
