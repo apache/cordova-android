@@ -29,7 +29,7 @@ module.exports = function(cmd, opt_cwd) {
     var d = Q.defer();
     console.log('exec: ' + cmd);
     try {
-        child_process.exec(cmd, {cwd: opt_cwd}, function(err, stdout, stderr) {
+        child_process.exec(cmd, {cwd: opt_cwd, maxBuffer: 1024000}, function(err, stdout, stderr) {
             console.log([cmd, err, stdout, stderr]);
             if (err) d.reject('Error executing "' + cmd + '": ' + stderr);
             else d.resolve(stdout);

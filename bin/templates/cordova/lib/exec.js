@@ -28,7 +28,7 @@ var child_process = require('child_process'),
 module.exports = function(cmd, opt_cwd) {
     var d = Q.defer();
     try {
-        child_process.exec(cmd, {cwd: opt_cwd}, function(err, stdout, stderr) {
+        child_process.exec(cmd, {cwd: opt_cwd, maxBuffer: 1024000}, function(err, stdout, stderr) {
             if (err) d.reject('Error executing "' + cmd + '": ' + stderr);
             else d.resolve(stdout);
         });
