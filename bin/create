@@ -32,5 +32,5 @@ if (args['--help'] || args._.length === 0) {
     process.exit(1);
 }
 
-create.createProject(args._[0], args._[1], args._[2], args._[3], args['--shared']).done();
+create.createProject(args._[0], args._[1], args._[2], args._[3], args['--shared'], args['--cli']).done();
 

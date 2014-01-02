@@ -116,7 +116,7 @@ function copyScripts(projectPath) {
  * Returns a promise.
  */
 
-exports.createProject = function(project_path, package_name, project_name, project_template_dir, use_shared_project) {
+exports.createProject = function(project_path, package_name, project_name, project_template_dir, use_shared_project, use_cli_template) {
     var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
 
     // Set default values for path, package and name
@@ -162,6 +162,12 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
             // Manually create directories that would be empty within the template (since git doesn't track directories).
             shell.mkdir(path.join(project_path, 'libs'));
+            // Add in the proper eclipse project file.
+            if (use_cli_template) {
+                shell.cp(path.join(project_template_dir, 'eclipse-project-CLI'), path.join(project_path, '.project'));
+            } else {
+                shell.cp(path.join(project_template_dir, 'eclipse-project'), path.join(project_path, '.project'));
+            }
 
             // copy cordova.js, cordova.jar and res/xml
             shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
@@ -172,6 +178,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
             shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
             shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
+            shell.sed('-i', /__NAME__/, project_name, path.join(project_path, '.project'));
             shell.sed('-i', /__ID__/, package_name, activity_path);
 
             shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
