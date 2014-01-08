@@ -284,4 +284,12 @@ public class App extends CordovaPlugin {
         this.cordova.getActivity().registerReceiver(this.telephonyReceiver, intentFilter);
     }
 
+    /*
+     * Unregister the receiver
+     *
+     */
+    public void onDestroy()
+    {
+        this.cordova.getActivity().unregisterReceiver(this.telephonyReceiver);
+    }
 }
