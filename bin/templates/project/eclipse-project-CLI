@@ -39,7 +39,7 @@
 		<link>
                         <name>** Cordova Project **/config.xml</name>
 			<type>1</type>
-			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/www/config.xml</locationURI>
+			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/config.xml</locationURI>
 		</link>
                 <link>
                         <name>** Cordova Project **/www</name>
