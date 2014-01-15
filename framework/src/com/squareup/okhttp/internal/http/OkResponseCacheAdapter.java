@@ -15,6 +15,7 @@
  */
 package com.squareup.okhttp.internal.http;
 
+import com.squareup.okhttp.OkResponseCache;
 import com.squareup.okhttp.ResponseSource;
 import java.io.IOException;
 import java.net.CacheRequest;
@@ -39,6 +40,9 @@ public final class OkResponseCacheAdapter implements OkResponseCache {
 
   @Override public CacheRequest put(URI uri, URLConnection urlConnection) throws IOException {
     return responseCache.put(uri, urlConnection);
+  }
+
+  @Override public void maybeRemove(String requestMethod, URI uri) throws IOException {
   }
 
   @Override public void update(CacheResponse conditionalCacheHit, HttpURLConnection connection)

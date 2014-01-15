@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Proxy;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Arrays;
 import javax.net.ssl.SSLSocket;
@@ -92,24 +93,20 @@ public final class Connection implements Closeable {
 
   public void connect(int connectTimeout, int readTimeout, TunnelRequest tunnelRequest)
       throws IOException {
-    if (connected) {
-      throw new IllegalStateException("already connected");
-    }
-    connected = true;
+    if (connected) throw new IllegalStateException("already connected");
+
     socket = (route.proxy.type() != Proxy.Type.HTTP) ? new Socket(route.proxy) : new Socket();
-    socket.connect(route.inetSocketAddress, connectTimeout);
+    Platform.get().connectSocket(socket, route.inetSocketAddress, connectTimeout);
     socket.setSoTimeout(readTimeout);
     in = socket.getInputStream();
     out = socket.getOutputStream();
 
     if (route.address.sslSocketFactory != null) {
       upgradeToTls(tunnelRequest);
+    } else {
+      streamWrapper();
     }
-
-    // Use MTU-sized buffers to send fewer packets.
-    int mtu = Platform.get().getMtu(socket);
-    in = new BufferedInputStream(in, mtu);
-    out = new BufferedOutputStream(out, mtu);
+    connected = true;
   }
 
   /**
@@ -134,7 +131,8 @@ public final class Connection implements Closeable {
       platform.supportTlsIntolerantServer(sslSocket);
     }
 
-    if (route.modernTls) {
+    boolean useNpn = route.modernTls && route.address.transports.contains("spdy/3");
+    if (useNpn) {
       platform.setNpnProtocols(sslSocket, NPN_PROTOCOLS);
     }
 
@@ -148,14 +146,15 @@ public final class Connection implements Closeable {
 
     out = sslSocket.getOutputStream();
     in = sslSocket.getInputStream();
+    streamWrapper();
 
     byte[] selectedProtocol;
-    if (route.modernTls
-        && (selectedProtocol = platform.getNpnSelectedProtocol(sslSocket)) != null) {
+    if (useNpn && (selectedProtocol = platform.getNpnSelectedProtocol(sslSocket)) != null) {
       if (Arrays.equals(selectedProtocol, SPDY3)) {
         sslSocket.setSoTimeout(0); // SPDY timeouts are set per-stream.
         spdyConnection = new SpdyConnection.Builder(route.address.getUriHost(), true, in, out)
             .build();
+        spdyConnection.sendConnectionHeader();
       } else if (!Arrays.equals(selectedProtocol, HTTP_11)) {
         throw new IOException(
             "Unexpected NPN transport " + new String(selectedProtocol, "ISO-8859-1"));
@@ -190,6 +189,39 @@ public final class Connection implements Closeable {
     return !socket.isClosed() && !socket.isInputShutdown() && !socket.isOutputShutdown();
   }
 
+  /**
+   * Returns true if we are confident that we can read data from this
+   * connection. This is more expensive and more accurate than {@link
+   * #isAlive()}; callers should check {@link #isAlive()} first.
+   */
+  public boolean isReadable() {
+    if (!(in instanceof BufferedInputStream)) {
+      return true; // Optimistic.
+    }
+    if (isSpdy()) {
+      return true; // Optimistic. We can't test SPDY because its streams are in use.
+    }
+    BufferedInputStream bufferedInputStream = (BufferedInputStream) in;
+    try {
+      int readTimeout = socket.getSoTimeout();
+      try {
+        socket.setSoTimeout(1);
+        bufferedInputStream.mark(1);
+        if (bufferedInputStream.read() == -1) {
+          return false; // Stream is exhausted; socket is closed.
+        }
+        bufferedInputStream.reset();
+        return true;
+      } finally {
+        socket.setSoTimeout(readTimeout);
+      }
+    } catch (SocketTimeoutException ignored) {
+      return true; // Read timed out; socket is good.
+    } catch (IOException e) {
+      return false; // Couldn't read; socket is closed.
+    }
+  }
+
   public void resetIdleStartTime() {
     if (spdyConnection != null) {
       throw new IllegalStateException("spdyConnection != null");
@@ -207,7 +239,7 @@ public final class Connection implements Closeable {
    * {@code keepAliveDurationNs}.
    */
   public boolean isExpired(long keepAliveDurationNs) {
-    return isIdle() && System.nanoTime() - getIdleStartTimeNs() > keepAliveDurationNs;
+    return getIdleStartTimeNs() < System.nanoTime() - keepAliveDurationNs;
   }
 
   /**
@@ -220,7 +252,8 @@ public final class Connection implements Closeable {
 
   /** Returns the transport appropriate for this connection. */
   public Object newTransport(HttpEngine httpEngine) throws IOException {
-    return (spdyConnection != null) ? new SpdyTransport(httpEngine, spdyConnection)
+    return (spdyConnection != null)
+        ? new SpdyTransport(httpEngine, spdyConnection)
         : new HttpTransport(httpEngine, out, in);
   }
 
@@ -258,6 +291,11 @@ public final class Connection implements Closeable {
     return route.address.sslSocketFactory != null && route.proxy.type() == Proxy.Type.HTTP;
   }
 
+  public void updateReadTimeout(int newTimeout) throws IOException {
+    if (!connected) throw new IllegalStateException("updateReadTimeout - not connected");
+    socket.setSoTimeout(newTimeout);
+  }
+
   /**
    * To make an HTTPS connection over an HTTP proxy, send an unencrypted
    * CONNECT request to create the proxy connection. This may need to be
@@ -275,8 +313,9 @@ public final class Connection implements Closeable {
         case HTTP_PROXY_AUTH:
           requestHeaders = new RawHeaders(requestHeaders);
           URL url = new URL("https", tunnelRequest.host, tunnelRequest.port, "/");
-          boolean credentialsFound = HttpAuthenticator.processAuthHeader(HTTP_PROXY_AUTH,
-              responseHeaders, requestHeaders, route.proxy, url);
+          boolean credentialsFound = HttpAuthenticator.processAuthHeader(
+              route.address.authenticator, HTTP_PROXY_AUTH, responseHeaders, requestHeaders,
+              route.proxy, url);
           if (credentialsFound) {
             continue;
           } else {
@@ -287,5 +326,10 @@ public final class Connection implements Closeable {
               "Unexpected response code for CONNECT: " + responseHeaders.getResponseCode());
       }
     }
+  }
+
+  private void streamWrapper() throws IOException {
+    in = new BufferedInputStream(in, 4096);
+    out = new BufferedOutputStream(out, 256);
   }
 }

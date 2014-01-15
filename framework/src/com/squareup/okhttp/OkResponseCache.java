@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2013 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,41 @@
 package com.squareup.okhttp;
 
 import java.io.IOException;
+import java.net.CacheRequest;
 import java.net.CacheResponse;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
 
 /**
- * A response cache that supports statistics tracking and updating stored
- * responses. Implementations of {@link java.net.ResponseCache} should implement
- * this interface to receive additional support from the HTTP engine.
+ * An extended response cache API. Unlike {@link java.net.ResponseCache}, this
+ * interface supports conditional caching and statistics.
+ *
+ * <h3>Warning: Experimental OkHttp 2.0 API</h3>
+ * This class is in beta. APIs are subject to change!
  */
 public interface OkResponseCache {
+  CacheResponse get(URI uri, String requestMethod, Map<String, List<String>> requestHeaders)
+      throws IOException;
 
-  /** Track an HTTP response being satisfied by {@code source}. */
-  void trackResponse(ResponseSource source);
+  CacheRequest put(URI uri, URLConnection urlConnection) throws IOException;
+
+  /** Remove any cache entries for the supplied {@code uri} if the request method invalidates. */
+  void maybeRemove(String requestMethod, URI uri) throws IOException;
+
+  /**
+   * Handles a conditional request hit by updating the stored cache response
+   * with the headers from {@code httpConnection}. The cached response body is
+   * not updated. If the stored response has changed since {@code
+   * conditionalCacheHit} was returned, this does nothing.
+   */
+  void update(CacheResponse conditionalCacheHit, HttpURLConnection connection) throws IOException;
 
   /** Track an conditional GET that was satisfied by this cache. */
   void trackConditionalCacheHit();
 
-  /** Updates stored HTTP headers using a hit on a conditional GET. */
-  void update(CacheResponse conditionalCacheHit, HttpURLConnection httpConnection)
-      throws IOException;
+  /** Track an HTTP response being satisfied by {@code source}. */
+  void trackResponse(ResponseSource source);
 }

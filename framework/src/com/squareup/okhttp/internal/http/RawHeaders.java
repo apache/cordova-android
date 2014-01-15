@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * The HTTP status and unparsed header fields of a single HTTP message. Values
@@ -122,23 +123,6 @@ public final class RawHeaders {
     this.httpMinorVersion = httpMinorVersion;
   }
 
-  public void computeResponseStatusLineFromSpdyHeaders() throws IOException {
-    String status = null;
-    String version = null;
-    for (int i = 0; i < namesAndValues.size(); i += 2) {
-      String name = namesAndValues.get(i);
-      if (":status".equals(name)) {
-        status = namesAndValues.get(i + 1);
-      } else if (":version".equals(name)) {
-        version = namesAndValues.get(i + 1);
-      }
-    }
-    if (status == null || version == null) {
-      throw new ProtocolException("Expected ':status' and ':version' headers not present");
-    }
-    setStatusLine(version + " " + status);
-  }
-
   /**
    * @param method like "GET", "POST", "HEAD", etc.
    * @param path like "/foo/bar.html"
@@ -180,14 +164,17 @@ public final class RawHeaders {
 
   /**
    * Add an HTTP header line containing a field name, a literal colon, and a
-   * value.
+   * value. This works around empty header names and header names that start
+   * with a colon (created by old broken SPDY versions of the response cache).
    */
   public void addLine(String line) {
-    int index = line.indexOf(":");
-    if (index == -1) {
-      addLenient("", line);
-    } else {
+    int index = line.indexOf(":", 1);
+    if (index != -1) {
       addLenient(line.substring(0, index), line.substring(index + 1));
+    } else if (line.startsWith(":")) {
+      addLenient("", line.substring(1)); // Empty header name.
+    } else {
+      addLenient("", line); // No header name.
     }
   }
 
@@ -248,6 +235,15 @@ public final class RawHeaders {
     return namesAndValues.get(fieldNameIndex);
   }
 
+  /** Returns an immutable case-insensitive set of header names. */
+  public Set<String> names() {
+    TreeSet<String> result = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+    for (int i = 0; i < length(); i++) {
+      result.add(getFieldName(i));
+    }
+    return Collections.unmodifiableSet(result);
+  }
+
   /** Returns the value at {@code index} or null if that is out of range. */
   public String getValue(int index) {
     int valueIndex = index * 2 + 1;
@@ -265,6 +261,20 @@ public final class RawHeaders {
       }
     }
     return null;
+  }
+
+  /** Returns an immutable list of the header values for {@code name}. */
+  public List<String> values(String name) {
+    List<String> result = null;
+    for (int i = 0; i < length(); i++) {
+      if (name.equalsIgnoreCase(getFieldName(i))) {
+        if (result == null) result = new ArrayList<String>(2);
+        result.add(getValue(i));
+      }
+    }
+    return result != null
+        ? Collections.unmodifiableList(result)
+        : Collections.<String>emptyList();
   }
 
   /** @param fieldNames a case-insensitive set of HTTP header field names. */
@@ -401,10 +411,13 @@ public final class RawHeaders {
     return result;
   }
 
-  public static RawHeaders fromNameValueBlock(List<String> nameValueBlock) {
+  /** Returns headers for a name value block containing a SPDY response. */
+  public static RawHeaders fromNameValueBlock(List<String> nameValueBlock) throws IOException {
     if (nameValueBlock.size() % 2 != 0) {
       throw new IllegalArgumentException("Unexpected name value block: " + nameValueBlock);
     }
+    String status = null;
+    String version = null;
     RawHeaders result = new RawHeaders();
     for (int i = 0; i < nameValueBlock.size(); i += 2) {
       String name = nameValueBlock.get(i);
@@ -414,11 +427,21 @@ public final class RawHeaders {
         if (end == -1) {
           end = values.length();
         }
-        result.namesAndValues.add(name);
-        result.namesAndValues.add(values.substring(start, end));
+        String value = values.substring(start, end);
+        if (":status".equals(name)) {
+          status = value;
+        } else if (":version".equals(name)) {
+          version = value;
+        } else {
+          result.namesAndValues.add(name);
+          result.namesAndValues.add(value);
+        }
         start = end + 1;
       }
     }
+    if (status == null) throw new ProtocolException("Expected ':status' header not present");
+    if (version == null) throw new ProtocolException("Expected ':version' header not present");
+    result.setStatusLine(version + " " + status);
     return result;
   }
 }

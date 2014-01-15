@@ -26,43 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.squareup.okhttp.internal.Util.checkOffsetAndCount;
-import static com.squareup.okhttp.internal.Util.pokeInt;
-import static java.nio.ByteOrder.BIG_ENDIAN;
 
 /** A logical bidirectional stream. */
 public final class SpdyStream {
 
   // Internal state is guarded by this. No long-running or potentially
   // blocking operations are performed while the lock is held.
-
-  private static final int DATA_FRAME_HEADER_LENGTH = 8;
-
-  private static final String[] STATUS_CODE_NAMES = {
-      null,
-      "PROTOCOL_ERROR",
-      "INVALID_STREAM",
-      "REFUSED_STREAM",
-      "UNSUPPORTED_VERSION",
-      "CANCEL",
-      "INTERNAL_ERROR",
-      "FLOW_CONTROL_ERROR",
-      "STREAM_IN_USE",
-      "STREAM_ALREADY_CLOSED",
-      "INVALID_CREDENTIALS",
-      "FRAME_TOO_LARGE"
-  };
-
-  public static final int RST_PROTOCOL_ERROR = 1;
-  public static final int RST_INVALID_STREAM = 2;
-  public static final int RST_REFUSED_STREAM = 3;
-  public static final int RST_UNSUPPORTED_VERSION = 4;
-  public static final int RST_CANCEL = 5;
-  public static final int RST_INTERNAL_ERROR = 6;
-  public static final int RST_FLOW_CONTROL_ERROR = 7;
-  public static final int RST_STREAM_IN_USE = 8;
-  public static final int RST_STREAM_ALREADY_CLOSED = 9;
-  public static final int RST_INVALID_CREDENTIALS = 10;
-  public static final int RST_FRAME_TOO_LARGE = 11;
 
   /**
    * The number of unacknowledged bytes at which the input stream will send
@@ -75,7 +44,6 @@ public final class SpdyStream {
   private final int id;
   private final SpdyConnection connection;
   private final int priority;
-  private final int slot;
   private long readTimeoutMillis = 0;
   private int writeWindowSize;
 
@@ -93,27 +61,18 @@ public final class SpdyStream {
    * reasons to abnormally close this stream (such as both peers closing it
    * near-simultaneously) then this is the first reason known to this peer.
    */
-  private int rstStatusCode = -1;
+  private ErrorCode errorCode = null;
 
-  SpdyStream(int id, SpdyConnection connection, int flags, int priority, int slot,
-      List<String> requestHeaders, Settings settings) {
+  SpdyStream(int id, SpdyConnection connection, boolean outFinished, boolean inFinished,
+      int priority, List<String> requestHeaders, Settings settings) {
     if (connection == null) throw new NullPointerException("connection == null");
     if (requestHeaders == null) throw new NullPointerException("requestHeaders == null");
     this.id = id;
     this.connection = connection;
+    this.in.finished = inFinished;
+    this.out.finished = outFinished;
     this.priority = priority;
-    this.slot = slot;
     this.requestHeaders = requestHeaders;
-
-    if (isLocallyInitiated()) {
-      // I am the sender
-      in.finished = (flags & SpdyConnection.FLAG_UNIDIRECTIONAL) != 0;
-      out.finished = (flags & SpdyConnection.FLAG_FIN) != 0;
-    } else {
-      // I am the receiver
-      in.finished = (flags & SpdyConnection.FLAG_FIN) != 0;
-      out.finished = (flags & SpdyConnection.FLAG_UNIDIRECTIONAL) != 0;
-    }
 
     setSettings(settings);
   }
@@ -129,7 +88,7 @@ public final class SpdyStream {
    * reports itself as not open. This is because input data is buffered.
    */
   public synchronized boolean isOpen() {
-    if (rstStatusCode != -1) {
+    if (errorCode != null) {
       return false;
     }
     if ((in.finished || in.closed) && (out.finished || out.closed) && responseHeaders != null) {
@@ -157,14 +116,28 @@ public final class SpdyStream {
    * have not been received yet.
    */
   public synchronized List<String> getResponseHeaders() throws IOException {
+    long remaining = 0;
+    long start = 0;
+    if (readTimeoutMillis != 0) {
+      start = (System.nanoTime() / 1000000);
+      remaining = readTimeoutMillis;
+    }
     try {
-      while (responseHeaders == null && rstStatusCode == -1) {
-        wait();
+      while (responseHeaders == null && errorCode == null) {
+        if (readTimeoutMillis == 0) { // No timeout configured.
+          wait();
+        } else if (remaining > 0) {
+          wait(remaining);
+          remaining = start + readTimeoutMillis - (System.nanoTime() / 1000000);
+        } else {
+          throw new SocketTimeoutException("Read response header timeout. readTimeoutMillis: "
+                            + readTimeoutMillis);
+        }
       }
       if (responseHeaders != null) {
         return responseHeaders;
       }
-      throw new IOException("stream was reset: " + rstStatusString());
+      throw new IOException("stream was reset: " + errorCode);
     } catch (InterruptedException e) {
       InterruptedIOException rethrow = new InterruptedIOException();
       rethrow.initCause(e);
@@ -173,15 +146,11 @@ public final class SpdyStream {
   }
 
   /**
-   * Returns the reason why this stream was closed, or -1 if it closed
-   * normally or has not yet been closed. Valid reasons are {@link
-   * #RST_PROTOCOL_ERROR}, {@link #RST_INVALID_STREAM}, {@link
-   * #RST_REFUSED_STREAM}, {@link #RST_UNSUPPORTED_VERSION}, {@link
-   * #RST_CANCEL}, {@link #RST_INTERNAL_ERROR} and {@link
-   * #RST_FLOW_CONTROL_ERROR}.
+   * Returns the reason why this stream was closed, or null if it closed
+   * normally or has not yet been closed.
    */
-  public synchronized int getRstStatusCode() {
-    return rstStatusCode;
+  public synchronized ErrorCode getErrorCode() {
+    return errorCode;
   }
 
   /**
@@ -192,7 +161,7 @@ public final class SpdyStream {
    */
   public void reply(List<String> responseHeaders, boolean out) throws IOException {
     assert (!Thread.holdsLock(SpdyStream.this));
-    int flags = 0;
+    boolean outFinished = false;
     synchronized (this) {
       if (responseHeaders == null) {
         throw new NullPointerException("responseHeaders == null");
@@ -206,10 +175,10 @@ public final class SpdyStream {
       this.responseHeaders = responseHeaders;
       if (!out) {
         this.out.finished = true;
-        flags |= SpdyConnection.FLAG_FIN;
+        outFinished = true;
       }
     }
-    connection.writeSynReply(id, flags, responseHeaders);
+    connection.writeSynReply(id, outFinished, responseHeaders);
   }
 
   /**
@@ -248,7 +217,7 @@ public final class SpdyStream {
    * Abnormally terminate this stream. This blocks until the {@code RST_STREAM}
    * frame has been transmitted.
    */
-  public void close(int rstStatusCode) throws IOException {
+  public void close(ErrorCode rstStatusCode) throws IOException {
     if (!closeInternal(rstStatusCode)) {
       return; // Already closed.
     }
@@ -259,65 +228,58 @@ public final class SpdyStream {
    * Abnormally terminate this stream. This enqueues a {@code RST_STREAM}
    * frame and returns immediately.
    */
-  public void closeLater(int rstStatusCode) {
-    if (!closeInternal(rstStatusCode)) {
+  public void closeLater(ErrorCode errorCode) {
+    if (!closeInternal(errorCode)) {
       return; // Already closed.
     }
-    connection.writeSynResetLater(id, rstStatusCode);
+    connection.writeSynResetLater(id, errorCode);
   }
 
   /** Returns true if this stream was closed. */
-  private boolean closeInternal(int rstStatusCode) {
+  private boolean closeInternal(ErrorCode errorCode) {
     assert (!Thread.holdsLock(this));
     synchronized (this) {
-      if (this.rstStatusCode != -1) {
+      if (this.errorCode != null) {
         return false;
       }
       if (in.finished && out.finished) {
         return false;
       }
-      this.rstStatusCode = rstStatusCode;
+      this.errorCode = errorCode;
       notifyAll();
     }
     connection.removeStream(id);
     return true;
   }
 
-  void receiveReply(List<String> strings) throws IOException {
+  void receiveHeaders(List<String> headers, HeadersMode headersMode) {
     assert (!Thread.holdsLock(SpdyStream.this));
-    boolean streamInUseError = false;
+    ErrorCode errorCode = null;
     boolean open = true;
     synchronized (this) {
-      if (isLocallyInitiated() && responseHeaders == null) {
-        responseHeaders = strings;
-        open = isOpen();
-        notifyAll();
+      if (responseHeaders == null) {
+        if (headersMode.failIfHeadersAbsent()) {
+          errorCode = ErrorCode.PROTOCOL_ERROR;
+        } else {
+          responseHeaders = headers;
+          open = isOpen();
+          notifyAll();
+        }
       } else {
-        streamInUseError = true;
+        if (headersMode.failIfHeadersPresent()) {
+          errorCode = ErrorCode.STREAM_IN_USE;
+        } else {
+          List<String> newHeaders = new ArrayList<String>();
+          newHeaders.addAll(responseHeaders);
+          newHeaders.addAll(headers);
+          this.responseHeaders = newHeaders;
+        }
       }
     }
-    if (streamInUseError) {
-      closeLater(SpdyStream.RST_STREAM_IN_USE);
+    if (errorCode != null) {
+      closeLater(errorCode);
     } else if (!open) {
       connection.removeStream(id);
-    }
-  }
-
-  void receiveHeaders(List<String> headers) throws IOException {
-    assert (!Thread.holdsLock(SpdyStream.this));
-    boolean protocolError = false;
-    synchronized (this) {
-      if (responseHeaders != null) {
-        List<String> newHeaders = new ArrayList<String>();
-        newHeaders.addAll(responseHeaders);
-        newHeaders.addAll(headers);
-        this.responseHeaders = newHeaders;
-      } else {
-        protocolError = true;
-      }
-    }
-    if (protocolError) {
-      closeLater(SpdyStream.RST_PROTOCOL_ERROR);
     }
   }
 
@@ -339,18 +301,20 @@ public final class SpdyStream {
     }
   }
 
-  synchronized void receiveRstStream(int statusCode) {
-    if (rstStatusCode == -1) {
-      rstStatusCode = statusCode;
+  synchronized void receiveRstStream(ErrorCode errorCode) {
+    if (this.errorCode == null) {
+      this.errorCode = errorCode;
       notifyAll();
     }
   }
 
   private void setSettings(Settings settings) {
+    // TODO: For HTTP/2.0, also adjust the stream flow control window size
+    // by the difference between the new value and the old value.
     assert (Thread.holdsLock(connection)); // Because 'settings' is guarded by 'connection'.
-    this.writeWindowSize =
-        settings != null ? settings.getInitialWindowSize(Settings.DEFAULT_INITIAL_WINDOW_SIZE)
-            : Settings.DEFAULT_INITIAL_WINDOW_SIZE;
+    this.writeWindowSize = settings != null
+        ? settings.getInitialWindowSize(Settings.DEFAULT_INITIAL_WINDOW_SIZE)
+        : Settings.DEFAULT_INITIAL_WINDOW_SIZE;
   }
 
   void receiveSettings(Settings settings) {
@@ -364,17 +328,8 @@ public final class SpdyStream {
     notifyAll();
   }
 
-  private String rstStatusString() {
-    return rstStatusCode > 0 && rstStatusCode < STATUS_CODE_NAMES.length
-        ? STATUS_CODE_NAMES[rstStatusCode] : Integer.toString(rstStatusCode);
-  }
-
   int getPriority() {
     return priority;
-  }
-
-  int getSlot() {
-    return slot;
   }
 
   /**
@@ -496,7 +451,7 @@ public final class SpdyStream {
         remaining = readTimeoutMillis;
       }
       try {
-        while (pos == -1 && !finished && !closed && rstStatusCode == -1) {
+        while (pos == -1 && !finished && !closed && errorCode == null) {
           if (readTimeoutMillis == 0) {
             SpdyStream.this.wait();
           } else if (remaining > 0) {
@@ -534,7 +489,7 @@ public final class SpdyStream {
       // If the peer sends more data than we can handle, discard it and close the connection.
       if (flowControlError) {
         Util.skipByReading(in, byteCount);
-        closeLater(SpdyStream.RST_FLOW_CONTROL_ERROR);
+        closeLater(ErrorCode.FLOW_CONTROL_ERROR);
         return;
       }
 
@@ -583,8 +538,8 @@ public final class SpdyStream {
       if (closed) {
         throw new IOException("stream closed");
       }
-      if (rstStatusCode != -1) {
-        throw new IOException("stream was reset: " + rstStatusString());
+      if (errorCode != null) {
+        throw new IOException("stream was reset: " + errorCode);
       }
     }
   }
@@ -602,7 +557,7 @@ public final class SpdyStream {
       // is safe because the input stream is closed (we won't use any
       // further bytes) and the output stream is either finished or closed
       // (so RSTing both streams doesn't cause harm).
-      SpdyStream.this.close(RST_CANCEL);
+      SpdyStream.this.close(ErrorCode.CANCEL);
     } else if (!open) {
       connection.removeStream(id);
     }
@@ -614,7 +569,7 @@ public final class SpdyStream {
    */
   private final class SpdyDataOutputStream extends OutputStream {
     private final byte[] buffer = new byte[8192];
-    private int pos = DATA_FRAME_HEADER_LENGTH;
+    private int pos = 0;
 
     /** True if the caller has closed this stream. */
     private boolean closed;
@@ -656,7 +611,7 @@ public final class SpdyStream {
     @Override public void flush() throws IOException {
       assert (!Thread.holdsLock(SpdyStream.this));
       checkNotClosed();
-      if (pos > DATA_FRAME_HEADER_LENGTH) {
+      if (pos > 0) {
         writeFrame(false);
         connection.flush();
       }
@@ -670,27 +625,23 @@ public final class SpdyStream {
         }
         closed = true;
       }
-      writeFrame(true);
+      if (!out.finished) {
+        writeFrame(true);
+      }
       connection.flush();
       cancelStreamIfNecessary();
     }
 
-    private void writeFrame(boolean last) throws IOException {
+    private void writeFrame(boolean outFinished) throws IOException {
       assert (!Thread.holdsLock(SpdyStream.this));
 
-      int length = pos - DATA_FRAME_HEADER_LENGTH;
+      int length = pos;
       synchronized (SpdyStream.this) {
-        waitUntilWritable(length, last);
+        waitUntilWritable(length, outFinished);
         unacknowledgedBytes += length;
       }
-      int flags = 0;
-      if (last) {
-        flags |= SpdyConnection.FLAG_FIN;
-      }
-      pokeInt(buffer, 0, id & 0x7fffffff, BIG_ENDIAN);
-      pokeInt(buffer, 4, (flags & 0xff) << 24 | length & 0xffffff, BIG_ENDIAN);
-      connection.writeFrame(buffer, 0, pos);
-      pos = DATA_FRAME_HEADER_LENGTH;
+      connection.writeData(id, outFinished, buffer, 0, pos);
+      pos = 0;
     }
 
     /**
@@ -709,8 +660,8 @@ public final class SpdyStream {
             throw new IOException("stream closed");
           } else if (finished) {
             throw new IOException("stream finished");
-          } else if (rstStatusCode != -1) {
-            throw new IOException("stream was reset: " + rstStatusString());
+          } else if (errorCode != null) {
+            throw new IOException("stream was reset: " + errorCode);
           }
         }
       } catch (InterruptedException e) {
@@ -724,8 +675,8 @@ public final class SpdyStream {
           throw new IOException("stream closed");
         } else if (finished) {
           throw new IOException("stream finished");
-        } else if (rstStatusCode != -1) {
-          throw new IOException("stream was reset: " + rstStatusString());
+        } else if (errorCode != null) {
+          throw new IOException("stream was reset: " + errorCode);
         }
       }
     }

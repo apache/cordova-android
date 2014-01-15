@@ -22,8 +22,8 @@ import com.squareup.okhttp.internal.StrictLineReader;
 import com.squareup.okhttp.internal.Util;
 import com.squareup.okhttp.internal.http.HttpEngine;
 import com.squareup.okhttp.internal.http.HttpURLConnectionImpl;
+import com.squareup.okhttp.internal.http.HttpsEngine;
 import com.squareup.okhttp.internal.http.HttpsURLConnectionImpl;
-import com.squareup.okhttp.internal.http.OkResponseCache;
 import com.squareup.okhttp.internal.http.RawHeaders;
 import com.squareup.okhttp.internal.http.ResponseHeaders;
 import java.io.BufferedWriter;
@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.CacheRequest;
 import java.net.CacheResponse;
@@ -44,8 +43,6 @@ import java.net.ResponseCache;
 import java.net.SecureCacheResponse;
 import java.net.URI;
 import java.net.URLConnection;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -55,8 +52,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSocket;
 
 import static com.squareup.okhttp.internal.Util.US_ASCII;
 import static com.squareup.okhttp.internal.Util.UTF_8;
@@ -119,9 +116,6 @@ import static com.squareup.okhttp.internal.Util.UTF_8;
  * }</pre>
  */
 public final class HttpResponseCache extends ResponseCache {
-  private static final char[] DIGITS =
-      { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
   // TODO: add APIs to iterate the cache?
   private static final int VERSION = 201105;
   private static final int ENTRY_METADATA = 0;
@@ -153,6 +147,10 @@ public final class HttpResponseCache extends ResponseCache {
       return HttpResponseCache.this.put(uri, connection);
     }
 
+    @Override public void maybeRemove(String requestMethod, URI uri) throws IOException {
+      HttpResponseCache.this.maybeRemove(requestMethod, uri);
+    }
+
     @Override public void update(
         CacheResponse conditionalCacheHit, HttpURLConnection connection) throws IOException {
       HttpResponseCache.this.update(conditionalCacheHit, connection);
@@ -172,26 +170,7 @@ public final class HttpResponseCache extends ResponseCache {
   }
 
   private String uriToKey(URI uri) {
-    try {
-      MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-      byte[] md5bytes = messageDigest.digest(uri.toString().getBytes("UTF-8"));
-      return bytesToHexString(md5bytes);
-    } catch (NoSuchAlgorithmException e) {
-      throw new AssertionError(e);
-    } catch (UnsupportedEncodingException e) {
-      throw new AssertionError(e);
-    }
-  }
-
-  private static String bytesToHexString(byte[] bytes) {
-    char[] digits = DIGITS;
-    char[] buf = new char[bytes.length * 2];
-    int c = 0;
-    for (byte b : bytes) {
-      buf[c++] = digits[(b >> 4) & 0xf];
-      buf[c++] = digits[b & 0xf];
-    }
-    return new String(buf);
+    return Util.hash(uri.toString());
   }
 
   @Override public CacheResponse get(URI uri, String requestMethod,
@@ -226,17 +205,11 @@ public final class HttpResponseCache extends ResponseCache {
 
     HttpURLConnection httpConnection = (HttpURLConnection) urlConnection;
     String requestMethod = httpConnection.getRequestMethod();
-    String key = uriToKey(uri);
 
-    if (requestMethod.equals("POST") || requestMethod.equals("PUT") || requestMethod.equals(
-        "DELETE")) {
-      try {
-        cache.remove(key);
-      } catch (IOException ignored) {
-        // The cache cannot be written.
-      }
+    if (maybeRemove(requestMethod, uri)) {
       return null;
-    } else if (!requestMethod.equals("GET")) {
+    }
+    if (!requestMethod.equals("GET")) {
       // Don't cache non-GET responses. We're technically allowed to cache
       // HEAD requests and some POST requests, but the complexity of doing
       // so is high and the benefit is low.
@@ -259,7 +232,7 @@ public final class HttpResponseCache extends ResponseCache {
     Entry entry = new Entry(uri, varyHeaders, httpConnection);
     DiskLruCache.Editor editor = null;
     try {
-      editor = cache.edit(key);
+      editor = cache.edit(uriToKey(uri));
       if (editor == null) {
         return null;
       }
@@ -269,6 +242,23 @@ public final class HttpResponseCache extends ResponseCache {
       abortQuietly(editor);
       return null;
     }
+  }
+
+  /**
+   * Returns true if the supplied {@code requestMethod} potentially invalidates an entry in the
+   * cache.
+   */
+  private boolean maybeRemove(String requestMethod, URI uri) {
+    if (requestMethod.equals("POST") || requestMethod.equals("PUT") || requestMethod.equals(
+        "DELETE")) {
+      try {
+        cache.remove(uriToKey(uri));
+      } catch (IOException ignored) {
+        // The cache cannot be written.
+      }
+      return true;
+    }
+    return false;
   }
 
   private void update(CacheResponse conditionalCacheHit, HttpURLConnection httpConnection)
@@ -331,6 +321,30 @@ public final class HttpResponseCache extends ResponseCache {
     return writeSuccessCount;
   }
 
+  public long getSize() {
+    return cache.size();
+  }
+
+  public long getMaxSize() {
+    return cache.getMaxSize();
+  }
+
+  public void flush() throws IOException {
+    cache.flush();
+  }
+
+  public void close() throws IOException {
+    cache.close();
+  }
+
+  public File getDirectory() {
+    return cache.getDirectory();
+  }
+
+  public boolean isClosed() {
+    return cache.isClosed();
+  }
+
   private synchronized void trackResponse(ResponseSource source) {
     requestCount++;
 
@@ -383,8 +397,7 @@ public final class HttpResponseCache extends ResponseCache {
           editor.commit();
         }
 
-        @Override
-        public void write(byte[] buffer, int offset, int length) throws IOException {
+        @Override public void write(byte[] buffer, int offset, int length) throws IOException {
           // Since we don't override "write(int oneByte)", we can write directly to "out"
           // and avoid the inefficient implementation from the FilterOutputStream.
           out.write(buffer, offset, length);
@@ -513,21 +526,37 @@ public final class HttpResponseCache extends ResponseCache {
       this.requestMethod = httpConnection.getRequestMethod();
       this.responseHeaders = RawHeaders.fromMultimap(httpConnection.getHeaderFields(), true);
 
-      if (isHttps()) {
-        HttpsURLConnection httpsConnection = (HttpsURLConnection) httpConnection;
-        cipherSuite = httpsConnection.getCipherSuite();
+      SSLSocket sslSocket = getSslSocket(httpConnection);
+      if (sslSocket != null) {
+        cipherSuite = sslSocket.getSession().getCipherSuite();
         Certificate[] peerCertificatesNonFinal = null;
         try {
-          peerCertificatesNonFinal = httpsConnection.getServerCertificates();
+          peerCertificatesNonFinal = sslSocket.getSession().getPeerCertificates();
         } catch (SSLPeerUnverifiedException ignored) {
         }
         peerCertificates = peerCertificatesNonFinal;
-        localCertificates = httpsConnection.getLocalCertificates();
+        localCertificates = sslSocket.getSession().getLocalCertificates();
       } else {
         cipherSuite = null;
         peerCertificates = null;
         localCertificates = null;
       }
+    }
+
+    /**
+     * Returns the SSL socket used by {@code httpConnection} for HTTPS, nor null
+     * if the connection isn't using HTTPS. Since we permit redirects across
+     * protocols (HTTP to HTTPS or vice versa), the implementation type of the
+     * connection doesn't necessarily match the implementation type of its HTTP
+     * engine.
+     */
+    private SSLSocket getSslSocket(HttpURLConnection httpConnection) {
+      HttpEngine engine = httpConnection instanceof HttpsURLConnectionImpl
+          ? ((HttpsURLConnectionImpl) httpConnection).getHttpEngine()
+          : ((HttpURLConnectionImpl) httpConnection).getHttpEngine();
+      return engine instanceof HttpsEngine
+          ? ((HttpsEngine) engine).getSslSocket()
+          : null;
     }
 
     public void writeTo(DiskLruCache.Editor editor) throws IOException {

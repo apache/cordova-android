@@ -24,11 +24,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Junk drawer of utility methods. */
@@ -45,6 +53,9 @@ public final class Util {
   /** A cheap and type-safe constant for the UTF-8 Charset. */
   public static final Charset UTF_8 = Charset.forName("UTF-8");
   private static AtomicReference<byte[]> skipBuffer = new AtomicReference<byte[]>();
+
+  private static final char[] DIGITS =
+      { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
   private Util() {
   }
@@ -119,6 +130,21 @@ public final class Util {
     if (socket != null) {
       try {
         socket.close();
+      } catch (RuntimeException rethrown) {
+        throw rethrown;
+      } catch (Exception ignored) {
+      }
+    }
+  }
+
+  /**
+   * Closes {@code serverSocket}, ignoring any checked exceptions. Does nothing if
+   * {@code serverSocket} is null.
+   */
+  public static void closeQuietly(ServerSocket serverSocket) {
+    if (serverSocket != null) {
+      try {
+        serverSocket.close();
       } catch (RuntimeException rethrown) {
         throw rethrown;
       } catch (Exception ignored) {
@@ -258,6 +284,8 @@ public final class Util {
    * buffer.
    */
   public static long skipByReading(InputStream in, long byteCount) throws IOException {
+    if (byteCount == 0) return 0L;
+
     // acquire the shared skip buffer.
     byte[] buffer = skipBuffer.getAndSet(null);
     if (buffer == null) {
@@ -323,5 +351,44 @@ public final class Util {
       result.setLength(length - 1);
     }
     return result.toString();
+  }
+
+  /** Returns a 32 character string containing a hash of {@code s}. */
+  public static String hash(String s) {
+    try {
+      MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+      byte[] md5bytes = messageDigest.digest(s.getBytes("UTF-8"));
+      return bytesToHexString(md5bytes);
+    } catch (NoSuchAlgorithmException e) {
+      throw new AssertionError(e);
+    } catch (UnsupportedEncodingException e) {
+      throw new AssertionError(e);
+    }
+  }
+
+  private static String bytesToHexString(byte[] bytes) {
+    char[] digits = DIGITS;
+    char[] buf = new char[bytes.length * 2];
+    int c = 0;
+    for (byte b : bytes) {
+      buf[c++] = digits[(b >> 4) & 0xf];
+      buf[c++] = digits[b & 0xf];
+    }
+    return new String(buf);
+  }
+
+  /** Returns an immutable copy of {@code list}. */
+  public static <T> List<T> immutableList(List<T> list) {
+    return Collections.unmodifiableList(new ArrayList<T>(list));
+  }
+
+  public static ThreadFactory daemonThreadFactory(final String name) {
+    return new ThreadFactory() {
+      @Override public Thread newThread(Runnable runnable) {
+        Thread result = new Thread(runnable, name);
+        result.setDaemon(true);
+        return result;
+      }
+    };
   }
 }

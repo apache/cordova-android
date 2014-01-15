@@ -15,8 +15,10 @@
  */
 package com.squareup.okhttp;
 
+import com.squareup.okhttp.internal.Util;
 import java.net.Proxy;
 import java.net.UnknownHostException;
+import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -38,16 +40,23 @@ public final class Address {
   final int uriPort;
   final SSLSocketFactory sslSocketFactory;
   final HostnameVerifier hostnameVerifier;
+  final OkAuthenticator authenticator;
+  final List<String> transports;
 
   public Address(String uriHost, int uriPort, SSLSocketFactory sslSocketFactory,
-      HostnameVerifier hostnameVerifier, Proxy proxy) throws UnknownHostException {
+      HostnameVerifier hostnameVerifier, OkAuthenticator authenticator, Proxy proxy,
+      List<String> transports) throws UnknownHostException {
     if (uriHost == null) throw new NullPointerException("uriHost == null");
     if (uriPort <= 0) throw new IllegalArgumentException("uriPort <= 0: " + uriPort);
+    if (authenticator == null) throw new IllegalArgumentException("authenticator == null");
+    if (transports == null) throw new IllegalArgumentException("transports == null");
     this.proxy = proxy;
     this.uriHost = uriHost;
     this.uriPort = uriPort;
     this.sslSocketFactory = sslSocketFactory;
     this.hostnameVerifier = hostnameVerifier;
+    this.authenticator = authenticator;
+    this.transports = Util.immutableList(transports);
   }
 
   /** Returns the hostname of the origin server. */
@@ -79,6 +88,22 @@ public final class Address {
     return hostnameVerifier;
   }
 
+
+  /**
+   * Returns the client's authenticator. This method never returns null.
+   */
+  public OkAuthenticator getAuthenticator() {
+    return authenticator;
+  }
+
+  /**
+   * Returns the client's transports. This method always returns a non-null list
+   * that contains "http/1.1", possibly among other transports.
+   */
+  public List<String> getTransports() {
+    return transports;
+  }
+
   /**
    * Returns this address's explicitly-specified HTTP proxy, or null to
    * delegate to the HTTP client's proxy selector.
@@ -94,7 +119,9 @@ public final class Address {
           && this.uriHost.equals(that.uriHost)
           && this.uriPort == that.uriPort
           && equal(this.sslSocketFactory, that.sslSocketFactory)
-          && equal(this.hostnameVerifier, that.hostnameVerifier);
+          && equal(this.hostnameVerifier, that.hostnameVerifier)
+          && equal(this.authenticator, that.authenticator)
+          && equal(this.transports, that.transports);
     }
     return false;
   }
@@ -105,7 +132,9 @@ public final class Address {
     result = 31 * result + uriPort;
     result = 31 * result + (sslSocketFactory != null ? sslSocketFactory.hashCode() : 0);
     result = 31 * result + (hostnameVerifier != null ? hostnameVerifier.hashCode() : 0);
+    result = 31 * result + (authenticator != null ? authenticator.hashCode() : 0);
     result = 31 * result + (proxy != null ? proxy.hashCode() : 0);
+    result = 31 * result + transports.hashCode();
     return result;
   }
 }

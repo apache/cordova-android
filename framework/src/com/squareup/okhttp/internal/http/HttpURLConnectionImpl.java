@@ -18,33 +18,28 @@
 package com.squareup.okhttp.internal.http;
 
 import com.squareup.okhttp.Connection;
-import com.squareup.okhttp.ConnectionPool;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Route;
-import com.squareup.okhttp.internal.AbstractOutputStream;
-import com.squareup.okhttp.internal.FaultRecoveringOutputStream;
+import com.squareup.okhttp.internal.Platform;
 import com.squareup.okhttp.internal.Util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.CookieHandler;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.ProtocolException;
 import java.net.Proxy;
-import java.net.ProxySelector;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.security.Permission;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.net.ssl.HostnameVerifier;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLSocketFactory;
 
 import static com.squareup.okhttp.internal.Util.getEffectivePort;
 
@@ -62,10 +57,10 @@ import static com.squareup.okhttp.internal.Util.getEffectivePort;
  * connection} field on this class for null/non-null to determine of an instance
  * is currently connected to a server.
  */
-public class HttpURLConnectionImpl extends HttpURLConnection {
+public class HttpURLConnectionImpl extends HttpURLConnection implements Policy {
 
   /** Numeric status code, 307: Temporary Redirect. */
-  static final int HTTP_TEMP_REDIRECT = 307;
+  public static final int HTTP_TEMP_REDIRECT = 307;
 
   /**
    * How many redirects should we follow? Chrome follows 21; Firefox, curl,
@@ -73,51 +68,19 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
    */
   private static final int MAX_REDIRECTS = 20;
 
-  /**
-   * The minimum number of request body bytes to transmit before we're willing
-   * to let a routine {@link IOException} bubble up to the user. This is used to
-   * size a buffer for data that will be replayed upon error.
-   */
-  private static final int MAX_REPLAY_BUFFER_LENGTH = 8192;
-
-  private final boolean followProtocolRedirects;
-
-  /** The proxy requested by the client, or null for a proxy to be selected automatically. */
-  final Proxy requestedProxy;
-
-  final ProxySelector proxySelector;
-  final CookieHandler cookieHandler;
-  final OkResponseCache responseCache;
-  final ConnectionPool connectionPool;
-  /* SSL configuration; necessary for HTTP requests that get redirected to HTTPS. */
-  SSLSocketFactory sslSocketFactory;
-  HostnameVerifier hostnameVerifier;
-  final Set<Route> failedRoutes;
+  final OkHttpClient client;
 
   private final RawHeaders rawRequestHeaders = new RawHeaders();
-
+  /** Like the superclass field of the same name, but a long and available on all platforms. */
+  private long fixedContentLength = -1;
   private int redirectionCount;
-  private FaultRecoveringOutputStream faultRecoveringRequestBody;
-
   protected IOException httpEngineFailure;
   protected HttpEngine httpEngine;
+  private Proxy selectedProxy;
 
-  public HttpURLConnectionImpl(URL url, OkHttpClient client, OkResponseCache responseCache,
-      Set<Route> failedRoutes) {
+  public HttpURLConnectionImpl(URL url, OkHttpClient client) {
     super(url);
-    this.followProtocolRedirects = client.getFollowProtocolRedirects();
-    this.failedRoutes = failedRoutes;
-    this.requestedProxy = client.getProxy();
-    this.proxySelector = client.getProxySelector();
-    this.cookieHandler = client.getCookieHandler();
-    this.connectionPool = client.getConnectionPool();
-    this.sslSocketFactory = client.getSslSocketFactory();
-    this.hostnameVerifier = client.getHostnameVerifier();
-    this.responseCache = responseCache;
-  }
-
-  Set<Route> getFailedRoutes() {
-    return failedRoutes;
+    this.client = client;
   }
 
   @Override public final void connect() throws IOException {
@@ -197,7 +160,7 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
     try {
       return getResponse().getResponseHeaders().getHeaders().toMultimap(true);
     } catch (IOException e) {
-      return null;
+      return Collections.emptyMap();
     }
   }
 
@@ -241,29 +204,14 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
       throw new ProtocolException("cannot write request body after response has been read");
     }
 
-    if (faultRecoveringRequestBody == null) {
-      faultRecoveringRequestBody = new FaultRecoveringOutputStream(MAX_REPLAY_BUFFER_LENGTH, out) {
-        @Override protected OutputStream replacementStream(IOException e) throws IOException {
-          if (httpEngine.getRequestBody() instanceof AbstractOutputStream
-              && ((AbstractOutputStream) httpEngine.getRequestBody()).isClosed()) {
-            return null; // Don't recover once the underlying stream has been closed.
-          }
-          if (handleFailure(e)) {
-            return httpEngine.getRequestBody();
-          }
-          return null; // This is a permanent failure.
-        }
-      };
-    }
-
-    return faultRecoveringRequestBody;
+    return out;
   }
 
   @Override public final Permission getPermission() throws IOException {
     String hostName = getURL().getHost();
     int hostPort = Util.getEffectivePort(getURL());
     if (usingProxy()) {
-      InetSocketAddress proxyAddress = (InetSocketAddress) requestedProxy.address();
+      InetSocketAddress proxyAddress = (InetSocketAddress) client.getProxy().address();
       hostName = proxyAddress.getHostName();
       hostPort = proxyAddress.getPort();
     }
@@ -275,6 +223,22 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
       return null;
     }
     return rawRequestHeaders.get(field);
+  }
+
+  @Override public void setConnectTimeout(int timeoutMillis) {
+    client.setConnectTimeout(timeoutMillis, TimeUnit.MILLISECONDS);
+  }
+
+  @Override public int getConnectTimeout() {
+    return client.getConnectTimeout();
+  }
+
+  @Override public void setReadTimeout(int timeoutMillis) {
+    client.setReadTimeout(timeoutMillis, TimeUnit.MILLISECONDS);
+  }
+
+  @Override public int getReadTimeout() {
+    return client.getReadTimeout();
   }
 
   private void initHttpEngine() throws IOException {
@@ -290,8 +254,8 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
         if (method.equals("GET")) {
           // they are requesting a stream to write to. This implies a POST method
           method = "POST";
-        } else if (!method.equals("POST") && !method.equals("PUT")) {
-          // If the request method is neither POST nor PUT, then you're not writing
+        } else if (!method.equals("POST") && !method.equals("PUT") && !method.equals("PATCH")) {
+          // If the request method is neither POST nor PUT nor PATCH, then you're not writing
           throw new ProtocolException(method + " does not support writing");
         }
       }
@@ -302,17 +266,16 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
     }
   }
 
-  protected HttpURLConnection getHttpConnectionToCache() {
+  @Override public HttpURLConnection getHttpConnectionToCache() {
     return this;
   }
 
   private HttpEngine newHttpEngine(String method, RawHeaders requestHeaders,
       Connection connection, RetryableOutputStream requestBody) throws IOException {
     if (url.getProtocol().equals("http")) {
-      return new HttpEngine(this, method, requestHeaders, connection, requestBody);
+      return new HttpEngine(client, this, method, requestHeaders, connection, requestBody);
     } else if (url.getProtocol().equals("https")) {
-      return new HttpsURLConnectionImpl.HttpsEngine(
-          this, method, requestHeaders, connection, requestBody);
+      return new HttpsEngine(client, this, method, requestHeaders, connection, requestBody);
     } else {
       throw new AssertionError();
     }
@@ -348,7 +311,7 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
       // Although RFC 2616 10.3.2 specifies that a HTTP_MOVED_PERM
       // redirect should keep the same method, Chrome, Firefox and the
       // RI all issue GETs when following any redirect.
-      int responseCode = getResponseCode();
+      int responseCode = httpEngine.getResponseCode();
       if (responseCode == HTTP_MULT_CHOICE
           || responseCode == HTTP_MOVED_PERM
           || responseCode == HTTP_MOVED_TEMP
@@ -358,8 +321,7 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
       }
 
       if (requestBody != null && !(requestBody instanceof RetryableOutputStream)) {
-        throw new HttpRetryException("Cannot retry streamed HTTP body",
-            httpEngine.getResponseCode());
+        throw new HttpRetryException("Cannot retry streamed HTTP body", responseCode);
       }
 
       if (retry == Retry.DIFFERENT_CONNECTION) {
@@ -370,6 +332,11 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
 
       httpEngine = newHttpEngine(retryMethod, rawRequestHeaders, httpEngine.getConnection(),
           (RetryableOutputStream) requestBody);
+
+      if (requestBody == null) {
+        // Drop the Content-Length header when redirected from POST to GET.
+        httpEngine.getRequestHeaders().removeContentLength();
+      }
     }
   }
 
@@ -384,6 +351,7 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
       if (readResponse) {
         httpEngine.readResponse();
       }
+
       return true;
     } catch (IOException e) {
       if (handleFailure(e)) {
@@ -407,8 +375,7 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
 
     OutputStream requestBody = httpEngine.getRequestBody();
     boolean canRetryRequestBody = requestBody == null
-        || requestBody instanceof RetryableOutputStream
-        || (faultRecoveringRequestBody != null && faultRecoveringRequestBody.isRecoverable());
+        || requestBody instanceof RetryableOutputStream;
     if (routeSelector == null && httpEngine.connection == null // No connection.
         || routeSelector != null && !routeSelector.hasNext() // No more routes to attempt.
         || !isRecoverable(e)
@@ -418,15 +385,9 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
     }
 
     httpEngine.release(true);
-    RetryableOutputStream retryableOutputStream = requestBody instanceof RetryableOutputStream
-        ? (RetryableOutputStream) requestBody
-        : null;
+    RetryableOutputStream retryableOutputStream = (RetryableOutputStream) requestBody;
     httpEngine = newHttpEngine(method, rawRequestHeaders, null, retryableOutputStream);
     httpEngine.routeSelector = routeSelector; // Keep the same routeSelector.
-    if (faultRecoveringRequestBody != null && faultRecoveringRequestBody.isRecoverable()) {
-      httpEngine.sendRequest();
-      faultRecoveringRequestBody.replaceStream(httpEngine.getRequestBody());
-    }
     return true;
   }
 
@@ -451,13 +412,13 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
 
   /**
    * Returns the retry action to take for the current response headers. The
-   * headers, proxy and target URL or this connection may be adjusted to
+   * headers, proxy and target URL for this connection may be adjusted to
    * prepare for a follow up request.
    */
   private Retry processResponseHeaders() throws IOException {
     Proxy selectedProxy = httpEngine.connection != null
         ? httpEngine.connection.getRoute().getProxy()
-        : requestedProxy;
+        : client.getProxy();
     final int responseCode = getResponseCode();
     switch (responseCode) {
       case HTTP_PROXY_AUTH:
@@ -466,8 +427,9 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
         }
         // fall-through
       case HTTP_UNAUTHORIZED:
-        boolean credentialsFound = HttpAuthenticator.processAuthHeader(getResponseCode(),
-            httpEngine.getResponseHeaders().getHeaders(), rawRequestHeaders, selectedProxy, url);
+        boolean credentialsFound = HttpAuthenticator.processAuthHeader(client.getAuthenticator(),
+            getResponseCode(), httpEngine.getResponseHeaders().getHeaders(), rawRequestHeaders,
+            selectedProxy, url);
         return credentialsFound ? Retry.SAME_CONNECTION : Retry.NONE;
 
       case HTTP_MULT_CHOICE:
@@ -496,7 +458,7 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
           return Retry.NONE; // Don't follow redirects to unsupported protocols.
         }
         boolean sameProtocol = previousUrl.getProtocol().equals(url.getProtocol());
-        if (!sameProtocol && !followProtocolRedirects) {
+        if (!sameProtocol && !client.getFollowProtocolRedirects()) {
           return Retry.NONE; // This client doesn't follow redirects across protocols.
         }
         boolean sameHost = previousUrl.getHost().equals(url.getHost());
@@ -513,17 +475,29 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
   }
 
   /** @see java.net.HttpURLConnection#setFixedLengthStreamingMode(int) */
-  final int getFixedContentLength() {
+  @Override public final long getFixedContentLength() {
     return fixedContentLength;
   }
 
-  /** @see java.net.HttpURLConnection#setChunkedStreamingMode(int) */
-  final int getChunkLength() {
+  @Override public final int getChunkLength() {
     return chunkLength;
   }
 
   @Override public final boolean usingProxy() {
-    return (requestedProxy != null && requestedProxy.type() != Proxy.Type.DIRECT);
+    if (selectedProxy != null) {
+      return isValidNonDirectProxy(selectedProxy);
+    }
+
+    // This behavior is a bit odd (but is probably justified by the
+    // oddness of the APIs involved). Before a connection is established,
+    // this method will return true only if this connection was explicitly
+    // opened with a Proxy. We don't attempt to query the ProxySelector
+    // at all.
+    return isValidNonDirectProxy(client.getProxy());
+  }
+
+  private static boolean isValidNonDirectProxy(Proxy proxy) {
+    return proxy != null && proxy.type() != Proxy.Type.DIRECT;
   }
 
   @Override public String getResponseMessage() throws IOException {
@@ -541,7 +515,21 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
     if (field == null) {
       throw new NullPointerException("field == null");
     }
-    rawRequestHeaders.set(field, newValue);
+    if (newValue == null) {
+      // Silently ignore null header values for backwards compatibility with older
+      // android versions as well as with other URLConnection implementations.
+      //
+      // Some implementations send a malformed HTTP header when faced with
+      // such requests, we respect the spec and ignore the header.
+      Platform.get().logW("Ignoring header " + field + " because its value was null.");
+      return;
+    }
+
+    if ("X-Android-Transports".equals(field)) {
+      setTransports(newValue, false /* append */);
+    } else {
+      rawRequestHeaders.set(field, newValue);
+    }
   }
 
   @Override public final void addRequestProperty(String field, String value) {
@@ -551,6 +539,52 @@ public class HttpURLConnectionImpl extends HttpURLConnection {
     if (field == null) {
       throw new NullPointerException("field == null");
     }
-    rawRequestHeaders.add(field, value);
+    if (value == null) {
+      // Silently ignore null header values for backwards compatibility with older
+      // android versions as well as with other URLConnection implementations.
+      //
+      // Some implementations send a malformed HTTP header when faced with
+      // such requests, we respect the spec and ignore the header.
+      Platform.get().logW("Ignoring header " + field + " because its value was null.");
+      return;
+    }
+
+    if ("X-Android-Transports".equals(field)) {
+      setTransports(value, true /* append */);
+    } else {
+      rawRequestHeaders.add(field, value);
+    }
+  }
+
+  /*
+   * Splits and validates a comma-separated string of transports.
+   * When append == false, we require that the transport list contains "http/1.1".
+   */
+  private void setTransports(String transportsString, boolean append) {
+    List<String> transportsList = new ArrayList<String>();
+    if (append) {
+      transportsList.addAll(client.getTransports());
+    }
+    for (String transport : transportsString.split(",", -1)) {
+      transportsList.add(transport);
+    }
+    client.setTransports(transportsList);
+  }
+
+  @Override public void setFixedLengthStreamingMode(int contentLength) {
+    setFixedLengthStreamingMode((long) contentLength);
+  }
+
+  // @Override Don't override: this overload method doesn't exist prior to Java 1.7.
+  public void setFixedLengthStreamingMode(long contentLength) {
+    if (super.connected) throw new IllegalStateException("Already connected");
+    if (chunkLength > 0) throw new IllegalStateException("Already in chunked mode");
+    if (contentLength < 0) throw new IllegalArgumentException("contentLength < 0");
+    this.fixedContentLength = contentLength;
+    super.fixedContentLength = (int) Math.min(contentLength, Integer.MAX_VALUE);
+  }
+
+  @Override public final void setSelectedProxy(Proxy proxy) {
+    this.selectedProxy = proxy;
   }
 }

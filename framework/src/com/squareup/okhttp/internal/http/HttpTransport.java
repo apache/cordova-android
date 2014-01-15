@@ -78,18 +78,23 @@ public final class HttpTransport implements Transport {
     }
 
     // Stream a request body of a known length.
-    int fixedContentLength = httpEngine.policy.getFixedContentLength();
+    long fixedContentLength = httpEngine.policy.getFixedContentLength();
     if (fixedContentLength != -1) {
       httpEngine.requestHeaders.setContentLength(fixedContentLength);
       writeRequestHeaders();
       return new FixedLengthOutputStream(requestOut, fixedContentLength);
     }
 
+    long contentLength = httpEngine.requestHeaders.getContentLength();
+    if (contentLength > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("Use setFixedLengthStreamingMode() or "
+          + "setChunkedStreamingMode() for requests larger than 2 GiB.");
+    }
+
     // Buffer a request body of a known length.
-    int contentLength = httpEngine.requestHeaders.getContentLength();
     if (contentLength != -1) {
       writeRequestHeaders();
-      return new RetryableOutputStream(contentLength);
+      return new RetryableOutputStream((int) contentLength);
     }
 
     // Buffer a request body of an unknown length. Don't write request
@@ -127,15 +132,18 @@ public final class HttpTransport implements Transport {
   }
 
   @Override public ResponseHeaders readResponseHeaders() throws IOException {
-    RawHeaders headers = RawHeaders.fromBytes(socketIn);
-    httpEngine.connection.setHttpMinorVersion(headers.getHttpMinorVersion());
-    httpEngine.receiveHeaders(headers);
-    return new ResponseHeaders(httpEngine.uri, headers);
+    RawHeaders rawHeaders = RawHeaders.fromBytes(socketIn);
+    httpEngine.connection.setHttpMinorVersion(rawHeaders.getHttpMinorVersion());
+    httpEngine.receiveHeaders(rawHeaders);
+
+    ResponseHeaders headers = new ResponseHeaders(httpEngine.uri, rawHeaders);
+    headers.setTransport("http/1.1");
+    return headers;
   }
 
-  public boolean makeReusable(boolean streamCancelled, OutputStream requestBodyOut,
+  public boolean makeReusable(boolean streamCanceled, OutputStream requestBodyOut,
       InputStream responseBodyIn) {
-    if (streamCancelled) {
+    if (streamCanceled) {
       return false;
     }
 
@@ -169,6 +177,10 @@ public final class HttpTransport implements Transport {
    * Discards the response body so that the connection can be reused. This
    * needs to be done judiciously, since it delays the current request in
    * order to speed up a potential future request that may never occur.
+   *
+   * <p>A stream may be discarded to encourage response caching (a response
+   * cannot be cached unless it is consumed completely) or to enable connection
+   * reuse.
    */
   private static boolean discardStream(HttpEngine httpEngine, InputStream responseBodyIn) {
     Connection connection = httpEngine.connection;
@@ -212,9 +224,9 @@ public final class HttpTransport implements Transport {
   /** An HTTP body with a fixed length known in advance. */
   private static final class FixedLengthOutputStream extends AbstractOutputStream {
     private final OutputStream socketOut;
-    private int bytesRemaining;
+    private long bytesRemaining;
 
-    private FixedLengthOutputStream(OutputStream socketOut, int bytesRemaining) {
+    private FixedLengthOutputStream(OutputStream socketOut, long bytesRemaining) {
       this.socketOut = socketOut;
       this.bytesRemaining = bytesRemaining;
     }
@@ -358,14 +370,14 @@ public final class HttpTransport implements Transport {
 
   /** An HTTP body with a fixed length specified in advance. */
   private static class FixedLengthInputStream extends AbstractHttpInputStream {
-    private int bytesRemaining;
+    private long bytesRemaining;
 
     public FixedLengthInputStream(InputStream is, CacheRequest cacheRequest, HttpEngine httpEngine,
-        int length) throws IOException {
+        long length) throws IOException {
       super(is, httpEngine, cacheRequest);
       bytesRemaining = length;
       if (bytesRemaining == 0) {
-        endOfInput(false);
+        endOfInput();
       }
     }
 
@@ -375,7 +387,7 @@ public final class HttpTransport implements Transport {
       if (bytesRemaining == 0) {
         return -1;
       }
-      int read = in.read(buffer, offset, Math.min(count, bytesRemaining));
+      int read = in.read(buffer, offset, (int) Math.min(count, bytesRemaining));
       if (read == -1) {
         unexpectedEndOfInput(); // the server didn't supply the promised content length
         throw new ProtocolException("unexpected end of stream");
@@ -383,14 +395,14 @@ public final class HttpTransport implements Transport {
       bytesRemaining -= read;
       cacheWrite(buffer, offset, read);
       if (bytesRemaining == 0) {
-        endOfInput(false);
+        endOfInput();
       }
       return read;
     }
 
     @Override public int available() throws IOException {
       checkNotClosed();
-      return bytesRemaining == 0 ? 0 : Math.min(in.available(), bytesRemaining);
+      return bytesRemaining == 0 ? 0 : (int) Math.min(in.available(), bytesRemaining);
     }
 
     @Override public void close() throws IOException {
@@ -460,7 +472,7 @@ public final class HttpTransport implements Transport {
         RawHeaders rawResponseHeaders = httpEngine.responseHeaders.getHeaders();
         RawHeaders.readHeaders(transport.socketIn, rawResponseHeaders);
         httpEngine.receiveHeaders(rawResponseHeaders);
-        endOfInput(false);
+        endOfInput();
       }
     }
 
