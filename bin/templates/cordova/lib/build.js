@@ -20,9 +20,9 @@
 */
 
 var shell   = require('shelljs'),
-    exec    = require('./exec'),
-    Q       = require('q'),
     clean   = require('./clean'),
+    spawn   = require('./spawn'),
+    Q       = require('q'),
     path    = require('path'),
     fs      = require('fs'),
     ROOT    = path.join(__dirname, '..', '..');
@@ -34,13 +34,13 @@ var shell   = require('shelljs'),
 module.exports.run = function(build_type) {
     //default build type
     build_type = typeof build_type !== 'undefined' ? build_type : "--debug";
-    var cmd;
+    var args;
     switch(build_type) {
         case '--debug' :
-            cmd = 'ant debug -f "' + path.join(ROOT, 'build.xml') + '"';
+            args = ['debug', '-f', path.join(ROOT, 'build.xml')];
             break;
         case '--release' :
-            cmd = 'ant release -f "' + path.join(ROOT, 'build.xml') + '"';
+            args = ['release', '-f', path.join(ROOT, 'build.xml')];
             break;
         case '--nobuild' :
             console.log('Skipping build...');
@@ -48,13 +48,10 @@ module.exports.run = function(build_type) {
         default :
             return Q.reject('Build option \'' + build_type + '\' not recognized.');
     }
-    if(cmd) {
-        return clean.run() // TODO: Can we stop cleaning every time and let ant build incrementally?
-        .then(function() {
-            return exec(cmd);
-        });
-    }
-    return Q();
+    return clean.run() // TODO: Can we stop cleaning every time and let ant build incrementally?
+    .then(function() {
+        return spawn('ant', args);
+    });
 }
 
 /*

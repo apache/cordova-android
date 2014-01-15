@@ -19,20 +19,25 @@
        under the License.
 */
 
-var spawn = require('./spawn'),
-    path  = require('path'),
-    ROOT  = path.join(__dirname, '..', '..');
+var child_process = require('child_process'),
+    Q       = require('q');
 
-/*
- * Cleans the project using ant
- * Returns a promise.
- */
-module.exports.run = function() {
-    return spawn('ant', ['clean', '-f', path.join(ROOT, 'build.xml')]);
+// Takes a command and optional current working directory.
+module.exports = function(cmd, args, opt_cwd) {
+    var d = Q.defer();
+    try {
+        var child = child_process.spawn(cmd, args, {cwd: opt_cwd, stdio: 'inherit'});
+        child.on('exit', function(code) {
+            if (code) {
+                d.reject('Error code ' + code + ' for command: ' + cmd + ' with args: ' + args);
+            } else {
+                d.resolve();
+            }
+        });
+    } catch(e) {
+        console.error('error caught: ' + e);
+        d.reject(e);
+    }
+    return d.promise;
 }
 
-module.exports.help = function() {
-    console.log('Usage: ' + path.relative(process.cwd(), process.argv[1]));
-    console.log('Cleans the project directory.');
-    process.exit(0);
-}
