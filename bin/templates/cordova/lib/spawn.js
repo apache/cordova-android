@@ -21,11 +21,17 @@
 
 var child_process = require('child_process'),
     Q       = require('q');
+var isWindows = process.platform.slice(0, 3) == 'win';
 
 // Takes a command and optional current working directory.
 module.exports = function(cmd, args, opt_cwd) {
     var d = Q.defer();
     try {
+        // Work around spawn not being able to find .bat files.
+        if (isWindows) {
+          args.unshift('/s', '/c', cmd);
+          cmd = 'cmd';
+        }
         var child = child_process.spawn(cmd, args, {cwd: opt_cwd, stdio: 'inherit'});
         child.on('exit', function(code) {
             if (code) {
