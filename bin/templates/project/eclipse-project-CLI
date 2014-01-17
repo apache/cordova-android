@@ -32,22 +32,22 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>** Cordova Project **</name>
+			<name>-- Cordova Project --</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-                        <name>** Cordova Project **/config.xml</name>
+                        <name>-- Cordova Project --/config.xml</name>
 			<type>1</type>
 			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/config.xml</locationURI>
 		</link>
                 <link>
-                        <name>** Cordova Project **/www</name>
+                        <name>-- Cordova Project --/www</name>
                         <type>2</type>
 			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/www</locationURI>
                 </link>
                 <link>
-                        <name>** Cordova Project **/merges</name>
+                        <name>-- Cordova Project --/merges</name>
                         <type>2</type>
 			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/merges</locationURI>
                 </link>
