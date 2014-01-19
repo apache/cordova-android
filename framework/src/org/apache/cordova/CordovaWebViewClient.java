@@ -21,9 +21,9 @@ package org.apache.cordova;
 import java.io.ByteArrayInputStream;
 import java.util.Hashtable;
 
-import org.apache.cordova.api.CordovaInterface;
+import org.apache.cordova.CordovaInterface;
 
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,10 +45,19 @@ import android.webkit.WebViewClient;
 
 /**
  * This class is the WebViewClient that implements callbacks for our web view.
+ * The kind of callbacks that happen here are regarding the rendering of the
+ * document instead of the chrome surrounding it, such as onPageStarted(), 
+ * shouldOverrideUrlLoading(), etc. Related to but different than
+ * CordovaChromeClient.
+ *
+ * @see <a href="http://developer.android.com/reference/android/webkit/WebViewClient.html">WebViewClient</a>
+ * @see <a href="http://developer.android.com/guide/webapps/webview.html">WebView guide</a>
+ * @see CordovaChromeClient
+ * @see CordovaWebView
  */
 public class CordovaWebViewClient extends WebViewClient {
 
-	private static final String TAG = "Cordova";
+	private static final String TAG = "CordovaWebViewClient";
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     CordovaWebView appView;

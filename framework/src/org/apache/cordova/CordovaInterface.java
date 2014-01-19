@@ -21,7 +21,7 @@ package org.apache.cordova;
 import android.app.Activity;
 import android.content.Intent;
 
-import org.apache.cordova.api.CordovaPlugin;
+import org.apache.cordova.CordovaPlugin;
 
 import java.util.concurrent.ExecutorService;
 
@@ -51,7 +51,7 @@ public interface CordovaInterface {
     /**
      * Get the Android activity.
      *
-     * @return
+     * @return the Activity
      */
     public abstract Activity getActivity();
     

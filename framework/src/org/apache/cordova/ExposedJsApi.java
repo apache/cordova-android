@@ -19,8 +19,7 @@
 package org.apache.cordova;
 
 import android.webkit.JavascriptInterface;
-import org.apache.cordova.api.PluginManager;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.PluginManager;
 import org.json.JSONException;
 
 /**
@@ -48,10 +47,13 @@ import org.json.JSONException;
 
         jsMessageQueue.setPaused(true);
         try {
+            // Tell the resourceApi what thread the JS is running on.
+            CordovaResourceApi.jsThread = Thread.currentThread();
+            
             pluginManager.exec(service, action, callbackId, arguments);
             String ret = "";
             if (!NativeToJsMessageQueue.DISABLE_EXEC_CHAINING) {
-                ret = jsMessageQueue.popAndEncode();
+                ret = jsMessageQueue.popAndEncode(false);
             }
             return ret;
         } catch (Throwable e) {
@@ -68,7 +70,7 @@ import org.json.JSONException;
     }
     
     @JavascriptInterface
-    public String retrieveJsMessages() {
-        return jsMessageQueue.popAndEncode();
+    public String retrieveJsMessages(boolean fromOnlineEvent) {
+        return jsMessageQueue.popAndEncode(fromOnlineEvent);
     }
 }

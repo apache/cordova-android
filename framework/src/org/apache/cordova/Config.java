@@ -21,14 +21,12 @@ package org.apache.cordova;
 
 import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Locale;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.LOG;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -43,8 +41,7 @@ public class Config {
 
     public static final String TAG = "Config";
 
-    private ArrayList<Pattern> whiteList = new ArrayList<Pattern>();
-    private HashMap<String, Boolean> whiteListCache = new HashMap<String, Boolean>();
+    private Whitelist whitelist = new Whitelist();
     private String startUrl;
 
     private static Config self = null;
@@ -71,15 +68,21 @@ public class Config {
             return;
         }
 
-        int id = action.getResources().getIdentifier("config", "xml", action.getPackageName());
+        // First checking the class namespace for config.xml
+        int id = action.getResources().getIdentifier("config", "xml", action.getClass().getPackage().getName());
         if (id == 0) {
-            id = action.getResources().getIdentifier("cordova", "xml", action.getPackageName());
-            LOG.i("CordovaLog", "config.xml missing, reverting to cordova.xml");
+            // If we couldn't find config.xml there, we'll look in the namespace from AndroidManifest.xml
+            id = action.getResources().getIdentifier("config", "xml", action.getPackageName());
+            if (id == 0) {
+                LOG.i("CordovaLog", "config.xml missing. Ignoring...");
+                return;
+            }
         }
-        if (id == 0) {
-            LOG.i("CordovaLog", "cordova.xml missing. Ignoring...");
-            return;
-        }
+
+        // Add implicitly allowed URLs
+        whitelist.addWhiteListEntry("file:///*", false);
+        whitelist.addWhiteListEntry("content:///*", false);
+        whitelist.addWhiteListEntry("data:*", false);
 
         XmlResourceParser xml = action.getResources().getXml(id);
         int eventType = -1;
@@ -91,18 +94,18 @@ public class Config {
                     String origin = xml.getAttributeValue(null, "origin");
                     String subdomains = xml.getAttributeValue(null, "subdomains");
                     if (origin != null) {
-                        this._addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                        whitelist.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
                     }
                 }
                 else if (strNode.equals("log")) {
                     String level = xml.getAttributeValue(null, "level");
-                    Log.d(TAG, "The <log> tags is deprecated. Use <preference name=\"loglevel\" value=\"" + level + "\"/> instead.");
+                    Log.d(TAG, "The <log> tag is deprecated. Use <preference name=\"loglevel\" value=\"" + level + "\"/> instead.");
                     if (level != null) {
                         LOG.setLogLevel(level);
                     }
                 }
                 else if (strNode.equals("preference")) {
-                    String name = xml.getAttributeValue(null, "name");
+                    String name = xml.getAttributeValue(null, "name").toLowerCase(Locale.getDefault());
                     /* Java 1.6 does not support switch-based strings
                        Java 7 does, but we're using Dalvik, which is apparently not Java.
                        Since we're reading XML, this has to be an ugly if/else.
@@ -112,39 +115,43 @@ public class Config {
                        
                        Note: We should probably pass in the classname for the variable splash on splashscreen!
                        */
-                    if (name.equals("loglevel")) {
+                    if (name.equalsIgnoreCase("LogLevel")) {
                         String level = xml.getAttributeValue(null, "value");
                         LOG.setLogLevel(level);
-                    } else if (name.equals("splashscreen")) {
+                    } else if (name.equalsIgnoreCase("SplashScreen")) {
                         String value = xml.getAttributeValue(null, "value");
                         int resource = 0;
                         if (value == null)
                         {
                             value = "splash";
                         }
-                        resource = action.getResources().getIdentifier(value, "drawable", action.getPackageName());
+                        resource = action.getResources().getIdentifier(value, "drawable", action.getClass().getPackage().getName());
                         
                         action.getIntent().putExtra(name, resource);
                     }
-                    else if(name.equals("backgroundColor")) {
+                    else if(name.equalsIgnoreCase("BackgroundColor")) {
                         int value = xml.getAttributeIntValue(null, "value", Color.BLACK);
                         action.getIntent().putExtra(name, value);
                     }
-                    else if(name.equals("loadUrlTimeoutValue")) {
+                    else if(name.equalsIgnoreCase("LoadUrlTimeoutValue")) {
                         int value = xml.getAttributeIntValue(null, "value", 20000);
                         action.getIntent().putExtra(name, value);
                     }
-                    else if(name.equals("keepRunning"))
+                    else if(name.equalsIgnoreCase("SplashScreenDelay")) {
+                        int value = xml.getAttributeIntValue(null, "value", 3000);
+                        action.getIntent().putExtra(name, value);
+                    }
+                    else if(name.equalsIgnoreCase("KeepRunning"))
                     {
                         boolean value = xml.getAttributeValue(null, "value").equals("true");
                         action.getIntent().putExtra(name, value);
                     }
-                    else if(name.equals("InAppBrowserStorageEnabled"))
+                    else if(name.equalsIgnoreCase("InAppBrowserStorageEnabled"))
                     {
                         boolean value = xml.getAttributeValue(null, "value").equals("true");
                         action.getIntent().putExtra(name, value);
                     }
-                    else if(name.equals("disallowOverscroll"))
+                    else if(name.equalsIgnoreCase("DisallowOverscroll"))
                     {
                         boolean value = xml.getAttributeValue(null, "value").equals("true");
                         action.getIntent().putExtra(name, value);
@@ -199,108 +206,20 @@ public class Config {
         if (self == null) {
             return;
         }
-
-        self._addWhiteListEntry(origin, subdomains);
+        self.whitelist.addWhiteListEntry(origin, subdomains);
     }
-
-    /*
-     * Trying to figure out how to match * is a pain
-     * So, we don't use a regex here
-     */
-    
-    private boolean originHasWildcard(String origin){
-        //First, check for a protocol, then split it if it has one.
-        if(origin.contains("//"))
-        {
-            origin = origin.split("//")[1];
-        }
-        return origin.startsWith("*");
-    }
-
-    private void _addWhiteListEntry(String origin, boolean subdomains) {
-        try {
-            // Unlimited access to network resources
-            if (origin.compareTo("*") == 0) {
-                LOG.d(TAG, "Unlimited access to network resources");
-                this.whiteList.add(Pattern.compile(".*"));
-            }
-            else { // specific access
-                // check if subdomains should be included
-                if(originHasWildcard(origin))
-                {
-                    subdomains = true;
-                    //Remove the wildcard so this works properly
-                    origin = origin.replace("*.", "");
-                }
-                
-                // TODO: we should not add more domains if * has already been added
-                Pattern schemeRegex = Pattern.compile("^[a-z-]+://");
-                Matcher matcher = schemeRegex.matcher(origin);
-                if (subdomains) {
-                    // Check for http or https protocols
-                    if (origin.startsWith("http")) {
-                        this.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://(.*\\.)?")));
-                    }
-                    // Check for other protocols
-                    else if(matcher.find()){
-                        this.whiteList.add(Pattern.compile("^" + origin.replaceFirst("//", "//(.*\\.)?")));
-                    }
-                    // XXX making it stupid friendly for people who forget to include protocol/SSL
-                    else {
-                        this.whiteList.add(Pattern.compile("^https?://(.*\\.)?" + origin));
-                    }
-                    LOG.d(TAG, "Origin to allow with subdomains: %s", origin);
-                } else {
-                    // Check for http or https protocols
-                    if (origin.startsWith("http")) {
-                        this.whiteList.add(Pattern.compile(origin.replaceFirst("https?://", "^https?://")));
-                    }
-                    // Check for other protocols
-                    else if(matcher.find()){
-                        this.whiteList.add(Pattern.compile("^" + origin));
-                    }
-                    // XXX making it stupid friendly for people who forget to include protocol/SSL
-                    else {
-                        this.whiteList.add(Pattern.compile("^https?://" + origin));
-                    }
-                    LOG.d(TAG, "Origin to allow: %s", origin);
-                }
-            }
-        } catch (Exception e) {
-            LOG.d(TAG, "Failed to add origin %s", origin);
-        }
-    }
-
 
     /**
      * Determine if URL is in approved list of URLs to load.
      *
      * @param url
-     * @return
+     * @return true if whitelisted
      */
     public static boolean isUrlWhiteListed(String url) {
         if (self == null) {
             return false;
         }
-
-        // Check to see if we have matched url previously
-        if (self.whiteListCache.get(url) != null) {
-            return true;
-        }
-
-        // Look for match in white list
-        Iterator<Pattern> pit = self.whiteList.iterator();
-        while (pit.hasNext()) {
-            Pattern p = pit.next();
-            Matcher m = p.matcher(url);
-
-            // If match found, then cache it to speed up subsequent comparisons
-            if (m.find()) {
-                self.whiteListCache.put(url, true);
-                return true;
-            }
-        }
-        return false;
+        return self.whitelist.isUrlWhiteListed(url);
     }
 
     public static String getStartUrl() {

@@ -66,9 +66,16 @@
 
 <!-- extension targets. Uncomment the ones where you want to do custom work
      in between standard targets -->
-<!--
+
     <target name="-pre-build">
+        <!-- copy in the current cordova.js file from the parent project -->
+        <copy file="../framework/assets/www/cordova.js" 
+              todir="assets/www"
+              preservelastmodified="true"
+              failonerror="true"
+              verbose="true" />
     </target>
+<!--
     <target name="-pre-compile">
     </target>
 

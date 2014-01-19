@@ -15,34 +15,105 @@
  */
 package com.squareup.okhttp;
 
+import com.squareup.okhttp.internal.Util;
+import com.squareup.okhttp.internal.http.HttpAuthenticator;
 import com.squareup.okhttp.internal.http.HttpURLConnectionImpl;
 import com.squareup.okhttp.internal.http.HttpsURLConnectionImpl;
-import com.squareup.okhttp.internal.http.OkResponseCache;
 import com.squareup.okhttp.internal.http.OkResponseCacheAdapter;
+import com.squareup.okhttp.internal.tls.OkHostnameVerifier;
 import java.net.CookieHandler;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.ResponseCache;
 import java.net.URL;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 
 /** Configures and creates HTTP connections. */
-public final class OkHttpClient {
+public final class OkHttpClient implements URLStreamHandlerFactory {
+  private static final List<String> DEFAULT_TRANSPORTS
+      = Util.immutableList(Arrays.asList("spdy/3", "http/1.1"));
+
+  private final RouteDatabase routeDatabase;
+  private final Dispatcher dispatcher;
   private Proxy proxy;
-  private Set<Route> failedRoutes = Collections.synchronizedSet(new LinkedHashSet<Route>());
+  private List<String> transports;
   private ProxySelector proxySelector;
   private CookieHandler cookieHandler;
   private ResponseCache responseCache;
   private SSLSocketFactory sslSocketFactory;
   private HostnameVerifier hostnameVerifier;
+  private OkAuthenticator authenticator;
   private ConnectionPool connectionPool;
   private boolean followProtocolRedirects = true;
+  private int connectTimeout;
+  private int readTimeout;
+
+  public OkHttpClient() {
+    routeDatabase = new RouteDatabase();
+    dispatcher = new Dispatcher();
+  }
+
+  private OkHttpClient(OkHttpClient copyFrom) {
+    routeDatabase = copyFrom.routeDatabase;
+    dispatcher = copyFrom.dispatcher;
+  }
+
+  /**
+   * Sets the default connect timeout for new connections. A value of 0 means no timeout.
+   *
+   * @see URLConnection#setConnectTimeout(int)
+   */
+  public void setConnectTimeout(long timeout, TimeUnit unit) {
+    if (timeout < 0) {
+      throw new IllegalArgumentException("timeout < 0");
+    }
+    if (unit == null) {
+      throw new IllegalArgumentException("unit == null");
+    }
+    long millis = unit.toMillis(timeout);
+    if (millis > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("Timeout too large.");
+    }
+    connectTimeout = (int) millis;
+  }
+
+  /** Default connect timeout (in milliseconds). */
+  public int getConnectTimeout() {
+    return connectTimeout;
+  }
+
+  /**
+   * Sets the default read timeout for new connections. A value of 0 means no timeout.
+   *
+   * @see URLConnection#setReadTimeout(int)
+   */
+  public void setReadTimeout(long timeout, TimeUnit unit) {
+    if (timeout < 0) {
+      throw new IllegalArgumentException("timeout < 0");
+    }
+    if (unit == null) {
+      throw new IllegalArgumentException("unit == null");
+    }
+    long millis = unit.toMillis(timeout);
+    if (millis > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException("Timeout too large.");
+    }
+    readTimeout = (int) millis;
+  }
+
+  /** Default read timeout (in milliseconds). */
+  public int getReadTimeout() {
+    return readTimeout;
+  }
 
   /**
    * Sets the HTTP proxy that will be used by connections created by this
@@ -108,7 +179,7 @@ public final class OkHttpClient {
     return responseCache;
   }
 
-  private OkResponseCache okResponseCache() {
+  public OkResponseCache getOkResponseCache() {
     if (responseCache instanceof HttpResponseCache) {
       return ((HttpResponseCache) responseCache).okResponseCache;
     } else if (responseCache != null) {
@@ -124,7 +195,7 @@ public final class OkHttpClient {
    * <p>If unset, the {@link HttpsURLConnection#getDefaultSSLSocketFactory()
    * system-wide default} SSL socket factory will be used.
    */
-  public OkHttpClient setSSLSocketFactory(SSLSocketFactory sslSocketFactory) {
+  public OkHttpClient setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
     this.sslSocketFactory = sslSocketFactory;
     return this;
   }
@@ -147,6 +218,22 @@ public final class OkHttpClient {
 
   public HostnameVerifier getHostnameVerifier() {
     return hostnameVerifier;
+  }
+
+  /**
+   * Sets the authenticator used to respond to challenges from the remote web
+   * server or proxy server.
+   *
+   * <p>If unset, the {@link java.net.Authenticator#setDefault system-wide default}
+   * authenticator will be used.
+   */
+  public OkHttpClient setAuthenticator(OkAuthenticator authenticator) {
+    this.authenticator = authenticator;
+    return this;
+  }
+
+  public OkAuthenticator getAuthenticator() {
+    return authenticator;
   }
 
   /**
@@ -180,16 +267,86 @@ public final class OkHttpClient {
     return followProtocolRedirects;
   }
 
+  public RouteDatabase getRoutesDatabase() {
+    return routeDatabase;
+  }
+
+  /**
+   * Configure the transports used by this client to communicate with remote
+   * servers. By default this client will prefer the most efficient transport
+   * available, falling back to more ubiquitous transports. Applications should
+   * only call this method to avoid specific compatibility problems, such as web
+   * servers that behave incorrectly when SPDY is enabled.
+   *
+   * <p>The following transports are currently supported:
+   * <ul>
+   *   <li><a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">http/1.1</a>
+   *   <li><a href="http://www.chromium.org/spdy/spdy-protocol/spdy-protocol-draft3">spdy/3</a>
+   * </ul>
+   *
+   * <p><strong>This is an evolving set.</strong> Future releases may drop
+   * support for transitional transports (like spdy/3), in favor of their
+   * successors (spdy/4 or http/2.0). The http/1.1 transport will never be
+   * dropped.
+   *
+   * <p>If multiple protocols are specified, <a
+   * href="https://technotes.googlecode.com/git/nextprotoneg.html">NPN</a> will
+   * be used to negotiate a transport. Future releases may use another mechanism
+   * (such as <a href="http://tools.ietf.org/html/draft-friedl-tls-applayerprotoneg-02">ALPN</a>)
+   * to negotiate a transport.
+   *
+   * @param transports the transports to use, in order of preference. The list
+   *     must contain "http/1.1". It must not contain null.
+   */
+  public OkHttpClient setTransports(List<String> transports) {
+    transports = Util.immutableList(transports);
+    if (!transports.contains("http/1.1")) {
+      throw new IllegalArgumentException("transports doesn't contain http/1.1: " + transports);
+    }
+    if (transports.contains(null)) {
+      throw new IllegalArgumentException("transports must not contain null");
+    }
+    if (transports.contains("")) {
+      throw new IllegalArgumentException("transports contains an empty string");
+    }
+    this.transports = transports;
+    return this;
+  }
+
+  public List<String> getTransports() {
+    return transports;
+  }
+
+  /**
+   * Schedules {@code request} to be executed.
+   */
+  /* OkHttp 2.0: public */ void enqueue(Request request, Response.Receiver responseReceiver) {
+    // Create the HttpURLConnection immediately so the enqueued job gets the current settings of
+    // this client. Otherwise changes to this client (socket factory, redirect policy, etc.) may
+    // incorrectly be reflected in the request when it is dispatched later.
+    dispatcher.enqueue(copyWithDefaults(), request, responseReceiver);
+  }
+
+  /**
+   * Cancels all scheduled tasks tagged with {@code tag}. Requests that are already
+   * in flight might not be canceled.
+   */
+  /* OkHttp 2.0: public */ void cancel(Object tag) {
+    dispatcher.cancel(tag);
+  }
+
   public HttpURLConnection open(URL url) {
+    return open(url, proxy);
+  }
+
+  HttpURLConnection open(URL url, Proxy proxy) {
     String protocol = url.getProtocol();
     OkHttpClient copy = copyWithDefaults();
-    if (protocol.equals("http")) {
-      return new HttpURLConnectionImpl(url, copy, copy.okResponseCache(), copy.failedRoutes);
-    } else if (protocol.equals("https")) {
-      return new HttpsURLConnectionImpl(url, copy, copy.okResponseCache(), copy.failedRoutes);
-    } else {
-      throw new IllegalArgumentException("Unexpected protocol: " + protocol);
-    }
+    copy.proxy = proxy;
+
+    if (protocol.equals("http")) return new HttpURLConnectionImpl(url, copy);
+    if (protocol.equals("https")) return new HttpsURLConnectionImpl(url, copy);
+    throw new IllegalArgumentException("Unexpected protocol: " + protocol);
   }
 
   /**
@@ -197,9 +354,8 @@ public final class OkHttpClient {
    * each field that hasn't been explicitly configured.
    */
   private OkHttpClient copyWithDefaults() {
-    OkHttpClient result = new OkHttpClient();
+    OkHttpClient result = new OkHttpClient(this);
     result.proxy = proxy;
-    result.failedRoutes = failedRoutes;
     result.proxySelector = proxySelector != null ? proxySelector : ProxySelector.getDefault();
     result.cookieHandler = cookieHandler != null ? cookieHandler : CookieHandler.getDefault();
     result.responseCache = responseCache != null ? responseCache : ResponseCache.getDefault();
@@ -208,9 +364,45 @@ public final class OkHttpClient {
         : HttpsURLConnection.getDefaultSSLSocketFactory();
     result.hostnameVerifier = hostnameVerifier != null
         ? hostnameVerifier
-        : HttpsURLConnection.getDefaultHostnameVerifier();
+        : OkHostnameVerifier.INSTANCE;
+    result.authenticator = authenticator != null
+        ? authenticator
+        : HttpAuthenticator.SYSTEM_DEFAULT;
     result.connectionPool = connectionPool != null ? connectionPool : ConnectionPool.getDefault();
     result.followProtocolRedirects = followProtocolRedirects;
+    result.transports = transports != null ? transports : DEFAULT_TRANSPORTS;
+    result.connectTimeout = connectTimeout;
+    result.readTimeout = readTimeout;
     return result;
+  }
+
+  /**
+   * Creates a URLStreamHandler as a {@link URL#setURLStreamHandlerFactory}.
+   *
+   * <p>This code configures OkHttp to handle all HTTP and HTTPS connections
+   * created with {@link URL#openConnection()}: <pre>   {@code
+   *
+   *   OkHttpClient okHttpClient = new OkHttpClient();
+   *   URL.setURLStreamHandlerFactory(okHttpClient);
+   * }</pre>
+   */
+  public URLStreamHandler createURLStreamHandler(final String protocol) {
+    if (!protocol.equals("http") && !protocol.equals("https")) return null;
+
+    return new URLStreamHandler() {
+      @Override protected URLConnection openConnection(URL url) {
+        return open(url);
+      }
+
+      @Override protected URLConnection openConnection(URL url, Proxy proxy) {
+        return open(url, proxy);
+      }
+
+      @Override protected int getDefaultPort() {
+        if (protocol.equals("http")) return 80;
+        if (protocol.equals("https")) return 443;
+        throw new AssertionError();
+      }
+    };
   }
 }

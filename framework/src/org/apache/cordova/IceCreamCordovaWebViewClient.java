@@ -18,11 +18,12 @@
 */
 package org.apache.cordova;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaResourceApi.OpenForReadResult;
+import org.apache.cordova.LOG;
 
 import android.annotation.TargetApi;
 import android.net.Uri;
@@ -33,6 +34,7 @@ import android.webkit.WebView;
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
+    private static final String TAG = "IceCreamCordovaWebViewClient";
 
     public IceCreamCordovaWebViewClient(CordovaInterface cordova) {
         super(cordova);
@@ -44,38 +46,43 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        // Disable checks during shouldInterceptRequest since there is no way to avoid IO here :(.
-        UriResolvers.webCoreThread = null;
         try {
-            UriResolver uriResolver = appView.resolveUri(Uri.parse(url), true);
-            
-            if (uriResolver == null && url.startsWith("file:///android_asset/")) {
-                if (url.contains("?") || url.contains("#") || needsIceCreamSpecialsInAssetUrlFix(url)) {
-                    uriResolver = appView.resolveUri(Uri.parse(url), false);
-                }
+            // Check the against the white-list.
+            if ((url.startsWith("http:") || url.startsWith("https:")) && !Config.isUrlWhiteListed(url)) {
+                LOG.w(TAG, "URL blocked by whitelist: " + url);
+                // Results in a 404.
+                return new WebResourceResponse("text/plain", "UTF-8", null);
             }
+
+            CordovaResourceApi resourceApi = appView.getResourceApi();
+            Uri origUri = Uri.parse(url);
+            // Allow plugins to intercept WebView requests.
+            Uri remappedUri = resourceApi.remapUri(origUri);
             
-            if (uriResolver != null) {
-                try {
-                    InputStream stream = uriResolver.getInputStream();
-                    String mimeType = uriResolver.getMimeType();
-                    // If we don't know how to open this file, let the browser continue loading
-                    return new WebResourceResponse(mimeType, "UTF-8", stream);
-                } catch (IOException e) {
-                    LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file.", e);
-                    // Results in a 404.
-                    return new WebResourceResponse("text/plain", "UTF-8", null);
-                }
+            if (!origUri.equals(remappedUri) || needsSpecialsInAssetUrlFix(origUri)) {
+                OpenForReadResult result = resourceApi.openForRead(remappedUri, true);
+                return new WebResourceResponse(result.mimeType, "UTF-8", result.inputStream);
             }
+            // If we don't need to special-case the request, let the browser load it.
             return null;
-        } finally {
-            // Tell the Thread-Checking resolve what thread the WebCore thread is.
-            UriResolvers.webCoreThread = Thread.currentThread();
+        } catch (IOException e) {
+            if (!(e instanceof FileNotFoundException)) {
+                LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file (returning a 404).", e);
+            }
+            // Results in a 404.
+            return new WebResourceResponse("text/plain", "UTF-8", null);
         }
     }
+
+    private static boolean needsSpecialsInAssetUrlFix(Uri uri) {
+        if (CordovaResourceApi.getUriType(uri) != CordovaResourceApi.URI_TYPE_ASSET) {
+            return false;
+        }
+        if (uri.getQuery() != null || uri.getFragment() != null) {
+            return true;
+        }
         
-    private static boolean needsIceCreamSpecialsInAssetUrlFix(String url) {
-        if (!url.contains("%20")){
+        if (!uri.toString().contains("%")) {
             return false;
         }
 
@@ -83,8 +90,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
             case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH:
             case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1:
                 return true;
-            default:
-                return false;
         }
+        return false;
     }
 }

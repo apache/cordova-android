@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import android.media.ExifInterface;
 
+@Deprecated // Deprecated in 3.1. To be removed in 4.0.
 public class ExifHelper {
     private String aperture = null;
     private String datetime = null;

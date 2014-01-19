@@ -24,6 +24,7 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+@Deprecated // Deprecated in 3.1. To be removed in 4.0.
 public class JSONUtils {
 	public static List<String> toStringList(JSONArray array) throws JSONException {
         if(array == null) {

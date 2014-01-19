@@ -22,8 +22,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
 
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.LOG;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
+@Deprecated // Deprecated in 3.1. To be removed in 4.0.
 public class FileHelper {
     private static final String LOG_TAG = "FileUtils";
     private static final String _DATA = "_data";

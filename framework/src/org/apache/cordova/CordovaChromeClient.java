@@ -18,8 +18,8 @@
 */
 package org.apache.cordova;
 
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -47,6 +47,14 @@ import android.widget.RelativeLayout;
 
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
+ * The kind of callbacks that happen here are on the chrome outside the document,
+ * such as onCreateWindow(), onConsoleMessage(), onProgressChanged(), etc. Related
+ * to but different than CordovaWebViewClient.
+ *
+ * @see <a href="http://developer.android.com/reference/android/webkit/WebChromeClient.html">WebChromeClient</a>
+ * @see <a href="http://developer.android.com/guide/webapps/webview.html">WebView guide</a>
+ * @see CordovaWebViewClient
+ * @see CordovaWebView
  */
 public class CordovaChromeClient extends WebChromeClient {
 
@@ -54,8 +62,8 @@ public class CordovaChromeClient extends WebChromeClient {
     private static final String LOG_TAG = "CordovaChromeClient";
     private String TAG = "CordovaLog";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    private CordovaInterface cordova;
-    private CordovaWebView appView;
+    protected CordovaInterface cordova;
+    protected CordovaWebView appView;
 
     // the video progress view
     private View mVideoProgressView;
@@ -228,13 +236,18 @@ public class CordovaChromeClient extends WebChromeClient {
 
         // Sets the native->JS bridge mode. 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_bridge_mode:")) {
-            this.appView.exposedJsApi.setNativeToJsBridgeMode(Integer.parseInt(message));
-            result.confirm("");
+        	try {
+                this.appView.exposedJsApi.setNativeToJsBridgeMode(Integer.parseInt(message));
+                result.confirm("");
+        	} catch (NumberFormatException e){
+                result.confirm("");
+                e.printStackTrace();
+        	}
         }
 
         // Polling for JavaScript messages 
         else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-            String r = this.appView.exposedJsApi.retrieveJsMessages();
+            String r = this.appView.exposedJsApi.retrieveJsMessages("1".equals(message));
             result.confirm(r == null ? "" : r);
         }
 
@@ -275,33 +288,13 @@ public class CordovaChromeClient extends WebChromeClient {
 
     /**
      * Handle database quota exceeded notification.
-     *
-     * @param url
-     * @param databaseIdentifier
-     * @param currentQuota
-     * @param estimatedSize
-     * @param totalUsedQuota
-     * @param quotaUpdater
      */
     @Override
     public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota, long estimatedSize,
             long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater)
     {
         LOG.d(TAG, "onExceededDatabaseQuota estimatedSize: %d  currentQuota: %d  totalUsedQuota: %d", estimatedSize, currentQuota, totalUsedQuota);
-
-        if (estimatedSize < MAX_QUOTA)
-        {
-            //increase for 1Mb
-            long newQuota = estimatedSize;
-            LOG.d(TAG, "calling quotaUpdater.updateQuota newQuota: %d", newQuota);
-            quotaUpdater.updateQuota(newQuota);
-        }
-        else
-        {
-            // Set the quota to whatever it is and force an error
-            // TODO: get docs on how to handle this properly
-            quotaUpdater.updateQuota(currentQuota);
-        }
+        quotaUpdater.updateQuota(MAX_QUOTA);
     }
 
     // console.log in api level 7: http://developer.android.com/guide/developing/debug-tasks.html

@@ -19,8 +19,8 @@
 package org.apache.cordova;
 
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.CordovaPlugin;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
 
 //import android.content.Context;
 //import android.webkit.WebView;
@@ -107,13 +107,13 @@ public class PluginEntry {
      * Get the class.
      *
      * @param clazz
-     * @return
+     * @return a reference to the named class
      * @throws ClassNotFoundException
      */
     @SuppressWarnings("rawtypes")
     private Class getClassByName(final String clazz) throws ClassNotFoundException {
         Class c = null;
-        if (clazz != null) {
+        if ((clazz != null) && !("".equals(clazz))) {
             c = Class.forName(clazz);
         }
         return c;
@@ -125,7 +125,7 @@ public class PluginEntry {
     @SuppressWarnings("rawtypes")
     private boolean isCordovaPlugin(Class c) {
         if (c != null) {
-            return org.apache.cordova.api.CordovaPlugin.class.isAssignableFrom(c);
+            return org.apache.cordova.CordovaPlugin.class.isAssignableFrom(c);
         }
         return false;
     }

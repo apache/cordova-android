@@ -45,7 +45,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
    
-    <uses-sdk android:minSdkVersion="7" />
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="19"/>
 
     <instrumentation
         android:name="android.test.InstrumentationTestRunner"
@@ -59,7 +59,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.CordovaWebViewTestActivity" >
+            android:name="org.apache.cordova.test.CordovaWebViewTestActivity" >
             <intent-filter >
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -69,7 +69,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.backbbuttonmultipage" >
+            android:name="org.apache.cordova.test.background" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -79,7 +79,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.background" >
+            android:name="org.apache.cordova.test.backgroundcolor" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -89,7 +89,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.basicauth" >
+            android:name="org.apache.cordova.test.basicauth" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -99,7 +99,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.CordovaActivity" >
+            android:name="org.apache.cordova.test.CordovaActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -109,7 +109,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.CordovaDriverAction" >
+            android:name="org.apache.cordova.test.CordovaDriverAction" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -119,7 +119,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.errorurl" >
+            android:name="org.apache.cordova.test.errorurl" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -129,7 +129,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.fullscreen" >
+            android:name="org.apache.cordova.test.fullscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -139,7 +139,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.htmlnotfound" >
+            android:name="org.apache.cordova.test.htmlnotfound" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -149,7 +149,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.iframe" >
+            android:name="org.apache.cordova.test.iframe" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -159,7 +159,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.jqmtabbackbutton" >
+            android:name="org.apache.cordova.test.lifecycle" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -169,7 +169,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.lifecycle" >
+            android:name="org.apache.cordova.test.loading" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -179,7 +179,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.loading" >
+            android:name="org.apache.cordova.test.menus" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -189,7 +189,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.menus" >
+            android:name="org.apache.cordova.test.splashscreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -199,7 +199,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.splashscreen" >
+            android:name="org.apache.cordova.test.tests" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -209,7 +209,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.tests" >
+            android:name="org.apache.cordova.test.timeout" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -219,7 +219,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.timeout" >
+            android:name="org.apache.cordova.test.userwebview" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -229,7 +229,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.userwebview" >
+            android:name="org.apache.cordova.test.whitelist" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -239,7 +239,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.whitelist" >
+            android:name="org.apache.cordova.test.xhr" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
@@ -249,21 +249,11 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.xhr" >
+            android:name="org.apache.cordova.test.backbuttonmultipage" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
             </intent-filter>
         </activity>
-        <activity
-            android:windowSoftInputMode="adjustPan"
-            android:label="@string/app_name" 
-            android:configChanges="orientation|keyboardHidden"
-            android:name=".actions.backbuttonmultipage" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.SAMPLE_CODE" />
-            </intent-filter>
-        </activity>
-        </application>
+    </application>
 </manifest> 

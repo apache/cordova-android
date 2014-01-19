@@ -23,7 +23,7 @@ import org.json.JSONArray;
 import android.util.Log;
 
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.PluginResult;
 import org.json.JSONObject;
 
 public class CallbackContext {
@@ -110,8 +110,6 @@ public class CallbackContext {
 
     /**
      * Helper for success callbacks that just returns the Status.OK by default
-     *
-     * @param message           The message to add to the success result.
      */
     public void success() {
         sendPluginResult(new PluginResult(PluginResult.Status.OK));
@@ -130,7 +128,6 @@ public class CallbackContext {
      * Helper for error callbacks that just returns the Status.ERROR by default
      *
      * @param message           The message to add to the error result.
-     * @param callbackId        The callback id used when calling back into JavaScript.
      */
     public void error(String message) {
         sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message));
@@ -140,7 +137,6 @@ public class CallbackContext {
      * Helper for error callbacks that just returns the Status.ERROR by default
      *
      * @param message           The message to add to the error result.
-     * @param callbackId        The callback id used when calling back into JavaScript.
      */
     public void error(int message) {
         sendPluginResult(new PluginResult(PluginResult.Status.ERROR, message));

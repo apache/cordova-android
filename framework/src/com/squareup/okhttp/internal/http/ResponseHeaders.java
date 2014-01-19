@@ -17,6 +17,7 @@
 package com.squareup.okhttp.internal.http;
 
 import com.squareup.okhttp.ResponseSource;
+import com.squareup.okhttp.internal.Platform;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -34,13 +35,16 @@ import static com.squareup.okhttp.internal.Util.equal;
 public final class ResponseHeaders {
 
   /** HTTP header name for the local time when the request was sent. */
-  private static final String SENT_MILLIS = "X-Android-Sent-Millis";
+  private static final String SENT_MILLIS = Platform.get().getPrefix() + "-Sent-Millis";
 
   /** HTTP header name for the local time when the response was received. */
-  private static final String RECEIVED_MILLIS = "X-Android-Received-Millis";
+  private static final String RECEIVED_MILLIS = Platform.get().getPrefix() + "-Received-Millis";
 
   /** HTTP synthetic header with the response source. */
-  static final String RESPONSE_SOURCE = "X-Android-Response-Source";
+  static final String RESPONSE_SOURCE = Platform.get().getPrefix() + "-Response-Source";
+
+  /** HTTP synthetic header with the selected transport (spdy/3, http/1.1, etc). */
+  static final String SELECTED_TRANSPORT = Platform.get().getPrefix() + "-Selected-Transport";
 
   private final URI uri;
   private final RawHeaders headers;
@@ -110,8 +114,9 @@ public final class ResponseHeaders {
 
   private String contentEncoding;
   private String transferEncoding;
-  private int contentLength = -1;
+  private long contentLength = -1;
   private String connection;
+  private String contentType;
 
   public ResponseHeaders(URI uri, RawHeaders headers) {
     this.uri = uri;
@@ -168,9 +173,11 @@ public final class ResponseHeaders {
         transferEncoding = value;
       } else if ("Content-Length".equalsIgnoreCase(fieldName)) {
         try {
-          contentLength = Integer.parseInt(value);
+          contentLength = Long.parseLong(value);
         } catch (NumberFormatException ignored) {
         }
+      } else if ("Content-Type".equalsIgnoreCase(fieldName)) {
+        contentType = value;
       } else if ("Connection".equalsIgnoreCase(fieldName)) {
         connection = value;
       } else if (SENT_MILLIS.equalsIgnoreCase(fieldName)) {
@@ -259,8 +266,12 @@ public final class ResponseHeaders {
     return contentEncoding;
   }
 
-  public int getContentLength() {
+  public long getContentLength() {
     return contentLength;
+  }
+
+  public String getContentType() {
+    return contentType;
   }
 
   public String getConnection() {
@@ -276,6 +287,10 @@ public final class ResponseHeaders {
 
   public void setResponseSource(ResponseSource responseSource) {
     headers.set(RESPONSE_SOURCE, responseSource.toString() + " " + headers.getResponseCode());
+  }
+
+  public void setTransport(String transport) {
+    headers.set(SELECTED_TRANSPORT, transport);
   }
 
   /**

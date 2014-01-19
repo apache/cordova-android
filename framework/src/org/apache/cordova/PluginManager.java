@@ -19,19 +19,19 @@
 package org.apache.cordova;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.UriResolver;
-import org.apache.cordova.api.CallbackContext;
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.CordovaPlugin;
-import org.apache.cordova.api.PluginEntry;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginEntry;
+import org.apache.cordova.PluginResult;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -39,8 +39,8 @@ import android.content.Intent;
 import android.content.res.XmlResourceParser;
 
 import android.net.Uri;
+import android.os.Debug;
 import android.util.Log;
-import android.webkit.WebResourceResponse;
 
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
@@ -50,6 +50,7 @@ import android.webkit.WebResourceResponse;
  */
 public class PluginManager {
     private static String TAG = "PluginManager";
+    private static final int SLOW_EXEC_WARNING_THRESHOLD = Debug.isDebuggerConnected() ? 60 : 16;
 
     // List of service entries
     private final HashMap<String, PluginEntry> entries = new HashMap<String, PluginEntry>();
@@ -60,9 +61,9 @@ public class PluginManager {
     // Flag to track first time through
     private boolean firstRun;
 
-    // Map URL schemes like foo: to plugins that want to handle those schemes
-    // This would allow how all URLs are handled to be offloaded to a plugin
-    protected HashMap<String, String> urlMap = new HashMap<String, String>();
+    // Stores mapping of Plugin Name -> <url-filter> values.
+    // Using <url-filter> is deprecated.
+    protected HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
 
     private AtomicInteger numPendingUiExecs;
 
@@ -109,16 +110,16 @@ public class PluginManager {
      * Load plugins from res/xml/config.xml
      */
     public void loadPlugins() {
-        int id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getPackageName());
-        if(id == 0)
-        {
-            id = this.ctx.getActivity().getResources().getIdentifier("plugins", "xml", this.ctx.getActivity().getPackageName());
-            LOG.i(TAG, "Using plugins.xml instead of config.xml.  plugins.xml will eventually be deprecated");
-        }
+        // First checking the class namespace for config.xml
+        int id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getClass().getPackage().getName());
         if (id == 0) {
-            this.pluginConfigurationMissing();
-            //We have the error, we need to exit without crashing!
-            return;
+            // If we couldn't find config.xml there, we'll look in the namespace from AndroidManifest.xml
+            id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getPackageName());
+            if (id == 0) {
+                this.pluginConfigurationMissing();
+                //We have the error, we need to exit without crashing!
+                return;
+            }
         }
         XmlResourceParser xml = this.ctx.getActivity().getResources().getXml(id);
         int eventType = -1;
@@ -128,16 +129,13 @@ public class PluginManager {
         while (eventType != XmlResourceParser.END_DOCUMENT) {
             if (eventType == XmlResourceParser.START_TAG) {
                 String strNode = xml.getName();
-                //This is for the old scheme
-                if (strNode.equals("plugin")) {
-                    service = xml.getAttributeValue(null, "name");
-                    pluginClass = xml.getAttributeValue(null, "value");
-                    Log.d(TAG, "<plugin> tags are deprecated, please use <features> instead. <plugin> will no longer work as of Cordova 3.0");
-                    onload = "true".equals(xml.getAttributeValue(null, "onload"));
-                }
-                //What is this?
-                else if (strNode.equals("url-filter")) {
-                    this.urlMap.put(xml.getAttributeValue(null, "value"), service);
+                if (strNode.equals("url-filter")) {
+                    Log.w(TAG, "Plugin " + service + " is using deprecated tag <url-filter>");
+                    if (urlMap.get(service) == null) {
+                        urlMap.put(service, new ArrayList<String>(2));
+                    }
+                    List<String> filters = urlMap.get(service);
+                    filters.add(xml.getAttributeValue(null, "value"));
                 }
                 else if (strNode.equals("feature")) {
                     //Check for supported feature sets  aka. plugins (Accelerometer, Geolocation, etc)
@@ -240,7 +238,13 @@ public class PluginManager {
         }
         try {
             CallbackContext callbackContext = new CallbackContext(callbackId, app);
+            long pluginStartTime = System.currentTimeMillis();
             boolean wasValidAction = plugin.execute(action, rawArgs, callbackContext);
+            long duration = System.currentTimeMillis() - pluginStartTime;
+            
+            if (duration > SLOW_EXEC_WARNING_THRESHOLD) {
+                Log.w(TAG, "THREAD WARNING: exec() call to " + service + "." + action + " blocked the main thread for " + duration + "ms. Plugin should use CordovaInterface.getThreadPool().");
+            }
             if (!wasValidAction) {
                 PluginResult cr = new PluginResult(PluginResult.Status.INVALID_ACTION);
                 app.sendPluginResult(cr, callbackId);
@@ -340,7 +344,7 @@ public class PluginManager {
      *
      * @param id                The message id
      * @param data              The message data
-     * @return
+     * @return                  Object to stop propagation or null
      */
     public Object postMessage(String id, Object data) {
         Object obj = this.ctx.onMessage(id, data);
@@ -376,11 +380,22 @@ public class PluginManager {
      * @return                  Return false to allow the URL to load, return true to prevent the URL from loading.
      */
     public boolean onOverrideUrlLoading(String url) {
-        Iterator<Entry<String, String>> it = this.urlMap.entrySet().iterator();
-        while (it.hasNext()) {
-            HashMap.Entry<String, String> pairs = it.next();
-            if (url.startsWith(pairs.getKey())) {
-                return this.getPlugin(pairs.getValue()).onOverrideUrlLoading(url);
+        // Deprecated way to intercept URLs. (process <url-filter> tags).
+        // Instead, plugins should not include <url-filter> and instead ensure
+        // that they are loaded before this function is called (either by setting
+        // the onload <param> or by making an exec() call to them)
+        for (PluginEntry entry : this.entries.values()) {
+            List<String> urlFilters = urlMap.get(entry.service);
+            if (urlFilters != null) {
+                for (String s : urlFilters) {
+                    if (url.startsWith(s)) {
+                        return getPlugin(entry.service).onOverrideUrlLoading(url);
+                    }
+                }
+            } else if (entry.plugin != null) {
+                if (entry.plugin.onOverrideUrlLoading(url)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -403,14 +418,14 @@ public class PluginManager {
     private void pluginConfigurationMissing() {
         LOG.e(TAG, "=====================================================================================");
         LOG.e(TAG, "ERROR: config.xml is missing.  Add res/xml/config.xml to your project.");
-        LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=incubator-cordova-android.git;a=blob;f=framework/res/xml/plugins.xml");
+        LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=blob;f=framework/res/xml/config.xml");
         LOG.e(TAG, "=====================================================================================");
     }
 
-    UriResolver resolveUri(Uri uri) {
+    Uri remapUri(Uri uri) {
         for (PluginEntry entry : this.entries.values()) {
             if (entry.plugin != null) {
-                UriResolver ret = entry.plugin.resolveUri(uri);
+                Uri ret = entry.plugin.remapUri(uri);
                 if (ret != null) {
                     return ret;
                 }

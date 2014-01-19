@@ -16,6 +16,7 @@
 
 package com.squareup.okhttp.internal.http;
 
+import com.squareup.okhttp.internal.spdy.ErrorCode;
 import com.squareup.okhttp.internal.spdy.SpdyConnection;
 import com.squareup.okhttp.internal.spdy.SpdyStream;
 import java.io.IOException;
@@ -36,6 +37,10 @@ public final class SpdyTransport implements Transport {
   }
 
   @Override public OutputStream createRequestBody() throws IOException {
+    long fixedContentLength = httpEngine.policy.getFixedContentLength();
+    if (fixedContentLength != -1) {
+      httpEngine.requestHeaders.setContentLength(fixedContentLength);
+    }
     // TODO: if we aren't streaming up to the server, we should buffer the whole request
     writeRequestHeaders();
     return stream.getOutputStream();
@@ -55,7 +60,7 @@ public final class SpdyTransport implements Transport {
     boolean hasResponseBody = true;
     stream = spdyConnection.newStream(requestHeaders.toNameValueBlock(), hasRequestBody,
         hasResponseBody);
-    stream.setReadTimeout(httpEngine.policy.getReadTimeout());
+    stream.setReadTimeout(httpEngine.client.getReadTimeout());
   }
 
   @Override public void writeRequestBody(RetryableOutputStream requestBody) throws IOException {
@@ -69,24 +74,26 @@ public final class SpdyTransport implements Transport {
   @Override public ResponseHeaders readResponseHeaders() throws IOException {
     List<String> nameValueBlock = stream.getResponseHeaders();
     RawHeaders rawHeaders = RawHeaders.fromNameValueBlock(nameValueBlock);
-    rawHeaders.computeResponseStatusLineFromSpdyHeaders();
     httpEngine.receiveHeaders(rawHeaders);
-    return new ResponseHeaders(httpEngine.uri, rawHeaders);
+
+    ResponseHeaders headers = new ResponseHeaders(httpEngine.uri, rawHeaders);
+    headers.setTransport("spdy/3");
+    return headers;
   }
 
   @Override public InputStream getTransferStream(CacheRequest cacheRequest) throws IOException {
     return new UnknownLengthHttpInputStream(stream.getInputStream(), cacheRequest, httpEngine);
   }
 
-  @Override public boolean makeReusable(boolean streamCancelled, OutputStream requestBodyOut,
+  @Override public boolean makeReusable(boolean streamCanceled, OutputStream requestBodyOut,
       InputStream responseBodyIn) {
-    if (streamCancelled) {
+    if (streamCanceled) {
       if (stream != null) {
-        stream.closeLater(SpdyStream.RST_CANCEL);
+        stream.closeLater(ErrorCode.CANCEL);
         return true;
       } else {
         // If stream is null, it either means that writeRequestHeaders wasn't called
-        // or that SpdyConnection#newStream threw an IOEXception. In both cases there's
+        // or that SpdyConnection#newStream threw an IOException. In both cases there's
         // nothing to do here and this stream can't be reused.
         return false;
       }

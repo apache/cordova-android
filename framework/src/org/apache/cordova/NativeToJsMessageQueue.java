@@ -22,8 +22,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.PluginResult;
 
 import android.os.Message;
 import android.util.Log;
@@ -35,7 +35,7 @@ import android.webkit.WebView;
 public class NativeToJsMessageQueue {
     private static final String LOG_TAG = "JsMessageQueue";
 
-    // This must match the default value in incubator-cordova-js/lib/android/exec.js
+    // This must match the default value in cordova-js/lib/android/exec.js
     private static final int DEFAULT_BRIDGE_MODE = 2;
     
     // Set this to true to force plugin results to be encoding as
@@ -138,8 +138,9 @@ public class NativeToJsMessageQueue {
      * Combines as many messages as possible, while staying under MAX_PAYLOAD_SIZE.
      * Returns null if the queue is empty.
      */
-    public String popAndEncode() {
+    public String popAndEncode(boolean fromOnlineEvent) {
         synchronized (this) {
+            registeredListeners[activeListenerIndex].notifyOfFlush(fromOnlineEvent);
             if (queue.isEmpty()) {
                 return null;
             }
@@ -274,12 +275,13 @@ public class NativeToJsMessageQueue {
         return paused;
     }
 
-    private interface BridgeMode {
-        void onNativeToJsMessageAvailable();
+    private abstract class BridgeMode {
+        abstract void onNativeToJsMessageAvailable();
+        void notifyOfFlush(boolean fromOnlineEvent) {}
     }
     
     /** Uses webView.loadUrl("javascript:") to execute messages. */
-    private class LoadUrlBridgeMode implements BridgeMode {
+    private class LoadUrlBridgeMode extends BridgeMode {
         final Runnable runnable = new Runnable() {
             public void run() {
                 String js = popAndEncodeAsJs();
@@ -289,18 +291,17 @@ public class NativeToJsMessageQueue {
             }
         };
         
-        public void onNativeToJsMessageAvailable() {
+        @Override void onNativeToJsMessageAvailable() {
             cordova.getActivity().runOnUiThread(runnable);
         }
     }
 
     /** Uses online/offline events to tell the JS when to poll for messages. */
-    private class OnlineEventsBridgeMode implements BridgeMode {
-        boolean online = true;
+    private class OnlineEventsBridgeMode extends BridgeMode {
+        boolean online = false;
         final Runnable runnable = new Runnable() {
             public void run() {
                 if (!queue.isEmpty()) {
-                    online = !online;
                     webView.setNetworkAvailable(online);
                 }
             }                
@@ -308,8 +309,14 @@ public class NativeToJsMessageQueue {
         OnlineEventsBridgeMode() {
             webView.setNetworkAvailable(true);
         }
-        public void onNativeToJsMessageAvailable() {
+        @Override void onNativeToJsMessageAvailable() {
             cordova.getActivity().runOnUiThread(runnable);
+        }
+        // Track when online/offline events are fired so that we don't fire excess events.
+        @Override void notifyOfFlush(boolean fromOnlineEvent) {
+            if (fromOnlineEvent) {
+                online = !online;
+            }
         }
     }
     
@@ -317,7 +324,7 @@ public class NativeToJsMessageQueue {
      * Uses Java reflection to access an API that lets us eval JS.
      * Requires Android 3.2.4 or above. 
      */
-    private class PrivateApiBridgeMode implements BridgeMode {
+    private class PrivateApiBridgeMode extends BridgeMode {
     	// Message added in commit:
     	// http://omapzoom.org/?p=platform/frameworks/base.git;a=commitdiff;h=9497c5f8c4bc7c47789e5ccde01179abc31ffeb2
     	// Which first appeared in 3.2.4ish.
@@ -355,7 +362,7 @@ public class NativeToJsMessageQueue {
     		}
     	}
     	
-        public void onNativeToJsMessageAvailable() {
+        @Override void onNativeToJsMessageAvailable() {
         	if (sendMessageMethod == null && !initFailed) {
         		initReflection();
         	}

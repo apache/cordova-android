@@ -23,14 +23,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Stack;
-import java.util.regex.Pattern;
+import java.util.Locale;
 
 import org.apache.cordova.Config;
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.LOG;
-import org.apache.cordova.api.PluginManager;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.LOG;
+import org.apache.cordova.PluginManager;
+import org.apache.cordova.PluginResult;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -38,6 +37,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -57,9 +59,16 @@ import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.widget.FrameLayout;
 
+/*
+ * This class is our web view.
+ *
+ * @see <a href="http://developer.android.com/guide/webapps/webview.html">WebView guide</a>
+ * @see <a href="http://developer.android.com/reference/android/webkit/WebView.html">WebView</a>
+ */
 public class CordovaWebView extends WebView {
 
     public static final String TAG = "CordovaWebView";
+    public static final String CORDOVA_VERSION = "3.4.0-dev";
 
     private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
     private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
@@ -95,6 +104,8 @@ public class CordovaWebView extends WebView {
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
     private ActivityResult mResult = null;
+
+    private CordovaResourceApi resourceApi;
 
     class ActivityResult {
         
@@ -206,7 +217,9 @@ public class CordovaWebView extends WebView {
         this.setup();
     }
 
-
+    /**
+     * set the WebViewClient, but provide special case handling for IceCreamSandwich.
+     */
     private void initWebViewClient(CordovaInterface cordova) {
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB ||
                 android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -227,9 +240,10 @@ public class CordovaWebView extends WebView {
     private void setup() {
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
-        this.requestFocusFromTouch();
-
-        // Enable JavaScript
+        if (shouldRequestFocusOnInit()) {
+			this.requestFocusFromTouch();
+		}
+		// Enable JavaScript
         WebSettings settings = this.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
@@ -270,6 +284,28 @@ public class CordovaWebView extends WebView {
         settings.setDatabaseEnabled(true);
         settings.setDatabasePath(databasePath);
         
+        
+        //Determine whether we're in debug or release mode, and turn on Debugging!
+        try {
+            final String packageName = this.cordova.getActivity().getPackageName();
+            final PackageManager pm = this.cordova.getActivity().getPackageManager();
+            ApplicationInfo appInfo;
+            
+            appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+            
+            if((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 &&  
+                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT)
+            {
+                setWebContentsDebuggingEnabled(true);
+            }
+        } catch (IllegalArgumentException e) {
+            Log.d(TAG, "You have one job! To turn on Remote Web Debugging! YOU HAVE FAILED! ");
+            e.printStackTrace();
+        } catch (NameNotFoundException e) {
+            Log.d(TAG, "This should never happen: Your application's package can't be found.");
+            e.printStackTrace();
+        }  
+        
         settings.setGeolocationDatabasePath(databasePath);
 
         // Enable DOM storage
@@ -305,10 +341,21 @@ public class CordovaWebView extends WebView {
         pluginManager = new PluginManager(this, this.cordova);
         jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
         exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
+        resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
         exposeJsInterface();
     }
-    
-    private void updateUserAgentString() {
+
+	/**
+	 * Override this method to decide whether or not you need to request the
+	 * focus when your application start
+	 * 
+	 * @return true unless this method is overriden to return a different value
+	 */
+    protected boolean shouldRequestFocusOnInit() {
+		return true;
+	}
+
+	private void updateUserAgentString() {
         this.getSettings().getUserAgentString();
     }
 
@@ -413,7 +460,7 @@ public class CordovaWebView extends WebView {
         // Create a timeout timer for loadUrl
         final CordovaWebView me = this;
         final int currentLoadUrlTimeout = me.loadUrlTimeout;
-        final int loadUrlTimeoutValue = Integer.parseInt(this.getProperty("loadUrlTimeoutValue", "20000"));
+        final int loadUrlTimeoutValue = Integer.parseInt(this.getProperty("LoadUrlTimeoutValue", "20000"));
 
         // Timeout error method
         final Runnable loadError = new Runnable() {
@@ -495,11 +542,20 @@ public class CordovaWebView extends WebView {
         this.loadUrlIntoView(url);
     }
     
+    
+    public void onScrollChanged(int l, int t, int oldl, int oldt)
+    {
+        super.onScrollChanged(l, t, oldl, oldt);
+        //We should post a message that the scroll changed
+        ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, this);
+        this.postMessage("onScrollChanged", myEvent);
+    }
+    
     /**
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)
      *
-     * @param message
+     * @param statement
      */
     public void sendJavascript(String statement) {
         this.jsMessageQueue.addJavaScript(statement);
@@ -509,7 +565,8 @@ public class CordovaWebView extends WebView {
      * Send a plugin result back to JavaScript.
      * (This is a convenience method)
      *
-     * @param message
+     * @param result
+     * @param callbackId
      */
     public void sendPluginResult(PluginResult result, String callbackId) {
         this.jsMessageQueue.addPluginResult(result, callbackId);
@@ -573,29 +630,24 @@ public class CordovaWebView extends WebView {
                 // TODO: What about params?
                 // Load new URL
                 this.loadUrl(url);
+                return;
             }
             // Load in default viewer if not
-            else {
-                LOG.w(TAG, "showWebPage: Cannot load URL into webview since it is not in white list.  Loading into browser instead. (URL=" + url + ")");
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    cordova.getActivity().startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    LOG.e(TAG, "Error loading url " + url, e);
-                }
-            }
+            LOG.w(TAG, "showWebPage: Cannot load URL into webview since it is not in white list.  Loading into browser instead. (URL=" + url + ")");
         }
-
-        // Load in default view intent
-        else {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error loading url " + url, e);
+        try {
+            // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
+            // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            Uri uri = Uri.parse(url);
+            if ("file".equals(uri.getScheme())) {
+                intent.setDataAndType(uri, resourceApi.getMimeType(uri));
+            } else {
+                intent.setData(uri);
             }
+            cordova.getActivity().startActivity(intent);
+        } catch (android.content.ActivityNotFoundException e) {
+            LOG.e(TAG, "Error loading url " + url, e);
         }
     }
 
@@ -608,7 +660,7 @@ public class CordovaWebView extends WebView {
      */
     private void loadConfiguration() {
  
-        if ("true".equals(this.getProperty("fullscreen", "false"))) {
+        if ("true".equals(this.getProperty("Fullscreen", "false"))) {
             this.cordova.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             this.cordova.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
@@ -619,13 +671,14 @@ public class CordovaWebView extends WebView {
      *
      * @param name
      * @param defaultValue
-     * @return
+     * @return the String value for the named property
      */
     public String getProperty(String name, String defaultValue) {
         Bundle bundle = this.cordova.getActivity().getIntent().getExtras();
         if (bundle == null) {
             return defaultValue;
         }
+        name = name.toLowerCase(Locale.getDefault());
         Object p = bundle.get(name);
         if (p == null) {
             return defaultValue;
@@ -702,11 +755,11 @@ public class CordovaWebView extends WebView {
                     if (this.backHistory()) {
                         return true;
                     }
-                    // If not, then invoke default behaviour
+                    // If not, then invoke default behavior
                     else {
                         //this.activityState = ACTIVITY_EXITING;
                     	//return false;
-                    	// If they hit back button when app is initializing, app should exit instead of hang until initilazation (CB2-458)
+                    	// If they hit back button when app is initializing, app should exit instead of hang until initialization (CB2-458)
                     	this.cordova.getActivity().finish();
                     }
                 }
@@ -858,7 +911,7 @@ public class CordovaWebView extends WebView {
         {
             WebHistoryItem item = currentList.getItemAtIndex(i);
             String url = item.getUrl();
-            LOG.d(TAG, "The URL at index: " + Integer.toString(i) + "is " + url );
+            LOG.d(TAG, "The URL at index: " + Integer.toString(i) + " is " + url );
         }
     }
     
@@ -872,7 +925,7 @@ public class CordovaWebView extends WebView {
 	        String url = item.getUrl();
 	        String currentUrl = this.getUrl();
 	        LOG.d(TAG, "The current URL is: " + currentUrl);
-	        LOG.d(TAG, "The URL at item 0 is:" + url);
+	        LOG.d(TAG, "The URL at item 0 is: " + url);
 	        return currentUrl.equals(url);
         }
         return false;
@@ -905,7 +958,7 @@ public class CordovaWebView extends WebView {
 
     public void hideCustomView() {
         // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
-        Log.d(TAG, "Hidding Custom View");
+        Log.d(TAG, "Hiding Custom View");
         if (mCustomView == null) return;
 
         // Hide the custom view.
@@ -925,7 +978,7 @@ public class CordovaWebView extends WebView {
      * if the video overlay is showing then we need to know 
      * as it effects back button handling
      * 
-     * @return
+     * @return true if custom view is showing
      */
     public boolean isCustomViewShowing() {
         return mCustomView != null;
@@ -944,37 +997,7 @@ public class CordovaWebView extends WebView {
         mResult = new ActivityResult(requestCode, resultCode, intent);
     }
     
-    /**
-     * Resolves the given URI, giving plugins a chance to re-route or customly handle the URI.
-     * A white-list rejection will be returned if the URI does not pass the white-list.
-     * @return Never returns null.
-     * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
-     *     resolved before being passed into this function.
-     */
-    public UriResolver resolveUri(Uri uri) {
-        return resolveUri(uri, false);
-    }
-    
-    UriResolver resolveUri(Uri uri, boolean fromWebView) {
-        if (!uri.isAbsolute()) {
-            throw new IllegalArgumentException("Relative URIs are not yet supported by resolveUri.");
-        }
-        UriResolver ret = null;
-        // Check the against the white-list before delegating to plugins.
-        if (("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())) && !Config.isUrlWhiteListed(uri.toString()))
-        {
-            LOG.w(TAG, "resolveUri - URL is not in whitelist: " + uri);
-            ret = UriResolvers.createError("Whitelist rejection for: " + uri);
-        } else {
-            // Give plugins a chance to handle the request.
-            ret = ((org.apache.cordova.PluginManager)pluginManager).resolveUri(uri);
-        }
-        if (ret == null && !fromWebView) {
-            ret = UriResolvers.forUri(uri, cordova.getActivity());
-            if (ret == null) {
-                ret = UriResolvers.createError("Unresolvable URI: " + uri);
-            }
-        }
-        return ret == null ? null : UriResolvers.makeThreadChecking(ret);
+    public CordovaResourceApi getResourceApi() {
+        return resourceApi;
     }
 }

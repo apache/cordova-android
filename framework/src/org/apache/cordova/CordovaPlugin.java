@@ -20,9 +20,8 @@ package org.apache.cordova;
 
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.CallbackContext;
-import org.apache.cordova.UriResolver;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CallbackContext;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -149,7 +148,7 @@ public class CordovaPlugin {
      * @param requestCode		The request code originally supplied to startActivityForResult(),
      * 							allowing you to identify who this result came from.
      * @param resultCode		The integer result code returned by the child activity through its setResult().
-     * @param data				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     * @param intent				An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
     }
@@ -165,13 +164,12 @@ public class CordovaPlugin {
     }
 
     /**
-     * Hook for overriding the default URI handling mechanism.
-     * Applies to WebView requests as well as requests made by plugins.
+     * Hook for redirecting requests. Applies to WebView requests as well as requests made by plugins.
      */
-    public UriResolver resolveUri(Uri uri) {
+    public Uri remapUri(Uri uri) {
         return null;
     }
-
+    
     /**
      * Called when the WebView does a top-level navigation or refreshes.
      *

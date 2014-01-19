@@ -19,15 +19,15 @@
 package org.apache.cordova.test;
 
 import org.apache.cordova.CordovaArgs;
-import org.apache.cordova.api.LOG;
+import org.apache.cordova.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.content.Intent;
 
-import org.apache.cordova.api.CallbackContext;
-import org.apache.cordova.api.CordovaPlugin;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginResult;
 
 /**
  * This class provides a service.

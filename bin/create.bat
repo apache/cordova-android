@@ -1,5 +1,3 @@
-@ECHO OFF
-GOTO BEGIN
 :: Licensed to the Apache Software Foundation (ASF) under one
 :: or more contributor license agreements.  See the NOTICE file
 :: distributed with this work for additional information
@@ -17,38 +15,12 @@ GOTO BEGIN
 :: specific language governing permissions and limitations
 :: under the License.
 
-:BEGIN
-        IF NOT DEFINED JAVA_HOME GOTO MISSING_JAVA_HOME
-
-        FOR %%X in (java.exe javac.exe ant.bat android.bat) do (
-            IF [%%~$PATH:X]==[] (
-              ECHO Cannot locate %%X using the PATH environment variable.
-              ECHO Retry after adding directory containing %%X to the PATH variable.
-              ECHO Remember to open a new command window after updating the PATH variable.
-              IF "%%X"=="java.exe" GOTO GET_JAVA
-              IF "%%X"=="javac.exe" GOTO GET_JAVA
-              IF "%%X"=="ant.bat" GOTO GET_ANT
-              IF "%%X"=="android.bat" GOTO GET_ANDROID
-              GOTO ERROR
-            )
-        )
-        cscript "%~dp0\create.js" %* //nologo
-        GOTO END
-:MISSING_JAVA_HOME
-        ECHO The JAVA_HOME environment variable is not set.
-        ECHO Set JAVA_HOME to an existing JRE directory.
-        ECHO Remember to also add JAVA_HOME to the PATH variable.
-        ECHO After updating system variables, open a new command window and retry.
-        GOTO ERROR
-:GET_JAVA
-        ECHO Visit http://java.oracle.com if you need to install Java (JDK).
-        GOTO ERROR
-:GET_ANT
-        ECHO Visit http://ant.apache.org if you need to install Apache Ant.
-        GOTO ERROR
-:GET_ANDROID
-        ECHO Visit http://developer.android.com if you need to install the Android SDK.
-        GOTO ERROR
-:ERROR
-EXIT /B 1
-:END
+@ECHO OFF
+SET script_path="%~dp0create"
+IF EXIST %script_path% (
+    node %script_path% %*
+) ELSE (
+    ECHO.
+    ECHO ERROR: Could not find 'create' script in 'bin' folder, aborting...>&2
+    EXIT /B 1
+)

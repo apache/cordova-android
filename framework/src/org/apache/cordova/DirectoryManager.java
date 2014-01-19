@@ -30,6 +30,7 @@ import android.os.StatFs;
  *
  * It is used by the FileUtils class.
  */
+@Deprecated // Deprecated in 3.1. To be removed in 4.0.
 public class DirectoryManager {
 
     @SuppressWarnings("unused")
