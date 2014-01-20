@@ -28,7 +28,8 @@ var spawn = require('./spawn'),
  * Returns a promise.
  */
 module.exports.run = function() {
-    return spawn('ant', ['clean', '-f', path.join(ROOT, 'build.xml')]);
+    var args = ['clean', '-f', path.join(ROOT, 'build.xml'), '-Dout.dir=ant-build', '-Dgen.dir=ant-build/gen'];
+    return spawn('ant', args);
 }
 
 module.exports.help = function() {
