@@ -20,7 +20,6 @@
 */
 
 var shell   = require('shelljs'),
-    clean   = require('./clean'),
     spawn   = require('./spawn'),
     Q       = require('q'),
     path    = require('path'),
@@ -34,13 +33,12 @@ var shell   = require('shelljs'),
 module.exports.run = function(build_type) {
     //default build type
     build_type = typeof build_type !== 'undefined' ? build_type : "--debug";
-    var args;
+    var args = ['debug', '-f', path.join(ROOT, 'build.xml'), '-Dout.dir=ant-build', '-Dgen.dir=ant-build/gen'];
     switch(build_type) {
         case '--debug' :
-            args = ['debug', '-f', path.join(ROOT, 'build.xml')];
             break;
         case '--release' :
-            args = ['release', '-f', path.join(ROOT, 'build.xml')];
+            args[0] = 'release';
             break;
         case '--nobuild' :
             console.log('Skipping build...');
@@ -48,10 +46,7 @@ module.exports.run = function(build_type) {
         default :
             return Q.reject('Build option \'' + build_type + '\' not recognized.');
     }
-    return clean.run() // TODO: Can we stop cleaning every time and let ant build incrementally?
-    .then(function() {
-        return spawn('ant', args);
-    });
+    return spawn('ant', args);
 }
 
 /*
@@ -59,17 +54,26 @@ module.exports.run = function(build_type) {
  * the script will error out. (should we error or just return undefined?)
  */
 module.exports.get_apk = function() {
-    if(fs.existsSync(path.join(ROOT, 'bin'))) {
-        var bin_files = fs.readdirSync(path.join(ROOT, 'bin'));
-        for (file in bin_files) {
-            if(path.extname(bin_files[file]) == '.apk') {
-                return path.join(ROOT, 'bin', bin_files[file]);
-            }
+    var binDir = path.join(ROOT, 'ant-build');
+    if (fs.existsSync(binDir)) {
+        var candidates = fs.readdirSync(binDir).filter(function(p) {
+            // Need to choose between release and debug .apk.
+            return path.extname(p) == '.apk';
+        }).map(function(p) {
+            p = path.join(binDir, p);
+            return { p: p, t: fs.statSync(p).mtime };
+        }).sort(function(a,b) {
+            return a.t > b.t ? -1 :
+                   a.t < b.t ? 1 : 0;
+        });
+        if (candidates.length === 0) {
+            console.error('ERROR : No .apk found in \'ant-build\' directory');
+            process.exit(2);
         }
-        console.error('ERROR : No .apk found in \'bin\' folder');
-        process.exit(2);
+        console.log('Using apk: ' + candidates[0].p);
+        return candidates[0].p;
     } else {
-        console.error('ERROR : unable to find project bin folder, could not locate .apk');
+        console.error('ERROR : unable to find project ant-build directory, could not locate .apk');
         process.exit(2);
     }
 }
