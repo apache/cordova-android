@@ -26,6 +26,19 @@ var shell   = require('shelljs'),
     fs      = require('fs'),
     ROOT    = path.join(__dirname, '..', '..');
 
+
+function hasCustomRules() {
+    return fs.existsSync(path.join(ROOT, 'custom_rules.xml'));
+}
+module.exports.getAntArgs = function(cmd) {
+    var args = [cmd, '-f', path.join(ROOT, 'build.xml')];
+    // custom_rules.xml is required for incremental builds.
+    if (hasCustomRules()) {
+        args.push('-Dout.dir=ant-build', '-Dgen.absolute.dir=ant-gen');
+    }
+    return args;
+};
+
 /*
  * Builds the project with ant.
  * Returns a promise.
@@ -33,7 +46,7 @@ var shell   = require('shelljs'),
 module.exports.run = function(build_type) {
     //default build type
     build_type = typeof build_type !== 'undefined' ? build_type : "--debug";
-    var args = ['debug', '-f', path.join(ROOT, 'build.xml'), '-Dout.dir=ant-build', '-Dgen.dir=ant-build/gen'];
+    var args = module.exports.getAntArgs('debug');
     switch(build_type) {
         case '--debug' :
             break;
@@ -46,7 +59,14 @@ module.exports.run = function(build_type) {
         default :
             return Q.reject('Build option \'' + build_type + '\' not recognized.');
     }
-    return spawn('ant', args);
+    // Without our custom_rules.xml, we need to clean before building.
+    var ret = Q();
+    if (!hasCustomRules()) {
+        ret = require('./clean').run();
+    }
+    return ret.then(function() {
+        return spawn('ant', args);
+    });
 }
 
 /*

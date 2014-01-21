@@ -87,6 +87,11 @@ function runAndroidUpdate(projectPath, target_api, shared) {
     return exec('android update project --subprojects --path "' + projectPath + '" --target ' + target_api + ' --library "' + path.relative(projectPath, targetFrameworkDir) + '"');
 }
 
+function copyAntRules(projectPath) {
+    var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
+    shell.cp('-f', path.join(srcDir, 'custom_rules.xml'), projectPath);
+}
+
 function copyScripts(projectPath) {
     var srcScriptsDir = path.join(ROOT, 'bin', 'templates', 'cordova');
     var destScriptsDir = path.join(projectPath, 'cordova');
@@ -186,6 +191,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
             shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
             copyScripts(project_path);
+            copyAntRules(project_path);
         });
         // Link it to local android install.
         return runAndroidUpdate(project_path, target_api, use_shared_project);
@@ -209,6 +215,7 @@ exports.updateProject = function(projectPath) {
         var target_api = check_reqs.get_target();
         copyJsAndLibrary(projectPath, false, null);
         copyScripts(projectPath);
+        copyAntRules(projectPath);
         removeDebuggableFromManifest(projectPath);
         return runAndroidUpdate(projectPath, target_api, false)
         .then(function() {
