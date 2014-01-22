@@ -5,10 +5,13 @@
         <pathconvert property="fixedJarsPath" refid="project.all.jars.path">
           <filtermapper>
             <replacestring from="/bin/" to="/ant-build/"/>
+            <replacestring from="\bin\" to="\ant-build\"/>
           </filtermapper>
         </pathconvert>
         <path id="project.all.jars.path">
           <pathelement path="${fixedJarsPath}"/>
         </path>
+        <echo message="Set jars path to: ${toString:project.all.jars.path}"/>
     </target>
 </project>
+
