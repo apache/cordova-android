@@ -79,7 +79,7 @@ module.exports.install = function(target) {
         var cmd = 'adb -s ' + target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
         return exec(cmd);
     }).then(function() {
-        console.log('LANCH SUCCESS');
+        console.log('LAUNCH SUCCESS');
     }, function(err) {
         return Q.reject('ERROR: Failed to launch application on device: ' + err);
     });
