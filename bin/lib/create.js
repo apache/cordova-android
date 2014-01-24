@@ -220,6 +220,7 @@ exports.updateProject = function(projectPath) {
         return runAndroidUpdate(projectPath, target_api, false)
         .then(function() {
             console.log('Android project is now at version ' + version);
+            console.log('If you updated from a pre-3.2.0 version and use an IDE, we now require that you import the "CordovaLib" library project.');
         });
     });
 };
