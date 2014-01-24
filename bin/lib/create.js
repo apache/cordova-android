@@ -202,8 +202,18 @@ exports.createProject = function(project_path, package_name, project_name, proje
 
 // Attribute removed in Cordova 4.4 (CB-5447).
 function removeDebuggableFromManifest(projectPath) {
-    var manifestPath   = path.join(projectPath, 'AndroidManifest.xml');
+    var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
     shell.sed('-i', /\s*android:debuggable="true"/, '', manifestPath);
+}
+
+function extractProjectNameFromManifest(projectPath) {
+    var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
+    var manifestData = fs.readFileSync(manifestPath, 'utf8');
+    var m = /<activity[\s\S]*?android:name\s*=\s*"(.*?)"/i.exec(manifestData);
+    if (!m) {
+      throw new Error('Could not find activity name in ' + manifestPath);
+    }
+    return m[1];
 }
 
 // Returns a promise.
@@ -212,8 +222,9 @@ exports.updateProject = function(projectPath) {
     // Check that requirements are met and proper targets are installed
     return check_reqs.run()
     .then(function() {
+        var projectName = extractProjectNameFromManifest(projectPath);
         var target_api = check_reqs.get_target();
-        copyJsAndLibrary(projectPath, false, null);
+        copyJsAndLibrary(projectPath, false, projectName);
         copyScripts(projectPath);
         copyAntRules(projectPath);
         removeDebuggableFromManifest(projectPath);
