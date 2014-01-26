@@ -149,6 +149,10 @@ exports.createProject = function(project_path, package_name, project_name, proje
         return Q.reject('Package name must look like: com.company.Name');
     }
 
+    if (project_name === 'CordovaActivity') {
+        return Q.reject('Project name cannot be CordovaActivity');
+    }
+
     // Check that requirements are met and proper targets are installed
     return check_reqs.run()
     .then(function() {
