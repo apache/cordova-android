@@ -13,5 +13,9 @@
         </path>
         <echo message="Set jars path to: ${toString:project.all.jars.path}"/>
     </target>
+    <target name="-post-build">
+        <move file="ant-build/AndroidManifest.xml" tofile="ant-build/AndroidManifest.cordova.xml" failonerror="false" overwrite="true" />
+        <move file="CordovaLib/ant-build/AndroidManifest.xml" tofile="CordovaLib/ant-build/AndroidManifest.cordova.xml" failonerror="false" overwrite="true" />
+    </target>
 </project>
 
