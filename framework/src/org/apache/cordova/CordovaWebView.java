@@ -494,8 +494,7 @@ public class CordovaWebView extends WebView {
         // Load url
         this.cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                Thread thread = new Thread(timeoutCheck);
-                thread.start();
+                cordova.getThreadPool().execute(timeoutCheck);
                 me.loadUrlNow(url);
             }
         });
