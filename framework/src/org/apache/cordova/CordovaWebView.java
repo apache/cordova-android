@@ -445,17 +445,22 @@ public class CordovaWebView extends WebView {
         }
     }
 
+    public void loadUrlIntoView(final String url) {
+        loadUrlIntoView(url, true);
+    }
+
     /**
      * Load the url into the webview.
      *
      * @param url
      */
-    public void loadUrlIntoView(final String url) {
+    public void loadUrlIntoView(final String url, boolean recreatePlugins) {
         LOG.d(TAG, ">>> loadUrl(" + url + ")");
 
-        this.url = url;
-        this.pluginManager.init();
-
+        if (recreatePlugins) {
+            this.url = url;
+            this.pluginManager.init();
+        }
 
         // Create a timeout timer for loadUrl
         final CordovaWebView me = this;
