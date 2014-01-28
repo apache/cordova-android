@@ -165,17 +165,23 @@ exports.createProject = function(project_path, package_name, project_name, proje
             // copy project template
             shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
+            shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
+
             // Manually create directories that would be empty within the template (since git doesn't track directories).
             shell.mkdir(path.join(project_path, 'libs'));
+
             // Add in the proper eclipse project file.
             if (use_cli_template) {
+                var note = 'To show `assets/www` or `res/xml/config.xml`, go to:\n' +
+                           '    Project -> Properties -> Resource -> Resource Filters\n' +
+                           'And delete the exclusion filter.\n';
                 shell.cp(path.join(project_template_dir, 'eclipse-project-CLI'), path.join(project_path, '.project'));
+                fs.writeFileSync(path.join(project_path, 'assets', '_where-is-www.txt'), note);
             } else {
                 shell.cp(path.join(project_template_dir, 'eclipse-project'), path.join(project_path, '.project'));
             }
 
-            // copy cordova.js, cordova.jar and res/xml
-            shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
+            // copy cordova.js, cordova.jar
             copyJsAndLibrary(project_path, use_shared_project, safe_activity_name);
 
             // interpolate the activity name and package

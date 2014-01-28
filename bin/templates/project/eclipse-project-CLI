@@ -32,36 +32,40 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>-- Cordova Project --</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-                        <name>-- Cordova Project --/config.xml</name>
+                        <name>config.xml</name>
 			<type>1</type>
 			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/config.xml</locationURI>
 		</link>
                 <link>
-                        <name>-- Cordova Project --/www</name>
+                        <name>www</name>
                         <type>2</type>
 			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/www</locationURI>
                 </link>
                 <link>
-                        <name>-- Cordova Project --/merges</name>
+                        <name>merges</name>
                         <type>2</type>
 			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/merges</locationURI>
                 </link>
 	</linkedResources>
-	<filteredResources>
-		<filter>
-			<id>1388696068187</id>
-			<name></name>
-			<type>10</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-name-matches-false-true-CordovaLib|platform_www|cordova</arguments>
-			</matcher>
-		</filter>
-	</filteredResources>
+        <filteredResources>
+                <filter>
+                        <id>1390880034107</id>
+                        <name></name>
+                        <type>30</type>
+                        <matcher>
+                                <id>org.eclipse.ui.ide.multiFilter</id>
+                                <arguments>1.0-projectRelativePath-matches-false-true-^(build.xml|ant-gen|ant-build|custom_rules.xml|CordovaLib|platform_www|cordova)</arguments>
+                        </matcher>
+                </filter>
+                <filter>
+                        <id>1390880034108</id>
+                        <name></name>
+                        <type>30</type>
+                        <matcher>
+                                <id>org.eclipse.ui.ide.multiFilter</id>
+                                <arguments>1.0-projectRelativePath-matches-false-true-^(assets/www|res/xml/config.xml)</arguments>
+                        </matcher>
+                </filter>
+        </filteredResources>
 </projectDescription>
 
