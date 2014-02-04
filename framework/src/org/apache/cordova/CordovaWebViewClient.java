@@ -62,7 +62,7 @@ public class CordovaWebViewClient extends WebViewClient {
     CordovaInterface cordova;
     CordovaWebView appView;
     private boolean doClearHistory = false;
-    private boolean isCurrentlyLoading;
+    boolean isCurrentlyLoading;
 
     /** The authorization tokens. */
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
