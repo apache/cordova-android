@@ -55,14 +55,14 @@ public class Whitelist {
                 if (scheme == null || "*".equals(scheme)) {
                     this.scheme = null;
                 } else {
-                    this.scheme = Pattern.compile(regexFromPattern(scheme, false));
+                    this.scheme = Pattern.compile(regexFromPattern(scheme, false), Pattern.CASE_INSENSITIVE);
                 }
                 if ("*".equals(host)) {
                     this.host = null;
                 } else if (host.startsWith("*.")) {
-                    this.host = Pattern.compile("([a-z0-9.-]*\\.)?" + regexFromPattern(host.substring(2), false));
+                    this.host = Pattern.compile("([a-z0-9.-]*\\.)?" + regexFromPattern(host.substring(2), false), Pattern.CASE_INSENSITIVE);
                 } else {
-                    this.host = Pattern.compile(regexFromPattern(host, false));
+                    this.host = Pattern.compile(regexFromPattern(host, false), Pattern.CASE_INSENSITIVE);
                 }
                 if (port == null || "*".equals(port)) {
                     this.port = null;
@@ -120,7 +120,7 @@ public class Whitelist {
                     whiteList = null;
                 }
                 else { // specific access
-                    Pattern parts = Pattern.compile("^((\\*|[a-z-]+)://)?(\\*|((\\*\\.)?[^*/:]+))?(:(\\d+))?(/.*)?");
+                    Pattern parts = Pattern.compile("^((\\*|[A-Za-z-]+)://)?(\\*|((\\*\\.)?[^*/:]+))?(:(\\d+))?(/.*)?");
                     Matcher m = parts.matcher(origin);
                     if (m.matches()) {
                         String scheme = m.group(2);
