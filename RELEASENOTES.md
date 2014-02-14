@@ -20,6 +20,29 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+
+### 3.4.0 (Feb 2014) ###
+
+37 commits from 10 authors.  Highlights include:
+
+* Security Fix for Android 4.2.1 and lower (disabling addJavascriptInterface as a bridge option) 
+* CB-5793 Make ant work-around work on windows.
+* CB-5793 Don't clean before build and change output directory to ant-build to avoid conflicts with Eclipse.
+* CB-4910 Fix CLI's eclipse project template not working on windows due to "*" in the virtual folder name.
+* CB-5803 Fix cordova/emulate on windows.
+* CB-5801 exec->spawn in build to make sure compile errors are shown.
+* CB-5799 Update version of OkHTTP to 1.3
+* Remove package.json within bin/ since we never intend to ship bin/ as an npm module
+* CB-4910 Update CLI project template to point to config.xml at the root now that it's not in www/ by default.
+* Silence excessive logging from scroll events
+* CB-5504: Adding onDestroy to app plugin to deregister telephonyReceiver
+* CB-5715 Add Eclipse .project file to create template.
+* CB-5447 Removed android:debuggable=“true” from project template.
+* CB-5714 Fix of android build when too big output stops build with error due to buffer overflow.
+* Fix incorrect MIME type for .js files loaded through CordovaResourceAPI.
+* Remove 2 X console.log from exec.js
+* CB-5592 Set MIME type for openExternal when scheme is file:
+
 ### 3.3.0 (Dec 2013) ###
 
 41 commits from 11 authors. Highlights include:
