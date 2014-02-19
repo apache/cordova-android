@@ -83,7 +83,7 @@ public class NativeToJsMessageQueue {
         this.cordova = cordova;
         this.webView = webView;
         registeredListeners = new BridgeMode[4];
-        registeredListeners[0] = null;  // Polling. Requires no logic.
+        registeredListeners[0] = new PollingBridgeMode();
         registeredListeners[1] = new LoadUrlBridgeMode();
         registeredListeners[2] = new OnlineEventsBridgeMode();
         registeredListeners[3] = new PrivateApiBridgeMode();
@@ -279,7 +279,13 @@ public class NativeToJsMessageQueue {
         abstract void onNativeToJsMessageAvailable();
         void notifyOfFlush(boolean fromOnlineEvent) {}
     }
-    
+
+    /** Uses JS polls for messages on a timer.. */
+    private class PollingBridgeMode extends BridgeMode {
+        @Override void onNativeToJsMessageAvailable() {
+        }
+    }
+
     /** Uses webView.loadUrl("javascript:") to execute messages. */
     private class LoadUrlBridgeMode extends BridgeMode {
         final Runnable runnable = new Runnable() {
