@@ -7,9 +7,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -19,6 +19,25 @@
 #
 -->
 ## Release Notes for Cordova (Android) ##
+
+### 3.4.0 (Feb 2014) ###
+
+43 commits from 10 authors. Highlights include:
+
+* Removing addJavascriptInterface support from all Android versions lower than 4.2 due to security vulnerability
+* CB-5917 Add a loadUrlIntoView overload that doesn't recreate plugins.
+* CB-5889 Make update script find project name instead of using "null" for CordovaLib
+* CB-5889 Add a message in the update script about needing to import CordovaLib when using an IDE.
+* CB-5793 Don't clean before build and change output directory to ant-build to avoid conflicts with Eclipse.
+* CB-5803 Fix cordova/emulate on windows.
+* CB-5801 exec->spawn in build to make sure compile errors are shown.
+* CB-5799 Update version of OkHTTP to 1.3
+* CB-4910 Update CLI project template to point to config.xml at the root now that it's not in www/ by default.
+* CB-5504 Adding onDestroy to app plugin to deregister telephonyReceiver
+* CB-5715 Add Eclipse .project file to create template. For CLI projects, it adds refs for root www/ & config.xml and hides platform versions
+* CB-5447 Removed android:debuggable=“true” from project template.
+* CB-5714 Fix of android build when too big output stops build with error due to buffer overflow.
+* CB-5592 Set MIME type for openExternal when scheme is file:
 
 ### 3.3.0 (Dec 2013) ###
 
