@@ -102,7 +102,8 @@ public class NativeToJsMessageQueue {
                 synchronized (this) {
                     activeListenerIndex = value;
                     BridgeMode activeListener = registeredListeners[value];
-                    if (!paused && !queue.isEmpty() && activeListener != null) {
+                    activeListener.reset();
+                    if (!paused && !queue.isEmpty()) {
                         activeListener.onNativeToJsMessageAvailable();
                     }
                 }
@@ -117,6 +118,7 @@ public class NativeToJsMessageQueue {
         synchronized (this) {
             queue.clear();
             setBridgeMode(DEFAULT_BRIDGE_MODE);
+            registeredListeners[activeListenerIndex].reset();
         }
     }
 
@@ -249,7 +251,7 @@ public class NativeToJsMessageQueue {
     private void enqueueMessage(JsMessage message) {
         synchronized (this) {
             queue.add(message);
-            if (!paused && registeredListeners[activeListenerIndex] != null) {
+            if (!paused) {
                 registeredListeners[activeListenerIndex].onNativeToJsMessageAvailable();
             }
         }        
@@ -264,7 +266,7 @@ public class NativeToJsMessageQueue {
         paused = value;
         if (!value) {
             synchronized (this) {
-                if (!queue.isEmpty() && registeredListeners[activeListenerIndex] != null) {
+                if (!queue.isEmpty()) {
                     registeredListeners[activeListenerIndex].onNativeToJsMessageAvailable();
                 }
             }   
@@ -278,6 +280,7 @@ public class NativeToJsMessageQueue {
     private abstract class BridgeMode {
         abstract void onNativeToJsMessageAvailable();
         void notifyOfFlush(boolean fromOnlineEvent) {}
+        void reset() {}
     }
 
     /** Uses JS polls for messages on a timer.. */
@@ -304,7 +307,7 @@ public class NativeToJsMessageQueue {
 
     /** Uses online/offline events to tell the JS when to poll for messages. */
     private class OnlineEventsBridgeMode extends BridgeMode {
-        boolean online = false;
+        private boolean online;
         final Runnable runnable = new Runnable() {
             public void run() {
                 if (!queue.isEmpty()) {
@@ -312,7 +315,8 @@ public class NativeToJsMessageQueue {
                 }
             }                
         };
-        OnlineEventsBridgeMode() {
+        @Override void reset() {
+            online = false;
             webView.setNetworkAvailable(true);
         }
         @Override void onNativeToJsMessageAvailable() {
