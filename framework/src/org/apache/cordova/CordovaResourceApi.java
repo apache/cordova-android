@@ -346,6 +346,10 @@ public class CordovaResourceApi {
         copyResource(openForRead(sourceUri), outputStream);
     }
 
+    // Added in 3.5.0.
+    public void copyResource(Uri sourceUri, Uri dstUri) throws IOException {
+        copyResource(openForRead(sourceUri), openOutputStream(dstUri));
+    }
     
     private void assertBackgroundThread() {
         if (threadCheckingEnabled) {
