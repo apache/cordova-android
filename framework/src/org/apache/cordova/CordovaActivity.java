@@ -147,63 +147,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     private Object LOG_TAG;
 
-    /**
-    * Sets the authentication token.
-    *
-    * @param authenticationToken
-    * @param host
-    * @param realm
-    */
-    public void setAuthenticationToken(AuthenticationToken authenticationToken, String host, String realm) {
-        if (this.appView != null && this.appView.viewClient != null) {
-            this.appView.viewClient.setAuthenticationToken(authenticationToken, host, realm);
-        }
-    }
-
-    /**
-     * Removes the authentication token.
-     *
-     * @param host
-     * @param realm
-     *
-     * @return the authentication token or null if did not exist
-     */
-    public AuthenticationToken removeAuthenticationToken(String host, String realm) {
-        if (this.appView != null && this.appView.viewClient != null) {
-            return this.appView.viewClient.removeAuthenticationToken(host, realm);
-        }
-        return null;
-    }
-
-    /**
-     * Gets the authentication token.
-     *
-     * In order it tries:
-     * 1- host + realm
-     * 2- host
-     * 3- realm
-     * 4- no host, no realm
-     *
-     * @param host
-     * @param realm
-     *
-     * @return the authentication token
-     */
-    public AuthenticationToken getAuthenticationToken(String host, String realm) {
-        if (this.appView != null && this.appView.viewClient != null) {
-            return this.appView.viewClient.getAuthenticationToken(host, realm);
-        }
-        return null;
-    }
-
-    /**
-     * Clear all authentication tokens.
-     */
-    public void clearAuthenticationTokens() {
-        if (this.appView != null && this.appView.viewClient != null) {
-            this.appView.viewClient.clearAuthenticationTokens();
-        }
-    }
 
     /**
      * Called when the activity is first created.
@@ -269,7 +212,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * require a more specialized web view.
      */
     protected CordovaWebView makeWebView() {
-        return new CordovaWebView(CordovaActivity.this);
+        return (CordovaWebView) new AndroidWebView(CordovaActivity.this);
     }
 
     /**
@@ -282,9 +225,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     protected CordovaWebViewClient makeWebViewClient(CordovaWebView webView) {
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            return new CordovaWebViewClient(this, webView);
+            return (CordovaWebViewClient) new AndroidWebViewClient(this, webView);
         } else {
-            return new IceCreamCordovaWebViewClient(this, webView);
+            return (CordovaWebViewClient) new IceCreamCordovaWebViewClient(this, webView);
         }
     }
 
@@ -297,7 +240,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param webView the default constructed web view object
      */
     protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
-        return new CordovaChromeClient(this, webView);
+        return (CordovaChromeClient) new AndroidChromeClient(this, webView);
     }
 
     /**
@@ -335,13 +278,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         if (this.getBooleanProperty("DisallowOverscroll", false)) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.GINGERBREAD) {
-                this.appView.setOverScrollMode(CordovaWebView.OVER_SCROLL_NEVER);
+                //Note: We're using the parent class, because all we know is that this will be a view
+                this.appView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             }
         }
 
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
-        this.root.addView(this.appView);
+        this.root.addView((View) this.appView);
         setContentView(this.root);
 
         // Clear cancel flag
@@ -408,17 +352,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         this.splashscreenTime = time;
         this.loadUrl(url);
         
-        /*
-        // Init web view if not already done
-        if (this.appView == null) {
-            this.init();
-        }
-
-        this.splashscreenTime = time;
-        this.splashscreen = this.getIntegerProperty("SplashScreen", 0);
-        this.showSplashScreen(this.splashscreenTime);
-        this.appView.loadUrl(url, time);
-        */
     }
     
     /*
@@ -454,15 +387,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
     }
 
-
-    /**
-     * Cancel loadUrl before it has been loaded.
-     */
-    // TODO NO-OP
-    @Deprecated
-    public void cancelLoadUrl() {
-        this.cancelLoadUrl = true;
-    }
 
     /**
      * Clear the resource cache.
@@ -711,31 +635,18 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
     }
 
-    /**
-     * @deprecated
-     * Add services to res/xml/plugins.xml instead.
-     *
-     * Add a class that implements a service.
-     *
-     * @param serviceType
-     * @param className
-     */
-    @Deprecated
-    public void addService(String serviceType, String className) {
-        if (this.appView != null && this.appView.pluginManager != null) {
-            this.appView.pluginManager.addService(serviceType, className);
-        }
-    }
 
     /**
      * Send JavaScript statement back to JavaScript.
      * (This is a convenience method)
      *
      * @param statement
+     * 
      */
     public void sendJavascript(String statement) {
         if (this.appView != null) {
-            this.appView.jsMessageQueue.addJavaScript(statement);
+            this.appView.addJavascript(statement);
+            //this.appView.jsMessageQueue.addJavaScript(statement);
         }
     }
 
@@ -814,7 +725,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         super.onActivityResult(requestCode, resultCode, intent);
         Log.d(TAG, "Request code = " + requestCode);
         if (appView != null && requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
-        	ValueCallback<Uri> mUploadMessage = this.appView.getWebChromeClient().getValueCallback();
+        	ValueCallback<Uri> mUploadMessage = ((CordovaChromeClient) this.appView.getWebChromeClient()).getValueCallback();
             Log.d(TAG, "did we get here?");
             if (null == mUploadMessage)
                 return;
@@ -829,7 +740,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         if(callback == null && initCallbackClass != null) {
             // The application was restarted, but had defined an initial callback
             // before being shut down.
-            this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
+            //this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
+            this.activityResultCallback = appView.getPlugin(initCallbackClass);
             callback = this.activityResultCallback;
         }
         if(callback != null) {
