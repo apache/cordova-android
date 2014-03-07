@@ -43,7 +43,7 @@ public class ScrollEvent {
      * @param view
      */
     
-    ScrollEvent(int nx, int ny, int x, int y, View view)
+    public ScrollEvent(int nx, int ny, int x, int y, View view)
     {
         l = x; y = t; nl = nx; nt = ny;
         targetView = view;

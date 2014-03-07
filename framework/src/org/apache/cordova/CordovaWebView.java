@@ -107,4 +107,6 @@ public interface CordovaWebView {
     void sendPluginResult(PluginResult cr, String callbackId);
 
     PluginManager getPluginManager();
+
+    void setLayoutParams(android.widget.FrameLayout.LayoutParams layoutParams);
 }

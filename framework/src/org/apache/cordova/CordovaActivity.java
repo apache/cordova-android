@@ -18,6 +18,8 @@
 */
 package org.apache.cordova;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -212,6 +214,34 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * require a more specialized web view.
      */
     protected CordovaWebView makeWebView() {
+        String r = this.getStringProperty("webView", "org.apache.cordova.AndroidWebView");
+
+        try {
+            Class webViewClass = Class.forName(r);
+            Constructor<CordovaWebView> [] webViewConstructors = webViewClass.getConstructors();
+            
+            
+            if(CordovaWebView.class.isAssignableFrom(webViewClass)) {
+                CordovaWebView webView =  (CordovaWebView) webViewConstructors[0].newInstance(this);
+                return webView;
+            }
+            else
+            {
+                LOG.e(TAG, "The WebView Engine is NOT a proper WebView, defaulting to system WebView");
+            }
+        } catch (ClassNotFoundException e) {
+            LOG.e(TAG, "The WebView Engine was not found, defaulting to system WebView");
+        } catch (InstantiationException e) {
+            LOG.e(TAG, "Unable to instantiate the WebView, defaulting to system WebView");
+        } catch (IllegalAccessException e) {
+            LOG.e(TAG, "Illegal Access to Constructor.  This should never happen, defaulting to system WebView");
+        } catch (IllegalArgumentException e) {
+            LOG.e(TAG, "The WebView does not implement the default constructor, defaulting to system WebView");
+        } catch (InvocationTargetException e) {
+            LOG.e(TAG, "Invocation Target Exception! Reflection is hard, defaulting to system WebView");
+        }
+        
+        // If all else fails, return a default WebView
         return (CordovaWebView) new AndroidWebView(CordovaActivity.this);
     }
 
