@@ -44,7 +44,7 @@ public class NativeToJsMessageQueue {
 
     // Disable URL-based exec() bridge by default since it's a bit of a
     // security concern.
-    static final boolean ENABLE_LOCATION_CHANGE_EXEC_MODE = false;
+    public static final boolean ENABLE_LOCATION_CHANGE_EXEC_MODE = false;
         
     // Disable sending back native->JS messages during an exec() when the active
     // exec() is asynchronous. Set this to true when running bridge benchmarks.

@@ -36,6 +36,7 @@
     <content src="index.html" />
 
     <preference name="loglevel" value="DEBUG" />
+        
     <!--
       <preference name="splashscreen" value="resourceName" />
       <preference name="backgroundColor" value="0xFFF" />
