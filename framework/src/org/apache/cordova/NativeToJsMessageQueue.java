@@ -48,7 +48,7 @@ public class NativeToJsMessageQueue {
         
     // Disable sending back native->JS messages during an exec() when the active
     // exec() is asynchronous. Set this to true when running bridge benchmarks.
-    static final boolean DISABLE_EXEC_CHAINING = false;
+    public static final boolean DISABLE_EXEC_CHAINING = false;
     
     // Arbitrarily chosen upper limit for how much data to send to JS in one shot.
     // This currently only chops up on message boundaries. It may be useful
