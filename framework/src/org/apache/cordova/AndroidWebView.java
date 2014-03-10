@@ -343,7 +343,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
 
         pluginManager = new PluginManager(this, this.cordova);
         jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
-        exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
+        exposedJsApi = new AndroidExposedJsApi(pluginManager, jsMessageQueue);
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
         exposeJsInterface();
     }

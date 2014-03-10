@@ -117,7 +117,7 @@ public class XWalkCordovaWebView extends XWalkView implements CordovaWebView {
     private long lastMenuEventTime = 0;
 
     NativeToJsMessageQueue jsMessageQueue;
-    ExposedJsApi exposedJsApi;
+    XwalkExposedJsApi exposedJsApi;
 
     /** custom view created by the browser (a video player for example) */
     private View mCustomView;
@@ -319,7 +319,7 @@ public class XWalkCordovaWebView extends XWalkView implements CordovaWebView {
         extensionManager = new XWalkExtensionManager(this.cordova.getActivity(), this.cordova.getActivity());
         extensionManager.loadExtensions();
         jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
-        exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
+        exposedJsApi = new XwalkExposedJsApi(pluginManager, jsMessageQueue);
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
         exposeJsInterface();
     }
