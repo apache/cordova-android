@@ -139,7 +139,6 @@ public class CordovaChromeClient extends WebChromeClient {
                     return true;
             }
         });
-        dlg.create();
         dlg.show();
         return true;
     }
@@ -188,7 +187,6 @@ public class CordovaChromeClient extends WebChromeClient {
                     return true;
             }
         });
-        dlg.create();
         dlg.show();
         return true;
     }
@@ -280,7 +278,6 @@ public class CordovaChromeClient extends WebChromeClient {
                             res.cancel();
                         }
                     });
-            dlg.create();
             dlg.show();
         }
         return true;
