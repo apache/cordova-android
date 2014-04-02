@@ -494,9 +494,22 @@ public class NativeToJsMessageQueue {
                   .append(success)
                   .append(",")
                   .append(status)
-                  .append(",[")
-                  .append(pluginResult.getMessage())
-                  .append("],")
+                  .append(",[");
+                switch (pluginResult.getMessageType()) {
+                    case PluginResult.MESSAGE_TYPE_BINARYSTRING:
+                        sb.append("atob('")
+                          .append(pluginResult.getMessage())
+                          .append("')");
+                        break;
+                    case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+                        sb.append("cordova.require('cordova/base64').toArrayBuffer('")
+                          .append(pluginResult.getMessage())
+                          .append("')");
+                        break;
+                    default:
+                    sb.append(pluginResult.getMessage());
+                }
+                sb.append("],")
                   .append(pluginResult.getKeepCallback())
                   .append(");");
             }
