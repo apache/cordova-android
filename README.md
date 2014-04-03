@@ -84,7 +84,7 @@ Running Tests
 Please see details under test/README.md.
 
 Further Reading
----
+----
 
 - [http://developer.android.com](http://developer.android.com)
 - [http://cordova.apache.org/](http://cordova.apache.org)
