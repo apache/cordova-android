@@ -268,6 +268,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * This is intended to be overridable by subclasses of CordovaIntent which
      * require a more specialized web view.
      */
+    protected CordovaWebView makeWebView(PluginFactory pluginFactory) {
+        return new CordovaWebView(CordovaActivity.this, pluginFactory);
+    }
+
     protected CordovaWebView makeWebView() {
         return new CordovaWebView(CordovaActivity.this);
     }
@@ -303,9 +307,13 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Create and initialize web container with default web view objects.
      */
-    public void init() {
-        CordovaWebView webView = makeWebView();
+    public void init(PluginFactory pluginFactory) {
+        CordovaWebView webView = makeWebView(pluginFactory);
         this.init(webView, makeWebViewClient(webView), makeChromeClient(webView));
+    }
+
+    public void init() {
+        this.init(null);
     }
 
     /**

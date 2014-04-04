@@ -79,6 +79,8 @@ public class CordovaWebView extends WebView {
     private BroadcastReceiver receiver;
 
 
+    private PluginFactory pluginFactory;
+
     /** Activities and other important classes **/
     private CordovaInterface cordova;
     CordovaWebViewClient viewClient;
@@ -133,7 +135,7 @@ public class CordovaWebView extends WebView {
      *
      * @param context
      */
-    public CordovaWebView(Context context) {
+    public CordovaWebView(Context context, PluginFactory pluginFactory) {
         super(context);
         if (CordovaInterface.class.isInstance(context))
         {
@@ -143,8 +145,13 @@ public class CordovaWebView extends WebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
+        this.pluginFactory = pluginFactory;
         this.loadConfiguration();
         this.setup();
+    }
+
+    public CordovaWebView(Context context) {
+        this(context, (PluginFactory) null);
     }
 
     /**
@@ -153,7 +160,7 @@ public class CordovaWebView extends WebView {
      * @param context
      * @param attrs
      */
-    public CordovaWebView(Context context, AttributeSet attrs) {
+    public CordovaWebView(Context context, AttributeSet attrs, PluginFactory pluginFactory) {
         super(context, attrs);
         if (CordovaInterface.class.isInstance(context))
         {
@@ -163,10 +170,15 @@ public class CordovaWebView extends WebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
+        this.pluginFactory = pluginFactory;
         this.setWebChromeClient(new CordovaChromeClient(this.cordova, this));
         this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
+    }
+
+    public CordovaWebView(Context context, AttributeSet attrs) {
+        this(context, attrs, null);
     }
 
     /**
@@ -177,7 +189,7 @@ public class CordovaWebView extends WebView {
      * @param defStyle
      *
      */
-    public CordovaWebView(Context context, AttributeSet attrs, int defStyle) {
+    public CordovaWebView(Context context, AttributeSet attrs, int defStyle, PluginFactory pluginFactory) {
         super(context, attrs, defStyle);
         if (CordovaInterface.class.isInstance(context))
         {
@@ -187,9 +199,14 @@ public class CordovaWebView extends WebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
+        this.pluginFactory = pluginFactory;
         this.setWebChromeClient(new CordovaChromeClient(this.cordova, this));
         this.loadConfiguration();
         this.setup();
+    }
+
+    public CordovaWebView(Context context, AttributeSet attrs, int defStyle) {
+        this(context, attrs, defStyle, null);
     }
 
     /**
@@ -201,7 +218,7 @@ public class CordovaWebView extends WebView {
      * @param privateBrowsing
      */
     @TargetApi(11)
-    public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
+    public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing, PluginFactory pluginFactory) {
         super(context, attrs, defStyle, privateBrowsing);
         if (CordovaInterface.class.isInstance(context))
         {
@@ -211,10 +228,15 @@ public class CordovaWebView extends WebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
+        this.pluginFactory = pluginFactory;
         this.setWebChromeClient(new CordovaChromeClient(this.cordova));
         this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
+    }
+
+    public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
+        this(context, attrs, defStyle, privateBrowsing, null);
     }
 
     /**
@@ -338,7 +360,7 @@ public class CordovaWebView extends WebView {
         }
         // end CB-1405
 
-        pluginManager = new PluginManager(this, this.cordova);
+        pluginManager = new PluginManager(this, this.cordova, this.pluginFactory);
         jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
         exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
@@ -358,6 +380,7 @@ public class CordovaWebView extends WebView {
 	private void updateUserAgentString() {
         this.getSettings().getUserAgentString();
     }
+
 
     private void exposeJsInterface() {
         int SDK_INT = Build.VERSION.SDK_INT;

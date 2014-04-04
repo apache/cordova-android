@@ -67,17 +67,28 @@ public class PluginManager {
 
     private AtomicInteger numPendingUiExecs;
 
+    protected PluginFactory pluginFactory;
+
     /**
      * Constructor.
      *
      * @param app
      * @param ctx
+     * @param pluginFactory          Object for creating actual `CordovaPlugin`s; needed to pass to `PluginEntry`
      */
-    public PluginManager(CordovaWebView app, CordovaInterface ctx) {
+    public PluginManager(CordovaWebView app, CordovaInterface ctx, PluginFactory pluginFactory) {
         this.ctx = ctx;
         this.app = app;
         this.firstRun = true;
         this.numPendingUiExecs = new AtomicInteger(0);
+        this.pluginFactory = pluginFactory;
+    }
+
+    /**
+     * Alternate constructor for using default `PluginFactory`
+     */
+    public PluginManager(CordovaWebView app, CordovaInterface ctx) {
+        this(app, ctx, null);
     }
 
     /**
@@ -158,7 +169,7 @@ public class PluginManager {
                 String strNode = xml.getName();
                 if (strNode.equals("feature") || strNode.equals("plugin"))
                 {
-                    PluginEntry entry = new PluginEntry(service, pluginClass, onload);
+                    PluginEntry entry = new PluginEntry(service, pluginClass, onload, this.pluginFactory);
                     this.addService(entry);
 
                     //Empty the strings to prevent plugin loading bugs
@@ -291,7 +302,7 @@ public class PluginManager {
      * @param className         The plugin class name
      */
     public void addService(String service, String className) {
-        PluginEntry entry = new PluginEntry(service, className, false);
+        PluginEntry entry = new PluginEntry(service, className, false, this.pluginFactory);
         this.addService(entry);
     }
 
