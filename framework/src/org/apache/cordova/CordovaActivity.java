@@ -315,7 +315,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         // Add web view but make it invisible while loading URL
         this.appView.setVisibility(View.INVISIBLE);
-        this.root.addView((View) this.appView);
+        this.root.addView((View) this.appView.getView());
         setContentView(this.root);
 
         // Clear cancel flag
