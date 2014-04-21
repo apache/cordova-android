@@ -17,6 +17,8 @@ public interface CordovaWebView {
     Object pluginManager = null;
     Object jsMessageQueue = null;
 
+    View getView();
+
     void setWebViewClient(CordovaWebViewClient webViewClient);
 
     void setWebChromeClient(CordovaChromeClient webChromeClient);
