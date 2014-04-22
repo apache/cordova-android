@@ -1078,4 +1078,8 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         super.setLayoutParams(layoutParams);
     }
 
+    @Override
+    public View getView() {
+        return this;
+    }
 }
