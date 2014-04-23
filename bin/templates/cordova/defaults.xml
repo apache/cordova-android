@@ -23,6 +23,7 @@
 
     <!-- Preferences for Android -->
     <preference name="loglevel" value="DEBUG" />
+    <preference name="AndroidLaunchMode" value="singleTop" />
 
     <!-- This is required for native Android hooks -->
     <feature name="App">
