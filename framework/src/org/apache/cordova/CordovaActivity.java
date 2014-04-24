@@ -214,7 +214,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * require a more specialized web view.
      */
     protected CordovaWebView makeWebView() {
-        String r = this.getStringProperty("webView", "org.apache.cordova.Android").concat("WebView");
+        String r = this.getStringProperty("webView", "org.apache.cordova.AndroidWebView");
 
         try {
             Class webViewClass = Class.forName(r);
@@ -222,8 +222,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             
             
             if(CordovaWebView.class.isAssignableFrom(webViewClass)) {
-                CordovaWebView webView =  (CordovaWebView) webViewConstructors[0].newInstance(this);
-                return webView;
+                for (Constructor<CordovaWebView> constructor : webViewConstructors) {
+                    try {
+                        CordovaWebView webView =  (CordovaWebView) constructor.newInstance(this);
+                        return webView;
+                    } catch (IllegalArgumentException e) {
+                        LOG.e(TAG, "Illegal arguments, try next constructor.");
+                    }
+                }
             }
             else
             {
@@ -254,44 +260,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param webView the default constructed web view object
      */
     protected CordovaWebViewClient makeWebViewClient(CordovaWebView webView) {
-    	String r = this.getStringProperty("webView", "org.apache.cordova.Android").concat("WebViewClient");
-
-        try {
-            Class webViewClientClass = Class.forName(r);
-            Constructor<CordovaWebViewClient> [] webViewClientConstructors = webViewClientClass.getConstructors();
-            
-            
-            if(CordovaWebViewClient.class.isAssignableFrom(webViewClientClass)) {
-            	for (Constructor<CordovaWebViewClient> constructor : webViewClientConstructors) {
-            		try {
-            			CordovaWebViewClient webViewClient =  (CordovaWebViewClient) constructor.newInstance(this, webView);
-                        return webViewClient;
-            		} catch (IllegalArgumentException e) {
-                        LOG.e(TAG, "Illegal arguments, try next constructor.");
-                    }
-            	}
-            }
-            else
-            {
-                LOG.e(TAG, "The WebView Engine is NOT a proper WebView, defaulting to system WebView");
-            }
-        } catch (ClassNotFoundException e) {
-            LOG.e(TAG, "The WebView Engine was not found, defaulting to system WebView");
-        } catch (InstantiationException e) {
-            LOG.e(TAG, "Unable to instantiate the WebView, defaulting to system WebView");
-        } catch (IllegalAccessException e) {
-            LOG.e(TAG, "Illegal Access to Constructor.  This should never happen, defaulting to system WebView");
-        } catch (IllegalArgumentException e) {
-            LOG.e(TAG, "The WebView does not implement the default constructor, defaulting to system WebView");
-        } catch (InvocationTargetException e) {
-            LOG.e(TAG, "Invocation Target Exception! Reflection is hard, defaulting to system WebView");
-        }
-
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            return (CordovaWebViewClient) new AndroidWebViewClient(this, webView);
-        } else {
-            return (CordovaWebViewClient) new IceCreamCordovaWebViewClient(this, webView);
-        }
+    	return webView.makeWebViewClient();
     }
 
     /**
@@ -303,40 +272,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param webView the default constructed web view object
      */
     protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
-    	String r = this.getStringProperty("webView", "org.apache.cordova.Android").concat("ChromeClient");
-
-        try {
-            Class chromeClientClass = Class.forName(r);
-            Constructor<CordovaChromeClient> [] chromeClientConstructors = chromeClientClass.getConstructors();
-            
-            
-            if(CordovaChromeClient.class.isAssignableFrom(chromeClientClass)) {
-            	for (Constructor<CordovaChromeClient> constructor : chromeClientConstructors) {
-            		try {
-            			CordovaChromeClient chromeClient =  (CordovaChromeClient) constructor.newInstance(this, webView);
-            			return chromeClient;
-            		} catch (IllegalArgumentException e) {
-                        LOG.e(TAG, "Illegal arguments, try next constructor.");
-                    }
-            	}
-            }
-            else
-            {
-                LOG.e(TAG, "The WebView Engine is NOT a proper WebView, defaulting to system WebView");
-            }
-        } catch (ClassNotFoundException e) {
-            LOG.e(TAG, "The WebView Engine was not found, defaulting to system WebView");
-        } catch (InstantiationException e) {
-            LOG.e(TAG, "Unable to instantiate the WebView, defaulting to system WebView");
-        } catch (IllegalAccessException e) {
-            LOG.e(TAG, "Illegal Access to Constructor.  This should never happen, defaulting to system WebView");
-        } catch (IllegalArgumentException e) {
-            LOG.e(TAG, "The WebView does not implement the default constructor, defaulting to system WebView");
-        } catch (InvocationTargetException e) {
-            LOG.e(TAG, "Invocation Target Exception! Reflection is hard, defaulting to system WebView");
-        }
-
-        return (CordovaChromeClient) new AndroidChromeClient(this, webView);
+    	return webView.makeChromeClient();
     }
 
     /**
