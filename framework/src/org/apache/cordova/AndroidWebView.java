@@ -166,8 +166,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
-        this.setWebChromeClient((CordovaChromeClient) new AndroidChromeClient(this.cordova, this));
-        this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
     }
@@ -190,7 +188,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
-        this.setWebChromeClient((CordovaChromeClient) new AndroidChromeClient(this.cordova, this));
         this.loadConfiguration();
         this.setup();
     }
@@ -214,25 +211,37 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         {
             Log.d(TAG, "Your activity must implement CordovaInterface to work");
         }
-        this.setWebChromeClient((CordovaChromeClient) new AndroidChromeClient(this.cordova));
-        this.initWebViewClient(this.cordova);
         this.loadConfiguration();
         this.setup();
     }
 
     /**
-     * set the WebViewClient, but provide special case handling for IceCreamSandwich.
+     * Create a default WebViewClient object for this webview. This can be overridden by the
+     * main application's CordovaActivity subclass.
+     *
+     * By default, it creates an AndroidWebViewClient, but we provide special case handling for
+     * IceCreamSandwich.
      */
-    private void initWebViewClient(CordovaInterface cordova) {
+    @Override
+    public CordovaWebViewClient makeWebViewClient() {
         if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB ||
                 android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
         {
-            this.setWebViewClient((CordovaWebViewClient) new AndroidWebViewClient(this.cordova, this));
+            return (CordovaWebViewClient) new AndroidWebViewClient(this.cordova, this);
         }
         else
         {
-            this.setWebViewClient((CordovaWebViewClient) new IceCreamCordovaWebViewClient(this.cordova, this));
+            return (CordovaWebViewClient) new IceCreamCordovaWebViewClient(this.cordova, this);
         }
+    }
+
+    /**
+     * Create a default WebViewClient object for this webview. This can be overridden by the
+     * main application's CordovaActivity subclass.
+     */
+    @Override
+    public CordovaChromeClient makeWebChromeClient() {
+        return (CordovaChromeClient) new AndroidChromeClient(this.cordova);
     }
 
     /**

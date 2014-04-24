@@ -19,6 +19,10 @@ public interface CordovaWebView {
 
     View getView();
 
+    CordovaWebViewClient makeWebViewClient();
+
+    CordovaChromeClient makeWebChromeClient();
+
     void setWebViewClient(CordovaWebViewClient webViewClient);
 
     void setWebChromeClient(CordovaChromeClient webChromeClient);

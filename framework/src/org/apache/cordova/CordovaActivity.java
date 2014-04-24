@@ -248,29 +248,27 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Construct the client for the default web view object.
      *
-     * This is intended to be overridable by subclasses of CordovaIntent which
-     * require a more specialized web view.
+     * This is intended to be overridable by subclasses of CordovaActivity which
+     * require a more specialized web view. By default, it allows the webView
+     * to create its own client objects.
      *
      * @param webView the default constructed web view object
      */
     protected CordovaWebViewClient makeWebViewClient(CordovaWebView webView) {
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            return (CordovaWebViewClient) new AndroidWebViewClient(this, webView);
-        } else {
-            return (CordovaWebViewClient) new IceCreamCordovaWebViewClient(this, webView);
-        }
+        return webView.makeWebViewClient();
     }
 
     /**
      * Construct the chrome client for the default web view object.
      *
-     * This is intended to be overridable by subclasses of CordovaIntent which
-     * require a more specialized web view.
+     * This is intended to be overridable by subclasses of CordovaActivity which
+     * require a more specialized web view. By default, it allows the webView
+     * to create its own client objects.
      *
      * @param webView the default constructed web view object
      */
     protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
-        return (CordovaChromeClient) new AndroidChromeClient(this, webView);
+        return webView.makeWebChromeClient();
     }
 
     /**
