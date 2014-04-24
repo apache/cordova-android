@@ -219,16 +219,18 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         try {
             Class webViewClass = Class.forName(r);
             Constructor<CordovaWebView> [] webViewConstructors = webViewClass.getConstructors();
-            
-            
+
             if(CordovaWebView.class.isAssignableFrom(webViewClass)) {
-                CordovaWebView webView =  (CordovaWebView) webViewConstructors[0].newInstance(this);
-                return webView;
+                for (Constructor<CordovaWebView> constructor : webViewConstructors) {
+                    try {
+                        CordovaWebView webView = (CordovaWebView) constructor.newInstance(this);
+                        return webView;
+                    } catch (IllegalArgumentException e) {
+                        LOG.d(TAG, "Illegal arguments; trying next constructor.");
+                    }
+                }
             }
-            else
-            {
-                LOG.e(TAG, "The WebView Engine is NOT a proper WebView, defaulting to system WebView");
-            }
+            LOG.e(TAG, "The WebView Engine is NOT a proper WebView, defaulting to system WebView");
         } catch (ClassNotFoundException e) {
             LOG.e(TAG, "The WebView Engine was not found, defaulting to system WebView");
         } catch (InstantiationException e) {
