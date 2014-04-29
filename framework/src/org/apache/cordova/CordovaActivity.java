@@ -222,8 +222,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             
             
             if(CordovaWebView.class.isAssignableFrom(webViewClass)) {
-                CordovaWebView webView =  (CordovaWebView) webViewConstructors[0].newInstance(this);
-                return webView;
+                for (Constructor<CordovaWebView> constructor : webViewConstructors) {
+                    try {
+                        CordovaWebView webView =  (CordovaWebView) constructor.newInstance(this);
+                        return webView;
+                    } catch (IllegalArgumentException e) {
+                        LOG.e(TAG, "Illegal arguments, try next constructor.");
+                    }
+                }
             }
             else
             {
@@ -254,11 +260,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param webView the default constructed web view object
      */
     protected CordovaWebViewClient makeWebViewClient(CordovaWebView webView) {
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            return (CordovaWebViewClient) new AndroidWebViewClient(this, webView);
-        } else {
-            return (CordovaWebViewClient) new IceCreamCordovaWebViewClient(this, webView);
-        }
+    	return webView.makeWebViewClient();
     }
 
     /**
@@ -270,7 +272,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param webView the default constructed web view object
      */
     protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
-        return (CordovaChromeClient) new AndroidChromeClient(this, webView);
+    	return webView.makeChromeClient();
     }
 
     /**

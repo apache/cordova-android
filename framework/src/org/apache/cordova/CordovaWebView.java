@@ -18,6 +18,10 @@ public interface CordovaWebView {
     Object jsMessageQueue = null;
 
     View getView();
+    
+    CordovaWebViewClient makeWebViewClient();
+    
+    CordovaChromeClient makeChromeClient();
 
     void setWebViewClient(CordovaWebViewClient webViewClient);
 
