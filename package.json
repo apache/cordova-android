@@ -4,7 +4,7 @@
   "description": "This is the release for cordova-android",
   "main": "bin/create",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test":"echo \"Error: please view test/readme.md\" && exit 1" 
   },
   "repository": {
     "type": "git",
