@@ -1,20 +1,18 @@
 {
   "name": "cordova-android",
   "version": "3.4.0",
-  "description": "This is the release for cordova-android",
+  "description": "cordova-android release",
   "main": "bin/create",
-  "scripts": {
-    "test":"echo \"Error: please view test/readme.md\" && exit 1" 
-  },
   "repository": {
     "type": "git",
     "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
   },
   "keywords": [
     "android",
-    "cordova"
+    "cordova",
+    "apache"
   ],
-  "author": "Joe Bowser",
+  "author": "Apache Software Foundation",
   "license": "Apache version 2.0",
   "dependencies": {
     "q": "^0.9.0",
