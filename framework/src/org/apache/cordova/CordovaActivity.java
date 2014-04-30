@@ -219,22 +219,17 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         try {
             Class webViewClass = Class.forName(r);
             Constructor<CordovaWebView> [] webViewConstructors = webViewClass.getConstructors();
-            
-            
             if(CordovaWebView.class.isAssignableFrom(webViewClass)) {
                 for (Constructor<CordovaWebView> constructor : webViewConstructors) {
                     try {
-                        CordovaWebView webView =  (CordovaWebView) constructor.newInstance(this);
+                        CordovaWebView webView = (CordovaWebView) constructor.newInstance(this);
                         return webView;
                     } catch (IllegalArgumentException e) {
-                        LOG.e(TAG, "Illegal arguments, try next constructor.");
+                        LOG.d(TAG, "Illegal arguments; trying next constructor.");
                     }
                 }
             }
-            else
-            {
-                LOG.e(TAG, "The WebView Engine is NOT a proper WebView, defaulting to system WebView");
-            }
+            LOG.e(TAG, "The WebView Engine is NOT a proper WebView, defaulting to system WebView");
         } catch (ClassNotFoundException e) {
             LOG.e(TAG, "The WebView Engine was not found, defaulting to system WebView");
         } catch (InstantiationException e) {
@@ -254,25 +249,27 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Construct the client for the default web view object.
      *
-     * This is intended to be overridable by subclasses of CordovaIntent which
-     * require a more specialized web view.
+     * This is intended to be overridable by subclasses of CordovaActivity which
+     * require a more specialized web view. By default, it allows the webView
+     * to create its own client objects.
      *
      * @param webView the default constructed web view object
      */
     protected CordovaWebViewClient makeWebViewClient(CordovaWebView webView) {
-    	return webView.makeWebViewClient();
+        return webView.makeWebViewClient();
     }
 
     /**
      * Construct the chrome client for the default web view object.
      *
-     * This is intended to be overridable by subclasses of CordovaIntent which
-     * require a more specialized web view.
+     * This is intended to be overridable by subclasses of CordovaActivity which
+     * require a more specialized web view. By default, it allows the webView
+     * to create its own client objects.
      *
      * @param webView the default constructed web view object
      */
     protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
-    	return webView.makeChromeClient();
+    	return webView.makeWebChromeClient();
     }
 
     /**
