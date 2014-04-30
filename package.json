@@ -1,0 +1,23 @@
+{
+  "name": "cordova-android",
+  "version": "3.4.0",
+  "description": "This is the release for cordova-android",
+  "main": "bin/create",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
+  },
+  "keywords": [
+    "android",
+    "cordova"
+  ],
+  "author": "Joe Bowser",
+  "license": "Apache version 2.0",
+  "dependencies": {
+    "q": "^0.9.0",
+    "shelljs": "^0.2.6"
+  }
+}
