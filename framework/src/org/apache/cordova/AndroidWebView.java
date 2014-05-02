@@ -219,13 +219,13 @@ public class AndroidWebView extends WebView implements CordovaWebView {
      * Create a default WebViewClient object for this webview. This can be overridden by the
      * main application's CordovaActivity subclass.
      *
-     * By default, it creates an AndroidWebViewClient, but we provide special case handling for
-     * IceCreamSandwich.
+     * There are two possible client objects that can be returned:
+     *   AndroidWebViewClient for android < 3.0
+     *   IceCreamCordovaWebViewClient for Android >= 3.0 (Supports shouldInterceptRequest)
      */
     @Override
     public CordovaWebViewClient makeWebViewClient() {
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB ||
-                android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB)
         {
             return (CordovaWebViewClient) new AndroidWebViewClient(this.cordova, this);
         }
