@@ -139,7 +139,6 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
                     return true;
             }
         });
-        dlg.create();
         dlg.show();
         return true;
     }
@@ -188,7 +187,6 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
                     return true;
             }
         });
-        dlg.create();
         dlg.show();
         return true;
     }
@@ -284,7 +282,6 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
                             res.cancel();
                         }
                     });
-            dlg.create();
             dlg.show();
         }
         return true;

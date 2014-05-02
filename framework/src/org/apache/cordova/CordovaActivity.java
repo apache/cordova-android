@@ -219,6 +219,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         try {
             Class webViewClass = Class.forName(r);
             Constructor<CordovaWebView> [] webViewConstructors = webViewClass.getConstructors();
+
             if(CordovaWebView.class.isAssignableFrom(webViewClass)) {
                 for (Constructor<CordovaWebView> constructor : webViewConstructors) {
                     try {
@@ -269,7 +270,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param webView the default constructed web view object
      */
     protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
-    	return webView.makeWebChromeClient();
+        return webView.makeWebChromeClient();
     }
 
     /**
