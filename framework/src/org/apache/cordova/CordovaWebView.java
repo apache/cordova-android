@@ -35,9 +35,19 @@ public interface CordovaWebView {
 
     Object getParent();
 
+    void loadUrl(String url);
+
     void loadUrl(String url, int splashscreenTime);
 
-    void loadUrl(String url);
+    void loadUrlNow(String url);
+
+    void loadUrlIntoView(final String url);
+
+    void loadUrlIntoView(final String url, boolean recreatePlugins);
+
+    void loadUrlIntoView(final String url, final int splashscreenTime);
+
+    void stopLoading();
 
     boolean canGoBack();
 
@@ -58,7 +68,7 @@ public interface CordovaWebView {
     void postMessage(String id, Object data);
 
     void addJavascript(String statement);
-    
+
     void sendJavascript(String statememt);
 
     CordovaChromeClient getWebChromeClient();
@@ -98,8 +108,6 @@ public interface CordovaWebView {
     void incUrlTimeout();
 
     void setOverScrollMode(int overScrollNever);
-
-    void loadUrlNow(String string);
 
     void setNetworkAvailable(boolean online);
 
