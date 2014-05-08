@@ -36,6 +36,10 @@ module.exports.get_target = function() {
         // this is called on the project itself, and can support Google APIs AND Vanilla Android
         var target = shell.grep(/target=android-[\d+]/, path.join(ROOT, 'project.properties')) ||
           shell.grep(/target=Google Inc.:Google APIs:[\d+]/, path.join(ROOT, 'project.properties'));
+        if(target == "" || !target) {
+          // Try Google Glass APIs
+          target = shell.grep(/target=Google Inc.:Glass Development Kit Preview:[\d+]/, path.join(ROOT, 'project.properties'));
+        }
         return target.split('=')[1].replace('\n', '').replace('\r', '');
     }
 }
