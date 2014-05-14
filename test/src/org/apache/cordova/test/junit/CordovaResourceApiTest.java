@@ -65,7 +65,7 @@ public class CordovaResourceApiTest extends ActivityInstrumentationTestCase2<Cor
         cordovaWebView = activity.cordovaWebView;
         resourceApi = cordovaWebView.getResourceApi();
         resourceApi.setThreadCheckingEnabled(false);
-        cordovaWebView.pluginManager.addService(new PluginEntry("CordovaResourceApiTestPlugin1", new CordovaPlugin() {
+        cordovaWebView.getPluginManager().addService(new PluginEntry("CordovaResourceApiTestPlugin1", new CordovaPlugin() {
             @Override
             public Uri remapUri(Uri uri) {
                 if (uri.getQuery() != null && uri.getQuery().contains("pluginRewrite")) {

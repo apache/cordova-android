@@ -115,4 +115,9 @@ public interface CordovaWebView {
     PluginManager getPluginManager();
 
     void setLayoutParams(android.widget.FrameLayout.LayoutParams layoutParams);
+    
+    // Required for test
+    
+    String getUrl();
+    boolean isPaused();
 }

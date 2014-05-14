@@ -27,6 +27,7 @@ import org.apache.cordova.test.backbuttonmultipage;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.UiThreadTest;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -174,7 +175,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
           {
               String url = testView.getUrl();
               assertTrue(url.endsWith("sample3.html"));
-              BaseInputConnection viewConnection = new BaseInputConnection(testView, true);
+              BaseInputConnection viewConnection = new BaseInputConnection((View) testView, true);
               KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
               KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
               viewConnection.sendKeyEvent(backDown);
@@ -187,7 +188,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
           {
               String url = testView.getUrl();
               assertTrue(url.endsWith("sample2.html"));
-              BaseInputConnection viewConnection = new BaseInputConnection(testView, true);
+              BaseInputConnection viewConnection = new BaseInputConnection((View) testView, true);
               KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
               KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
               viewConnection.sendKeyEvent(backDown);

@@ -24,20 +24,20 @@ import android.webkit.WebView;
 import org.apache.cordova.*;
 import org.apache.cordova.LOG;
 
-public class whitelist extends DroidGap {
+public class whitelist extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.init(new CordovaWebView(this), new TestViewClient(this), new CordovaChromeClient(this));
+        super.init(new AndroidWebView(this), new TestViewClient(this), new AndroidChromeClient(this));
         super.loadUrl("file:///android_asset/www/whitelist/index.html");
     }
 
     /**
      * This class can be used to override the GapViewClient and receive notification of webview events.
      */
-    public class TestViewClient extends CordovaWebViewClient {
+    public class TestViewClient extends AndroidWebViewClient {
 
-        public TestViewClient(DroidGap arg0) {
+        public TestViewClient(CordovaActivity arg0) {
             super(arg0);
         }
 
