@@ -43,7 +43,7 @@ public class Config {
 
     private Whitelist whitelist = new Whitelist();
     private String startUrl;
-    
+
     private static Config self = null;
 
     public static void init(Activity action) {
