@@ -214,6 +214,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Config.init(this);
+        LOG.i(TAG, "Apache Cordova native platform version " + appView.CORDOVA_VERSION + " is starting");
         LOG.d(TAG, "CordovaActivity.onCreate()");
         super.onCreate(savedInstanceState);
 
