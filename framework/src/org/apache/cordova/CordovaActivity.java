@@ -214,7 +214,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * require a more specialized web view.
      */
     protected CordovaWebView makeWebView() {
-        String r = this.getStringProperty("webView", "org.apache.cordova.AndroidWebView");
+        String r = this.getStringProperty("webView", "org.apache.cordova.AndroidCordovaWebView");
 
         try {
             Class webViewClass = Class.forName(r);
@@ -244,7 +244,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
         
         // If all else fails, return a default WebView
-        return (CordovaWebView) new AndroidWebView(CordovaActivity.this);
+        return (CordovaWebView) new AndroidCordovaWebView(CordovaActivity.this);
     }
 
     /**

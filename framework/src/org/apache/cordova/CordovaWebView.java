@@ -11,121 +11,121 @@ import android.view.View;
 import android.webkit.WebChromeClient.CustomViewCallback;
 import android.widget.LinearLayout.LayoutParams;
 
-public interface CordovaWebView {
+public abstract class CordovaWebView {
 
     String OVER_SCROLL_NEVER = null;
-    Object pluginManager = null;
-    Object jsMessageQueue = null;
+    public PluginManager pluginManager = null;
+    NativeToJsMessageQueue jsMessageQueue = null;
 
-    View getView();
+    public abstract View getView();
 
-    CordovaWebViewClient makeWebViewClient();
+    public abstract CordovaWebViewClient makeWebViewClient();
 
-    CordovaChromeClient makeWebChromeClient();
+    public abstract CordovaChromeClient makeWebChromeClient();
 
-    void setWebViewClient(CordovaWebViewClient webViewClient);
+    public abstract void setWebViewClient(CordovaWebViewClient webViewClient);
 
-    void setWebChromeClient(CordovaChromeClient webChromeClient);
+    public abstract void setWebChromeClient(CordovaChromeClient webChromeClient);
 
-    void setId(int i);
+    public abstract void setId(int i);
 
-    void setLayoutParams(LayoutParams layoutParams);
+    public abstract void setLayoutParams(LayoutParams layoutParams);
 
-    void setVisibility(int invisible);
+    public abstract void setVisibility(int invisible);
 
-    Object getParent();
+    public abstract Object getParent();
 
-    void loadUrl(String url);
+    public abstract void loadUrl(String url);
 
-    void loadUrl(String url, int splashscreenTime);
+    public abstract void loadUrl(String url, int splashscreenTime);
 
-    void loadUrlNow(String url);
+    public abstract void loadUrlNow(String url);
 
-    void loadUrlIntoView(final String url);
+    public abstract void loadUrlIntoView(final String url);
 
-    void loadUrlIntoView(final String url, boolean recreatePlugins);
+    public abstract void loadUrlIntoView(final String url, boolean recreatePlugins);
 
-    void loadUrlIntoView(final String url, final int splashscreenTime);
+    public abstract void loadUrlIntoView(final String url, final int splashscreenTime);
 
-    void stopLoading();
+    public abstract void stopLoading();
 
-    boolean canGoBack();
+    public abstract boolean canGoBack();
 
-    void clearCache(boolean b);
+    public abstract void clearCache(boolean b);
 
-    void clearHistory();
+    public abstract void clearHistory();
 
-    boolean backHistory();
+    public abstract boolean backHistory();
 
-    void handlePause(boolean keepRunning);
+    public abstract void handlePause(boolean keepRunning);
 
-    void onNewIntent(Intent intent);
+    public abstract void onNewIntent(Intent intent);
 
-    void handleResume(boolean keepRunning, boolean activityResultKeepRunning);
+    public abstract void handleResume(boolean keepRunning, boolean activityResultKeepRunning);
 
-    void handleDestroy();
+    public abstract void handleDestroy();
 
-    void postMessage(String id, Object data);
+    public abstract void postMessage(String id, Object data);
 
-    void addJavascript(String statement);
+    public abstract void addJavascript(String statement);
 
-    void sendJavascript(String statememt);
+    public abstract void sendJavascript(String statememt);
 
-    CordovaChromeClient getWebChromeClient();
+    public abstract CordovaChromeClient getWebChromeClient();
 
-    CordovaPlugin getPlugin(String initCallbackClass);
+    public abstract CordovaPlugin getPlugin(String initCallbackClass);
 
-    void showWebPage(String errorUrl, boolean b, boolean c, HashMap<String, Object> params);
+    public abstract void showWebPage(String errorUrl, boolean b, boolean c, HashMap<String, Object> params);
 
-    Object getFocusedChild();
+    public abstract Object getFocusedChild();
 
-    boolean isCustomViewShowing();
+    public abstract boolean isCustomViewShowing();
 
-    boolean onKeyUp(int keyCode, KeyEvent event);
+    public abstract boolean onKeyUp(int keyCode, KeyEvent event);
 
-    boolean onKeyDown(int keyCode, KeyEvent event);
+    public abstract boolean onKeyDown(int keyCode, KeyEvent event);
 
-    String exec(String service, String action, String callbackId, String message) throws JSONException;
+    public abstract String exec(String service, String action, String callbackId, String message) throws JSONException;
 
-    void setNativeToJsBridgeMode(int parseInt);
+    public abstract void setNativeToJsBridgeMode(int parseInt);
 
-    String retrieveJsMessages(boolean equals);
+    public abstract String retrieveJsMessages(boolean equals);
 
-    void showCustomView(View view, CustomViewCallback callback);
+    public abstract void showCustomView(View view, CustomViewCallback callback);
 
-    void hideCustomView();
+    public abstract void hideCustomView();
 
-    Context getContext();
+    public abstract Context getContext();
 
-    boolean onOverrideUrlLoading(String url);
+    public abstract boolean onOverrideUrlLoading(String url);
 
-    void resetJsMessageQueue();
+    public abstract void resetJsMessageQueue();
 
-    void onReset();
+    public abstract void onReset();
 
-    int getVisibility();
+    public abstract int getVisibility();
 
-    void incUrlTimeout();
+    public abstract void incUrlTimeout();
 
-    void setOverScrollMode(int overScrollNever);
+    public abstract void setOverScrollMode(int overScrollNever);
 
-    void setNetworkAvailable(boolean online);
+    public abstract void setNetworkAvailable(boolean online);
 
-    CordovaResourceApi getResourceApi();
+    public abstract CordovaResourceApi getResourceApi();
 
-    void bindButton(boolean override);
-    void bindButton(String button, boolean override);
+    public abstract void bindButton(boolean override);
+    public abstract void bindButton(String button, boolean override);
 
-    boolean isBackButtonBound();
+    public abstract boolean isBackButtonBound();
 
-    void sendPluginResult(PluginResult cr, String callbackId);
+    public abstract void sendPluginResult(PluginResult cr, String callbackId);
 
-    PluginManager getPluginManager();
+    public abstract PluginManager getPluginManager();
 
-    void setLayoutParams(android.widget.FrameLayout.LayoutParams layoutParams);
+    public abstract void setLayoutParams(android.widget.FrameLayout.LayoutParams layoutParams);
     
     // Required for test
     
-    String getUrl();
-    boolean isPaused();
+    public abstract String getUrl();
+    public abstract boolean isPaused();
 }
