@@ -338,6 +338,20 @@ public class AndroidWebView extends WebView {
     }
 
     /*
+     * Add a key code to either the keyUp or keyDown handler lists.
+     */
+    void bindButton(int keyCode, boolean keyDown) {
+        if(keyDown)
+        {
+            keyDownCodes.add(keyCode);
+        }
+        else
+        {
+            keyUpCodes.add(keyCode);
+        }
+     }
+
+    /*
      * onKeyDown
      */
     @Override

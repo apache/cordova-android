@@ -19,7 +19,6 @@
 
 package org.apache.cordova;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -59,9 +58,6 @@ public class AndroidCordovaWebView extends CordovaWebView {
 
     public static final String TAG = "CordovaWebView";
     public static final String CORDOVA_VERSION = "3.6.0-dev";
-
-    private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
-    private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
 
     private boolean paused;
 
@@ -550,23 +546,12 @@ public class AndroidCordovaWebView extends CordovaWebView {
     @Override
     public void bindButton(String button, boolean override) {
         if (button.compareTo("volumeup")==0) {
-          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_UP);
+          webview.bindButton(KeyEvent.KEYCODE_VOLUME_UP, true);
         }
         else if (button.compareTo("volumedown")==0) {
-          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_DOWN);
+          webview.bindButton(KeyEvent.KEYCODE_VOLUME_DOWN, true);
         }
       }
-
-    private void bindButton(int keyCode, boolean keyDown, boolean override) {
-       if(keyDown)
-       {
-           keyDownCodes.add(keyCode);
-       }
-       else
-       {
-           keyUpCodes.add(keyCode);
-       }
-    }
 
     @Override
     public boolean isBackButtonBound()
