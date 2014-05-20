@@ -15,7 +15,7 @@ public abstract class CordovaWebView {
 
     String OVER_SCROLL_NEVER = null;
     public PluginManager pluginManager = null;
-    NativeToJsMessageQueue jsMessageQueue = null;
+    protected NativeToJsMessageQueue jsMessageQueue = null;
 
     public abstract View getView();
 
