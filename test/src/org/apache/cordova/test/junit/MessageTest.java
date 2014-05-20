@@ -25,8 +25,8 @@ import org.apache.cordova.pluginApi.pluginStub;
 import org.apache.cordova.test.CordovaWebViewTestActivity;
 import org.apache.cordova.test.R;
 
-import com.jayway.android.robotium.solo.By;
-import com.jayway.android.robotium.solo.Solo;
+import com.robotium.solo.By;
+import com.robotium.solo.Solo;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
