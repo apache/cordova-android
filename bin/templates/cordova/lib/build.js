@@ -24,6 +24,7 @@ var shell   = require('shelljs'),
     Q       = require('q'),
     path    = require('path'),
     fs      = require('fs'),
+    which   = require('which'),
     ROOT    = path.join(__dirname, '..', '..');
 
 
@@ -32,6 +33,12 @@ function hasCustomRules() {
 }
 module.exports.getAntArgs = function(cmd) {
     var args = [cmd, '-f', path.join(ROOT, 'build.xml')];
+    try {
+      // Specify sdk dir in case local properties are missing
+      args.push('-Dsdk.dir='+path.join(which.sync('android'), '../..'));
+    } catch(e) {
+      // Can't find android; don't push arg: assume all is okay
+    }
     // custom_rules.xml is required for incremental builds.
     if (hasCustomRules()) {
         args.push('-Dout.dir=ant-build', '-Dgen.absolute.dir=ant-gen');
