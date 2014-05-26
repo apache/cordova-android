@@ -38,7 +38,7 @@ import java.util.HashMap;
 /**
  * This class exposes methods in Cordova that can be called from JavaScript.
  */
-public class App extends CordovaPlugin {
+public class CoreAndroid extends CordovaPlugin {
 
     protected static final String TAG = "CordovaApp";
     private BroadcastReceiver telephonyReceiver;
