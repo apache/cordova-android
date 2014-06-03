@@ -13,6 +13,7 @@
         </path>
         <echo message="Set jars path to: ${toString:project.all.jars.path}"/>
     </target>
+    <!-- Rename AndroidManifest.xml so that Eclipse's import wizard doesn't detect ant-build as a project -->
     <target name="-post-build">
         <move file="ant-build/AndroidManifest.xml" tofile="ant-build/AndroidManifest.cordova.xml" failonerror="false" overwrite="true" />
         <move file="CordovaLib/ant-build/AndroidManifest.xml" tofile="CordovaLib/ant-build/AndroidManifest.cordova.xml" failonerror="false" overwrite="true" />
