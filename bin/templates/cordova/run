@@ -26,7 +26,7 @@ var run  = require('./lib/run'),
 // Support basic help commands
 if (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
                     args[2] == 'help' || args[2] == '-help' || args[2] == '/help') {
-    run.help();
+    run.help(args);
 } else {
     reqs.run().done(function() {
         return run.run(args);
