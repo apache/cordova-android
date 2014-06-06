@@ -18,7 +18,7 @@ public interface CordovaWebView {
     Object jsMessageQueue = null;
 
     public static final String TAG = "CordovaWebView";
-    public static final String CORDOVA_VERSION = "3.6.0-dev";
+    public static final String CORDOVA_VERSION = "4.0.0-dev";
 
     View getView();
 
