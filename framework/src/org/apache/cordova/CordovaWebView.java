@@ -72,6 +72,30 @@ public interface CordovaWebView {
 
     void addJavascript(String statement);
 
+    /**
+     * Send JavaScript statement back to JavaScript.
+     * (This is a convenience method)
+     *
+     * @param statement
+     * Deprecated (https://issues.apache.org/jira/browse/CB-6851)
+     * Instead of executing snippets of JS, you should use the exec bridge
+     * to create a Java->JS communication channel.
+     * To do this:
+     * 1. Within plugin.xml (to have your JS run before deviceready):
+     *    <js-module><runs/></js-module>
+     * 2. Within your .js (call exec on start-up):
+     *    require('cordova/channel').onCordovaReady.subscribe(function() {
+     *      require('cordova/exec')(win, null, 'Plugin', 'method', []);
+     *      function win(message) {
+     *        ... process message from java here ...
+     *      }
+     *    });
+     * 3. Within your .java:
+     *    PluginResult dataResult = new PluginResult(PluginResult.Status.OK, CODE);
+     *    dataResult.setKeepCallback(true);
+     *    savedCallbackContext.sendPluginResult(dataResult);
+     */
+    @Deprecated
     void sendJavascript(String statememt);
 
     CordovaChromeClient getWebChromeClient();

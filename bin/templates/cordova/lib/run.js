@@ -125,8 +125,8 @@ var path  = require('path'),
     });
 }
 
-module.exports.help = function() {
-    console.log('Usage: ' + path.relative(process.cwd(), args[0]) + ' [options]');
+module.exports.help = function(args) {
+    console.log('Usage: ' + path.relative(process.cwd(), args[1]) + ' [options]');
     console.log('Build options :');
     console.log('    --debug : Builds project in debug mode');
     console.log('    --release : Builds project in release mode');

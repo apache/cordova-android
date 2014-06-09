@@ -20,6 +20,40 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 3.5.0 (May 2014) ###
+
+* OkHttp has broken headers. Updating for ASF compliance.
+* Revert accidentally removed lines from NOTICE
+* CB-6552: added top level package.json
+* CB-6491 add CONTRIBUTING.md
+* CB-6543 Fix cordova/run failure when no custom_rules.xml available
+* defaults.xml: Add AndroidLaunchMode preference
+* Add JavaDoc for CordovaResourceApi
+* CB-6388: Handle binary data correctly in LOAD_URL bridge
+* Fix CB-6048: Set launchMode=singleTop so tapping app icon does not always restart app
+* Remove incorrect usage of AlertDialog.Builder.create
+* Catch uncaught exceptions in from plugins and turn them into error responses.
+* Add NOTICE file
+* CB-6047 Fix online sometimes getting in a bad state on page transitions.
+* Add another convenience overload for CordovaResourceApi.copyResource
+* Update framework's .classpath to what Eclipse wants it to be.
+* README.md: `android update` to `android-19`.
+* Fix NPE when POLLING bridge mode is used.
+* Updating NOTICE to include Square for OkHttp
+* CB-5398 Apply KitKat content URI fix to all content URIs
+* CB-5398 Work-around for KitKat content: URLs not rendering in <img> tags
+* CB-5908: add splascreen images to template
+* CB-5395: Make scheme and host (but not path) case-insensitive in whitelist
+* Ignore multiple onPageFinished() callbacks & onReceivedError due to stopLoading()
+* Removing addJavascriptInterface support from all Android versions lower than 4.2 due to security vu
+* CB-4984 Don't create on CordovaActivity name
+* CB-5917 Add a loadUrlIntoView overload that doesn't recreate plugins.
+* Use thread pool for load timeout.
+* CB-5715 For CLI, hide assets/www and res/xml/config.xml by default
+* CB-5793 ant builds: Rename AndroidManifest during -post-build to avoid Eclipse detecting ant-build/
+* CB-5889 Make update script find project name instead of using "null" for CordovaLib
+* CB-5889 Add a message in the update script about needing to import CordovaLib when using an IDE.
+
 ### 3.4.0 (Feb 2014) ###
 
 43 commits from 10 authors. Highlights include:
