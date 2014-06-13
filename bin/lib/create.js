@@ -145,12 +145,30 @@ exports.createProject = function(project_path, package_name, project_name, proje
         return Q.reject('Project already exists! Delete and recreate');
     }
 
+    //Make the package conform to Java package types
     if (!/[a-zA-Z0-9_]+\.[a-zA-Z0-9_](.[a-zA-Z0-9_])*/.test(package_name)) {
         return Q.reject('Package name must look like: com.company.Name');
     }
 
+    //Enforce underscore limitation
+    if (/[_]+[a-zA-Z0-9_]*/.test(package_name)) {
+        return Q.reject("Package name can't begin with an underscore");
+    }
+
+    //Enforce stupid name error
     if (project_name === 'CordovaActivity') {
         return Q.reject('Project name cannot be CordovaActivity');
+    }
+
+    //Classes in Java don't begin with numbers
+    if (/[0-9]+[a-zA-Z0-9]/.test(project_name)) {
+        return Q.reject('Project name must not begin with a number');
+    }
+
+    //Class is a reserved word
+    if(/[C|c]+lass+[\s|\.]/.test(package_name) && !/[a-zA-Z0-9_]+[C|c]+lass/.test(package_name))
+    {
+        return Q.reject('class is a reserved word');
     }
 
     // Check that requirements are met and proper targets are installed
