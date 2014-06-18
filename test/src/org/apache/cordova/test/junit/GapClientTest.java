@@ -59,9 +59,9 @@ public class GapClientTest extends ActivityInstrumentationTestCase2<CordovaWebVi
 		assertNotNull(testView);
 	}
 	
-	public void testForCordovaView() {
+	public void testForAndroidWebView() {
 	    String className = testView.getClass().getSimpleName();
-	    assertTrue(className.equals("CordovaWebView"));
+	    assertTrue(className.equals("AndroidWebView"));
 	}
 	
 	

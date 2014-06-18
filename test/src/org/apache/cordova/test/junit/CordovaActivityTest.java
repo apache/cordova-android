@@ -59,9 +59,9 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<Cordov
     }
     
 
-    public void testForCordovaView() {
+    public void testForAndroidWebView() {
         String className = testView.getClass().getSimpleName();
-        assertTrue(className.equals("CordovaWebView"));
+        assertTrue(className.equals("AndroidWebView"));
     }
     
     public void testForLinearLayout() {

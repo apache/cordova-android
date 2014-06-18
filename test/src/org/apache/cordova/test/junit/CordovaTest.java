@@ -49,11 +49,11 @@ public class CordovaTest extends
     assertNotNull(testView);
   }
 
-  public void testForCordovaView() {
+  public void testForAndroidWebView() {
     //Sleep for no reason!!!!
-    sleep();
+    sleep();        
     String className = testView.getClass().getSimpleName();
-    assertTrue(className.equals("CordovaWebView"));
+    assertTrue(className.equals("AndroidWebView"));
   }
 
   /*

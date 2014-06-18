@@ -56,10 +56,11 @@ import android.webkit.WebViewClient;
  */
 public class AndroidWebViewClient extends WebViewClient implements CordovaWebViewClient{
 
-	private static final String TAG = "CordovaWebViewClient";
+	private static final String TAG = "AndroidWebViewClient";
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     AndroidWebView appView;
+    CordovaUriHelper helper;
     private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
 
@@ -84,6 +85,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
     public AndroidWebViewClient(CordovaInterface cordova, AndroidWebView view) {
         this.cordova = cordova;
         this.appView = view;
+        helper = new CordovaUriHelper(cordova, view);
     }
 
     /**
@@ -93,6 +95,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
      */
     public void setWebView(AndroidWebView view) {
         this.appView = view;
+        helper = new CordovaUriHelper(cordova, view);
     }
 
 
@@ -130,6 +133,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
 	@Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
     	// Check if it's an exec() bridge command message.
+	    /*
     	if (NativeToJsMessageQueue.ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
     		handleExecUrl(url);
     	}
@@ -235,6 +239,8 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
             }
         }
         return true;
+        */
+	    return helper.shouldOverrideUrlLoading(view, url);
     }
     
     /**
