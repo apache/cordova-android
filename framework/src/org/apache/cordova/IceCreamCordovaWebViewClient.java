@@ -40,7 +40,7 @@ public class IceCreamCordovaWebViewClient extends AndroidWebViewClient implement
         super(cordova);
     }
     
-    public IceCreamCordovaWebViewClient(CordovaInterface cordova, CordovaWebView view) {
+    public IceCreamCordovaWebViewClient(CordovaInterface cordova, AndroidWebView view) {
         super(cordova, view);
     }
 
@@ -96,11 +96,5 @@ public class IceCreamCordovaWebViewClient extends AndroidWebViewClient implement
                 return true;
         }
         return false;
-    }
-
-    @Override
-    public void onReceivedError(CordovaWebView me, int i, String string,
-            String url) {
-        super.onReceivedError(me, i, string, url);
     }
 }

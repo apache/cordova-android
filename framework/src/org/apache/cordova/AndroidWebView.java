@@ -480,7 +480,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
                 me.stopLoading();
                 LOG.e(TAG, "CordovaWebView: TIMEOUT ERROR!");
                 if (viewClient != null) {
-                    viewClient.onReceivedError(me, -6, "The connection to the server was unsuccessful.", url);
+                    viewClient.onReceivedError(-6, "The connection to the server was unsuccessful.", url);
                 }
             }
         };

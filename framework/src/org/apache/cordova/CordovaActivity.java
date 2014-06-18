@@ -299,8 +299,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         this.appView.setWebViewClient(webViewClient);
         this.appView.setWebChromeClient(webChromeClient);
-        webViewClient.setWebView(this.appView);
-        webChromeClient.setWebView(this.appView);
 
         this.appView.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

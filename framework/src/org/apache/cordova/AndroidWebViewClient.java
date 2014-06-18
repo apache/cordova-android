@@ -59,7 +59,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
 	private static final String TAG = "CordovaWebViewClient";
 	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
-    CordovaWebView appView;
+    AndroidWebView appView;
     private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
 
@@ -81,7 +81,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
      * @param cordova
      * @param view
      */
-    public AndroidWebViewClient(CordovaInterface cordova, CordovaWebView view) {
+    public AndroidWebViewClient(CordovaInterface cordova, AndroidWebView view) {
         this.cordova = cordova;
         this.appView = view;
     }
@@ -91,7 +91,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
      *
      * @param view
      */
-    public void setWebView(CordovaWebView view) {
+    public void setWebView(AndroidWebView view) {
         this.appView = view;
     }
 
@@ -483,14 +483,8 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
     }
 
     @Override
-    public void onReceivedError(CordovaWebView me, int i, String string,
-            String url) {
-        // Only deal with this if we're dealing with a proper classic webview.
-        if(WebView.class.isInstance(me))
-        {
-            this.onReceivedError(me, i, string, url);
-        }
-
+    public void onReceivedError(int errorCode, String description, String url) {
+        this.onReceivedError(appView, errorCode, description, url);
     }
 
 }
