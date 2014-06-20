@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cordova.CordovaArgs;
@@ -37,7 +38,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Intent;
 import android.content.res.XmlResourceParser;
-
 import android.net.Uri;
 import android.os.Debug;
 import android.util.Log;
@@ -66,6 +66,8 @@ public class PluginManager {
     protected HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
 
     private AtomicInteger numPendingUiExecs;
+    
+    private Set<String> pluginIdWhitelist;
 
     /**
      * Constructor.
@@ -78,6 +80,10 @@ public class PluginManager {
         this.app = app;
         this.firstRun = true;
         this.numPendingUiExecs = new AtomicInteger(0);
+    }
+    
+    public void setPluginIdWhitelist(Set<String> pluginIdWhitelist) {
+        this.pluginIdWhitelist = pluginIdWhitelist;
     }
 
     /**
@@ -192,7 +198,9 @@ public class PluginManager {
     public void startupPlugins() {
         for (PluginEntry entry : this.entries.values()) {
             if (entry.onload) {
-                entry.createPlugin(this.app, this.ctx);
+                if (pluginIdWhitelist == null || pluginIdWhitelist.contains(entry.service)) {
+                    entry.createPlugin(this.app, this.ctx);
+                }
             }
         }
     }
@@ -278,7 +286,11 @@ public class PluginManager {
         }
         CordovaPlugin plugin = entry.plugin;
         if (plugin == null) {
-            plugin = entry.createPlugin(this.app, this.ctx);
+            if (pluginIdWhitelist == null || pluginIdWhitelist.contains(entry.service)) {
+                plugin = entry.createPlugin(this.app, this.ctx);
+            } else {
+                Log.e(TAG, "Attempted to access non-whitelisted plugin: " + entry.service);
+            }
         }
         return plugin;
     }
