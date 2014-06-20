@@ -108,10 +108,6 @@ public interface CordovaWebView {
 
     boolean isCustomViewShowing();
 
-    boolean onKeyUp(int keyCode, KeyEvent event);
-
-    boolean onKeyDown(int keyCode, KeyEvent event);
-
     String exec(String service, String action, String callbackId, String message) throws JSONException;
 
     void setNativeToJsBridgeMode(int parseInt);

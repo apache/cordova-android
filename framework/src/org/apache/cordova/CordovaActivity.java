@@ -974,36 +974,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         this.runOnUiThread(runnable);
     }
 
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event)
-    {
-        if (appView != null && (appView.isCustomViewShowing() || appView.getFocusedChild() != null ) &&
-                (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
-            return appView.onKeyUp(keyCode, event);
-        } else {
-            return super.onKeyUp(keyCode, event);
-    	}
-    }
-    
-    /*
-     * Android 2.x needs to be able to check where the cursor is.  Android 4.x does not
-     * 
-     * (non-Javadoc)
-     * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
-     */
-    
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        //Determine if the focus is on the current view or not
-        if (appView != null && appView.getFocusedChild() != null && (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_MENU)) {
-                    return appView.onKeyDown(keyCode, event);
-        }
-        else
-            return super.onKeyDown(keyCode, event);
-    }
-    
-    
     /**
      * Called when a message is sent to plugin.
      *
