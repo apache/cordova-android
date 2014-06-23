@@ -17,8 +17,8 @@
        specific language governing permissions and limitations
        under the License.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:windowSoftInputMode="adjustPan"
-      package="__PACKAGE__" android:versionName="1.0" android:versionCode="1" android:hardwareAccelerated="true">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+  package="__PACKAGE__" android:versionName="1.0" android:versionCode="1" android:hardwareAccelerated="true">
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
@@ -38,6 +38,7 @@
                 android:label="@string/activity_name"
                 android:launchMode="singleTop"
                 android:theme="@android:style/Theme.Black.NoTitleBar"
+                android:windowSoftInputMode="adjustPan"
                 android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale">
             <intent-filter android:label="@string/launcher_name">
                 <action android:name="android.intent.action.MAIN" />

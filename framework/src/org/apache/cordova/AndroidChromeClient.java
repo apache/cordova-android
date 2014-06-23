@@ -107,6 +107,7 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
      * @param url
      * @param message
      * @param result
+     * @see Other implementation in the Dialogs plugin.
      */
     @Override
     public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
@@ -150,6 +151,7 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
      * @param url
      * @param message
      * @param result
+     * @see Other implementation in the Dialogs plugin.
      */
     @Override
     public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
@@ -204,6 +206,7 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
      * @param message
      * @param defaultValue
      * @param result
+     * @see Other implementation in the Dialogs plugin.
      */
     @Override
     public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {

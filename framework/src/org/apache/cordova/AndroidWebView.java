@@ -772,12 +772,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
                         return true;
                     }
                     // If not, then invoke default behavior
-                    else {
-                        //this.activityState = ACTIVITY_EXITING;
-                    	//return false;
-                    	// If they hit back button when app is initializing, app should exit instead of hang until initialization (CB2-458)
-                    	this.cordova.getActivity().finish();
-                    }
                 }
             }
         }
