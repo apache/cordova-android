@@ -113,18 +113,13 @@ function copyScripts(projectPath) {
  */
 function validatePackageName(package_name) {
     //Make the package conform to Java package types
-    if (!/[a-zA-Z0-9_]+\.[a-zA-Z0-9_](.[a-zA-Z0-9_])*/.test(package_name)) {
+    //Enforce underscore limitation
+    if (!/^[a-zA-Z]+(\.[a-zA-Z0-9][a-zA-Z0-9_]*)+$/.test(package_name)) {
         return Q.reject('Package name must look like: com.company.Name');
     }
 
-    //Enforce underscore limitation
-    if (/[_]+[a-zA-Z0-9_]*/.test(package_name)) {
-        return Q.reject("Package name can't begin with an underscore");
-    }
-
     //Class is a reserved word
-    if(/[C|c]+lass+[\s|\.]/.test(package_name) && !/[a-zA-Z0-9_]+[C|c]+lass/.test(package_name))
-    {
+    if(/\b[Cc]lass\b/.test(package_name)) {
         return Q.reject('class is a reserved word');
     }
 
@@ -137,6 +132,11 @@ function validatePackageName(package_name) {
  * otherwise.
  */
 function validateProjectName(project_name) {
+    //Make sure there's something there
+    if (project_name === '') {
+        return Q.reject('Project name cannot be empty');
+    }
+
     //Enforce stupid name error
     if (project_name === 'CordovaActivity') {
         return Q.reject('Project name cannot be CordovaActivity');
