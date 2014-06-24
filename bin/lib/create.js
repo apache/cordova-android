@@ -288,3 +288,7 @@ exports.updateProject = function(projectPath) {
     });
 };
 
+
+// For testing
+exports.validatePackageName = validatePackageName;
+exports.validateProjectName = validateProjectName;

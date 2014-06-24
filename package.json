@@ -12,10 +12,17 @@
     "cordova",
     "apache"
   ],
+  "scripts": {
+    "test": "jasmine-node --color spec"
+  },
   "author": "Apache Software Foundation",
   "license": "Apache version 2.0",
   "dependencies": {
     "q": "^0.9.0",
     "shelljs": "^0.2.6"
+  },
+  "devDependencies": {
+    "jasmine-node": "~1",
+    "promise-matchers": "~0"
   }
 }
