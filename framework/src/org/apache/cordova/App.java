@@ -32,6 +32,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.telephony.TelephonyManager;
+import android.view.KeyEvent;
 
 import java.util.HashMap;
 
@@ -217,7 +218,7 @@ public class App extends CordovaPlugin {
      */
     public void overrideBackbutton(boolean override) {
         LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
-        webView.bindButton(override);
+        webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, override);
     }
 
     /**
@@ -229,7 +230,12 @@ public class App extends CordovaPlugin {
      */
     public void overrideButton(String button, boolean override) {
         LOG.i("App", "WARNING: Volume Button Default Behavior will be overridden.  The volume event will be fired!");
-        webView.bindButton(button, override);
+        if (button.equals("volumeup")) {
+            webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_VOLUME_UP, override);
+        }
+        else if (button.equals("volumedown")) {
+            webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_VOLUME_DOWN, override);
+        }
     }
 
     /**
@@ -238,7 +244,7 @@ public class App extends CordovaPlugin {
      * @return boolean
      */
     public boolean isBackbuttonOverridden() {
-        return webView.isBackButtonBound();
+        return webView.isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK);
     }
 
     /**
