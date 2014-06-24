@@ -117,6 +117,50 @@ function copyGradleWrapper(sdkPath, projectPath) {
 }
 
 /**
+ * Test whether a package name is acceptable for use as an android project.
+ * Returns a promise, fulfilled if the package name is acceptable; rejected
+ * otherwise.
+ */
+function validatePackageName(package_name) {
+    //Make the package conform to Java package types
+    //Enforce underscore limitation
+    if (!/^[a-zA-Z]+(\.[a-zA-Z0-9][a-zA-Z0-9_]*)+$/.test(package_name)) {
+        return Q.reject('Package name must look like: com.company.Name');
+    }
+
+    //Class is a reserved word
+    if(/\b[Cc]lass\b/.test(package_name)) {
+        return Q.reject('class is a reserved word');
+    }
+
+    return Q.resolve();
+}
+
+/**
+ * Test whether a project name is acceptable for use as an android class.
+ * Returns a promise, fulfilled if the project name is acceptable; rejected
+ * otherwise.
+ */
+function validateProjectName(project_name) {
+    //Make sure there's something there
+    if (project_name === '') {
+        return Q.reject('Project name cannot be empty');
+    }
+
+    //Enforce stupid name error
+    if (project_name === 'CordovaActivity') {
+        return Q.reject('Project name cannot be CordovaActivity');
+    }
+
+    //Classes in Java don't begin with numbers
+    if (/^[0-9]/.test(project_name)) {
+        return Q.reject('Project name must not begin with a number');
+    }
+
+    return Q.resolve();
+}
+
+/**
  * $ create [options]
  *
  * Creates an android application with the given options.
@@ -156,34 +200,14 @@ exports.createProject = function(project_path, package_name, project_name, proje
     }
 
     //Make the package conform to Java package types
-    if (!/[a-zA-Z0-9_]+\.[a-zA-Z0-9_](.[a-zA-Z0-9_])*/.test(package_name)) {
-        return Q.reject('Package name must look like: com.company.Name');
-    }
-
-    //Enforce underscore limitation
-    if (/[_]+[a-zA-Z0-9_]*/.test(package_name)) {
-        return Q.reject("Package name can't begin with an underscore");
-    }
-
-    //Enforce stupid name error
-    if (project_name === 'CordovaActivity') {
-        return Q.reject('Project name cannot be CordovaActivity');
-    }
-
-    //Classes in Java don't begin with numbers
-    if (/[0-9]+[a-zA-Z0-9]/.test(project_name)) {
-        return Q.reject('Project name must not begin with a number');
-    }
-
-    //Class is a reserved word
-    if(/[C|c]+lass+[\s|\.]/.test(package_name) && !/[a-zA-Z0-9_]+[C|c]+lass/.test(package_name))
-    {
-        return Q.reject('class is a reserved word');
-    }
-
-    // Check that requirements are met and proper targets are installed
-    return check_reqs.run()
+    return validatePackageName(package_name)
     .then(function() {
+        validateProjectName(project_name);
+    })
+    // Check that requirements are met and proper targets are installed
+    .then(function() {
+        check_reqs.run();
+    }).then(function() {
         // Log the given values for the project
         console.log('Creating Cordova project for the Android platform:');
         console.log('\tPath: ' + project_path);
@@ -284,3 +308,7 @@ exports.updateProject = function(projectPath) {
     });
 };
 
+
+// For testing
+exports.validatePackageName = validatePackageName;
+exports.validateProjectName = validateProjectName;

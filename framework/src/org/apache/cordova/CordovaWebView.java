@@ -136,10 +136,8 @@ public interface CordovaWebView {
 
     CordovaResourceApi getResourceApi();
 
-    void bindButton(boolean override);
-    void bindButton(String button, boolean override);
-
-    boolean isBackButtonBound();
+    void setButtonPlumbedToJs(int keyCode, boolean override);
+    boolean isButtonPlumbedToJs(int keyCode);
 
     void sendPluginResult(PluginResult cr, String callbackId);
 
@@ -148,7 +146,6 @@ public interface CordovaWebView {
     void setLayoutParams(android.widget.FrameLayout.LayoutParams layoutParams);
     
     // Required for test
-    
     String getUrl();
     boolean isPaused();
 }

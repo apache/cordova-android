@@ -21,8 +21,8 @@ package org.apache.cordova;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 
 import org.apache.cordova.Config;
@@ -72,8 +72,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     public static final String TAG = "CordovaWebView";
     public static final String CORDOVA_VERSION = "4.0.0-dev";
 
-    private ArrayList<Integer> keyDownCodes = new ArrayList<Integer>();
-    private ArrayList<Integer> keyUpCodes = new ArrayList<Integer>();
+    private HashSet<Integer> boundKeyCodes = new HashSet<Integer>();
 
     PluginManager pluginManager;
     private boolean paused;
@@ -92,10 +91,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     // Flag to track that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
 
-    private boolean bound;
-
-    private boolean handleButton = false;
-    
     private long lastMenuEventTime = 0;
 
     NativeToJsMessageQueue jsMessageQueue;
@@ -708,17 +703,13 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
-        if(keyDownCodes.contains(keyCode))
+        if(boundKeyCodes.contains(keyCode))
         {
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                    // only override default behavior is event bound
-                    LOG.d(TAG, "Down Key Hit");
                     this.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
                     return true;
             }
-            // If volumeup key
             else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-                    LOG.d(TAG, "Up Key Hit");
                     this.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
                     return true;
             }
@@ -729,7 +720,8 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         }
         else if(keyCode == KeyEvent.KEYCODE_BACK)
         {
-            return !(this.startOfHistory()) || this.bound;
+            return !(this.startOfHistory()) || isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK);
+
         }
         else if(keyCode == KeyEvent.KEYCODE_MENU)
         {
@@ -746,10 +738,8 @@ public class AndroidWebView extends WebView implements CordovaWebView {
                 return super.onKeyDown(keyCode, event);
             }
         }
-        
         return super.onKeyDown(keyCode, event);
     }
-    
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event)
@@ -759,10 +749,11 @@ public class AndroidWebView extends WebView implements CordovaWebView {
             // A custom view is currently displayed  (e.g. playing a video)
             if(mCustomView != null) {
                 this.hideCustomView();
+                return true;
             } else {
                 // The webview is currently displayed
                 // If back key is bound, then send event to JavaScript
-                if (this.bound) {
+                if (isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK)) {
                     this.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
                     return true;
                 } else {
@@ -788,48 +779,31 @@ public class AndroidWebView extends WebView implements CordovaWebView {
             this.loadUrl("javascript:cordova.fireDocumentEvent('searchbutton');");
             return true;
         }
-        else if(keyUpCodes.contains(keyCode))
-        {
-            //What the hell should this do?
-            return super.onKeyUp(keyCode, event);
-        }
 
         //Does webkit change this behavior?
         return super.onKeyUp(keyCode, event);
     }
 
-    
-    public void bindButton(boolean override)
-    {
-        this.bound = override;
-    }
-
-    public void bindButton(String button, boolean override) {
-        // TODO Auto-generated method stub
-        if (button.compareTo("volumeup")==0) {
-          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_UP);
+    @Override
+    public void setButtonPlumbedToJs(int keyCode, boolean value) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            case KeyEvent.KEYCODE_BACK:
+                // TODO: Why are search and menu buttons handled separately?
+                boundKeyCodes.add(keyCode);
+                return;
+            default:
+                throw new IllegalArgumentException("Unsupported keycode: " + keyCode);
         }
-        else if (button.compareTo("volumedown")==0) {
-          keyDownCodes.add(KeyEvent.KEYCODE_VOLUME_DOWN);
-        }
-      }
-
-    public void bindButton(int keyCode, boolean keyDown, boolean override) {
-       if(keyDown)
-       {
-           keyDownCodes.add(keyCode);
-       }
-       else
-       {
-           keyUpCodes.add(keyCode);
-       }
     }
 
-    public boolean isBackButtonBound()
+    @Override
+    public boolean isButtonPlumbedToJs(int keyCode)
     {
-        return this.bound;
+        return boundKeyCodes.contains(keyCode);
     }
-    
+
     public void handlePause(boolean keepRunning)
     {
         LOG.d(TAG, "Handle the pause");
@@ -899,10 +873,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     public boolean isPaused()
     {
         return paused;
-    }
-
-    public boolean hadKeyEvent() {
-        return handleButton;
     }
 
     // Wrapping these functions in their own class prevents warnings in adb like:
