@@ -12,12 +12,6 @@ import android.webkit.WebChromeClient.CustomViewCallback;
 import android.widget.LinearLayout.LayoutParams;
 
 public interface CordovaWebView {
-
-    String OVER_SCROLL_NEVER = null;
-    Object pluginManager = null;
-    Object jsMessageQueue = null;
-
-    public static final String TAG = "CordovaWebView";
     public static final String CORDOVA_VERSION = "4.0.0-dev";
 
     View getView();
