@@ -280,14 +280,11 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
         super.onPageStarted(view, url, favicon);
         isCurrentlyLoading = true;
         LOG.d(TAG, "onPageStarted(" + url + ")");
-        // Flush stale messages.
-        this.appView.resetJsMessageQueue();
+        // Flush stale messages & reset plugins.
+        this.appView.onPageReset();
 
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageStarted", url);
-
-        // Notify all plugins of the navigation, so they can clean up if necessary.
-        this.appView.onReset();
     }
 
     /**

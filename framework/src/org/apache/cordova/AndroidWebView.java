@@ -1024,14 +1024,10 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         return this.pluginManager.onOverrideUrlLoading(url);
     }
 
-    @Override
-    public void resetJsMessageQueue() {
-        this.jsMessageQueue.reset();
-    }
-
-    @Override
-    public void onReset() {
-        this.pluginManager.onReset();
+    void onPageReset() {
+        boundKeyCodes.clear();
+        pluginManager.onReset();
+        jsMessageQueue.reset();
     }
 
     @Override

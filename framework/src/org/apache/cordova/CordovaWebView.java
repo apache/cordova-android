@@ -122,10 +122,6 @@ public interface CordovaWebView {
 
     boolean onOverrideUrlLoading(String url);
 
-    void resetJsMessageQueue();
-
-    void onReset();
-
     int getVisibility();
 
     void incUrlTimeout();
