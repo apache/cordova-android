@@ -124,15 +124,15 @@ public class Whitelist {
                     whiteList = null;
                 }
                 else { // specific access
-                    Pattern parts = Pattern.compile("^((\\*|[A-Za-z-]+)://)?(\\*|((\\*\\.)?[^*/:]+))?(:(\\d+))?(/.*)?");
+                    Pattern parts = Pattern.compile("^((\\*|[A-Za-z-]+):(//)?)?(\\*|((\\*\\.)?[^*/:]+))?(:(\\d+))?(/.*)?");
                     Matcher m = parts.matcher(origin);
                     if (m.matches()) {
                         String scheme = m.group(2);
-                        String host = m.group(3);
+                        String host = m.group(4);
                         // Special case for two urls which are allowed to have empty hosts
                         if (("file".equals(scheme) || "content".equals(scheme)) && host == null) host = "*";
-                        String port = m.group(7);
-                        String path = m.group(8);
+                        String port = m.group(8);
+                        String path = m.group(9);
                         if (scheme == null) {
                             // XXX making it stupid friendly for people who forget to include protocol/SSL
                             whiteList.add(new URLPattern("http", host, port, path));
