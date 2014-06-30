@@ -84,7 +84,7 @@ module.exports.check_android = function() {
         if (stderr.match(/command\snot\sfound/)) {
             return Q.reject(new Error('The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) is added to your path.'));
         } else {
-            return Q.reject(new Error('An error occurred while listing Android targets'));
+            return Q.reject(new Error('An error occurred while listing Android targets. Error: ' + stderr ));
         }
     });
 }
