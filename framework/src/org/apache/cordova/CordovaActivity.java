@@ -340,8 +340,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             }
         }
 
-        // Add web view but make it invisible while loading URL
-        this.appView.setVisibility(View.INVISIBLE);
+        // Add web view, and hide it when 'LoadingDialog' is enabled.
+        String loading = this.getStringProperty("LoadingDialog", null);
+        if (loading != null) this.appView.setVisibility(View.INVISIBLE);
         this.root.addView(this.appView);
         setContentView(this.root);
 
