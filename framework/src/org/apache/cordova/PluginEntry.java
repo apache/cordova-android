@@ -31,6 +31,11 @@ import org.apache.cordova.CordovaPlugin;
 public class PluginEntry {
 
     /**
+     * Factory object for creating plugins.
+     */
+    private PluginFactory pluginFactory;
+
+    /**
      * The name of the service that this plugin implements
      */
     public String service = "";
@@ -60,9 +65,26 @@ public class PluginEntry {
      * @param onload                Create plugin object when HTML page is loaded
      */
     public PluginEntry(String service, String pluginClass, boolean onload) {
+        this(service, pluginClass, onload, null);
+    }
+
+    /**
+     * Alternate constructor for `PluginFactory`
+     *
+     * @param service               The name of the service
+     * @param pluginClass           The plugin class name
+     * @param onload                Create plugin object when HTML page is loaded
+     * @param pluginFactory         Factory object for creating the plugins
+     */
+    public PluginEntry(String service, String pluginClass, boolean onload, PluginFactory pluginFactory) {
         this.service = service;
         this.pluginClass = pluginClass;
         this.onload = onload;
+        if(pluginFactory == null) {
+            this.pluginFactory = new PluginFactory();
+        } else {
+            this.pluginFactory = pluginFactory;
+        }
     }
 
     /**
@@ -88,45 +110,7 @@ public class PluginEntry {
         if (this.plugin != null) {
             return this.plugin;
         }
-        try {
-            @SuppressWarnings("rawtypes")
-            Class c = getClassByName(this.pluginClass);
-            if (isCordovaPlugin(c)) {
-                this.plugin = (CordovaPlugin) c.newInstance();
-                this.plugin.initialize(ctx, webView);
-                return plugin;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error adding plugin " + this.pluginClass + ".");
-        }
-        return null;
-    }
-
-    /**
-     * Get the class.
-     *
-     * @param clazz
-     * @return a reference to the named class
-     * @throws ClassNotFoundException
-     */
-    @SuppressWarnings("rawtypes")
-    private Class getClassByName(final String clazz) throws ClassNotFoundException {
-        Class c = null;
-        if ((clazz != null) && !("".equals(clazz))) {
-            c = Class.forName(clazz);
-        }
-        return c;
-    }
-
-    /**
-     * Returns whether the given class extends CordovaPlugin.
-     */
-    @SuppressWarnings("rawtypes")
-    private boolean isCordovaPlugin(Class c) {
-        if (c != null) {
-            return org.apache.cordova.CordovaPlugin.class.isAssignableFrom(c);
-        }
-        return false;
+        this.plugin = pluginFactory.createPlugin(this.service, this.pluginClass, webView, ctx);
+        return this.plugin;
     }
 }
