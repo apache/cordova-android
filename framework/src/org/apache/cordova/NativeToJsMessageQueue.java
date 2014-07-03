@@ -308,23 +308,28 @@ public class NativeToJsMessageQueue {
     /** Uses online/offline events to tell the JS when to poll for messages. */
     private class OnlineEventsBridgeMode extends BridgeMode {
         private boolean online;
-        final Runnable runnable = new Runnable() {
+        private boolean ignoreNextFlush;
+
+        final Runnable toggleNetworkRunnable = new Runnable() {
             public void run() {
                 if (!queue.isEmpty()) {
+                    ignoreNextFlush = false;
                     webView.setNetworkAvailable(online);
                 }
-            }                
+            }
         };
         @Override void reset() {
             online = false;
+            // If the following call triggers a notifyOfFlush, then ignore it.
+            ignoreNextFlush = true;
             webView.setNetworkAvailable(true);
         }
         @Override void onNativeToJsMessageAvailable() {
-            cordova.getActivity().runOnUiThread(runnable);
+            cordova.getActivity().runOnUiThread(toggleNetworkRunnable);
         }
         // Track when online/offline events are fired so that we don't fire excess events.
         @Override void notifyOfFlush(boolean fromOnlineEvent) {
-            if (fromOnlineEvent) {
+            if (fromOnlineEvent && !ignoreNextFlush) {
                 online = !online;
             }
         }
