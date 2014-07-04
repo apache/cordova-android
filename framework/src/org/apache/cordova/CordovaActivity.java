@@ -657,8 +657,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void onResume() {
         super.onResume();
         LOG.d(TAG, "Resuming the App");
-        //Reload the configuration
-        Config.init(this);
         
         if (this.activityState == ACTIVITY_STARTING) {
             this.activityState = ACTIVITY_RUNNING;
