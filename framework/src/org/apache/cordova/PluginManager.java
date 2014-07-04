@@ -23,10 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -65,8 +62,6 @@ public class PluginManager {
     // Using <url-filter> is deprecated.
     protected HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
 
-    private AtomicInteger numPendingUiExecs;
-    
     private Set<String> pluginIdWhitelist;
 
     /**
@@ -79,7 +74,6 @@ public class PluginManager {
         this.ctx = ctx;
         this.app = app;
         this.firstRun = true;
-        this.numPendingUiExecs = new AtomicInteger(0);
     }
     
     public void setPluginIdWhitelist(Set<String> pluginIdWhitelist) {
@@ -104,9 +98,6 @@ public class PluginManager {
             this.onDestroy();
             this.clearPluginObjects();
         }
-
-        // Insert PluginManager service
-        this.addService(new PluginEntry("PluginManager", new PluginManagerService()));
 
         // Start up all plugins that have onload specified
         this.startupPlugins();
@@ -224,20 +215,6 @@ public class PluginManager {
      *                      plugin execute method.
      */
     public void exec(final String service, final String action, final String callbackId, final String rawArgs) {
-        if (numPendingUiExecs.get() > 0) {
-            numPendingUiExecs.getAndIncrement();
-            this.ctx.getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    execHelper(service, action, callbackId, rawArgs);
-                    numPendingUiExecs.getAndDecrement();
-                }
-            });
-        } else {
-            execHelper(service, action, callbackId, rawArgs);
-        }
-    }
-
-    private void execHelper(final String service, final String action, final String callbackId, final String rawArgs) {
         CordovaPlugin plugin = getPlugin(service);
         if (plugin == null) {
             Log.d(TAG, "exec() call to unknown plugin: " + service);
@@ -448,27 +425,5 @@ public class PluginManager {
             }
         }
         return null;
-    }
-
-    private class PluginManagerService extends CordovaPlugin {
-        @Override
-        public boolean execute(String action, CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-            if ("startup".equals(action)) {
-                // The onPageStarted event of CordovaWebViewClient resets the queue of messages to be returned to javascript in response
-                // to exec calls. Since this event occurs on the UI thread and exec calls happen on the WebCore thread it is possible
-                // that onPageStarted occurs after exec calls have started happening on a new page, which can cause the message queue
-                // to be reset between the queuing of a new message and its retrieval by javascript. To avoid this from happening,
-                // javascript always sends a "startup" exec upon loading a new page which causes all future exec calls to happen on the UI
-                // thread (and hence after onPageStarted) until there are no more pending exec calls remaining.
-                numPendingUiExecs.getAndIncrement();
-                ctx.getActivity().runOnUiThread(new Runnable() {
-                    public void run() {
-                        numPendingUiExecs.getAndDecrement();
-                    }
-                });
-                return true;
-            }
-            return false;
-        }
     }
 }

@@ -19,17 +19,13 @@
 
 package org.apache.cordova;
 
-import org.json.JSONException;
-
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
 import android.webkit.WebView;
 
 public class CordovaUriHelper {
     
     private static final String TAG = "CordovaUriHelper";
-    private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     
     private CordovaWebView appView;
     private CordovaInterface cordova;
@@ -40,32 +36,6 @@ public class CordovaUriHelper {
         cordova = cdv;
     }
     
-    // Parses commands sent by setting the webView's URL to:
-    // cdvbrg:service/action/callbackId#jsonArgs
-    void handleExecUrl(String url) {
-        int idx1 = CORDOVA_EXEC_URL_PREFIX.length();
-        int idx2 = url.indexOf('#', idx1 + 1);
-        int idx3 = url.indexOf('#', idx2 + 1);
-        int idx4 = url.indexOf('#', idx3 + 1);
-        if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1) {
-            Log.e(TAG, "Could not decode URL command: " + url);
-            return;
-        }
-        String service    = url.substring(idx1, idx2);
-        String action     = url.substring(idx2 + 1, idx3);
-        String callbackId = url.substring(idx3 + 1, idx4);
-        String jsonArgs   = url.substring(idx4 + 1);
-        try {
-            appView.exec(service, action, callbackId, jsonArgs);
-            //There is no reason to not send this directly to the pluginManager
-            
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-    
-
     /**
      * Give the host application a chance to take over the control when a new url
      * is about to be loaded in the current WebView.
@@ -76,14 +46,10 @@ public class CordovaUriHelper {
      */
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         // The WebView should support http and https when going on the Internet
-        if(url.startsWith("http"))
+        if(url.startsWith("http:") || url.startsWith("https:"))
         {
-            // Check if it's an exec() bridge command message.
-            if (NativeToJsMessageQueue.ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
-                handleExecUrl(url);
-            }
             // We only need to whitelist sites on the Internet! 
-            else if(Config.isUrlWhiteListed(url))
+            if(Config.isUrlWhiteListed(url))
             {
                 return false;
             }
@@ -94,7 +60,9 @@ public class CordovaUriHelper {
         }
         else if(url.startsWith("file://") | url.startsWith("data:"))
         {
-            return false;
+            //This directory on WebKit/Blink based webviews contains SQLite databases!
+            //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
+            return url.contains("app_webview");
         }
         else
         {
@@ -109,5 +77,4 @@ public class CordovaUriHelper {
         //Default behaviour should be to load the default intent, let's see what happens! 
         return true;
     }
-
 }

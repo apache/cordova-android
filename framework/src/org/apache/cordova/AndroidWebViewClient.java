@@ -21,8 +21,6 @@ package org.apache.cordova;
 import java.io.ByteArrayInputStream;
 import java.util.Hashtable;
 
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,15 +30,14 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.net.http.SslError;
 import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
 
 /**
  * This class is the WebViewClient that implements callbacks for our web view.
@@ -56,8 +53,8 @@ import android.webkit.WebViewClient;
  */
 public class AndroidWebViewClient extends WebViewClient implements CordovaWebViewClient{
 
-	private static final String TAG = "AndroidWebViewClient";
-	private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
+    private static final String TAG = "AndroidWebViewClient";
+    private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
     CordovaInterface cordova;
     AndroidWebView appView;
     CordovaUriHelper helper;
@@ -98,30 +95,6 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
         helper = new CordovaUriHelper(cordova, view);
     }
 
-
-    // Parses commands sent by setting the webView's URL to:
-    // cdvbrg:service/action/callbackId#jsonArgs
-	private void handleExecUrl(String url) {
-		int idx1 = CORDOVA_EXEC_URL_PREFIX.length();
-		int idx2 = url.indexOf('#', idx1 + 1);
-		int idx3 = url.indexOf('#', idx2 + 1);
-		int idx4 = url.indexOf('#', idx3 + 1);
-		if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1) {
-			Log.e(TAG, "Could not decode URL command: " + url);
-			return;
-		}
-		String service    = url.substring(idx1, idx2);
-		String action     = url.substring(idx2 + 1, idx3);
-		String callbackId = url.substring(idx3 + 1, idx4);
-		String jsonArgs   = url.substring(idx4 + 1);
-        try {
-            appView.exec(service, action, callbackId, jsonArgs);
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-	}
-
     /**
      * Give the host application a chance to take over the control when a new url
      * is about to be loaded in the current WebView.
@@ -132,115 +105,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
      */
 	@Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-    	// Check if it's an exec() bridge command message.
-	    /*
-    	if (NativeToJsMessageQueue.ENABLE_LOCATION_CHANGE_EXEC_MODE && url.startsWith(CORDOVA_EXEC_URL_PREFIX)) {
-    		handleExecUrl(url);
-    	}
-
-        // Give plugins the chance to handle the url
-    	else if (this.appView.onOverrideUrlLoading(url)) {
-        }
-
-        // If dialing phone (tel:5551212)
-        else if (url.startsWith(WebView.SCHEME_TEL)) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse(url));
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error dialing " + url + ": " + e.toString());
-            }
-        }
-
-        // If displaying map (geo:0,0?q=address)
-        else if (url.startsWith("geo:")) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error showing map " + url + ": " + e.toString());
-            }
-        }
-
-        // If sending email (mailto:abc@corp.com)
-        else if (url.startsWith(WebView.SCHEME_MAILTO)) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error sending email " + url + ": " + e.toString());
-            }
-        }
-
-        // If sms:5551212?body=This is the message
-        else if (url.startsWith("sms:")) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-
-                // Get address
-                String address = null;
-                int parmIndex = url.indexOf('?');
-                if (parmIndex == -1) {
-                    address = url.substring(4);
-                }
-                else {
-                    address = url.substring(4, parmIndex);
-
-                    // If body, then set sms body
-                    Uri uri = Uri.parse(url);
-                    String query = uri.getQuery();
-                    if (query != null) {
-                        if (query.startsWith("body=")) {
-                            intent.putExtra("sms_body", query.substring(5));
-                        }
-                    }
-                }
-                intent.setData(Uri.parse("sms:" + address));
-                intent.putExtra("address", address);
-                intent.setType("vnd.android-dir/mms-sms");
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error sending sms " + url + ":" + e.toString());
-            }
-        }
-        
-        //Android Market
-        else if(url.startsWith("market:")) {
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                this.cordova.getActivity().startActivity(intent);
-            } catch (android.content.ActivityNotFoundException e) {
-                LOG.e(TAG, "Error loading Google Play Store: " + url, e);
-            }
-        }
-
-        // All else
-        else {
-
-            // If our app or file:, then load into a new Cordova webview container by starting a new instance of our activity.
-            // Our app continues to run.  When BACK is pressed, our app is redisplayed.
-            if (url.startsWith("file://") || url.startsWith("data:")  || Config.isUrlWhiteListed(url)) {
-                return false;
-            }
-
-            // If not our application, let default viewer handle
-            else {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    this.cordova.getActivity().startActivity(intent);
-                } catch (android.content.ActivityNotFoundException e) {
-                    LOG.e(TAG, "Error loading url " + url, e);
-                }
-            }
-        }
-        return true;
-        */
-	    return helper.shouldOverrideUrlLoading(view, url);
+        return helper.shouldOverrideUrlLoading(view, url);
     }
     
     /**
