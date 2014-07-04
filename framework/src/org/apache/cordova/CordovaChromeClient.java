@@ -28,6 +28,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -201,64 +202,75 @@ public class CordovaChromeClient extends WebChromeClient {
      * Since we are hacking prompts for our own purposes, we should not be using them for
      * this purpose, perhaps we should hack console.log to do this instead!
      *
-     * @param view
-     * @param url
-     * @param message
-     * @param defaultValue
-     * @param result
      * @see Other implementation in the Dialogs plugin.
      */
     @Override
-    public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-
-        // Security check to make sure any requests are coming from the page initially
-        // loaded in webview and not another loaded in an iframe.
-        boolean reqOk = false;
-        if (url.startsWith("file://") || Config.isUrlWhiteListed(url)) {
-            reqOk = true;
-        }
-
-        // Calling PluginManager.exec() to call a native service using 
-        // prompt(this.stringify(args), "gap:"+this.stringify([service, action, callbackId, true]));
-        if (reqOk && defaultValue != null && defaultValue.length() > 3 && defaultValue.substring(0, 4).equals("gap:")) {
+    public boolean onJsPrompt(WebView view, String origin, String message, String defaultValue, JsPromptResult result) {
+        // Unlike the @JavascriptInterface bridge, this method is always called on the UI thread.
+        if (defaultValue != null && defaultValue.length() > 3 && defaultValue.startsWith("gap:")) {
             JSONArray array;
             try {
                 array = new JSONArray(defaultValue.substring(4));
-                String service = array.getString(0);
-                String action = array.getString(1);
-                String callbackId = array.getString(2);
-                String r = this.appView.exposedJsApi.exec(service, action, callbackId, message);
+                int bridgeSecret = array.getInt(0);
+                String service = array.getString(1);
+                String action = array.getString(2);
+                String callbackId = array.getString(3);
+                String r = appView.exposedJsApi.exec(bridgeSecret, service, action, callbackId, message);
                 result.confirm(r == null ? "" : r);
             } catch (JSONException e) {
                 e.printStackTrace();
-                return false;
+                result.cancel();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                result.cancel();
             }
         }
 
         // Sets the native->JS bridge mode. 
-        else if (reqOk && defaultValue != null && defaultValue.equals("gap_bridge_mode:")) {
-        	try {
-                this.appView.exposedJsApi.setNativeToJsBridgeMode(Integer.parseInt(message));
-                result.confirm("");
-        	} catch (NumberFormatException e){
-                result.confirm("");
+        else if (defaultValue != null && defaultValue.startsWith("gap_bridge_mode:")) {
+            try {
+                int bridgeSecret = Integer.parseInt(defaultValue.substring(16));
+                appView.exposedJsApi.setNativeToJsBridgeMode(bridgeSecret, Integer.parseInt(message));
+                result.cancel();
+            } catch (NumberFormatException e){
                 e.printStackTrace();
-        	}
+                result.cancel();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                result.cancel();
+            }
         }
 
         // Polling for JavaScript messages 
-        else if (reqOk && defaultValue != null && defaultValue.equals("gap_poll:")) {
-            String r = this.appView.exposedJsApi.retrieveJsMessages("1".equals(message));
-            result.confirm(r == null ? "" : r);
+        else if (defaultValue != null && defaultValue.startsWith("gap_poll:")) {
+            int bridgeSecret = Integer.parseInt(defaultValue.substring(9));
+            try {
+                String r = appView.exposedJsApi.retrieveJsMessages(bridgeSecret, "1".equals(message));
+                result.confirm(r == null ? "" : r);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                result.cancel();
+            }
         }
 
-        // Do NO-OP so older code doesn't display dialog
-        else if (defaultValue != null && defaultValue.equals("gap_init:")) {
-            result.confirm("OK");
-        }
-
-        // Show dialog
-        else {
+        else if (defaultValue != null && defaultValue.startsWith("gap_init:")) {
+            String startUrl = Config.getStartUrl();
+            // Protect against random iframes being able to talk through the bridge.
+            // Trust only file URLs and the start URL's domain.
+            // The extra origin.startsWith("http") is to protect against iframes with data: having "" as origin.
+            if (origin.startsWith("file:") || (origin.startsWith("http") && startUrl.startsWith(origin))) {
+                // Enable the bridge
+                int bridgeMode = Integer.parseInt(defaultValue.substring(9));
+                appView.jsMessageQueue.setBridgeMode(bridgeMode);
+                // Tell JS the bridge secret.
+                int secret = appView.exposedJsApi.generateBridgeSecret();
+                result.confirm(""+secret);
+            } else {
+                Log.e(LOG_TAG, "gap_init called from restricted origin: " + origin);
+                result.cancel();
+            }
+        } else {
+            // Returning false would also show a dialog, but the default one shows the origin (ugly).
             final JsPromptResult res = result;
             AlertDialog.Builder dlg = new AlertDialog.Builder(this.cordova.getActivity());
             dlg.setMessage(message);
@@ -338,10 +350,10 @@ public class CordovaChromeClient extends WebChromeClient {
         this.appView.showCustomView(view, callback);
     }
 
-	@Override
-	public void onHideCustomView() {
-    	this.appView.hideCustomView();
-	}
+    @Override
+    public void onHideCustomView() {
+        this.appView.hideCustomView();
+    }
     
     @Override
     /**
@@ -351,24 +363,24 @@ public class CordovaChromeClient extends WebChromeClient {
      */
     public View getVideoLoadingProgressView() {
 
-	    if (mVideoProgressView == null) {	        
-	    	// Create a new Loading view programmatically.
-	    	
-	    	// create the linear layout
-	    	LinearLayout layout = new LinearLayout(this.appView.getContext());
-	        layout.setOrientation(LinearLayout.VERTICAL);
-	        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-	        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-	        layout.setLayoutParams(layoutParams);
-	        // the proress bar
-	        ProgressBar bar = new ProgressBar(this.appView.getContext());
-	        LinearLayout.LayoutParams barLayoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-	        barLayoutParams.gravity = Gravity.CENTER;
-	        bar.setLayoutParams(barLayoutParams);   
-	        layout.addView(bar);
-	        
-	        mVideoProgressView = layout;
-	    }
+        if (mVideoProgressView == null) {            
+            // Create a new Loading view programmatically.
+            
+            // create the linear layout
+            LinearLayout layout = new LinearLayout(this.appView.getContext());
+            layout.setOrientation(LinearLayout.VERTICAL);
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+            layout.setLayoutParams(layoutParams);
+            // the proress bar
+            ProgressBar bar = new ProgressBar(this.appView.getContext());
+            LinearLayout.LayoutParams barLayoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            barLayoutParams.gravity = Gravity.CENTER;
+            bar.setLayoutParams(barLayoutParams);   
+            layout.addView(bar);
+            
+            mVideoProgressView = layout;
+        }
     return mVideoProgressView; 
     }
     

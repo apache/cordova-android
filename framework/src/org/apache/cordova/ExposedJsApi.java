@@ -19,6 +19,7 @@
 package org.apache.cordova;
 
 import android.webkit.JavascriptInterface;
+
 import org.apache.cordova.PluginManager;
 import org.json.JSONException;
 
@@ -31,6 +32,7 @@ import org.json.JSONException;
     
     private PluginManager pluginManager;
     private NativeToJsMessageQueue jsMessageQueue;
+    private volatile int bridgeSecret = -1; // written by UI thread, read by JS thread.
     
     public ExposedJsApi(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue) {
         this.pluginManager = pluginManager;
@@ -38,7 +40,8 @@ import org.json.JSONException;
     }
 
     @JavascriptInterface
-    public String exec(String service, String action, String callbackId, String arguments) throws JSONException {
+    public String exec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
+        verifySecret(bridgeSecret);
         // If the arguments weren't received, send a message back to JS.  It will switch bridge modes and try again.  See CB-2666.
         // We send a message meant specifically for this case.  It starts with "@" so no other message can be encoded into the same string.
         if (arguments == null) {
@@ -65,12 +68,31 @@ import org.json.JSONException;
     }
     
     @JavascriptInterface
-    public void setNativeToJsBridgeMode(int value) {
+    public void setNativeToJsBridgeMode(int bridgeSecret, int value) throws IllegalAccessException {
+        verifySecret(bridgeSecret);
         jsMessageQueue.setBridgeMode(value);
     }
     
     @JavascriptInterface
-    public String retrieveJsMessages(boolean fromOnlineEvent) {
+    public String retrieveJsMessages(int bridgeSecret, boolean fromOnlineEvent) throws IllegalAccessException {
+        verifySecret(bridgeSecret);
         return jsMessageQueue.popAndEncode(fromOnlineEvent);
+    }
+
+    private void verifySecret(int value) throws IllegalAccessException {
+        if (bridgeSecret < 0 || value != bridgeSecret) {
+            throw new IllegalAccessException();
+        }
+    }
+
+    /** Called on page transitions */
+    void clearBridgeSecret() {
+        bridgeSecret = -1;
+    }
+
+    /** Called by cordova.js to initialize the bridge. */
+    int generateBridgeSecret() {
+        bridgeSecret = (int)(Math.random() * Integer.MAX_VALUE);
+        return bridgeSecret;
     }
 }

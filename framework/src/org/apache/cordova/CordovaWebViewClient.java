@@ -18,7 +18,6 @@
 */
 package org.apache.cordova;
 
-import java.io.ByteArrayInputStream;
 import java.util.Hashtable;
 
 import org.apache.cordova.CordovaInterface;
@@ -28,18 +27,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.net.http.SslError;
 import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -170,6 +166,7 @@ public class CordovaWebViewClient extends WebViewClient {
         LOG.d(TAG, "onPageStarted(" + url + ")");
         // Flush stale messages.
         this.appView.jsMessageQueue.reset();
+        this.appView.exposedJsApi.clearBridgeSecret();
 
         // Broadcast message that page has loaded
         this.appView.postMessage("onPageStarted", url);
