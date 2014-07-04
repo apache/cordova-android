@@ -709,16 +709,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     protected void onResume() {
         super.onResume();
+        LOG.d(TAG, "Resuming the App");
         //Reload the configuration
         Config.init(this);
-
-        LOG.d(TAG, "Resuming the App");
         
-
-        //Code to test CB-3064
-        String errorUrl = Config.getErrorUrl();
-        LOG.d(TAG, "CB-3064: The errorUrl is " + errorUrl);
-          
         if (this.activityState == ACTIVITY_STARTING) {
             this.activityState = ACTIVITY_RUNNING;
             return;
