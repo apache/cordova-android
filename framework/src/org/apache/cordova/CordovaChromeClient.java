@@ -22,6 +22,5 @@ import android.net.Uri;
 import android.webkit.ValueCallback;
 
 public interface CordovaChromeClient {
-    void setWebView(CordovaWebView appView);
     ValueCallback<Uri> getValueCallback();
 }

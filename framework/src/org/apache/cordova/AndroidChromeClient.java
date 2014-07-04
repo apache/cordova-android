@@ -65,7 +65,7 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
     private static final String LOG_TAG = "CordovaChromeClient";
     private long MAX_QUOTA = 100 * 1024 * 1024;
     protected CordovaInterface cordova;
-    protected CordovaWebView appView;
+    protected AndroidWebView appView;
 
     // the video progress view
     private View mVideoProgressView;
@@ -75,31 +75,13 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
     
     /**
      * Constructor.
-     *
-     * @param cordova
-     */
-    public AndroidChromeClient(CordovaInterface cordova) {
-        this.cordova = cordova;
-    }
-
-    /**
-     * Constructor.
      * 
      * @param ctx
      * @param app
      */
-    public AndroidChromeClient(CordovaInterface ctx, CordovaWebView app) {
+    public AndroidChromeClient(CordovaInterface ctx, AndroidWebView app) {
         this.cordova = ctx;
         this.appView = app;
-    }
-
-    /**
-     * Constructor.
-     * 
-     * @param view
-     */
-    public void setWebView(CordovaWebView view) {
-        this.appView = view;
     }
 
     /**

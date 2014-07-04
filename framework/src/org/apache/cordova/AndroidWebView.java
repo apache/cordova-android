@@ -93,7 +93,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     private long lastMenuEventTime = 0;
 
     NativeToJsMessageQueue jsMessageQueue;
-    ExposedJsApi exposedJsApi;
+    AndroidExposedJsApi exposedJsApi;
 
     /** custom view created by the browser (a video player for example) */
     private View mCustomView;
@@ -235,7 +235,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
      */
     @Override
     public CordovaChromeClient makeWebChromeClient() {
-        return (CordovaChromeClient) new AndroidChromeClient(this.cordova);
+        return (CordovaChromeClient) new AndroidChromeClient(this.cordova, this);
     }
 
     /**
@@ -989,22 +989,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     public CordovaPlugin getPlugin(String initCallbackClass) {
         // TODO Auto-generated method stub
         return this.pluginManager.getPlugin(initCallbackClass);
-    }
-
-    @Override
-    public String exec(String service, String action, String callbackId,
-            String message) throws JSONException {
-        return this.exposedJsApi.exec(service, action, callbackId, message);
-    }
-
-    @Override
-    public void setNativeToJsBridgeMode(int parseInt) {
-        this.exposedJsApi.setNativeToJsBridgeMode(parseInt);
-    }
-
-    @Override
-    public String retrieveJsMessages(boolean equals) {
-        return this.exposedJsApi.retrieveJsMessages(equals);
     }
 
     @Override

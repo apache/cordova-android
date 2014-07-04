@@ -753,7 +753,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         LOG.d(TAG, "Incoming Result");
         super.onActivityResult(requestCode, resultCode, intent);
         Log.d(TAG, "Request code = " + requestCode);
-        if (appView != null && requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
+        if (appView != null && requestCode == AndroidChromeClient.FILECHOOSER_RESULTCODE) {
         	ValueCallback<Uri> mUploadMessage = ((CordovaChromeClient) this.appView.getWebChromeClient()).getValueCallback();
             Log.d(TAG, "did we get here?");
             if (null == mUploadMessage)

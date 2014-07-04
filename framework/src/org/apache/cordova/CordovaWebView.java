@@ -102,12 +102,6 @@ public interface CordovaWebView {
 
     boolean isCustomViewShowing();
 
-    String exec(String service, String action, String callbackId, String message) throws JSONException;
-
-    void setNativeToJsBridgeMode(int parseInt);
-
-    String retrieveJsMessages(boolean equals);
-
     void showCustomView(View view, CustomViewCallback callback);
 
     void hideCustomView();
