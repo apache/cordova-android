@@ -18,8 +18,6 @@
  */
 package org.apache.cordova;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -31,11 +29,8 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginEntry;
 import org.apache.cordova.PluginResult;
 import org.json.JSONException;
-import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Intent;
-import android.content.res.XmlResourceParser;
-
 import android.net.Uri;
 import android.os.Debug;
 import android.util.Log;
@@ -56,23 +51,13 @@ public class PluginManager {
     private final CordovaInterface ctx;
     private final CordovaWebView app;
 
-    // Flag to track first time through
-    private boolean firstRun;
-
     // Stores mapping of Plugin Name -> <url-filter> values.
     // Using <url-filter> is deprecated.
-    protected HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
+    protected HashMap<String, List<String>> urlMap;
 
-    /**
-     * Constructor.
-     *
-     * @param app
-     * @param ctx
-     */
     public PluginManager(CordovaWebView app, CordovaInterface ctx) {
         this.ctx = ctx;
         this.app = app;
-        this.firstRun = true;
     }
 
     /**
@@ -82,9 +67,8 @@ public class PluginManager {
         LOG.d(TAG, "init()");
 
         // If first time, then load plugins from config.xml file
-        if (this.firstRun) {
+        if (urlMap == null) {
             this.loadPlugins();
-            this.firstRun = false;
         }
 
         // Stop plugins on current HTML page and discard plugin objects
@@ -102,72 +86,12 @@ public class PluginManager {
      * Load plugins from res/xml/config.xml
      */
     public void loadPlugins() {
-        // First checking the class namespace for config.xml
-        int id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getClass().getPackage().getName());
-        if (id == 0) {
-            // If we couldn't find config.xml there, we'll look in the namespace from AndroidManifest.xml
-            id = this.ctx.getActivity().getResources().getIdentifier("config", "xml", this.ctx.getActivity().getPackageName());
-            if (id == 0) {
-                this.pluginConfigurationMissing();
-                //We have the error, we need to exit without crashing!
-                return;
-            }
-        }
-        XmlResourceParser xml = this.ctx.getActivity().getResources().getXml(id);
-        int eventType = -1;
-        String service = "", pluginClass = "", paramType = "";
-        boolean onload = false;
-        boolean insideFeature = false;
-        while (eventType != XmlResourceParser.END_DOCUMENT) {
-            if (eventType == XmlResourceParser.START_TAG) {
-                String strNode = xml.getName();
-                if (strNode.equals("url-filter")) {
-                    Log.w(TAG, "Plugin " + service + " is using deprecated tag <url-filter>");
-                    if (urlMap.get(service) == null) {
-                        urlMap.put(service, new ArrayList<String>(2));
-                    }
-                    List<String> filters = urlMap.get(service);
-                    filters.add(xml.getAttributeValue(null, "value"));
-                }
-                else if (strNode.equals("feature")) {
-                    //Check for supported feature sets  aka. plugins (Accelerometer, Geolocation, etc)
-                    //Set the bit for reading params
-                    insideFeature = true;
-                    service = xml.getAttributeValue(null, "name");
-                }
-                else if (insideFeature && strNode.equals("param")) {
-                    paramType = xml.getAttributeValue(null, "name");
-                    if (paramType.equals("service")) // check if it is using the older service param
-                        service = xml.getAttributeValue(null, "value");
-                    else if (paramType.equals("package") || paramType.equals("android-package"))
-                        pluginClass = xml.getAttributeValue(null,"value");
-                    else if (paramType.equals("onload"))
-                        onload = "true".equals(xml.getAttributeValue(null, "value"));
-                }
-            }
-            else if (eventType == XmlResourceParser.END_TAG)
-            {
-                String strNode = xml.getName();
-                if (strNode.equals("feature") || strNode.equals("plugin"))
-                {
-                    PluginEntry entry = new PluginEntry(service, pluginClass, onload);
-                    this.addService(entry);
-
-                    //Empty the strings to prevent plugin loading bugs
-                    service = "";
-                    pluginClass = "";
-                    insideFeature = false;
-                    onload = false;
-                }
-            }
-            try {
-                eventType = xml.next();
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    	ConfigXmlParser parser = new ConfigXmlParser();
+    	parser.parse(ctx.getActivity());
+    	for (PluginEntry entry : parser.getPluginEntries()) {
+    		addService(entry);
+    	}
+    	urlMap = parser.getPluginUrlMap();
     }
 
     /**
@@ -394,14 +318,6 @@ public class PluginManager {
                 plugin.onReset();
             }
         }
-    }
-
-
-    private void pluginConfigurationMissing() {
-        LOG.e(TAG, "=====================================================================================");
-        LOG.e(TAG, "ERROR: config.xml is missing.  Add res/xml/config.xml to your project.");
-        LOG.e(TAG, "https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=blob;f=framework/res/xml/config.xml");
-        LOG.e(TAG, "=====================================================================================");
     }
 
     Uri remapUri(Uri uri) {
