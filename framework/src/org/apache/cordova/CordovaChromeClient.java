@@ -72,31 +72,17 @@ public class CordovaChromeClient extends WebChromeClient {
     // File Chooser
     public ValueCallback<Uri> mUploadMessage;
     
-    /**
-     * Constructor.
-     *
-     * @param cordova
-     */
+    @Deprecated
     public CordovaChromeClient(CordovaInterface cordova) {
         this.cordova = cordova;
     }
 
-    /**
-     * Constructor.
-     * 
-     * @param ctx
-     * @param app
-     */
     public CordovaChromeClient(CordovaInterface ctx, CordovaWebView app) {
         this.cordova = ctx;
         this.appView = app;
     }
 
-    /**
-     * Constructor.
-     * 
-     * @param view
-     */
+    @Deprecated
     public void setWebView(CordovaWebView view) {
         this.appView = view;
     }

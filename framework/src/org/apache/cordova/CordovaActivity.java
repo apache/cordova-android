@@ -18,8 +18,8 @@
 */
 package org.apache.cordova;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -72,9 +72,8 @@ import android.widget.LinearLayout;
  *       &#64;Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
- *         super.init();
  *         // Load your application
- *         super.loadUrl(Config.getStartUrl());
+ *         loadUrl(launchUrl);
  *       }
  *     }
  * </pre>
@@ -110,10 +109,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected CordovaPlugin activityResultCallback = null;
     protected boolean activityResultKeepRunning;
 
-    // Default background color for activity
-    // (this is not the color for the webview, which is set in HTML)
-    private int backgroundColor = Color.BLACK;
-
     /*
      * The variables below are used to cache some of the activity properties.
      */
@@ -132,6 +127,12 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected boolean keepRunning = true;
 
     private String initCallbackClass;
+
+    // Read from config.xml:
+    protected CordovaPreferences preferences;
+    protected Whitelist whitelist;
+    protected String launchUrl;
+    protected ArrayList<PluginEntry> pluginEntries;
 
     /**
     * Sets the authentication token.
@@ -194,10 +195,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Called when the activity is first created.
      */
-    @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Config.init(this);
         LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebView.CORDOVA_VERSION + " is starting");
         LOG.d(TAG, "CordovaActivity.onCreate()");
         super.onCreate(savedInstanceState);
@@ -207,17 +206,19 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             initCallbackClass = savedInstanceState.getString("callbackClass");
         }
         
-        if(!this.getBooleanProperty("ShowTitle", false))
+        loadConfig();
+
+        if(!preferences.getBoolean("ShowTitle", false))
         {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
 
-        if(this.getBooleanProperty("SetFullscreen", false))
+        if(preferences.getBoolean("SetFullscreen", false))
         {
             Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else if (this.getBooleanProperty("Fullscreen", false)) {
+        } else if (preferences.getBoolean("Fullscreen", false)) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
@@ -225,6 +226,35 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         }
 
+        appView = makeWebView();
+        appView.init(this, makeWebViewClient(appView), makeChromeClient(appView), pluginEntries);
+
+        // TODO: Have the views set this themselves.
+        if (preferences.getBoolean("DisallowOverscroll", false)) {
+            appView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        }
+        createViews();
+
+        // TODO: Make this a preference (CB-6153)
+        // Setup the hardware volume controls to handle volume control
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+    }
+
+    protected void loadConfig() {
+        ConfigXmlParser parser = new ConfigXmlParser();
+        parser.parse(this);
+        preferences = parser.getPreferences();
+        preferences.setPreferencesBundle(getIntent().getExtras());
+        preferences.copyIntoIntentExtras(this);
+        whitelist = parser.getWhitelist();
+        launchUrl = parser.getLaunchUrl();
+        pluginEntries = parser.getPluginEntries();
+        Config.parser = parser;
+    }
+
+    @SuppressWarnings("deprecation")
+    protected void createViews() {
+        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
         // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
         Display display = getWindowManager().getDefaultDisplay();
         int width = display.getWidth();
@@ -232,12 +262,23 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         root = new LinearLayoutSoftKeyboardDetect(this, width, height);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(this.backgroundColor);
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
 
-        // Setup the hardware volume controls to handle volume control
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        appView.setId(100);
+        appView.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                1.0F));
+
+        // Add web view but make it invisible while loading URL
+        appView.setVisibility(View.INVISIBLE);
+        root.addView((View) appView);
+        setContentView(root);
+
+        // TODO: Setting this on the appView causes it to show when <html style="opacity:0">.
+        int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
+        root.setBackgroundColor(backgroundColor);
     }
 
     /**
@@ -266,11 +307,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param webView the default constructed web view object
      */
     protected CordovaWebViewClient makeWebViewClient(CordovaWebView webView) {
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            return new CordovaWebViewClient(this, webView);
-        } else {
-            return new IceCreamCordovaWebViewClient(this, webView);
-        }
+        return webView.makeWebViewClient(this);
     }
 
     /**
@@ -282,78 +319,46 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param webView the default constructed web view object
      */
     protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
-        return new CordovaChromeClient(this, webView);
+        return webView.makeChromeClient(this);
     }
 
-    /**
-     * Create and initialize web container with default web view objects.
-     */
+    @Deprecated // No need to call init() anymore.
     public void init() {
-        CordovaWebView webView = makeWebView();
-        this.init(webView, makeWebViewClient(webView), makeChromeClient(webView));
+        this.init(appView, null, null);
     }
 
-    /**
-     * Initialize web container with web view objects.
-     *
-     * @param webView
-     * @param webViewClient
-     * @param webChromeClient
-     */
     @SuppressLint("NewApi")
+    @Deprecated // No need to call init() anymore.
     public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
         LOG.d(TAG, "CordovaActivity.init()");
 
-        // Set up web container
-        this.appView = webView;
-        this.appView.setId(100);
+        appView = webView;
 
-        this.appView.setWebViewClient(webViewClient);
-        this.appView.setWebChromeClient(webChromeClient);
-        webViewClient.setWebView(this.appView);
-        webChromeClient.setWebView(this.appView);
-
-        this.appView.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                1.0F));
-
-        if (this.getBooleanProperty("DisallowOverscroll", false)) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.GINGERBREAD) {
-                this.appView.setOverScrollMode(CordovaWebView.OVER_SCROLL_NEVER);
-            }
+        if (webViewClient != null) {
+            this.appView.setWebViewClient(webViewClient);
+            webViewClient.setWebView(this.appView);
         }
-
-        // Add web view but make it invisible while loading URL
-        this.appView.setVisibility(View.INVISIBLE);
-        this.root.addView(this.appView);
-        setContentView(this.root);
+        if (webChromeClient != null) {
+            this.appView.setWebChromeClient(webChromeClient);
+            webChromeClient.setWebView(this.appView);
+        }
     }
 
     /**
      * Load the url into the webview.
      */
     public void loadUrl(String url) {
-
-        // Init web view if not already done
-        if (this.appView == null) {
-            this.init();
-        }
-
-        this.splashscreenTime = this.getIntegerProperty("SplashScreenDelay", this.splashscreenTime);
-        if(this.splashscreenTime > 0)
+        this.splashscreenTime = preferences.getInteger("SplashScreenDelay", this.splashscreenTime);
+        String splash = preferences.getString("SplashScreen", null);
+        if(this.splashscreenTime > 0 && splash != null)
         {
-            this.splashscreen = this.getIntegerProperty("SplashScreen", 0);
+            this.splashscreen = getResources().getIdentifier(splash, "drawable", getClass().getPackage().getName());;
             if(this.splashscreen != 0)
             {
                 this.showSplashScreen(this.splashscreenTime);
             }
         }
         
-        // Set backgroundColor
-        this.backgroundColor = this.getIntegerProperty("BackgroundColor", Color.BLACK);
-        this.root.setBackgroundColor(this.backgroundColor);
-
         // If keepRunning
         this.keepRunning = this.getBooleanProperty("KeepRunning", true);
 
@@ -430,9 +435,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     @Deprecated // Call method on appView directly.
     public void clearCache() {
-        if (this.appView == null) {
-            this.init();
-        }
         this.appView.clearCache(true);
     }
 
@@ -459,103 +461,34 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     /**
      * Get boolean property for activity.
-     *
-     * @param name
-     * @param defaultValue
-     * @return the boolean value of the named property
      */
+    @Deprecated // Call method on preferences directly.
     public boolean getBooleanProperty(String name, boolean defaultValue) {
-        Bundle bundle = this.getIntent().getExtras();
-        if (bundle == null) {
-            return defaultValue;
-        }
-        name = name.toLowerCase(Locale.getDefault());
-        Boolean p;
-        try {
-            p = (Boolean) bundle.get(name);
-        } catch (ClassCastException e) {
-            String s = bundle.get(name).toString();
-            if ("true".equals(s)) {
-                p = true;
-            }
-            else {
-                p = false;
-            }
-        }
-        if (p == null) {
-            return defaultValue;
-        }
-        return p.booleanValue();
+        return preferences.getBoolean(name, defaultValue);
     }
 
     /**
      * Get int property for activity.
-     *
-     * @param name
-     * @param defaultValue
-     * @return the int value for the named property
      */
+    @Deprecated // Call method on preferences directly.
     public int getIntegerProperty(String name, int defaultValue) {
-        Bundle bundle = this.getIntent().getExtras();
-        if (bundle == null) {
-            return defaultValue;
-        }
-        name = name.toLowerCase(Locale.getDefault());
-        Integer p;
-        try {
-            p = (Integer) bundle.get(name);
-        } catch (ClassCastException e) {
-            p = Integer.parseInt(bundle.get(name).toString());
-        }
-        if (p == null) {
-            return defaultValue;
-        }
-        return p.intValue();
+        return preferences.getInteger(name, defaultValue);
     }
 
     /**
      * Get string property for activity.
-     *
-     * @param name
-     * @param defaultValue
-     * @return the String value for the named property
      */
+    @Deprecated // Call method on preferences directly.
     public String getStringProperty(String name, String defaultValue) {
-        Bundle bundle = this.getIntent().getExtras();
-        if (bundle == null) {
-            return defaultValue;
-        }
-        name = name.toLowerCase(Locale.getDefault());
-        String p = bundle.getString(name);
-        if (p == null) {
-            return defaultValue;
-        }
-        return p;
+        return preferences.getString(name, defaultValue);
     }
 
     /**
      * Get double property for activity.
-     *
-     * @param name
-     * @param defaultValue
-     * @return the double value for the named property
      */
+    @Deprecated // Call method on preferences directly.
     public double getDoubleProperty(String name, double defaultValue) {
-        Bundle bundle = this.getIntent().getExtras();
-        if (bundle == null) {
-            return defaultValue;
-        }
-        name = name.toLowerCase(Locale.getDefault());
-        Double p;
-        try {
-            p = (Double) bundle.get(name);
-        } catch (ClassCastException e) {
-            p = Double.parseDouble(bundle.get(name).toString());
-        }
-        if (p == null) {
-            return defaultValue;
-        }
-        return p.doubleValue();
+        return preferences.getDouble(name, defaultValue);
     }
 
     /**

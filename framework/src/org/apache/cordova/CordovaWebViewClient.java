@@ -64,11 +64,7 @@ public class CordovaWebViewClient extends WebViewClient {
     /** The authorization tokens. */
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
 
-    /**
-     * Constructor.
-     *
-     * @param cordova
-     */
+    @Deprecated
     public CordovaWebViewClient(CordovaInterface cordova) {
         this.cordova = cordova;
     }
@@ -90,6 +86,7 @@ public class CordovaWebViewClient extends WebViewClient {
      *
      * @param view
      */
+    @Deprecated
     public void setWebView(CordovaWebView view) {
         this.appView = view;
         helper = new CordovaUriHelper(cordova, view);

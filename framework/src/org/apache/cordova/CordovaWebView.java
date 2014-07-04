@@ -21,9 +21,12 @@ package org.apache.cordova;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.cordova.Config;
 import org.apache.cordova.CordovaInterface;
@@ -122,114 +125,51 @@ public class CordovaWebView extends WebView {
             ViewGroup.LayoutParams.MATCH_PARENT,
             Gravity.CENTER);
     
-    /**
-     * Constructor.
-     *
-     * @param context
-     */
     public CordovaWebView(Context context) {
-        super(context);
-        if (CordovaInterface.class.isInstance(context))
-        {
-            this.cordova = (CordovaInterface) context;
-        }
-        else
-        {
-            Log.d(TAG, "Your activity must implement CordovaInterface to work");
-        }
-        this.setup();
+        this(context, null);
     }
 
-    /**
-     * Constructor.
-     *
-     * @param context
-     * @param attrs
-     */
     public CordovaWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        if (CordovaInterface.class.isInstance(context))
-        {
-            this.cordova = (CordovaInterface) context;
-        }
-        else
-        {
-            Log.d(TAG, "Your activity must implement CordovaInterface to work");
-        }
-        this.setWebChromeClient(new CordovaChromeClient(this.cordova, this));
-        this.initWebViewClient(this.cordova);
-        this.setup();
     }
 
-    /**
-     * Constructor.
-     *
-     * @param context
-     * @param attrs
-     * @param defStyle
-     *
-     */
+    @Deprecated
     public CordovaWebView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        if (CordovaInterface.class.isInstance(context))
-        {
-            this.cordova = (CordovaInterface) context;
-        }
-        else
-        {
-            Log.d(TAG, "Your activity must implement CordovaInterface to work");
-        }
-        this.setWebChromeClient(new CordovaChromeClient(this.cordova, this));
-        this.setup();
     }
 
-    /**
-     * Constructor.
-     *
-     * @param context
-     * @param attrs
-     * @param defStyle
-     * @param privateBrowsing
-     */
     @TargetApi(11)
+    @Deprecated
     public CordovaWebView(Context context, AttributeSet attrs, int defStyle, boolean privateBrowsing) {
         super(context, attrs, defStyle, privateBrowsing);
-        if (CordovaInterface.class.isInstance(context))
-        {
-            this.cordova = (CordovaInterface) context;
-        }
-        else
-        {
-            Log.d(TAG, "Your activity must implement CordovaInterface to work");
-        }
-        this.setWebChromeClient(new CordovaChromeClient(this.cordova));
-        this.initWebViewClient(this.cordova);
-        this.setup();
     }
 
-    /**
-     * set the WebViewClient, but provide special case handling for IceCreamSandwich.
-     */
-    private void initWebViewClient(CordovaInterface cordova) {
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB ||
-                android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
-        {
-            this.setWebViewClient(new CordovaWebViewClient(this.cordova, this));
+    // Use two-phase init so that the control will work with XML layouts.
+    public void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient chromeClient, List<PluginEntry> pluginEntries) {
+        if (this.cordova != null) {
+            throw new IllegalStateException();
         }
-        else
-        {
-            this.setWebViewClient(new IceCreamCordovaWebViewClient(this.cordova, this));
-        }
+        this.cordova = cordova;
+        this.viewClient = webViewClient;
+        this.chromeClient = chromeClient;
+        super.setWebChromeClient(chromeClient);
+        super.setWebViewClient(webViewClient);
+
+        pluginManager = new PluginManager(this, this.cordova, pluginEntries);
+        jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
+        exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
+        resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
+
+        initWebViewSettings();
+        exposeJsInterface();
     }
 
-    /**
-     * Initialize webview.
-     */
+    @SuppressLint("SetJavaScriptEnabled")
     @SuppressWarnings("deprecation")
-    @SuppressLint("NewApi")
-    private void setup() {
+    private void initWebViewSettings() {
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
+        // TODO: The Activity is the one that should call requestFocus().
         if (shouldRequestFocusOnInit()) {
 			this.requestFocusFromTouch();
 		}
@@ -270,31 +210,17 @@ public class CordovaWebView extends WebView {
             Level16Apis.enableUniversalAccess(settings);
         // Enable database
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
-        String databasePath = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
+        String databasePath = getContext().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         settings.setDatabaseEnabled(true);
         settings.setDatabasePath(databasePath);
         
         
         //Determine whether we're in debug or release mode, and turn on Debugging!
-        try {
-            final String packageName = this.cordova.getActivity().getPackageName();
-            final PackageManager pm = this.cordova.getActivity().getPackageManager();
-            ApplicationInfo appInfo;
-            
-            appInfo = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
-            
-            if((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 &&  
-                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT)
-            {
-                setWebContentsDebuggingEnabled(true);
-            }
-        } catch (IllegalArgumentException e) {
-            Log.d(TAG, "You have one job! To turn on Remote Web Debugging! YOU HAVE FAILED! ");
-            e.printStackTrace();
-        } catch (NameNotFoundException e) {
-            Log.d(TAG, "This should never happen: Your application's package can't be found.");
-            e.printStackTrace();
-        }  
+        ApplicationInfo appInfo = getContext().getApplicationContext().getApplicationInfo();
+        if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 &&
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            enableRemoteDebugging();
+        }
         
         settings.setGeolocationDatabasePath(databasePath);
 
@@ -307,13 +233,12 @@ public class CordovaWebView extends WebView {
         // Enable AppCache
         // Fix for CB-2282
         settings.setAppCacheMaxSize(5 * 1048576);
-        String pathToCache = this.cordova.getActivity().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
-        settings.setAppCachePath(pathToCache);
+        settings.setAppCachePath(databasePath);
         settings.setAppCacheEnabled(true);
         
         // Fix for CB-1405
         // Google issue 4641
-        this.updateUserAgentString();
+        settings.getUserAgentString();
         
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
@@ -321,18 +246,33 @@ public class CordovaWebView extends WebView {
             this.receiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    updateUserAgentString();
+                    getSettings().getUserAgentString();
                 }
             };
-            this.cordova.getActivity().registerReceiver(this.receiver, intentFilter);
+            getContext().registerReceiver(this.receiver, intentFilter);
         }
         // end CB-1405
+    }
 
-        pluginManager = new PluginManager(this, this.cordova);
-        jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
-        exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
-        resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
-        exposeJsInterface();
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void enableRemoteDebugging() {
+        try {
+            WebView.setWebContentsDebuggingEnabled(true);
+        } catch (IllegalArgumentException e) {
+            Log.d(TAG, "You have one job! To turn on Remote Web Debugging! YOU HAVE FAILED! ");
+            e.printStackTrace();
+        }
+    }
+
+    public CordovaChromeClient makeChromeClient(CordovaInterface cordova) {
+        return new CordovaChromeClient(cordova, this);
+    }
+
+    public CordovaWebViewClient makeWebViewClient(CordovaInterface cordova) {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            return new CordovaWebViewClient(cordova, this);
+        }
+        return new IceCreamCordovaWebViewClient(cordova, this);
     }
 
 	/**
@@ -345,13 +285,8 @@ public class CordovaWebView extends WebView {
 		return true;
 	}
 
-	private void updateUserAgentString() {
-        this.getSettings().getUserAgentString();
-    }
-
     private void exposeJsInterface() {
-        int SDK_INT = Build.VERSION.SDK_INT;
-        if ((SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)) {
+        if ((Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)) {
             Log.i(TAG, "Disabled addJavascriptInterface() bridge since Android version is old.");
             // Bug being that Java Strings do not get converted to JS strings automatically.
             // This isn't hard to work-around on the JS side, but it's easier to just
@@ -363,9 +298,8 @@ public class CordovaWebView extends WebView {
 
     /**
      * Set the WebViewClient.
-     *
-     * @param client
      */
+    @Deprecated // Set this in init() instead.
     public void setWebViewClient(CordovaWebViewClient client) {
         this.viewClient = client;
         super.setWebViewClient(client);
@@ -373,9 +307,8 @@ public class CordovaWebView extends WebView {
 
     /**
      * Set the WebChromeClient.
-     *
-     * @param client
      */
+    @Deprecated // Set this in init() instead.
     public void setWebChromeClient(CordovaChromeClient client) {
         this.chromeClient = client;
         super.setWebChromeClient(client);
@@ -849,7 +782,7 @@ public class CordovaWebView extends WebView {
         // unregister the receiver
         if (this.receiver != null) {
             try {
-                this.cordova.getActivity().unregisterReceiver(this.receiver);
+                getContext().unregisterReceiver(this.receiver);
             } catch (Exception e) {
                 Log.e(TAG, "Error unregistering configuration receiver: " + e.getMessage(), e);
             }

@@ -52,11 +52,31 @@ public class PluginManager {
 
     // Stores mapping of Plugin Name -> <url-filter> values.
     // Using <url-filter> is deprecated.
-    protected HashMap<String, List<String>> urlMap;
+    protected HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
 
-    public PluginManager(CordovaWebView app, CordovaInterface ctx) {
-        this.ctx = ctx;
-        this.app = app;
+    @Deprecated
+    PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova) {
+        this(cordovaWebView, cordova, null);
+    }
+
+    PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, List<PluginEntry> pluginEntries) {
+        this.ctx = cordova;
+        this.app = cordovaWebView;
+        if (pluginEntries == null) {
+            ConfigXmlParser parser = new ConfigXmlParser();
+            parser.parse(ctx.getActivity());
+            pluginEntries = parser.getPluginEntries();
+        }
+        setPluginEntries(pluginEntries);
+    }
+
+    public void setPluginEntries(List<PluginEntry> pluginEntries) {
+        this.onPause(false);
+        this.onDestroy();
+        this.clearPluginObjects();
+        for (PluginEntry entry : pluginEntries) {
+            addService(entry);
+        }
     }
 
     /**
@@ -64,33 +84,14 @@ public class PluginManager {
      */
     public void init() {
         LOG.d(TAG, "init()");
-
-        // If first time, then load plugins from config.xml file
-        if (urlMap == null) {
-            this.loadPlugins();
-        }
-
-        // Stop plugins on current HTML page and discard plugin objects
-        else {
-            this.onPause(false);
-            this.onDestroy();
-            this.clearPluginObjects();
-        }
-
-        // Start up all plugins that have onload specified
+        this.onPause(false);
+        this.onDestroy();
+        this.clearPluginObjects();
         this.startupPlugins();
     }
 
-    /**
-     * Load plugins from res/xml/config.xml
-     */
+    @Deprecated
     public void loadPlugins() {
-        ConfigXmlParser parser = new ConfigXmlParser();
-        parser.parse(ctx.getActivity());
-        urlMap = new HashMap<String, List<String>>();
-        for (PluginEntry entry : parser.getPluginEntries()) {
-            addService(entry);
-        }
     }
 
     /**
