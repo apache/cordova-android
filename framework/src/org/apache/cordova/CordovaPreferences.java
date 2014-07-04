@@ -48,7 +48,7 @@ public class CordovaPreferences {
         name = name.toLowerCase(Locale.ENGLISH);
         String value = prefs.get(name);
         if (value != null) {
-            return "true".equals(value);
+            return Boolean.parseBoolean(value);
         } else if (preferencesBundleExtras != null) {
             Object bundleValue = preferencesBundleExtras.get(name);
             if (bundleValue instanceof String) {
@@ -64,7 +64,8 @@ public class CordovaPreferences {
         name = name.toLowerCase(Locale.ENGLISH);
         String value = prefs.get(name);
         if (value != null) {
-            return Integer.valueOf(value);
+            // Use Integer.decode() can't handle it if the highest bit is set.
+            return (int)(long)Long.decode(value);
         } else if (preferencesBundleExtras != null) {
             Object bundleValue = preferencesBundleExtras.get(name);
             if (bundleValue instanceof String) {
@@ -123,36 +124,40 @@ public class CordovaPreferences {
                 action.getIntent().putExtra(name, resource);
             }
             else if(name.equals("backgroundcolor")) {
-                int asInt = Integer.valueOf(value);
+                int asInt = (int)(long)Long.decode(value);
                 action.getIntent().putExtra(name, asInt);
             }
             else if(name.equals("loadurltimeoutvalue")) {
-                int asInt = Integer.valueOf(value);
+                int asInt = Integer.decode(value);
                 action.getIntent().putExtra(name, asInt);
             }
             else if(name.equals("splashscreendelay")) {
-                int asInt = Integer.valueOf(value);
+                int asInt = Integer.decode(value);
                 action.getIntent().putExtra(name, asInt);
             }
             else if(name.equals("keeprunning"))
             {
-                boolean asBool = "true".equals(value);
+                boolean asBool = Boolean.parseBoolean(value);
                 action.getIntent().putExtra(name, asBool);
             }
             else if(name.equals("inappbrowserstorageenabled"))
             {
-                boolean asBool = "true".equals(value);
+                boolean asBool = Boolean.parseBoolean(value);
                 action.getIntent().putExtra(name, asBool);
             }
             else if(name.equals("disallowoverscroll"))
             {
-                boolean asBool = "true".equals(value);
+                boolean asBool = Boolean.parseBoolean(value);
                 action.getIntent().putExtra(name, asBool);
             }
             else
             {
                 action.getIntent().putExtra(name, value);
             }
+        }
+        // In the normal case, the intent extras are null until the first call to putExtra().
+        if (preferencesBundleExtras == null) {
+            preferencesBundleExtras = action.getIntent().getExtras();
         }
     }
 }
