@@ -19,7 +19,6 @@
 package org.apache.cordova;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -54,13 +53,28 @@ public class PluginManager {
 
     // Stores mapping of Plugin Name -> <url-filter> values.
     // Using <url-filter> is deprecated.
-    protected HashMap<String, List<String>> urlMap;
+    protected HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
 
     private Set<String> pluginIdWhitelist;
 
-    public PluginManager(CordovaWebView app, CordovaInterface ctx) {
-        this.ctx = ctx;
-        this.app = app;
+    PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, List<PluginEntry> pluginEntries) {
+        this.ctx = cordova;
+        this.app = cordovaWebView;
+        if (pluginEntries == null) {
+            ConfigXmlParser parser = new ConfigXmlParser();
+            parser.parse(ctx.getActivity());
+            pluginEntries = parser.getPluginEntries();
+        }
+        setPluginEntries(pluginEntries);
+    }
+
+    public void setPluginEntries(List<PluginEntry> pluginEntries) {
+        this.onPause(false);
+        this.onDestroy();
+        this.clearPluginObjects();
+        for (PluginEntry entry : pluginEntries) {
+            addService(entry);
+        }
     }
     
     public void setPluginIdWhitelist(Set<String> pluginIdWhitelist) {
@@ -72,33 +86,14 @@ public class PluginManager {
      */
     public void init() {
         LOG.d(TAG, "init()");
-
-        // If first time, then load plugins from config.xml file
-        if (urlMap == null) {
-            this.loadPlugins();
-        }
-
-        // Stop plugins on current HTML page and discard plugin objects
-        else {
-            this.onPause(false);
-            this.onDestroy();
-            this.clearPluginObjects();
-        }
-
-        // Start up all plugins that have onload specified
+        this.onPause(false);
+        this.onDestroy();
+        this.clearPluginObjects();
         this.startupPlugins();
     }
 
-    /**
-     * Load plugins from res/xml/config.xml
-     */
+    @Deprecated
     public void loadPlugins() {
-    	ConfigXmlParser parser = new ConfigXmlParser();
-    	parser.parse(ctx.getActivity());
-    	for (PluginEntry entry : parser.getPluginEntries()) {
-    		addService(entry);
-    	}
-    	urlMap = parser.getPluginUrlMap();
     }
 
     /**
@@ -219,6 +214,10 @@ public class PluginManager {
      */
     public void addService(PluginEntry entry) {
         this.entries.put(entry.service, entry);
+        List<String> urlFilters = entry.getUrlFilters();
+        if (urlFilters != null) {
+            urlMap.put(entry.service, urlFilters);
+        }
     }
 
     /**
@@ -324,11 +323,9 @@ public class PluginManager {
      * Called when the app navigates or refreshes.
      */
     public void onReset() {
-        Iterator<PluginEntry> it = this.entries.values().iterator();
-        while (it.hasNext()) {
-            CordovaPlugin plugin = it.next().plugin;
-            if (plugin != null) {
-                plugin.onReset();
+        for (PluginEntry entry : this.entries.values()) {
+            if (entry.plugin != null) {
+                entry.plugin.onReset();
             }
         }
     }

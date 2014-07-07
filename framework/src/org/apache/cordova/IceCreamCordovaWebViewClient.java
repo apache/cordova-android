@@ -35,12 +35,7 @@ import android.webkit.WebView;
 public class IceCreamCordovaWebViewClient extends AndroidWebViewClient implements CordovaWebViewClient{
 
     private static final String TAG = "IceCreamCordovaWebViewClient";
-    private CordovaUriHelper helper;
 
-    public IceCreamCordovaWebViewClient(CordovaInterface cordova) {
-        super(cordova);
-    }
-    
     public IceCreamCordovaWebViewClient(CordovaInterface cordova, AndroidWebView view) {
         super(cordova, view);
     }

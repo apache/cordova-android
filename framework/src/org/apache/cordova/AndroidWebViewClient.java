@@ -18,20 +18,17 @@
 */
 package org.apache.cordova;
 
-import java.io.ByteArrayInputStream;
 import java.util.Hashtable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.http.SslError;
-import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
@@ -54,10 +51,9 @@ import android.webkit.WebViewClient;
 public class AndroidWebViewClient extends WebViewClient implements CordovaWebViewClient{
 
     private static final String TAG = "AndroidWebViewClient";
-    private static final String CORDOVA_EXEC_URL_PREFIX = "http://cdv_exec/";
-    CordovaInterface cordova;
-    AndroidWebView appView;
-    CordovaUriHelper helper;
+    protected final CordovaInterface cordova;
+    protected final AndroidWebView appView;
+    protected final CordovaUriHelper helper;
     private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
 
@@ -68,29 +64,10 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
      * Constructor.
      *
      * @param cordova
-     */
-    public AndroidWebViewClient(CordovaInterface cordova) {
-        this.cordova = cordova;
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param cordova
      * @param view
      */
     public AndroidWebViewClient(CordovaInterface cordova, AndroidWebView view) {
         this.cordova = cordova;
-        this.appView = view;
-        helper = new CordovaUriHelper(cordova, view);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param view
-     */
-    public void setWebView(AndroidWebView view) {
         this.appView = view;
         helper = new CordovaUriHelper(cordova, view);
     }

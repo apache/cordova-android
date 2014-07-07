@@ -21,8 +21,6 @@ package org.apache.cordova;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,7 +39,6 @@ public class ConfigXmlParser {
     private CordovaPreferences prefs = new CordovaPreferences();
     private Whitelist whitelist = new Whitelist();
     private ArrayList<PluginEntry> pluginEntries = new ArrayList<PluginEntry>(20);
-    private HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
 
     public Whitelist getWhitelist() {
         return whitelist;
@@ -59,10 +56,6 @@ public class ConfigXmlParser {
         return launchUrl;
     }
     
-    public HashMap<String, List<String>> getPluginUrlMap() {
-    	return urlMap;
-    }
-
     public void parse(Activity action) {
         // First checking the class namespace for config.xml
         int id = action.getResources().getIdentifier("config", "xml", action.getClass().getPackage().getName());
@@ -82,16 +75,17 @@ public class ConfigXmlParser {
         String service = "", pluginClass = "", paramType = "";
         boolean onload = false;
         boolean insideFeature = false;
+        ArrayList<String> urlMap = null;
+
         while (eventType != XmlResourceParser.END_DOCUMENT) {
             if (eventType == XmlResourceParser.START_TAG) {
                 String strNode = xml.getName();
                 if (strNode.equals("url-filter")) {
                     Log.w(TAG, "Plugin " + service + " is using deprecated tag <url-filter>");
-                    if (urlMap.get(service) == null) {
-                        urlMap.put(service, new ArrayList<String>(2));
+                    if (urlMap == null) {
+                        urlMap = new ArrayList<String>(2);
                     }
-                    List<String> filters = urlMap.get(service);
-                    filters.add(xml.getAttributeValue(null, "value"));
+                    urlMap.add(xml.getAttributeValue(null, "value"));
                 } else if (strNode.equals("feature")) {
                     //Check for supported feature sets  aka. plugins (Accelerometer, Geolocation, etc)
                     //Set the bit for reading params
@@ -130,12 +124,13 @@ public class ConfigXmlParser {
             {
                 String strNode = xml.getName();
                 if (strNode.equals("feature")) {
-                    pluginEntries.add(new PluginEntry(service, pluginClass, onload));
+                    pluginEntries.add(new PluginEntry(service, pluginClass, onload, urlMap));
 
                     service = "";
                     pluginClass = "";
                     insideFeature = false;
                     onload = false;
+                    urlMap = null;
                 }
             }
             try {

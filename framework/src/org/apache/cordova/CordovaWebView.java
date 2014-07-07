@@ -1,12 +1,10 @@
 package org.apache.cordova;
 
 import java.util.HashMap;
-
-import org.json.JSONException;
+import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
-import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebChromeClient.CustomViewCallback;
 import android.widget.LinearLayout.LayoutParams;
@@ -14,12 +12,14 @@ import android.widget.LinearLayout.LayoutParams;
 public interface CordovaWebView {
     public static final String CORDOVA_VERSION = "4.0.0-dev";
 
+    void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient, List<PluginEntry> pluginEntries);
+
     View getView();
 
-    CordovaWebViewClient makeWebViewClient();
+    CordovaWebViewClient makeWebViewClient(CordovaInterface cordova);
 
-    CordovaChromeClient makeWebChromeClient();
-
+    CordovaChromeClient makeWebChromeClient(CordovaInterface cordova);
+        
     void setWebViewClient(CordovaWebViewClient webViewClient);
 
     void setWebChromeClient(CordovaChromeClient webChromeClient);
@@ -132,4 +132,5 @@ public interface CordovaWebView {
     // Required for test
     String getUrl();
     boolean isPaused();
+
 }

@@ -46,8 +46,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.util.Log;
 
-
-
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
  * The kind of callbacks that happen here are on the chrome outside the document,
@@ -62,10 +60,10 @@ import android.util.Log;
 public class AndroidChromeClient extends WebChromeClient implements CordovaChromeClient {
 
     public static final int FILECHOOSER_RESULTCODE = 5173;
-    private static final String LOG_TAG = "CordovaChromeClient";
+    private static final String LOG_TAG = "AndroidChromeClient";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    protected CordovaInterface cordova;
-    protected AndroidWebView appView;
+    protected final CordovaInterface cordova;
+    protected final AndroidWebView appView;
 
     // the video progress view
     private View mVideoProgressView;
@@ -73,12 +71,6 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
     // File Chooser
     public ValueCallback<Uri> mUploadMessage;
     
-    /**
-     * Constructor.
-     * 
-     * @param ctx
-     * @param app
-     */
     public AndroidChromeClient(CordovaInterface ctx, AndroidWebView app) {
         this.cordova = ctx;
         this.appView = app;
