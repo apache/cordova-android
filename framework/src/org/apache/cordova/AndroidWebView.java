@@ -291,15 +291,25 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     }
 
     @Override
+    public void setWebViewClient(WebViewClient client) {
+        this.viewClient = (CordovaWebViewClient)client;
+        super.setWebViewClient(client);
+    }
+
+    @Override
+    public void setWebChromeClient(WebChromeClient client) {
+        this.chromeClient = (CordovaChromeClient)client;
+        super.setWebChromeClient(client);
+    }
+
+    @Override
     public void setWebViewClient(CordovaWebViewClient client) {
-        this.viewClient = client;
-        super.setWebViewClient((WebViewClient) client);
+        setWebViewClient((WebViewClient) client);
     }
 
     @Override
     public void setWebChromeClient(CordovaChromeClient client) {
-        this.chromeClient = client;
-        super.setWebChromeClient((WebChromeClient) client);
+        setWebChromeClient((WebChromeClient) client);
     }
     
     public CordovaChromeClient getWebChromeClient() {
