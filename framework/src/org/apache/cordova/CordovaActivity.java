@@ -21,7 +21,6 @@ package org.apache.cordova;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,7 +30,6 @@ import org.apache.cordova.LOG;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -91,12 +89,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     // The webview for our app
     protected CordovaWebView appView;
-
-    @Deprecated // unused.
-    protected CordovaWebViewClient webViewClient;
-
-    @Deprecated // Will be removed. Use findViewById() to retrieve views.
-    protected LinearLayout root;
 
     protected ProgressDialog spinnerDialog = null;
     private final ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -203,7 +195,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         int width = display.getWidth();
         int height = display.getHeight();
 
-        root = new LinearLayoutSoftKeyboardDetect(this, width, height);
+        LinearLayoutSoftKeyboardDetect root = new LinearLayoutSoftKeyboardDetect(this, width, height);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
@@ -297,26 +289,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         return webView.makeWebChromeClient(this);
     }
 
-    @Deprecated // No need to call init() anymore.
-    public void init() {
-        this.init(appView, null, null);
-    }
-
-    @SuppressLint("NewApi")
-    @Deprecated // No need to call init() anymore.
-    public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
-        LOG.d(TAG, "CordovaActivity.init()");
-
-        appView = webView;
-
-        if (webViewClient != null) {
-            this.appView.setWebViewClient(webViewClient);
-        }
-        if (webChromeClient != null) {
-            this.appView.setWebChromeClient(webChromeClient);
-        }
-    }
-
     /**
      * Load the url into the webview.
      */
@@ -333,7 +305,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
         
         // If keepRunning
-        this.keepRunning = this.getBooleanProperty("KeepRunning", true);
+        this.keepRunning = preferences.getBoolean("KeepRunning", true);
 
         //Check if the view is attached to anything
         if(appView.getParent() != null)
@@ -374,10 +346,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         // If loadingDialog property, then show the App loading dialog for first page of app
         String loading = null;
         if ((this.appView == null) || !this.appView.canGoBack()) {
-            loading = this.getStringProperty("LoadingDialog", null);
+            loading = preferences.getString("LoadingDialog", null);
         }
         else {
-            loading = this.getStringProperty("LoadingPageDialog", null);
+            loading = preferences.getString("LoadingPageDialog", null);
         }
         if (loading != null) {
 
@@ -397,67 +369,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             }
             this.spinnerStart(title, message);
         }
-    }
-
-    /**
-     * Clear the resource cache.
-     */
-    @Deprecated // Call method on appView directly.
-    public void clearCache() {
-        this.appView.clearCache(true);
-    }
-
-    /**
-     * Clear web history in this web view.
-     */
-    @Deprecated // Call method on appView directly.
-    public void clearHistory() {
-        this.appView.clearHistory();
-    }
-
-    /**
-     * Go to previous page in history.  (We manage our own history)
-     *
-     * @return true if we went back, false if we are already at top
-     */
-    @Deprecated // Call method on appView directly.
-    public boolean backHistory() {
-        if (this.appView != null) {
-            return appView.backHistory();
-        }
-        return false;
-    }
-
-    /**
-     * Get boolean property for activity.
-     */
-    @Deprecated // Call method on preferences directly.
-    public boolean getBooleanProperty(String name, boolean defaultValue) {
-        return preferences.getBoolean(name, defaultValue);
-    }
-
-    /**
-     * Get int property for activity.
-     */
-    @Deprecated // Call method on preferences directly.
-    public int getIntegerProperty(String name, int defaultValue) {
-        return preferences.getInteger(name, defaultValue);
-    }
-
-    /**
-     * Get string property for activity.
-     */
-    @Deprecated // Call method on preferences directly.
-    public String getStringProperty(String name, String defaultValue) {
-        return preferences.getString(name, defaultValue);
-    }
-
-    /**
-     * Get double property for activity.
-     */
-    @Deprecated // Call method on preferences directly.
-    public double getDoubleProperty(String name, double defaultValue) {
-        return preferences.getDouble(name, defaultValue);
     }
 
     /**
@@ -552,21 +463,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     public void postMessage(String id, Object data) {
         if (this.appView != null) {
             this.appView.postMessage(id, data);
-        }
-    }
-
-    /**
-     * Send JavaScript statement back to JavaScript.
-     * (This is a convenience method)
-     *
-     * @param statement
-     * 
-     */
-    @Deprecated // Call method on appView directly.
-    public void sendJavascript(String statement) {
-        if (this.appView != null) {
-            this.appView.addJavascript(statement);
-            //this.appView.jsMessageQueue.addJavaScript(statement);
         }
     }
 
@@ -684,7 +580,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         final CordovaActivity me = this;
 
         // If errorUrl specified, then load it
-        final String errorUrl = me.getStringProperty("errorUrl", null);
+        final String errorUrl = preferences.getString("errorUrl", null);
         if ((errorUrl != null) && (errorUrl.startsWith("file://") || Config.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
 
             // Load URL on UI thread
@@ -768,32 +664,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         return true;
     }
 
-    /**
-     * Get Activity context.
-     */
-    @Deprecated
-    public Context getContext() {
-        LOG.d(TAG, "This will be deprecated December 2012");
-        return this;
-    }
-
-    /**
-     * Load the specified URL in the Cordova webview or a new browser instance.
-     *
-     * NOTE: If openExternal is false, only URLs listed in whitelist can be loaded.
-     *
-     * @param url           The url to load.
-     * @param openExternal  Load url in browser instead of Cordova webview.
-     * @param clearHistory  Clear the history stack, so new page becomes top of history
-     * @param params        Parameters for new app
-     */
-    @Deprecated // Call method on appView directly.
-    public void showWebPage(String url, boolean openExternal, boolean clearHistory, HashMap<String, Object> params) {
-        if (this.appView != null) {
-            appView.showWebPage(url, openExternal, clearHistory, params);
-        }
-    }
-
     protected Dialog splashDialog;
 
     /**
@@ -823,7 +693,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                 root.setMinimumHeight(display.getHeight());
                 root.setMinimumWidth(display.getWidth());
                 root.setOrientation(LinearLayout.VERTICAL);
-                root.setBackgroundColor(that.getIntegerProperty("backgroundColor", Color.BLACK));
+                root.setBackgroundColor(preferences.getInteger("backgroundColor", Color.BLACK));
                 root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
                 root.setBackgroundResource(that.splashscreen);
@@ -871,7 +741,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             else {
                 // If the splash dialog is showing don't try to show it again
                 if (this.splashDialog == null || !this.splashDialog.isShowing()) {
-                    this.splashscreen = this.getIntegerProperty("SplashScreen", 0);
+                    String splashResource = preferences.getString("SplashScreen", null);
+                    if (splashResource != null) {
+                        splashscreen = getResources().getIdentifier(splashResource, "drawable", getClass().getPackage().getName());
+                    }
                     this.showSplashScreen(this.splashscreenTime);
                 }
             }
@@ -909,66 +782,4 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             outState.putString("callbackClass", cClass);
         }
     }
-    
-
-    /**
-     * Set boolean property on activity.
-     * This method has been deprecated in 3.0 and will be removed at a future
-     * time. Please use config.xml instead.
-     *
-     * @param name
-     * @param value
-     * @deprecated
-     */
-    @Deprecated
-    public void setBooleanProperty(String name, boolean value) {
-        Log.d(TAG, "Setting boolean properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
-        this.getIntent().putExtra(name.toLowerCase(), value);
-    }
-
-    /**
-     * Set int property on activity.
-     * This method has been deprecated in 3.0 and will be removed at a future
-     * time. Please use config.xml instead.
-     *
-     * @param name
-     * @param value
-     * @deprecated
-     */
-    @Deprecated
-    public void setIntegerProperty(String name, int value) {
-        Log.d(TAG, "Setting integer properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
-        this.getIntent().putExtra(name.toLowerCase(), value);
-    }
-
-    /**
-     * Set string property on activity.
-     * This method has been deprecated in 3.0 and will be removed at a future
-     * time. Please use config.xml instead.
-     *
-     * @param name
-     * @param value
-     * @deprecated
-     */
-    @Deprecated
-    public void setStringProperty(String name, String value) {
-        Log.d(TAG, "Setting string properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
-        this.getIntent().putExtra(name.toLowerCase(), value);
-    }
-
-    /**
-     * Set double property on activity.
-     * This method has been deprecated in 3.0 and will be removed at a future
-     * time. Please use config.xml instead.
-     *
-     * @param name
-     * @param value
-     * @deprecated
-     */
-    @Deprecated
-    public void setDoubleProperty(String name, double value) {
-        Log.d(TAG, "Setting double properties in CordovaActivity will be deprecated in 3.0 on July 2013, please use config.xml");
-        this.getIntent().putExtra(name.toLowerCase(), value);
-    }
-
 }
