@@ -360,7 +360,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
         
         // If keepRunning
-        this.keepRunning = this.getBooleanProperty("KeepRunning", true);
+        this.keepRunning = preferences.getBoolean("KeepRunning", true);
 
         //Check if the view is attached to anything
         if(appView.getParent() != null)
@@ -401,10 +401,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         // If loadingDialog property, then show the App loading dialog for first page of app
         String loading = null;
         if ((this.appView == null) || !this.appView.canGoBack()) {
-            loading = this.getStringProperty("LoadingDialog", null);
+            loading = preferences.getString("LoadingDialog", null);
         }
         else {
-            loading = this.getStringProperty("LoadingPageDialog", null);
+            loading = preferences.getString("LoadingPageDialog", null);
         }
         if (loading != null) {
 
@@ -785,8 +785,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         final CordovaActivity me = this;
 
         // If errorUrl specified, then load it
-        final String errorUrl = me.getStringProperty("errorUrl", null);
-        if ((errorUrl != null) && (errorUrl.startsWith("file://") || Config.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
+        final String errorUrl = preferences.getString("errorUrl", null);
+        if ((errorUrl != null) && (errorUrl.startsWith("file://") || whitelist.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
 
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {
@@ -924,7 +924,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                 root.setMinimumHeight(display.getHeight());
                 root.setMinimumWidth(display.getWidth());
                 root.setOrientation(LinearLayout.VERTICAL);
-                root.setBackgroundColor(that.getIntegerProperty("backgroundColor", Color.BLACK));
+                root.setBackgroundColor(preferences.getInteger("backgroundColor", Color.BLACK));
                 root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
                 root.setBackgroundResource(that.splashscreen);
@@ -1002,7 +1002,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             else {
                 // If the splash dialog is showing don't try to show it again
                 if (this.splashDialog == null || !this.splashDialog.isShowing()) {
-                    this.splashscreen = this.getIntegerProperty("SplashScreen", 0);
+                    String splashResource = preferences.getString("SplashScreen", null);
+                    if (splashResource != null) {
+                        splashscreen = getResources().getIdentifier(splashResource, "drawable", getClass().getPackage().getName());
+                    }
                     this.showSplashScreen(this.splashscreenTime);
                 }
             }
