@@ -67,6 +67,8 @@ public class PluginManager {
         this.onPause(false);
         this.onDestroy();
         this.clearPluginObjects();
+        entries.clear();
+        urlMap.clear();
         for (PluginEntry entry : pluginEntries) {
             addService(entry);
         }
