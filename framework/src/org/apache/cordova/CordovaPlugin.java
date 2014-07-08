@@ -32,20 +32,31 @@ import android.net.Uri;
  * Plugins must extend this class and override one of the execute methods.
  */
 public class CordovaPlugin {
+    @Deprecated // This is never set.
     public String id;
     public CordovaWebView webView;					// WebView object
     public CordovaInterface cordova;
+    protected CordovaPreferences preferences;
 
-    /**
-     * @param cordova The context of the main Activity.
-     * @param webView The associated CordovaWebView.
-     */
-    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+    void privateInitialize(CordovaInterface cordova, CordovaWebView webView, CordovaPreferences preferences) {
         assert this.cordova == null;
         this.cordova = cordova;
         this.webView = webView;
+        this.preferences = preferences;
+        initialize(cordova, webView);
+        initialize();
     }
 
+    @Deprecated // Override initialize() instead.
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+    }
+
+    /**
+     * This is where you can do start-up logic with protected fields set.
+     */
+    protected void initialize() {
+    }
+    
     /**
      * Executes the request.
      *

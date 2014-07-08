@@ -92,6 +92,7 @@ public class CordovaWebView extends WebView {
     private Whitelist whitelist;
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
+    private CordovaPreferences preferences;
 
     class ActivityResult {
         
@@ -135,7 +136,7 @@ public class CordovaWebView extends WebView {
 
     // Use two-phase init so that the control will work with XML layouts.
     public void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient,
-            List<PluginEntry> pluginEntries, Whitelist whitelist) {
+            List<PluginEntry> pluginEntries, Whitelist whitelist, CordovaPreferences preferences) {
         if (this.cordova != null) {
             throw new IllegalStateException();
         }
@@ -143,6 +144,7 @@ public class CordovaWebView extends WebView {
         this.viewClient = webViewClient;
         this.chromeClient = webChromeClient;
         this.whitelist = whitelist;
+        this.preferences = preferences;
         super.setWebChromeClient(webChromeClient);
         super.setWebViewClient(webViewClient);
 
@@ -902,5 +904,9 @@ public class CordovaWebView extends WebView {
     
     public CordovaResourceApi getResourceApi() {
         return resourceApi;
+    }
+
+    public CordovaPreferences getPreferences() {
+        return preferences;
     }
 }
