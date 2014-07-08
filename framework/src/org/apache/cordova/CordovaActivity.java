@@ -227,7 +227,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
 
         appView = makeWebView();
-        appView.init(this, makeWebViewClient(appView), makeChromeClient(appView), pluginEntries);
+        appView.init(this, makeWebViewClient(appView), makeChromeClient(appView), pluginEntries, whitelist);
 
         // TODO: Have the views set this themselves.
         if (preferences.getBoolean("DisallowOverscroll", false)) {
@@ -844,8 +844,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Determine if URL is in approved list of URLs to load.
      */
+    @Deprecated // Use whitelist object directly.
     public boolean isUrlWhiteListed(String url) {
-        return Config.isUrlWhiteListed(url);
+        return whitelist.isUrlWhiteListed(url);
     }
 
     /*

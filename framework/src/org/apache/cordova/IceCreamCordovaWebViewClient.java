@@ -77,7 +77,7 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
     }
 
     private boolean isUrlHarmful(String url) {
-        return ((url.startsWith("http:") || url.startsWith("https:")) && !Config.isUrlWhiteListed(url))
+        return ((url.startsWith("http:") || url.startsWith("https:")) && !appView.getWhitelist().isUrlWhiteListed(url))
             || url.contains("app_webview");
     }
 

@@ -26,12 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.cordova.Config;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.LOG;
-import org.apache.cordova.PluginManager;
-import org.apache.cordova.PluginResult;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -80,10 +74,7 @@ public class CordovaWebView extends WebView {
     /** Activities and other important classes **/
     private CordovaInterface cordova;
     CordovaWebViewClient viewClient;
-    @SuppressWarnings("unused")
     private CordovaChromeClient chromeClient;
-
-    private String url;
 
     // Flag to track that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
@@ -97,9 +88,10 @@ public class CordovaWebView extends WebView {
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
-    private ActivityResult mResult = null;
-
     private CordovaResourceApi resourceApi;
+    private Whitelist whitelist;
+    // The URL passed to loadUrl(), not necessarily the URL of the current page.
+    String loadedUrl;
 
     class ActivityResult {
         
@@ -142,13 +134,15 @@ public class CordovaWebView extends WebView {
     }
 
     // Use two-phase init so that the control will work with XML layouts.
-    public void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient, List<PluginEntry> pluginEntries) {
+    public void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient,
+            List<PluginEntry> pluginEntries, Whitelist whitelist) {
         if (this.cordova != null) {
             throw new IllegalStateException();
         }
         this.cordova = cordova;
         this.viewClient = webViewClient;
         this.chromeClient = webChromeClient;
+        this.whitelist = whitelist;
         super.setWebChromeClient(webChromeClient);
         super.setWebViewClient(webViewClient);
 
@@ -310,6 +304,11 @@ public class CordovaWebView extends WebView {
         return this.chromeClient;
     }
 
+    
+    public Whitelist getWhitelist() {
+        return this.whitelist;
+    }
+    
     /**
      * Load the url into the webview.
      *
@@ -357,7 +356,7 @@ public class CordovaWebView extends WebView {
         LOG.d(TAG, ">>> loadUrl(" + url + ")");
 
         if (recreatePlugins) {
-            this.url = url;
+            this.loadedUrl = url;
             this.pluginManager.init();
         }
 
@@ -413,7 +412,7 @@ public class CordovaWebView extends WebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("file://") || url.startsWith("javascript:") || Config.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.startsWith("javascript:") || whitelist.isUrlWhiteListed(url)) {
             super.loadUrl(url);
         }
     }
@@ -549,7 +548,7 @@ public class CordovaWebView extends WebView {
         if (!openExternal) {
 
             // Make sure url is in whitelist
-            if (url.startsWith("file://") || Config.isUrlWhiteListed(url)) {
+            if (url.startsWith("file://") || whitelist.isUrlWhiteListed(url)) {
                 // TODO: What about params?
                 // Load new URL
                 this.loadUrl(url);
@@ -897,8 +896,8 @@ public class CordovaWebView extends WebView {
         return myList;
     }
 
+    @Deprecated // This never did anything
     public void storeResult(int requestCode, int resultCode, Intent intent) {
-        mResult = new ActivityResult(requestCode, resultCode, intent);
     }
     
     public CordovaResourceApi getResourceApi() {
