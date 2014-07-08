@@ -36,7 +36,4 @@
     <feature name="PluginStub">
         <param name="android-package" value="org.apache.cordova.pluginApi.pluginStub" />
     </feature>
-    <feature name="App">
-        <param name="android-package" value="org.apache.cordova.App" />
-    </feature>
 </widget>
