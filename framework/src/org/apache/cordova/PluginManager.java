@@ -84,10 +84,6 @@ public class PluginManager {
         this.startupPlugins();
     }
 
-    @Deprecated
-    public void loadPlugins() {
-    }
-
     /**
      * Delete all plugin objects.
      */
@@ -155,11 +151,6 @@ public class PluginManager {
             Log.e(TAG, "Uncaught exception from plugin", e);
             callbackContext.error(e.getMessage());
         }
-    }
-
-    @Deprecated
-    public void exec(String service, String action, String callbackId, String jsonArgs, boolean async) {
-        exec(service, action, callbackId, jsonArgs);
     }
 
     /**
