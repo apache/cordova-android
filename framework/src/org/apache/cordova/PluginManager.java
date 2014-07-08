@@ -60,11 +60,6 @@ public class PluginManager {
     PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, List<PluginEntry> pluginEntries) {
         this.ctx = cordova;
         this.app = cordovaWebView;
-        if (pluginEntries == null) {
-            ConfigXmlParser parser = new ConfigXmlParser();
-            parser.parse(ctx.getActivity());
-            pluginEntries = parser.getPluginEntries();
-        }
         setPluginEntries(pluginEntries);
     }
 
