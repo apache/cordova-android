@@ -12,7 +12,8 @@ import android.widget.LinearLayout.LayoutParams;
 public interface CordovaWebView {
     public static final String CORDOVA_VERSION = "4.0.0-dev";
 
-    void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient, List<PluginEntry> pluginEntries);
+    void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient,
+              List<PluginEntry> pluginEntries, Whitelist whitelist, CordovaPreferences preferences);
 
     View getView();
 
@@ -132,5 +133,7 @@ public interface CordovaWebView {
     // Required for test
     String getUrl();
     boolean isPaused();
-
+    
+    Whitelist getWhitelist();
+    CordovaPreferences getPreferences();
 }

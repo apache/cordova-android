@@ -229,11 +229,10 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
         }
 
         else if (defaultValue != null && defaultValue.startsWith("gap_init:")) {
-            String startUrl = Config.getStartUrl();
             // Protect against random iframes being able to talk through the bridge.
             // Trust only file URLs and the start URL's domain.
             // The extra origin.startsWith("http") is to protect against iframes with data: having "" as origin.
-            if (origin.startsWith("file:") || (origin.startsWith("http") && startUrl.startsWith(origin))) {
+            if (origin.startsWith("file:") || (origin.startsWith("http") && appView.loadedUrl.startsWith(origin))) {
                 // Enable the bridge
                 int bridgeMode = Integer.parseInt(defaultValue.substring(9));
                 appView.jsMessageQueue.setBridgeMode(bridgeMode);

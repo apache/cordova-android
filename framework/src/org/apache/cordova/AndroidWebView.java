@@ -26,12 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.cordova.Config;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.LOG;
-import org.apache.cordova.PluginManager;
-import org.apache.cordova.PluginResult;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -80,10 +74,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     /** Activities and other important classes **/
     private CordovaInterface cordova;
     CordovaWebViewClient viewClient;
-    @SuppressWarnings("unused")
     private CordovaChromeClient chromeClient;
-
-    private String url;
 
     // Flag to track that a loadUrl timeout occurred
     int loadUrlTimeout = 0;
@@ -97,10 +88,12 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
-    private ActivityResult mResult = null;
-
     private CordovaResourceApi resourceApi;
-
+    private Whitelist whitelist;
+    private CordovaPreferences preferences;
+    // The URL passed to loadUrl(), not necessarily the URL of the current page.
+    String loadedUrl;
+    
     class ActivityResult {
         
         int request;
@@ -134,13 +127,16 @@ public class AndroidWebView extends WebView implements CordovaWebView {
 
     // Use two-phase init so that the control will work with XML layouts.
     @Override
-    public void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient, List<PluginEntry> pluginEntries) {
+    public void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient,
+                     List<PluginEntry> pluginEntries, Whitelist whitelist, CordovaPreferences preferences) {
         if (this.cordova != null) {
             throw new IllegalStateException();
         }
         this.cordova = cordova;
         setWebChromeClient(webChromeClient);
         setWebViewClient(webViewClient);
+        this.whitelist = whitelist;
+        this.preferences = preferences;
 
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
         jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
@@ -364,7 +360,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         LOG.d(TAG, ">>> loadUrl(" + url + ")");
 
         if (recreatePlugins) {
-            this.url = url;
+            this.loadedUrl = url;
             this.pluginManager.init();
         }
 
@@ -420,7 +416,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("file://") || url.startsWith("javascript:") || Config.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.startsWith("javascript:") || whitelist.isUrlWhiteListed(url)) {
             super.loadUrl(url);
         }
     }
@@ -541,7 +537,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         if (!openExternal) {
 
             // Make sure url is in whitelist
-            if (url.startsWith("file://") || Config.isUrlWhiteListed(url)) {
+            if (url.startsWith("file://") || whitelist.isUrlWhiteListed(url)) {
                 // TODO: What about params?
                 // Load new URL
                 this.loadUrl(url);
@@ -862,10 +858,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         return myList;
     }
 
-    public void storeResult(int requestCode, int resultCode, Intent intent) {
-        mResult = new ActivityResult(requestCode, resultCode, intent);
-    }
-    
     public CordovaResourceApi getResourceApi() {
         return resourceApi;
     }
@@ -926,5 +918,13 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         return this;
     }
 
-
+    @Override
+    public Whitelist getWhitelist() {
+        return this.whitelist;
+    }
+    
+    @Override
+    public CordovaPreferences getPreferences() {
+        return preferences;
+    }
 }

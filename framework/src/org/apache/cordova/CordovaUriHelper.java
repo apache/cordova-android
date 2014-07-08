@@ -49,7 +49,7 @@ class CordovaUriHelper {
         if(url.startsWith("http:") || url.startsWith("https:"))
         {
             // We only need to whitelist sites on the Internet! 
-            if(Config.isUrlWhiteListed(url))
+            if(appView.getWhitelist().isUrlWhiteListed(url))
             {
                 return false;
             }

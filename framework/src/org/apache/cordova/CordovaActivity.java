@@ -162,7 +162,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
 
         appView = makeWebView();
-        appView.init(this, makeWebViewClient(appView), makeChromeClient(appView), pluginEntries);
+        appView.init(this, makeWebViewClient(appView), makeChromeClient(appView), pluginEntries, whitelist, preferences);
 
         // TODO: Have the views set this themselves.
         if (preferences.getBoolean("DisallowOverscroll", false)) {
@@ -175,6 +175,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
+    @SuppressWarnings("deprecation")
     protected void loadConfig() {
         ConfigXmlParser parser = new ConfigXmlParser();
         parser.parse(this);
@@ -581,8 +582,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         // If errorUrl specified, then load it
         final String errorUrl = preferences.getString("errorUrl", null);
-        if ((errorUrl != null) && (errorUrl.startsWith("file://") || Config.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
-
+        if ((errorUrl != null) && (errorUrl.startsWith("file://") || whitelist.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {
                 public void run() {
@@ -639,8 +639,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Determine if URL is in approved list of URLs to load.
      */
+    @Deprecated // Use whitelist object directly.
     public boolean isUrlWhiteListed(String url) {
-        return Config.isUrlWhiteListed(url);
+        return whitelist.isUrlWhiteListed(url);
     }
 
     /*

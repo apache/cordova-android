@@ -84,7 +84,7 @@ public class PluginEntry {
             Class<?> c = getClassByName(this.pluginClass);
             if (isCordovaPlugin(c)) {
                 this.plugin = (CordovaPlugin) c.newInstance();
-                this.plugin.initialize(ctx, webView);
+                this.plugin.privateInitialize(ctx, webView, webView.getPreferences());
                 return plugin;
             }
         } catch (Exception e) {

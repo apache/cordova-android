@@ -22,6 +22,7 @@ package org.apache.cordova;
 import android.app.Activity;
 import android.util.Log;
 
+@Deprecated // Use Whitelist, CordovaPrefences, etc. directly.
 public class Config {
     private static final String TAG = "Config";
 
@@ -81,5 +82,9 @@ public class Config {
 
     public static String getErrorUrl() {
         return parser.getPreferences().getString("errorurl", null);
+    }
+
+    public static Whitelist getWhitelist() {
+        return parser.getWhitelist();
     }
 }
