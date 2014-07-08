@@ -18,8 +18,6 @@
  */
 package org.apache.cordova;
 
-import java.util.List;
-
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
@@ -52,14 +50,12 @@ public class PluginEntry {
      */
     public boolean onload = false;
 
-    private List<String> urlFilters;
-
     /**
      * @param service               The name of the service
      * @param plugin                The plugin associated with this entry
      */
     public PluginEntry(String service, CordovaPlugin plugin) {
-        this(service, plugin.getClass().getName(), true, null);
+        this(service, plugin.getClass().getName(), true);
         this.plugin = plugin;
     }
 
@@ -69,21 +65,11 @@ public class PluginEntry {
      * @param onload                Create plugin object when HTML page is loaded
      */
     public PluginEntry(String service, String pluginClass, boolean onload) {
-        this(service, pluginClass, onload, null);
-    }
-    
-
-    public PluginEntry(String service, String pluginClass, boolean onload, List<String> urlFilters) {
         this.service = service;
         this.pluginClass = pluginClass;
         this.onload = onload;
-        this.urlFilters = urlFilters;
     }
-
-    public List<String> getUrlFilters() {
-        return urlFilters;
-    }
-
+    
     /**
      * Create plugin object.
      * If plugin is already created, then just return it.

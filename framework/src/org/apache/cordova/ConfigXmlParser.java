@@ -30,7 +30,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
 import android.content.res.XmlResourceParser;
-import android.util.Log;
 
 public class ConfigXmlParser {
     private static String TAG = "ConfigXmlParser";
@@ -75,18 +74,11 @@ public class ConfigXmlParser {
         String service = "", pluginClass = "", paramType = "";
         boolean onload = false;
         boolean insideFeature = false;
-        ArrayList<String> urlMap = null;
 
         while (eventType != XmlResourceParser.END_DOCUMENT) {
             if (eventType == XmlResourceParser.START_TAG) {
                 String strNode = xml.getName();
-                if (strNode.equals("url-filter")) {
-                    Log.w(TAG, "Plugin " + service + " is using deprecated tag <url-filter>");
-                    if (urlMap == null) {
-                        urlMap = new ArrayList<String>(2);
-                    }
-                    urlMap.add(xml.getAttributeValue(null, "value"));
-                } else if (strNode.equals("feature")) {
+                if (strNode.equals("feature")) {
                     //Check for supported feature sets  aka. plugins (Accelerometer, Geolocation, etc)
                     //Set the bit for reading params
                     insideFeature = true;
@@ -124,13 +116,12 @@ public class ConfigXmlParser {
             {
                 String strNode = xml.getName();
                 if (strNode.equals("feature")) {
-                    pluginEntries.add(new PluginEntry(service, pluginClass, onload, urlMap));
+                    pluginEntries.add(new PluginEntry(service, pluginClass, onload));
 
                     service = "";
                     pluginClass = "";
                     insideFeature = false;
                     onload = false;
-                    urlMap = null;
                 }
             }
             try {

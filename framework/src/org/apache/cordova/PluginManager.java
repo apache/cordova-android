@@ -51,10 +51,6 @@ public class PluginManager {
     private final CordovaInterface ctx;
     private final CordovaWebView app;
 
-    // Stores mapping of Plugin Name -> <url-filter> values.
-    // Using <url-filter> is deprecated.
-    protected HashMap<String, List<String>> urlMap = new HashMap<String, List<String>>();
-
     private Set<String> pluginIdWhitelist;
 
     PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, List<PluginEntry> pluginEntries) {
@@ -68,7 +64,6 @@ public class PluginManager {
         this.onDestroy();
         this.clearPluginObjects();
         entries.clear();
-        urlMap.clear();
         for (PluginEntry entry : pluginEntries) {
             addService(entry);
         }
@@ -211,10 +206,6 @@ public class PluginManager {
      */
     public void addService(PluginEntry entry) {
         this.entries.put(entry.service, entry);
-        List<String> urlFilters = entry.getUrlFilters();
-        if (urlFilters != null) {
-            urlMap.put(entry.service, urlFilters);
-        }
     }
 
     /**
@@ -300,14 +291,7 @@ public class PluginManager {
         // that they are loaded before this function is called (either by setting
         // the onload <param> or by making an exec() call to them)
         for (PluginEntry entry : this.entries.values()) {
-            List<String> urlFilters = urlMap.get(entry.service);
-            if (urlFilters != null) {
-                for (String s : urlFilters) {
-                    if (url.startsWith(s)) {
-                        return getPlugin(entry.service).onOverrideUrlLoading(url);
-                    }
-                }
-            } else if (entry.plugin != null) {
+            if (entry.plugin != null) {
                 if (entry.plugin.onOverrideUrlLoading(url)) {
                     return true;
                 }
