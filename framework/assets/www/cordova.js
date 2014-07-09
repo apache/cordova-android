@@ -1,5 +1,5 @@
 // Platform: android
-// 3.6.0-dev-7e845f3
+// 3.6.0-dev-70cdca3
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '3.6.0-dev-7e845f3';
+var CORDOVA_JS_BUILD_LABEL = '3.6.0-dev-70cdca3';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
@@ -265,7 +265,7 @@ var cordova = {
         try {
             cordova.callbackFromNative(callbackId, true, args.status, [args.message], args.keepCallback);
         } catch (e) {
-            console.log("Error in error callback: " + callbackId + " = "+e);
+            console.log("Error in success callback: " + callbackId + " = "+e);
         }
     },
 
@@ -344,18 +344,18 @@ define("cordova/android/promptbasednativeapi", function(require, exports, module
 
 /**
  * Implements the API of ExposedJsApi.java, but uses prompt() to communicate.
- * This is used only on the 2.3 simulator, where addJavascriptInterface() is broken.
+ * This is used pre-JellyBean, where addJavascriptInterface() is disabled.
  */
 
 module.exports = {
-    exec: function(service, action, callbackId, argsJson) {
-        return prompt(argsJson, 'gap:'+JSON.stringify([service, action, callbackId]));
+    exec: function(bridgeSecret, service, action, callbackId, argsJson) {
+        return prompt(argsJson, 'gap:'+JSON.stringify([bridgeSecret, service, action, callbackId]));
     },
-    setNativeToJsBridgeMode: function(value) {
-        prompt(value, 'gap_bridge_mode:');
+    setNativeToJsBridgeMode: function(bridgeSecret, value) {
+        prompt(value, 'gap_bridge_mode:' + bridgeSecret);
     },
-    retrieveJsMessages: function(fromOnlineEvent) {
-        return prompt(+fromOnlineEvent, 'gap_poll:');
+    retrieveJsMessages: function(bridgeSecret, fromOnlineEvent) {
+        return prompt(+fromOnlineEvent, 'gap_poll:' + bridgeSecret);
     }
 };
 
@@ -869,13 +869,10 @@ var cordova = require('cordova'),
     nativeApiProvider = require('cordova/android/nativeapiprovider'),
     utils = require('cordova/utils'),
     base64 = require('cordova/base64'),
+    channel = require('cordova/channel'),
     jsToNativeModes = {
         PROMPT: 0,
-        JS_OBJECT: 1,
-        // This mode is currently for benchmarking purposes only. It must be enabled
-        // on the native side through the ENABLE_LOCATION_CHANGE_EXEC_MODE
-        // constant within CordovaWebViewClient.java before it will work.
-        LOCATION_CHANGE: 2
+        JS_OBJECT: 1
     },
     nativeToJsModes = {
         // Polls for messages using the JS->Native bridge.
@@ -895,9 +892,17 @@ var cordova = require('cordova'),
     jsToNativeBridgeMode,  // Set lazily.
     nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT,
     pollEnabled = false,
-    messagesFromNative = [];
+    messagesFromNative = [],
+    bridgeSecret = -1;
 
 function androidExec(success, fail, service, action, args) {
+    if (bridgeSecret < 0) {
+        // If we ever catch this firing, we'll need to queue up exec()s
+        // and fire them once we get a secret. For now, I don't think
+        // it's possible for exec() to be called since plugins are parsed but
+        // not run until until after onNativeReady.
+        throw new Error('exec() called without bridgeSecret');
+    }
     // Set default bridge modes if they have not already been set.
     // By default, we use the failsafe, since addJavascriptInterface breaks too often
     if (jsToNativeBridgeMode === undefined) {
@@ -918,29 +923,35 @@ function androidExec(success, fail, service, action, args) {
         cordova.callbacks[callbackId] = {success:success, fail:fail};
     }
 
-    if (jsToNativeBridgeMode == jsToNativeModes.LOCATION_CHANGE) {
-        window.location = 'http://cdv_exec/' + service + '#' + action + '#' + callbackId + '#' + argsJson;
+    var messages = nativeApiProvider.get().exec(bridgeSecret, service, action, callbackId, argsJson);
+    // If argsJson was received by Java as null, try again with the PROMPT bridge mode.
+    // This happens in rare circumstances, such as when certain Unicode characters are passed over the bridge on a Galaxy S2.  See CB-2666.
+    if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT && messages === "@Null arguments.") {
+        androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
+        androidExec(success, fail, service, action, args);
+        androidExec.setJsToNativeBridgeMode(jsToNativeModes.JS_OBJECT);
+        return;
     } else {
-        var messages = nativeApiProvider.get().exec(service, action, callbackId, argsJson);
-        // If argsJson was received by Java as null, try again with the PROMPT bridge mode.
-        // This happens in rare circumstances, such as when certain Unicode characters are passed over the bridge on a Galaxy S2.  See CB-2666.
-        if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT && messages === "@Null arguments.") {
-            androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
-            androidExec(success, fail, service, action, args);
-            androidExec.setJsToNativeBridgeMode(jsToNativeModes.JS_OBJECT);
-            return;
-        } else {
-            androidExec.processMessages(messages, true);
-        }
+        androidExec.processMessages(messages, true);
     }
 }
+
+androidExec.init = function() {
+    bridgeSecret = +prompt('', 'gap_init:' + nativeToJsBridgeMode);
+    channel.onNativeReady.fire();
+};
 
 function pollOnceFromOnlineEvent() {
     pollOnce(true);
 }
 
 function pollOnce(opt_fromOnlineEvent) {
-    var msg = nativeApiProvider.get().retrieveJsMessages(!!opt_fromOnlineEvent);
+    if (bridgeSecret < 0) {
+        // This can happen when the NativeToJsMessageQueue resets the online state on page transitions.
+        // We know there's nothing to retrieve, so no need to poll.
+        return;
+    }
+    var msg = nativeApiProvider.get().retrieveJsMessages(bridgeSecret, !!opt_fromOnlineEvent);
     androidExec.processMessages(msg);
 }
 
@@ -990,7 +1001,10 @@ androidExec.setNativeToJsBridgeMode = function(mode) {
 
     nativeToJsBridgeMode = mode;
     // Tell the native side to switch modes.
-    nativeApiProvider.get().setNativeToJsBridgeMode(mode);
+    // Otherwise, it will be set by androidExec.init()
+    if (bridgeSecret >= 0) {
+        nativeApiProvider.get().setNativeToJsBridgeMode(bridgeSecret, mode);
+    }
 
     if (mode == nativeToJsModes.POLLING) {
         pollEnabled = true;
@@ -1465,10 +1479,8 @@ module.exports = {
             exec = require('cordova/exec'),
             modulemapper = require('cordova/modulemapper');
 
-        // Tell the native code that a page change has occurred.
-        exec(null, null, 'PluginManager', 'startup', []);
-        // Tell the JS that the native side is ready.
-        channel.onNativeReady.fire();
+        // Get the shared secret needed to use the bridge.
+        exec.init();
 
         // TODO: Extract this as a proper plugin.
         modulemapper.clobbers('cordova/plugin/android/app', 'navigator.app');
