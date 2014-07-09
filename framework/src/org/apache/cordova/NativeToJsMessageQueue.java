@@ -294,7 +294,7 @@ public class NativeToJsMessageQueue {
             public void run() {
                 String js = popAndEncodeAsJs();
                 if (js != null) {
-                    webView.loadUrlNow("javascript:" + js);
+                    webView.loadUrlIntoView("javascript:" + js, false);
                 }
             }
         };

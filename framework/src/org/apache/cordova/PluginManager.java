@@ -53,22 +53,14 @@ public class PluginManager {
 
     private Set<String> pluginIdWhitelist;
 
-    PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, List<PluginEntry> pluginEntries) {
+    public PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, List<PluginEntry> pluginEntries) {
         this.ctx = cordova;
         this.app = cordovaWebView;
-        setPluginEntries(pluginEntries);
-    }
-
-    public void setPluginEntries(List<PluginEntry> pluginEntries) {
-        this.onPause(false);
-        this.onDestroy();
-        this.clearPluginObjects();
-        entries.clear();
         for (PluginEntry entry : pluginEntries) {
             addService(entry);
         }
     }
-    
+
     public void setPluginIdWhitelist(Set<String> pluginIdWhitelist) {
         this.pluginIdWhitelist = pluginIdWhitelist;
     }

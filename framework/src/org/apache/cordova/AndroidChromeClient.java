@@ -20,8 +20,6 @@ package org.apache.cordova;
 
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.LOG;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
@@ -44,7 +42,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.util.Log;
 
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
@@ -57,7 +54,7 @@ import android.util.Log;
  * @see CordovaWebViewClient
  * @see CordovaWebView
  */
-public class AndroidChromeClient extends WebChromeClient implements CordovaChromeClient {
+public class AndroidChromeClient extends WebChromeClient {
 
     public static final int FILECHOOSER_RESULTCODE = 5173;
     private static final String LOG_TAG = "AndroidChromeClient";
@@ -69,7 +66,7 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
     private View mVideoProgressView;
     
     // File Chooser
-    public ValueCallback<Uri> mUploadMessage;
+    protected ValueCallback<Uri> mUploadMessage;
     
     public AndroidChromeClient(CordovaInterface ctx, AndroidWebView app) {
         this.cordova = ctx;
@@ -182,67 +179,9 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
     @Override
     public boolean onJsPrompt(WebView view, String origin, String message, String defaultValue, JsPromptResult result) {
         // Unlike the @JavascriptInterface bridge, this method is always called on the UI thread.
-        if (defaultValue != null && defaultValue.length() > 3 && defaultValue.startsWith("gap:")) {
-            JSONArray array;
-            try {
-                array = new JSONArray(defaultValue.substring(4));
-                int bridgeSecret = array.getInt(0);
-                String service = array.getString(1);
-                String action = array.getString(2);
-                String callbackId = array.getString(3);
-                String r = appView.exposedJsApi.exec(bridgeSecret, service, action, callbackId, message);
-                result.confirm(r == null ? "" : r);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                result.cancel();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                result.cancel();
-            }
-        }
-
-        // Sets the native->JS bridge mode. 
-        else if (defaultValue != null && defaultValue.startsWith("gap_bridge_mode:")) {
-            try {
-                int bridgeSecret = Integer.parseInt(defaultValue.substring(16));
-                appView.exposedJsApi.setNativeToJsBridgeMode(bridgeSecret, Integer.parseInt(message));
-                result.cancel();
-            } catch (NumberFormatException e){
-                e.printStackTrace();
-                result.cancel();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                result.cancel();
-            }
-        }
-
-        // Polling for JavaScript messages 
-        else if (defaultValue != null && defaultValue.startsWith("gap_poll:")) {
-            int bridgeSecret = Integer.parseInt(defaultValue.substring(9));
-            try {
-                String r = appView.exposedJsApi.retrieveJsMessages(bridgeSecret, "1".equals(message));
-                result.confirm(r == null ? "" : r);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                result.cancel();
-            }
-        }
-
-        else if (defaultValue != null && defaultValue.startsWith("gap_init:")) {
-            // Protect against random iframes being able to talk through the bridge.
-            // Trust only file URLs and the start URL's domain.
-            // The extra origin.startsWith("http") is to protect against iframes with data: having "" as origin.
-            if (origin.startsWith("file:") || (origin.startsWith("http") && appView.loadedUrl.startsWith(origin))) {
-                // Enable the bridge
-                int bridgeMode = Integer.parseInt(defaultValue.substring(9));
-                appView.jsMessageQueue.setBridgeMode(bridgeMode);
-                // Tell JS the bridge secret.
-                int secret = appView.exposedJsApi.generateBridgeSecret();
-                result.confirm(""+secret);
-            } else {
-                Log.e(LOG_TAG, "gap_init called from restricted origin: " + origin);
-                result.cancel();
-            }
+        String handledRet = appView.bridge.promptOnJsPrompt(origin, message, defaultValue);
+        if (handledRet != null) {
+            result.confirm(handledRet);
         } else {
             // Returning false would also show a dialog, but the default one shows the origin (ugly).
             final JsPromptResult res = result;
@@ -374,9 +313,5 @@ public class AndroidChromeClient extends WebChromeClient implements CordovaChrom
         i.setType("*/*");
         this.cordova.getActivity().startActivityForResult(Intent.createChooser(i, "File Browser"),
                 FILECHOOSER_RESULTCODE);
-    }
-    
-    public ValueCallback<Uri> getValueCallback() {
-        return this.mUploadMessage;
     }
 }

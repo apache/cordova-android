@@ -75,7 +75,7 @@ public class CoreAndroid extends CordovaPlugin {
                 // indicative of what this actually does (shows the webview).
                 cordova.getActivity().runOnUiThread(new Runnable() {
                     public void run() {
-                        webView.postMessage("spinner", "stop");
+                        webView.getPluginManager().postMessage("spinner", "stop");
                     }
                 });
             }
@@ -247,7 +247,7 @@ public class CoreAndroid extends CordovaPlugin {
      * Exit the Android application.
      */
     public void exitApp() {
-        this.webView.postMessage("exit", null);
+        this.webView.getPluginManager().postMessage("exit", null);
     }
     
 
@@ -271,15 +271,15 @@ public class CoreAndroid extends CordovaPlugin {
                         String extraData = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
                         if (extraData.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
                             LOG.i(TAG, "Telephone RINGING");
-                            webView.postMessage("telephone", "ringing");
+                            webView.getPluginManager().postMessage("telephone", "ringing");
                         }
                         else if (extraData.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
                             LOG.i(TAG, "Telephone OFFHOOK");
-                            webView.postMessage("telephone", "offhook");
+                            webView.getPluginManager().postMessage("telephone", "offhook");
                         }
                         else if (extraData.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                             LOG.i(TAG, "Telephone IDLE");
-                            webView.postMessage("telephone", "idle");
+                            webView.getPluginManager().postMessage("telephone", "idle");
                         }
                     }
                 }

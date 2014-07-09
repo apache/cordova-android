@@ -50,7 +50,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.ValueCallback;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
@@ -162,11 +161,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
 
         appView = makeWebView();
-        appView.init(this, makeWebViewClient(appView), makeChromeClient(appView), pluginEntries, whitelist, preferences);
 
         // TODO: Have the views set this themselves.
         if (preferences.getBoolean("DisallowOverscroll", false)) {
-            appView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            appView.getView().setOverScrollMode(View.OVER_SCROLL_NEVER);
         }
         createViews();
 
@@ -191,7 +189,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @SuppressWarnings("deprecation")
     protected void createViews() {
         // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
-        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
         Display display = getWindowManager().getDefaultDisplay();
         int width = display.getWidth();
         int height = display.getHeight();
@@ -201,15 +198,15 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
 
-        appView.setId(100);
-        appView.setLayoutParams(new LinearLayout.LayoutParams(
+        appView.getView().setId(100);
+        appView.getView().setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 1.0F));
 
         // Add web view but make it invisible while loading URL
-        appView.setVisibility(View.INVISIBLE);
-        root.addView((View) appView);
+        appView.getView().setVisibility(View.INVISIBLE);
+        root.addView(appView.getView());
         setContentView(root);
 
         // TODO: Setting this on the appView causes it to show when <html style="opacity:0">.
@@ -231,63 +228,34 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * require a more specialized web view.
      */
     protected CordovaWebView makeWebView() {
-        String r = preferences.getString("webView", "org.apache.cordova.AndroidWebView");
-
-        try {
-            Class<?> webViewClass = Class.forName(r);
-            Constructor<?>[] webViewConstructors = webViewClass.getConstructors();
-
-            if(CordovaWebView.class.isAssignableFrom(webViewClass)) {
-                for (Constructor<?> constructor : webViewConstructors) {
-                    try {
-                        CordovaWebView webView = (CordovaWebView) constructor.newInstance((Context)this);
-                        return webView;
-                    } catch (IllegalArgumentException e) {
-                        LOG.d(TAG, "Illegal arguments; trying next constructor.");
-                    }
-                }
+        String r = preferences.getString("webView", null);
+        CordovaWebView ret = null;
+        if (r != null) {
+            try {
+                Class<?> webViewClass = Class.forName(r);
+                Constructor<?> constructor = webViewClass.getConstructor(Context.class);
+                ret = (CordovaWebView) constructor.newInstance((Context)this);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
             }
-            LOG.e(TAG, "The WebView Engine is NOT a proper WebView, defaulting to system WebView");
-        } catch (ClassNotFoundException e) {
-            LOG.e(TAG, "The WebView Engine was not found, defaulting to system WebView");
-        } catch (InstantiationException e) {
-            LOG.e(TAG, "Unable to instantiate the WebView, defaulting to system WebView");
-        } catch (IllegalAccessException e) {
-            LOG.e(TAG, "Illegal Access to Constructor.  This should never happen, defaulting to system WebView");
-        } catch (IllegalArgumentException e) {
-            LOG.e(TAG, "The WebView does not implement the default constructor, defaulting to system WebView");
-        } catch (InvocationTargetException e) {
-            LOG.e(TAG, "Invocation Target Exception! Reflection is hard, defaulting to system WebView");
         }
-        
-        // If all else fails, return a default WebView
-        return (CordovaWebView) new AndroidWebView(this);
-    }
-
-    /**
-     * Construct the client for the default web view object.
-     *
-     * This is intended to be overridable by subclasses of CordovaActivity which
-     * require a more specialized web view. By default, it allows the webView
-     * to create its own client objects.
-     *
-     * @param webView the default constructed web view object
-     */
-    protected CordovaWebViewClient makeWebViewClient(CordovaWebView webView) {
-        return webView.makeWebViewClient(this);
-    }
-
-    /**
-     * Construct the chrome client for the default web view object.
-     *
-     * This is intended to be overridable by subclasses of CordovaActivity which
-     * require a more specialized web view. By default, it allows the webView
-     * to create its own client objects.
-     *
-     * @param webView the default constructed web view object
-     */
-    protected CordovaChromeClient makeChromeClient(CordovaWebView webView) {
-        return webView.makeWebChromeClient(this);
+            
+        if (ret == null) {
+            // If all else fails, return a default WebView
+            ret = new AndroidWebView(this);
+        }
+        ret.init(this, pluginEntries, whitelist, preferences);
+        return ret;
     }
 
     /**
@@ -309,21 +277,17 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         this.keepRunning = preferences.getBoolean("KeepRunning", true);
 
         //Check if the view is attached to anything
-        if(appView.getParent() != null)
+        if(appView.getView().getParent() != null)
         {
             // Then load the spinner
             this.loadSpinner();
         }
         //Load the correct splashscreen
-        
         if(this.splashscreen != 0)
         {
-            this.appView.loadUrl(url, this.splashscreenTime);
+            appView.getPluginManager().postMessage("splashscreen", "show");
         }
-        else
-        {
-            this.appView.loadUrl(url);
-        }
+        this.appView.loadUrlIntoView(url, true);
     }
 
     /**
@@ -459,15 +423,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     }
 
     /**
-     * Send a message to all plugins.
-     */
-    public void postMessage(String id, Object data) {
-        if (this.appView != null) {
-            this.appView.postMessage(id, data);
-        }
-    }
-
-    /**
      * Show the spinner.  Must be called from the UI thread.
      *
      * @param title         Title of the dialog
@@ -542,21 +497,15 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         super.onActivityResult(requestCode, resultCode, intent);
         Log.d(TAG, "Request code = " + requestCode);
         if (appView != null && requestCode == AndroidChromeClient.FILECHOOSER_RESULTCODE) {
-        	ValueCallback<Uri> mUploadMessage = ((CordovaChromeClient) this.appView.getWebChromeClient()).getValueCallback();
-            Log.d(TAG, "did we get here?");
-            if (null == mUploadMessage)
-                return;
             Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
-            Log.d(TAG, "result = " + result);
-            mUploadMessage.onReceiveValue(result);
-            mUploadMessage = null;
+            appView.onFilePickerResult(result);
         }
         CordovaPlugin callback = this.activityResultCallback;
         if(callback == null && initCallbackClass != null) {
             // The application was restarted, but had defined an initial callback
             // before being shut down.
             //this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
-            this.activityResultCallback = appView.getPlugin(initCallbackClass);
+            this.activityResultCallback = appView.getPluginManager().getPlugin(initCallbackClass);
             callback = this.activityResultCallback;
         }
         if(callback != null) {
@@ -598,7 +547,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             me.runOnUiThread(new Runnable() {
                 public void run() {
                     if (exit) {
-                        me.appView.setVisibility(View.GONE);
+                        me.appView.getView().setVisibility(View.GONE);
                         me.displayError("Application Error", description + " (" + failingUrl + ")", "OK", exit);
                     }
                 }
@@ -636,32 +585,24 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         });
     }
 
-    /**
-     * Determine if URL is in approved list of URLs to load.
-     */
-    @Deprecated // Use whitelist object directly.
-    public boolean isUrlWhiteListed(String url) {
-        return whitelist.isUrlWhiteListed(url);
-    }
-
     /*
      * Hook in Cordova for menu plugins
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        this.postMessage("onCreateOptionsMenu", menu);
+        appView.getPluginManager().postMessage("onCreateOptionsMenu", menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        this.postMessage("onPrepareOptionsMenu", menu);
+        appView.getPluginManager().postMessage("onPrepareOptionsMenu", menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        this.postMessage("onOptionsItemSelected", item);
+        appView.getPluginManager().postMessage("onOptionsItemSelected", item);
         return true;
     }
 
@@ -753,7 +694,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         else if ("spinner".equals(id)) {
             if ("stop".equals(data.toString())) {
                 this.spinnerStop();
-                this.appView.setVisibility(View.VISIBLE);
+                this.appView.getView().setVisibility(View.VISIBLE);
             }
         }
         else if ("onReceivedError".equals(id)) {

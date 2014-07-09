@@ -21,16 +21,15 @@ package org.apache.cordova;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.webkit.WebView;
 
-class CordovaUriHelper {
+public class CordovaUriHelper {
     
     private static final String TAG = "CordovaUriHelper";
     
     private CordovaWebView appView;
     private CordovaInterface cordova;
     
-    CordovaUriHelper(CordovaInterface cdv, CordovaWebView webView)
+    public CordovaUriHelper(CordovaInterface cdv, CordovaWebView webView)
     {
         appView = webView;
         cordova = cdv;
@@ -44,7 +43,7 @@ class CordovaUriHelper {
      * @param url           The url to be loaded.
      * @return              true to override, false for default behavior
      */
-    boolean shouldOverrideUrlLoading(WebView view, String url) {
+    public boolean shouldOverrideUrlLoading(String url) {
         // The WebView should support http and https when going on the Internet
         if(url.startsWith("http:") || url.startsWith("https:"))
         {
@@ -55,7 +54,7 @@ class CordovaUriHelper {
             }
         }
         // Give plugins the chance to handle the url
-        else if (this.appView.onOverrideUrlLoading(url)) {
+        else if (this.appView.getPluginManager().onOverrideUrlLoading(url)) {
             
         }
         else if(url.startsWith("file://") | url.startsWith("data:"))

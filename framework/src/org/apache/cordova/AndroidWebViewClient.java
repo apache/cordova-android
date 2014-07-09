@@ -48,7 +48,7 @@ import android.webkit.WebViewClient;
  * @see CordovaChromeClient
  * @see CordovaWebView
  */
-public class AndroidWebViewClient extends WebViewClient implements CordovaWebViewClient{
+public class AndroidWebViewClient extends WebViewClient {
 
     private static final String TAG = "AndroidWebViewClient";
     protected final CordovaInterface cordova;
@@ -60,12 +60,6 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
     /** The authorization tokens. */
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
 
-    /**
-     * Constructor.
-     *
-     * @param cordova
-     * @param view
-     */
     public AndroidWebViewClient(CordovaInterface cordova, AndroidWebView view) {
         this.cordova = cordova;
         this.appView = view;
@@ -82,17 +76,12 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
      */
 	@Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        return helper.shouldOverrideUrlLoading(view, url);
+        return helper.shouldOverrideUrlLoading(url);
     }
     
     /**
      * On received http auth request.
      * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination
-     *
-     * @param view
-     * @param handler
-     * @param host
-     * @param realm
      */
     @Override
     public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
@@ -126,7 +115,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
         this.appView.onPageReset();
 
         // Broadcast message that page has loaded
-        this.appView.postMessage("onPageStarted", url);
+        this.appView.getPluginManager().postMessage("onPageStarted", url);
     }
 
     /**
@@ -159,10 +148,10 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
         }
 
         // Clear timeout flag
-        this.appView.incUrlTimeout();
+        appView.loadUrlTimeout++;
 
         // Broadcast message that page has loaded
-        this.appView.postMessage("onPageFinished", url);
+        this.appView.getPluginManager().postMessage("onPageFinished", url);
 
         // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
         if (this.appView.getVisibility() == View.INVISIBLE) {
@@ -172,7 +161,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
                         Thread.sleep(2000);
                         cordova.getActivity().runOnUiThread(new Runnable() {
                             public void run() {
-                                appView.postMessage("spinner", "stop");
+                                appView.getPluginManager().postMessage("spinner", "stop");
                             }
                         });
                     } catch (InterruptedException e) {
@@ -184,7 +173,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
 
         // Shutdown if blank loaded
         if (url.equals("about:blank")) {
-            appView.postMessage("exit", null);
+            appView.getPluginManager().postMessage("exit", null);
         }
     }
 
@@ -206,7 +195,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
         LOG.d(TAG, "CordovaWebViewClient.onReceivedError: Error code=%s Description=%s URL=%s", errorCode, description, failingUrl);
 
         // Clear timeout flag
-        this.appView.incUrlTimeout();
+        appView.loadUrlTimeout++;
 
         // Handle error
         JSONObject data = new JSONObject();
@@ -217,7 +206,7 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        this.appView.postMessage("onReceivedError", data);
+        this.appView.getPluginManager().postMessage("onReceivedError", data);
     }
 
     /**
@@ -326,10 +315,4 @@ public class AndroidWebViewClient extends WebViewClient implements CordovaWebVie
     public void clearAuthenticationTokens() {
         this.authenticationTokens.clear();
     }
-
-    @Override
-    public void onReceivedError(int errorCode, String description, String url) {
-        this.onReceivedError(appView, errorCode, description, url);
-    }
-
 }

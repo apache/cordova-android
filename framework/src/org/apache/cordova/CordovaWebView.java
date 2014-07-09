@@ -5,45 +5,19 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 import android.webkit.WebChromeClient.CustomViewCallback;
-import android.widget.LinearLayout.LayoutParams;
 
 public interface CordovaWebView {
     public static final String CORDOVA_VERSION = "4.0.0-dev";
 
-    void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient,
-              List<PluginEntry> pluginEntries, Whitelist whitelist, CordovaPreferences preferences);
+    void init(CordovaInterface cordova, List<PluginEntry> pluginEntries,
+            Whitelist whitelist, CordovaPreferences preferences);
 
     View getView();
 
-    CordovaWebViewClient makeWebViewClient(CordovaInterface cordova);
-
-    CordovaChromeClient makeWebChromeClient(CordovaInterface cordova);
-        
-    void setWebViewClient(CordovaWebViewClient webViewClient);
-
-    void setWebChromeClient(CordovaChromeClient webChromeClient);
-
-    void setId(int i);
-
-    void setLayoutParams(LayoutParams layoutParams);
-
-    void setVisibility(int invisible);
-
-    Object getParent();
-
-    void loadUrl(String url);
-
-    void loadUrl(String url, int splashscreenTime);
-
-    void loadUrlNow(String url);
-
-    void loadUrlIntoView(final String url);
-
-    void loadUrlIntoView(final String url, boolean recreatePlugins);
-
-    void loadUrlIntoView(final String url, final int splashscreenTime);
+    void loadUrlIntoView(String url, boolean recreatePlugins);
 
     void stopLoading();
 
@@ -62,10 +36,6 @@ public interface CordovaWebView {
     void handleResume(boolean keepRunning, boolean activityResultKeepRunning);
 
     void handleDestroy();
-
-    void postMessage(String id, Object data);
-
-    void addJavascript(String statement);
 
     /**
      * Send JavaScript statement back to JavaScript.
@@ -93,31 +63,13 @@ public interface CordovaWebView {
     @Deprecated
     void sendJavascript(String statememt);
 
-    CordovaChromeClient getWebChromeClient();
-
-    CordovaPlugin getPlugin(String initCallbackClass);
-
     void showWebPage(String errorUrl, boolean b, boolean c, HashMap<String, Object> params);
-
-    Object getFocusedChild();
 
     boolean isCustomViewShowing();
 
     void showCustomView(View view, CustomViewCallback callback);
 
     void hideCustomView();
-
-    Context getContext();
-
-    boolean onOverrideUrlLoading(String url);
-
-    int getVisibility();
-
-    void incUrlTimeout();
-
-    void setOverScrollMode(int overScrollNever);
-
-    void setNetworkAvailable(boolean online);
 
     CordovaResourceApi getResourceApi();
 
@@ -128,12 +80,15 @@ public interface CordovaWebView {
 
     PluginManager getPluginManager();
 
-    void setLayoutParams(android.widget.FrameLayout.LayoutParams layoutParams);
-    
-    // Required for test
-    String getUrl();
-    boolean isPaused();
-    
     Whitelist getWhitelist();
     CordovaPreferences getPreferences();
+    
+    void onFilePickerResult(Uri uri);
+
+    void setNetworkAvailable(boolean online);
+    
+    // TODO: Work on deleting these by removing refs from plugins.
+    Context getContext();
+    void loadUrl(String url);
+    Object postMessage(String id, Object data);
 }
