@@ -299,12 +299,19 @@ public class NativeToJsMessageQueue {
     /** Uses online/offline events to tell the JS when to poll for messages. */
     private class OnlineEventsBridgeMode extends BridgeMode {
         boolean online = false;
+        boolean lastOnline = false;
+
         final Runnable runnable = new Runnable() {
             public void run() {
-                if (!queue.isEmpty()) {
-                    webView.setNetworkAvailable(online);
+                if(lastOnline) {
+                    webView.setNetworkAvailable(false);
+                    lastOnline = false;
                 }
-            }                
+                if (!queue.isEmpty()) {
+                    webView.setNetworkAvailable(true);
+                    lastOnline = true;
+                }
+            }
         };
         OnlineEventsBridgeMode() {
             webView.setNetworkAvailable(true);
