@@ -40,8 +40,23 @@ public class CordovaBridge {
         this.pluginManager = pluginManager;
         this.jsMessageQueue = jsMessageQueue;
     }
+    
+    private final boolean checkBridgeEnabled(String action) {
+        if (!jsMessageQueue.isBridgeEnabled()) {
+            if (bridgeSecret == -1) {
+                Log.d(LOG_TAG, action + " call made before bridge was enabled.");
+            } else {
+                Log.d(LOG_TAG, "Ignoring " + action + " from previous page load.");                
+            }
+            return false;
+        }
+        return true;
+    }
 
     public String jsExec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
+        if (!checkBridgeEnabled("exec()")) {
+            return "";
+        }
         verifySecret(bridgeSecret);
         // If the arguments weren't received, send a message back to JS.  It will switch bridge modes and try again.  See CB-2666.
         // We send a message meant specifically for this case.  It starts with "@" so no other message can be encoded into the same string.
@@ -74,6 +89,9 @@ public class CordovaBridge {
     }
 
     public String jsRetrieveJsMessages(int bridgeSecret, boolean fromOnlineEvent) throws IllegalAccessException {
+        if (!checkBridgeEnabled("retrieveJsMessages()")) {
+            return "";
+        }
         verifySecret(bridgeSecret);
         return jsMessageQueue.popAndEncode(fromOnlineEvent);
     }
