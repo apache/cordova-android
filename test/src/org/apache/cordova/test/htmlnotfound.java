@@ -21,7 +21,7 @@ package org.apache.cordova.test;
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class htmlnotfound extends DroidGap {
+public class htmlnotfound extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -21,16 +21,16 @@ package org.apache.cordova.test.junit;
 
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginManager;
-import org.apache.cordova.test.CordovaActivity;
+import org.apache.cordova.test.MainTestActivity;
 
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-public class CordovaActivityTest extends ActivityInstrumentationTestCase2<CordovaActivity> {
+public class CordovaActivityTest extends ActivityInstrumentationTestCase2<MainTestActivity> {
 
-    private CordovaActivity testActivity;
+    private MainTestActivity testActivity;
     private FrameLayout containerView;
     private LinearLayout innerContainer;
     private CordovaWebView testView;
@@ -40,7 +40,7 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<Cordov
     @SuppressWarnings("deprecation")
     public CordovaActivityTest()
     {
-        super("org.apache.cordova.test",CordovaActivity.class);
+        super("org.apache.cordova.test",MainTestActivity.class);
     }
     
     protected void setUp() throws Exception {
@@ -68,33 +68,7 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<Cordov
         String className = innerContainer.getClass().getSimpleName();
         assertTrue(className.equals("LinearLayoutSoftKeyboardDetect"));
     }
-    
 
-    public void testPauseAndResume() throws Throwable
-    {
-        runTestOnUiThread(new Runnable() {
-            public void run()
-            {
-                mInstr.callActivityOnPause(testActivity);
-            }
-        });
-        sleep();
-        runTestOnUiThread(new Runnable() {
-            public void run()
-            {
-                assertTrue(testView.isPaused());
-                mInstr.callActivityOnResume(testActivity);
-            }
-        });
-        sleep();
-        runTestOnUiThread(new Runnable() {
-            public void run()
-            {
-                assertFalse(testView.isPaused());
-            }
-        });
-    }
-    
     private void sleep() {
         try {
           Thread.sleep(TIMEOUT);

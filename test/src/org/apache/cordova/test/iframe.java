@@ -21,7 +21,7 @@ package org.apache.cordova.test;
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class iframe extends DroidGap {
+public class iframe extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

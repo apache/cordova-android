@@ -21,11 +21,11 @@ package org.apache.cordova.test;
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class loading extends DroidGap {
+public class loading extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.setStringProperty("loadingDialog", "Testing,Loading...");
+        preferences.set("loadingDialog", "Testing,Loading...");
         super.loadUrl("http://www.google.com");
     }
 }

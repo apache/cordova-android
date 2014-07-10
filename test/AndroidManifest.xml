@@ -99,7 +99,7 @@
             android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
-            android:name="org.apache.cordova.test.CordovaActivity" >
+            android:name="org.apache.cordova.test.MainTestActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.SAMPLE_CODE" />
