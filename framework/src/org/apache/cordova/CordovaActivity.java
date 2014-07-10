@@ -207,37 +207,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
         
         loadConfig();
-
-        if(!preferences.getBoolean("ShowTitle", false))
-        {
-            getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        }
-
-        if(preferences.getBoolean("SetFullscreen", false))
-        {
-            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else if (preferences.getBoolean("Fullscreen", false)) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        }
-
-        appView = makeWebView();
-        appView.init(this, makeWebViewClient(appView), makeChromeClient(appView), pluginEntries, whitelist, preferences);
-
-        // TODO: Have the views set this themselves.
-        if (preferences.getBoolean("DisallowOverscroll", false)) {
-            appView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        }
-        createViews();
-
-        // TODO: Make this a preference (CB-6153)
-        // Setup the hardware volume controls to handle volume control
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @SuppressWarnings("deprecation")
@@ -323,32 +292,58 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         return webView.makeWebChromeClient(this);
     }
 
-    @Deprecated // No need to call init() anymore.
     public void init() {
         this.init(appView, null, null);
     }
 
     @SuppressLint("NewApi")
-    @Deprecated // No need to call init() anymore.
+    @Deprecated // Call init() instead and override makeWebView() to customize.
     public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
         LOG.d(TAG, "CordovaActivity.init()");
 
-        appView = webView;
+        if(!preferences.getBoolean("ShowTitle", false))
+        {
+            getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        }
 
-        if (webViewClient != null) {
-            this.appView.setWebViewClient(webViewClient);
-            webViewClient.setWebView(this.appView);
+        if(preferences.getBoolean("SetFullscreen", false))
+        {
+            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else if (preferences.getBoolean("Fullscreen", false)) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         }
-        if (webChromeClient != null) {
-            this.appView.setWebChromeClient(webChromeClient);
-            webChromeClient.setWebView(this.appView);
+
+        appView = webView != null ? webView : makeWebView();
+        if (appView.pluginManager == null) {
+            appView.init(this, webViewClient != null ? webViewClient : makeWebViewClient(appView),
+                    webChromeClient != null ? webChromeClient : makeChromeClient(appView),
+                    pluginEntries, whitelist, preferences);
         }
+
+        // TODO: Have the views set this themselves.
+        if (preferences.getBoolean("DisallowOverscroll", false)) {
+            appView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        }
+        createViews();
+
+        // TODO: Make this a preference (CB-6153)
+        // Setup the hardware volume controls to handle volume control
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     /**
      * Load the url into the webview.
      */
     public void loadUrl(String url) {
+        if (appView == null) {
+            init();
+        }
         this.splashscreenTime = preferences.getInteger("SplashScreenDelay", this.splashscreenTime);
         String splash = preferences.getString("SplashScreen", null);
         if(this.splashscreenTime > 0 && splash != null)
@@ -436,6 +431,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     @Deprecated // Call method on appView directly.
     public void clearCache() {
+        if (appView == null) {
+            init();
+        }
         this.appView.clearCache(true);
     }
 
