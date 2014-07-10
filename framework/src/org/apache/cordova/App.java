@@ -49,7 +49,7 @@ public class App extends CordovaPlugin {
      * get file paths associated with the Activity.
      */
     @Override
-    public void initialize() {
+    public void pluginInitialize() {
         this.initTelephonyReceiver();
     }
 
