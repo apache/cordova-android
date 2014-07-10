@@ -158,6 +158,19 @@ public class CordovaWebView extends WebView {
         exposeJsInterface();
     }
 
+    @SuppressWarnings("deprecation")
+    private void initIfNecessary() {
+        if (pluginManager == null) {
+            Log.w(TAG, "CordovaWebView.init() was not called. This will soon be required.");
+            // Before the refactor to a two-phase init, the Context needed to implement CordovaInterface. 
+            CordovaInterface cdv = (CordovaInterface)getContext();
+            if (!Config.isInitialized()) {
+                Config.init(cdv.getActivity());
+            }
+            init(cdv, makeWebViewClient(cdv), makeWebChromeClient(cdv), Config.getPluginEntries(), Config.getWhitelist(), Config.getPreferences());
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     @SuppressWarnings("deprecation")
     private void initWebViewSettings() {
@@ -357,6 +370,8 @@ public class CordovaWebView extends WebView {
     public void loadUrlIntoView(final String url, boolean recreatePlugins) {
         LOG.d(TAG, ">>> loadUrl(" + url + ")");
 
+        initIfNecessary();
+
         if (recreatePlugins) {
             this.loadedUrl = url;
             this.pluginManager.init();
@@ -515,13 +530,10 @@ public class CordovaWebView extends WebView {
      * @return true if we went back, false if we are already at top
      */
     public boolean backHistory() {
-
         // Check webview first to see if there is a history
         // This is needed to support curPage#diffLink, since they are added to appView's history, but not our history url array (JQMobile behavior)
         if (super.canGoBack()) {
-            printBackForwardList();
             super.goBack();
-            
             return true;
         }
         return false;

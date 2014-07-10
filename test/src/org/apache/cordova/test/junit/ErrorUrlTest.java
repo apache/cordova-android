@@ -63,7 +63,7 @@ public class ErrorUrlTest extends ActivityInstrumentationTestCase2<errorurl> {
             String good_url = "file:///android_asset/www/htmlnotfound/error.html";
             String url = testView.getUrl();
             assertNotNull(url);
-            assertTrue(url.equals(good_url));
+            assertEquals(good_url, url);
          
         }
     });
