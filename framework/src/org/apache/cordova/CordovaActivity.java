@@ -108,7 +108,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     // Draw a splash screen using an image located in the drawable resource directory.
     // This is not the same as calling super.loadSplashscreen(url)
     protected int splashscreen = 0;
-    protected int splashscreenTime = 3000;
 
     // LoadUrl timeout value in msec (default of 20 sec)
     protected int loadUrlTimeoutValue = 20000;
@@ -141,7 +140,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
         
         loadConfig();
-
+    }
+    
+    protected void init() {
         if(!preferences.getBoolean("ShowTitle", false))
         {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -261,15 +262,17 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Load the url into the webview.
      */
-    public void loadUrl(String url) {
-        this.splashscreenTime = preferences.getInteger("SplashScreenDelay", this.splashscreenTime);
+    public void loadUrl(String url, int splashscreenTime) {
+        if (appView == null) {
+            init();
+        }
         String splash = preferences.getString("SplashScreen", null);
-        if(this.splashscreenTime > 0 && splash != null)
+        if(splashscreenTime > 0 && splash != null)
         {
             this.splashscreen = getResources().getIdentifier(splash, "drawable", getClass().getPackage().getName());;
             if(this.splashscreen != 0)
             {
-                this.showSplashScreen(this.splashscreenTime);
+                this.showSplashScreen(splashscreenTime);
             }
         }
         
@@ -297,10 +300,11 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
-    public void loadUrl(final String url, int time) {
-
-        this.splashscreenTime = time;
-        this.loadUrl(url);
+    public void loadUrl(final String url) {
+        if (appView == null) {
+            init();
+        }
+        this.loadUrl(url, preferences.getInteger("SplashScreenDelay", 3000));
     }
     
     /*
@@ -456,6 +460,11 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * End this activity by calling finish for activity
      */
     public void endActivity() {
+        finish();
+    }
+    
+    @Override
+    public void finish() {
         this.activityState = ACTIVITY_EXITING;
         super.finish();
     }
@@ -590,19 +599,25 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        appView.getPluginManager().postMessage("onCreateOptionsMenu", menu);
+        if (appView != null) {
+            appView.getPluginManager().postMessage("onCreateOptionsMenu", menu);
+        }
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        appView.getPluginManager().postMessage("onPrepareOptionsMenu", menu);
+        if (appView != null) {
+            appView.getPluginManager().postMessage("onPrepareOptionsMenu", menu);
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        appView.getPluginManager().postMessage("onOptionsItemSelected", item);
+        if (appView != null) {
+            appView.getPluginManager().postMessage("onOptionsItemSelected", item);
+        }
         return true;
     }
 
@@ -687,7 +702,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                     if (splashResource != null) {
                         splashscreen = getResources().getIdentifier(splashResource, "drawable", getClass().getPackage().getName());
                     }
-                    this.showSplashScreen(this.splashscreenTime);
+                    this.showSplashScreen(preferences.getInteger("SplashScreenDelay", 3000));
                 }
             }
         }
