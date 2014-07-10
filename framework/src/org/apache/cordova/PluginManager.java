@@ -18,9 +18,8 @@
  */
 package org.apache.cordova;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CallbackContext;
@@ -51,18 +50,24 @@ public class PluginManager {
     private final CordovaInterface ctx;
     private final CordovaWebView app;
 
-    private Set<String> pluginIdWhitelist;
-
-    public PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, List<PluginEntry> pluginEntries) {
+    public PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, Collection<PluginEntry> pluginEntries) {
         this.ctx = cordova;
         this.app = cordovaWebView;
+        setPluginEntries(pluginEntries);
+    }
+
+    public Collection<PluginEntry> getPluginEntries() {
+        return entries.values();
+    }
+
+    public void setPluginEntries(Collection<PluginEntry> pluginEntries) {
+        this.onPause(false);
+        this.onDestroy();
+        this.clearPluginObjects();
+        entries.clear();
         for (PluginEntry entry : pluginEntries) {
             addService(entry);
         }
-    }
-
-    public void setPluginIdWhitelist(Set<String> pluginIdWhitelist) {
-        this.pluginIdWhitelist = pluginIdWhitelist;
     }
 
     /**
@@ -91,9 +96,7 @@ public class PluginManager {
     public void startupPlugins() {
         for (PluginEntry entry : this.entries.values()) {
             if (entry.onload) {
-                if (pluginIdWhitelist == null || pluginIdWhitelist.contains(entry.service)) {
-                    entry.createPlugin(this.app, this.ctx);
-                }
+                entry.createPlugin(this.app, this.ctx);
             }
         }
     }
@@ -160,11 +163,7 @@ public class PluginManager {
         }
         CordovaPlugin plugin = entry.plugin;
         if (plugin == null) {
-            if (pluginIdWhitelist == null || pluginIdWhitelist.contains(entry.service)) {
-                plugin = entry.createPlugin(this.app, this.ctx);
-            } else {
-                Log.e(TAG, "Attempted to access non-whitelisted plugin: " + entry.service);
-            }
+            plugin = entry.createPlugin(this.app, this.ctx);
         }
         return plugin;
     }
