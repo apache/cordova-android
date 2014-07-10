@@ -34,27 +34,35 @@ import android.net.Uri;
 public class CordovaPlugin {
     @Deprecated // This is never set.
     public String id;
-    public CordovaWebView webView;					// WebView object
+    public CordovaWebView webView;
     public CordovaInterface cordova;
     protected CordovaPreferences preferences;
 
-    void privateInitialize(CordovaInterface cordova, CordovaWebView webView, CordovaPreferences preferences) {
+    /**
+     * Call this after constructing to initialize the plugin.
+     * Final because we want to be able to change args without breaking plugins.
+     */
+    public final void privateInitialize(CordovaInterface cordova, CordovaWebView webView, CordovaPreferences preferences) {
         assert this.cordova == null;
         this.cordova = cordova;
         this.webView = webView;
         this.preferences = preferences;
         initialize(cordova, webView);
-        initialize();
+        pluginInitialize();
     }
 
-    @Deprecated // Override initialize() instead.
+    /**
+     * Called after plugin construction and fields have been initialized.
+     * Prefer to use pluginInitialize instead since there is no value in
+     * having parameters on the initialize() function.
+     */
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     }
 
     /**
-     * This is where you can do start-up logic with protected fields set.
+     * Called after plugin construction and fields have been initialized.
      */
-    protected void initialize() {
+    protected void pluginInitialize() {
     }
     
     /**
