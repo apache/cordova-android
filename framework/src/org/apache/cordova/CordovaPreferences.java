@@ -40,6 +40,18 @@ public class CordovaPreferences {
         prefs.put(name.toLowerCase(Locale.ENGLISH), value);
     }
 
+    public void set(String name, boolean value) {
+        set(name, "" + value);
+    }
+
+    public void set(String name, int value) {
+        set(name, "" + value);
+    }
+    
+    public void set(String name, double value) {
+        set(name, "" + value);
+    }
+    
     public Map<String, String> getAll() {
         return prefs;
     }

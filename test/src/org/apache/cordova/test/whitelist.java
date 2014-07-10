@@ -23,11 +23,12 @@ import android.webkit.WebView;
 
 import org.apache.cordova.*;
 
-public class whitelist extends CordovaActivity {
+public class whitelist extends MainTestActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.init(new AndroidWebView(this), new TestViewClient(this), new AndroidChromeClient(this));
+        super.init();
+        ((AndroidWebView)appView).setWebViewClient(new TestViewClient(this, ((AndroidWebView)appView)));
         super.loadUrl("file:///android_asset/www/whitelist/index.html");
     }
 
@@ -36,8 +37,8 @@ public class whitelist extends CordovaActivity {
      */
     public class TestViewClient extends AndroidWebViewClient {
 
-        public TestViewClient(CordovaActivity arg0) {
-            super(arg0);
+        public TestViewClient(CordovaInterface ctx, AndroidWebView app) {
+            super(ctx, app);
         }
 
         @Override

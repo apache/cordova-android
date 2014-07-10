@@ -18,12 +18,11 @@
 */
 package org.apache.cordova.test;
 
-import org.apache.cordova.DroidGap;
+import org.apache.cordova.CordovaActivity;
 
-import android.app.Activity;
 import android.os.Bundle;
 
-public class CordovaActivity extends DroidGap {
+public class MainTestActivity extends CordovaActivity {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {

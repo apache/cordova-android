@@ -21,7 +21,7 @@ package org.apache.cordova.test;
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class fullscreen extends DroidGap {
+public class fullscreen extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,7 +30,7 @@ public class fullscreen extends DroidGap {
 
         // fullscreen can also be set in cordova.xml.  For example, 
         //      <preference name="fullscreen" value="true" />
-        super.setBooleanProperty("fullscreen", true);
+        preferences.set("fullscreen", true);
 
         super.init();
         super.loadUrl("file:///android_asset/www/fullscreen/index.html");

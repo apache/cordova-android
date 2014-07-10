@@ -22,12 +22,12 @@ import android.os.Bundle;
 
 import org.apache.cordova.*;
 
-public class background extends DroidGap {
+public class background extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //super.init(new FixWebView(this), new CordovaWebViewClient(this), new CordovaChromeClient(this));
-        super.setBooleanProperty("keepRunning", false);
+        preferences.set("keepRunning", false);
         super.loadUrl("file:///android_asset/www/background/index.html");
     }
 }

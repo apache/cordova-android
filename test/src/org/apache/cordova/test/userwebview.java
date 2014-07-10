@@ -23,9 +23,8 @@ import android.webkit.WebView;
 import android.webkit.GeolocationPermissions.Callback;
 
 import org.apache.cordova.*;
-import org.apache.cordova.LOG;
 
-public class userwebview extends CordovaActivity {
+public class userwebview extends MainTestActivity {
     
     public TestViewClient testViewClient;
     public TestChromeClient testChromeClient;
@@ -33,15 +32,17 @@ public class userwebview extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        testViewClient = new TestViewClient(this);
-        testChromeClient = new TestChromeClient(this);
-        super.init(new AndroidWebView(this), new TestViewClient(this), new TestChromeClient(this));
+        testViewClient = new TestViewClient(this, ((AndroidWebView)appView));
+        testChromeClient = new TestChromeClient(this, ((AndroidWebView)appView));
+        super.init();
+        ((AndroidWebView)appView).setWebViewClient(testViewClient);
+        ((AndroidWebView)appView).setWebChromeClient(testChromeClient);
         super.loadUrl("file:///android_asset/www/userwebview/index.html");
     }
 
     public class TestChromeClient extends AndroidChromeClient {
-        public TestChromeClient(CordovaActivity arg0) {
-            super(arg0);
+        public TestChromeClient(CordovaInterface ctx, AndroidWebView app) {
+            super(ctx, app);
             LOG.d("userwebview", "TestChromeClient()");
         }
 
@@ -57,8 +58,8 @@ public class userwebview extends CordovaActivity {
      * This class can be used to override the GapViewClient and receive notification of webview events.
      */
     public class TestViewClient extends AndroidWebViewClient {
-        public TestViewClient(CordovaActivity arg0) {
-            super(arg0);
+        public TestViewClient(CordovaInterface ctx, AndroidWebView app) {
+            super(ctx, app);
             LOG.d("userwebview", "TestViewClient()");
         }
 

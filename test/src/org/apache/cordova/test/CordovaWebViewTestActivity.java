@@ -22,13 +22,11 @@ package org.apache.cordova.test;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.cordova.Config;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.LOG;
 import org.apache.cordova.test.R;
-import org.apache.cordova.test.R.id;
-import org.apache.cordova.test.R.layout;
 
 import android.app.Activity;
 import android.content.Context;
@@ -48,6 +46,8 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
         setContentView(R.layout.main);
 
         cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
+        cordovaWebView.init(this,
+                Config.getPluginEntries(), Config.getWhitelist(), Config.getPreferences());
 
         cordovaWebView.loadUrl("file:///android_asset/www/index.html");
 

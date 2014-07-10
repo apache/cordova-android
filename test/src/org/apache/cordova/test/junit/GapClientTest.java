@@ -20,7 +20,6 @@
 package org.apache.cordova.test.junit;
 
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.CordovaChromeClient;
 import org.apache.cordova.PluginManager;
 import org.apache.cordova.test.CordovaWebViewTestActivity;
 
@@ -39,7 +38,6 @@ public class GapClientTest extends ActivityInstrumentationTestCase2<CordovaWebVi
 	private LinearLayout innerContainer;
 	private View testView;
 	private String rString;
-	private CordovaChromeClient appCode;
 
 	public GapClientTest() {
 		super("org.apache.cordova.test.activities",CordovaWebViewTestActivity.class);

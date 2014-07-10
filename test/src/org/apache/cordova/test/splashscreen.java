@@ -20,17 +20,15 @@ package org.apache.cordova.test;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
-import org.apache.cordova.test.R;
-import org.apache.cordova.test.R.drawable;
 
-public class splashscreen extends DroidGap {
+public class splashscreen extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.init();
 
         // Show splashscreen
-        this.setIntegerProperty("splashscreen", R.drawable.sandy);
+        preferences.set("splashscreen", "sandy");
 
         super.loadUrl("file:///android_asset/www/splashscreen/index.html", 2000);
     }
