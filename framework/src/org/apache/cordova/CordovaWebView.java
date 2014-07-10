@@ -87,6 +87,8 @@ public interface CordovaWebView {
 
     void setNetworkAvailable(boolean online);
     
+    String getUrl();
+
     // TODO: Work on deleting these by removing refs from plugins.
     Context getContext();
     void loadUrl(String url);
