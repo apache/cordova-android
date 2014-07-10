@@ -33,7 +33,7 @@ public class CordovaBridge {
     private static final String LOG_TAG = "CordovaBridge";
     private PluginManager pluginManager;
     private NativeToJsMessageQueue jsMessageQueue;
-    private volatile int bridgeSecret = -1; // written by UI thread, read by JS thread.
+    private volatile int expectedBridgeSecret = -1; // written by UI thread, read by JS thread.
     private String loadedUrl;
 
     public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue) {
@@ -41,23 +41,10 @@ public class CordovaBridge {
         this.jsMessageQueue = jsMessageQueue;
     }
     
-    private final boolean checkBridgeEnabled(String action) {
-        if (!jsMessageQueue.isBridgeEnabled()) {
-            if (bridgeSecret == -1) {
-                Log.d(LOG_TAG, action + " call made before bridge was enabled.");
-            } else {
-                Log.d(LOG_TAG, "Ignoring " + action + " from previous page load.");                
-            }
-            return false;
-        }
-        return true;
-    }
-
     public String jsExec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
-        if (!checkBridgeEnabled("exec()")) {
-            return "";
+        if (!verifySecret("exec()", bridgeSecret)) {
+            return null;
         }
-        verifySecret(bridgeSecret);
         // If the arguments weren't received, send a message back to JS.  It will switch bridge modes and try again.  See CB-2666.
         // We send a message meant specifically for this case.  It starts with "@" so no other message can be encoded into the same string.
         if (arguments == null) {
@@ -70,7 +57,7 @@ public class CordovaBridge {
             CordovaResourceApi.jsThread = Thread.currentThread();
 
             pluginManager.exec(service, action, callbackId, arguments);
-            String ret = "";
+            String ret = null;
             if (!NativeToJsMessageQueue.DISABLE_EXEC_CHAINING) {
                 ret = jsMessageQueue.popAndEncode(false);
             }
@@ -84,33 +71,44 @@ public class CordovaBridge {
     }
 
     public void jsSetNativeToJsBridgeMode(int bridgeSecret, int value) throws IllegalAccessException {
-        verifySecret(bridgeSecret);
+        if (!verifySecret("setNativeToJsBridgeMode()", bridgeSecret)) {
+            return;
+        }
         jsMessageQueue.setBridgeMode(value);
     }
 
     public String jsRetrieveJsMessages(int bridgeSecret, boolean fromOnlineEvent) throws IllegalAccessException {
-        if (!checkBridgeEnabled("retrieveJsMessages()")) {
-            return "";
+        if (!verifySecret("retrieveJsMessages()", bridgeSecret)) {
+            return null;
         }
-        verifySecret(bridgeSecret);
         return jsMessageQueue.popAndEncode(fromOnlineEvent);
     }
 
-    private void verifySecret(int value) throws IllegalAccessException {
-        if (bridgeSecret < 0 || value != bridgeSecret) {
+    private boolean verifySecret(String action, int bridgeSecret) throws IllegalAccessException {
+        if (!jsMessageQueue.isBridgeEnabled()) {
+            if (bridgeSecret == -1) {
+                Log.d(LOG_TAG, action + " call made before bridge was enabled.");
+            } else {
+                Log.d(LOG_TAG, "Ignoring " + action + " from previous page load.");
+            }
+            return false;
+        }
+        // Bridge secret wrong and bridge not due to it being from the previous page.
+        if (expectedBridgeSecret < 0 || bridgeSecret != expectedBridgeSecret) {
             throw new IllegalAccessException();
         }
+        return true;
     }
 
     /** Called on page transitions */
     void clearBridgeSecret() {
-        bridgeSecret = -1;
+        expectedBridgeSecret = -1;
     }
 
     /** Called by cordova.js to initialize the bridge. */
     int generateBridgeSecret() {
-        bridgeSecret = (int)(Math.random() * Integer.MAX_VALUE);
-        return bridgeSecret;
+        expectedBridgeSecret = (int)(Math.random() * Integer.MAX_VALUE);
+        return expectedBridgeSecret;
     }
 
     public void reset(String loadedUrl) {
