@@ -19,6 +19,8 @@
 
 package org.apache.cordova;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.util.Log;
 
@@ -86,5 +88,17 @@ public class Config {
 
     public static Whitelist getWhitelist() {
         return parser.getWhitelist();
+    }
+
+    public static List<PluginEntry> getPluginEntries() {
+        return parser.getPluginEntries();
+    }
+    
+    public static CordovaPreferences getPreferences() {
+        return parser.getPreferences();
+    }
+
+    public static boolean isInitialized() {
+        return parser != null;
     }
 }
