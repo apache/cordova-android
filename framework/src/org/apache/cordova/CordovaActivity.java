@@ -669,7 +669,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Deprecated // Call method on appView directly.
     public void sendJavascript(String statement) {
         if (this.appView != null) {
-            this.appView.jsMessageQueue.addJavaScript(statement);
+            this.appView.bridge.getMessageQueue().addJavaScript(statement);
         }
     }
 

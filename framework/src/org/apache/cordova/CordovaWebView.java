@@ -81,8 +81,7 @@ public class CordovaWebView extends WebView {
 
     private long lastMenuEventTime = 0;
 
-    NativeToJsMessageQueue jsMessageQueue;
-    ExposedJsApi exposedJsApi;
+    CordovaBridge bridge;
 
     /** custom view created by the browser (a video player for example) */
     private View mCustomView;
@@ -149,8 +148,7 @@ public class CordovaWebView extends WebView {
         super.setWebViewClient(webViewClient);
 
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
-        jsMessageQueue = new NativeToJsMessageQueue(this, cordova);
-        exposedJsApi = new ExposedJsApi(pluginManager, jsMessageQueue);
+        bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova));
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
 
         pluginManager.addService("App", "org.apache.cordova.App");
@@ -300,7 +298,7 @@ public class CordovaWebView extends WebView {
             // use the prompt bridge instead.
             return;            
         } 
-        this.addJavascriptInterface(exposedJsApi, "_cordovaNative");
+        this.addJavascriptInterface(new ExposedJsApi(bridge), "_cordovaNative");
     }
 
     @Override
@@ -497,7 +495,7 @@ public class CordovaWebView extends WebView {
      */
     @Deprecated
     public void sendJavascript(String statement) {
-        this.jsMessageQueue.addJavaScript(statement);
+        this.bridge.getMessageQueue().addJavaScript(statement);
     }
 
     /**
@@ -508,7 +506,7 @@ public class CordovaWebView extends WebView {
      * @param callbackId
      */
     public void sendPluginResult(PluginResult result, String callbackId) {
-        this.jsMessageQueue.addPluginResult(result, callbackId);
+        this.bridge.getMessageQueue().addPluginResult(result, callbackId);
     }
 
     /**

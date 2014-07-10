@@ -84,7 +84,11 @@ public class NativeToJsMessageQueue {
         registeredListeners[3] = new PrivateApiBridgeMode();
         reset();
     }
-    
+
+    public boolean isBridgeEnabled() {
+        return activeBridgeMode != null;
+    }
+
     /**
      * Changes the bridge mode.
      */
