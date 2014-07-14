@@ -45,7 +45,8 @@ public class PluginManager {
     private static final int SLOW_EXEC_WARNING_THRESHOLD = Debug.isDebuggerConnected() ? 60 : 16;
 
     // List of service entries
-    private final HashMap<String, PluginEntry> entries = new HashMap<String, PluginEntry>();
+    private final HashMap<String, CordovaPlugin> pluginMap = new HashMap<String, CordovaPlugin>();
+    private final HashMap<String, PluginEntry> entryMap = new HashMap<String, PluginEntry>();
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
@@ -57,14 +58,14 @@ public class PluginManager {
     }
 
     public Collection<PluginEntry> getPluginEntries() {
-        return entries.values();
+        return entryMap.values();
     }
 
     public void setPluginEntries(Collection<PluginEntry> pluginEntries) {
         this.onPause(false);
         this.onDestroy();
-        this.clearPluginObjects();
-        entries.clear();
+        pluginMap.clear();
+        entryMap.clear();
         for (PluginEntry entry : pluginEntries) {
             addService(entry);
         }
@@ -73,30 +74,31 @@ public class PluginManager {
     /**
      * Init when loading a new HTML page into webview.
      */
+    @Deprecated // Should not be exposed as public.
     public void init() {
         LOG.d(TAG, "init()");
         this.onPause(false);
         this.onDestroy();
-        this.clearPluginObjects();
+        pluginMap.clear();
         this.startupPlugins();
     }
 
     /**
      * Delete all plugin objects.
      */
+    @Deprecated // Should not be exposed as public.
     public void clearPluginObjects() {
-        for (PluginEntry entry : this.entries.values()) {
-            entry.plugin = null;
-        }
+        pluginMap.clear();
     }
 
     /**
      * Create plugins objects that have onload set.
      */
+    @Deprecated // Should not be exposed as public.
     public void startupPlugins() {
-        for (PluginEntry entry : this.entries.values()) {
+        for (PluginEntry entry : entryMap.values()) {
             if (entry.onload) {
-                entry.createPlugin(this.app, this.ctx);
+                getPlugin(entry.service);
             }
         }
     }
@@ -157,15 +159,21 @@ public class PluginManager {
      * @return              CordovaPlugin or null
      */
     public CordovaPlugin getPlugin(String service) {
-        PluginEntry entry = this.entries.get(service);
-        if (entry == null) {
-            return null;
+        CordovaPlugin ret = pluginMap.get(service);
+        if (ret == null) {
+            PluginEntry pe = entryMap.get(service);
+            if (pe == null) {
+                return null;
+            }
+            if (pe.plugin != null) {
+                ret = pe.plugin;
+            } else {
+                ret = instantiatePlugin(pe.pluginClass);
+            }
+            ret.privateInitialize(ctx, app, app.getPreferences());
+            pluginMap.put(service, ret);
         }
-        CordovaPlugin plugin = entry.plugin;
-        if (plugin == null) {
-            plugin = entry.createPlugin(this.app, this.ctx);
-        }
-        return plugin;
+        return ret;
     }
 
     /**
@@ -187,7 +195,11 @@ public class PluginManager {
      * @param entry             The plugin entry
      */
     public void addService(PluginEntry entry) {
-        this.entries.put(entry.service, entry);
+        this.entryMap.put(entry.service, entry);
+        if (entry.plugin != null) {
+            entry.plugin.privateInitialize(ctx, app, app.getPreferences());
+            pluginMap.put(entry.service, entry.plugin);
+        }
     }
 
     /**
@@ -195,11 +207,10 @@ public class PluginManager {
      *
      * @param multitasking      Flag indicating if multitasking is turned on for app
      */
+    @Deprecated // Should not be public
     public void onPause(boolean multitasking) {
-        for (PluginEntry entry : this.entries.values()) {
-            if (entry.plugin != null) {
-                entry.plugin.onPause(multitasking);
-            }
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            plugin.onPause(multitasking);
         }
     }
 
@@ -208,22 +219,20 @@ public class PluginManager {
      *
      * @param multitasking      Flag indicating if multitasking is turned on for app
      */
+    @Deprecated // Should not be public
     public void onResume(boolean multitasking) {
-        for (PluginEntry entry : this.entries.values()) {
-            if (entry.plugin != null) {
-                entry.plugin.onResume(multitasking);
-            }
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            plugin.onResume(multitasking);
         }
     }
 
     /**
      * The final call you receive before your activity is destroyed.
      */
+    @Deprecated // Should not be public
     public void onDestroy() {
-        for (PluginEntry entry : this.entries.values()) {
-            if (entry.plugin != null) {
-                entry.plugin.onDestroy();
-            }
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            plugin.onDestroy();
         }
     }
 
@@ -239,12 +248,10 @@ public class PluginManager {
         if (obj != null) {
             return obj;
         }
-        for (PluginEntry entry : this.entries.values()) {
-            if (entry.plugin != null) {
-                obj = entry.plugin.onMessage(id, data);
-                if (obj != null) {
-                    return obj;
-                }
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            obj = plugin.onMessage(id, data);
+            if (obj != null) {
+                return obj;
             }
         }
         return null;
@@ -253,11 +260,10 @@ public class PluginManager {
     /**
      * Called when the activity receives a new intent.
      */
+    @Deprecated // Should not be public
     public void onNewIntent(Intent intent) {
-        for (PluginEntry entry : this.entries.values()) {
-            if (entry.plugin != null) {
-                entry.plugin.onNewIntent(intent);
-            }
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            plugin.onNewIntent(intent);
         }
     }
 
@@ -267,16 +273,16 @@ public class PluginManager {
      * @param url               The URL that is being changed to.
      * @return                  Return false to allow the URL to load, return true to prevent the URL from loading.
      */
+    @Deprecated // Should not be public
     public boolean onOverrideUrlLoading(String url) {
         // Deprecated way to intercept URLs. (process <url-filter> tags).
         // Instead, plugins should not include <url-filter> and instead ensure
         // that they are loaded before this function is called (either by setting
         // the onload <param> or by making an exec() call to them)
-        for (PluginEntry entry : this.entries.values()) {
-            if (entry.plugin != null) {
-                if (entry.plugin.onOverrideUrlLoading(url)) {
-                    return true;
-                }
+        for (PluginEntry entry : this.entryMap.values()) {
+            CordovaPlugin plugin = pluginMap.get(entry.service);
+            if (plugin != null && plugin.onOverrideUrlLoading(url)) {
+                return true;
             }
         }
         return false;
@@ -285,23 +291,40 @@ public class PluginManager {
     /**
      * Called when the app navigates or refreshes.
      */
+    @Deprecated // Should not be public
     public void onReset() {
-        for (PluginEntry entry : this.entries.values()) {
-            if (entry.plugin != null) {
-                entry.plugin.onReset();
-            }
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            plugin.onReset();
         }
     }
 
     Uri remapUri(Uri uri) {
-        for (PluginEntry entry : this.entries.values()) {
-            if (entry.plugin != null) {
-                Uri ret = entry.plugin.remapUri(uri);
-                if (ret != null) {
-                    return ret;
-                }
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            Uri ret = plugin.remapUri(uri);
+            if (ret != null) {
+                return ret;
             }
         }
         return null;
+    }
+
+    /**
+     * Create a plugin based on class name.
+     */
+    private CordovaPlugin instantiatePlugin(String className) {
+        CordovaPlugin ret = null;
+        try {
+            Class<?> c = null;
+            if ((className != null) && !("".equals(className))) {
+                c = Class.forName(className);
+            }
+            if (c != null & CordovaPlugin.class.isAssignableFrom(c)) {
+                ret = (CordovaPlugin) c.newInstance();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error adding plugin " + className + ".");
+        }
+        return ret;
     }
 }

@@ -37,6 +37,10 @@ module.exports.get_target = function() {
         // this is called on the project itself, and can support Google APIs AND Vanilla Android
         var target = shell.grep(/target=android-[\d+]/, path.join(ROOT, 'project.properties')) ||
           shell.grep(/target=Google Inc.:Google APIs:[\d+]/, path.join(ROOT, 'project.properties'));
+        if(target == "" || !target) {
+          // Try Google Glass APIs
+          target = shell.grep(/target=Google Inc.:Glass Development Kit Preview:[\d+]/, path.join(ROOT, 'project.properties'));
+        }
         return target.split('=')[1].replace('\n', '').replace('\r', '');
     }
 }
@@ -99,10 +103,10 @@ module.exports.check_android = function() {
         }
         return Q();
     }, function(stderr) {
-        if (stderr.match(/command\snot\sfound/)) {
+        if (stderr.match(/command\snot\sfound/) || stderr.match(/is not recognized as an internal or external command/)) {
             return Q.reject(new Error('The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) is added to your path.'));
         } else {
-            return Q.reject(new Error('An error occurred while listing Android targets'));
+            return Q.reject(new Error('An error occurred while listing Android targets. Error: ' + stderr ));
         }
     });
 }
