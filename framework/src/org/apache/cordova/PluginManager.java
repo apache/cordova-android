@@ -83,18 +83,9 @@ public class PluginManager {
     }
 
     /**
-     * Delete all plugin objects.
-     */
-    @Deprecated // Should not be exposed as public.
-    public void clearPluginObjects() {
-        pluginMap.clear();
-    }
-
-    /**
      * Create plugins objects that have onload set.
      */
-    @Deprecated // Should not be exposed as public.
-    public void startupPlugins() {
+    private void startupPlugins() {
         for (PluginEntry entry : entryMap.values()) {
             if (entry.onload) {
                 getPlugin(entry.service);
