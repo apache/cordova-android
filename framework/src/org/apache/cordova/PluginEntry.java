@@ -23,27 +23,27 @@ import org.apache.cordova.CordovaPlugin;
 /**
  * This class represents a service entry object.
  */
-public class PluginEntry {
+public final class PluginEntry {
 
     /**
      * The name of the service that this plugin implements
      */
-    public String service;
+    public final String service;
 
     /**
      * The plugin class name that implements the service.
      */
-    public String pluginClass;
+    public final String pluginClass;
 
     /**
      * The pre-instantiated plugin to use for this entry.
      */
-    public CordovaPlugin plugin;
+    public final CordovaPlugin plugin;
 
     /**
      * Flag that indicates the plugin object should be created when PluginManager is initialized.
      */
-    public boolean onload;
+    public final boolean onload;
 
     /**
      * Constructs with a CordovaPlugin already instantiated.
