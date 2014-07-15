@@ -65,8 +65,9 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
                 OpenForReadResult result = resourceApi.openForRead(remappedUri, true);
                 return new WebResourceResponse(result.mimeType, "UTF-8", result.inputStream);
             }
-            // If we don't need to special-case the request, let the browser load it.
-            return null;
+            // If we don't need to special-case the request, let the super class(s) handle it. 
+            // The default implementation would simply ask the browser to load the given url.
+            return super.shouldInterceptRequest(view, url);
         } catch (IOException e) {
             if (!(e instanceof FileNotFoundException)) {
                 LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file (returning a 404).", e);
