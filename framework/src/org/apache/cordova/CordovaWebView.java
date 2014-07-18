@@ -689,13 +689,17 @@ public class CordovaWebView extends WebView {
         return super.onKeyUp(keyCode, event);
     }
 
-    public void setButtonPlumbedToJs(int keyCode, boolean value) {
+    public void setButtonPlumbedToJs(int keyCode, boolean override) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_VOLUME_DOWN:
             case KeyEvent.KEYCODE_VOLUME_UP:
             case KeyEvent.KEYCODE_BACK:
                 // TODO: Why are search and menu buttons handled separately?
-                boundKeyCodes.add(keyCode);
+                if (override) {
+                    boundKeyCodes.add(keyCode);
+                } else {
+                    boundKeyCodes.remove(keyCode);
+                }
                 return;
             default:
                 throw new IllegalArgumentException("Unsupported keycode: " + keyCode);
