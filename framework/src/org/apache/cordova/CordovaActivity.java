@@ -213,6 +213,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         // TODO: Setting this on the appView causes it to show when <html style="opacity:0">.
         int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
         root.setBackgroundColor(backgroundColor);
+        // this influence background color of webView while resizing (due to orientation change) on Android 2.3 and 4.0
+        appView.setBackgroundColor(backgroundColor);
     }
 
     /**
