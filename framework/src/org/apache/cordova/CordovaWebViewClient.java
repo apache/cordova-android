@@ -231,7 +231,19 @@ public class CordovaWebViewClient extends WebViewClient {
         // Clear timeout flag
         this.appView.loadUrlTimeout++;
 
-        // Handle error
+        // If this is a "Protocol Not Supported" error, then revert to the previous
+        // page. If there was no previous page, then punt. The application's config
+        // is likely incorrect (start page set to sms: or something like that)
+        if (errorCode == WebViewClient.ERROR_UNSUPPORTED_SCHEME) {
+            if (view.canGoBack()) {
+                view.goBack();
+                return;
+            } else {
+                super.onReceivedError(view, errorCode, description, failingUrl);
+            }
+        }
+
+        // Handle other errors by passing them to the webview in JS
         JSONObject data = new JSONObject();
         try {
             data.put("errorCode", errorCode);
