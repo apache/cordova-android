@@ -69,6 +69,9 @@ class CordovaUriHelper {
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(url));
+                intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                intent.setComponent(null);
+                intent.setSelector(null);
                 this.cordova.getActivity().startActivity(intent);
             } catch (android.content.ActivityNotFoundException e) {
                 LOG.e(TAG, "Error loading url " + url, e);
