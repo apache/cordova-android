@@ -609,6 +609,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         this.getWindow().getDecorView().requestFocus();
 
         this.appView.handleResume(this.keepRunning, this.activityResultKeepRunning);
+        
+        // Force window to have focus, so application always
+        // receive user input. Workaround for some devices (Samsung Galaxy Note 3 at least)
+        this.getWindow().getDecorView().requestFocus();
 
         // If app doesn't want to run in background
         if (!this.keepRunning || this.activityResultKeepRunning) {
