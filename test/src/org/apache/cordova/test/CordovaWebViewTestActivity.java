@@ -47,6 +47,9 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
 
         setContentView(R.layout.main);
 
+        //CB-7238: This has to be added now, because it got removed from somewhere else
+        Config.init(this);
+        
         cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
         Config.init(this);
         cordovaWebView.init(this, new CordovaWebViewClient(this, cordovaWebView), new CordovaChromeClient(this, cordovaWebView),
