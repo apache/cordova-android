@@ -51,7 +51,6 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
         Config.init(this);
         
         cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
-        Config.init(this);
         cordovaWebView.init(this, new CordovaWebViewClient(this, cordovaWebView), new CordovaChromeClient(this, cordovaWebView),
                 Config.getPluginEntries(), Config.getWhitelist(), Config.getPreferences());
 
