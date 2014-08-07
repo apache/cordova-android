@@ -321,11 +321,16 @@ public class NativeToJsMessageQueue {
                 }
             }
         };
+        final Runnable resetNetworkRunnable = new Runnable() {
+            public void run() {
+                online = false;
+                // If the following call triggers a notifyOfFlush, then ignore it.
+                ignoreNextFlush = true;
+                webView.setNetworkAvailable(true);
+            }
+        };
         @Override void reset() {
-            online = false;
-            // If the following call triggers a notifyOfFlush, then ignore it.
-            ignoreNextFlush = true;
-            webView.setNetworkAvailable(true);
+            cordova.getActivity().runOnUiThread(resetNetworkRunnable);
         }
         @Override void onNativeToJsMessageAvailable() {
             cordova.getActivity().runOnUiThread(toggleNetworkRunnable);
