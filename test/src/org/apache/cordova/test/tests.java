@@ -28,5 +28,6 @@ public class tests extends CordovaActivity {
         super.init();
         //super.pluginManager.addService("Activity", "org.apache.cordova.test.ActivityPlugin");
         super.loadUrl("file:///android_asset/www/index.html");
+        /// just for test
     }
 }
