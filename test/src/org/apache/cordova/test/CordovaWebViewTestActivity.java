@@ -22,6 +22,8 @@ package org.apache.cordova.test;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.cordova.AndroidChromeClient;
+import org.apache.cordova.AndroidWebViewClient;
 import org.apache.cordova.Config;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaInterface;
@@ -45,10 +47,11 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
 
         setContentView(R.layout.main);
 
-        cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
+        //CB-7238: This has to be added now, because it got removed from somewhere else
         Config.init(this);
-        cordovaWebView.init(this,
-                Config.getPluginEntries(), Config.getWhitelist(), Config.getPreferences());
+        
+        cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
+        cordovaWebView.init(this, Config.getPluginEntries(), Config.getWhitelist(), Config.getPreferences());
 
         cordovaWebView.loadUrl("file:///android_asset/www/index.html");
 
