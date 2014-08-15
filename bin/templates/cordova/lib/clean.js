@@ -22,6 +22,7 @@
 var build = require('./build'),
     spawn = require('./spawn'),
     path  = require('path');
+var check_reqs = require('./check_reqs');
 
 /*
  * Cleans the project using ant
@@ -29,7 +30,10 @@ var build = require('./build'),
  */
 module.exports.run = function() {
     var args = build.getAntArgs('clean');
-    return spawn('ant', args);
+    return check_reqs.check_ant()
+    .then(function() {
+        return spawn('ant', args);
+    });
 }
 
 module.exports.help = function() {

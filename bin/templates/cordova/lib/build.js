@@ -25,6 +25,7 @@ var shell   = require('shelljs'),
     path    = require('path'),
     fs      = require('fs'),
     ROOT    = path.join(__dirname, '..', '..');
+var check_reqs = require('./check_reqs');
 
 
 function hasCustomRules() {
@@ -60,9 +61,12 @@ module.exports.run = function(build_type) {
             return Q.reject('Build option \'' + build_type + '\' not recognized.');
     }
     // Without our custom_rules.xml, we need to clean before building.
-    var ret = Q();
+    var ret;
     if (!hasCustomRules()) {
+        // clean will call check_ant() for us.
         ret = require('./clean').run();
+    } else {
+        ret = check_reqs.check_ant();
     }
     return ret.then(function() {
         return spawn('ant', args);

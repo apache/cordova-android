@@ -55,7 +55,7 @@ module.exports.get_target = function() {
     }
 }
 
-// Returns a promise.
+// Returns a promise. Called only by build and clean commands.
 module.exports.check_ant = function() {
     return tryCommand('ant -version', 'Failed to run "ant -version", make sure you have ant installed and added to your PATH.');
 }
@@ -123,6 +123,6 @@ module.exports.check_android = function() {
 
 // Returns a promise.
 module.exports.run = function() {
-    return Q.all([this.check_ant(), this.check_java(), this.check_android()]);
+    return Q.all([this.check_java(), this.check_android()]);
 }
 
