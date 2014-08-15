@@ -19,26 +19,37 @@
        under the License.
 */
 
-var shell = require('shelljs'),
+var shelljs = require('shelljs'),
     child_process = require('child_process'),
     Q     = require('q'),
     path  = require('path'),
     fs    = require('fs'),
     ROOT  = path.join(__dirname, '..', '..');
 
+var isWindows = process.platform == 'win32';
+
+function tryCommand(cmd, errMsg) {
+    var d = Q.defer();
+    child_process.exec(cmd, function(err, stdout, stderr) {
+        if (err) d.reject(new Error(errMsg));
+        else d.resolve(stdout);
+    });
+    return d.promise;
+}
+
 // Get valid target from framework/project.properties
 module.exports.get_target = function() {
     if(fs.existsSync(path.join(ROOT, 'framework', 'project.properties'))) {
-        var target = shell.grep(/target=android-[\d+]/, path.join(ROOT, 'framework', 'project.properties'));
+        var target = shelljs.grep(/target=android-[\d+]/, path.join(ROOT, 'framework', 'project.properties'));
         return target.split('=')[1].replace('\n', '').replace('\r', '').replace(' ', '');
     } else if (fs.existsSync(path.join(ROOT, 'project.properties'))) {
         // if no target found, we're probably in a project and project.properties is in ROOT.
         // this is called on the project itself, and can support Google APIs AND Vanilla Android
-        var target = shell.grep(/target=android-[\d+]/, path.join(ROOT, 'project.properties')) ||
-          shell.grep(/target=Google Inc.:Google APIs:[\d+]/, path.join(ROOT, 'project.properties'));
+        var target = shelljs.grep(/target=android-[\d+]/, path.join(ROOT, 'project.properties')) ||
+          shelljs.grep(/target=Google Inc.:Google APIs:[\d+]/, path.join(ROOT, 'project.properties'));
         if(target == "" || !target) {
           // Try Google Glass APIs
-          target = shell.grep(/target=Google Inc.:Glass Development Kit Preview:[\d+]/, path.join(ROOT, 'project.properties'));
+          target = shelljs.grep(/target=Google Inc.:Glass Development Kit Preview:[\d+]/, path.join(ROOT, 'project.properties'));
         }
         return target.split('=')[1].replace('\n', '').replace('\r', '');
     }
@@ -46,49 +57,66 @@ module.exports.get_target = function() {
 
 // Returns a promise.
 module.exports.check_ant = function() {
-    var d = Q.defer();
-    child_process.exec('ant -version', function(err, stdout, stderr) {
-        if (err) d.reject(new Error('ERROR : executing command \'ant\', make sure you have ant installed and added to your path.'));
-        else d.resolve();
-    });
-    return d.promise;
+    return tryCommand('ant -version', 'Failed to run "ant -version", make sure you have ant installed and added to your PATH.');
 }
 
 // Returns a promise.
 module.exports.check_java = function() {
-    var d = Q.defer();
-    child_process.exec('java -version', function(err, stdout, stderr) {
-        if(err) {
-            var msg =
-                'Failed to run \'java -version\', make sure your java environment is set up\n' +
-                'including JDK and JRE.\n' +
-                'Your JAVA_HOME variable is ' + process.env.JAVA_HOME + '\n';
-            d.reject(new Error(msg + err));
+    var javacInPath = !!shelljs.which('javac');
+    var hasJavaHome = !!process.env.JAVA_HOME;
+    // Windows java installer doesn't add javac to PATH, nor set JAVA_HOME (ugh).
+    if (hasJavaHome && !javacInPath) {
+        process.env.PATH += path.delimiter + path.join(process.env.JAVA_HOME, 'bin');
+    } else if (isWindows && (!hasJavaHome || !javacInPath)) {
+        // Try to auto-detect java in the default install paths.
+        var firstJdkDir =
+            shelljs.ls(process.env.ProgramFiles + '\\java\\jdk*')[0] ||
+            shelljs.ls('C:\\Program Files\\java\\jdk*')[0] ||
+            shelljs.ls('C:\\Program Files (x86)\\java\\jdk*')[0];
+        if (firstJdkDir) {
+            // shelljs always uses / in paths.
+            firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
+            if (!javacInPath) {
+                process.env.PATH += path.delimiter + path.join(firstJdkDir, 'bin');
+            }
+            process.env.JAVA_HOME = firstJdkDir;
         }
-        else d.resolve();
+    }
+    var msg =
+        'Failed to run "java -version", make sure your java environment is set up\n' +
+        'including JDK and JRE.\n' +
+        'Your JAVA_HOME variable is: ' + process.env.JAVA_HOME;
+    return tryCommand('java -version', msg)
+    .then(function() {
+        msg = 'Failed to run "javac -version", make sure you have a Java JDK (not just a JRE) installed.';
+        return tryCommand('javac -version', msg)
     });
-    return d.promise;
 }
 
 // Returns a promise.
 module.exports.check_android = function() {
-    var valid_target = this.get_target();
-    var d = Q.defer();
-    child_process.exec('android list targets', function(err, stdout, stderr) {
-        if (err) d.reject(stderr);
-        else d.resolve(stdout);
-    });
+    var androidCmdPath = !!shelljs.which('android');
+    var adbInPath = !!shelljs.which('adb');
+    var hasAndroidHome = !!process.env.ANDROID_HOME;
+    if (hasAndroidHome && !androidCmdPath) {
+        process.env.PATH += path.delimiter + path.join(process.env.ANDROID_HOME, 'tools');
+    }
+    if (androidCmdPath && !hasAndroidHome) {
+        process.env.ANDROID_HOME = path.dirname(path.dirname(androidCmdPath));
+        hasAndroidHome = true;
+    }
+    if (hasAndroidHome && !adbInPath) {
+        process.env.PATH += path.delimiter + path.join(process.env.ANDROID_HOME, 'platform-tools');
+    }
 
-    return d.promise.then(function(output) {
+    var valid_target = this.get_target();
+    var msg = 'Failed to run "android". Make sure you have the latest Android SDK installed, and that the "android" command (inside the tools/ folder) is added to your PATH.';
+    return tryCommand('android list targets', msg)
+    .then(function(output) {
         if (!output.match(valid_target)) {
-            return Q.reject(new Error('Please install Android target ' + valid_target.split('-')[1] + ' (the Android newest SDK). Make sure you have the latest Android tools installed as well. Run \"android\" from your command-line to install/update any missing SDKs or tools.'));
-        }
-        return Q();
-    }, function(stderr) {
-        if (stderr.match(/command\snot\sfound/) || stderr.match(/is not recognized as an internal or external command/)) {
-            return Q.reject(new Error('The command \"android\" failed. Make sure you have the latest Android SDK installed, and the \"android\" command (inside the tools/ folder) is added to your path.'));
-        } else {
-            return Q.reject(new Error('An error occurred while listing Android targets. Error: ' + stderr ));
+            return Q.reject(new Error('Please install Android target ' + valid_target.split('-')[1] +
+                ' (the Android newest SDK). Make sure you have the latest Android tools installed as well.' +
+                ' Run "android" from your command-line to install/update any missing SDKs or tools.'));
         }
     });
 }

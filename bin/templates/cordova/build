@@ -28,9 +28,9 @@ if(args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
                     args[2] == 'help' || args[2] == '-help' || args[2] == '/help') {
     build.help();
 } else {
-    reqs.run().then(function() {
+    reqs.run().done(function() {
         return build.run(args[2]);
-    }).done(null, function(err) {
+    }, function(err) {
         console.error(err);
         process.exit(2);
     });

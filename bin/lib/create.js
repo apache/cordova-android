@@ -196,7 +196,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
     })
     // Check that requirements are met and proper targets are installed
     .then(function() {
-        check_reqs.run();
+        return check_reqs.run();
     }).then(function() {
         // Log the given values for the project
         console.log('Creating Cordova project for the Android platform:');
