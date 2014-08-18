@@ -69,7 +69,7 @@ function copyGradleWrapper() {
     shell.cp('-r', path.join(wrapperDir, 'gradle', 'wrapper'), path.join(projectPath, 'gradle'));
 }
 
-module.exports.builders = {
+var builders = {
     ant: {
         getArgs: function(cmd) {
             var args = [cmd, '-f', path.join(ROOT, 'build.xml')];
@@ -77,13 +77,13 @@ module.exports.builders = {
             if (hasCustomRules()) {
                 args.push('-Dout.dir=ant-build', '-Dgen.absolute.dir=ant-gen');
             }
-            try {
-              // Specify sdk dir in case local properties are missing
-              args.push('-Dsdk.dir='+path.join(which.sync('android'), '../..'));
-            } catch(e) {
-              // Can't find android; don't push arg: assume all is okay
-            }
             return args;
+        },
+
+        prepEnv: function() {
+            return check_reqs.check_ant()
+            .then(function() {
+            });
         },
 
         /*
@@ -91,12 +91,28 @@ module.exports.builders = {
          * Returns a promise.
          */
         build: function(build_type) {
+            // Without our custom_rules.xml, we need to clean before building.
+            var ret = Q();
+            if (!hasCustomRules()) {
+                // clean will call check_ant() for us.
+                ret = this.clean();
+            }
+
             var builder = this;
-            var args = builder.getArgs(build_type == "debug" ? 'debug' : 'release');
-            return Q().then(function() {
+            var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release');
+            return check_reqs.check_ant()
+            .then(function() {
                 return spawn('ant', args);
             }).then(function() {
                 return builder.getOutputFiles();
+            });
+        },
+
+        clean: function() {
+            var args = this.getArgs('clean');
+            return check_reqs.check_ant()
+            .then(function() {
+                return spawn('ant', args);
             });
         },
 
@@ -139,6 +155,10 @@ module.exports.builders = {
             return args;
         },
 
+        prepEnv: function() {
+            return Q();
+        },
+
         /*
          * Builds the project with gradle.
          * Returns a promise.
@@ -147,6 +167,18 @@ module.exports.builders = {
             var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
             var args = builder.getArgs('build');
+            copyGradleWrapper();
+            return Q().then(function() {
+                return spawn(wrapper, args);
+            }).then(function() {
+                return builder.getOutputFiles(build_type);
+            });
+        },
+
+        clean: function() {
+            var builder = this;
+            var wrapper = path.join(ROOT, 'gradlew');
+            var args = builder.getArgs('clean');
             copyGradleWrapper();
             return Q().then(function() {
                 return spawn(wrapper, args);
@@ -171,17 +203,30 @@ module.exports.builders = {
             });
             return candidates;
         }
+    },
+
+    none: {
+        prepEnv: function() {
+            return Q();
+        },
+        build: function() {
+            console.log('Skipping build...');
+            return Q();
+        },
+        clean: function() {
+            return Q();
+        },
     }
 };
 
-/*
- * Builds the project with the specifed options
- * Returns a promise.
- */
-module.exports.run = function(options) {
-
+function parseOpts(options) {
     // Backwards-compatibility: Allow a single string argument
     if (typeof options == "string") options = [options];
+
+    var ret = {
+        buildType: 'debug',
+        buildMethod: process.env['ANDROID_BUILD'] || 'ant'
+    };
 
     // Iterate through command line options
     for (var i=0; options && (i < options.length); ++i) {
@@ -190,21 +235,15 @@ module.exports.run = function(options) {
             switch(option) {
                 case 'debug':
                 case 'release':
-                    if (build_type) {
-                        return Q.reject('Multiple build types (' + build_type + ' and ' + option + ') specified.');
-                    }
-                    build_type = option;
+                    ret.buildType = option;
                     break;
                 case 'ant':
                 case 'gradle':
-                    if (build_method) {
-                        return Q.reject('Multiple build methods (' + build_method + ' and ' + option + ') specified.');
-                    }
-                    build_method = option;
+                    ret.buildMethod = option;
                     break;
                 case 'nobuild' :
-                    console.log('Skipping build...');
-                    return Q();
+                    ret.buildMethod = 'none';
+                    break;
                 default :
                     return Q.reject('Build option \'' + options[i] + '\' not recognized.');
             }
@@ -212,34 +251,36 @@ module.exports.run = function(options) {
             return Q.reject('Build option \'' + options[i] + '\' not recognized.');
         }
     }
-    // Defaults
-    build_type = build_type || "debug";
-    build_method = build_method || process.env.ANDROID_BUILD || "ant";
+    return ret;
+}
 
-    // Get the builder
-    var builder = module.exports.builders[build_method];
+/*
+ * Builds the project with the specifed options
+ * Returns a promise.
+ */
+module.exports.runClean = function(options) {
+    var opts = parseOpts(options);
+    var builder = builders[opts.buildMethod];
+    return builder.prepEnv(opts.buildType)
+    .then(function() {
+        return builder.clean();
+    });
+};
 
-    // Without our custom_rules.xml, we need to clean before building.
-    var ret;
-    if (!hasCustomRules()) {
-        // clean will call check_ant() for us.
-        ret = require('./clean').run();
-    } else {
-        ret = check_reqs.check_ant();
-    }
+/*
+ * Builds the project with the specifed options
+ * Returns a promise.
+ */
+module.exports.run = function(options) {
+    var opts = parseOpts(options);
 
-    // Return a promise for the actual build
-    return ret.then(function() {
-        return builder.build.call(builder, build_type);
+    var builder = builders[opts.buildMethod];
+    return builder.prepEnv(opts.buildType)
+    .then(function() {
+        return builder.build(opts.buildType);
     }).then(function(apkFiles) {
         var outputDir = path.join(ROOT, 'out');
-        try {
-            fs.mkdirSync(outputDir);
-        } catch (e) {
-            if (e.code != "EEXIST") {
-                throw e;
-            }
-        }
+        shell.mkdir('-p', outputDir);
         for (var i=0; i < apkFiles.length; ++i) {
             shell.cp('-f', apkFiles[i], path.join(outputDir, path.basename(apkFiles[i])));
         }

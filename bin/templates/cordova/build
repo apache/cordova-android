@@ -33,7 +33,7 @@ if(args[2] == '--help' ||
     build.help();
 } else {
     reqs.run().done(function() {
-        return build.run.call(build.run, args.slice(2));
+        return build.run(args.slice(2));
     }, function(err) {
         console.error(err);
         process.exit(2);
