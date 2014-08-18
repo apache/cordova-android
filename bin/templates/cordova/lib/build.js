@@ -102,7 +102,22 @@ module.exports.builders = {
     },
     gradle: {
         getArgs: function(cmd) {
+            var lintSteps = [
+                'lint',
+                'lintVitalRelease',
+                'compileLint',
+                'copyReleaseLint',
+                'copyDebugLint'
+            ];
             var args = [cmd, '-b', path.join(ROOT, 'build.gradle')];
+            // 10 seconds -> 6 seconds
+            args.push('-Dorg.gradle.daemon=true');
+            // Excluding lint: 6s-> 1.6s
+            for (var i = 0; i < lintSteps.length; ++i) {
+                args.push('-x', lintSteps[i]);
+            }
+            // Shaves another 100ms, but produces a "try at own risk" warning. Not worth it (yet):
+            // args.push('-Dorg.gradle.parallel=true');
             return args;
         },
 
