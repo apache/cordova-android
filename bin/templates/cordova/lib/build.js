@@ -51,6 +51,24 @@ function hasCustomRules() {
     return fs.existsSync(path.join(ROOT, 'custom_rules.xml'));
 }
 
+// Copy the gradle wrapper files on each build so that:
+// A) We don't require the Android SDK at project creation time, and
+// B) So that they are always up-to-date.
+function copyGradleWrapper() {
+    var projectPath = ROOT;
+    // check_reqs ensures that this is set.
+    var sdkDir = process.env['ANDROID_HOME'];
+    var wrapperDir = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper');
+    if (process.platform == 'win32') {
+        shell.cp('-f', path.join(wrapperDir, 'gradlew.bat'), projectPath);
+    } else {
+        shell.cp('-f', path.join(wrapperDir, 'gradlew'), projectPath);
+    }
+    shell.rm('-rf', path.join(projectPath, 'gradle', 'wrapper'));
+    shell.mkdir('-p', path.join(projectPath, 'gradle'));
+    shell.cp('-r', path.join(wrapperDir, 'gradle', 'wrapper'), path.join(projectPath, 'gradle'));
+}
+
 module.exports.builders = {
     ant: {
         getArgs: function(cmd) {
@@ -129,6 +147,7 @@ module.exports.builders = {
             var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
             var args = builder.getArgs('build');
+            copyGradleWrapper();
             return Q().then(function() {
                 return spawn(wrapper, args);
             }).then(function() {

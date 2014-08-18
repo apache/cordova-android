@@ -64,23 +64,6 @@ module.exports.get_target = function() {
     }
 }
 
-// Returns a promise.
-module.exports.sdk_dir = function() {
-    var d = Q.defer();
-    which('android', function(err, path) {
-        if (err) {
-            d.reject(new Error('ERROR: Cannot find Android SDK. android command not found.'));
-        } else {
-            var toolsDir = path.substring(0, path.lastIndexOf('/'));
-            if (toolsDir.substring(toolsDir.length-6) != "/tools") {
-                d.reject(new Error('ERROR: Cannot find Android SDK. android command not found in tools dir.'));
-            }
-            d.resolve(toolsDir.substring(0, toolsDir.length-6));
-        }
-    });
-    return d.promise;
-};
-
 // Returns a promise. Called only by build and clean commands.
 module.exports.check_ant = function() {
     return tryCommand('ant -version', 'Failed to run "ant -version", make sure you have ant installed and added to your PATH.');

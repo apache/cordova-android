@@ -111,13 +111,6 @@ function copyScripts(projectPath) {
     shell.cp(path.join(ROOT, 'bin', 'lib', 'android_sdk_version.js'), path.join(projectPath, 'cordova', 'lib', 'android_sdk_version.js'));
 }
 
-function copyGradleWrapper(sdkPath, projectPath) {
-    var wrapperDir = path.join(sdkPath, 'tools', 'templates','gradle','wrapper');
-    shell.cp(path.join(wrapperDir, 'gradlew'), projectPath);
-    shell.cp(path.join(wrapperDir, 'gradlew.bat'), projectPath);
-    shell.cp('-r', path.join(wrapperDir, 'gradle'), projectPath);
-}
-
 /**
  * Test whether a package name is acceptable for use as an android project.
  * Returns a promise, fulfilled if the package name is acceptable; rejected
@@ -224,16 +217,6 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
             shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
-
-            shell.cp('-f', path.join(project_template_dir, 'build.gradle'), project_path);
-            shell.cp('-f', path.join(project_template_dir, 'libraries.gradle'), project_path);
-            shell.cp('-f', path.join(project_template_dir, 'settings.gradle'), project_path);
-            check_reqs.sdk_dir().then(function(dir) {
-                console.log("Copying Gradle wrapper from " + dir);
-                copyGradleWrapper(dir, project_path);
-            }).catch(function(err) {
-                console.log("Cannot find Android SDK. Not installing Gradle wrapper.");
-            });
 
             // Manually create directories that would be empty within the template (since git doesn't track directories).
             shell.mkdir(path.join(project_path, 'libs'));
