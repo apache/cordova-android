@@ -31,7 +31,7 @@ var isWindows = process.platform == 'win32';
 
 function forgivingWhichSync(cmd) {
     try {
-        return which.sync(path);
+        return which.sync(cmd);
     } catch (e) {
         return '';
     }
