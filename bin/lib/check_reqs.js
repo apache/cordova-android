@@ -29,6 +29,14 @@ var shelljs = require('shelljs'),
 
 var isWindows = process.platform == 'win32';
 
+function forgivingWhichSync(cmd) {
+    try {
+        return which.sync(path);
+    } catch (e) {
+        return '';
+    }
+}
+
 function tryCommand(cmd, errMsg) {
     var d = Q.defer();
     child_process.exec(cmd, function(err, stdout, stderr) {
@@ -80,32 +88,54 @@ module.exports.check_ant = function() {
 
 // Returns a promise.
 module.exports.check_java = function() {
-    var javacInPath = !!shelljs.which('javac');
-    var hasJavaHome = !!process.env.JAVA_HOME;
-    // Windows java installer doesn't add javac to PATH, nor set JAVA_HOME (ugh).
-    if (hasJavaHome && !javacInPath) {
-        process.env.PATH += path.delimiter + path.join(process.env.JAVA_HOME, 'bin');
-    } else if (isWindows && (!hasJavaHome || !javacInPath)) {
-        // Try to auto-detect java in the default install paths.
-        var firstJdkDir =
-            shelljs.ls(process.env.ProgramFiles + '\\java\\jdk*')[0] ||
-            shelljs.ls('C:\\Program Files\\java\\jdk*')[0] ||
-            shelljs.ls('C:\\Program Files (x86)\\java\\jdk*')[0];
-        if (firstJdkDir) {
-            // shelljs always uses / in paths.
-            firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
-            if (!javacInPath) {
-                process.env.PATH += path.delimiter + path.join(firstJdkDir, 'bin');
+    var javacPath = forgivingWhichSync('javac');
+    var hasJavaHome = !!process.env['JAVA_HOME'];
+    return Q().then(function() {
+        if (hasJavaHome) {
+            // Windows java installer doesn't add javac to PATH, nor set JAVA_HOME (ugh).
+            if (!javacPath) {
+                process.env['PATH'] += path.delimiter + path.join(process.env['JAVA_HOME'], 'bin');
             }
-            process.env.JAVA_HOME = firstJdkDir;
+        } else {
+            if (javacPath) {
+                // OS X has a command for finding JAVA_HOME.
+                if (fs.existsSync('/usr/libexec/java_home')) {
+                    return tryCommand('/usr/libexec/java_home', 'Failed to run: /usr/libexec/java_home')
+                    .then(function(stdout) {
+                        process.env['JAVA_HOME'] = stdout.trim();
+                    });
+                } else {
+                    // See if we can derive it from javac's location.
+                    var maybeJavaHome = path.dirname(path.dirname(javacPath));
+                    if (fs.existsSync(path.join(maybeJavaHome, 'lib', 'tools.jar'))) {
+                        process.env['JAVA_HOME'] = maybeJavaHome;
+                    } else {
+                        throw new Error('Could not find JAVA_HOME. Try setting the environment variable manually');
+                    }
+                }
+            } else if (isWindows) {
+                // Try to auto-detect java in the default install paths.
+                var firstJdkDir =
+                    shelljs.ls(process.env['ProgramFiles'] + '\\java\\jdk*')[0] ||
+                    shelljs.ls('C:\\Program Files\\java\\jdk*')[0] ||
+                    shelljs.ls('C:\\Program Files (x86)\\java\\jdk*')[0];
+                if (firstJdkDir) {
+                    // shelljs always uses / in paths.
+                    firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
+                    if (!javacPath) {
+                        process.env['PATH'] += path.delimiter + path.join(firstJdkDir, 'bin');
+                    }
+                    process.env['JAVA_HOME'] = firstJdkDir;
+                }
+            }
         }
-    }
-    var msg =
-        'Failed to run "java -version", make sure your java environment is set up\n' +
-        'including JDK and JRE.\n' +
-        'Your JAVA_HOME variable is: ' + process.env.JAVA_HOME;
-    return tryCommand('java -version', msg)
-    .then(function() {
+    }).then(function() {
+        var msg =
+            'Failed to run "java -version", make sure your java environment is set up\n' +
+            'including JDK and JRE.\n' +
+            'Your JAVA_HOME variable is: ' + process.env['JAVA_HOME'];
+        return tryCommand('java -version', msg)
+    }).then(function() {
         msg = 'Failed to run "javac -version", make sure you have a Java JDK (not just a JRE) installed.';
         return tryCommand('javac -version', msg)
     });
@@ -113,18 +143,21 @@ module.exports.check_java = function() {
 
 // Returns a promise.
 module.exports.check_android = function() {
-    var androidCmdPath = !!shelljs.which('android');
-    var adbInPath = !!shelljs.which('adb');
-    var hasAndroidHome = !!process.env.ANDROID_HOME;
+    var androidCmdPath = forgivingWhichSync('android');
+    var adbInPath = !!forgivingWhichSync('adb');
+    var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
     if (hasAndroidHome && !androidCmdPath) {
-        process.env.PATH += path.delimiter + path.join(process.env.ANDROID_HOME, 'tools');
+        process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools');
     }
     if (androidCmdPath && !hasAndroidHome) {
-        process.env.ANDROID_HOME = path.dirname(path.dirname(androidCmdPath));
-        hasAndroidHome = true;
+        var parentDir = path.dirname(androidCmdPath);
+        if (path.basename(parentDir) == 'tools') {
+            process.env['ANDROID_HOME'] = path.dirname(parentDir);
+            hasAndroidHome = true;
+        }
     }
     if (hasAndroidHome && !adbInPath) {
-        process.env.PATH += path.delimiter + path.join(process.env.ANDROID_HOME, 'platform-tools');
+        process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'platform-tools');
     }
 
     var valid_target = this.get_target();
@@ -135,6 +168,13 @@ module.exports.check_android = function() {
             return Q.reject(new Error('Please install Android target ' + valid_target.split('-')[1] +
                 ' (the Android newest SDK). Make sure you have the latest Android tools installed as well.' +
                 ' Run "android" from your command-line to install/update any missing SDKs or tools.'));
+        }
+    }).then(function() {
+        if (!process.env['ANDROID_HOME']) {
+            throw new Error('ANDROID_HOME is not set and "android" command not in your PATH. You must fulfill at least one of these conditions.');
+        }
+        if (!fs.existsSync(process.env['ANDROID_HOME'])) {
+            throw new Error('ANDROID_HOME is set to a non-existant path: ' + process.env['ANDROID_HOME']);
         }
     });
 }
