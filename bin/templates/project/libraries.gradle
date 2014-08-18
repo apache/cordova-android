@@ -1,0 +1,7 @@
+dependencies {
+// This file contains no plugins by default.
+// To add a third-party library project, add a line to this file like
+//    compile project(':library_dir_name')
+}
+// If multiple ndk architectures are provided, uncomment this line
+//ext.multiarch=true
