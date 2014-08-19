@@ -67,7 +67,18 @@ module.exports.get_target = function() {
 // Returns a promise. Called only by build and clean commands.
 module.exports.check_ant = function() {
     return tryCommand('ant -version', 'Failed to run "ant -version", make sure you have ant installed and added to your PATH.');
-}
+};
+
+// Returns a promise. Called only by build and clean commands.
+module.exports.check_gradle = function() {
+    var sdkDir = process.env['ANDROID_HOME'];
+    var wrapperDir = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper');
+    if (!fs.existsSync(wrapperDir)) {
+        return Q.reject(new Error('Could not find gradle wrapper within android sdk. Might need to update your Android SDK.\n' +
+            'Looked here: ' + wrapperDir));
+    }
+    return Q.when();
+};
 
 // Returns a promise.
 module.exports.check_java = function() {
@@ -126,41 +137,44 @@ module.exports.check_java = function() {
 
 // Returns a promise.
 module.exports.check_android = function() {
-    var androidCmdPath = forgivingWhichSync('android');
-    var adbInPath = !!forgivingWhichSync('adb');
-    var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
-    if (hasAndroidHome && !androidCmdPath) {
-        process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools');
-    }
-    if (androidCmdPath && !hasAndroidHome) {
-        var parentDir = path.dirname(androidCmdPath);
-        if (path.basename(parentDir) == 'tools') {
-            process.env['ANDROID_HOME'] = path.dirname(parentDir);
-            hasAndroidHome = true;
+    return Q().then(function() {
+        var androidCmdPath = forgivingWhichSync('android');
+        var adbInPath = !!forgivingWhichSync('adb');
+        var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
+        if (hasAndroidHome && !androidCmdPath) {
+            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools');
         }
-    }
-    if (hasAndroidHome && !adbInPath) {
-        process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'platform-tools');
-    }
-
-    var valid_target = this.get_target();
-    var msg = 'Failed to run "android". Make sure you have the latest Android SDK installed, and that the "android" command (inside the tools/ folder) is added to your PATH.';
-    return tryCommand('android list targets', msg)
-    .then(function(output) {
-        if (!output.match(valid_target)) {
-            return Q.reject(new Error('Please install Android target ' + valid_target.split('-')[1] +
-                ' (the Android newest SDK). Make sure you have the latest Android tools installed as well.' +
-                ' Run "android" from your command-line to install/update any missing SDKs or tools.'));
+        if (androidCmdPath && !hasAndroidHome) {
+            var parentDir = path.dirname(androidCmdPath);
+            if (path.basename(parentDir) == 'tools') {
+                process.env['ANDROID_HOME'] = path.dirname(parentDir);
+                hasAndroidHome = true;
+            }
         }
-    }).then(function() {
+        if (hasAndroidHome && !adbInPath) {
+            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'platform-tools');
+        }
         if (!process.env['ANDROID_HOME']) {
             throw new Error('ANDROID_HOME is not set and "android" command not in your PATH. You must fulfill at least one of these conditions.');
         }
         if (!fs.existsSync(process.env['ANDROID_HOME'])) {
             throw new Error('ANDROID_HOME is set to a non-existant path: ' + process.env['ANDROID_HOME']);
         }
+        // Check that the target sdk level is installed.
+        return module.exports.check_android_target(module.exports.get_target());
     });
-}
+};
+
+module.exports.check_android_target = function(valid_target) {
+    var msg = 'Failed to run "android". Make sure you have the latest Android SDK installed, and that the "android" command (inside the tools/ folder) is added to your PATH.';
+    return tryCommand('android list targets', msg)
+    .then(function(output) {
+        if (!output.match(valid_target)) {
+            throw new Error('Please install Android target "' + valid_target + '".\n' +
+                'Hint: Run "android" from your command-line to open the SDK manager.');
+        }
+    });
+};
 
 // Returns a promise.
 module.exports.run = function() {
