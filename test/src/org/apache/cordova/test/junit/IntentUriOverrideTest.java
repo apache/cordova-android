@@ -25,6 +25,7 @@ public class IntentUriOverrideTest extends ActivityInstrumentationTestCase2<Sabo
     private String BAD_URL = "file:///sdcard/download/wl-exploit.htm";
 
 
+    @SuppressWarnings("deprecation")
     public IntentUriOverrideTest()
     {
         super("org.apache.cordova.test",SabotagedActivity.class);

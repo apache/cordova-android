@@ -83,16 +83,47 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
     }
 }
 
-function runAndroidUpdate(projectPath, target_api, shared) {
-    var targetFrameworkDir = getFrameworkDir(projectPath, shared);
-    return exec('android update project --subprojects --path "' + projectPath + '" --target ' + target_api + ' --library "' + path.relative(projectPath, targetFrameworkDir) + '"');
+function extractSubProjectPaths(data) {
+    var ret = {};
+    var r = /^\s*android\.library\.reference\.\d+=(.*)(?:\s|$)/mg
+    var m;
+    while (m = r.exec(data)) {
+        ret[m[1]] = 1;
+    }
+    return Object.keys(ret);
 }
 
-function copyAntRules(projectPath) {
-    var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
-    if (fs.existsSync(path.join(srcDir, 'custom_rules.xml'))) {
-        shell.cp('-f', path.join(srcDir, 'custom_rules.xml'), projectPath);
+function writeProjectProperties(projectPath, target_api, shared) {
+    var dstPath = path.join(projectPath, 'project.properties');
+    var templatePath = path.join(ROOT, 'bin', 'templates', 'project', 'project.properties');
+    var srcPath = fs.existsSync(dstPath) ? dstPath : templatePath;
+    var data = fs.readFileSync(srcPath, 'utf8');
+    data = data.replace(/^target=.*/m, 'target=' + target_api);
+    var subProjects = extractSubProjectPaths(data);
+    subProjects = subProjects.filter(function(p) {
+        return !(/^CordovaLib$/m.exec(p) ||
+                 /[\\\/]cordova-android[\\\/]framework$/m.exec(p) ||
+                 /^(\.\.[\\\/])+framework$/m.exec(p)
+                 );
+    });
+    subProjects.unshift(shared ? path.relative(projectPath, path.join(ROOT, 'framework')) : 'CordovaLib');
+    data = data.replace(/^\s*android\.library\.reference\.\d+=.*\n/mg, '');
+    if (!/\n$/.exec(data)) {
+        data += '\n';
     }
+    for (var i = 0; i < subProjects.length; ++i) {
+        data += 'android.library.reference.' + (i+1) + '=' + subProjects[i] + '\n';
+    }
+    fs.writeFileSync(dstPath, data);
+}
+
+function copyBuildRules(projectPath) {
+    var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
+    shell.cp('-f', path.join(srcDir, 'custom_rules.xml'), projectPath);
+
+    shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
+    shell.cp('-f', path.join(srcDir, 'libraries.gradle'), projectPath);
+    shell.cp('-f', path.join(srcDir, 'settings.gradle'), projectPath);
 }
 
 function copyScripts(projectPath) {
@@ -206,7 +237,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
     })
     // Check that requirements are met and proper targets are installed
     .then(function() {
-        check_reqs.run();
+        return check_reqs.run();
     }).then(function() {
         // Log the given values for the project
         console.log('Creating Cordova project for the Android platform:');
@@ -222,6 +253,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
             shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
+            shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
 
             shell.cp('-f', path.join(project_template_dir, 'build.gradle'), project_path);
             shell.cp('-f', path.join(project_template_dir, 'libraries.gradle'), project_path);
@@ -263,10 +295,10 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
             shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
             copyScripts(project_path);
-            copyAntRules(project_path);
+            copyBuildRules(project_path);
         });
         // Link it to local android install.
-        return runAndroidUpdate(project_path, target_api, use_shared_project);
+        writeProjectProperties(project_path, target_api);
     }).then(function() {
         console.log('Project successfully created.');
     });
@@ -289,22 +321,20 @@ function extractProjectNameFromManifest(projectPath) {
 }
 
 // Returns a promise.
-exports.updateProject = function(projectPath) {
-    var version = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
+exports.updateProject = function(projectPath, shared) {
+    var newVersion = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
     // Check that requirements are met and proper targets are installed
     return check_reqs.run()
     .then(function() {
         var projectName = extractProjectNameFromManifest(projectPath);
         var target_api = check_reqs.get_target();
-        copyJsAndLibrary(projectPath, false, projectName);
+        copyJsAndLibrary(projectPath, shared, projectName);
         copyScripts(projectPath);
-        copyAntRules(projectPath);
+        copyBuildRules(projectPath);
         removeDebuggableFromManifest(projectPath);
-        return runAndroidUpdate(projectPath, target_api, false)
-        .then(function() {
-            console.log('Android project is now at version ' + version);
-            console.log('If you updated from a pre-3.2.0 version and use an IDE, we now require that you import the "CordovaLib" library project.');
-        });
+        writeProjectProperties(projectPath, target_api, shared);
+        console.log('Android project is now at version ' + newVersion);
+        console.log('If you updated from a pre-3.2.0 version and use an IDE, we now require that you import the "CordovaLib" library project.');
     });
 };
 
