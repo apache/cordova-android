@@ -204,7 +204,6 @@ var builders = {
             var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
             var args = builder.getArgs('build');
-            copyGradleWrapper();
             return Q().then(function() {
                 return spawn(wrapper, args);
             }).then(function() {
@@ -216,7 +215,6 @@ var builders = {
             var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
             var args = builder.getArgs('clean');
-            copyGradleWrapper();
             return Q().then(function() {
                 return spawn(wrapper, args);
             });
