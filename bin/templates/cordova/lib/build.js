@@ -24,7 +24,6 @@ var shell   = require('shelljs'),
     Q       = require('q'),
     path    = require('path'),
     fs      = require('fs'),
-    which   = require('which'),
     ROOT    = path.join(__dirname, '..', '..');
 var check_reqs = require('./check_reqs');
 
