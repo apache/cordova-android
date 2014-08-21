@@ -82,6 +82,11 @@ public class ConfigXmlParser {
         boolean insideFeature = false;
         ArrayList<String> urlMap = null;
 
+        // Add implicitly allowed URLs
+        internalWhitelist.addWhiteListEntry("file:///*", false);
+        internalWhitelist.addWhiteListEntry("content:///*", false);
+        internalWhitelist.addWhiteListEntry("data:*", false);
+
         while (eventType != XmlResourceParser.END_DOCUMENT) {
             if (eventType == XmlResourceParser.START_TAG) {
                 String strNode = xml.getName();

@@ -98,10 +98,6 @@ public class Whitelist {
 
     public Whitelist() {
         this.whiteList = new ArrayList<URLPattern>();
-        // Add implicitly allowed URLs
-        addWhiteListEntry("file:///*", false);
-        addWhiteListEntry("content:///*", false);
-        addWhiteListEntry("data:*", false);
     }
 
     /* Match patterns (from http://developer.chrome.com/extensions/match_patterns.html)
