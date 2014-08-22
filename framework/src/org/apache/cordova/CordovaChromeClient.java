@@ -21,6 +21,8 @@ package org.apache.cordova;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.LOG;
 
+import java.util.ArrayList;
+
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -64,6 +66,9 @@ public class CordovaChromeClient extends WebChromeClient {
 
     // the video progress view
     private View mVideoProgressView;
+    
+    //Dialogs record
+    private ArrayList<AlertDialog> dialogsManager = new ArrayList<AlertDialog>();
     
     // File Chooser
     public ValueCallback<Uri> mUploadMessage;
@@ -123,7 +128,8 @@ public class CordovaChromeClient extends WebChromeClient {
                     return true;
             }
         });
-        dlg.show();
+        AlertDialog alert = dlg.show();
+        dialogsManager.add(alert);
         return true;
     }
 
@@ -172,7 +178,8 @@ public class CordovaChromeClient extends WebChromeClient {
                     return true;
             }
         });
-        dlg.show();
+        AlertDialog alert = dlg.show();
+        dialogsManager.add(alert);
         return true;
     }
 
@@ -216,7 +223,8 @@ public class CordovaChromeClient extends WebChromeClient {
                             res.cancel();
                         }
                     });
-            dlg.show();
+            AlertDialog alert = dlg.show();
+            dialogsManager.add(alert);
         }
         return true;
     }
@@ -328,4 +336,13 @@ public class CordovaChromeClient extends WebChromeClient {
     public ValueCallback<Uri> getValueCallback() {
         return this.mUploadMessage;
     }
+    
+    public void destroyAllDialogs(){
+        if(dialogsManager != null){
+            for (int i = 0; i < dialogsManager.size(); i++){
+                dialogsManager.get(i).cancel();
+            }
+        }
+    }
+    
 }

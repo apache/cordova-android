@@ -923,4 +923,8 @@ public class CordovaWebView extends WebView {
     public CordovaPreferences getPreferences() {
         return preferences;
     }
+    
+    public void destroyDialogs(){
+        this.chromeClient.destroyAllDialogs();
+    }
 }
