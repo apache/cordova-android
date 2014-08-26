@@ -88,7 +88,9 @@ public class CordovaWebView extends WebView {
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
     private CordovaResourceApi resourceApi;
-    private Whitelist whitelist;
+    private Whitelist internalWhitelist;
+    private Whitelist externalWhitelist;
+
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
     private CordovaPreferences preferences;
@@ -135,14 +137,16 @@ public class CordovaWebView extends WebView {
 
     // Use two-phase init so that the control will work with XML layouts.
     public void init(CordovaInterface cordova, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient,
-            List<PluginEntry> pluginEntries, Whitelist whitelist, CordovaPreferences preferences) {
+            List<PluginEntry> pluginEntries, Whitelist internalWhitelist, Whitelist externalWhitelist,
+            CordovaPreferences preferences) {
         if (this.cordova != null) {
             throw new IllegalStateException();
         }
         this.cordova = cordova;
         this.viewClient = webViewClient;
         this.chromeClient = webChromeClient;
-        this.whitelist = whitelist;
+        this.internalWhitelist = internalWhitelist;
+        this.externalWhitelist = externalWhitelist;
         this.preferences = preferences;
         super.setWebChromeClient(webChromeClient);
         super.setWebViewClient(webViewClient);
@@ -165,7 +169,7 @@ public class CordovaWebView extends WebView {
             if (!Config.isInitialized()) {
                 Config.init(cdv.getActivity());
             }
-            init(cdv, makeWebViewClient(cdv), makeWebChromeClient(cdv), Config.getPluginEntries(), Config.getWhitelist(), Config.getPreferences());
+            init(cdv, makeWebViewClient(cdv), makeWebChromeClient(cdv), Config.getPluginEntries(), Config.getWhitelist(), Config.getExternalWhitelist(), Config.getPreferences());
         }
     }
 
@@ -319,9 +323,13 @@ public class CordovaWebView extends WebView {
 
     
     public Whitelist getWhitelist() {
-        return this.whitelist;
+        return this.internalWhitelist;
     }
-    
+
+    public Whitelist getExternalWhitelist() {
+        return this.externalWhitelist;
+    }
+
     /**
      * Load the url into the webview.
      *
@@ -427,7 +435,7 @@ public class CordovaWebView extends WebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("file://") || url.startsWith("javascript:") || whitelist.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.startsWith("javascript:") || internalWhitelist.isUrlWhiteListed(url)) {
             super.loadUrl(url);
         }
     }
@@ -560,7 +568,7 @@ public class CordovaWebView extends WebView {
         if (!openExternal) {
 
             // Make sure url is in whitelist
-            if (url.startsWith("file://") || whitelist.isUrlWhiteListed(url)) {
+            if (url.startsWith("file://") || internalWhitelist.isUrlWhiteListed(url)) {
                 // TODO: What about params?
                 // Load new URL
                 this.loadUrl(url);
