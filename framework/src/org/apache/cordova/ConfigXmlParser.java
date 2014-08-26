@@ -119,7 +119,15 @@ public class ConfigXmlParser {
                         if (external) {
                             externalWhitelist.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
                         } else {
-                            internalWhitelist.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                            if ("*".equals(origin)) {
+                                // Special-case * origin to mean http and https when used for internal
+                                // whitelist. This prevents external urls like sms: and geo: from being
+                                // handled internally.
+                                internalWhitelist.addWhiteListEntry("http://*/*", false);
+                                internalWhitelist.addWhiteListEntry("https://*/*", false);
+                            } else {
+                                internalWhitelist.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                            }
                         }
                     }
                 }
