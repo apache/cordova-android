@@ -18,5 +18,5 @@
  under the License.
 -->
 <resources>
-   <string name="app_name">CordovaTests</string>
+   <string name="app_name">CordovaNativeTests</string>
 </resources>
