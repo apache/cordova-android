@@ -15,6 +15,7 @@ buildscript {
 ext.multiarch=false
 
 dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
     for (subproject in getProjectList()) {
         compile project(subproject)
     }
