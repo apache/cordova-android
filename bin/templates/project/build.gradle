@@ -41,7 +41,7 @@ android {
     compileSdkVersion 19
     buildToolsVersion "19.0.0"
 
-    if (multiarch) {
+    if (multiarch || System.env.BUILD_MULTIPLE_APKS) {
         productFlavors {
             armv7 {
                 versionCode defaultConfig.versionCode + 2

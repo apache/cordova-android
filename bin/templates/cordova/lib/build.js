@@ -156,13 +156,25 @@ var builders = {
     },
     gradle: {
         getArgs: function(cmd) {
-            var lintSteps = [
-                'lint',
-                'lintVitalRelease',
-                'compileLint',
-                'copyReleaseLint',
-                'copyDebugLint'
-            ];
+            var lintSteps;
+            if (process.env['BUILD_MULTIPLE_APKS']) {
+                lintSteps = [
+                    'lint',
+                    'lintVitalX86Release',
+                    'lintVitalArmv7Release',
+                    'compileLint',
+                    'copyReleaseLint',
+                    'copyDebugLint'
+                ];
+            } else {
+                lintSteps = [
+                    'lint',
+                    'lintVitalRelease',
+                    'compileLint',
+                    'copyReleaseLint',
+                    'copyDebugLint'
+                ];
+            }
             var args = [cmd, '-b', path.join(ROOT, 'build.gradle')];
             // 10 seconds -> 6 seconds
             args.push('-Dorg.gradle.daemon=true');
