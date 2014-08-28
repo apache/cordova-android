@@ -20,6 +20,17 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 3.5.1 (August 2014) ###
+
+This was a security update to address CVE-2014-3500, CVE-2014-3501,
+and CVE-2014-3502. For more information, see
+http://cordova.apache.org/announcements/2014/08/04/android-351.html
+
+* Filter out non-launchable intents
+* Handle unsupported protocol errors in webview better
+* Update the errorurl to no longer use intents
+* Refactoring the URI handling on Cordova, removing dead code
+
 ### 3.5.0 (May 2014) ###
 
 * OkHttp has broken headers. Updating for ASF compliance.
