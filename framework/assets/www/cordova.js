@@ -1,5 +1,5 @@
 // Platform: android
-// 3.6.3
+// 3.7.0-dev-8f41e8d
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '3.6.3';
+var CORDOVA_JS_BUILD_LABEL = '3.7.0-dev-8f41e8d';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
