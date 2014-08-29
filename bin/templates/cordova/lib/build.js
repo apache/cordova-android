@@ -342,9 +342,9 @@ module.exports.run = function(options) {
  * the script will error out. (should we error or just return undefined?)
  * This is called by the run script to install the apk to the device
  */
-module.exports.get_apk = function(build_type) {
+module.exports.get_apk = function(build_type, architecture) {
     var outputDir = path.join(ROOT, 'out');
-    var candidates = find_files(outputDir, function() { return true; });
+    var candidates = find_files(outputDir, function(filename) { return (!architecture) || filename.indexOf(architecture) >= 0; });
     if (candidates.length === 0) {
         console.error('ERROR : No .apk found in ' + outputDir + ' directory');
         process.exit(2);
