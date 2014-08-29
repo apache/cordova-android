@@ -61,7 +61,12 @@ module.exports.install = function(target) {
         if (device_list.indexOf(target) < 0)
             return Q.reject('ERROR: Unable to find target \'' + target + '\'.');
 
-        var apk_path = build.get_apk();
+        var apk_path;
+        if (typeof process.env.DEPLOY_APK_ARCH == 'undefined') {
+            apk_path = build.get_apk();
+        } else {
+            apk_path = build.get_apk(null, process.env.DEPLOY_APK_ARCH);
+        }
         launchName = appinfo.getActivityName();
         console.log('Installing app on device...');
         var cmd = 'adb -s ' + target + ' install -r "' + apk_path + '"';
