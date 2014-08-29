@@ -21,7 +21,7 @@ package org.apache.cordova.test;
 import android.os.Bundle;
 import org.apache.cordova.*;
 
-public class basicauth extends DroidGap {
+public class basicauth extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,11 +31,13 @@ public class basicauth extends DroidGap {
         AuthenticationToken token = new AuthenticationToken();
         token.setUserName("test");
         token.setPassword("test");
-        super.setAuthenticationToken(token, "browserspy.dk:80", "BrowserSpy.dk - HTTP Password Test");
+        // classic webview includes port in hostname, Chromium webview does not. Handle both here.
+        // BTW, the realm is optional.
+        setAuthenticationToken(token, "browserspy.dk:80", "BrowserSpy.dk - HTTP Password Test");
+        setAuthenticationToken(token, "browserspy.dk", "BrowserSpy.dk - HTTP Password Test");
 
         // Add web site to whitelist
-        Config.init();
-        Config.addWhiteListEntry("http://browserspy.dk*", true);
+        Config.getWhitelist().addWhiteListEntry("http://browserspy.dk/*", true);
 
         // Load test
         super.loadUrl("file:///android_asset/www/basicauth/index.html");
