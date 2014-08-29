@@ -14,6 +14,25 @@
          "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
          KIND, either express or implied.  See the License for the
          specific language governing permissions and limitations
-         under the License.$
+         under the License.
 -->
-This is an error page.
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta name="viewport" content="width=320, user-scalable=no" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>Expected Error</title>
+      <link rel="stylesheet" href="../master.css" type="text/css" media="screen" title="no title">
+      <script type="text/javascript" charset="utf-8" src="../cordova.js"></script>
+      <script type="text/javascript" charset="utf-8" src="../main.js"></script>
+  </head>
+  <body onload="init();" id="stage" class="theme">
+    <h1>Expected Error</h1>
+    <div id="info">
+        <h4>Cordova: <span id="cordova"> &nbsp;</span></h4>
+        <h4>Deviceready: <span id="deviceready"> &nbsp;</span></h4>
+     </div>
+     <div id="info">
+     This is an expected error page because the initial href doesn't exist.
+  </body>
+</html>
