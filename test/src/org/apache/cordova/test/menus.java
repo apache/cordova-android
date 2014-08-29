@@ -28,10 +28,12 @@ import android.view.ContextMenu.ContextMenuInfo;
 import org.apache.cordova.*;
 import org.apache.cordova.LOG;
 
-public class menus extends DroidGap {
+public class menus extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // need the title to be shown for the options menu to be visible
+        preferences.set("showTitle", true);
         super.init();
         super.registerForContextMenu(super.appView);
         super.loadUrl("file:///android_asset/www/menus/index.html");
