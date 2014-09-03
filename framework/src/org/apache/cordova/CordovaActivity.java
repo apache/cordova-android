@@ -248,10 +248,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         root.addView((View) appView);
         setContentView(root);
 
-        // TODO: Setting this on the appView causes it to show when <html style="opacity:0">.
         int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
         root.setBackgroundColor(backgroundColor);
-        appView.setBackgroundColor(backgroundColor);
     }
 
     /**
