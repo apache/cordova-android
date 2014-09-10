@@ -48,20 +48,21 @@ function tryCommand(cmd, errMsg) {
 
 // Get valid target from framework/project.properties
 module.exports.get_target = function() {
-    if(fs.existsSync(path.join(ROOT, 'framework', 'project.properties'))) {
-        var target = shelljs.grep(/target=android-[\d+]/, path.join(ROOT, 'framework', 'project.properties'));
-        return target.split('=')[1].replace('\n', '').replace('\r', '').replace(' ', '');
-    } else if (fs.existsSync(path.join(ROOT, 'project.properties'))) {
-        // if no target found, we're probably in a project and project.properties is in ROOT.
-        // this is called on the project itself, and can support Google APIs AND Vanilla Android
-        var target = shelljs.grep(/target=android-[\d+]/, path.join(ROOT, 'project.properties')) ||
-          shelljs.grep(/target=Google Inc.:Google APIs:[\d+]/, path.join(ROOT, 'project.properties'));
-        if(target == "" || !target) {
-          // Try Google Glass APIs
-          target = shelljs.grep(/target=Google Inc.:Glass Development Kit Preview:[\d+]/, path.join(ROOT, 'project.properties'));
+    function extractFromFile(filePath) {
+        var target = shelljs.grep(/\btarget=/, filePath);
+        if (!target) {
+            throw new Error('Could not find android target within: ' + filePath);
         }
-        return target.split('=')[1].replace('\n', '').replace('\r', '');
+        return target.split('=')[1].trim();
     }
+    if (fs.existsSync(path.join(ROOT, 'framework', 'project.properties'))) {
+        return extractFromFile(path.join(ROOT, 'framework', 'project.properties'));
+    }
+    if (fs.existsSync(path.join(ROOT, 'project.properties'))) {
+        // if no target found, we're probably in a project and project.properties is in ROOT.
+        return extractFromFile(path.join(ROOT, 'project.properties'));
+    }
+    throw new Error('Could not find android target. File missing: ' + path.join(ROOT, 'project.properties'));
 }
 
 // Returns a promise. Called only by build and clean commands.
@@ -180,13 +181,17 @@ module.exports.check_android = function() {
 };
 
 module.exports.check_android_target = function(valid_target) {
+    // valid_target can look like:
+    //   android-19
+    //   android-L
+    //   Google Inc.:Google APIs:20
+    //   Google Inc.:Glass Development Kit Preview:20
     var msg = 'Failed to run "android". Make sure you have the latest Android SDK installed, and that the "android" command (inside the tools/ folder) is added to your PATH.';
-    return tryCommand('android list targets', msg)
+    return tryCommand('android list targets --compact', msg)
     .then(function(output) {
-        if (!output.match(valid_target)) {
-            throw new Error('Please install Android target "' + valid_target + '".\n' +
-                output + '\n\n' +
-                'Hint: Install it using the SDK manager by running: ' + forgivingWhichSync('android'));
+        if (output.split('\n').indexOf(valid_target) == -1) {
+            throw new Error('Please install Android target: "' + valid_target + '".\n' +
+                'Hint: Open the SDK manager by running: ' + forgivingWhichSync('android'));
         }
     });
 };
