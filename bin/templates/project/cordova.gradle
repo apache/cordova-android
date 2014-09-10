@@ -17,40 +17,16 @@
        under the License.
 */
 
-int[] getAvailableSdks() {
-    def availableSdks = new ByteArrayOutputStream()
-    exec {
-        commandLine 'android', 'list', 'target', '--compact'
-        standardOutput = availableSdks
-    }
-    availableSdks
-        .toString()
-        .tokenize('\n')
-        .findAll { it ==~ /android-(\d+).*/ }
-        .collect { (it =~ /android-(\d+).*/)[0][1].toInteger() }
-        .sort( { a, b -> b <=> a } )
-}
+import java.util.regex.Pattern
 
-int highestSdkAvailable(int minSdkVersion) {
-    def availableSdks
-    try {
-        availableSdks = getAvailableSdks()
-    } catch (e) {
-        println "An exception occurred while trying to find the Android SDK."
-        throw e
-    }
-    if (availableSdks.length > 0) {
-        def highestSdk = availableSdks[0]
-        if (highestSdk < minSdkVersion) {
-            throw new RuntimeException(
-                "No usable Android SDK found. Highest installed version is " +
-                highestSdk + "; minimum version required is " + minSdkVersion + ".")
-        }
-        highestSdk
+String getProjectTarget(String defaultTarget) {
+    def manifestFile = file("project.properties")
+    def pattern = Pattern.compile("target\\s*=\\s*(.*)")
+    def matcher = pattern.matcher(manifestFile.getText())
+    if (matcher.find()) {
+        matcher.group(1)
     } else {
-        throw new RuntimeException(
-            "No installed SDKs found. Please install the Android SDK version " +
-            minSdkVersion + " or higher.")
+        defaultTarget
     }
 }
 
@@ -142,6 +118,6 @@ String getAndroidSdkDir() {
     androidSdkDir
 }
 
-cordovaSdkVersion =  highestSdkAvailable(19)
+cordovaSdkVersion =  getProjectTarget("android-19")
 cordovaBuildToolsVersion = latestBuildToolsAvailable("19.0.0")
 
