@@ -141,6 +141,20 @@ module.exports.check_android = function() {
         var androidCmdPath = forgivingWhichSync('android');
         var adbInPath = !!forgivingWhichSync('adb');
         var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
+        function maybeSetAndroidHome(value) {
+            if (fs.existsSync(value)) {
+                hasAndroidHome = true;
+                process.env['ANDROID_HOME'] = value;
+            }
+        }
+        if (!hasAndroidHome && !androidCmdPath) {
+            if (isWindows) {
+                maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'android-studio', 'sdk'));
+                maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'android-studio', 'sdk'));
+            } else if (process.platform == 'darwin') {
+                maybeSetAndroidHome('/Applications/Android Studio.app/sdk');
+            }
+        }
         if (hasAndroidHome && !androidCmdPath) {
             process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools');
         }
@@ -171,7 +185,8 @@ module.exports.check_android_target = function(valid_target) {
     .then(function(output) {
         if (!output.match(valid_target)) {
             throw new Error('Please install Android target "' + valid_target + '".\n' +
-                'Hint: Run "android" from your command-line to open the SDK manager.');
+                output + '\n\n' +
+                'Hint: Install it using the SDK manager by running: ' + forgivingWhichSync('android'));
         }
     });
 };
