@@ -19,6 +19,8 @@
 
 import java.util.regex.Pattern
 
+ext.cordova = {}
+apply from: 'cordova.gradle', to: ext.cordova
 apply plugin: 'android'
 
 buildscript {
@@ -57,8 +59,8 @@ android {
         versionCode Integer.parseInt("" + getVersionCodeFromManifest() + "0")
     }
 
-    compileSdkVersion 19
-    buildToolsVersion "19.0.0"
+    compileSdkVersion cordova.cordovaSdkVersion
+    buildToolsVersion cordova.cordovaBuildToolsVersion
 
     if (multiarch || System.env.BUILD_MULTIPLE_APKS) {
         productFlavors {

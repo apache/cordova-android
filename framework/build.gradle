@@ -32,8 +32,8 @@ buildscript {
 apply plugin: 'android-library'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.0.0"
+    compileSdkVersion cordova.cordovaSdkVersion
+    buildToolsVersion cordova.cordovaBuildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
