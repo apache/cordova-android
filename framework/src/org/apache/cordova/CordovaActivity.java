@@ -121,7 +121,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     // Read from config.xml:
     protected CordovaPreferences preferences;
-    protected Whitelist whitelist;
+    protected Whitelist internalWhitelist;
+    protected Whitelist externalWhitelist;
     protected String launchUrl;
     protected ArrayList<PluginEntry> pluginEntries;
 
@@ -181,7 +182,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         preferences = parser.getPreferences();
         preferences.setPreferencesBundle(getIntent().getExtras());
         preferences.copyIntoIntentExtras(this);
-        whitelist = parser.getWhitelist();
+        internalWhitelist = parser.getInternalWhitelist();
+        externalWhitelist = parser.getExternalWhitelist();
         launchUrl = parser.getLaunchUrl();
         pluginEntries = parser.getPluginEntries();
         Config.parser = parser;
@@ -256,7 +258,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             // If all else fails, return a default WebView
             ret = new AndroidWebView(this);
         }
-        ret.init(this, pluginEntries, whitelist, preferences);
+        ret.init(this, pluginEntries, internalWhitelist, externalWhitelist, preferences);
         return ret;
     }
 
@@ -544,7 +546,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         // If errorUrl specified, then load it
         final String errorUrl = preferences.getString("errorUrl", null);
-        if ((errorUrl != null) && (errorUrl.startsWith("file://") || whitelist.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
+        if ((errorUrl != null) && (errorUrl.startsWith("file://") || internalWhitelist.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {
                 public void run() {

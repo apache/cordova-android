@@ -30,7 +30,20 @@
         Apache Cordova Team
     </author>
 
-    <access origin="*"/>
+    <!-- Allow access to arbitrary URLs in the Cordova WebView. This is a
+         development mode setting, and should be changed for production. -->
+    <access origin="http://*/*"/>
+    <access origin="https://*/*"/>
+
+    <!-- Grant certain URLs the ability to launch external applications. This
+         behaviour is set to match that of Cordova versions before 3.6.0, and
+         should be reviewed before launching an application in production. It
+         may be changed in the future. -->
+    <access origin="tel:*" launch-external="yes"/>
+    <access origin="geo:*" launch-external="yes"/>
+    <access origin="mailto:*" launch-external="yes"/>
+    <access origin="sms:*" launch-external="yes"/>
+    <access origin="market:*" launch-external="yes"/>
 
     <!-- <content src="http://mysite.com/myapp.html" /> for external pages -->
     <content src="index.html" />

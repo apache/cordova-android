@@ -48,18 +48,11 @@ public class CordovaUriHelper {
      */
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     public boolean shouldOverrideUrlLoading(String url) {
-        // The WebView should support http and https when going on the Internet
-        if(url.startsWith("http:") || url.startsWith("https:"))
-        {
-            // We only need to whitelist sites on the Internet! 
-            if(appView.getWhitelist().isUrlWhiteListed(url))
-            {
-                return false;
-            }
-        }
         // Give plugins the chance to handle the url
-        else if (this.appView.getPluginManager().onOverrideUrlLoading(url)) {
-            
+        if (this.appView.getPluginManager().onOverrideUrlLoading(url)) {
+            // Do nothing other than what the plugins wanted.
+            // If any returned true, then the request was handled.
+            return true;
         }
         else if(url.startsWith("file://") | url.startsWith("data:"))
         {
@@ -67,7 +60,11 @@ public class CordovaUriHelper {
             //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
             return url.contains("app_webview");
         }
-        else
+        else if (appView.getWhitelist().isUrlWhiteListed(url)) {
+            // Allow internal navigation
+            return false;
+        }
+        else if (appView.getExternalWhitelist().isUrlWhiteListed(url))
         {
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -78,11 +75,12 @@ public class CordovaUriHelper {
                     intent.setSelector(null);
                 }
                 this.cordova.getActivity().startActivity(intent);
+                return true;
             } catch (android.content.ActivityNotFoundException e) {
                 LOG.e(TAG, "Error loading url " + url, e);
             }
         }
-        //Default behaviour should be to load the default intent, let's see what happens! 
+        // Intercept the request and do nothing with it -- block it
         return true;
     }
 }

@@ -58,7 +58,7 @@ public class Config {
             Log.e(TAG, "Config was not initialised. Did you forget to Config.init(this)?");
             return;
         }
-        parser.getWhitelist().addWhiteListEntry(origin, subdomains);
+        parser.getInternalWhitelist().addWhiteListEntry(origin, subdomains);
     }
 
     /**
@@ -72,7 +72,21 @@ public class Config {
             Log.e(TAG, "Config was not initialised. Did you forget to Config.init(this)?");
             return false;
         }
-        return parser.getWhitelist().isUrlWhiteListed(url);
+        return parser.getInternalWhitelist().isUrlWhiteListed(url);
+    }
+
+    /**
+     * Determine if URL is in approved list of URLs to launch external applications.
+     *
+     * @param url
+     * @return true if whitelisted
+     */
+    public static boolean isUrlExternallyWhiteListed(String url) {
+        if (parser == null) {
+            Log.e(TAG, "Config was not initialised. Did you forget to Config.init(this)?");
+            return false;
+        }
+        return parser.getExternalWhitelist().isUrlWhiteListed(url);
     }
 
     public static String getStartUrl() {
@@ -87,7 +101,11 @@ public class Config {
     }
 
     public static Whitelist getWhitelist() {
-        return parser.getWhitelist();
+        return parser.getInternalWhitelist();
+    }
+
+    public static Whitelist getExternalWhitelist() {
+        return parser.getExternalWhitelist();
     }
 
     public static List<PluginEntry> getPluginEntries() {

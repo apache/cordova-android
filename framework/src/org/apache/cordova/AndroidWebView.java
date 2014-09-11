@@ -86,7 +86,8 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
     private CordovaResourceApi resourceApi;
-    private Whitelist whitelist;
+    private Whitelist internalWhitelist;
+    private Whitelist externalWhitelist;
     private CordovaPreferences preferences;
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
@@ -110,12 +111,14 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     // Use two-phase init so that the control will work with XML layouts.
     @Override
     public void init(CordovaInterface cordova, List<PluginEntry> pluginEntries,
-            Whitelist whitelist, CordovaPreferences preferences) {
+            Whitelist internalWhitelist, Whitelist externalWhitelist,
+            CordovaPreferences preferences) {
         if (this.cordova != null) {
             throw new IllegalStateException();
         }
         this.cordova = cordova;
-        this.whitelist = whitelist;
+        this.internalWhitelist = internalWhitelist;
+        this.externalWhitelist = externalWhitelist;
         this.preferences = preferences;
 
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
@@ -351,7 +354,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("file://") || url.startsWith("javascript:") || whitelist.isUrlWhiteListed(url)) {
+        if (url.startsWith("file://") || url.startsWith("javascript:") || internalWhitelist.isUrlWhiteListed(url)) {
             super.loadUrl(url);
         }
     }
@@ -426,7 +429,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         if (!openExternal) {
 
             // Make sure url is in whitelist
-            if (url.startsWith("file://") || whitelist.isUrlWhiteListed(url)) {
+            if (url.startsWith("file://") || internalWhitelist.isUrlWhiteListed(url)) {
                 // TODO: What about params?
                 // Load new URL
                 loadUrlIntoView(url, true);
@@ -744,9 +747,14 @@ public class AndroidWebView extends WebView implements CordovaWebView {
 
     @Override
     public Whitelist getWhitelist() {
-        return this.whitelist;
+        return this.internalWhitelist;
     }
-    
+
+    @Override
+    public Whitelist getExternalWhitelist() {
+        return this.externalWhitelist;
+    }
+
     @Override
     public CordovaPreferences getPreferences() {
         return preferences;

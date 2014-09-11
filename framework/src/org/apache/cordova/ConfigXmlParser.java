@@ -36,11 +36,16 @@ public class ConfigXmlParser {
 
     private String launchUrl = "file:///android_asset/www/index.html";
     private CordovaPreferences prefs = new CordovaPreferences();
-    private Whitelist whitelist = new Whitelist();
+    private Whitelist internalWhitelist = new Whitelist();
+    private Whitelist externalWhitelist = new Whitelist();
     private ArrayList<PluginEntry> pluginEntries = new ArrayList<PluginEntry>(20);
 
-    public Whitelist getWhitelist() {
-        return whitelist;
+    public Whitelist getInternalWhitelist() {
+        return internalWhitelist;
+    }
+
+    public Whitelist getExternalWhitelist() {
+        return externalWhitelist;
     }
 
     public CordovaPreferences getPreferences() {
@@ -75,6 +80,11 @@ public class ConfigXmlParser {
         boolean onload = false;
         boolean insideFeature = false;
 
+        // Add implicitly allowed URLs
+        internalWhitelist.addWhiteListEntry("file:///*", false);
+        internalWhitelist.addWhiteListEntry("content:///*", false);
+        internalWhitelist.addWhiteListEntry("data:*", false);
+
         while (eventType != XmlResourceParser.END_DOCUMENT) {
             if (eventType == XmlResourceParser.START_TAG) {
                 String strNode = xml.getName();
@@ -96,8 +106,21 @@ public class ConfigXmlParser {
                 else if (strNode.equals("access")) {
                     String origin = xml.getAttributeValue(null, "origin");
                     String subdomains = xml.getAttributeValue(null, "subdomains");
+                    boolean external = (xml.getAttributeValue(null, "launch-external") != null);
                     if (origin != null) {
-                        whitelist.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                        if (external) {
+                            externalWhitelist.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                        } else {
+                            if ("*".equals(origin)) {
+                                // Special-case * origin to mean http and https when used for internal
+                                // whitelist. This prevents external urls like sms: and geo: from being
+                                // handled internally.
+                                internalWhitelist.addWhiteListEntry("http://*/*", false);
+                                internalWhitelist.addWhiteListEntry("https://*/*", false);
+                            } else {
+                                internalWhitelist.addWhiteListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                            }
+                        }
                     }
                 }
                 else if (strNode.equals("preference")) {

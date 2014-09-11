@@ -26,6 +26,10 @@
         Apache Cordova Team
     </author>
     <access origin="*.apache.org" />
+    <access origin="http://*.google.com/*" />
+    <access origin="https://*.google.com/*" />
+    <access origin="https://*.googleapis.com/*" />
+    <access origin="https://*.gstatic.com/*" />
     <content src="index.html" />
     <preference name="loglevel" value="DEBUG" />
     <preference name="useBrowserHistory" value="true" />
