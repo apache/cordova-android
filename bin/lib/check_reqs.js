@@ -143,17 +143,29 @@ module.exports.check_android = function() {
         var adbInPath = !!forgivingWhichSync('adb');
         var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
         function maybeSetAndroidHome(value) {
-            if (fs.existsSync(value)) {
+            if (!hasAndroidHome && fs.existsSync(value)) {
                 hasAndroidHome = true;
                 process.env['ANDROID_HOME'] = value;
             }
         }
         if (!hasAndroidHome && !androidCmdPath) {
             if (isWindows) {
+                // Android Studio installer.
                 maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'android-studio', 'sdk'));
                 maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'android-studio', 'sdk'));
+                // Stand-alone installer.
+                maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'android-sdk'));
+                maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'android-sdk'));
             } else if (process.platform == 'darwin') {
                 maybeSetAndroidHome('/Applications/Android Studio.app/sdk');
+                // Stand-alone zip file that user might think to put under /Applications
+                maybeSetAndroidHome('/Applications/android-sdk-macosx');
+                maybeSetAndroidHome('/Applications/android-sdk');
+            }
+            if (process.env['HOME']) {
+                // or their HOME directory.
+                maybeSetAndroidHome(path.join(process.env['HOME'], 'android-sdk-macosx'));
+                maybeSetAndroidHome(path.join(process.env['HOME'], 'android-sdk'));
             }
         }
         if (hasAndroidHome && !androidCmdPath) {
