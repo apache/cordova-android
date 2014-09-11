@@ -20,6 +20,135 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 3.6.0 (Sept 2014) ###
+
+* Set VERSION to 3.6.0 (via coho)
+* CB-7410 fix the menu test
+* CB-7410 Fix the errorUrl test
+* CB-7410 Fix Basic Authentication test
+* CB-3445: Allow build and run scripts to select APK by architecture
+* CB-3445: Add environment variable 'BUILD_MULTIPLE_APKS' for splitting APKs based on architecture
+* CB-3445: Ensure that JAR files in libs directory are included
+* CB-7267 update RELEASENOTES for 3.5.1
+* CB-7410 clarify the title
+* CB-7385 update cordova.js for testing prior to branch/tag
+* CB-7410 add whitelist entries to get iframe/GoogleMaps working
+* CB-7291 propogate change in method signature to the native tests
+* CB-7291: Restrict meaning of "\*" in internal whitelist to just http and https
+* CB-7291: Only add file, content and data URLs to internal whitelist
+* CB-7291: Add defaults to external whitelist
+* CB-7291: Add external-launch-whitelist and use it for filtering intent launches
+* CB-3445: Read project.properties to configure gradle libraries
+* CB-7325 Fix error message in android_sdk_version.js when missing SDK on windows
+* CB-7335 Add a .gitignore to android project template
+* CB-7330 Fix dangling function call in last commit (broke gradle builds)
+* CB-7330 Don't run "android update" during creation
+* CB-3445 Add gradle support clean command (plus some code cleanup)
+* CB-7044 Fix typo in prev commit causing check_reqs to always fail.
+* CB-3445 Copy gradle wrapper in build instead of create
+* CB-3445 Add .gradle template files for "update" as well as "create"
+* CB-7044 Add JAVA_HOME when not set. Be stricter about ANDROID_HOME
+* CB-3445 Speed up gradle building (incremental builds go from 10s -> 1.5s for me)
+* CB-3445: android: Copy Gradle wrapper from Android SDK rather than bundling a JAR
+* CB-3445: Add which to checked-in node_modules
+* CB-3445: Add option to build and install with gradle
+* CB-3445: Add an initial set of Gradle build scripts
+* CB-7321 Don't require ant for create script
+* CB-7044, CB-7299 Fix up PATH problems when possible.
+* Change in test's AndroidManifest.xml needed for the test to run properly. Forgot the manifest.
+* Change in test's AndroidManifest.xml needed for the test to run properly
+* Adding tests related to 3.5.1
+* CB-7261 Fix setNativeToJsBridgeMode sometimes crashing when switching to ONLINE_EVENT
+* CB-7265 Fix crash when navigating to custom protocol (introduced in 3.5.1)
+* Filter out non-launchable intents
+* Handle unsupported protocol errors in webview better
+* CB-7238: I should have collapsed this, but Config.init() must go before the creation of CordovaWebView
+* CB-7238: Minor band-aid to get tests running again, this has to go away before 3.6.0 is released, since this is an API change.
+* Extend whitelist to handle URLs without // chars
+* CB-7172 Force window to have focus after resume
+* CB-7159 Set background color of webView as well as its parent
+* CB-7018 Fix setButtonPlumbedToJs never un-listening
+* Undeprecate some just-deprecated symbols in PluginManager.
+* @Deprecate methods of PluginManager that were never meant to be public
+* Move plugin instantiation and instance storing logic PluginEntry->PluginManager
+* Fix broken unit test due to missing Config.init() call
+* Update to check for Google Glass APIs
+* Fix for `android` not being in PATH check on Windows
+* Displaying error when regex does not match.
+* Fix broken compile due to previous commit :(
+* Tweak CordovaPlugin.initialize method to be less deprecated.
+* Un-deprecate CordovaActivity.init() - it's needed to tweak prefs in onCreate
+* Tweak log messages in CordovaBridge with bridgeSecret is wrong
+* Backport CordovaBridge from 4.0.x -> master
+* Update unit tests to not use most deprecated things (e.g. DroidGap)
+* Add non-String overloades for CordovaPreferences.set()
+* Make CordovaWebview resilient to init() not being called (for backwards-compatibility)
+* Add node_module licenses to LICENSE
+* Update cordova.js snapshot to work with bridge changes
+* Provide CordovaPlugin with CordovaPreferences. Add new Plugin.initialize()
+* Convert usages of Config.\* to use the non-static versions
+* Change getProperty -> prefs.get\* within CordovaActivity
+* Make CordovaUriHelper class package-private
+* Fix PluginManager.setPluginEntries not removing old entries
+* Move registration of App plugin from config.xml -> code
+* Make setWebViewClient an override instead of an overload. Delete Location-change JS->Native bridge mode (missed some of it).
+* CB-4404 Revert setting android:windowSoftInputMode to "adjustPan"
+* Refactor: Use ConfigXmlParser in activity. Adds CordovaWebView.init()
+* Deprecate some convenience methods on CordovaActivity
+* Fix CordovaPreferences not correctly parsing hex values (valueOf->decode)
+* Refactor: Move url-filter information into PluginEntry.
+* Don't re-parse config.xml in onResume.
+* Move handling of Fullscreen preference to CordovaActivity
+* Delete dead code from CordovaActivity
+* Update .classpath to make Eclipse happy (just re-orders one line)
+* Delete "CB-3064: The errorUrl is..." Log message left over from debugging presumably
+* Refactor Config into ConfigXmlParser, CordovaPreferences
+* Delete Location-change JS->Native bridge mode
+* CB-5988 Allow exec() only from file: or start-up URL's domain
+* CB-6761 Fix native->JS bridge ceasing to fire when page changes and online is set to false and the JS loads quickly
+* Update the errorurl to no longer use intents
+* This breaks running the JUnit tests, we'll bring it back soon
+* Refactoring the URI handling on Cordova, removing dead code
+* CB-7018 Clean up and deprecation of some button-related functions
+* CB-7017 Fix onload=true being set on all subsequent plugins
+* CB-5971: Fix package / project validation
+* CB-5971: Add unit tests to cordova-android
+* CB-5971: Factor out package/project name validation logic
+* Delete explicit activity.finish() in back button handling. No change in behaviour.
+* CB-5971: This would have been a good first bug, too bad
+* CB-4404: Changing where android:windowSoftInputMode is in the manifest so it works
+* Add documentation referencing other implementation.
+* CB-6851 Deprecate WebView.sendJavascript()
+* CB-6876 Show the correct executable name
+* CB-6876 Fix the "print usage"
+* Trivial spelling fix in comments when reading CordovaResourceApi
+* CB-6818: I want to remove this code, because Square didn't do their headers properly
+* CB-6860 Add activity_name and launcher_name to AndroidManifest.xml & strings.xml
+* Add a comment to custom_rules.xml saying why we move AndroidManifest.xml
+* Remove +x from README.md
+* CB-6784 Add missing licenses
+* CB-6784 Add license to CONTRIBUTING.md
+* Revert "defaults.xml: Add AndroidLaunchMode preference"
+* updated RELEASENOTES
+* CB-6315: Wrapping this so it runs on the UI thread
+* CB-6723 Update package name for Robotium
+* CB-6707 Update minSdkVersion to 10 consistently
+* CB-5652 make visible cordova version
+* Update JS snapshot to version 3.6.0-dev (via coho)
+* Update JS snapshot to version 3.6.0-dev (via coho)
+* Set VERSION to 3.6.0-dev (via coho)
+
+### 3.5.1 (August 2014) ###
+
+This was a security update to address CVE-2014-3500, CVE-2014-3501,
+and CVE-2014-3502. For more information, see
+http://cordova.apache.org/announcements/2014/08/04/android-351.html
+
+* Filter out non-launchable intents
+* Handle unsupported protocol errors in webview better
+* Update the errorurl to no longer use intents
+* Refactoring the URI handling on Cordova, removing dead code
+
 ### 3.5.0 (May 2014) ###
 
 * OkHttp has broken headers. Updating for ASF compliance.
