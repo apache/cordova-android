@@ -225,10 +225,6 @@ exports.createProject = function(project_path, package_name, project_name, proje
     return validatePackageName(package_name)
     .then(function() {
         validateProjectName(project_name);
-    })
-    // Check that requirements are met and proper targets are installed
-    .then(function() {
-        return check_reqs.run();
     }).then(function() {
         // Log the given values for the project
         console.log('Creating Cordova project for the Android platform:');
@@ -304,8 +300,7 @@ function extractProjectNameFromManifest(projectPath) {
 // Returns a promise.
 exports.updateProject = function(projectPath, shared) {
     var newVersion = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
-    // Check that requirements are met and proper targets are installed
-    return check_reqs.run()
+    return Q()
     .then(function() {
         var projectName = extractProjectNameFromManifest(projectPath);
         var target_api = check_reqs.get_target();
