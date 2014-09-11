@@ -123,6 +123,7 @@ function copyBuildRules(projectPath) {
 
     shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
     shell.cp('-f', path.join(srcDir, 'settings.gradle'), projectPath);
+    shell.cp('-f', path.join(srcDir, 'cordova.gradle'), projectPath);
 }
 
 function copyScripts(projectPath) {
