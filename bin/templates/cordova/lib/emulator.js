@@ -166,7 +166,7 @@ module.exports.start = function(emulator_ID) {
                     var androidCmd = check_reqs.getAbsoluteAndroidCmd();
                     return Q.reject('ERROR : No emulator images (avds) found.\n' +
                         '1. Download desired System Image by running: ' + androidCmd + ' sdk\n' +
-                        '2. Create an AVD by running: ' + androidCmd + ' avd\n'
+                        '2. Create an AVD by running: ' + androidCmd + ' avd\n' +
                         'HINT: For a faster emulator, use an Intel System Image and install the HAXM device driver\n');
                 }
             });
