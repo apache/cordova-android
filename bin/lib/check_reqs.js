@@ -126,13 +126,15 @@ module.exports.check_java = function() {
         }
     }).then(function() {
         var msg =
-            'Failed to run "java -version", make sure your java environment is set up\n' +
-            'including JDK and JRE.\n' +
-            'Your JAVA_HOME variable is: ' + process.env['JAVA_HOME'];
+            'Failed to run "java -version", make sure that you have a JDK installed.\n' +
+            'You can get it from: http://www.oracle.com/technetwork/java/javase/downloads.\n';
+        if (process.env['JAVA_HOME']) {
+            msg += 'Your JAVA_HOME is invalid: ' + process.env['JAVA_HOME'] + '\n';
+        }
         return tryCommand('java -version', msg)
-    }).then(function() {
-        msg = 'Failed to run "javac -version", make sure you have a Java JDK (not just a JRE) installed.';
-        return tryCommand('javac -version', msg)
+        .then(function() {
+            return tryCommand('javac -version', msg);
+        });
     });
 }
 
@@ -192,6 +194,10 @@ module.exports.check_android = function() {
     });
 };
 
+module.exports.getAbsoluteAndroidCmd = function() {
+    return forgivingWhichSync('android').replace(/([ \\])/g, '\\$1');
+};
+
 module.exports.check_android_target = function(valid_target) {
     // valid_target can look like:
     //   android-19
@@ -202,8 +208,10 @@ module.exports.check_android_target = function(valid_target) {
     return tryCommand('android list targets --compact', msg)
     .then(function(output) {
         if (output.split('\n').indexOf(valid_target) == -1) {
+            var androidCmd = module.exports.getAbsoluteAndroidCmd();
             throw new Error('Please install Android target: "' + valid_target + '".\n' +
-                'Hint: Open the SDK manager by running: ' + forgivingWhichSync('android'));
+                'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
+                'Or install directly via: ' + androidCmd + ' update sdk --no-ui --all --filter "' + valid_target + '"');
         }
     });
 };
