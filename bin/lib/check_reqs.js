@@ -204,7 +204,7 @@ module.exports.check_android_target = function(valid_target) {
     //   android-L
     //   Google Inc.:Google APIs:20
     //   Google Inc.:Glass Development Kit Preview:20
-    var msg = 'Failed to run "android". Make sure you have the latest Android SDK installed, and that the "android" command (inside the tools/ folder) is added to your PATH.';
+    var msg = 'Android SDK not found. Make sure that it is installed. If it is not at the default location, set the ANDROID_HOME environment variable.';
     return tryCommand('android list targets --compact', msg)
     .then(function(output) {
         if (output.split('\n').indexOf(valid_target) == -1) {
