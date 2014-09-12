@@ -28,6 +28,7 @@ var shell = require('shelljs'),
     ROOT  = path.join(__dirname, '..', '..'),
     child_process = require('child_process'),
     new_emulator = 'cordova_emulator';
+var check_reqs = require('./check_reqs');
 
 /**
  * Returns a Promise for a list of emulator images in the form of objects
@@ -84,7 +85,7 @@ module.exports.list_images = function() {
  * Returns a promise.
  */
 module.exports.best_image = function() {
-    var project_target = this.get_target().replace('android-', '');
+    var project_target = check_reqs.get_target().replace('android-', '');
     return this.list_images()
     .then(function(images) {
         var closest = 9999;
@@ -120,11 +121,6 @@ module.exports.list_started = function() {
     });
 }
 
-module.exports.get_target = function() {
-    var target = shell.grep(/target=android-[\d+]/, path.join(ROOT, 'project.properties'));
-    return target.split('=')[1].replace('\n', '').replace('\r', '').replace(' ', '');
-}
-
 // Returns a promise.
 module.exports.list_targets = function() {
     return exec('android list targets')
@@ -156,7 +152,7 @@ module.exports.start = function(emulator_ID) {
     .then(function(list) {
         started_emulators = list;
         num_started = started_emulators.length;
-        if (typeof emulator_ID === 'undefined') {
+        if (!emulator_ID) {
             return self.list_images()
             .then(function(emulator_list) {
                 if (emulator_list.length > 0) {
@@ -167,11 +163,11 @@ module.exports.start = function(emulator_ID) {
                         return emulator_ID;
                     });
                 } else {
-                    return Q.reject('ERROR : No emulator images (avds) found, if you would like to create an\n' +
-                        ' avd follow the instructions provided here:\n' +
-                        ' http://developer.android.com/tools/devices/index.html\n' +
-                        ' Or run \'android create avd --name <name> --target <targetID>\'\n' +
-                        ' in on the command line.');
+                    var androidCmd = check_reqs.getAbsoluteAndroidCmd();
+                    return Q.reject('ERROR : No emulator images (avds) found.\n' +
+                        '1. Download desired System Image by running: ' + androidCmd + ' sdk\n' +
+                        '2. Create an AVD by running: ' + androidCmd + ' avd\n'
+                        'HINT: For a faster emulator, use an Intel System Image and install the HAXM device driver\n');
                 }
             });
         } else {
