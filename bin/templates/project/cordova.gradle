@@ -84,9 +84,13 @@ int compareVersions(String a, String b) {
 
 String getAndroidSdkDir() {
     def rootDir = project.rootDir
+    def androidSdkDir = null
+    String envVar = System.getenv("ANDROID_HOME")
     def localProperties = new File(rootDir, 'local.properties')
-    def androidSdkDir = ""
-    if (localProperties.exists()) {
+    String systemProperty = System.getProperty("android.home")
+    if (envVar != null) {
+        androidSdkDir = envVar
+    } else if (localProperties.exists()) {
         Properties properties = new Properties()
         localProperties.withInputStream { instr ->
             properties.load(instr)
@@ -98,23 +102,16 @@ String getAndroidSdkDir() {
             sdkDirProp = properties.getProperty('android.dir')
             if (sdkDirProp != null) {
                 androidSdkDir = (new File(rootDir, sdkDirProp)).getAbsolutePath()
-            } else {
-                throw new RuntimeException(
-                        "No sdk.dir property defined in local.properties file.")
-            }
-        }
-    } else {
-        String envVar = System.getenv("ANDROID_HOME")
-        if (envVar != null) {
-            androidSdkDir = envVar
-        } else {
-            String property = System.getProperty("android.home")
-            if (property != null) {
-                androidSdkDir = property
             }
         }
     }
-    println androidSdkDir
+    if (androidSdkDir == null && systemProperty != null) {
+        androidSdkDir = systemProperty
+    }
+    if (androidSdkDir == null) {
+        throw new RuntimeException(
+            "Unable to determine Android SDK directory.")
+    }
     androidSdkDir
 }
 
