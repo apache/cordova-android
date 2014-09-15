@@ -293,9 +293,12 @@ module.exports.install = function(target) {
             return Q.reject('Unable to find target \'' + target + '\'. Failed to deploy to emulator.');
         }
 
-        console.log('Installing app on emulator...');
-        var apk_path = build.get_apk();
-        return exec('adb -s ' + target + ' install -r "' + apk_path + '"');
+        return build.detectArchitecture(target)
+        .then(function(arch) {
+            var apk_path = build.get_apk(null, arch);
+            console.log('Installing app on emulator...');
+            return exec('adb -s ' + target + ' install -r "' + apk_path + '"');
+        });
     }).then(function(output) {
         if (output.match(/Failure/)) {
             return Q.reject('Failed to install apk to emulator: ' + output);
