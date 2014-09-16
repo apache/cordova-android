@@ -89,6 +89,26 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 
+    if (System.env.RELEASE_SIGNING_PROPERTIES_FILE) {
+        signingConfigs {
+            release {
+                // These must be set or Gradle will complain (even if they are overridden).
+                keyAlias = ""
+                keyPassword = ""
+                storeFile = null
+                storePassword = ""
+            }
+        }
+        buildTypes {
+            release {
+                signingConfig signingConfigs.release
+            }
+        }
+        addSigningProps(System.env.RELEASE_SIGNING_PROPERTIES_FILE, signingConfigs.release)
+    }
+    if (System.env.DEBUG_SIGNING_PROPERTIES_FILE) {
+        addSigningProps(System.env.DEBUG_SIGNING_PROPERTIES_FILE, signingConfigs.debug)
+    }
 }
 
 task wrapper(type: Wrapper) {
@@ -113,3 +133,24 @@ def getProjectList() {
     }
     return projects
 }
+
+def ensureValueExists(filePath, props, key) {
+    if (props.get(key) == null) {
+        throw new GradleException(filePath + ': Missing key required "' + key + '"')
+    }
+    return props.get(key)
+}
+
+def addSigningProps(propsFilePath, signingConfig) {
+    def propsFile = file(propsFilePath)
+    propsFile.withReader { reader ->
+        def props = new Properties()
+        props.load(reader)
+        signingConfig.keyAlias = ensureValueExists(propsFilePath, props, 'keyAlias')
+        signingConfig.keyPassword = ensureValueExists(propsFilePath, props, 'keyPassword')
+        signingConfig.storeFile = RelativePath.parse(true, ensureValueExists(propsFilePath, props, 'storeFile')).getFile(propsFile.getParentFile())
+        signingConfig.storePassword = ensureValueExists(propsFilePath, props, 'storePassword')
+    }
+}
+
+
