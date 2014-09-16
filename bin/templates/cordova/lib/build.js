@@ -236,7 +236,7 @@ var builders = {
         // Find the recently-generated output APK files
         // Gradle can generate multiple output files; return all of them.
         getOutputFiles: function(build_type) {
-            var binDir = path.join(ROOT, 'build', 'apk');
+            var binDir = path.join(ROOT, 'build', 'outputs', 'apk');
             var candidates = find_files(binDir, function(candidate) {
                 // Need to choose between release and debug .apk.
                 if (build_type === 'debug') {
