@@ -155,7 +155,6 @@ var builders = {
                 process.exit(2);
             }
             var ret = candidates[0];
-            console.log('Using apk: ' + ret);
             return [ret];
         }
     },
@@ -256,9 +255,7 @@ var builders = {
                 }
                 return path.extname(candidate) == '.apk';
             });
-            var ret = candidates[0];
-            console.log('Using apk: ' + ret);
-            return [ret];
+            return candidates;
         }
     },
 
@@ -343,9 +340,14 @@ module.exports.run = function(options) {
         // are used by get_apk().
         var outputDir = path.join(ROOT, 'out');
         shell.mkdir('-p', outputDir);
+        var builtApks = [];
         for (var i=0; i < apkFiles.length; ++i) {
-            shell.cp('-f', apkFiles[i], path.join(outputDir, path.basename(apkFiles[i])));
+            var dst = path.join(outputDir, path.basename(apkFiles[i]));
+            builtApks.push(dst);
+            shell.cp('-f', apkFiles[i], dst);
         }
+        console.log('Built the following APKs:\n' + builtApks.join('\n'));
+        return builtApks;
     });
 };
 
