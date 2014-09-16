@@ -110,10 +110,13 @@ module.exports.check_java = function() {
                 }
             } else if (isWindows) {
                 // Try to auto-detect java in the default install paths.
+                var oldSilent = shelljs.config.silent;
+                shelljs.config.silent = true;
                 var firstJdkDir =
                     shelljs.ls(process.env['ProgramFiles'] + '\\java\\jdk*')[0] ||
                     shelljs.ls('C:\\Program Files\\java\\jdk*')[0] ||
                     shelljs.ls('C:\\Program Files (x86)\\java\\jdk*')[0];
+                shelljs.config.silent = oldSilent;
                 if (firstJdkDir) {
                     // shelljs always uses / in paths.
                     firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
@@ -195,7 +198,7 @@ module.exports.check_android = function() {
 };
 
 module.exports.getAbsoluteAndroidCmd = function() {
-    return forgivingWhichSync('android').replace(/([ \\])/g, '\\$1');
+    return forgivingWhichSync('android').replace(/(\s)/g, '\\$1');
 };
 
 module.exports.check_android_target = function(valid_target) {
@@ -209,9 +212,12 @@ module.exports.check_android_target = function(valid_target) {
     .then(function(output) {
         if (output.split('\n').indexOf(valid_target) == -1) {
             var androidCmd = module.exports.getAbsoluteAndroidCmd();
-            throw new Error('Please install Android target: "' + valid_target + '".\n' +
+            throw new Error('Please install Android target: "' + valid_target + '".\n\n' +
                 'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
-                'Or install directly via: ' + androidCmd + ' update sdk --no-ui --all --filter "' + valid_target + '"');
+                'You will require:\n' +
+                '1. "SDK Platform" for ' + valid_target + '\n' +
+                '2. "Android SDK Platform-tools (latest)\n' +
+                '3. "Android SDK Build-tools" (latest)');
         }
     });
 };
