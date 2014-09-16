@@ -38,8 +38,11 @@ function find_files(directory, predicate) {
             p = path.join(directory, p);
             return { p: p, t: fs.statSync(p).mtime };
         }).sort(function(a,b) {
-            return a.t > b.t ? -1 :
-                   a.t < b.t ? 1 : 0;
+            var timeDiff = b.t - a.t;
+            if (timeDiff === 0) {
+                return a.p.length - b.p.length;
+            }
+            return timeDiff;
         }).map(function(p) { return p.p; });
         return candidates;
     } else {
@@ -151,8 +154,9 @@ var builders = {
                 console.error('ERROR : No .apk found in ' + binDir + ' directory');
                 process.exit(2);
             }
-            console.log('Using apk: ' + candidates[0]);
-            return [candidates[0]];
+            var ret = candidates[0];
+            console.log('Using apk: ' + ret);
+            return [ret];
         }
     },
     gradle: {
@@ -245,14 +249,16 @@ var builders = {
             var candidates = find_files(binDir, function(candidate) {
                 // Need to choose between release and debug .apk.
                 if (build_type === 'debug') {
-                    return (path.extname(candidate) == '.apk' && candidate.indexOf('-debug-') >= 0);
+                    return (path.extname(candidate) == '.apk' && candidate.indexOf('-debug') >= 0);
                 }
                 if (build_type === 'release') {
-                    return (path.extname(candidate) == '.apk' && candidate.indexOf('-release-') >= 0);
+                    return (path.extname(candidate) == '.apk' && candidate.indexOf('-release') >= 0);
                 }
                 return path.extname(candidate) == '.apk';
             });
-            return candidates;
+            var ret = candidates[0];
+            console.log('Using apk: ' + ret);
+            return [ret];
         }
     },
 
