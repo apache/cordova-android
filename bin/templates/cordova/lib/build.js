@@ -176,6 +176,11 @@ var builders = {
                     'copyDebugLint'
                 ];
             }
+            if (cmd == 'debug') {
+                cmd = 'assembleDebug';
+            } else if (cmd == 'release') {
+                cmd = 'assembleRelease';
+            }
             var args = [cmd, '-b', path.join(ROOT, 'build.gradle')];
             // 10 seconds -> 6 seconds
             args.push('-Dorg.gradle.daemon=true');
@@ -216,7 +221,7 @@ var builders = {
         build: function(build_type) {
             var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
-            var args = builder.getArgs('build');
+            var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release');
             return Q().then(function() {
                 return spawn(wrapper, args);
             }).then(function() {
