@@ -29,7 +29,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.10.+'
+        classpath 'com.android.tools.build:gradle:0.12.0+'
     }
 }
 
@@ -109,7 +109,7 @@ def getProjectList() {
     def matcher = pattern.matcher(manifestFile.getText())
     def projects = []
     while (matcher.find()) {
-      projects.add(":" + matcher.group(2).replace("/",":"))
+        projects.add(":" + matcher.group(2).replace("/",":"))
     }
     return projects
 }
