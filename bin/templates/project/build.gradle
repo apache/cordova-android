@@ -18,6 +18,7 @@
 */
 
 import java.util.regex.Pattern
+import groovy.swing.SwingBuilder
 
 ext.cordova = {}
 apply from: 'cordova.gradle', to: ext.cordova
@@ -115,6 +116,49 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.12'
 }
 
+def promptForPassword(msg) {
+    if (System.console() == null) {
+        def ret = null
+        new SwingBuilder().edt {
+            dialog(modal: true, title: 'Enter password', alwaysOnTop: true, resizable: false, locationRelativeTo: null, pack: true, show: true) {
+                vbox {
+                    label(text: msg)
+                    def input = passwordField()
+                    button(defaultButton: true, text: 'OK', actionPerformed: {
+                        ret = input.password;
+                        dispose();
+                    })
+                }
+            }
+        }
+        if (!ret) {
+            throw new GradleException('User canceled build')
+        }
+        return new String(ret)
+    } else {
+        return System.console().readPassword('\n' + msg);
+    }
+}
+
+task promptForReleaseKeyPassword {
+    if (!System.env.RELEASE_SIGNING_PROPERTIES_FILE) {
+        return;
+    }
+    if (!android.signingConfigs.release.storePassword) {
+        android.signingConfigs.release.storePassword = promptForPassword('Enter key store password: ')
+        println('set to:' + android.signingConfigs.release.storePassword)
+    }
+    if (!android.signingConfigs.release.keyPassword) {
+        android.signingConfigs.release.keyPassword = promptForPassword('Enter key password: ');
+    }
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name == 'validateReleaseSigning') {
+        task.dependsOn promptForReleaseKeyPassword
+    }
+}
+
 def getVersionCodeFromManifest() {
     def manifestFile = file(android.sourceSets.main.manifest.srcFile)
     def pattern = Pattern.compile("versionCode=\"(\\d+)\"")
@@ -147,10 +191,9 @@ def addSigningProps(propsFilePath, signingConfig) {
         def props = new Properties()
         props.load(reader)
         signingConfig.keyAlias = ensureValueExists(propsFilePath, props, 'keyAlias')
-        signingConfig.keyPassword = ensureValueExists(propsFilePath, props, 'keyPassword')
+        signingConfig.keyPassword = props.get('keyPassword')
         signingConfig.storeFile = RelativePath.parse(true, ensureValueExists(propsFilePath, props, 'storeFile')).getFile(propsFile.getParentFile())
-        signingConfig.storePassword = ensureValueExists(propsFilePath, props, 'storePassword')
+        signingConfig.storePassword = props.get('storePassword')
     }
 }
-
 
