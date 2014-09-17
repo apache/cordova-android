@@ -115,6 +115,6 @@ String getAndroidSdkDir() {
     androidSdkDir
 }
 
-cordovaSdkVersion =  getProjectTarget("android-19")
+cordovaSdkVersion =  System.env.MIN_SDK_VERSION ?: getProjectTarget("android-19")
 cordovaBuildToolsVersion = latestBuildToolsAvailable("19.1.0")
 

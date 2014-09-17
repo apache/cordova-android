@@ -57,7 +57,7 @@ android {
     }
 
     defaultConfig {
-        versionCode Integer.parseInt("" + getVersionCodeFromManifest() + "0")
+        versionCode Integer.parseInt(System.env.ANDROID_VERSION_CODE ?: ("" + getVersionCodeFromManifest() + "0"))
     }
 
     compileSdkVersion cordova.cordovaSdkVersion
