@@ -265,7 +265,7 @@ var builders = {
         },
         build: function() {
             console.log('Skipping build...');
-            return Q();
+            return Q([]);
         },
         clean: function() {
             return Q();
