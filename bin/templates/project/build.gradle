@@ -140,7 +140,7 @@ def promptForPassword(msg) {
     }
 }
 
-task promptForReleaseKeyPassword {
+def promptForReleaseKeyPassword() {
     if (!System.env.RELEASE_SIGNING_PROPERTIES_FILE) {
         return;
     }
@@ -153,9 +153,11 @@ task promptForReleaseKeyPassword {
     }
 }
 
-tasks.whenTaskAdded { task ->
-    if (task.name == 'validateReleaseSigning') {
-        task.dependsOn promptForReleaseKeyPassword
+gradle.taskGraph.whenReady { taskGraph ->
+    taskGraph.getAllTasks().each() { task ->
+        if (task.name == 'validateReleaseSigning') {
+            promptForReleaseKeyPassword()
+        }
     }
 }
 
