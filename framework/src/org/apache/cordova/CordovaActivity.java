@@ -628,9 +628,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     public void onDestroy() {
         LOG.d(TAG, "CordovaActivity.onDestroy()");
         super.onDestroy();
-        //Destroy all used AlertDialogs
-        this.appView.destroyDialogs();
-
+        
         // hide the splash screen to avoid leaking a window
         this.removeSplashScreen();
 

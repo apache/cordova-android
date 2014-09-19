@@ -781,6 +781,9 @@ public class CordovaWebView extends WebView {
         // Load blank page so that JavaScript onunload is called
         this.loadUrl("about:blank");
 
+        //Remove all dialogs
+        this.chromeClient.destroyAllDialogs();
+        
         // Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.onDestroy();
@@ -922,9 +925,5 @@ public class CordovaWebView extends WebView {
 
     public CordovaPreferences getPreferences() {
         return preferences;
-    }
-    
-    public void destroyDialogs(){
-        this.chromeClient.destroyAllDialogs();
     }
 }
