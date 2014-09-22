@@ -48,7 +48,7 @@ module.exports.list = function() {
  * and launches it.
  * Returns a promise.
  */
-module.exports.install = function(target) {
+module.exports.install = function(target, buildResults) {
     var launchName;
     return this.list()
     .then(function(device_list) {
@@ -64,8 +64,9 @@ module.exports.install = function(target) {
 
         return build.detectArchitecture(target)
         .then(function(arch) {
-            var apk_path = build.get_apk(null, arch);
+            var apk_path = build.findBestApkForArchitecture(buildResults, arch);
             launchName = appinfo.getActivityName();
+            console.log('Using apk: ' + apk_path);
             console.log('Installing app on device...');
             var cmd = 'adb -s ' + target + ' install -r "' + apk_path + '"';
             return exec(cmd);
