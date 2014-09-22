@@ -32,6 +32,7 @@ buildscript {
         // * framework/build.gradle
         // * bin/templates/project/cordova.gradle
         // * bin/templates/cordova/lib/plugin-build.gradle
+        // * distributionUrl within bin/templates/cordova/lib/build.js.
         classpath 'com.android.tools.build:gradle:0.12.+'
     }
 }
