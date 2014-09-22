@@ -29,7 +29,9 @@ buildscript {
         // It can affect things like where the .apk is generated.
         // It also dictates what the minimum android build-tools version
         // that you need (Set in bin/templates/project/cordova.gradle).
-        // Be sure to also update the value in bin/templates/project.
+        // Be sure to also update the value in:
+        // (1) bin/templates/project/build.gradle, and
+        // (2) the distribution URL in bin/templates/cordova/lib/build.js.
         classpath 'com.android.tools.build:gradle:0.12.+'
     }
 }
