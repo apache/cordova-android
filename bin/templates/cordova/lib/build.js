@@ -239,8 +239,7 @@ var builders = {
 
                 // If the gradle distribution URL is set, make sure it points to version 1.12.
                 // If it's not set, do nothing, assuming that we're using a future version of gradle that we don't want to mess with.
-                // For some reason, using ^ and $ don't work.  This does the job, though.
-                var distributionUrlRegex = /distributionUrl.*zip/;
+                var distributionUrlRegex = '/^distributionUrl=.*$/';
                 var distributionUrl = 'distributionUrl=http\\://services.gradle.org/distributions/gradle-1.12-all.zip';
                 var gradleWrapperPropertiesPath = path.join(projectPath, 'gradle', 'wrapper', 'gradle-wrapper.properties');
                 shell.sed('-i', distributionUrlRegex, distributionUrl, gradleWrapperPropertiesPath);
