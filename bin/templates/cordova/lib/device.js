@@ -48,7 +48,7 @@ module.exports.list = function() {
  * and launches it.
  * Returns a promise.
  */
-module.exports.install = function(target) {
+module.exports.install = function(target, buildResults) {
     var launchName;
     return this.list()
     .then(function(device_list) {
@@ -56,21 +56,20 @@ module.exports.install = function(target) {
             return Q.reject('ERROR: Failed to deploy to device, no devices found.');
 
         // default device
-        target = typeof target !== 'undefined' ? target : device_list[0];
+        target = target || device_list[0];
 
         if (device_list.indexOf(target) < 0)
             return Q.reject('ERROR: Unable to find target \'' + target + '\'.');
 
-        var apk_path;
-        if (typeof process.env.DEPLOY_APK_ARCH == 'undefined') {
-            apk_path = build.get_apk();
-        } else {
-            apk_path = build.get_apk(null, process.env.DEPLOY_APK_ARCH);
-        }
-        launchName = appinfo.getActivityName();
-        console.log('Installing app on device...');
-        var cmd = 'adb -s ' + target + ' install -r "' + apk_path + '"';
-        return exec(cmd);
+        return build.detectArchitecture(target)
+        .then(function(arch) {
+            var apk_path = build.findBestApkForArchitecture(buildResults, arch);
+            launchName = appinfo.getActivityName();
+            console.log('Using apk: ' + apk_path);
+            console.log('Installing app on device...');
+            var cmd = 'adb -s ' + target + ' install -r "' + apk_path + '"';
+            return exec(cmd);
+        });
     }).then(function(output) {
         if (output.match(/Failure/)) return Q.reject('ERROR: Failed to install apk to device: ' + output);
 

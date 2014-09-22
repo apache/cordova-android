@@ -33,16 +33,16 @@ var path  = require('path'),
  * Returns a promise.
  */
  module.exports.run = function(args) {
-    var build_type;
+    var buildFlags = [];
     var install_target;
 
     for (var i=2; i<args.length; i++) {
         if (args[i] == '--debug') {
-            build_type = '--debug';
+            buildFlags.push('--debug');
         } else if (args[i] == '--release') {
-            build_type = '--release';
+            buildFlags.push('--release');
         } else if (args[i] == '--nobuild') {
-            build_type = '--nobuild';
+            buildFlags.push('--nobuild');
         } else if (args[i] == '--device') {
             install_target = '--device';
         } else if (args[i] == '--emulator') {
@@ -55,13 +55,13 @@ var path  = require('path'),
         }
     }
 
-    return build.run(build_type).then(function() {
+    return build.run(buildFlags).then(function(buildResults) {
         if (install_target == '--device') {
-            return device.install();
+            return device.install(null, buildResults);
         } else if (install_target == '--emulator') {
             return emulator.list_started().then(function(started) {
                 var p = started && started.length > 0 ? Q() : emulator.start();
-                return p.then(function() { emulator.install(); });
+                return p.then(function() { return emulator.install(null, buildResults); });
             });
         } else if (install_target) {
             var devices, started_emulators, avds;
@@ -75,16 +75,16 @@ var path  = require('path'),
             }).then(function(res) {
                 avds = res;
                 if (devices.indexOf(install_target) > -1) {
-                    return device.install(install_target);
+                    return device.install(install_target, buildResults);
                 } else if (started_emulators.indexOf(install_target) > -1) {
-                    return emulator.install(install_target);
+                    return emulator.install(install_target, buildResults);
                 } else {
                     // if target emulator isn't started, then start it.
                     var emulator_ID;
                     for(avd in avds) {
                         if(avds[avd].name == install_target) {
                             return emulator.start(install_target)
-                            .then(function() { emulator.install(emulator_ID); });
+                            .then(function() { emulator.install(emulator_ID, buildResults); });
                         }
                     }
                     return Q.reject('Target \'' + install_target + '\' not found, unable to run project');
@@ -96,13 +96,13 @@ var path  = require('path'),
             .then(function(device_list) {
                 if (device_list.length > 0) {
                     console.log('WARNING : No target specified, deploying to device \'' + device_list[0] + '\'.');
-                    return device.install(device_list[0]);
+                    return device.install(device_list[0], buildResults);
                 } else {
                     return emulator.list_started()
                     .then(function(emulator_list) {
                         if (emulator_list.length > 0) {
                             console.log('WARNING : No target specified, deploying to emulator \'' + emulator_list[0] + '\'.');
-                            return emulator.install(emulator_list[0]);
+                            return emulator.install(emulator_list[0], buildResults);
                         } else {
                             console.log('WARNING : No started emulators found, starting an emulator.');
                             return emulator.best_image()
@@ -111,7 +111,7 @@ var path  = require('path'),
                                     return emulator.start(best_avd.name)
                                     .then(function(emulator_ID) {
                                         console.log('WARNING : No target specified, deploying to emulator \'' + emulator_ID + '\'.');
-                                        return emulator.install(emulator_ID);
+                                        return emulator.install(emulator_ID, buildResults);
                                     });
                                 } else {
                                     return emulator.start();
