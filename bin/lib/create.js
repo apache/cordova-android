@@ -193,25 +193,36 @@ function validateProjectName(project_name) {
  *
  *   - `project_path` 	{String} Path to the new Cordova android project.
  *   - `package_name`{String} Package name, following reverse-domain style convention.
- *   - `project_name` 	{String} Project name.
+ *   - `app_name` 	{String} Application name.
  *   - 'project_template_dir' {String} Path to project template (override).
+ *   - 'project_name' {String} Name that will be used for main activity/class instead od default (override).
  *
  * Returns a promise.
  */
 
-exports.createProject = function(project_path, package_name, project_name, project_template_dir, use_shared_project, use_cli_template) {
+exports.createProject = function(project_path, package_name, app_name, project_template_dir, use_shared_project, use_cli_template, project_name) {
     var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
 
     // Set default values for path, package and name
     project_path = typeof project_path !== 'undefined' ? project_path : "CordovaExample";
     project_path = path.relative(process.cwd(), project_path);
     package_name = typeof package_name !== 'undefined' ? package_name : 'my.cordova.project';
-    project_name = typeof project_name !== 'undefined' ? project_name : 'CordovaExample';
+    app_name = typeof app_name !== 'undefined' ? app_name : 'CordovaExample';
+    project_name = typeof project_name !== 'undefined' ? project_name : app_name;
     project_template_dir = typeof project_template_dir !== 'undefined' ? 
                            project_template_dir : 
                            path.join(ROOT, 'bin', 'templates', 'project');
 
     var safe_activity_name = project_name.replace(/\W/g, '');
+    if (safe_activity_name !== project_name) {
+        // Oops. We cut some symbols from project name so lets warn user about this.
+        console.log('[WARN] Project name contains non-ASCII chars that is stripped out since Android tools doesn\'t support such names for Classes/activities.');
+        console.log('[WARN] If you want to specify custom name, that should be used for Main activity, use --projectname option');
+    }
+    if (safe_activity_name === '') {
+        return Q.reject('Activity name can\'t be empty.');
+    }
+
     var package_as_path = package_name.replace(/\./g, path.sep);
     var activity_dir    = path.join(project_path, 'src', package_as_path);
     var activity_path   = path.join(activity_dir, safe_activity_name + '.java');
@@ -265,8 +276,8 @@ exports.createProject = function(project_path, package_name, project_name, proje
             shell.mkdir('-p', activity_dir);
             shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
             shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
-            shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
-            shell.sed('-i', /__NAME__/, project_name, path.join(project_path, '.project'));
+            shell.sed('-i', /__NAME__/, app_name, path.join(project_path, 'res', 'values', 'strings.xml'));
+            shell.sed('-i', /__NAME__/, app_name, path.join(project_path, '.project'));
             shell.sed('-i', /__ID__/, package_name, activity_path);
 
             shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
@@ -281,7 +292,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
     }).then(function() {
         console.log('Project successfully created.');
     });
-}
+};
 
 // Attribute removed in Cordova 4.4 (CB-5447).
 function removeDebuggableFromManifest(projectPath) {

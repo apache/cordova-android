@@ -22,7 +22,13 @@ exports.getArgs = function(argv) {
     var posArgs = [];
     for (var i = 2, arg; arg = argv[i] || i < argv.length; ++i) {
         if (/^--/.exec(arg)) {
-            ret[arg] = true;
+          // Support for string optional arguments
+            var val = /^(.*?)="(.*)"$/.exec(arg);
+            if (val) {
+                ret[val[1]] = val[2];
+            } else {
+                ret[arg] = true;
+            }
         } else {
             posArgs.push(arg);
         }
