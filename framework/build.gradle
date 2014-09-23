@@ -39,6 +39,7 @@ apply plugin: 'android-library'
 android {
     compileSdkVersion cordova.cordovaSdkVersion
     buildToolsVersion cordova.cordovaBuildToolsVersion
+    publishNonDefault true
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
