@@ -34,14 +34,11 @@ buildscript {
     }
 }
 
-ext.multiarch=false
-
-dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
-    for (subproject in getProjectList()) {
-        compile project(subproject)
-    }
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.12'
 }
+
+ext.multiarch=false
 
 android {
     sourceSets {
@@ -112,9 +109,15 @@ android {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '1.12'
+dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
+    // https://code.google.com/p/android/issues/detail?id=52962
+    for (subproject in getProjectList()) {
+        releaseCompile project(path: subproject, configuration: 'release')
+        debugCompile project(path: subproject, configuration: 'debug')
+    }
 }
+
 
 def promptForPassword(msg) {
     if (System.console() == null) {

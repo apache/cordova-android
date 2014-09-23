@@ -230,6 +230,13 @@ var builders = {
                 var distributionUrl = 'distributionUrl=http\\://services.gradle.org/distributions/gradle-1.12-all.zip';
                 var gradleWrapperPropertiesPath = path.join(projectPath, 'gradle', 'wrapper', 'gradle-wrapper.properties');
                 shell.sed('-i', distributionUrlRegex, distributionUrl, gradleWrapperPropertiesPath);
+
+                // Update the version of build.gradle in each dependent library.
+                var pluginBuildGradle = path.join(projectPath, 'cordova', 'lib', 'plugin-build.gradle');
+                var subProjects = extractSubProjectPaths();
+                for (var i = 0; i < subProjects.length; ++i) {
+                    shell.cp('-f', pluginBuildGradle, path.join(ROOT, subProjects[i], 'build.gradle'));
+                }
             });
         },
 
