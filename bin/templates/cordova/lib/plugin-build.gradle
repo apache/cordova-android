@@ -16,7 +16,7 @@
    under the License.
 */
 
-
+// GENERATED FILE! DO NOT EDIT!
 
 buildscript {
     repositories {
@@ -24,19 +24,15 @@ buildscript {
     }
 
     dependencies {
-        // This should be updated with each cordova-android release.
-        // It can affect things like where the .apk is generated.
-        // It also dictates what the minimum android build-tools version
-        // that you need (Set in bin/templates/project/cordova.gradle).
-        // Make sure the value is the same in all locations:
-        // * framework/build.gradle
-        // * bin/templates/project/cordova.gradle
-        // * bin/templates/cordova/lib/plugin-build.gradle
         classpath 'com.android.tools.build:gradle:0.12.+'
     }
 }
 
 apply plugin: 'android-library'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
+}
 
 android {
     compileSdkVersion cordova.cordovaSdkVersion
@@ -57,6 +53,11 @@ android {
             renderscript.srcDirs = ['src']
             res.srcDirs = ['res']
             assets.srcDirs = ['assets']
+            jniLibs.srcDirs = ['libs']
         }
     }
+}
+
+if (file('build-extras.gradle').exists()) {
+    apply from: 'build-extras.gradle'
 }

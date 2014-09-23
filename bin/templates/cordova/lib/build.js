@@ -222,6 +222,13 @@ var builders = {
                 shell.rm('-rf', path.join(projectPath, 'gradle', 'wrapper'));
                 shell.mkdir('-p', path.join(projectPath, 'gradle'));
                 shell.cp('-r', path.join(wrapperDir, 'gradle', 'wrapper'), path.join(projectPath, 'gradle'));
+
+                // Update the version of build.gradle in each dependent library.
+                var pluginBuildGradle = path.join(projectPath, 'cordova', 'lib', 'plugin-build.gradle');
+                var subProjects = extractSubProjectPaths();
+                for (var i = 0; i < subProjects.length; ++i) {
+                    shell.cp('-f', pluginBuildGradle, path.join(ROOT, subProjects[i], 'build.gradle'));
+                }
             });
         },
 
