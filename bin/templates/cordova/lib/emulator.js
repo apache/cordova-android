@@ -273,14 +273,7 @@ module.exports.create_image = function(name, target) {
     }
 }
 
-/*
- * Installs a previously built application on the emulator and launches it.
- * If no target is specified, then it picks one.
- * If no started emulators are found, error out.
- * Returns a promise.
- */
-module.exports.install = function(target, buildResults) {
-    var self = this;
+module.exports.resolveTarget = function(target) {
     return this.list_started()
     .then(function(emulator_list) {
         if (emulator_list.length < 1) {
@@ -288,37 +281,55 @@ module.exports.install = function(target, buildResults) {
         }
 
         // default emulator
-        target = typeof target !== 'undefined' ? target : emulator_list[0];
+        target = target || emulator_list[0];
         if (emulator_list.indexOf(target) < 0) {
             return Q.reject('Unable to find target \'' + target + '\'. Failed to deploy to emulator.');
         }
 
         return build.detectArchitecture(target)
         .then(function(arch) {
-            var apk_path = build.findBestApkForArchitecture(buildResults, arch);
-            console.log('Installing app on emulator...');
-            console.log('Using apk: ' + apk_path);
-            return exec('adb -s ' + target + ' install -r "' + apk_path + '"');
+            return {target:target, arch:arch, isEmulator:true};
         });
-    }).then(function(output) {
-        if (output.match(/Failure/)) {
-            return Q.reject('Failed to install apk to emulator: ' + output);
+    });
+};
+
+/*
+ * Installs a previously built application on the emulator and launches it.
+ * If no target is specified, then it picks one.
+ * If no started emulators are found, error out.
+ * Returns a promise.
+ */
+module.exports.install = function(target, buildResults) {
+    return Q().then(function() {
+        if (target && typeof target == 'object') {
+            return target;
         }
-        return Q();
-    }, function(err) {
-        return Q.reject('Failed to install apk to emulator: ' + err);
-    }).then(function() {
-        //unlock screen
-        return exec('adb -s ' + target + ' shell input keyevent 82');
-    }).then(function() {
-        // launch the application
-        console.log('Launching application...');
-        var launchName = appinfo.getActivityName();
-        cmd = 'adb -s ' + target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
-        return exec(cmd);
-    }).then(function(output) {
-        console.log('LAUNCH SUCCESS');
-    }, function(err) {
-        return Q.reject('Failed to launch app on emulator: ' + err);
+        return module.exports.resolveTarget(target);
+    }).then(function(resolvedTarget) {
+        var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
+        console.log('Installing app on emulator...');
+        console.log('Using apk: ' + apk_path);
+        return exec('adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"')
+        .then(function(output) {
+            if (output.match(/Failure/)) {
+                return Q.reject('Failed to install apk to emulator: ' + output);
+            }
+            return Q();
+        }, function(err) {
+            return Q.reject('Failed to install apk to emulator: ' + err);
+        }).then(function() {
+            //unlock screen
+            return exec('adb -s ' + resolvedTarget.target + ' shell input keyevent 82');
+        }).then(function() {
+            // launch the application
+            console.log('Launching application...');
+            var launchName = appinfo.getActivityName();
+            cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
+            return exec(cmd);
+        }).then(function(output) {
+            console.log('LAUNCH SUCCESS');
+        }, function(err) {
+            return Q.reject('Failed to launch app on emulator: ' + err);
+        });
     });
 }
