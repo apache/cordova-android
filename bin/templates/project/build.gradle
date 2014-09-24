@@ -17,6 +17,8 @@
        under the License.
 */
 
+// GENERATED FILE! DO NOT EDIT!
+
 import java.util.regex.Pattern
 import groovy.swing.SwingBuilder
 
@@ -111,11 +113,8 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    // https://code.google.com/p/android/issues/detail?id=52962
-    for (subproject in getProjectList()) {
-        releaseCompile project(path: subproject, configuration: 'release')
-        debugCompile project(path: subproject, configuration: 'debug')
-    }
+    // SUB-PROJECT DEPENDENCIES START
+    // SUB-PROJECT DEPENDENCIES END
 }
 
 
@@ -170,17 +169,6 @@ def getVersionCodeFromManifest() {
     def matcher = pattern.matcher(manifestFile.getText())
     matcher.find()
     return Integer.parseInt(matcher.group(1))
-}
-
-def getProjectList() {
-    def manifestFile = file("project.properties")
-    def pattern = Pattern.compile("android.library.reference.(\\d+)\\s*=\\s*(.*)")
-    def matcher = pattern.matcher(manifestFile.getText())
-    def projects = []
-    while (matcher.find()) {
-        projects.add(":" + matcher.group(2).replace("/",":"))
-    }
-    return projects
 }
 
 def ensureValueExists(filePath, props, key) {

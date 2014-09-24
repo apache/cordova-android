@@ -237,6 +237,22 @@ var builders = {
                 for (var i = 0; i < subProjects.length; ++i) {
                     shell.cp('-f', pluginBuildGradle, path.join(ROOT, subProjects[i], 'build.gradle'));
                 }
+
+                var subProjectsAsGradlePaths = subProjects.map(function(p) { return ':' + p.replace(/[/\\]/g, ':') });
+                // Write the settings.gradle file.
+                fs.writeFileSync(path.join(projectPath, 'settings.gradle'),
+                    '// GENERATED FILE - DO NOT EDIT\n' +
+                    'include ":"\n' +
+                    'include "' + subProjectsAsGradlePaths.join('"\ninclude "') + '"\n');
+                // Update dependencies within build.gradle.
+                var buildGradle = fs.readFileSync(path.join(projectPath, 'build.gradle'), 'utf8');
+                var depsList = '';
+                subProjectsAsGradlePaths.forEach(function(p) {
+                    depsList += '    debugCompile project(path: "' + p + '", configuration: "debug")\n';
+                    depsList += '    releaseCompile project(path: "' + p + '", configuration: "release")\n';
+                });
+                buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
+                fs.writeFileSync(path.join(projectPath, 'build.gradle'), buildGradle);
             });
         },
 
