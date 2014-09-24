@@ -53,7 +53,7 @@ function sortFilesByDate(files) {
     }).map(function(p) { return p.p; });
 }
 
-function findOutputApksHelper(dir, build_type) {
+function findOutputApksHelper(dir, build_type, arch) {
     var ret = findApks(dir).filter(function(candidate) {
         // Need to choose between release and debug .apk.
         if (build_type === 'debug') {
@@ -69,9 +69,15 @@ function findOutputApksHelper(dir, build_type) {
         return ret;
     }
     var archSpecific = !!/-x86|-arm/.exec(ret[0]);
-    return ret.filter(function(p) {
+    ret = ret.filter(function(p) {
         return !!/-x86|-arm/.exec(p) == archSpecific;
     });
+    if (arch) {
+        ret = ret.filter(function(p) {
+            return p.indexOf('-' + arch) != -1;
+        });
+    }
+    return ret;
 }
 
 function hasCustomRules() {
@@ -163,11 +169,11 @@ var builders = {
 
         findOutputApks: function(build_type) {
             var binDir = path.join(ROOT, hasCustomRules() ? 'ant-build' : 'bin');
-            return findOutputApksHelper(binDir, build_type);
+            return findOutputApksHelper(binDir, build_type, null);
         }
     },
     gradle: {
-        getArgs: function(cmd) {
+        getArgs: function(cmd, arch) {
             var lintSteps;
             if (process.env['BUILD_MULTIPLE_APKS']) {
                 lintSteps = [
@@ -187,7 +193,15 @@ var builders = {
                     'copyDebugLint'
                 ];
             }
-            if (cmd == 'debug') {
+            if (arch == 'arm' && cmd == 'debug') {
+                cmd = 'assembleArmv7Debug';
+            } else if (arch == 'arm' && cmd == 'release') {
+                cmd = 'assembleArmv7Release';
+            } else if (arch == 'x86' && cmd == 'debug') {
+                cmd = 'assembleX86Debug';
+            } else if (arch == 'x86' && cmd == 'release') {
+                cmd = 'assembleX86Release';
+            } else if (cmd == 'debug') {
                 cmd = 'assembleDebug';
             } else if (cmd == 'release') {
                 cmd = 'assembleRelease';
@@ -260,10 +274,10 @@ var builders = {
          * Builds the project with gradle.
          * Returns a promise.
          */
-        build: function(build_type) {
+        build: function(build_type, arch) {
             var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
-            var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release');
+            var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release', arch);
             return Q().then(function() {
                 return spawn(wrapper, args);
             });
@@ -278,9 +292,9 @@ var builders = {
             });
         },
 
-        findOutputApks: function(build_type) {
+        findOutputApks: function(build_type, arch) {
             var binDir = path.join(ROOT, 'build', 'outputs', 'apk');
-            return findOutputApksHelper(binDir, build_type);
+            return findOutputApksHelper(binDir, build_type, arch);
         }
     },
 
@@ -295,19 +309,20 @@ var builders = {
         clean: function() {
             return Q();
         },
-        findOutputApks: function(build_type) {
-            return sortFilesByDate(builders.ant.findOutputApks(build_type).concat(builders.gradle.findOutputApks(build_type)));
+        findOutputApks: function(build_type, arch) {
+            return sortFilesByDate(builders.ant.findOutputApks(build_type, arch).concat(builders.gradle.findOutputApks(build_type, arch)));
         }
     }
 };
 
-function parseOpts(options) {
+function parseOpts(options, resolvedTarget) {
     // Backwards-compatibility: Allow a single string argument
     if (typeof options == "string") options = [options];
 
     var ret = {
         buildType: 'debug',
-        buildMethod: process.env['ANDROID_BUILD'] || 'ant'
+        buildMethod: process.env['ANDROID_BUILD'] || 'ant',
+        arch: null
     };
 
     // Iterate through command line options
@@ -333,6 +348,12 @@ function parseOpts(options) {
             return Q.reject('Build option \'' + options[i] + '\' not recognized.');
         }
     }
+
+    var multiApk = ret.buildMethod == 'gradle' && process.env['BUILD_MULTIPLE_APKS'];
+    if (multiApk && !/0|false|no/i.exec(multiApk)) {
+        ret.arch = resolvedTarget && resolvedTarget.arch;
+    }
+
     return ret;
 }
 
@@ -355,15 +376,14 @@ module.exports.runClean = function(options) {
  * Builds the project with the specifed options
  * Returns a promise.
  */
-module.exports.run = function(options) {
-    var opts = parseOpts(options);
-
+module.exports.run = function(options, optResolvedTarget) {
+    var opts = parseOpts(options, optResolvedTarget);
     var builder = builders[opts.buildMethod];
     return builder.prepEnv()
     .then(function() {
-        return builder.build(opts.buildType);
+        return builder.build(opts.buildType, opts.arch);
     }).then(function() {
-        var apkPaths = builder.findOutputApks(opts.buildType);
+        var apkPaths = builder.findOutputApks(opts.buildType, opts.arch);
         console.log('Built the following apk(s):');
         console.log('    ' + apkPaths.join('\n    '));
         return {

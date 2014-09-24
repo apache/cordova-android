@@ -43,20 +43,14 @@ module.exports.list = function() {
     });
 }
 
-/*
- * Installs a previously built application on the device
- * and launches it.
- * Returns a promise.
- */
-module.exports.install = function(target, buildResults) {
-    var launchName;
+module.exports.resolveTarget = function(target) {
     return this.list()
     .then(function(device_list) {
-        if (!device_list || !device_list.length)
+        if (!device_list || !device_list.length) {
             return Q.reject('ERROR: Failed to deploy to device, no devices found.');
-
+        }
         // default device
-        target = typeof target !== 'undefined' ? target : device_list[0];
+        target = target || device_list[0];
 
         if (device_list.indexOf(target) < 0) {
             return Q.reject('ERROR: Unable to find target \'' + target + '\'.');
@@ -64,28 +58,45 @@ module.exports.install = function(target, buildResults) {
 
         return build.detectArchitecture(target)
         .then(function(arch) {
-            var apk_path = build.findBestApkForArchitecture(buildResults, arch);
-            launchName = appinfo.getActivityName();
-            console.log('Using apk: ' + apk_path);
-            console.log('Installing app on device...');
-            var cmd = 'adb -s ' + target + ' install -r "' + apk_path + '"';
-            return exec(cmd);
+            return { target: target, arch: arch, isEmulator: false };
         });
-    }).then(function(output) {
-        if (output.match(/Failure/)) return Q.reject('ERROR: Failed to install apk to device: ' + output);
+    });
+};
 
-        //unlock screen
-        var cmd = 'adb -s ' + target + ' shell input keyevent 82';
-        return exec(cmd);
-    }, function(err) { return Q.reject('ERROR: Failed to install apk to device: ' + err); })
-    .then(function() {
-        // launch the application
-        console.log('Launching application...');
-        var cmd = 'adb -s ' + target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
-        return exec(cmd);
-    }).then(function() {
-        console.log('LAUNCH SUCCESS');
-    }, function(err) {
-        return Q.reject('ERROR: Failed to launch application on device: ' + err);
+/*
+ * Installs a previously built application on the device
+ * and launches it.
+ * Returns a promise.
+ */
+module.exports.install = function(target, buildResults) {
+    return Q().then(function() {
+        if (target && typeof target == 'object') {
+            return target;
+        }
+        return module.exports.resolveTarget(target);
+    }).then(function(resolvedTarget) {
+        var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
+        var launchName = appinfo.getActivityName();
+        console.log('Using apk: ' + apk_path);
+        console.log('Installing app on device...');
+        var cmd = 'adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"';
+        return exec(cmd)
+        .then(function(output) {
+            if (output.match(/Failure/)) return Q.reject('ERROR: Failed to install apk to device: ' + output);
+
+            //unlock screen
+            var cmd = 'adb -s ' + resolvedTarget.target + ' shell input keyevent 82';
+            return exec(cmd);
+        }, function(err) { return Q.reject('ERROR: Failed to install apk to device: ' + err); })
+        .then(function() {
+            // launch the application
+            console.log('Launching application...');
+            var cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
+            return exec(cmd);
+        }).then(function() {
+            console.log('LAUNCH SUCCESS');
+        }, function(err) {
+            return Q.reject('ERROR: Failed to launch application on device: ' + err);
+        });
     });
 }
