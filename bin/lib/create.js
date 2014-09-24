@@ -121,7 +121,6 @@ function copyBuildRules(projectPath) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
     shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
-    shell.cp('-f', path.join(srcDir, 'settings.gradle'), projectPath);
     shell.cp('-f', path.join(srcDir, 'cordova.gradle'), projectPath);
 }
 
