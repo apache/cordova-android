@@ -34,7 +34,7 @@ found at https://code.google.com/p/robotium/ and the jar should be put in the
 To run manually from command line:
 
 0. Build by entering `ant debug install`
-0. Run tests by clicking on "CordovaTest" icon on device
+0. Run tests by clicking on "CordovaNativeTests" app icon on the device
 
 To run from Eclipse:
 
