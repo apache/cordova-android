@@ -37,3 +37,4 @@ Desktop.ini
 # IntelliJ IDEA files
 *.iml
 .idea
+npm-debug.log
