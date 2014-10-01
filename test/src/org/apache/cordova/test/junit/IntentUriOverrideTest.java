@@ -75,6 +75,7 @@ public class IntentUriOverrideTest extends ActivityInstrumentationTestCase2<Sabo
         runTestOnUiThread(new Runnable() {
             public void run()
             {
+                sleep();
                 boolean isBadUrl = testView.getUrl().equals(BAD_URL);
                 assertFalse(isBadUrl);
             }
