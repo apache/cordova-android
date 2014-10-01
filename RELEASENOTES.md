@@ -30,6 +30,7 @@
 * CB-7463: Adding licences.  I don't know what the gradle syntax is for comments, that still needs to be done.
 * CB-7463: Looked at the Apache BigTop git, gradle uses C-style comments
 * CB-7460: Fixing bug with KitKat where the background colour would override the CSS colours on the application
+* CB-7674 Preference activation no longer occurs in CordovaActivity.onCreate()
 
 ### 3.6.0 (Sept 2014) ###
 
