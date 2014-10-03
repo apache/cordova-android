@@ -789,7 +789,7 @@ public class CordovaWebView extends WebView {
         // Load blank page so that JavaScript onunload is called
         this.loadUrl("about:blank");
         
-        //Remove all dialogs
+        //Remove last AlertDialog
         this.chromeClient.destroyLastDialog();
 
         // Forward to plugins
