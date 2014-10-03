@@ -65,6 +65,9 @@ public class AndroidChromeClient extends WebChromeClient {
     // the video progress view
     private View mVideoProgressView;
     
+    //Keep track of last AlertDialog showed
+    private AlertDialog lastHandledDialog;
+
     // File Chooser
     protected ValueCallback<Uri> mUploadMessage;
     
@@ -113,7 +116,7 @@ public class AndroidChromeClient extends WebChromeClient {
                     return true;
             }
         });
-        dlg.show();
+        lastHandledDialog = dlg.show();
         return true;
     }
 
@@ -162,7 +165,7 @@ public class AndroidChromeClient extends WebChromeClient {
                     return true;
             }
         });
-        dlg.show();
+        lastHandledDialog = dlg.show();
         return true;
     }
 
@@ -206,7 +209,7 @@ public class AndroidChromeClient extends WebChromeClient {
                             res.cancel();
                         }
                     });
-            dlg.show();
+            lastHandledDialog = dlg.show();
         }
         return true;
     }
@@ -314,4 +317,11 @@ public class AndroidChromeClient extends WebChromeClient {
         this.cordova.getActivity().startActivityForResult(Intent.createChooser(i, "File Browser"),
                 FILECHOOSER_RESULTCODE);
     }
+
+    public void destroyLastDialog(){
+        if(lastHandledDialog != null){
+                lastHandledDialog.cancel();
+        }
+    }
+
 }
