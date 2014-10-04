@@ -275,7 +275,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
             copyBuildRules(project_path);
         });
         // Link it to local android install.
-        writeProjectProperties(project_path, target_api);
+        writeProjectProperties(project_path, target_api, use_shared_project);
     }).then(function() {
         console.log('Project successfully created.');
     });
