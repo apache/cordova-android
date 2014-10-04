@@ -20,6 +20,17 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 3.6.4 (Sept 30, 2014) ###
+
+* Set VERSION to 3.6.4 (via coho)
+* Update JS snapshot to version 3.6.4 (via coho)
+* CB-7634 Detect JAVA_HOME properly on Ubuntu
+* CB-7579 Fix run script's ability to use non-arch-specific APKs
+* CB-6511 Fixes build for android when app name contains unicode characters.
+* CB-7463: Adding licences.  I don't know what the gradle syntax is for comments, that still needs to be done.
+* CB-7463: Looked at the Apache BigTop git, gradle uses C-style comments
+* CB-7460: Fixing bug with KitKat where the background colour would override the CSS colours on the application
+
 ### 3.6.0 (Sept 2014) ###
 
 * Set VERSION to 3.6.0 (via coho)

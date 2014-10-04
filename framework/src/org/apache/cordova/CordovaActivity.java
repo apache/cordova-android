@@ -48,6 +48,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebViewClient;
@@ -70,6 +71,7 @@ import android.widget.LinearLayout;
  *       &#64;Override
  *       public void onCreate(Bundle savedInstanceState) {
  *         super.onCreate(savedInstanceState);
+ *         super.init();
  *         // Load your application
  *         loadUrl(launchUrl);
  *       }
@@ -133,22 +135,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     public void onCreate(Bundle savedInstanceState) {
         LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebView.CORDOVA_VERSION + " is starting");
         LOG.d(TAG, "CordovaActivity.onCreate()");
-        super.onCreate(savedInstanceState);
 
-        if(savedInstanceState != null)
-        {
-            initCallbackClass = savedInstanceState.getString("callbackClass");
-        }
-        
+        // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
-    }
-    
-    protected void init() {
         if(!preferences.getBoolean("ShowTitle", false))
         {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
-
+        
         if(preferences.getBoolean("SetFullscreen", false))
         {
             Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
@@ -162,6 +156,15 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         }
 
+        super.onCreate(savedInstanceState);
+
+        if(savedInstanceState != null)
+        {
+            initCallbackClass = savedInstanceState.getString("callbackClass");
+        }
+    }
+    
+    protected void init() {
         appView = makeWebView();
 
         // TODO: Have the views set this themselves.
@@ -209,6 +212,13 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         // Add web view but make it invisible while loading URL
         appView.getView().setVisibility(View.INVISIBLE);
+        // need to remove appView from any existing parent before invoking root.addView(appView)
+        ViewParent parent = appView.getView().getParent();
+        if ((parent != null) && (parent != root)) {
+            LOG.d(TAG, "removing appView from existing parent");
+            ViewGroup parentGroup = (ViewGroup) parent;
+            parentGroup.removeView(appView.getView());
+        }
         root.addView(appView.getView());
         setContentView(root);
 

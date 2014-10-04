@@ -603,6 +603,9 @@ public class AndroidWebView extends WebView implements CordovaWebView {
 
         // Load blank page so that JavaScript onunload is called
         this.loadUrl("about:blank");
+        
+        //Remove last AlertDialog
+        this.chromeClient.destroyLastDialog();
 
         // Forward to plugins
         if (this.pluginManager != null) {
