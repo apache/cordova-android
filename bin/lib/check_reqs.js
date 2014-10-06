@@ -31,7 +31,7 @@ var isWindows = process.platform == 'win32';
 
 function forgivingWhichSync(cmd) {
     try {
-        return which.sync(cmd);
+        return fs.realpathSync(which.sync(cmd));
     } catch (e) {
         return '';
     }
@@ -102,7 +102,7 @@ module.exports.check_java = function() {
                 } else {
                     // See if we can derive it from javac's location.
                     // fs.realpathSync is require on Ubuntu, which symplinks from /usr/bin -> JDK
-                    var maybeJavaHome = path.dirname(path.dirname(fs.realpathSync(javacPath)));
+                    var maybeJavaHome = path.dirname(path.dirname(javacPath));
                     if (fs.existsSync(path.join(maybeJavaHome, 'lib', 'tools.jar'))) {
                         process.env['JAVA_HOME'] = maybeJavaHome;
                     } else {
@@ -179,9 +179,15 @@ module.exports.check_android = function() {
         }
         if (androidCmdPath && !hasAndroidHome) {
             var parentDir = path.dirname(androidCmdPath);
+            var grandParentDir = path.dirname(parentDir);
             if (path.basename(parentDir) == 'tools') {
                 process.env['ANDROID_HOME'] = path.dirname(parentDir);
                 hasAndroidHome = true;
+            } else if (fs.existsSync(path.join(grandParentDir, 'tools', 'android'))) {
+                process.env['ANDROID_HOME'] = grandParentDir;
+                hasAndroidHome = true;
+            } else {
+                throw new Error('ANDROID_HOME is not set and no "tools" directory found at ' + parentDir);
             }
         }
         if (hasAndroidHome && !adbInPath) {
