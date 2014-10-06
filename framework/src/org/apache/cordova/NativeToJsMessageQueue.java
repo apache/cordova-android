@@ -37,6 +37,7 @@ public class NativeToJsMessageQueue {
 
     // Set this to true to force plugin results to be encoding as
     // JS instead of the custom format (useful for benchmarking).
+    // Doesn't work for multipart messages.
     private static final boolean FORCE_ENCODE_USING_EVAL = false;
 
     // Disable sending back native->JS messages during an exec() when the active
@@ -419,53 +420,43 @@ public class NativeToJsMessageQueue {
             this.pluginResult = pluginResult;
         }
         
+        static int calculateEncodedLengthHelper(PluginResult pluginResult) {
+            switch (pluginResult.getMessageType()) {
+                case PluginResult.MESSAGE_TYPE_BOOLEAN: // f or t
+                case PluginResult.MESSAGE_TYPE_NULL: // N
+                    return 1;
+                case PluginResult.MESSAGE_TYPE_NUMBER: // n
+                    return 1 + pluginResult.getMessage().length();
+                case PluginResult.MESSAGE_TYPE_STRING: // s
+                    return 1 + pluginResult.getStrMessage().length();
+                case PluginResult.MESSAGE_TYPE_BINARYSTRING:
+                    return 1 + pluginResult.getMessage().length();
+                case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+                    return 1 + pluginResult.getMessage().length();
+                case PluginResult.MESSAGE_TYPE_MULTIPART:
+                    int ret = 1;
+                    for (int i = 0; i < pluginResult.getMultipartMessagesSize(); i++) {
+                        int length = calculateEncodedLengthHelper(pluginResult.getMultipartMessage(i));
+                        int argLength = String.valueOf(length).length();
+                        ret += argLength + 1 + length;
+                    }
+                    return ret;
+                case PluginResult.MESSAGE_TYPE_JSON:
+                default:
+                    return pluginResult.getMessage().length();
+            }
+        }
+        
         int calculateEncodedLength() {
             if (pluginResult == null) {
                 return jsPayloadOrCallbackId.length() + 1;
             }
             int statusLen = String.valueOf(pluginResult.getStatus()).length();
             int ret = 2 + statusLen + 1 + jsPayloadOrCallbackId.length() + 1;
-            switch (pluginResult.getMessageType()) {
-                case PluginResult.MESSAGE_TYPE_BOOLEAN: // f or t
-                case PluginResult.MESSAGE_TYPE_NULL: // N
-                    ret += 1;
-                    break;
-                case PluginResult.MESSAGE_TYPE_NUMBER: // n
-                    ret += 1 + pluginResult.getMessage().length();
-                    break;
-                case PluginResult.MESSAGE_TYPE_STRING: // s
-                    ret += 1 + pluginResult.getStrMessage().length();
-                    break;
-                case PluginResult.MESSAGE_TYPE_BINARYSTRING:
-                    ret += 1 + pluginResult.getMessage().length();
-                    break;
-                case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
-                    ret += 1 + pluginResult.getMessage().length();
-                    break;
-                case PluginResult.MESSAGE_TYPE_JSON:
-                default:
-                    ret += pluginResult.getMessage().length();
+            return ret + calculateEncodedLengthHelper(pluginResult);
             }
-            return ret;
-        }
-        
-        void encodeAsMessage(StringBuilder sb) {
-            if (pluginResult == null) {
-                sb.append('J')
-                  .append(jsPayloadOrCallbackId);
-                return;
-            }
-            int status = pluginResult.getStatus();
-            boolean noResult = status == PluginResult.Status.NO_RESULT.ordinal();
-            boolean resultOk = status == PluginResult.Status.OK.ordinal();
-            boolean keepCallback = pluginResult.getKeepCallback();
 
-            sb.append((noResult || resultOk) ? 'S' : 'F')
-              .append(keepCallback ? '1' : '0')
-              .append(status)
-              .append(' ')
-              .append(jsPayloadOrCallbackId)
-              .append(' ');
+        static void encodeAsMessageHelper(StringBuilder sb, PluginResult pluginResult) {
             switch (pluginResult.getMessageType()) {
                 case PluginResult.MESSAGE_TYPE_BOOLEAN:
                     sb.append(pluginResult.getMessage().charAt(0)); // t or f.
@@ -489,12 +480,42 @@ public class NativeToJsMessageQueue {
                     sb.append('A');
                     sb.append(pluginResult.getMessage());
                     break;
+                case PluginResult.MESSAGE_TYPE_MULTIPART:
+                    sb.append('M');
+                    for (int i = 0; i < pluginResult.getMultipartMessagesSize(); i++) {
+                        PluginResult multipartMessage = pluginResult.getMultipartMessage(i);
+                        sb.append(String.valueOf(calculateEncodedLengthHelper(multipartMessage)));
+                        sb.append(' ');
+                        encodeAsMessageHelper(sb, multipartMessage);
+                    }
+                    break;
                 case PluginResult.MESSAGE_TYPE_JSON:
                 default:
                     sb.append(pluginResult.getMessage()); // [ or {
             }
         }
         
+        void encodeAsMessage(StringBuilder sb) {
+            if (pluginResult == null) {
+                sb.append('J')
+                  .append(jsPayloadOrCallbackId);
+                return;
+            }
+            int status = pluginResult.getStatus();
+            boolean noResult = status == PluginResult.Status.NO_RESULT.ordinal();
+            boolean resultOk = status == PluginResult.Status.OK.ordinal();
+            boolean keepCallback = pluginResult.getKeepCallback();
+
+            sb.append((noResult || resultOk) ? 'S' : 'F')
+              .append(keepCallback ? '1' : '0')
+              .append(status)
+              .append(' ')
+              .append(jsPayloadOrCallbackId)
+              .append(' ');
+
+            encodeAsMessageHelper(sb, pluginResult);
+        }
+
         void encodeAsJsMessage(StringBuilder sb) {
             if (pluginResult == null) {
                 sb.append(jsPayloadOrCallbackId);
