@@ -18,6 +18,8 @@
 */
 package org.apache.cordova;
 
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -29,6 +31,7 @@ public class PluginResult {
     private boolean keepCallback = false;
     private String strMessage;
     private String encodedMessage;
+    private List<PluginResult> multipartMessages;
 
     public PluginResult(Status status) {
         this(status, PluginResult.StatusMessages[status.ordinal()]);
@@ -80,6 +83,13 @@ public class PluginResult {
         this.encodedMessage = Base64.encodeToString(data, Base64.NO_WRAP);
     }
     
+    // The keepCallback and status of multipartMessages are ignored.
+    public PluginResult(Status status, List<PluginResult> multipartMessages) {
+        this.status = status.ordinal();
+        this.messageType = MESSAGE_TYPE_MULTIPART;
+        this.multipartMessages = multipartMessages;
+    }
+
     public void setKeepCallback(boolean b) {
         this.keepCallback = b;
     }
@@ -97,6 +107,14 @@ public class PluginResult {
             encodedMessage = JSONObject.quote(strMessage);
         }
         return encodedMessage;
+    }
+
+    public int getMultipartMessagesSize() {
+        return multipartMessages.size();
+    }
+
+    public PluginResult getMultipartMessage(int index) {
+        return multipartMessages.get(index);
     }
 
     /**
@@ -150,6 +168,7 @@ public class PluginResult {
     // Use BINARYSTRING when your string may contain null characters.
     // This is required to work around a bug in the platform :(.
     public static final int MESSAGE_TYPE_BINARYSTRING = 7;
+    public static final int MESSAGE_TYPE_MULTIPART = 8;
 
     public static String[] StatusMessages = new String[] {
         "No result",
