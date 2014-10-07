@@ -14,7 +14,7 @@
     ],
     "scripts": {
         "test": "jasmine-node --color spec",
-        "test-build": "rm -rf \"test create\"; ./bin/create \"test create\" com.test.app Test && \"./test create/cordova/build\" && rm -rf \"test create\""
+        "test-build": "rm -rf \"test create\"; ./bin/create \"test create\" com.test.app 応用 && \"./test create/cordova/build\" && rm -rf \"test create\""
     },
     "author": "Apache Software Foundation",
     "license": "Apache version 2.0",
