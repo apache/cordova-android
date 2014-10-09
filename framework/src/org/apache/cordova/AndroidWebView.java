@@ -86,8 +86,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
     private CordovaResourceApi resourceApi;
-    private Whitelist internalWhitelist;
-    private Whitelist externalWhitelist;
     private CordovaPreferences preferences;
     private CordovaUriHelper helper;
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
@@ -112,14 +110,11 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     // Use two-phase init so that the control will work with XML layouts.
     @Override
     public void init(CordovaInterface cordova, List<PluginEntry> pluginEntries,
-            Whitelist internalWhitelist, Whitelist externalWhitelist,
             CordovaPreferences preferences) {
         if (this.cordova != null) {
             throw new IllegalStateException();
         }
         this.cordova = cordova;
-        this.internalWhitelist = internalWhitelist;
-        this.externalWhitelist = externalWhitelist;
         this.preferences = preferences;
         this.helper = new CordovaUriHelper(cordova, this);
 
@@ -748,16 +743,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     @Override
     public View getView() {
         return this;
-    }
-
-    @Override
-    public Whitelist getWhitelist() {
-        return this.internalWhitelist;
-    }
-
-    @Override
-    public Whitelist getExternalWhitelist() {
-        return this.externalWhitelist;
     }
 
     @Override

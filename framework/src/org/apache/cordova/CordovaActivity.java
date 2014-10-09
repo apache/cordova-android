@@ -123,8 +123,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     // Read from config.xml:
     protected CordovaPreferences preferences;
-    protected Whitelist internalWhitelist;
-    protected Whitelist externalWhitelist;
     protected String launchUrl;
     protected ArrayList<PluginEntry> pluginEntries;
 
@@ -185,8 +183,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         preferences = parser.getPreferences();
         preferences.setPreferencesBundle(getIntent().getExtras());
         preferences.copyIntoIntentExtras(this);
-        internalWhitelist = parser.getInternalWhitelist();
-        externalWhitelist = parser.getExternalWhitelist();
         launchUrl = parser.getLaunchUrl();
         pluginEntries = parser.getPluginEntries();
         Config.parser = parser;
@@ -266,7 +262,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             // If all else fails, return a default WebView
             ret = new AndroidWebView(this);
         }
-        ret.init(this, pluginEntries, internalWhitelist, externalWhitelist, preferences);
+        ret.init(this, pluginEntries, preferences);
         return ret;
     }
 
