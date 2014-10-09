@@ -270,6 +270,7 @@ public class CordovaResourceApi {
             case URI_TYPE_RESOURCE: {
                 String mimeType = contentResolver.getType(uri);
                 AssetFileDescriptor assetFd = contentResolver.openAssetFileDescriptor(uri, "r");
+                if (assetFd == null) break;
                 InputStream inputStream = assetFd.createInputStream();
                 long length = assetFd.getLength();
                 return new OpenForReadResult(uri, inputStream, mimeType, length, assetFd);
