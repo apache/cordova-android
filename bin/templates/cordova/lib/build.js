@@ -340,6 +340,10 @@ function parseOpts(options, resolvedTarget) {
                 case 'nobuild' :
                     ret.buildMethod = 'none';
                     break;
+                case 'device':
+                    // Unused here, but this is valid on iOS. Catch it to prevent an error
+                    // when running `cordova build --device` with multiple platforms
+                    break;
                 default :
                     return Q.reject('Build option \'' + options[i] + '\' not recognized.');
             }
