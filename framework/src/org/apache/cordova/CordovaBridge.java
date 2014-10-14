@@ -18,6 +18,8 @@
 */
 package org.apache.cordova;
 
+import java.security.SecureRandom;
+
 import org.apache.cordova.PluginManager;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -107,7 +109,8 @@ public class CordovaBridge {
 
     /** Called by cordova.js to initialize the bridge. */
     int generateBridgeSecret() {
-        expectedBridgeSecret = (int)(Math.random() * Integer.MAX_VALUE);
+        SecureRandom randGen = new SecureRandom();
+        expectedBridgeSecret = (int)(randGen.nextInt() * Integer.MAX_VALUE);
         return expectedBridgeSecret;
     }
 
