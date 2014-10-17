@@ -573,6 +573,12 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         LOG.d(TAG, "Paused the application!");
 
+        // If they pressed Back button to exit, make sure we actually exit! 
+        // Otherwise things won't properly resume and JS won't run (JS resume event never fires, timers never resume, etc).
+        if (isFinishing()) {
+            this.activityState = ACTIVITY_EXITING;
+        }
+
         // Don't process pause if shutting down, since onDestroy() will be called
         if (this.activityState == ACTIVITY_EXITING) {
             return;
