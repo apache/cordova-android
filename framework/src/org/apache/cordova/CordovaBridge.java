@@ -109,7 +109,8 @@ public class CordovaBridge {
 
     /** Called by cordova.js to initialize the bridge. */
     int generateBridgeSecret() {
-        expectedBridgeSecret = (int)(Math.random() * Integer.MAX_VALUE);
+        SecureRandom randGen = new SecureRandom();
+        expectedBridgeSecret = randGen.nextInt(Integer.MAX_VALUE);
         return expectedBridgeSecret;
     }
 
