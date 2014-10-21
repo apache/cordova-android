@@ -180,14 +180,21 @@ def ensureValueExists(filePath, props, key) {
 
 def addSigningProps(propsFilePath, signingConfig) {
     def propsFile = file(propsFilePath)
+    def props = new Properties()
     propsFile.withReader { reader ->
-        def props = new Properties()
         props.load(reader)
-        signingConfig.keyAlias = ensureValueExists(propsFilePath, props, 'keyAlias')
-        signingConfig.keyPassword = props.get('keyPassword')
-        signingConfig.storeFile = RelativePath.parse(true, ensureValueExists(propsFilePath, props, 'storeFile')).getFile(propsFile.getParentFile())
-        signingConfig.storePassword = props.get('storePassword')
     }
+    def storeFile = new File(ensureValueExists(propsFilePath, props, 'storeFile'))
+    if (!storeFile.isAbsolute()) {
+        storeFile = RelativePath.parse(true, storeFile.toString()).getFile(propsFile.getParentFile())
+    }
+    if (!storeFile.exists()) {
+        throw new FileNotFoundException('Keystore file does not exist: ' + storeFile.getAbsolutePath())
+    }
+    signingConfig.keyAlias = ensureValueExists(propsFilePath, props, 'keyAlias')
+    signingConfig.keyPassword = props.get('keyPassword')
+    signingConfig.storeFile = storeFile
+    signingConfig.storePassword = props.get('storePassword')
 }
 
 if (file('build-extras.gradle').exists()) {
