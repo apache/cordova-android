@@ -195,6 +195,16 @@ def addSigningProps(propsFilePath, signingConfig) {
     signingConfig.keyPassword = props.get('keyPassword')
     signingConfig.storeFile = storeFile
     signingConfig.storePassword = props.get('storePassword')
+    def storeType = props.get('storeType')
+    if (!storeType) {
+        def filename = storeFile.getName().toLowerCase();
+        if (filename.endsWith('.p12') || filename.endsWith('.pfx')) {
+            storeType = 'pkcs12'
+        }
+    }
+    if (storeType) {
+        signingConfig.storeType = storeType
+    }
 }
 
 if (file('build-extras.gradle').exists()) {
