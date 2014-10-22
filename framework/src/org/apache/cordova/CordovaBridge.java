@@ -37,12 +37,14 @@ public class CordovaBridge {
     private NativeToJsMessageQueue jsMessageQueue;
     private volatile int expectedBridgeSecret = -1; // written by UI thread, read by JS thread.
     private String loadedUrl;
+    protected CordovaUriHelper helper;
 
-    public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue) {
+    public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue, CordovaUriHelper helper) {
         this.pluginManager = pluginManager;
         this.jsMessageQueue = jsMessageQueue;
+        this.helper = helper;
     }
-    
+
     public String jsExec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
         if (!verifySecret("exec()", bridgeSecret)) {
             return null;
@@ -163,9 +165,9 @@ public class CordovaBridge {
         }
         else if (defaultValue != null && defaultValue.startsWith("gap_init:")) {
             // Protect against random iframes being able to talk through the bridge.
-            // Trust only file URLs and the start URL's domain.
-            // The extra origin.startsWith("http") is to protect against iframes with data: having "" as origin.
-            if (origin.startsWith("file:") || (origin.startsWith("http") && loadedUrl.startsWith(origin))) {
+            // Trust only file URLs and pages which the app would have been allowed
+            // to navigate to anyway.
+            if (origin.startsWith("file:") || helper.shouldAllowNavigation(origin)) {
                 // Enable the bridge
                 int bridgeMode = Integer.parseInt(defaultValue.substring(9));
                 jsMessageQueue.setBridgeMode(bridgeMode);
