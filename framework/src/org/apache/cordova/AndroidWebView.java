@@ -92,6 +92,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     private Whitelist externalWhitelist;
     private CordovaPreferences preferences;
     private CoreAndroid appPlugin;
+    private CordovaUriHelper helper;
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
     
@@ -123,6 +124,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         this.internalWhitelist = internalWhitelist;
         this.externalWhitelist = externalWhitelist;
         this.preferences = preferences;
+        this.helper = new CordovaUriHelper(cordova, this);
 
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
         cookieManager = new AndroidCookieManager(this);
@@ -141,7 +143,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
                 cordova.getActivity().runOnUiThread(r);
             }
         }));
-        bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue, this.cordova.getActivity().getPackageName());
+        bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue, this.cordova.getActivity().getPackageName(), helper);
         initWebViewSettings();
         pluginManager.addService(CoreAndroid.PLUGIN_NAME, CoreAndroid.class.getCanonicalName());
         pluginManager.init();
@@ -386,7 +388,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("file://") || url.startsWith("javascript:") || url.startsWith("about:") || internalWhitelist.isUrlWhiteListed(url)) {
+        if (url.startsWith("javascript:") || helper.shouldAllowNavigation(url)) {
             super.loadUrl(url);
         }
     }
@@ -461,7 +463,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         if (!openExternal) {
 
             // Make sure url is in whitelist
-            if (url.startsWith("file://") || internalWhitelist.isUrlWhiteListed(url)) {
+            if (helper.shouldAllowNavigation(url)) {
                 // TODO: What about params?
                 // Load new URL
                 loadUrlIntoView(url, true);

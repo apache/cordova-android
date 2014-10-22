@@ -142,7 +142,7 @@ public class CordovaActivity extends Activity {
         appView = makeWebView();
         createViews();
         //TODO: Add null check against CordovaInterfaceImpl, since this can be fragile
-        appView.init(cordovaInterface, pluginEntries, internalWhitelist, externalWhitelist, preferences);
+        appView.init(cordovaInterface, pluginEntries, preferences);
         cordovaInterface.setPluginManager(appView.getPluginManager());
 
         // Wire the hardware volume controls to control media if desired.
@@ -354,7 +354,11 @@ public class CordovaActivity extends Activity {
 
         // If errorUrl specified, then load it
         final String errorUrl = preferences.getString("errorUrl", null);
-        if ((errorUrl != null) && (errorUrl.startsWith("file://") || internalWhitelist.isUrlWhiteListed(errorUrl)) && (!failingUrl.equals(errorUrl))) {
+        CordovaUriHelper helper = new CordovaUriHelper(this.cordovaInterface, appView);
+        if ((errorUrl != null) &&
+            (!failingUrl.equals(errorUrl)) &&
+            (appView != null && helper.shouldAllowNavigation(errorUrl))
+           ) {
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {
                 public void run() {

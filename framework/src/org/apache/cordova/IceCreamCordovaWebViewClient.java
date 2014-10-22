@@ -45,7 +45,7 @@ public class IceCreamCordovaWebViewClient extends AndroidWebViewClient {
         try {
             // Check the against the whitelist and lock out access to the WebView directory
             // Changing this will cause problems for your application
-            if (isUrlHarmful(url)) {
+            if (!helper.shouldAllowRequest(url)) {
                 LOG.w(TAG, "URL blocked by whitelist: " + url);
                 // Results in a 404.
                 return new WebResourceResponse("text/plain", "UTF-8", null);
@@ -69,11 +69,6 @@ public class IceCreamCordovaWebViewClient extends AndroidWebViewClient {
             // Results in a 404.
             return new WebResourceResponse("text/plain", "UTF-8", null);
         }
-    }
-
-    private boolean isUrlHarmful(String url) {
-        return ((url.startsWith("http:") || url.startsWith("https:")) && !appView.getWhitelist().isUrlWhiteListed(url))
-            || url.contains("app_webview");
     }
 
     private static boolean needsKitKatContentUrlFix(Uri uri) {
