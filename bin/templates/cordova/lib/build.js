@@ -24,6 +24,7 @@ var shell   = require('shelljs'),
     Q       = require('q'),
     path    = require('path'),
     fs      = require('fs'),
+    os      = require('os'),
     ROOT    = path.join(__dirname, '..', '..');
 var check_reqs = require('./check_reqs');
 var exec  = require('./exec');
@@ -400,7 +401,7 @@ module.exports.run = function(options, optResolvedTarget) {
  */
 module.exports.detectArchitecture = function(target) {
     function helper() {
-        return exec('adb -s ' + target + ' shell cat /proc/cpuinfo')
+        return exec('adb -s ' + target + ' shell cat /proc/cpuinfo', os.tmpdir())
         .then(function(output) {
             if (/intel/i.exec(output)) {
                 return 'x86';
