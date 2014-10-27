@@ -152,7 +152,7 @@ public class CordovaWebView extends WebView {
         super.setWebViewClient(webViewClient);
 
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
-        bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova));
+        bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova), this.cordova.getActivity().getPackageName());
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
 
         pluginManager.addService("App", "org.apache.cordova.App");

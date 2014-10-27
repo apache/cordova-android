@@ -37,12 +37,14 @@ public class CordovaBridge {
     private NativeToJsMessageQueue jsMessageQueue;
     private volatile int expectedBridgeSecret = -1; // written by UI thread, read by JS thread.
     private String loadedUrl;
+    private String appContentUrlPrefix;
 
-    public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue) {
+    public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue, String packageName) {
         this.pluginManager = pluginManager;
         this.jsMessageQueue = jsMessageQueue;
+        this.appContentUrlPrefix = "content://" + packageName + ".";
     }
-    
+
     public String jsExec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
         if (!verifySecret("exec()", bridgeSecret)) {
             return null;
@@ -165,7 +167,9 @@ public class CordovaBridge {
             // Protect against random iframes being able to talk through the bridge.
             // Trust only file URLs and the start URL's domain.
             // The extra origin.startsWith("http") is to protect against iframes with data: having "" as origin.
-            if (origin.startsWith("file:") || (origin.startsWith("http") && loadedUrl.startsWith(origin))) {
+            if (origin.startsWith("file:") ||
+                origin.startsWith(this.appContentUrlPrefix) ||
+                (origin.startsWith("http") && loadedUrl.startsWith(origin))) {
                 // Enable the bridge
                 int bridgeMode = Integer.parseInt(defaultValue.substring(9));
                 jsMessageQueue.setBridgeMode(bridgeMode);
