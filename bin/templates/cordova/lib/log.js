@@ -21,6 +21,7 @@
 
 var shell = require('shelljs'),
     path  = require('path'),
+    os  = require('os'),
     Q     = require('q'),
     child_process = require('child_process'),
     ROOT  = path.join(__dirname, '..', '..');
@@ -32,7 +33,7 @@ var shell = require('shelljs'),
 module.exports.run = function() {
     var cmd = 'adb logcat | grep -v nativeGetEnabledTags';
     var d = Q.defer();
-    var adb = child_process.spawn('adb', ['logcat']);
+    var adb = child_process.spawn('adb', ['logcat'], {cwd: os.tmpdir()});
 
     adb.stdout.on('data', function(data) {
         var lines = data ? data.toString().split('\n') : [];

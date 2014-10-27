@@ -23,6 +23,7 @@ var shell = require('shelljs'),
     exec  = require('./exec'),
     Q     = require('q'),
     path  = require('path'),
+    os    = require('os'),
     appinfo = require('./appinfo'),
     build = require('./build'),
     ROOT  = path.join(__dirname, '..', '..'),
@@ -108,7 +109,7 @@ module.exports.best_image = function() {
 
 // Returns a promise.
 module.exports.list_started = function() {
-    return exec('adb devices')
+    return exec('adb devices', os.tmpdir())
     .then(function(output) {
         var response = output.split('\n');
         var started_emulator_list = [];
@@ -123,7 +124,7 @@ module.exports.list_started = function() {
 
 // Returns a promise.
 module.exports.list_targets = function() {
-    return exec('android list targets')
+    return exec('android list targets', os.tmpdir())
     .then(function(output) {
         var target_out = output.split('\n');
         var targets = [];
@@ -201,7 +202,7 @@ module.exports.start = function(emulator_ID) {
         console.log('BOOT COMPLETE');
 
         //unlock screen
-        return exec('adb -s ' + emulator_id + ' shell input keyevent 82');
+        return exec('adb -s ' + emulator_id + ' shell input keyevent 82', os.tmpdir());
     }).then(function() {
         //return the new emulator id for the started emulators
         return emulator_id;
@@ -231,7 +232,7 @@ module.exports.wait_for_emulator = function(num_running) {
  */
 module.exports.wait_for_boot = function(emulator_id) {
     var self = this;
-    return exec('adb -s ' + emulator_id + ' shell getprop init.svc.bootanim')
+    return exec('adb -s ' + emulator_id + ' shell getprop init.svc.bootanim', os.tmpdir())
     .then(function(output) {
         if (output.match(/stopped/)) {
             return;
@@ -309,7 +310,7 @@ module.exports.install = function(target, buildResults) {
         var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
         console.log('Installing app on emulator...');
         console.log('Using apk: ' + apk_path);
-        return exec('adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"')
+        return exec('adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"', os.tmpdir())
         .then(function(output) {
             if (output.match(/Failure/)) {
                 return Q.reject('Failed to install apk to emulator: ' + output);
@@ -319,13 +320,13 @@ module.exports.install = function(target, buildResults) {
             return Q.reject('Failed to install apk to emulator: ' + err);
         }).then(function() {
             //unlock screen
-            return exec('adb -s ' + resolvedTarget.target + ' shell input keyevent 82');
+            return exec('adb -s ' + resolvedTarget.target + ' shell input keyevent 82', os.tmpdir());
         }).then(function() {
             // launch the application
             console.log('Launching application...');
             var launchName = appinfo.getActivityName();
             cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
-            return exec(cmd);
+            return exec(cmd, os.tmpdir());
         }).then(function(output) {
             console.log('LAUNCH SUCCESS');
         }, function(err) {
