@@ -49,12 +49,12 @@ public class CordovaUriHelper {
         Boolean pluginManagerAllowsNavigation = this.appView.getPluginManager().shouldAllowNavigation(url);
         if (pluginManagerAllowsNavigation == null) {
             // Default policy:
-            // Internal urls on file:// or data:// that do not contain "app_webview" are allowed for navigation
+            // Internal urls on file:// or data:// that do not contain "/app_webview/" are allowed for navigation
             if(url.startsWith("file://") || url.startsWith("data:"))
             {
                 //This directory on WebKit/Blink based webviews contains SQLite databases!
                 //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
-                return !url.contains("app_webview");
+                return !url.contains("/app_webview/");
             }
             return false;
         }
@@ -88,12 +88,12 @@ public class CordovaUriHelper {
         Boolean pluginManagerAllowsRequest = this.appView.getPluginManager().shouldAllowRequest(url);
         if (pluginManagerAllowsRequest == null) {
             // Default policy:
-            // Internal urls on file:// or data:// that do not contain "app_webview" are allowed for navigation
+            // Internal urls on file:// or data:// that do not contain "/app_webview/" are allowed for navigation
             if(url.startsWith("file://") || url.startsWith("data:"))
             {
                 //This directory on WebKit/Blink based webviews contains SQLite databases!
                 //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
-                return !url.contains("app_webview");
+                return !url.contains("/app_webview/");
             }
             return false;
         }
