@@ -34,7 +34,7 @@ public class menus extends CordovaActivity {
         super.onCreate(savedInstanceState);
         // need the title to be shown (config.xml) for the options menu to be visible
         super.init();
-        super.registerForContextMenu(super.appView);
+        super.registerForContextMenu(super.appView.getView());
         super.loadUrl("file:///android_asset/www/menus/index.html");
     }
 
