@@ -73,7 +73,7 @@ android {
     }
 
     defaultConfig {
-        versionCode Integer.parseInt(System.env.ANDROID_VERSION_CODE ?: ("" + getVersionCodeFromManifest() + "0"))
+        versionCode Integer.parseInt(System.env.ANDROID_VERSION_CODE ?: ("" + getIntFromManifest("versionCode") + "0"))
     }
 
     compileSdkVersion cordova.cordovaSdkVersion
@@ -99,6 +99,8 @@ android {
                 }
             }
         }
+    } else if (getIntFromManifest("minSdkVersion") >= 20) {
+        defaultConfig.versionCode += 9
     }
 
     compileOptions {
@@ -179,9 +181,9 @@ gradle.taskGraph.whenReady { taskGraph ->
     }
 }
 
-def getVersionCodeFromManifest() {
+def getIntFromManifest(name) {
     def manifestFile = file(android.sourceSets.main.manifest.srcFile)
-    def pattern = Pattern.compile("versionCode=\"(\\d+)\"")
+    def pattern = Pattern.compile(name + "=\"(\\d+)\"")
     def matcher = pattern.matcher(manifestFile.getText())
     matcher.find()
     return Integer.parseInt(matcher.group(1))
