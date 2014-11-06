@@ -207,6 +207,9 @@ def addSigningProps(propsFilePath, signingConfig) {
     }
 }
 
+// PLUGIN GRADLE EXTENSIONS START
+// PLUGIN GRADLE EXTENSIONS END
+
 if (file('build-extras.gradle').exists()) {
     apply from: 'build-extras.gradle'
 }
