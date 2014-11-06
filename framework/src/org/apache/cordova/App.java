@@ -287,7 +287,7 @@ public class App extends CordovaPlugin {
         };
 
         // Register the receiver
-        this.cordova.getActivity().registerReceiver(this.telephonyReceiver, intentFilter);
+        webView.getContext().registerReceiver(this.telephonyReceiver, intentFilter);
     }
 
     /*
@@ -296,6 +296,6 @@ public class App extends CordovaPlugin {
      */
     public void onDestroy()
     {
-        this.cordova.getActivity().unregisterReceiver(this.telephonyReceiver);
+        webView.getContext().unregisterReceiver(this.telephonyReceiver);
     }
 }
