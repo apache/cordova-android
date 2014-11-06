@@ -123,7 +123,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
 
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
-        bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova));
+        bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova), this.cordova.getActivity().getPackageName());
         pluginManager.addService("App", "org.apache.cordova.CoreAndroid");
         initWebViewSettings();
         
@@ -598,6 +598,9 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     
     public void handleDestroy()
     {
+        // Cancel pending timeout timer.
+        loadUrlTimeout++;
+
         // Send destroy event to JavaScript
         this.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
 
