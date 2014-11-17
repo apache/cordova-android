@@ -50,6 +50,9 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.12'
 }
 
+// PLUGIN GRADLE EXTENSIONS START
+// PLUGIN GRADLE EXTENSIONS END
+
 ext.multiarch=false
 
 android {
