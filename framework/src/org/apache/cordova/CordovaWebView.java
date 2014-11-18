@@ -156,6 +156,9 @@ public class CordovaWebView extends WebView {
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
 
         pluginManager.addService("App", "org.apache.cordova.App");
+        // This will be removed in 4.0.x in favour of the plugin not being bundled.
+        pluginManager.addService(new PluginEntry("SplashScreenInternal", "org.apache.cordova.SplashScreenInternal", true));
+        pluginManager.init();
         initWebViewSettings();
         exposeJsInterface();
     }
@@ -383,8 +386,11 @@ public class CordovaWebView extends WebView {
         initIfNecessary();
 
         if (recreatePlugins) {
+            // Don't re-initialize on first load.
+            if (loadedUrl != null) {
+                this.pluginManager.init();
+            }
             this.loadedUrl = url;
-            this.pluginManager.init();
         }
 
         // Create a timeout timer for loadUrl
@@ -462,9 +468,6 @@ public class CordovaWebView extends WebView {
         else {
 
             LOG.d(TAG, "loadUrlIntoView(%s, %d)", url, time);
-
-            // Send message to show splashscreen now if desired
-            this.postMessage("splashscreen", "show");
         }
 
         // Load url

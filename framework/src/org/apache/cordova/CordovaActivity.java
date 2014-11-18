@@ -24,17 +24,13 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.LOG;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -42,7 +38,6 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -100,7 +95,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     @Deprecated // Will be removed. Use findViewById() to retrieve views.
     protected LinearLayout root;
 
-    protected ProgressDialog spinnerDialog = null;
     private final ExecutorService threadPool = Executors.newCachedThreadPool();
 
     private static int ACTIVITY_STARTING = 0;
@@ -117,9 +111,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
 
     // Draw a splash screen using an image located in the drawable resource directory.
-    // This is not the same as calling super.loadSplashscreen(url)
+    @Deprecated // Use "SplashScreen" preference instead.
     protected int splashscreen = 0;
-    protected int splashscreenTime = 3000;
+    @Deprecated // Use "SplashScreenDelay" preference instead.
+    protected int splashscreenTime = -1;
 
     // LoadUrl timeout value in msec (default of 20 sec)
     protected int loadUrlTimeoutValue = 20000;
@@ -267,9 +262,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 1.0F));
 
-        // Add web view but make it invisible while loading URL
-        appView.setVisibility(View.INVISIBLE);
-        
         // need to remove appView from any existing parent before invoking root.addView(appView)
         ViewParent parent = appView.getParent();
         if ((parent != null) && (parent != root)) {
@@ -334,6 +326,13 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     public void init(CordovaWebView webView, CordovaWebViewClient webViewClient, CordovaChromeClient webChromeClient) {
         LOG.d(TAG, "CordovaActivity.init()");
 
+        if (splashscreenTime >= 0) {
+            preferences.set("SplashScreenDelay", splashscreenTime);
+        }
+        if (splashscreen != 0) {
+            preferences.set("SplashDrawableId", splashscreen);
+        }
+
         appView = webView != null ? webView : makeWebView();
         if (appView.pluginManager == null) {
             appView.init(this, webViewClient != null ? webViewClient : makeWebViewClient(appView),
@@ -361,36 +360,10 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         if (appView == null) {
             init();
         }
-        this.splashscreenTime = preferences.getInteger("SplashScreenDelay", this.splashscreenTime);
-        String splash = preferences.getString("SplashScreen", null);
-        if(this.splashscreenTime > 0 && splash != null)
-        {
-            this.splashscreen = getResources().getIdentifier(splash, "drawable", getClass().getPackage().getName());;
-            if(this.splashscreen != 0)
-            {
-                this.showSplashScreen(this.splashscreenTime);
-            }
-        }
-        
         // If keepRunning
         this.keepRunning = preferences.getBoolean("KeepRunning", true);
 
-        //Check if the view is attached to anything
-        if(appView.getParent() != null)
-        {
-            // Then load the spinner
-            this.loadSpinner();
-        }
-        //Load the correct splashscreen
-        
-        if(this.splashscreen != 0)
-        {
-            this.appView.loadUrl(url, this.splashscreenTime);
-        }
-        else
-        {
-            this.appView.loadUrl(url);
-        }
+        appView.loadUrlIntoView(url, true);
     }
 
     /**
@@ -400,43 +373,11 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
+    @Deprecated // Use loadUrl(String url) instead.
     public void loadUrl(final String url, int time) {
 
         this.splashscreenTime = time;
         this.loadUrl(url);
-    }
-    
-    /*
-     * Load the spinner
-     */
-    void loadSpinner() {
-
-        // If loadingDialog property, then show the App loading dialog for first page of app
-        String loading = null;
-        if ((this.appView == null) || !this.appView.canGoBack()) {
-            loading = preferences.getString("LoadingDialog", null);
-        }
-        else {
-            loading = preferences.getString("LoadingPageDialog", null);
-        }
-        if (loading != null) {
-
-            String title = "";
-            String message = "Loading Application...";
-
-            if (loading.length() > 0) {
-                int comma = loading.indexOf(',');
-                if (comma > 0) {
-                    title = loading.substring(0, comma);
-                    message = loading.substring(comma + 1);
-                }
-                else {
-                    title = "";
-                    message = loading;
-                }
-            }
-            this.spinnerStart(title, message);
-        }
     }
 
     @Deprecated
@@ -588,9 +529,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         {
             this.appView.handlePause(this.keepRunning);
         }
-
-        // hide the splash screen to avoid leaking a window
-        this.removeSplashScreen();
     }
 
     /**
@@ -645,9 +583,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         LOG.d(TAG, "CordovaActivity.onDestroy()");
         super.onDestroy();
 
-        // hide the splash screen to avoid leaking a window
-        this.removeSplashScreen();
-
         if (this.appView != null) {
             appView.handleDestroy();
         }
@@ -697,28 +632,20 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param title         Title of the dialog
      * @param message       The message of the dialog
      */
+    @Deprecated // Call this directly on SplashScreen plugin instead.
     public void spinnerStart(final String title, final String message) {
-        if (this.spinnerDialog != null) {
-            this.spinnerDialog.dismiss();
-            this.spinnerDialog = null;
-        }
-        final CordovaActivity me = this;
-        this.spinnerDialog = ProgressDialog.show(CordovaActivity.this, title, message, true, true,
-                new DialogInterface.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog) {
-                        me.spinnerDialog = null;
-                    }
-                });
+        JSONArray args = new JSONArray();
+        args.put(title);
+        args.put(message);
+        doSplashScreenAction("spinnerStart", args);
     }
 
     /**
      * Stop spinner - Must be called from UI thread
      */
+    @Deprecated // Call this directly on SplashScreen plugin instead.
     public void spinnerStop() {
-        if (this.spinnerDialog != null && this.spinnerDialog.isShowing()) {
-            this.spinnerDialog.dismiss();
-            this.spinnerDialog = null;
-        }
+        doSplashScreenAction("spinnerStop", null);
     }
 
     /**
@@ -810,8 +737,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {
                 public void run() {
-                    // Stop "app loading" spinner if showing
-                    me.spinnerStop();
                     me.appView.showWebPage(errorUrl, false, true, null);
                 }
             });
@@ -915,62 +840,34 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
     }
 
-    protected Dialog splashDialog;
+    private void doSplashScreenAction(String action, JSONArray args) {
+        CordovaPlugin p = appView.pluginManager.getPlugin("org.apache.cordova.splashscreeninternal");
+        if (p != null) {
+            args = args == null ? new JSONArray() : args;
+            try {
+                p.execute(action, args, null);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /**
      * Removes the Dialog that displays the splash screen
      */
+    @Deprecated
     public void removeSplashScreen() {
-        if (splashDialog != null && splashDialog.isShowing()) {
-            splashDialog.dismiss();
-            splashDialog = null;
-        }
+        doSplashScreenAction("hide", null);
     }
 
     /**
      * Shows the splash screen over the full Activity
      */
     @SuppressWarnings("deprecation")
+    @Deprecated
     protected void showSplashScreen(final int time) {
-        final CordovaActivity that = this;
-
-        Runnable runnable = new Runnable() {
-            public void run() {
-                // Get reference to display
-                Display display = getWindowManager().getDefaultDisplay();
-
-                // Create the layout for the dialog
-                LinearLayout root = new LinearLayout(that.getActivity());
-                root.setMinimumHeight(display.getHeight());
-                root.setMinimumWidth(display.getWidth());
-                root.setOrientation(LinearLayout.VERTICAL);
-                root.setBackgroundColor(preferences.getInteger("backgroundColor", Color.BLACK));
-                root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
-                root.setBackgroundResource(that.splashscreen);
-                
-                // Create and show the dialog
-                splashDialog = new Dialog(that, android.R.style.Theme_Translucent_NoTitleBar);
-                // check to see if the splash screen should be full screen
-                if ((getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                        == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
-                    splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                }
-                splashDialog.setContentView(root);
-                splashDialog.setCancelable(false);
-                splashDialog.show();
-
-                // Set Runnable to remove splash screen just in case
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        removeSplashScreen();
-                    }
-                }, time);
-            }
-        };
-        this.runOnUiThread(runnable);
+        preferences.set("SplashScreenDelay", time);
+        doSplashScreenAction("show", null);
     }
 
     @Override
@@ -1015,28 +912,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             LOG.d(TAG, "onMessage(" + id + "," + data + ")");
         }
 
-        if ("splashscreen".equals(id)) {
-            if ("hide".equals(data.toString())) {
-                this.removeSplashScreen();
-            }
-            else {
-                // If the splash dialog is showing don't try to show it again
-                if (this.splashDialog == null || !this.splashDialog.isShowing()) {
-                    String splashResource = preferences.getString("SplashScreen", null);
-                    if (splashResource != null) {
-                        splashscreen = getResources().getIdentifier(splashResource, "drawable", getClass().getPackage().getName());
-                    }
-                    this.showSplashScreen(this.splashscreenTime);
-                }
-            }
-        }
-        else if ("spinner".equals(id)) {
-            if ("stop".equals(data.toString())) {
-                this.spinnerStop();
-                this.appView.setVisibility(View.VISIBLE);
-            }
-        }
-        else if ("onReceivedError".equals(id)) {
+        if ("onReceivedError".equals(id)) {
             JSONObject d = (JSONObject) data;
             try {
                 this.onReceivedError(d.getInt("errorCode"), d.getString("description"), d.getString("url"));
