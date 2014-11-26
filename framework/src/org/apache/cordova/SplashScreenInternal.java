@@ -54,6 +54,9 @@ public class SplashScreenInternal extends CordovaPlugin {
             String splashResource = preferences.getString("SplashScreen", null);
             if (splashResource != null) {
                 drawableId = cordova.getActivity().getResources().getIdentifier(splashResource, "drawable", cordova.getActivity().getClass().getPackage().getName());
+                if (drawableId == 0) {
+                    drawableId = cordova.getActivity().getResources().getIdentifier(splashResource, "drawable", cordova.getActivity().getPackageName());
+                }
                 preferences.set("SplashDrawableId", drawableId);
             }
         }
