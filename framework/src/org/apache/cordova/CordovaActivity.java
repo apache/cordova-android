@@ -362,7 +362,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         String splash = preferences.getString("SplashScreen", null);
         if(this.splashscreenTime > 0 && splash != null)
         {
-            this.splashscreen = getResources().getIdentifier(splash, "drawable", getClass().getPackage().getName());;
+            this.splashscreen = getResources().getIdentifier(splash, "drawable", this.getPackageName());
             if(this.splashscreen != 0)
             {
                 this.showSplashScreen(this.splashscreenTime);
