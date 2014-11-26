@@ -87,8 +87,12 @@ public class PluginManager {
      */
     private void startupPlugins() {
         for (PluginEntry entry : entryMap.values()) {
+            // Add a null entry to for each non-startup plugin to avoid ConcurrentModificationException
+            // When iterating plugins.
             if (entry.onload) {
                 getPlugin(entry.service);
+            } else {
+                pluginMap.put(entry.service, null);
             }
         }
     }
@@ -199,7 +203,9 @@ public class PluginManager {
      */
     public void onPause(boolean multitasking) {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            plugin.onPause(multitasking);
+            if (plugin != null) {
+                plugin.onPause(multitasking);
+            }
         }
     }
 
@@ -210,7 +216,9 @@ public class PluginManager {
      */
     public void onResume(boolean multitasking) {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            plugin.onResume(multitasking);
+            if (plugin != null) {
+                plugin.onResume(multitasking);
+            }
         }
     }
 
@@ -219,7 +227,9 @@ public class PluginManager {
      */
     public void onDestroy() {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            plugin.onDestroy();
+            if (plugin != null) {
+                plugin.onDestroy();
+            }
         }
     }
 
@@ -236,9 +246,11 @@ public class PluginManager {
             return obj;
         }
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            obj = plugin.onMessage(id, data);
-            if (obj != null) {
-                return obj;
+            if (plugin != null) {
+                obj = plugin.onMessage(id, data);
+                if (obj != null) {
+                    return obj;
+                }
             }
         }
         return null;
@@ -249,7 +261,9 @@ public class PluginManager {
      */
     public void onNewIntent(Intent intent) {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            plugin.onNewIntent(intent);
+            if (plugin != null) {
+                plugin.onNewIntent(intent);
+            }
         }
     }
 
@@ -278,15 +292,19 @@ public class PluginManager {
      */
     public void onReset() {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            plugin.onReset();
+            if (plugin != null) {
+                plugin.onReset();
+            }
         }
     }
 
     Uri remapUri(Uri uri) {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            Uri ret = plugin.remapUri(uri);
-            if (ret != null) {
-                return ret;
+            if (plugin != null) {
+                Uri ret = plugin.remapUri(uri);
+                if (ret != null) {
+                    return ret;
+                }
             }
         }
         return null;
