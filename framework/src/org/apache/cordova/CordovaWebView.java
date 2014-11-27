@@ -156,6 +156,8 @@ public class CordovaWebView extends WebView {
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
 
         pluginManager.addService("App", "org.apache.cordova.App");
+        // This will be removed in 4.0.x in favour of the plugin not being bundled.
+        pluginManager.addService(new PluginEntry("SplashScreenInternal", "org.apache.cordova.SplashScreenInternal", true));
         pluginManager.init();
         initWebViewSettings();
         exposeJsInterface();

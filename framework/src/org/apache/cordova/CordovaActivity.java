@@ -110,7 +110,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      */
 
     // Draw a splash screen using an image located in the drawable resource directory.
+    @Deprecated // Use "SplashScreen" preference instead.
     protected int splashscreen = 0;
+    @Deprecated // Use "SplashScreenDelay" preference instead.
     protected int splashscreenTime = -1;
 
     // LoadUrl timeout value in msec (default of 20 sec)
@@ -337,11 +339,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
                     pluginEntries, internalWhitelist, externalWhitelist, preferences);
         }
 
-        boolean hasPlugin = appView.pluginManager.getPlugin("org.apache.cordova.splashscreen") != null;
-        if (!hasPlugin && (preferences.getString("SplashScreen", null) != null || splashscreen != 0)) {
-            Log.w(TAG, "Warning - splashscreen resource set but plugin not installed.");
-        }
-
         // TODO: Have the views set this themselves.
         if (preferences.getBoolean("DisallowOverscroll", false)) {
             appView.setOverScrollMode(View.OVER_SCROLL_NEVER);
@@ -373,6 +370,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param url
      * @param time              The number of ms to wait before loading webview
      */
+    @Deprecated // Use loadUrl(String url) instead.
     public void loadUrl(final String url, int time) {
 
         this.splashscreenTime = time;
@@ -631,6 +629,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param title         Title of the dialog
      * @param message       The message of the dialog
      */
+    @Deprecated // Call this directly on SplashScreen plugin instead.
     public void spinnerStart(final String title, final String message) {
         JSONArray args = new JSONArray();
         args.put(title);
@@ -641,6 +640,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     /**
      * Stop spinner - Must be called from UI thread
      */
+    @Deprecated // Call this directly on SplashScreen plugin instead.
     public void spinnerStop() {
         doSplashScreenAction("spinnerStop", null);
     }
@@ -838,7 +838,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     }
 
     private void doSplashScreenAction(String action, JSONArray args) {
-        CordovaPlugin p = appView.pluginManager.getPlugin("org.apache.cordova.splashscreen");
+        CordovaPlugin p = appView.pluginManager.getPlugin("org.apache.cordova.splashscreeninternal");
         if (p != null) {
             args = args == null ? new JSONArray() : args;
             try {
