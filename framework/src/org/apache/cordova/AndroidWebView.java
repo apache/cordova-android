@@ -186,8 +186,12 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         
         // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         // while we do this
-        if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             Level16Apis.enableUniversalAccess(settings);
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            Level17Apis.setMediaPlaybackRequiresUserGesture(settings, false);
+        }
         // Enable database
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = getContext().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
@@ -641,7 +645,13 @@ public class AndroidWebView extends WebView implements CordovaWebView {
             settings.setAllowUniversalAccessFromFileURLs(true);
         }
     }
-    
+
+    @TargetApi(17)
+    private static final class Level17Apis {
+        static void setMediaPlaybackRequiresUserGesture(WebSettings settings, boolean value) {
+            settings.setMediaPlaybackRequiresUserGesture(value);
+        }
+    }
     public void printBackForwardList() {
         WebBackForwardList currentList = this.copyBackForwardList();
         int currentSize = currentList.getSize();

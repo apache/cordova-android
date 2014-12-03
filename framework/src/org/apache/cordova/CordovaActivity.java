@@ -173,9 +173,11 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
         createViews();
 
-        // TODO: Make this a preference (CB-6153)
-        // Setup the hardware volume controls to handle volume control
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        // Wire the hardware volume controls to control media if desired.
+        String volumePref = preferences.getString("DefaultVolumeStream", "");
+        if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
+            setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        }
     }
 
     @SuppressWarnings("deprecation")
