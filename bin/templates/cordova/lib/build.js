@@ -320,7 +320,7 @@ function parseOpts(options, resolvedTarget) {
 
     var ret = {
         buildType: 'debug',
-        buildMethod: process.env['ANDROID_BUILD'] || 'ant',
+        buildMethod: process.env['ANDROID_BUILD'] || 'gradle',
         arch: null
     };
 
