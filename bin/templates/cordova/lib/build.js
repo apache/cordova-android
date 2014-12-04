@@ -398,12 +398,44 @@ module.exports.run = function(options, optResolvedTarget) {
  * Returns "arm" or "x86".
  */
 module.exports.detectArchitecture = function(target) {
-    return exec('adb -s ' + target + ' shell cat /proc/cpuinfo')
-    .then(function(output) {
-        if (/intel/i.exec(output)) {
-            return 'x86';
+    function helper() {
+        return exec('adb -s ' + target + ' shell cat /proc/cpuinfo')
+        .then(function(output) {
+            if (/intel/i.exec(output)) {
+                return 'x86';
+            }
+            return 'arm';
+        });
+    }
+    // It sometimes happens (at least on OS X), that this command will hang forever.
+    // To fix it, either unplug & replug device, or restart adb server.
+    return helper().timeout(1000, 'Device communication timed out. Try unplugging & replugging the device.')
+    .then(null, function(err) {
+        if (/timed out/.exec('' + err)) {
+            // adb kill-server doesn't seem to do the trick.
+            // Could probably find a x-platform version of killall, but I'm not actually
+            // sure that this scenario even happens on non-OSX machines.
+            return exec('killall adb')
+            .then(function() {
+                console.log('adb seems hung. retrying.');
+                return helper()
+                .then(null, function() {
+                    // The double kill is sadly often necessary, at least on mac.
+                    console.log('Now device not found... restarting adb again.');
+                    return exec('killall adb')
+                    .then(function() {
+                        return helper()
+                        .then(null, function() {
+                            return Q.reject('USB is flakey. Try unplugging & replugging the device.');
+                        });
+                    });
+                });
+            }, function() {
+                // For non-killall OS's.
+                return Q.reject(err);
+            })
         }
-        return 'arm';
+        throw err;
     });
 };
 
