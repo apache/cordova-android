@@ -133,6 +133,9 @@ public class CordovaPreferences {
             } else if (name.equals("splashscreen")) {
                 // Note: We should probably pass in the classname for the variable splash on splashscreen!
                 int resource = action.getResources().getIdentifier(value, "drawable", action.getClass().getPackage().getName());
+                if(resource == 0) {
+                    resource = action.getResources().getIdentifier(value, "drawable", action.getPackageName());
+                }
                 action.getIntent().putExtra(name, resource);
             }
             else if(name.equals("backgroundcolor")) {
