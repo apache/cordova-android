@@ -124,8 +124,9 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
         bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova), this.cordova.getActivity().getPackageName());
-        pluginManager.addService("App", "org.apache.cordova.CoreAndroid");
         initWebViewSettings();
+        pluginManager.addService("App", "org.apache.cordova.CoreAndroid");
+        pluginManager.init();
         
         if (this.viewClient == null) {
             setWebViewClient(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH ?
@@ -304,8 +305,11 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         recreatePlugins = recreatePlugins || (loadedUrl == null);
 
         if (recreatePlugins) {
+            // Don't re-initialize on first load.
+            if (loadedUrl != null) {
+                this.pluginManager.init();
+            }
             this.loadedUrl = url;
-            this.pluginManager.init();
         }
 
         // Create a timeout timer for loadUrl
