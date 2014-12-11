@@ -339,14 +339,19 @@ function parseOpts(options, resolvedTarget) {
                 case 'gradle':
                     ret.buildMethod = option;
                     break;
+                case 'device':
+                case 'emulator':
+                    // Don't need to do anything special to when building for device vs emulator.
+                    // iOS uses this flag to switch on architecture.
+                    break;
                 case 'nobuild' :
                     ret.buildMethod = 'none';
                     break;
                 default :
-                    return Q.reject('Build option \'' + options[i] + '\' not recognized.');
+                    console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).';
             }
         } else {
-            return Q.reject('Build option \'' + options[i] + '\' not recognized.');
+            console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).';
         }
     }
 
