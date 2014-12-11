@@ -24,6 +24,7 @@ var shell   = require('shelljs'),
     Q       = require('q'),
     path    = require('path'),
     fs      = require('fs'),
+    os      = require('os'),
     ROOT    = path.join(__dirname, '..', '..');
 var check_reqs = require('./check_reqs');
 var exec  = require('./exec');
@@ -338,14 +339,19 @@ function parseOpts(options, resolvedTarget) {
                 case 'gradle':
                     ret.buildMethod = option;
                     break;
+                case 'device':
+                case 'emulator':
+                    // Don't need to do anything special to when building for device vs emulator.
+                    // iOS uses this flag to switch on architecture.
+                    break;
                 case 'nobuild' :
                     ret.buildMethod = 'none';
                     break;
                 default :
-                    return Q.reject('Build option \'' + options[i] + '\' not recognized.');
+                    console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).');
             }
         } else {
-            return Q.reject('Build option \'' + options[i] + '\' not recognized.');
+            console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).');
         }
     }
 
@@ -400,7 +406,7 @@ module.exports.run = function(options, optResolvedTarget) {
  */
 module.exports.detectArchitecture = function(target) {
     function helper() {
-        return exec('adb -s ' + target + ' shell cat /proc/cpuinfo')
+        return exec('adb -s ' + target + ' shell cat /proc/cpuinfo', os.tmpdir())
         .then(function(output) {
             if (/intel/i.exec(output)) {
                 return 'x86';

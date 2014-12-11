@@ -22,6 +22,7 @@
 var exec  = require('./exec'),
     Q     = require('q'),
     path  = require('path'),
+    os    = require('os'),
     build = require('./build'),
     appinfo = require('./appinfo'),
     ROOT = path.join(__dirname, '..', '..');
@@ -32,7 +33,7 @@ var exec  = require('./exec'),
  */
 module.exports.list = function(lookHarder) {
     function helper() {
-        return exec('adb devices')
+        return exec('adb devices', os.tmpdir())
         .then(function(output) {
             var response = output.split('\n');
             var device_list = [];
@@ -100,19 +101,19 @@ module.exports.install = function(target, buildResults) {
         console.log('Using apk: ' + apk_path);
         console.log('Installing app on device...');
         var cmd = 'adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"';
-        return exec(cmd)
+        return exec(cmd, os.tmpdir())
         .then(function(output) {
             if (output.match(/Failure/)) return Q.reject('ERROR: Failed to install apk to device: ' + output);
 
             //unlock screen
             var cmd = 'adb -s ' + resolvedTarget.target + ' shell input keyevent 82';
-            return exec(cmd);
+            return exec(cmd, os.tmpdir());
         }, function(err) { return Q.reject('ERROR: Failed to install apk to device: ' + err); })
         .then(function() {
             // launch the application
             console.log('Launching application...');
             var cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
-            return exec(cmd);
+            return exec(cmd, os.tmpdir());
         }).then(function() {
             console.log('LAUNCH SUCCESS');
         }, function(err) {
