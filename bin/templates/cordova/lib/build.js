@@ -348,10 +348,10 @@ function parseOpts(options, resolvedTarget) {
                     ret.buildMethod = 'none';
                     break;
                 default :
-                    console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).';
+                    console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).');
             }
         } else {
-            console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).';
+            console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).');
         }
     }
 
