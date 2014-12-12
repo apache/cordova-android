@@ -50,10 +50,10 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.12'
 }
 
+ext.multiarch=false
+
 // PLUGIN GRADLE EXTENSIONS START
 // PLUGIN GRADLE EXTENSIONS END
-
-ext.multiarch=false
 
 android {
     sourceSets {
@@ -220,6 +220,9 @@ def addSigningProps(propsFilePath, signingConfig) {
     if (storeType) {
         signingConfig.storeType = storeType
     }
+}
+
+task lintVitalRelease {
 }
 
 if (file('build-extras.gradle').exists()) {
