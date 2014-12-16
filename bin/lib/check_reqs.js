@@ -156,20 +156,26 @@ module.exports.check_android = function() {
         }
         if (!hasAndroidHome && !androidCmdPath) {
             if (isWindows) {
-                // Android Studio installer.
+                // Android Studio 1.0 installer
+                maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'sdk'));
+                maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'sdk'));
+                // Android Studio pre-1.0 installer
                 maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'android-studio', 'sdk'));
                 maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'android-studio', 'sdk'));
-                // Stand-alone installer.
+                // Stand-alone installer
                 maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'android-sdk'));
                 maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'android-sdk'));
             } else if (process.platform == 'darwin') {
+                // Android Studio 1.0 installer
+                maybeSetAndroidHome(path.join(process.env['HOME'], 'Library', 'Android', 'sdk'));
+                // Android Studio pre-1.0 installer
                 maybeSetAndroidHome('/Applications/Android Studio.app/sdk');
                 // Stand-alone zip file that user might think to put under /Applications
                 maybeSetAndroidHome('/Applications/android-sdk-macosx');
                 maybeSetAndroidHome('/Applications/android-sdk');
             }
             if (process.env['HOME']) {
-                // or their HOME directory.
+                // Stand-alone zip file that user might think to put under their home directory
                 maybeSetAndroidHome(path.join(process.env['HOME'], 'android-sdk-macosx'));
                 maybeSetAndroidHome(path.join(process.env['HOME'], 'android-sdk'));
             }
