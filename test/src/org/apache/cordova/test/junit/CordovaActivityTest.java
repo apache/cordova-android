@@ -19,11 +19,19 @@
 
 package org.apache.cordova.test.junit;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import org.apache.cordova.AndroidWebView;
+import org.apache.cordova.ConfigXmlParser;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginManager;
 import org.apache.cordova.test.MainTestActivity;
+import org.apache.cordova.ConfigXmlParser;
+import org.apache.cordova.CordovaPreferences;
 
 import android.app.Instrumentation;
+import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -49,7 +57,7 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<MainTe
         testActivity = this.getActivity();
         containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
         innerContainer = (LinearLayout) containerView.getChildAt(0);
-        testView = (CordovaWebView) innerContainer.getChildAt(0);
+        testView = testActivity.cordovaWebView;
         
     }
     
@@ -61,7 +69,11 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<MainTe
 
     public void testForAndroidWebView() {
         String className = testView.getClass().getSimpleName();
-        assertTrue(className.equals("AndroidWebView"));
+        if (androidWebView()) {
+            assertTrue(className.equals("AndroidWebView"));
+        } else {
+            assertFalse(className.equals("AndroidWebView"));
+        }
     }
     
     public void testForLinearLayout() {
@@ -75,5 +87,16 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<MainTe
         } catch (InterruptedException e) {
           fail("Unexpected Timeout");
         }
+    }
+
+    private boolean androidWebView () {
+        ConfigXmlParser parser = new ConfigXmlParser();
+        parser.parse(testActivity);
+        CordovaPreferences preferences = parser.getPreferences();
+        String r = preferences.getString("webView", null);
+        if (r != null) {
+            return false;
+        }
+        return true;
     }
 }

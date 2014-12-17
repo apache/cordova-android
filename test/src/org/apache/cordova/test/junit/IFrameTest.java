@@ -32,13 +32,11 @@ import android.test.TouchUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-public class IFrameTest extends ActivityInstrumentationTestCase2 {
+public class IFrameTest extends ActivityInstrumentationTestCase2<iframe> {
   
     
     private Instrumentation mInstr;
-    private Activity testActivity;
-    private FrameLayout containerView;
-    private LinearLayout innerContainer;
+    private iframe testActivity;
     private CordovaWebView testView;
     private TouchUtils touch;
     private Purity touchTool;
@@ -52,9 +50,7 @@ public class IFrameTest extends ActivityInstrumentationTestCase2 {
       super.setUp();
       mInstr = this.getInstrumentation();
       testActivity = this.getActivity();
-      containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
-      innerContainer = (LinearLayout) containerView.getChildAt(0);
-      testView = (CordovaWebView) innerContainer.getChildAt(0);
+      testView = testActivity.cordovaWebView;
       touch = new TouchUtils();
       touchTool = new Purity(testActivity, getInstrumentation());
     }

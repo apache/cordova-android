@@ -31,8 +31,6 @@ import android.widget.LinearLayout;
 public class PluginManagerTest extends ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
 	
 	private CordovaWebViewTestActivity testActivity;
-	private FrameLayout containerView;
-	private LinearLayout innerContainer;
 	private View testView;
 	private String rString;
 	private PluginManager pMan;
@@ -44,14 +42,11 @@ public class PluginManagerTest extends ActivityInstrumentationTestCase2<CordovaW
 	protected void setUp() throws Exception{
 		super.setUp();
 		testActivity = this.getActivity();
-		containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
-		innerContainer = (LinearLayout) containerView.getChildAt(0);
-		testView = innerContainer.getChildAt(0);
+		testView = testActivity.cordovaWebView.getView();
 		
 	}
 	
 	public void testPreconditions(){
-	    assertNotNull(innerContainer);
 	    assertNotNull(testView);
 	}
 	

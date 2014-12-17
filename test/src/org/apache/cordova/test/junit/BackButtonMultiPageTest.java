@@ -26,6 +26,7 @@ import org.apache.cordova.test.backbuttonmultipage;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.UiThreadTest;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
@@ -37,7 +38,6 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
   private int TIMEOUT = 2000;
   backbuttonmultipage testActivity;
   private FrameLayout containerView;
-  private LinearLayout innerContainer;
   private CordovaWebView testView;
   
 
@@ -50,15 +50,13 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       super.setUp();
       testActivity = this.getActivity();
       containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
-      innerContainer = (LinearLayout) containerView.getChildAt(0);
-      testView = (CordovaWebView) innerContainer.getChildAt(0);
+      testView = testActivity.cordovaWebView;
       testView.loadUrl("file:///android_asset/www/backbuttonmultipage/index.html");
       sleep();
   }
 
   @UiThreadTest
   public void testPreconditions(){
-      assertNotNull(innerContainer);
       assertNotNull(testView);
       String url = testView.getUrl();
       assertTrue(url.endsWith("index.html"));
@@ -175,7 +173,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
           {
               String url = testView.getUrl();
               assertTrue(url.endsWith("sample3.html"));
-              BaseInputConnection viewConnection = new BaseInputConnection((View) testView, true);
+              BaseInputConnection viewConnection = new BaseInputConnection(testView.getView(), true);
               KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
               KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
               viewConnection.sendKeyEvent(backDown);
@@ -188,7 +186,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
           {
               String url = testView.getUrl();
               assertTrue(url.endsWith("sample2.html"));
-              BaseInputConnection viewConnection = new BaseInputConnection((View) testView, true);
+              BaseInputConnection viewConnection = new BaseInputConnection(testView.getView(), true);
               KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
               KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
               viewConnection.sendKeyEvent(backDown);

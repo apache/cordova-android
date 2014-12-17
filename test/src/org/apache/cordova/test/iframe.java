@@ -22,9 +22,13 @@ import android.os.Bundle;
 import org.apache.cordova.*;
 
 public class iframe extends CordovaActivity {
+    public CordovaWebView cordovaWebView;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.loadUrl("file:///android_asset/www/iframe/index.html");
+
+        cordovaWebView = this.appView;
     }
 }

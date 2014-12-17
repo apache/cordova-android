@@ -19,6 +19,8 @@
 
 package org.apache.cordova.test.junit;
 
+import org.apache.cordova.ConfigXmlParser;
+import org.apache.cordova.CordovaPreferences;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginManager;
 import org.apache.cordova.test.CordovaWebViewTestActivity;
@@ -34,8 +36,6 @@ import android.widget.LinearLayout;
 public class GapClientTest extends ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
 	
 	private CordovaWebViewTestActivity testActivity;
-	private FrameLayout containerView;
-	private LinearLayout innerContainer;
 	private View testView;
 	private String rString;
 
@@ -46,21 +46,31 @@ public class GapClientTest extends ActivityInstrumentationTestCase2<CordovaWebVi
 	protected void setUp() throws Exception{
 		super.setUp();
 		testActivity = this.getActivity();
-		containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
-		innerContainer = (LinearLayout) containerView.getChildAt(0);
-		testView = innerContainer.getChildAt(0);
+		testView = testActivity.cordovaWebView.getView();
 		
 	}
 	
 	public void testPreconditions(){
-	    assertNotNull(innerContainer);
 		assertNotNull(testView);
 	}
 	
 	public void testForAndroidWebView() {
 	    String className = testView.getClass().getSimpleName();
-	    assertTrue(className.equals("AndroidWebView"));
+	    if (androidWebView()) {
+            assertTrue(className.equals("AndroidWebView"));
+        } else {
+            assertFalse(className.equals("AndroidWebView"));
+        }
 	}
 	
-	
+	private boolean androidWebView () {
+	    ConfigXmlParser parser = new ConfigXmlParser();
+	    parser.parse(testActivity);
+	    CordovaPreferences preferences = parser.getPreferences();
+		String r = preferences.getString("webView", null);
+	    if (r != null) {
+            return false;
+	    }
+	    return true;
+	}
 }

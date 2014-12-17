@@ -19,14 +19,19 @@
 package org.apache.cordova.test;
 
 import org.apache.cordova.CordovaActivity;
+import org.apache.cordova.CordovaWebView;
 
 import android.os.Bundle;
 
 public class MainTestActivity extends CordovaActivity {
+    public CordovaWebView cordovaWebView;
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.loadUrl("file:///android_asset/www/index.html");
+
+        cordovaWebView = this.appView;
     }
 }

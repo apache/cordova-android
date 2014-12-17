@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 
 import org.apache.cordova.Config;
 import org.apache.cordova.CordovaActivity;
+import org.apache.cordova.CordovaWebView;
 
 import android.content.res.AssetManager;
 import android.os.Bundle;
@@ -36,7 +37,7 @@ public class SabotagedActivity extends CordovaActivity {
 
     private String BAD_ASSET = "www/error.html";
     private String LOG_TAG = "SabotagedActivity";
-    
+    public CordovaWebView cordovaWebView;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,6 +46,8 @@ public class SabotagedActivity extends CordovaActivity {
 //        copyErrorAsset();
         super.init();
         super.loadUrl(Config.getStartUrl());
+
+        cordovaWebView = this.appView;
     }
 
     /* 

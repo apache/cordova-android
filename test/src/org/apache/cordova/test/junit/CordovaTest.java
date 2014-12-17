@@ -18,6 +18,8 @@
 */
 package org.apache.cordova.test.junit;
 
+import org.apache.cordova.ConfigXmlParser;
+import org.apache.cordova.CordovaPreferences;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginManager;
 import org.apache.cordova.test.CordovaWebViewTestActivity;
@@ -42,7 +44,7 @@ public class CordovaTest extends
   protected void setUp() throws Exception {
     super.setUp();
     testActivity = this.getActivity();
-    testView = testActivity.findViewById(R.id.cordovaWebView);
+    testView = testActivity.cordovaWebView.getView();
   }
 
   public void testPreconditions() {
@@ -53,7 +55,11 @@ public class CordovaTest extends
     //Sleep for no reason!!!!
     sleep();        
     String className = testView.getClass().getSimpleName();
-    assertTrue(className.equals("AndroidWebView"));
+    if (androidWebView()) {
+        assertTrue(className.equals("AndroidWebView"));
+    } else {
+        assertFalse(className.equals("AndroidWebView"));
+    }
   }
 
   /*
@@ -112,5 +118,16 @@ public class CordovaTest extends
     } catch (InterruptedException e) {
       fail("Unexpected Timeout");
     }
+  }
+
+  private boolean androidWebView () {
+      ConfigXmlParser parser = new ConfigXmlParser();
+      parser.parse(testActivity);
+      CordovaPreferences preferences = parser.getPreferences();
+      String r = preferences.getString("webView", null);
+      if (r != null) {
+        return false;
+      }
+      return true;
   }
 }

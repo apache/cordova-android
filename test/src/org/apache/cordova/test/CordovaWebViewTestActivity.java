@@ -19,12 +19,17 @@
 
 package org.apache.cordova.test;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.cordova.AndroidChromeClient;
+import org.apache.cordova.AndroidWebView;
 import org.apache.cordova.AndroidWebViewClient;
 import org.apache.cordova.Config;
+import org.apache.cordova.ConfigXmlParser;
+import org.apache.cordova.CordovaPreferences;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
@@ -45,17 +50,56 @@ public class CordovaWebViewTestActivity extends Activity implements CordovaInter
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.main);
-
         //CB-7238: This has to be added now, because it got removed from somewhere else
         Config.init(this);
         
-        cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
+        cordovaWebView = makeWebView();
+        setContentView(cordovaWebView.getView());
         cordovaWebView.init(this, Config.getPluginEntries(), Config.getWhitelist(),
             Config.getExternalWhitelist(), Config.getPreferences());
 
         cordovaWebView.loadUrl("file:///android_asset/www/index.html");
 
+    }
+
+    /**
+     * Construct the default web view object.
+     *
+     * This is intended to be overridable by subclasses of CordovaIntent which
+     * require a more specialized web view.
+     */
+    protected CordovaWebView makeWebView() {
+        ConfigXmlParser parser = new ConfigXmlParser();
+        parser.parse(this);
+        CordovaPreferences preferences = parser.getPreferences();
+
+        String r = preferences.getString("webView", null);
+        CordovaWebView ret = null;
+        if (r != null) {
+            try {
+                Class<?> webViewClass = Class.forName(r);
+                Constructor<?> constructor = webViewClass.getConstructor(Context.class);
+                ret = (CordovaWebView) constructor.newInstance((Context)this);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (ret == null) {
+            // If all else fails, return a default WebView
+            ret = new AndroidWebView(this);
+        }
+        return ret;
     }
 
     public Context getContext() {

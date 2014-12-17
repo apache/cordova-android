@@ -37,8 +37,6 @@ public class IntentUriOverrideTest extends ActivityInstrumentationTestCase2<Sabo
     private int TIMEOUT = 1000;
     
     private SabotagedActivity testActivity;
-    private FrameLayout containerView;
-    private LinearLayout innerContainer;
     private CordovaWebView testView;
     private Instrumentation mInstr;
     private String BAD_URL = "file:///sdcard/download/wl-exploit.htm";
@@ -59,14 +57,11 @@ public class IntentUriOverrideTest extends ActivityInstrumentationTestCase2<Sabo
         badIntent.putExtra("url", BAD_URL);
         setActivityIntent(badIntent);
         testActivity = getActivity();
-        containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
-        innerContainer = (LinearLayout) containerView.getChildAt(0);
-        testView = (CordovaWebView) innerContainer.getChildAt(0);
+        testView = testActivity.cordovaWebView;
     }
     
     
     public void testPreconditions(){
-        assertNotNull(innerContainer);
         assertNotNull(testView);
     }
     

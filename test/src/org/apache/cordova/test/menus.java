@@ -26,16 +26,19 @@ import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 
 import org.apache.cordova.*;
-import org.apache.cordova.LOG;
 
 public class menus extends CordovaActivity {
+    private CordovaWebView cordovaWebView;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // need the title to be shown (config.xml) for the options menu to be visible
         super.init();
-        super.registerForContextMenu(super.appView);
+        super.registerForContextMenu(super.appView.getView());
         super.loadUrl("file:///android_asset/www/menus/index.html");
+
+        cordovaWebView = this.appView;
     }
 
     // Demonstrate how to add your own menus to app

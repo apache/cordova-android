@@ -22,6 +22,8 @@ import android.os.Bundle;
 import org.apache.cordova.*;
 
 public class splashscreen extends CordovaActivity {
+    private CordovaWebView cordovaWebView;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,6 +32,8 @@ public class splashscreen extends CordovaActivity {
         // Show splashscreen
         preferences.set("splashscreen", "sandy");
 
-        super.loadUrl("file:///android_asset/www/splashscreen/index.html", 2000);
+        super.loadUrl("file:///android_asset/www/splashscreen/index.html");
+
+        cordovaWebView = this.appView;
     }
 }

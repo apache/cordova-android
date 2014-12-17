@@ -22,12 +22,16 @@ import android.os.Bundle;
 import org.apache.cordova.*;
 
 public class errorurl extends CordovaActivity {
+    public CordovaWebView cordovaWebView;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         preferences.set("errorUrl", "file:///android_asset/www/htmlnotfound/error.html");
         super.loadUrl("file:///android_asset/www/htmlnotfound/index.html");
+
+        cordovaWebView = this.appView;
     }
-    
-    
+
+
 }

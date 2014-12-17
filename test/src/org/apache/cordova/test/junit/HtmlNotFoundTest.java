@@ -32,8 +32,6 @@ public class HtmlNotFoundTest extends ActivityInstrumentationTestCase2<htmlnotfo
 
   private int TIMEOUT = 1000;
   private htmlnotfound testActivity;
-  private FrameLayout containerView;
-  private LinearLayout innerContainer;
   private CordovaWebView testView;
 
   public HtmlNotFoundTest() {
@@ -44,13 +42,10 @@ public class HtmlNotFoundTest extends ActivityInstrumentationTestCase2<htmlnotfo
   protected void setUp() throws Exception {
     super.setUp();
     testActivity = this.getActivity();
-    containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
-    innerContainer = (LinearLayout) containerView.getChildAt(0);
-    testView = (CordovaWebView) innerContainer.getChildAt(0);
+    testView = testActivity.cordovaWebView;
   }
 
   public void testPreconditions(){
-    assertNotNull(innerContainer);
     assertNotNull(testView);
   }
 
