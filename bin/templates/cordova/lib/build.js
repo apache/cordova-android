@@ -175,25 +175,6 @@ var builders = {
     },
     gradle: {
         getArgs: function(cmd, arch) {
-            var lintSteps;
-            if (process.env['BUILD_MULTIPLE_APKS']) {
-                lintSteps = [
-                    'lint',
-                    'lintVitalX86Release',
-                    'lintVitalArmv7Release',
-                    'compileLint',
-                    'copyReleaseLint',
-                    'copyDebugLint'
-                ];
-            } else {
-                lintSteps = [
-                    'lint',
-                    'lintVitalRelease',
-                    'compileLint',
-                    'copyReleaseLint',
-                    'copyDebugLint'
-                ];
-            }
             if (arch == 'arm' && cmd == 'debug') {
                 cmd = 'assembleArmv7Debug';
             } else if (arch == 'arm' && cmd == 'release') {
@@ -210,10 +191,6 @@ var builders = {
             var args = [cmd, '-b', path.join(ROOT, 'build.gradle')];
             // 10 seconds -> 6 seconds
             args.push('-Dorg.gradle.daemon=true');
-            // Excluding lint: 6s-> 1.6s
-            for (var i = 0; i < lintSteps.length; ++i) {
-                args.push('-x', lintSteps[i]);
-            }
             // Shaves another 100ms, but produces a "try at own risk" warning. Not worth it (yet):
             // args.push('-Dorg.gradle.parallel=true');
             return args;
