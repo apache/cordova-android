@@ -107,9 +107,9 @@ android {
             release {
                 // These must be set or Gradle will complain (even if they are overridden).
                 keyAlias = ""
-                keyPassword = ""
+                keyPassword = "__unset" // And these must be set to non-empty in order to have the signing step added to the task graph.
                 storeFile = null
-                storePassword = ""
+                storePassword = "__unset"
             }
         }
         buildTypes {
@@ -159,11 +159,10 @@ def promptForReleaseKeyPassword() {
     if (!System.env.RELEASE_SIGNING_PROPERTIES_FILE) {
         return;
     }
-    if (!android.signingConfigs.release.storePassword) {
+    if ('__unset'.equals(android.signingConfigs.release.storePassword)) {
         android.signingConfigs.release.storePassword = promptForPassword('Enter key store password: ')
-        println('set to:' + android.signingConfigs.release.storePassword)
     }
-    if (!android.signingConfigs.release.keyPassword) {
+    if ('__unset'.equals(android.signingConfigs.release.keyPassword)) {
         android.signingConfigs.release.keyPassword = promptForPassword('Enter key password: ');
     }
 }
@@ -205,9 +204,9 @@ def addSigningProps(propsFilePath, signingConfig) {
         throw new FileNotFoundException('Keystore file does not exist: ' + storeFile.getAbsolutePath())
     }
     signingConfig.keyAlias = ensureValueExists(propsFilePath, props, 'keyAlias')
-    signingConfig.keyPassword = props.get('keyPassword')
+    signingConfig.keyPassword = props.get('keyPassword', signingConfig.keyPassword)
     signingConfig.storeFile = storeFile
-    signingConfig.storePassword = props.get('storePassword')
+    signingConfig.storePassword = props.get('storePassword', signingConfig.storePassword)
     def storeType = props.get('storeType')
     if (!storeType) {
         def filename = storeFile.getName().toLowerCase();
