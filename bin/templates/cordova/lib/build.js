@@ -306,15 +306,21 @@ function parseOpts(options, resolvedTarget) {
     // Iterate through command line options
     for (var i=0; options && (i < options.length); ++i) {
         if (/^--/.exec(options[i])) {
-            var option = options[i].substring(2);
-            switch(option) {
+            var keyValue = options[i].substring(2).split('=');
+            var flagName = keyValue[0];
+            var flagValue = keyValue[1];
+            if ((flagName == 'versionCode' || flagName == 'minSdkVersion') && !flagValue) {
+                flagValue = options[i + 1];
+                ++i;
+            }
+            switch(flagName) {
                 case 'debug':
                 case 'release':
-                    ret.buildType = option;
+                    ret.buildType = flagName;
                     break;
                 case 'ant':
                 case 'gradle':
-                    ret.buildMethod = option;
+                    ret.buildMethod = flagName;
                     break;
                 case 'device':
                 case 'emulator':
@@ -324,8 +330,14 @@ function parseOpts(options, resolvedTarget) {
                 case 'nobuild' :
                     ret.buildMethod = 'none';
                     break;
+                case 'versionCode':
+                    process.env['ANDROID_VERSION_CODE'] = flagValue;
+                    break;
+                case 'minSdkVersion':
+                    process.env['ANDROID_MIN_SDK_VERSION'] = flagValue;
+                    break;
                 default :
-                    console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).');
+                    console.warn('Build option --\'' + flagName + '\' not recognized (ignoring).');
             }
         } else {
             console.warn('Build option \'' + options[i] + '\' not recognized (ignoring).');
@@ -445,12 +457,14 @@ module.exports.findBestApkForArchitecture = function(buildResults, arch) {
 };
 
 module.exports.help = function() {
-    console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'cordova', 'build')) + ' [build_type]');
-    console.log('Build Types : ');
-    console.log('    \'--debug\': Default build, will build project in debug mode');
+    console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'cordova', 'build')) + ' [flags]');
+    console.log('Flags:');
+    console.log('    \'--debug\': will build project in debug mode (default)');
     console.log('    \'--release\': will build project for release');
-    console.log('    \'--ant\': Default build, will build project with ant');
+    console.log('    \'--ant\': will build project with ant (default)');
     console.log('    \'--gradle\': will build project with gradle');
-    console.log('    \'--nobuild\': will skip build process (can be used with run command)');
+    console.log('    \'--nobuild\': will skip build process (useful when using run command)');
+    console.log('    \'--versionCode=#\': Override versionCode for this build. Useful for uploading multiple APKs. Requires --gradle.');
+    console.log('    \'--minSdkVersion=#\': Override minSdkVersion for this build. Useful for uploading multiple APKs. Requires --gradle.');
     process.exit(0);
 };
