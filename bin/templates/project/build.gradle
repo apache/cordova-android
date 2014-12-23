@@ -54,10 +54,10 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.2.1'
 }
 
+ext.multiarch=false
+
 // PLUGIN GRADLE EXTENSIONS START
 // PLUGIN GRADLE EXTENSIONS END
-
-ext.multiarch=false
 
 android {
     sourceSets {
