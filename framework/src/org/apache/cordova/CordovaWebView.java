@@ -155,7 +155,7 @@ public class CordovaWebView extends WebView {
         bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova), this.cordova.getActivity().getPackageName());
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
 
-        pluginManager.addService("App", "org.apache.cordova.App");
+        pluginManager.addService(App.PLUGIN_NAME, "org.apache.cordova.App");
         // This will be removed in 4.0.x in favour of the plugin not being bundled.
         pluginManager.addService(new PluginEntry("SplashScreenInternal", "org.apache.cordova.SplashScreenInternal", true));
         pluginManager.init();

@@ -1,5 +1,5 @@
 // Platform: android
-// 1fc2526faa6197e1637ecb48ebe0f876f008ba0f
+// 12489aed3d93ecc98adfc2091fe566067f2d39fc
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -509,9 +509,14 @@ function each(objects, func, context) {
 
 function clobber(obj, key, value) {
     exports.replaceHookForTesting(obj, key);
-    obj[key] = value;
+    var needsProperty = false;
+    try {
+        obj[key] = value;
+    } catch (e) {
+        needsProperty = true;
+    }
     // Getters can only be overridden by getters.
-    if (obj[key] !== value) {
+    if (needsProperty || obj[key] !== value) {
         utils.defineGetter(obj, key, function() {
             return value;
         });
@@ -1027,12 +1032,7 @@ function buildPayload(payload, message) {
         payload.push(+message.slice(1));
     } else if (payloadKind == 'A') {
         var data = message.slice(1);
-        var bytes = window.atob(data);
-        var arraybuffer = new Uint8Array(bytes.length);
-        for (var i = 0; i < bytes.length; i++) {
-            arraybuffer[i] = bytes.charCodeAt(i);
-        }
-        payload.push(arraybuffer.buffer);
+        payload.push(base64.toArrayBuffer(data));
     } else if (payloadKind == 'S') {
         payload.push(window.atob(message.slice(1)));
     } else if (payloadKind == 'M') {
@@ -1167,6 +1167,7 @@ var cordova = require('cordova');
 var modulemapper = require('cordova/modulemapper');
 var platform = require('cordova/platform');
 var pluginloader = require('cordova/pluginloader');
+var utils = require('cordova/utils');
 
 var platformInitChannelsArray = [channel.onNativeReady, channel.onPluginsReady];
 
@@ -1198,21 +1199,19 @@ function replaceNavigator(origNavigator) {
         for (var key in origNavigator) {
             if (typeof origNavigator[key] == 'function') {
                 newNavigator[key] = origNavigator[key].bind(origNavigator);
-            } else {
+            }
+            else {
                 (function(k) {
-                        Object.defineProperty(newNavigator, k, {
-                            get: function() {
-                                return origNavigator[k];
-                            },
-                            configurable: true,
-                            enumerable: true
-                        });
-                    })(key);
+                    utils.defineGetterSetter(newNavigator,key,function() {
+                        return origNavigator[k];
+                    });
+                })(key);
             }
         }
     }
     return newNavigator;
 }
+
 if (window.navigator) {
     window.navigator = replaceNavigator(window.navigator);
 }
@@ -1293,6 +1292,7 @@ define("cordova/init_b", function(require, exports, module) {
 var channel = require('cordova/channel');
 var cordova = require('cordova');
 var platform = require('cordova/platform');
+var utils = require('cordova/utils');
 
 var platformInitChannelsArray = [channel.onDOMContentLoaded, channel.onNativeReady];
 
@@ -1327,16 +1327,13 @@ function replaceNavigator(origNavigator) {
         for (var key in origNavigator) {
             if (typeof origNavigator[key] == 'function') {
                 newNavigator[key] = origNavigator[key].bind(origNavigator);
-            } else {
+            }
+            else {
                 (function(k) {
-                        Object.defineProperty(newNavigator, k, {
-                            get: function() {
-                                return origNavigator[k];
-                            },
-                            configurable: true,
-                            enumerable: true
-                        });
-                    })(key);
+                    utils.defineGetterSetter(newNavigator,key,function() {
+                        return origNavigator[k];
+                    });
+                })(key);
             }
         }
     }
@@ -1385,7 +1382,7 @@ platform.bootstrap && platform.bootstrap();
  * Create all cordova objects once native side is ready.
  */
 channel.join(function() {
-    
+
     platform.initialize && platform.initialize();
 
     // Fire event to notify that all objects are created
@@ -1546,10 +1543,26 @@ module.exports = {
         // Let native code know we are all done on the JS side.
         // Native code will then un-hide the WebView.
         channel.onCordovaReady.subscribe(function() {
+            exec(onMessageFromNative, null, 'App', 'messageChannel', []);
             exec(null, null, "App", "show", []);
         });
     }
 };
+
+function onMessageFromNative(msg) {
+    var cordova = require('cordova');
+    var action = msg.action;
+
+    switch (action)
+    {
+        case 'hidekeyboard':
+        case 'showkeyboard':
+            cordova.fireDocumentEvent(action);
+            break;
+        default:
+            throw new Error('Unknown event action ' + msg.action);
+    }
+}
 
 });
 
