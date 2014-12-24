@@ -42,7 +42,22 @@ import java.util.HashMap;
 public class App extends CordovaPlugin {
 
     protected static final String TAG = "CordovaApp";
+    private static App pluginInstance;
     private BroadcastReceiver telephonyReceiver;
+    private CallbackContext messageChannel;
+
+    /**
+     * Send an event to be fired on the Javascript side.
+     *
+     * @param action The name of the event to be fired
+     */
+    public static void fireJavascriptEvent(String action) {
+        if (pluginInstance != null && pluginInstance.messageChannel != null) {
+            pluginInstance.sendEventMessage(action);
+        } else {
+            LOG.w(TAG, "Unable to fire event without existing plugin and message channel");
+        }
+    }
 
     /**
      * Sets the context of the Command. This can then be used to do things like
@@ -50,6 +65,7 @@ public class App extends CordovaPlugin {
      */
     @Override
     public void pluginInitialize() {
+        pluginInstance = this;
         this.initTelephonyReceiver();
     }
 
@@ -100,6 +116,11 @@ public class App extends CordovaPlugin {
             else if (action.equals("exitApp")) {
                 this.exitApp();
             }
+			else if (action.equals("messageChannel")) {
+                messageChannel = callbackContext;
+                return true;
+            }
+
             callbackContext.sendPluginResult(new PluginResult(status, result));
             return true;
         } catch (JSONException e) {
@@ -249,7 +270,7 @@ public class App extends CordovaPlugin {
     public void exitApp() {
         this.webView.postMessage("exit", null);
     }
-    
+
 
     /**
      * Listen for telephony events: RINGING, OFFHOOK and IDLE
@@ -288,6 +309,18 @@ public class App extends CordovaPlugin {
 
         // Register the receiver
         webView.getContext().registerReceiver(this.telephonyReceiver, intentFilter);
+    }
+
+    private void sendEventMessage(String action) {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("action", action);
+        } catch (JSONException e) {
+            LOG.e(TAG, "Failed to create event message", e);
+        }
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, obj);
+        pluginResult.setKeepCallback(true);
+        messageChannel.sendPluginResult(pluginResult);
     }
 
     /*
