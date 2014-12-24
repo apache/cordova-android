@@ -74,6 +74,9 @@ android {
 
     defaultConfig {
         versionCode Integer.parseInt(System.env.ANDROID_VERSION_CODE ?: ("" + getIntFromManifest("versionCode") + "0"))
+        if (System.env.ANDROID_MIN_SDK_VERSION) {
+            minSdkVersion Integer.parseInt(System.env.ANDROID_MIN_SDK_VERSION)
+        }
     }
 
     compileSdkVersion cordova.cordovaSdkVersion
@@ -82,13 +85,13 @@ android {
     if (multiarch || System.env.BUILD_MULTIPLE_APKS) {
         productFlavors {
             armv7 {
-                versionCode defaultConfig.versionCode + 2
+                versionCode System.env.ANDROID_VERSION_CODE ?: defaultConfig.versionCode + 2
                 ndk {
                     abiFilters "armeabi-v7a", ""
                 }
             }
             x86 {
-                versionCode defaultConfig.versionCode + 4
+                versionCode System.env.ANDROID_VERSION_CODE ?: defaultConfig.versionCode + 4
                 ndk {
                     abiFilters "x86", ""
                 }
@@ -99,8 +102,16 @@ android {
                 }
             }
         }
-    } else if (getIntFromManifest("minSdkVersion") >= 20) {
+    } else if (!System.env.ANDROID_VERSION_CODE) {
+      def minSdkVersion = Integer.parseInt(System.env.ANDROID_MIN_SDK_VERSION ?: "" + getIntFromManifest("minSdkVersion"))
+      // Vary versionCode by the two most common API levels:
+      // 14 is ICS, which is the lowest API level for many apps.
+      // 20 is Lollipop, which is the lowest API level for the updatable system webview.
+      if (minSdkVersion >= 20) {
         defaultConfig.versionCode += 9
+      } else if (minSdkVersion >= 14) {
+        defaultConfig.versionCode += 8
+      }
     }
 
     compileOptions {
