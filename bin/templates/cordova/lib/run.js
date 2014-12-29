@@ -23,11 +23,12 @@ var path  = require('path'),
     build = require('./build'),
     emulator = require('./emulator'),
     device   = require('./device'),
+    shell = require('shelljs'),
     Q = require('q');
 
 /*
  * Runs the application on a device if available.
- * If not device is found, it will use a started emulator.
+ * If no device is found, it will use a started emulator.
  * If no started emulators are found it will attempt to start an avd.
  * If no avds are found it will error out.
  * Returns a promise.
@@ -35,6 +36,7 @@ var path  = require('path'),
  module.exports.run = function(args) {
     var buildFlags = [];
     var install_target;
+    var list = false;
 
     for (var i=2; i<args.length; i++) {
         if (args[i] == '--debug') {
@@ -49,10 +51,39 @@ var path  = require('path'),
             install_target = '--emulator';
         } else if (args[i].substring(0, 9) == '--target=') {
             install_target = args[i].substring(9, args[i].length);
+        } else if (args[i] == '--list') {
+            list = true;
         } else {
             console.error('ERROR : Run option \'' + args[i] + '\' not recognized.');
             process.exit(2);
         }
+    }
+
+    if (list) {
+        var output = '';
+        var temp = '';
+        if (!install_target) {
+            output += 'Available Android Devices:\n';
+            temp = shell.exec(path.join(__dirname, 'list-devices'), {silent:true}).output;
+            temp = temp.replace(/^(?=[^\s])/gm, '\t');
+            output += temp;
+            output += 'Available Android Virtual Devices:\n';
+            temp = shell.exec(path.join(__dirname, 'list-emulator-images'), {silent:true}).output;
+            temp = temp.replace(/^(?=[^\s])/gm, '\t');
+            output += temp;
+        } else if (install_target == '--emulator') {
+            output += 'Available Android Virtual Devices:\n';
+            temp = shell.exec(path.join(__dirname, 'list-emulator-images'), {silent:true}).output;
+            temp = temp.replace(/^(?=[^\s])/gm, '\t');
+            output += temp;
+        } else if (install_target == '--device') {
+            output += 'Available Android Devices:\n';
+            temp = shell.exec(path.join(__dirname, 'list-devices'), {silent:true}).output;
+            temp = temp.replace(/^(?=[^\s])/gm, '\t');
+            output += temp;
+        }
+        console.log(output);
+        return;
     }
 
     return Q()
