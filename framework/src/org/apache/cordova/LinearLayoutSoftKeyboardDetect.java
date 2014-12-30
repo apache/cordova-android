@@ -35,11 +35,14 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
     private int oldWidth = 0; // Need to save old width for orientation change
     private int screenWidth = 0;
     private int screenHeight = 0;
+    private CordovaActivity app = null;
+    private App appPlugin = null;
 
     public LinearLayoutSoftKeyboardDetect(Context context, int width, int height) {
         super(context);
         screenWidth = width;
         screenHeight = height;
+        app = (CordovaActivity) context;
     }
 
     @Override
@@ -85,12 +88,12 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         // If the height as gotten bigger then we will assume the soft keyboard has
         // gone away.
         else if (height > oldHeight) {
-            App.fireJavascriptEvent("hidekeyboard");
+            getAppPlugin().fireJavascriptEvent("hidekeyboard");
         }
         // If the height as gotten smaller then we will assume the soft keyboard has
         // been displayed.
         else if (height < oldHeight) {
-            App.fireJavascriptEvent("showkeyboard");
+            getAppPlugin().fireJavascriptEvent("showkeyboard");
         }
 
         // Update the old height for the next event
@@ -98,4 +101,11 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         oldWidth = width;
     }
 
+    private App getAppPlugin() {
+        if (appPlugin == null) {
+            appPlugin = (App)app.appView.pluginManager.getPlugin(App.APP_PLUGIN_CLASS);
+        }
+
+        return appPlugin;
+    }
 }

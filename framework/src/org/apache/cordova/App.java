@@ -41,6 +41,7 @@ import java.util.HashMap;
  */
 public class App extends CordovaPlugin {
 
+    public static final String APP_PLUGIN_CLASS = "org.apache.cordova.App";
     protected static final String TAG = "CordovaApp";
     private static App pluginInstance;
     private BroadcastReceiver telephonyReceiver;
