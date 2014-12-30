@@ -18,10 +18,7 @@
 */
 package org.apache.cordova;
 
-import org.apache.cordova.LOG;
-
 import android.content.Context;
-//import android.view.View.MeasureSpec;
 import android.widget.LinearLayout;
 
 /**
@@ -88,12 +85,12 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         // If the height as gotten bigger then we will assume the soft keyboard has
         // gone away.
         else if (height > oldHeight) {
-            getAppPlugin().fireJavascriptEvent("hidekeyboard");
+            sendEvent("hidekeyboard");
         }
         // If the height as gotten smaller then we will assume the soft keyboard has
         // been displayed.
         else if (height < oldHeight) {
-            getAppPlugin().fireJavascriptEvent("showkeyboard");
+            sendEvent("showkeyboard");
         }
 
         // Update the old height for the next event
@@ -101,11 +98,15 @@ public class LinearLayoutSoftKeyboardDetect extends LinearLayout {
         oldWidth = width;
     }
 
-    private App getAppPlugin() {
+    private void sendEvent(String event) {
         if (appPlugin == null) {
-            appPlugin = (App)app.appView.pluginManager.getPlugin(App.APP_PLUGIN_CLASS);
+            appPlugin = (App)app.appView.pluginManager.getPlugin(App.APP_PLUGIN_NAME);
         }
 
-        return appPlugin;
+        if (appPlugin == null) {
+            LOG.w(TAG, "Unable to fire event without existing plugin");
+            return;
+        }
+        appPlugin.fireJavascriptEvent(event);
     }
 }

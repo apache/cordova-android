@@ -41,9 +41,8 @@ import java.util.HashMap;
  */
 public class App extends CordovaPlugin {
 
-    public static final String APP_PLUGIN_CLASS = "org.apache.cordova.App";
+    public static final String APP_PLUGIN_NAME = "App";
     protected static final String TAG = "CordovaApp";
-    private static App pluginInstance;
     private BroadcastReceiver telephonyReceiver;
     private CallbackContext messageChannel;
 
@@ -52,12 +51,8 @@ public class App extends CordovaPlugin {
      *
      * @param action The name of the event to be fired
      */
-    public static void fireJavascriptEvent(String action) {
-        if (pluginInstance != null && pluginInstance.messageChannel != null) {
-            pluginInstance.sendEventMessage(action);
-        } else {
-            LOG.w(TAG, "Unable to fire event without existing plugin and message channel");
-        }
+    public void fireJavascriptEvent(String action) {
+        sendEventMessage(action);
     }
 
     /**
@@ -66,7 +61,6 @@ public class App extends CordovaPlugin {
      */
     @Override
     public void pluginInitialize() {
-        pluginInstance = this;
         this.initTelephonyReceiver();
     }
 
