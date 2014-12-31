@@ -125,7 +125,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
         bridge = new CordovaBridge(pluginManager, new NativeToJsMessageQueue(this, cordova), this.cordova.getActivity().getPackageName());
         initWebViewSettings();
-        pluginManager.addService("App", "org.apache.cordova.CoreAndroid");
+        pluginManager.addService(CoreAndroid.PLUGIN_NAME, "org.apache.cordova.CoreAndroid");
         pluginManager.init();
         
         if (this.viewClient == null) {
