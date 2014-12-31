@@ -227,7 +227,9 @@ var builders = {
                 var pluginBuildGradle = path.join(projectPath, 'cordova', 'lib', 'plugin-build.gradle');
                 var subProjects = extractSubProjectPaths();
                 for (var i = 0; i < subProjects.length; ++i) {
-                    shell.cp('-f', pluginBuildGradle, path.join(ROOT, subProjects[i], 'build.gradle'));
+                    if (subProjects[i] !== 'CordovaLib') {
+                        shell.cp('-f', pluginBuildGradle, path.join(ROOT, subProjects[i], 'build.gradle'));
+                    }
                 }
 
                 var subProjectsAsGradlePaths = subProjects.map(function(p) { return ':' + p.replace(/[/\\]/g, ':') });
