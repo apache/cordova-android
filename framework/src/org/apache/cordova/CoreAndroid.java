@@ -315,7 +315,9 @@ public class CoreAndroid extends CordovaPlugin {
         }
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, obj);
         pluginResult.setKeepCallback(true);
-        messageChannel.sendPluginResult(pluginResult);
+        if (messageChannel != null) {
+            messageChannel.sendPluginResult(pluginResult);
+        }
     }
 
     /*
