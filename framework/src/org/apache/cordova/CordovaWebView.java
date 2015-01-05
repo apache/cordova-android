@@ -94,6 +94,7 @@ public class CordovaWebView extends WebView {
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
     private CordovaPreferences preferences;
+    private App appPlugin;
 
     class ActivityResult {
         
@@ -626,13 +627,13 @@ public class CordovaWebView extends WebView {
         if(boundKeyCodes.contains(keyCode))
         {
             if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                    this.loadUrl("javascript:cordova.fireDocumentEvent('volumedownbutton');");
-                    return true;
+                sendJavascriptEvent("volumedownbutton");
+                return true;
             }
             // If volumeup key
             else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-                    this.loadUrl("javascript:cordova.fireDocumentEvent('volumeupbutton');");
-                    return true;
+                sendJavascriptEvent("volumeupbutton");
+                return true;
             }
             else
             {
@@ -674,7 +675,7 @@ public class CordovaWebView extends WebView {
                 // The webview is currently displayed
                 // If back key is bound, then send event to JavaScript
                 if (isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK)) {
-                    this.loadUrl("javascript:cordova.fireDocumentEvent('backbutton');");
+                    sendJavascriptEvent("backbutton");
                     return true;
                 } else {
                     // If not bound
@@ -689,19 +690,31 @@ public class CordovaWebView extends WebView {
         // Legacy
         else if (keyCode == KeyEvent.KEYCODE_MENU) {
             if (this.lastMenuEventTime < event.getEventTime()) {
-                this.loadUrl("javascript:cordova.fireDocumentEvent('menubutton');");
+                sendJavascriptEvent("menubutton");
             }
             this.lastMenuEventTime = event.getEventTime();
             return super.onKeyUp(keyCode, event);
         }
         // If search key
         else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-            this.loadUrl("javascript:cordova.fireDocumentEvent('searchbutton');");
+            sendJavascriptEvent("searchbutton");
             return true;
         }
 
         //Does webkit change this behavior?
         return super.onKeyUp(keyCode, event);
+    }
+
+    private void sendJavascriptEvent(String event) {
+        if (appPlugin == null) {
+            appPlugin = (App)this.pluginManager.getPlugin(App.PLUGIN_NAME);
+        }
+
+        if (appPlugin == null) {
+            LOG.w(TAG, "Unable to fire event without existing plugin");
+            return;
+        }
+        appPlugin.fireJavascriptEvent(event);
     }
 
     public void setButtonPlumbedToJs(int keyCode, boolean override) {
@@ -757,7 +770,7 @@ public class CordovaWebView extends WebView {
     {
         LOG.d(TAG, "Handle the pause");
         // Send pause event to JavaScript
-        this.loadUrl("javascript:try{cordova.fireDocumentEvent('pause');}catch(e){console.log('exception firing pause event from native');};");
+        sendJavascriptEvent("pause");
 
         // Forward to plugins
         if (this.pluginManager != null) {
@@ -775,9 +788,8 @@ public class CordovaWebView extends WebView {
     
     public void handleResume(boolean keepRunning, boolean activityResultKeepRunning)
     {
+        sendJavascriptEvent("resume");
 
-        this.loadUrl("javascript:try{cordova.fireDocumentEvent('resume');}catch(e){console.log('exception firing resume event from native');};");
-        
         // Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.onResume(keepRunning);
