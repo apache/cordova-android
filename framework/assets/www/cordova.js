@@ -1,5 +1,5 @@
 // Platform: android
-// 12489aed3d93ecc98adfc2091fe566067f2d39fc
+// 07125ef9d481fab81c2c29eafec253846f05a8ca
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -1555,12 +1555,27 @@ function onMessageFromNative(msg) {
 
     switch (action)
     {
+        // Button events
+        case 'backbutton':
+        case 'menubutton':
+        case 'searchbutton':
+        // App life cycle events
+        case 'pause':
+        case 'resume':
+        // Keyboard events
         case 'hidekeyboard':
         case 'showkeyboard':
-            cordova.fireDocumentEvent(action);
+        // Volume events
+        case 'volumedownbutton':
+        case 'volumeupbutton':
+            try {
+                cordova.fireDocumentEvent(action);
+            } catch(e) {
+                console.log('exception firing ' + action + ' event from native:' + e);
+            }
             break;
         default:
-            throw new Error('Unknown event action ' + msg.action);
+            throw new Error('Unknown event action ' + action);
     }
 }
 
