@@ -18,6 +18,8 @@
 */
 
 import java.util.regex.Pattern
+import groovy.swing.SwingBuilder
+
 
 String getProjectTarget(String defaultTarget) {
     def manifestFile = file("project.properties")
@@ -37,7 +39,7 @@ String[] getAvailableBuildTools() {
         .sort { a, b -> compareVersions(b, a) }
 }
 
-String latestBuildToolsAvailable(String minBuildToolsVersion) {
+String findLatestInstalledBuildTools(String minBuildToolsVersion) {
     def availableBuildToolsVersions
     try {
         availableBuildToolsVersions = getAvailableBuildTools()
@@ -115,6 +117,45 @@ String getAndroidSdkDir() {
     androidSdkDir
 }
 
-ext.cordovaSdkVersion =  System.env.MIN_SDK_VERSION ?: getProjectTarget("android-19")
-ext.cordovaBuildToolsVersion = latestBuildToolsAvailable("19.1.0")
+def extractIntFromManifest(name) {
+    def manifestFile = file(android.sourceSets.main.manifest.srcFile)
+    def pattern = Pattern.compile(name + "=\"(\\d+)\"")
+    def matcher = pattern.matcher(manifestFile.getText())
+    matcher.find()
+    return Integer.parseInt(matcher.group(1))
+}
+
+def promptForPassword(msg) {
+    if (System.console() == null) {
+        def ret = null
+        new SwingBuilder().edt {
+            dialog(modal: true, title: 'Enter password', alwaysOnTop: true, resizable: false, locationRelativeTo: null, pack: true, show: true) {
+                vbox {
+                    label(text: msg)
+                    def input = passwordField()
+                    button(defaultButton: true, text: 'OK', actionPerformed: {
+                        ret = input.password;
+                        dispose();
+                    })
+                }
+            }
+        }
+        if (!ret) {
+            throw new GradleException('User canceled build')
+        }
+        return new String(ret)
+    } else {
+        return System.console().readPassword('\n' + msg);
+    }
+}
+
+// Properties exported here are visible to all plugins.
+ext {
+    // These helpers are shared, but are not guaranteed to be stable / unchanged.
+    privateHelpers = {}
+    privateHelpers.getProjectTarget = { defaultValue -> getProjectTarget(defaultValue) }
+    privateHelpers.findLatestInstalledBuildTools = { defaultValue -> findLatestInstalledBuildTools(defaultValue) }
+    privateHelpers.extractIntFromManifest = { name -> extractIntFromManifest(name) }
+    privateHelpers.promptForPassword = { msg -> promptForPassword(msg) }
+}
 
