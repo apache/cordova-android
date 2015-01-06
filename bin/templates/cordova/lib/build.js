@@ -174,7 +174,7 @@ var builders = {
         }
     },
     gradle: {
-        getArgs: function(cmd, arch) {
+        getArgs: function(cmd, arch, extraArgs) {
             if (arch == 'arm' && cmd == 'debug') {
                 cmd = 'assembleArmv7Debug';
             } else if (arch == 'arm' && cmd == 'release') {
@@ -191,6 +191,7 @@ var builders = {
             var args = [cmd, '-b', path.join(ROOT, 'build.gradle')];
             // 10 seconds -> 6 seconds
             args.push('-Dorg.gradle.daemon=true');
+            args.push.apply(args, extraArgs);
             // Shaves another 100ms, but produces a "try at own risk" warning. Not worth it (yet):
             // args.push('-Dorg.gradle.parallel=true');
             return args;
@@ -254,20 +255,22 @@ var builders = {
          * Builds the project with gradle.
          * Returns a promise.
          */
-        build: function(build_type, arch) {
+        build: function(build_type, arch, extraArgs) {
             var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
-            var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release', arch);
+            var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release', arch, extraArgs);
             return Q().then(function() {
+                console.log('Running: ' + wrapper + ' ' + extraArgs.join(' '));
                 return spawn(wrapper, args);
             });
         },
 
-        clean: function() {
+        clean: function(extraArgs) {
             var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
-            var args = builder.getArgs('clean');
+            var args = builder.getArgs('clean', null, extraArgs);
             return Q().then(function() {
+                console.log('Running: ' + wrapper + ' ' + extraArgs.join(' '));
                 return spawn(wrapper, args);
             });
         },
@@ -302,7 +305,14 @@ function parseOpts(options, resolvedTarget) {
     var ret = {
         buildType: 'debug',
         buildMethod: process.env['ANDROID_BUILD'] || 'ant',
-        arch: null
+        arch: null,
+        extraArgs: []
+    };
+
+    var multiValueArgs = {
+      'versionCode': true,
+      'minSdkVersion': true,
+      'gradleArg': true
     };
 
     // Iterate through command line options
@@ -311,7 +321,7 @@ function parseOpts(options, resolvedTarget) {
             var keyValue = options[i].substring(2).split('=');
             var flagName = keyValue[0];
             var flagValue = keyValue[1];
-            if ((flagName == 'versionCode' || flagName == 'minSdkVersion') && !flagValue) {
+            if (multiValueArgs[flagName] && !flagValue) {
                 flagValue = options[i + 1];
                 ++i;
             }
@@ -333,10 +343,13 @@ function parseOpts(options, resolvedTarget) {
                     ret.buildMethod = 'none';
                     break;
                 case 'versionCode':
-                    process.env['ANDROID_VERSION_CODE'] = flagValue;
+                    ret.extraArgs.push('-PcdvVersionCode=' + flagValue);
                     break;
                 case 'minSdkVersion':
-                    process.env['ANDROID_MIN_SDK_VERSION'] = flagValue;
+                    ret.extraArgs.push('-PcdvMinSdkVersion=' + flagValue);
+                    break;
+                case 'gradleArg':
+                    ret.extraArgs.push(flagValue);
                     break;
                 default :
                     console.warn('Build option --\'' + flagName + '\' not recognized (ignoring).');
@@ -363,7 +376,7 @@ module.exports.runClean = function(options) {
     var builder = builders[opts.buildMethod];
     return builder.prepEnv()
     .then(function() {
-        return builder.clean();
+        return builder.clean(opts.extraArgs);
     }).then(function() {
         shell.rm('-rf', path.join(ROOT, 'out'));
     });
@@ -378,7 +391,7 @@ module.exports.run = function(options, optResolvedTarget) {
     var builder = builders[opts.buildMethod];
     return builder.prepEnv()
     .then(function() {
-        return builder.build(opts.buildType, opts.arch);
+        return builder.build(opts.buildType, opts.arch, opts.extraArgs);
     }).then(function() {
         var apkPaths = builder.findOutputApks(opts.buildType, opts.arch);
         console.log('Built the following apk(s):');
@@ -468,5 +481,6 @@ module.exports.help = function() {
     console.log('    \'--nobuild\': will skip build process (useful when using run command)');
     console.log('    \'--versionCode=#\': Override versionCode for this build. Useful for uploading multiple APKs. Requires --gradle.');
     console.log('    \'--minSdkVersion=#\': Override minSdkVersion for this build. Useful for uploading multiple APKs. Requires --gradle.');
+    console.log('    \'--gradleArg=<gradle command line arg>\': Extra args to pass to the gradle command. Use one flag per arg. Ex. --gradleArg=-PcdvBuildMultipleApks=true');
     process.exit(0);
 };
