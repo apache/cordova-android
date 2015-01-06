@@ -1,5 +1,5 @@
 // Platform: android
-// 07125ef9d481fab81c2c29eafec253846f05a8ca
+// 3b066a6856fd4d01806a332f2ab57eb7d340fe35
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '3.7.0-dev';
+var PLATFORM_VERSION_BUILD_LABEL = '4.0.x';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
@@ -1517,12 +1517,14 @@ module.exports = {
         // TODO: Extract this as a proper plugin.
         modulemapper.clobbers('cordova/plugin/android/app', 'navigator.app');
 
+        var APP_PLUGIN_NAME = Number(cordova.platformVersion.split('.')[0]) >= 4 ? 'CoreAndroid' : 'App';
+
         // Inject a listener for the backbutton on the document.
         var backButtonChannel = cordova.addDocumentEventHandler('backbutton');
         backButtonChannel.onHasSubscribersChange = function() {
             // If we just attached the first handler or detached the last handler,
             // let native know we need to override the back button.
-            exec(null, null, "App", "overrideBackbutton", [this.numHandlers == 1]);
+            exec(null, null, APP_PLUGIN_NAME, "overrideBackbutton", [this.numHandlers == 1]);
         };
 
         // Add hardware MENU and SEARCH button handlers
@@ -1533,7 +1535,7 @@ module.exports = {
             // generic button bind used for volumeup/volumedown buttons
             var volumeButtonChannel = cordova.addDocumentEventHandler(buttonName + 'button');
             volumeButtonChannel.onHasSubscribersChange = function() {
-                exec(null, null, "App", "overrideButton", [buttonName, this.numHandlers == 1]);
+                exec(null, null, APP_PLUGIN_NAME, "overrideButton", [buttonName, this.numHandlers == 1]);
             };
         }
         // Inject a listener for the volume buttons on the document.
@@ -1543,8 +1545,8 @@ module.exports = {
         // Let native code know we are all done on the JS side.
         // Native code will then un-hide the WebView.
         channel.onCordovaReady.subscribe(function() {
-            exec(onMessageFromNative, null, 'App', 'messageChannel', []);
-            exec(null, null, "App", "show", []);
+            exec(onMessageFromNative, null, APP_PLUGIN_NAME, 'messageChannel', []);
+            exec(null, null, APP_PLUGIN_NAME, "show", []);
         });
     }
 };
@@ -1568,11 +1570,7 @@ function onMessageFromNative(msg) {
         // Volume events
         case 'volumedownbutton':
         case 'volumeupbutton':
-            try {
-                cordova.fireDocumentEvent(action);
-            } catch(e) {
-                console.log('exception firing ' + action + ' event from native:' + e);
-            }
+            cordova.fireDocumentEvent(action);
             break;
         default:
             throw new Error('Unknown event action ' + action);
