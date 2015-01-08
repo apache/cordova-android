@@ -19,11 +19,6 @@
 
 // GENERATED FILE! DO NOT EDIT!
 
-import java.util.regex.Pattern
-import groovy.swing.SwingBuilder
-
-ext.cordova = {}
-apply from: 'cordova.gradle', to: ext.cordova
 apply plugin: 'android'
 
 buildscript {
@@ -59,7 +54,44 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.2.1'
 }
 
-ext.multiarch=false
+// Configuration properties. Set these via environment variables, build-extras.gradle, or gradle.properties.
+// Refer to: http://www.gradle.org/docs/current/userguide/tutorial_this_and_that.html
+ext {
+    apply from: 'cordova.gradle'
+    // The value for android.compileSdkVersion.
+    if (!project.hasProperty('cdvCompileSdkVersion')) {
+        cdvCompileSdkVersion = privateHelpers.getProjectTarget('android-19')
+    }
+    // The value for android.buildToolsVersion.
+    if (!project.hasProperty('cdvBuildToolsVersion')) {
+        cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools('19.1.0')
+    }
+    // Sets the versionCode to the given value.
+    if (!project.hasProperty('cdvVersionCode')) {
+        cdvVersionCode = null
+    }
+    // Sets the minSdkVersion to the given value.
+    if (!project.hasProperty('cdvMinSdkVersion')) {
+        cdvMinSdkVersion = null
+    }
+    // Whether to build architecture-specific APKs.
+    if (!project.hasProperty('cdvBuildMultipleApks')) {
+        cdvBuildMultipleApks = false
+    }
+    // .properties files to use for release signing.
+    if (!project.hasProperty('cdvReleaseSigningPropertiesFile')) {
+        cdvReleaseSigningPropertiesFile = null
+    }
+    // .properties files to use for debug signing.
+    if (!project.hasProperty('cdvDebugSigningPropertiesFile')) {
+        cdvDebugSigningPropertiesFile = null
+    }
+}
+
+def hasBuildExtras = file('build-extras.gradle').exists()
+if (hasBuildExtras) {
+    apply from: 'build-extras.gradle'
+}
 
 // PLUGIN GRADLE EXTENSIONS START
 // PLUGIN GRADLE EXTENSIONS END
@@ -77,26 +109,29 @@ android {
         }
     }
 
+    def versionCodeOverride = cdvVersionCode ? Integer.parseInt(cdvVersionCode) : null
+    def minSdkVersionOverride = cdvMinSdkVersion ? Integer.parseInt(cdvMinSdkVersion) : null
+
     defaultConfig {
-        versionCode Integer.parseInt(System.env.ANDROID_VERSION_CODE ?: ("" + getIntFromManifest("versionCode") + "0"))
-        if (System.env.ANDROID_MIN_SDK_VERSION) {
-            minSdkVersion Integer.parseInt(System.env.ANDROID_MIN_SDK_VERSION)
+        versionCode versionCodeOverride ?: Integer.parseInt("" + privateHelpers.extractIntFromManifest("versionCode") + "0")
+        if (minSdkVersionOverride != null) {
+            minSdkVersion minSdkVersionOverride
         }
     }
 
-    compileSdkVersion cordova.cordovaSdkVersion
-    buildToolsVersion cordova.cordovaBuildToolsVersion
+    compileSdkVersion cdvCompileSdkVersion
+    buildToolsVersion cdvBuildToolsVersion
 
-    if (multiarch || System.env.BUILD_MULTIPLE_APKS) {
+    if (Boolean.valueOf(cdvBuildMultipleApks)) {
         productFlavors {
             armv7 {
-                versionCode System.env.ANDROID_VERSION_CODE ?: defaultConfig.versionCode + 2
+                versionCode versionCodeOverride ?: defaultConfig.versionCode + 2
                 ndk {
                     abiFilters "armeabi-v7a", ""
                 }
             }
             x86 {
-                versionCode System.env.ANDROID_VERSION_CODE ?: defaultConfig.versionCode + 4
+                versionCode versionCodeOverride ?: defaultConfig.versionCode + 4
                 ndk {
                     abiFilters "x86", ""
                 }
@@ -107,8 +142,8 @@ android {
                 }
             }
         }
-    } else if (!System.env.ANDROID_VERSION_CODE) {
-      def minSdkVersion = Integer.parseInt(System.env.ANDROID_MIN_SDK_VERSION ?: "" + getIntFromManifest("minSdkVersion"))
+    } else if (!versionCodeOverride) {
+      def minSdkVersion = minSdkVersionOverride ?: privateHelpers.extractIntFromManifest("minSdkVersion")
       // Vary versionCode by the two most common API levels:
       // 14 is ICS, which is the lowest API level for many apps.
       // 20 is Lollipop, which is the lowest API level for the updatable system webview.
@@ -124,7 +159,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_6
     }
 
-    if (System.env.RELEASE_SIGNING_PROPERTIES_FILE) {
+    if (cdvReleaseSigningPropertiesFile) {
         signingConfigs {
             release {
                 // These must be set or Gradle will complain (even if they are overridden).
@@ -139,10 +174,10 @@ android {
                 signingConfig signingConfigs.release
             }
         }
-        addSigningProps(System.env.RELEASE_SIGNING_PROPERTIES_FILE, signingConfigs.release)
+        addSigningProps(cdvReleaseSigningPropertiesFile, signingConfigs.release)
     }
-    if (System.env.DEBUG_SIGNING_PROPERTIES_FILE) {
-        addSigningProps(System.env.DEBUG_SIGNING_PROPERTIES_FILE, signingConfigs.debug)
+    if (cdvDebugSigningPropertiesFile) {
+        addSigningProps(cdvDebugSigningPropertiesFile, signingConfigs.debug)
     }
 }
 
@@ -152,40 +187,15 @@ dependencies {
     // SUB-PROJECT DEPENDENCIES END
 }
 
-
-def promptForPassword(msg) {
-    if (System.console() == null) {
-        def ret = null
-        new SwingBuilder().edt {
-            dialog(modal: true, title: 'Enter password', alwaysOnTop: true, resizable: false, locationRelativeTo: null, pack: true, show: true) {
-                vbox {
-                    label(text: msg)
-                    def input = passwordField()
-                    button(defaultButton: true, text: 'OK', actionPerformed: {
-                        ret = input.password;
-                        dispose();
-                    })
-                }
-            }
-        }
-        if (!ret) {
-            throw new GradleException('User canceled build')
-        }
-        return new String(ret)
-    } else {
-        return System.console().readPassword('\n' + msg);
-    }
-}
-
 def promptForReleaseKeyPassword() {
-    if (!System.env.RELEASE_SIGNING_PROPERTIES_FILE) {
+    if (!cdvReleaseSigningPropertiesFile) {
         return;
     }
     if ('__unset'.equals(android.signingConfigs.release.storePassword)) {
-        android.signingConfigs.release.storePassword = promptForPassword('Enter key store password: ')
+        android.signingConfigs.release.storePassword = privateHelpers.promptForPassword('Enter key store password: ')
     }
     if ('__unset'.equals(android.signingConfigs.release.keyPassword)) {
-        android.signingConfigs.release.keyPassword = promptForPassword('Enter key password: ');
+        android.signingConfigs.release.keyPassword = privateHelpers.promptForPassword('Enter key password: ');
     }
 }
 
@@ -195,14 +205,6 @@ gradle.taskGraph.whenReady { taskGraph ->
             promptForReleaseKeyPassword()
         }
     }
-}
-
-def getIntFromManifest(name) {
-    def manifestFile = file(android.sourceSets.main.manifest.srcFile)
-    def pattern = Pattern.compile(name + "=\"(\\d+)\"")
-    def matcher = pattern.matcher(manifestFile.getText())
-    matcher.find()
-    return Integer.parseInt(matcher.group(1))
 }
 
 def ensureValueExists(filePath, props, key) {
@@ -241,6 +243,8 @@ def addSigningProps(propsFilePath, signingConfig) {
     }
 }
 
-if (file('build-extras.gradle').exists()) {
-    apply from: 'build-extras.gradle'
+// This can be defined within build-extras.gradle as:
+//     ext.postBuildExtras = { ... code here ... }
+if (hasProperty('postBuildExtras')) {
+    postBuildExtras()
 }

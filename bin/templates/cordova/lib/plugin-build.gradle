@@ -51,8 +51,8 @@ dependencies {
 }
 
 android {
-    compileSdkVersion cordova.cordovaSdkVersion
-    buildToolsVersion cordova.cordovaBuildToolsVersion
+    compileSdkVersion cdvCompileSdkVersion
+    buildToolsVersion cdvBuildToolsVersion
     publishNonDefault true
 
     compileOptions {

@@ -39,23 +39,18 @@ var path  = require('path'),
     var list = false;
 
     for (var i=2; i<args.length; i++) {
-        if (args[i] == '--debug') {
-            buildFlags.push('--debug');
-        } else if (args[i] == '--release') {
-            buildFlags.push('--release');
-        } else if (args[i] == '--nobuild') {
-            buildFlags.push('--nobuild');
+        if (/^--(debug|release|nobuild|versionCode=|minSdkVersion=|gradleArg=)/.exec(args[i])) {
+            buildFlags.push(args[i]);
         } else if (args[i] == '--device') {
             install_target = '--device';
         } else if (args[i] == '--emulator') {
             install_target = '--emulator';
-        } else if (args[i].substring(0, 9) == '--target=') {
+        } else if (/^--target=/.exec(args[i])) {
             install_target = args[i].substring(9, args[i].length);
         } else if (args[i] == '--list') {
             list = true;
         } else {
-            console.error('ERROR : Run option \'' + args[i] + '\' not recognized.');
-            process.exit(2);
+            console.warn('Option \'' + options[i] + '\' not recognized (ignoring).');
         }
     }
 
