@@ -175,7 +175,6 @@ var builders = {
     },
     gradle: {
         getArgs: function(cmd, arch, extraArgs) {
-            extraArgs = extraArgs || [];
             if (arch == 'arm' && cmd == 'debug') {
                 cmd = 'assembleArmv7Debug';
             } else if (arch == 'arm' && cmd == 'release') {
@@ -305,7 +304,7 @@ function parseOpts(options, resolvedTarget) {
 
     var ret = {
         buildType: 'debug',
-        buildMethod: process.env['ANDROID_BUILD'] || 'gradle',
+        buildMethod: process.env['ANDROID_BUILD'] || 'ant',
         arch: null,
         extraArgs: []
     };
@@ -482,6 +481,6 @@ module.exports.help = function() {
     console.log('    \'--nobuild\': will skip build process (useful when using run command)');
     console.log('    \'--versionCode=#\': Override versionCode for this build. Useful for uploading multiple APKs. Requires --gradle.');
     console.log('    \'--minSdkVersion=#\': Override minSdkVersion for this build. Useful for uploading multiple APKs. Requires --gradle.');
-    console.log('    \'--gradleArg=-PcdvVersionCode=1\': Extra args to pass to the gradle command. Use one flag per arg.');
+    console.log('    \'--gradleArg=<gradle command line arg>\': Extra args to pass to the gradle command. Use one flag per arg. Ex. --gradleArg=-PcdvBuildMultipleApks=true');
     process.exit(0);
 };
