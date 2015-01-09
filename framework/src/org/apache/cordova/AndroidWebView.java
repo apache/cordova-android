@@ -49,6 +49,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebViewClient;
+import android.webkit.CookieManager;
 import android.widget.FrameLayout;
 
 
@@ -134,6 +135,13 @@ public class AndroidWebView extends WebView implements CordovaWebView {
                 new AndroidWebViewClient(cordova, this) :
                 new IceCreamCordovaWebViewClient(cordova, this));
         }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.setAcceptThirdPartyCookies(this, true);
+        }
+
         if (this.chromeClient == null) {
             setWebChromeClient(new AndroidChromeClient(cordova, this));
         }
