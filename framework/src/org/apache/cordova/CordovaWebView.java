@@ -50,6 +50,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebViewClient;
+import android.webkit.CookieManager;
 import android.widget.FrameLayout;
 
 /*
@@ -191,7 +192,14 @@ public class CordovaWebView extends WebView {
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
-        
+
+        // Enable third-party cookies if on Lolipop. TODO: Make this configurable
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.setAcceptThirdPartyCookies(this, true);
+        }
+
         // Set the nav dump for HTC 2.x devices (disabling for ICS, deprecated entirely for Jellybean 4.2)
         try {
             Method gingerbread_getMethod =  WebSettings.class.getMethod("setNavDump", new Class[] { boolean.class });
