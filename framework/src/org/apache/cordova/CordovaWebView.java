@@ -813,9 +813,6 @@ public class CordovaWebView extends WebView {
         // Cancel pending timeout timer.
         loadUrlTimeout++;
 
-        // Send destroy event to JavaScript
-        this.loadUrl("javascript:try{cordova.require('cordova/channel').onDestroy.fire();}catch(e){console.log('exception firing destroy event from native');};");
-
         // Load blank page so that JavaScript onunload is called
         this.loadUrl("about:blank");
         

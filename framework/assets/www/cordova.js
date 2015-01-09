@@ -1,5 +1,5 @@
 // Platform: android
-// 07125ef9d481fab81c2c29eafec253846f05a8ca
+// ee7b91f28e3780afb44222a2d950ccc1bebd0b87
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -284,10 +284,16 @@ var cordova = {
             if (callback) {
                 if (isSuccess && status == cordova.callbackStatus.OK) {
                     callback.success && callback.success.apply(null, args);
-                } else {
+                } else if (!isSuccess) {
                     callback.fail && callback.fail.apply(null, args);
                 }
-
+                /*
+                else
+                    Note, this case is intentionally not caught.
+                    this can happen if isSuccess is true, but callbackStatus is NO_RESULT
+                    which is used to remove a callback from the list without calling the callbacks
+                    typically keepCallback is false in this case
+                */
                 // Clear callback if not expecting any more results
                 if (!keepCallback) {
                     delete cordova.callbacks[callbackId];
@@ -631,7 +637,6 @@ var utils = require('cordova/utils'),
  * onDeviceReady*              User event fired to indicate that Cordova is ready
  * onResume                    User event fired to indicate a start/resume lifecycle event
  * onPause                     User event fired to indicate a pause lifecycle event
- * onDestroy*                  Internal event fired when app is being destroyed (User should use window.onunload event, not this one).
  *
  * The events marked with an * are sticky. Once they have fired, they will stay in the fired state.
  * All listeners that subscribe after the event is fired will be executed right away.
@@ -842,9 +847,6 @@ channel.create('onResume');
 
 // Event to indicate a pause lifecycle event
 channel.create('onPause');
-
-// Event to indicate a destroy lifecycle event
-channel.createSticky('onDestroy');
 
 // Channels that must fire before "deviceready" is fired.
 channel.waitForInitialization('onCordovaReady');
@@ -1517,12 +1519,14 @@ module.exports = {
         // TODO: Extract this as a proper plugin.
         modulemapper.clobbers('cordova/plugin/android/app', 'navigator.app');
 
+        var APP_PLUGIN_NAME = Number(cordova.platformVersion.split('.')[0]) >= 4 ? 'CoreAndroid' : 'App';
+
         // Inject a listener for the backbutton on the document.
         var backButtonChannel = cordova.addDocumentEventHandler('backbutton');
         backButtonChannel.onHasSubscribersChange = function() {
             // If we just attached the first handler or detached the last handler,
             // let native know we need to override the back button.
-            exec(null, null, "App", "overrideBackbutton", [this.numHandlers == 1]);
+            exec(null, null, APP_PLUGIN_NAME, "overrideBackbutton", [this.numHandlers == 1]);
         };
 
         // Add hardware MENU and SEARCH button handlers
@@ -1533,7 +1537,7 @@ module.exports = {
             // generic button bind used for volumeup/volumedown buttons
             var volumeButtonChannel = cordova.addDocumentEventHandler(buttonName + 'button');
             volumeButtonChannel.onHasSubscribersChange = function() {
-                exec(null, null, "App", "overrideButton", [buttonName, this.numHandlers == 1]);
+                exec(null, null, APP_PLUGIN_NAME, "overrideButton", [buttonName, this.numHandlers == 1]);
             };
         }
         // Inject a listener for the volume buttons on the document.
@@ -1543,8 +1547,8 @@ module.exports = {
         // Let native code know we are all done on the JS side.
         // Native code will then un-hide the WebView.
         channel.onCordovaReady.subscribe(function() {
-            exec(onMessageFromNative, null, 'App', 'messageChannel', []);
-            exec(null, null, "App", "show", []);
+            exec(onMessageFromNative, null, APP_PLUGIN_NAME, 'messageChannel', []);
+            exec(null, null, APP_PLUGIN_NAME, "show", []);
         });
     }
 };
@@ -1568,11 +1572,7 @@ function onMessageFromNative(msg) {
         // Volume events
         case 'volumedownbutton':
         case 'volumeupbutton':
-            try {
-                cordova.fireDocumentEvent(action);
-            } catch(e) {
-                console.log('exception firing ' + action + ' event from native:' + e);
-            }
+            cordova.fireDocumentEvent(action);
             break;
         default:
             throw new Error('Unknown event action ' + action);
