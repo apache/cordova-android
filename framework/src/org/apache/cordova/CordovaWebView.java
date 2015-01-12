@@ -62,7 +62,7 @@ import android.widget.FrameLayout;
 public class CordovaWebView extends WebView {
 
     public static final String TAG = "CordovaWebView";
-    public static final String CORDOVA_VERSION = "3.7.0-dev";
+    public static final String CORDOVA_VERSION = "3.8.0-dev";
 
     private HashSet<Integer> boundKeyCodes = new HashSet<Integer>();
 
