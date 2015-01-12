@@ -1,5 +1,5 @@
 // Platform: android
-// ee7b91f28e3780afb44222a2d950ccc1bebd0b87
+// 24ab6855470f2dc0662624b597c98585e56a1666
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '3.7.0-dev';
+var PLATFORM_VERSION_BUILD_LABEL = '3.8.0-dev';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
