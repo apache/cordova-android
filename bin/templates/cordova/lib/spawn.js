@@ -26,13 +26,15 @@ var isWindows = process.platform.slice(0, 3) == 'win';
 // Takes a command and optional current working directory.
 module.exports = function(cmd, args, opt_cwd) {
     var d = Q.defer();
+    var opts = { cwd: opt_cwd, stdio: 'inherit' };
     try {
         // Work around spawn not being able to find .bat files.
         if (isWindows) {
-          args.unshift('/s', '/c', cmd);
-          cmd = 'cmd';
+            args = [['/s', '/c', '"' + [cmd].concat(args).map(function(a){if (/^[^"].* .*[^"]/.test(a)) return '"' + a + '"'; return a;}).join(' ')+'"'].join(' ')];
+            cmd = 'cmd';
+            opts.windowsVerbatimArguments = true;
         }
-        var child = child_process.spawn(cmd, args, {cwd: opt_cwd, stdio: 'inherit'});
+        var child = child_process.spawn(cmd, args, opts);
         child.on('exit', function(code) {
             if (code) {
                 d.reject('Error code ' + code + ' for command: ' + cmd + ' with args: ' + args);
@@ -45,5 +47,4 @@ module.exports = function(cmd, args, opt_cwd) {
         d.reject(e);
     }
     return d.promise;
-}
-
+};
