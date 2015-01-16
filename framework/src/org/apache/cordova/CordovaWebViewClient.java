@@ -115,15 +115,22 @@ public class CordovaWebViewClient extends WebViewClient {
     @Override
     public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
 
-        // Get the authentication token
+        // Get the authentication token (if specified)
         AuthenticationToken token = this.getAuthenticationToken(host, realm);
         if (token != null) {
             handler.proceed(token.getUserName(), token.getPassword());
+            return;
         }
-        else {
-            // Handle 401 like we'd normally do!
-            super.onReceivedHttpAuthRequest(view, handler, host, realm);
+
+        // Check if there is some plugin which can resolve this auth challenge
+        PluginManager pluginManager = this.appView.pluginManager;
+        if (pluginManager != null && pluginManager.onReceivedHttpAuthRequest(this.appView, new CordovaHttpAuthHandler(handler), host, realm)) {
+            this.appView.loadUrlTimeout++;
+            return;
         }
+
+        // By default handle 401 like we'd normally do!
+        super.onReceivedHttpAuthRequest(view, handler, host, realm);
     }
 
     /**
