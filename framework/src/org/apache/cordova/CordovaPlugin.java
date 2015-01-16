@@ -198,4 +198,20 @@ public class CordovaPlugin {
      */
     public void onReset() {
     }
+    
+    /**
+     * Called when the system received an HTTP authentication request. Plugin can use
+     * the supplied HttpAuthHandler to process this auth challenge.
+     *
+     * @param view              The WebView that is initiating the callback
+     * @param handler           The HttpAuthHandler used to set the WebView's response
+     * @param host              The host requiring authentication
+     * @param realm             The realm for which authentication is required
+     * 
+     * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
+     * 
+     */
+    public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
+        return false;
+    }
 }
