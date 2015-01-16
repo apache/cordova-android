@@ -262,6 +262,25 @@ public class PluginManager {
         }
         return false;
     }
+    
+    /**
+     * Called when he system received an SSL client certificate request.  Plugin can use
+     * the supplied ClientCertRequest to process this certificate challenge.
+     *
+     * @param view              The WebView that is initiating the callback
+     * @param request           The client certificate request
+     *
+     * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
+     *
+     */
+    public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            if (plugin != null && plugin.onReceivedClientCertRequest(view, request)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Called when the activity will start interacting with the user.
