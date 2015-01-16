@@ -171,8 +171,13 @@ public class CordovaWebViewClient extends WebViewClient {
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
         // Ignore excessive calls.
-        if (!isCurrentlyLoading) {
-            return;
+        //     On KitKat, loading about:blank does not invoke WebViewClient#onPageStarted
+        //     So do not check isCurrentLoading if app is running on KitKat
+        //         https://code.google.com/p/android/issues/detail?id=65701
+        if (android.os.Build.VERSION.SDK_INT != android.os.Build.VERSION_CODES.KITKAT){
+            if (!isCurrentlyLoading) {
+                return;
+            }
         }
         isCurrentlyLoading = false;
         LOG.d(TAG, "onPageFinished(" + url + ")");
