@@ -210,6 +210,27 @@ public class PluginManager {
     }
 
     /**
+     * Called when the system received an HTTP authentication request. Plugins can use
+     * the supplied HttpAuthHandler to process this auth challenge.
+     *
+     * @param view              The WebView that is initiating the callback
+     * @param handler           The HttpAuthHandler used to set the WebView's response
+     * @param host              The host requiring authentication
+     * @param realm             The realm for which authentication is required
+     * 
+     * @return                  Returns True if there is a plugin which will resolve this auth challenge, otherwise False
+     * 
+     */
+    public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            if (plugin != null && plugin.onReceivedHttpAuthRequest(view, handler, host, realm)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Called when the activity will start interacting with the user.
      *
      * @param multitasking      Flag indicating if multitasking is turned on for app

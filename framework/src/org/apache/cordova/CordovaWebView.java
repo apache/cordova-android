@@ -84,8 +84,6 @@ public interface CordovaWebView {
     Whitelist getWhitelist();
     Whitelist getExternalWhitelist();
     CordovaPreferences getPreferences();
-    
-    void onFilePickerResult(Uri uri);
 
     void setNetworkAvailable(boolean online);
     

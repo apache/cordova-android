@@ -799,14 +799,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     }
 
     @Override
-    public void onFilePickerResult(Uri uri) {
-        if (null == chromeClient.mUploadMessage)
-            return;
-        chromeClient.mUploadMessage.onReceiveValue(uri);
-        chromeClient.mUploadMessage = null;
-    }
-    
-    @Override
     public Object postMessage(String id, Object data) {
         return pluginManager.postMessage(id, data);
     }
