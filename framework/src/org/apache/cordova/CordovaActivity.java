@@ -36,7 +36,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -48,7 +47,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.ValueCallback;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
@@ -697,23 +695,12 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param requestCode       The request code originally supplied to startActivityForResult(),
      *                          allowing you to identify who this result came from.
      * @param resultCode        The integer result code returned by the child activity through its setResult().
-     * @param data              An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        LOG.d(TAG, "Incoming Result");
+        LOG.d(TAG, "Incoming Result. Request code = " + requestCode);
         super.onActivityResult(requestCode, resultCode, intent);
-        Log.d(TAG, "Request code = " + requestCode);
-        if (appView != null && requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
-        	ValueCallback<Uri> mUploadMessage = this.appView.getWebChromeClient().getValueCallback();
-            Log.d(TAG, "did we get here?");
-            if (null == mUploadMessage)
-                return;
-            Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
-            Log.d(TAG, "result = " + result);
-            mUploadMessage.onReceiveValue(result);
-            mUploadMessage = null;
-        }
         CordovaPlugin callback = this.activityResultCallback;
         if(callback == null && initCallbackClass != null) {
             // The application was restarted, but had defined an initial callback
