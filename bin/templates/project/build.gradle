@@ -86,11 +86,35 @@ ext {
     if (!project.hasProperty('cdvDebugSigningPropertiesFile')) {
         cdvDebugSigningPropertiesFile = null
     }
+    // Set by build.js script.
+    if (!project.hasProperty('cdvBuildArch')) {
+        cdvBuildArch = null
+    }
 }
 
 def hasBuildExtras = file('build-extras.gradle').exists()
 if (hasBuildExtras) {
     apply from: 'build-extras.gradle'
+}
+
+def computeBuildTargetName(debugBuild) {
+    def ret = 'assemble'
+    if (cdvBuildMultipleApks && cdvBuildArch) {
+        def arch = cdvBuildArch == 'arm' ? 'armv7' : cdvBuildArch
+        ret += '' + arch.toUpperCase().charAt(0) + arch.substring(1);
+    }
+    return ret + (debugBuild ? 'Debug' : 'Release')
+}
+
+// Make cdvBuild a task that depends on the debug/arch-sepecific task.
+task cdvBuildDebug
+cdvBuildDebug.dependsOn {
+    return computeBuildTargetName(true)
+}
+
+task cdvBuildRelease
+cdvBuildRelease.dependsOn {
+    return computeBuildTargetName(false)
 }
 
 // PLUGIN GRADLE EXTENSIONS START
