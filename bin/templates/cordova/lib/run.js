@@ -50,7 +50,7 @@ var path  = require('path'),
         } else if (args[i] == '--list') {
             list = true;
         } else {
-            console.warn('Option \'' + options[i] + '\' not recognized (ignoring).');
+            console.warn('Option \'' + args[i] + '\' not recognized (ignoring).');
         }
     }
 
