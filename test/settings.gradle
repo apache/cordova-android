@@ -1,0 +1,4 @@
+include ":"
+include ":CordovaLib"
+project(':CordovaLib').projectDir = new File('../framework')
+
