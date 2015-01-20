@@ -177,20 +177,16 @@ var builders = {
     },
     gradle: {
         getArgs: function(cmd, arch, extraArgs) {
-            if (arch == 'arm' && cmd == 'debug') {
-                cmd = 'assembleArmv7Debug';
-            } else if (arch == 'arm' && cmd == 'release') {
-                cmd = 'assembleArmv7Release';
-            } else if (arch == 'x86' && cmd == 'debug') {
-                cmd = 'assembleX86Debug';
-            } else if (arch == 'x86' && cmd == 'release') {
-                cmd = 'assembleX86Release';
+            if (cmd == 'release') {
+                cmd = 'cdvBuildRelease';
             } else if (cmd == 'debug') {
-                cmd = 'assembleDebug';
-            } else if (cmd == 'release') {
-                cmd = 'assembleRelease';
+                cmd = 'cdvBuildDebug';
             }
             var args = [cmd, '-b', path.join(ROOT, 'build.gradle')];
+            if (arch) {
+                args.push('-PcdvBuildArch=' + arch);
+            }
+
             // 10 seconds -> 6 seconds
             args.push('-Dorg.gradle.daemon=true');
             args.push.apply(args, extraArgs);
@@ -361,10 +357,7 @@ function parseOpts(options, resolvedTarget) {
         }
     }
 
-    var multiApk = ret.buildMethod == 'gradle' && process.env['BUILD_MULTIPLE_APKS'];
-    if (multiApk && !/0|false|no/i.exec(multiApk)) {
-        ret.arch = resolvedTarget && resolvedTarget.arch;
-    }
+    ret.arch = resolvedTarget && resolvedTarget.arch;
 
     return ret;
 }
