@@ -69,11 +69,13 @@ function findOutputApksHelper(dir, build_type, arch) {
     if (ret.length === 0) {
         return ret;
     }
+    // Assume arch-specific build if newest api has -x86 or -arm.
     var archSpecific = !!/-x86|-arm/.exec(ret[0]);
+    // And show only arch-specific ones (or non-arch-specific)
     ret = ret.filter(function(p) {
         return !!/-x86|-arm/.exec(p) == archSpecific;
     });
-    if (arch) {
+    if (arch && ret.length > 1) {
         ret = ret.filter(function(p) {
             return p.indexOf('-' + arch) != -1;
         });
