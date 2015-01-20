@@ -72,6 +72,7 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
         shell.cp('-f', path.join(ROOT, 'framework', 'AndroidManifest.xml'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'project.properties'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'build.gradle'), nestedCordovaLibPath);
+        shell.cp('-f', path.join(ROOT, 'framework', 'cordova.gradle'), nestedCordovaLibPath);
         shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
         // Create an eclipse project file and set the name of it to something unique.
         // Without this, you can't import multiple CordovaLib projects into the same workspace.
@@ -121,7 +122,6 @@ function copyBuildRules(projectPath) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
     shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
-    shell.cp('-f', path.join(srcDir, 'cordova.gradle'), projectPath);
 }
 
 function copyScripts(projectPath) {
