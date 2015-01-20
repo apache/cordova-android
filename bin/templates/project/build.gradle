@@ -117,6 +117,24 @@ cdvBuildRelease.dependsOn {
     return computeBuildTargetName(false)
 }
 
+task cdvPrintProps << {
+    println('cdvCompileSdkVersion=' + cdvCompileSdkVersion)
+    println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
+    println('cdvVersionCode=' + cdvVersionCode)
+    println('cdvMinSdkVersion=' + cdvMinSdkVersion)
+    println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
+    println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
+    println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
+    println('cdvBuildArch=' + cdvBuildArch)
+    println('computedVersionCode=' + android.defaultConfig.versionCode)
+    if (android.productFlavors.has('armv7')) {
+        println('computedArmv7VersionCode=' + android.productFlavors.armv7.versionCode)
+    }
+    if (android.productFlavors.has('x86')) {
+        println('computedx86VersionCode=' + android.productFlavors.x86.versionCode)
+    }
+}
+
 // PLUGIN GRADLE EXTENSIONS START
 // PLUGIN GRADLE EXTENSIONS END
 
