@@ -321,8 +321,8 @@ function parseOpts(options, resolvedTarget) {
     for (var i=0; options && (i < options.length); ++i) {
         if (/^--/.exec(options[i])) {
             var keyValue = options[i].substring(2).split('=');
-            var flagName = keyValue[0];
-            var flagValue = keyValue[1];
+            var flagName = keyValue.shift();
+            var flagValue = keyValue.join('=');
             if (multiValueArgs[flagName] && !flagValue) {
                 flagValue = options[i + 1];
                 ++i;
