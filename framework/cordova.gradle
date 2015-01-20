@@ -20,16 +20,19 @@
 import java.util.regex.Pattern
 import groovy.swing.SwingBuilder
 
-
-String getProjectTarget(String defaultTarget) {
-    def manifestFile = file("project.properties")
-    def pattern = Pattern.compile("target\\s*=\\s*(.*)")
-    def matcher = pattern.matcher(manifestFile.getText())
-    if (matcher.find()) {
-        matcher.group(1)
-    } else {
-        defaultTarget
+String doEnsureValueExists(filePath, props, key) {
+    if (props.get(key) == null) {
+        throw new GradleException(filePath + ': Missing key required "' + key + '"')
     }
+    return props.get(key)
+}
+
+String doGetProjectTarget() {
+    def props = new Properties()
+    file('project.properties').withReader { reader ->
+        props.load(reader)
+    }
+    return doEnsureValueExists('project.properties', props, 'target')
 }
 
 String[] getAvailableBuildTools() {
@@ -39,7 +42,7 @@ String[] getAvailableBuildTools() {
         .sort { a, b -> compareVersions(b, a) }
 }
 
-String findLatestInstalledBuildTools(String minBuildToolsVersion) {
+String doFindLatestInstalledBuildTools(String minBuildToolsVersion) {
     def availableBuildToolsVersions
     try {
         availableBuildToolsVersions = getAvailableBuildTools()
@@ -117,7 +120,7 @@ String getAndroidSdkDir() {
     androidSdkDir
 }
 
-def extractIntFromManifest(name) {
+def doExtractIntFromManifest(name) {
     def manifestFile = file(android.sourceSets.main.manifest.srcFile)
     def pattern = Pattern.compile(name + "=\"(\\d+)\"")
     def matcher = pattern.matcher(manifestFile.getText())
@@ -125,7 +128,7 @@ def extractIntFromManifest(name) {
     return Integer.parseInt(matcher.group(1))
 }
 
-def promptForPassword(msg) {
+def doPromptForPassword(msg) {
     if (System.console() == null) {
         def ret = null
         new SwingBuilder().edt {
@@ -153,9 +156,10 @@ def promptForPassword(msg) {
 ext {
     // These helpers are shared, but are not guaranteed to be stable / unchanged.
     privateHelpers = {}
-    privateHelpers.getProjectTarget = { defaultValue -> getProjectTarget(defaultValue) }
-    privateHelpers.findLatestInstalledBuildTools = { defaultValue -> findLatestInstalledBuildTools(defaultValue) }
-    privateHelpers.extractIntFromManifest = { name -> extractIntFromManifest(name) }
-    privateHelpers.promptForPassword = { msg -> promptForPassword(msg) }
+    privateHelpers.getProjectTarget = { doGetProjectTarget() }
+    privateHelpers.findLatestInstalledBuildTools = { doFindLatestInstalledBuildTools('19.1.0') }
+    privateHelpers.extractIntFromManifest = { name -> doExtractIntFromManifest(name) }
+    privateHelpers.promptForPassword = { msg -> doPromptForPassword(msg) }
+    privateHelpers.ensureValueExists = { filePath, props, key -> doEnsureValueExists(filePath, props, key) }
 }
 
