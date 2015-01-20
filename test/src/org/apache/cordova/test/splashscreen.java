@@ -30,6 +30,6 @@ public class splashscreen extends CordovaActivity {
         // Show splashscreen
         preferences.set("splashscreen", "sandy");
 
-        super.loadUrl("file:///android_asset/www/splashscreen/index.html", 2000);
+        super.loadUrl("file:///android_asset/www/splashscreen/index.html");
     }
 }
