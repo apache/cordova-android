@@ -44,19 +44,22 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
     super(backbuttonmultipage.class);
   }
 
-  @UiThreadTest
-  protected void setUp() throws Exception {
-      super.setUp();
-      testActivity = this.getActivity();
+  @Override
+  public void setUp() {
+      testActivity = getActivity();
       containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
       innerContainer = (LinearLayout) containerView.getChildAt(0);
       testView = (CordovaWebView) innerContainer.getChildAt(0);
-      testView.loadUrl("file:///android_asset/www/backbuttonmultipage/index.html");
-      sleep();
+  }
+
+  void loadTestPage() {
+     testView.loadUrl("file:///android_asset/www/backbuttonmultipage/index.html");
+     sleep();
   }
 
   @UiThreadTest
   public void testPreconditions(){
+      loadTestPage();
       assertNotNull(innerContainer);
       assertNotNull(testView);
       String url = testView.getUrl();
@@ -67,6 +70,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       runTestOnUiThread(new Runnable() {
           public void run()
           {
+              loadTestPage();
               testView.sendJavascript("window.location = 'sample2.html';");
           }
       });
@@ -111,6 +115,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       runTestOnUiThread(new Runnable() {
           public void run()
           {
+              loadTestPage();
               testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
           }
       });
@@ -156,6 +161,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       runTestOnUiThread(new Runnable() {
           public void run()
           {
+              loadTestPage();
               testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
           }
       });
@@ -209,6 +215,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       runTestOnUiThread(new Runnable() {
           public void run()
           {
+              loadTestPage();
               testView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
           }
       });
@@ -257,8 +264,7 @@ public class BackButtonMultiPageTest extends ActivityInstrumentationTestCase2<ba
       });
       
   }
-  
-  @UiThreadTest
+
   private void sleep() {
       try {
           Thread.sleep(TIMEOUT);
