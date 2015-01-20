@@ -262,7 +262,7 @@ var builders = {
             var wrapper = path.join(ROOT, 'gradlew');
             var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release', arch, extraArgs);
             return Q().then(function() {
-                console.log('Running: ' + wrapper + ' ' + extraArgs.join(' '));
+                console.log('Running: ' + wrapper + ' ' + args.concat(extraArgs).join(' '));
                 return spawn(wrapper, args);
             });
         },
@@ -272,7 +272,7 @@ var builders = {
             var wrapper = path.join(ROOT, 'gradlew');
             var args = builder.getArgs('clean', null, extraArgs);
             return Q().then(function() {
-                console.log('Running: ' + wrapper + ' ' + extraArgs.join(' '));
+                console.log('Running: ' + wrapper + ' ' + args.concat(extraArgs).join(' '));
                 return spawn(wrapper, args);
             });
         },
