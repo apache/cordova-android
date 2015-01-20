@@ -69,11 +69,13 @@ function findOutputApksHelper(dir, build_type, arch) {
     if (ret.length === 0) {
         return ret;
     }
+    // Assume arch-specific build if newest api has -x86 or -arm.
     var archSpecific = !!/-x86|-arm/.exec(ret[0]);
+    // And show only arch-specific ones (or non-arch-specific)
     ret = ret.filter(function(p) {
         return !!/-x86|-arm/.exec(p) == archSpecific;
     });
-    if (arch) {
+    if (arch && ret.length > 1) {
         ret = ret.filter(function(p) {
             return p.indexOf('-' + arch) != -1;
         });
@@ -175,20 +177,16 @@ var builders = {
     },
     gradle: {
         getArgs: function(cmd, arch, extraArgs) {
-            if (arch == 'arm' && cmd == 'debug') {
-                cmd = 'assembleArmv7Debug';
-            } else if (arch == 'arm' && cmd == 'release') {
-                cmd = 'assembleArmv7Release';
-            } else if (arch == 'x86' && cmd == 'debug') {
-                cmd = 'assembleX86Debug';
-            } else if (arch == 'x86' && cmd == 'release') {
-                cmd = 'assembleX86Release';
+            if (cmd == 'release') {
+                cmd = 'cdvBuildRelease';
             } else if (cmd == 'debug') {
-                cmd = 'assembleDebug';
-            } else if (cmd == 'release') {
-                cmd = 'assembleRelease';
+                cmd = 'cdvBuildDebug';
             }
             var args = [cmd, '-b', path.join(ROOT, 'build.gradle')];
+            if (arch) {
+                args.push('-PcdvBuildArch=' + arch);
+            }
+
             // 10 seconds -> 6 seconds
             args.push('-Dorg.gradle.daemon=true');
             args.push.apply(args, extraArgs);
@@ -260,7 +258,7 @@ var builders = {
             var wrapper = path.join(ROOT, 'gradlew');
             var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release', arch, extraArgs);
             return Q().then(function() {
-                console.log('Running: ' + wrapper + ' ' + extraArgs.join(' '));
+                console.log('Running: ' + wrapper + ' ' + args.concat(extraArgs).join(' '));
                 return spawn(wrapper, args);
             });
         },
@@ -270,7 +268,7 @@ var builders = {
             var wrapper = path.join(ROOT, 'gradlew');
             var args = builder.getArgs('clean', null, extraArgs);
             return Q().then(function() {
-                console.log('Running: ' + wrapper + ' ' + extraArgs.join(' '));
+                console.log('Running: ' + wrapper + ' ' + args.concat(extraArgs).join(' '));
                 return spawn(wrapper, args);
             });
         },
@@ -319,8 +317,8 @@ function parseOpts(options, resolvedTarget) {
     for (var i=0; options && (i < options.length); ++i) {
         if (/^--/.exec(options[i])) {
             var keyValue = options[i].substring(2).split('=');
-            var flagName = keyValue[0];
-            var flagValue = keyValue[1];
+            var flagName = keyValue.shift();
+            var flagValue = keyValue.join('=');
             if (multiValueArgs[flagName] && !flagValue) {
                 flagValue = options[i + 1];
                 ++i;
@@ -359,10 +357,7 @@ function parseOpts(options, resolvedTarget) {
         }
     }
 
-    var multiApk = ret.buildMethod == 'gradle' && process.env['BUILD_MULTIPLE_APKS'];
-    if (multiApk && !/0|false|no/i.exec(multiApk)) {
-        ret.arch = resolvedTarget && resolvedTarget.arch;
-    }
+    ret.arch = resolvedTarget && resolvedTarget.arch;
 
     return ret;
 }

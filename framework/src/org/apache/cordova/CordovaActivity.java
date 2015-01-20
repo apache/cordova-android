@@ -36,7 +36,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -48,7 +47,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.ValueCallback;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 
@@ -103,7 +101,8 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
 
     // Plugin to call when activity result is received
-    protected CordovaPlugin activityResultCallback = null;
+    protected int activityResultRequestCode;
+    protected CordovaPlugin activityResultCallback;
     protected boolean activityResultKeepRunning;
 
     /*
@@ -666,7 +665,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param requestCode       The request code that is passed to callback to identify the activity
      */
     public void startActivityForResult(CordovaPlugin command, Intent intent, int requestCode) {
-        this.activityResultCallback = command;
+        setActivityResultCallback(command);
         this.activityResultKeepRunning = this.keepRunning;
 
         // If multitasking turned on, then disable it for activities that return results
@@ -674,8 +673,19 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             this.keepRunning = false;
         }
 
-        // Start activity
-        super.startActivityForResult(intent, requestCode);
+        try {
+            startActivityForResult(intent, requestCode);
+        } catch (RuntimeException e) { // E.g.: ActivityNotFoundException
+            activityResultCallback = null;
+            throw e;
+        }
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
+        // Capture requestCode here so that it is captured in the setActivityResultCallback() case.
+        activityResultRequestCode = requestCode;
+        super.startActivityForResult(intent, requestCode, options);
     }
 
     /**
@@ -685,37 +695,34 @@ public class CordovaActivity extends Activity implements CordovaInterface {
      * @param requestCode       The request code originally supplied to startActivityForResult(),
      *                          allowing you to identify who this result came from.
      * @param resultCode        The integer result code returned by the child activity through its setResult().
-     * @param data              An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        LOG.d(TAG, "Incoming Result");
+        LOG.d(TAG, "Incoming Result. Request code = " + requestCode);
         super.onActivityResult(requestCode, resultCode, intent);
-        Log.d(TAG, "Request code = " + requestCode);
-        if (appView != null && requestCode == CordovaChromeClient.FILECHOOSER_RESULTCODE) {
-        	ValueCallback<Uri> mUploadMessage = this.appView.getWebChromeClient().getValueCallback();
-            Log.d(TAG, "did we get here?");
-            if (null == mUploadMessage)
-                return;
-            Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
-            Log.d(TAG, "result = " + result);
-            mUploadMessage.onReceiveValue(result);
-            mUploadMessage = null;
-        }
         CordovaPlugin callback = this.activityResultCallback;
         if(callback == null && initCallbackClass != null) {
             // The application was restarted, but had defined an initial callback
             // before being shut down.
-            this.activityResultCallback = appView.pluginManager.getPlugin(initCallbackClass);
-            callback = this.activityResultCallback;
+            callback = appView.pluginManager.getPlugin(initCallbackClass);
         }
-        if(callback != null) {
+        initCallbackClass = null;
+        activityResultCallback = null;
+
+        if (callback != null) {
             LOG.d(TAG, "We have a callback to send this result to");
             callback.onActivityResult(requestCode, resultCode, intent);
+        } else {
+            LOG.w(TAG, "Got an activity result, but no plugin was registered to receive it.");
         }
     }
 
     public void setActivityResultCallback(CordovaPlugin plugin) {
+        // Cancel any previously pending activity.
+        if (activityResultCallback != null) {
+            activityResultCallback.onActivityResult(activityResultRequestCode, Activity.RESULT_CANCELED, null);
+        }
         this.activityResultCallback = plugin;
     }
 
