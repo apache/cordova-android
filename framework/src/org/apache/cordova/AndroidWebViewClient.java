@@ -160,8 +160,8 @@ public class AndroidWebViewClient extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
-        // Ignore excessive calls.
-        if (!isCurrentlyLoading) {
+        // Ignore excessive calls, if url is not about:blank (CB-8317).
+        if (!isCurrentlyLoading && !url.startsWith("about:")) {
             return;
         }
         isCurrentlyLoading = false;
