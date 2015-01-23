@@ -59,15 +59,25 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
             console.log("Deleting " + oldJar);
             shell.rm('-f', oldJar);
         });
+        var wasSymlink = true;
+        try {
+            // Delete the symlink if it was one.
+            fs.unlinkSync(nestedCordovaLibPath)
+        } catch (e) {
+            wasSymlink = false;
+        }
         // Delete old library project if it existed.
         if (shared) {
             shell.rm('-rf', nestedCordovaLibPath);
-        } else {
+        } else if (!wasSymlink) {
             // Delete only the src, since eclipse can't handle its .project file being deleted.
             shell.rm('-rf', path.join(nestedCordovaLibPath, 'src'));
         }
     });
-    if (!shared) {
+    if (shared) {
+        var relativeFrameworkPath = path.relative(projectPath, getFrameworkDir(projectPath, true));
+        fs.symlinkSync(relativeFrameworkPath, nestedCordovaLibPath, 'dir');
+    } else {
         shell.mkdir('-p', nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'AndroidManifest.xml'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'project.properties'), nestedCordovaLibPath);
@@ -94,7 +104,7 @@ function extractSubProjectPaths(data) {
     return Object.keys(ret);
 }
 
-function writeProjectProperties(projectPath, target_api, shared) {
+function writeProjectProperties(projectPath, target_api) {
     var dstPath = path.join(projectPath, 'project.properties');
     var templatePath = path.join(ROOT, 'bin', 'templates', 'project', 'project.properties');
     var srcPath = fs.existsSync(dstPath) ? dstPath : templatePath;
@@ -107,7 +117,7 @@ function writeProjectProperties(projectPath, target_api, shared) {
                  /^(\.\.[\\\/])+framework$/m.exec(p)
                  );
     });
-    subProjects.unshift(shared ? path.relative(projectPath, path.join(ROOT, 'framework')) : 'CordovaLib');
+    subProjects.unshift('CordovaLib');
     data = data.replace(/^\s*android\.library\.reference\.\d+=.*\n/mg, '');
     if (!/\n$/.exec(data)) {
         data += '\n';
@@ -278,10 +288,18 @@ exports.createProject = function(project_path, package_name, project_name, proje
             copyBuildRules(project_path);
         });
         // Link it to local android install.
-        writeProjectProperties(project_path, target_api, use_shared_project);
-    }).then(function() {
-        console.log('Project successfully created.');
+        writeProjectProperties(project_path, target_api);
+        console.log(generateDoneMessage('create', use_shared_project));
     });
+}
+
+function generateDoneMessage(type, link) {
+    var pkg = require('../../package');
+    var msg = 'Android project ' + (type == 'update' ? 'updated ' : 'created ') + 'with ' + pkg.name + '@' + pkg.version;
+    if (link) {
+        msg += ' and has a linked CordovaLib';
+    }
+    return msg;
 }
 
 // Attribute removed in Cordova 4.4 (CB-5447).
@@ -302,7 +320,6 @@ function extractProjectNameFromManifest(projectPath) {
 
 // Returns a promise.
 exports.updateProject = function(projectPath, shared) {
-    var newVersion = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
     return Q()
     .then(function() {
         var projectName = extractProjectNameFromManifest(projectPath);
@@ -311,9 +328,8 @@ exports.updateProject = function(projectPath, shared) {
         copyScripts(projectPath);
         copyBuildRules(projectPath);
         removeDebuggableFromManifest(projectPath);
-        writeProjectProperties(projectPath, target_api, shared);
-        console.log('Android project is now at version ' + newVersion);
-        console.log('If you updated from a pre-3.2.0 version and use an IDE, we now require that you import the "CordovaLib" library project.');
+        writeProjectProperties(projectPath, target_api);
+        console.log(generateDoneMessage('update', shared));
     });
 };
 
