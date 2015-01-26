@@ -60,11 +60,11 @@ ext {
     apply from: 'CordovaLib/cordova.gradle'
     // The value for android.compileSdkVersion.
     if (!project.hasProperty('cdvCompileSdkVersion')) {
-        cdvCompileSdkVersion = privateHelpers.getProjectTarget()
+        cdvCompileSdkVersion = null;
     }
     // The value for android.buildToolsVersion.
     if (!project.hasProperty('cdvBuildToolsVersion')) {
-        cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+        cdvBuildToolsVersion = null;
     }
     // Sets the versionCode to the given value.
     if (!project.hasProperty('cdvVersionCode')) {
@@ -76,7 +76,7 @@ ext {
     }
     // Whether to build architecture-specific APKs.
     if (!project.hasProperty('cdvBuildMultipleApks')) {
-        cdvBuildMultipleApks = false
+        cdvBuildMultipleApks = null
     }
     // .properties files to use for release signing.
     if (!project.hasProperty('cdvReleaseSigningPropertiesFile')) {
@@ -90,12 +90,27 @@ ext {
     if (!project.hasProperty('cdvBuildArch')) {
         cdvBuildArch = null
     }
+
+    // Plugin gradle extensions can append to this to have code run at the end.
+    cdvPluginPostBuildExtras = []
 }
+
+// PLUGIN GRADLE EXTENSIONS START
+// PLUGIN GRADLE EXTENSIONS END
 
 def hasBuildExtras = file('build-extras.gradle').exists()
 if (hasBuildExtras) {
     apply from: 'build-extras.gradle'
 }
+
+// Set property defaults after extension .gradle files.
+if (ext.cdvCompileSdkVersion == null) {
+    ext.cdvCompileSdkVersion = privateHelpers.getProjectTarget()
+}
+if (ext.cdvBuildToolsVersion == null) {
+    ext.cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+}
+ext.cdvBuildMultipleApks = !!cdvBuildMultipleApks;
 
 def computeBuildTargetName(debugBuild) {
     def ret = 'assemble'
@@ -134,9 +149,6 @@ task cdvPrintProps << {
         println('computedx86VersionCode=' + android.productFlavors.x86.versionCode)
     }
 }
-
-// PLUGIN GRADLE EXTENSIONS START
-// PLUGIN GRADLE EXTENSIONS END
 
 android {
     sourceSets {
@@ -276,6 +288,10 @@ def addSigningProps(propsFilePath, signingConfig) {
     if (storeType) {
         signingConfig.storeType = storeType
     }
+}
+
+for (def func : cdvPluginPostBuildExtras) {
+    func()
 }
 
 // This can be defined within build-extras.gradle as:
