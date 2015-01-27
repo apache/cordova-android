@@ -34,7 +34,7 @@ public interface CordovaWebView {
 
     void onNewIntent(Intent intent);
 
-    void handleResume(boolean keepRunning, boolean activityResultKeepRunning);
+    void handleResume(boolean keepRunning);
 
     void handleDestroy();
 

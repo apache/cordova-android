@@ -594,6 +594,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         return boundKeyCodes.contains(keyCode);
     }
 
+    @Override
     public void handlePause(boolean keepRunning)
     {
         LOG.d(TAG, "Handle the pause");
@@ -607,22 +608,23 @@ public class AndroidWebView extends WebView implements CordovaWebView {
 
         // If app doesn't want to run in background
         if (!keepRunning) {
-            // Pause JavaScript timers (including setInterval)
+            // Pause JavaScript timers. This affects all webviews within the app!
             this.pauseTimers();
         }
     }
     
-    public void handleResume(boolean keepRunning, boolean activityResultKeepRunning)
+    @Override
+    public void handleResume(boolean keepRunning)
     {
+        // Resume JavaScript timers. This affects all webviews within the app!
+        this.resumeTimers();
+
         sendJavascriptEvent("resume");
         
         // Forward to plugins
         if (this.pluginManager != null) {
             this.pluginManager.onResume(keepRunning);
         }
-
-        // Resume JavaScript timers (including setInterval)
-        this.resumeTimers();
     }
     
     public void handleDestroy()
