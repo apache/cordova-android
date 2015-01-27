@@ -84,6 +84,7 @@ public interface CordovaWebView {
     Whitelist getWhitelist();
     Whitelist getExternalWhitelist();
     CordovaPreferences getPreferences();
+    ICordovaCookieManager getCookieManager();
 
     void setNetworkAvailable(boolean online);
     
