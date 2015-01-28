@@ -99,13 +99,22 @@ function extractProjectNameFromManifest(projectPath) {
 
 function extractSubProjectPaths() {
     var data = fs.readFileSync(path.join(ROOT, 'project.properties'), 'utf8');
-    var ret = {};
+    var libsSet = {};
     var r = /^\s*android\.library\.reference\.\d+=(.*)(?:\s|$)/mg
     var m;
     while (m = r.exec(data)) {
-        ret[m[1]] = 1;
+        libsSet[m[1]] = 1;
     }
-    return Object.keys(ret);
+    var gradleSet = {};
+    r = /^\s*cordova\.gradle\.include\.\d+=(.*)(?:\s|$)/mg
+    m;
+    while (m = r.exec(data)) {
+        gradleSet[m[1]] = 1;
+    }
+    return {
+      libs: Object.keys(libsSet),
+      gradleIncludes: Object.keys(gradleSet)
+    };
 }
 
 var builders = {
@@ -134,7 +143,7 @@ var builders = {
                         fs.writeFileSync(path.join(projectPath, 'local.properties'), LOCAL_PROPERTIES_TEMPLATE);
                     }
                 }
-                var subProjects = extractSubProjectPaths();
+                var subProjects = extractSubProjectPaths().libs;
                 writeBuildXml(ROOT);
                 for (var i = 0; i < subProjects.length; ++i) {
                     writeBuildXml(path.join(ROOT, subProjects[i]));
@@ -224,7 +233,8 @@ var builders = {
 
                 // Update the version of build.gradle in each dependent library.
                 var pluginBuildGradle = path.join(projectPath, 'cordova', 'lib', 'plugin-build.gradle');
-                var subProjects = extractSubProjectPaths();
+                var propertiesObj = extractSubProjectPaths();
+                var subProjects = propertiesObj.libs;
                 for (var i = 0; i < subProjects.length; ++i) {
                     if (subProjects[i] !== 'CordovaLib') {
                         shell.cp('-f', pluginBuildGradle, path.join(ROOT, subProjects[i], 'build.gradle'));
@@ -245,6 +255,11 @@ var builders = {
                     depsList += '    releaseCompile project(path: "' + p + '", configuration: "release")\n';
                 });
                 buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
+                var includeList = '';
+                propertiesObj.gradleIncludes.forEach(function(includePath) {
+                    includeList += 'apply from: "' + includePath + '"\n';
+                });
+                buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
                 fs.writeFileSync(path.join(projectPath, 'build.gradle'), buildGradle);
             });
         },
