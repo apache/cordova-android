@@ -25,7 +25,6 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,7 +37,6 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -186,12 +184,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
     @SuppressWarnings("deprecation")
     protected void createViews() {
-        // This builds the view.  We could probably get away with NOT having a LinearLayout, but I like having a bucket!
-        Display display = getWindowManager().getDefaultDisplay();
-        int width = display.getWidth();
-        int height = display.getHeight();
-
-        LinearLayoutSoftKeyboardDetect root = new LinearLayoutSoftKeyboardDetect(this, width, height);
+        LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
