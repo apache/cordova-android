@@ -66,7 +66,7 @@ public class CordovaActivityTest extends ActivityInstrumentationTestCase2<MainTe
     
     public void testForLinearLayout() {
         String className = innerContainer.getClass().getSimpleName();
-        assertTrue(className.equals("LinearLayoutSoftKeyboardDetect"));
+        assertTrue(className.equals("LinearLayout"));
     }
 
     private void sleep() {
