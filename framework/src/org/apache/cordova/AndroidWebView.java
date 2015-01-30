@@ -144,6 +144,10 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         }
 
         exposeJsInterface();
+
+        if (preferences.getBoolean("DisallowOverscroll", false)) {
+            setOverScrollMode(View.OVER_SCROLL_NEVER);
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")

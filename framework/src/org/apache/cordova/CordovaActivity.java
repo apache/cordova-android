@@ -154,11 +154,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     
     protected void init() {
         appView = makeWebView();
-
-        // TODO: Have the views set this themselves.
-        if (preferences.getBoolean("DisallowOverscroll", false)) {
-            appView.getView().setOverScrollMode(View.OVER_SCROLL_NEVER);
-        }
         createViews();
 
         // Wire the hardware volume controls to control media if desired.
