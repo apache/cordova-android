@@ -19,14 +19,8 @@
 package org.apache.cordova;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.PluginEntry;
-import org.apache.cordova.PluginResult;
 import org.json.JSONException;
 
 import android.content.Intent;
@@ -45,8 +39,8 @@ public class PluginManager {
     private static final int SLOW_EXEC_WARNING_THRESHOLD = Debug.isDebuggerConnected() ? 60 : 16;
 
     // List of service entries
-    private final HashMap<String, CordovaPlugin> pluginMap = new HashMap<String, CordovaPlugin>();
-    private final HashMap<String, PluginEntry> entryMap = new HashMap<String, PluginEntry>();
+    private final LinkedHashMap<String, CordovaPlugin> pluginMap = new LinkedHashMap<String, CordovaPlugin>();
+    private final LinkedHashMap<String, PluginEntry> entryMap = new LinkedHashMap<String, PluginEntry>();
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
@@ -281,19 +275,15 @@ public class PluginManager {
      * @return                  Object to stop propagation or null
      */
     public Object postMessage(String id, Object data) {
-        Object obj = this.ctx.onMessage(id, data);
-        if (obj != null) {
-            return obj;
-        }
         for (CordovaPlugin plugin : this.pluginMap.values()) {
             if (plugin != null) {
-                obj = plugin.onMessage(id, data);
+                Object obj = plugin.onMessage(id, data);
                 if (obj != null) {
                     return obj;
                 }
             }
         }
-        return null;
+        return ctx.onMessage(id, data);
     }
 
     /**
