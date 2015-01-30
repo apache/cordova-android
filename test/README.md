@@ -47,6 +47,8 @@ Robotium has to be installed for the onScrollChanged tests to work correctly.  I
 found at https://code.google.com/p/robotium/ and the jar should be put in the
 'androidTests/libs' directory'.
 
+    mkdir -p androidTests/libs && curl 'http://dl.bintray.com/robotium/generic/robotium-solo-5.2.1.jar' > androidTests/libs/robotium-solo-5.2.1.jar
+
 ## Running
 
 To run manual tests:
