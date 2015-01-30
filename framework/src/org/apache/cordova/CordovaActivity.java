@@ -217,40 +217,21 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     }
 
     /**
-     * Construct the default web view object.
+     * Construct the CordovaWebView object.
      *
-     * This is intended to be overridable by subclasses of CordovaIntent which
-     * require a more specialized web view.
+     * Override this to customize the webview that is used.
      */
     protected CordovaWebView makeWebView() {
-        String r = preferences.getString("webView", null);
-        CordovaWebView ret = null;
-        if (r != null) {
-            try {
-                Class<?> webViewClass = Class.forName(r);
-                Constructor<?> constructor = webViewClass.getConstructor(Context.class);
-                ret = (CordovaWebView) constructor.newInstance((Context)this);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            }
+        String webViewClassName = preferences.getString("webView", AndroidWebView.class.getCanonicalName());
+        try {
+            Class<?> webViewClass = Class.forName(webViewClassName);
+            Constructor<?> constructor = webViewClass.getConstructor(Context.class);
+            CordovaWebView ret = (CordovaWebView) constructor.newInstance((Context)this);
+            ret.init(this, pluginEntries, internalWhitelist, externalWhitelist, preferences);
+            return ret;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create webview. ", e);
         }
-
-        if (ret == null) {
-            // If all else fails, return a default WebView
-            ret = new AndroidWebView(this);
-        }
-        ret.init(this, pluginEntries, internalWhitelist, externalWhitelist, preferences);
-        return ret;
     }
 
     /**
