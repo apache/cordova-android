@@ -28,7 +28,7 @@ public class whitelist extends MainTestActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.init();
-        ((AndroidWebView)appView).setWebViewClient(new TestViewClient(this, ((AndroidWebView)appView)));
+        ((AndroidWebView)appView).setWebViewClient(new TestViewClient(cordovaInterface, ((AndroidWebView)appView)));
         super.loadUrl("file:///android_asset/www/whitelist/index.html");
     }
 

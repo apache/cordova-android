@@ -32,8 +32,8 @@ public class userwebview extends MainTestActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        testViewClient = new TestViewClient(this, ((AndroidWebView)appView));
-        testChromeClient = new TestChromeClient(this, ((AndroidWebView)appView));
+        testViewClient = new TestViewClient(cordovaInterface, ((AndroidWebView)appView));
+        testChromeClient = new TestChromeClient(cordovaInterface, ((AndroidWebView)appView));
         super.init();
         ((AndroidWebView)appView).setWebViewClient(testViewClient);
         ((AndroidWebView)appView).setWebChromeClient(testChromeClient);
