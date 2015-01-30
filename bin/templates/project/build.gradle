@@ -110,7 +110,11 @@ if (ext.cdvCompileSdkVersion == null) {
 if (ext.cdvBuildToolsVersion == null) {
     ext.cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
 }
+
+// Cast to appropriate types.
 ext.cdvBuildMultipleApks = !!cdvBuildMultipleApks;
+ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? null : Integer.parseInt('' + cdvMinSdkVersion)
+ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
 
 def computeBuildTargetName(debugBuild) {
     def ret = 'assemble'
@@ -163,13 +167,10 @@ android {
         }
     }
 
-    def versionCodeOverride = cdvVersionCode ? Integer.parseInt(cdvVersionCode) : null
-    def minSdkVersionOverride = cdvMinSdkVersion ? Integer.parseInt(cdvMinSdkVersion) : null
-
     defaultConfig {
-        versionCode versionCodeOverride ?: Integer.parseInt("" + privateHelpers.extractIntFromManifest("versionCode") + "0")
-        if (minSdkVersionOverride != null) {
-            minSdkVersion minSdkVersionOverride
+        versionCode cdvVersionCode ?: Integer.parseInt("" + privateHelpers.extractIntFromManifest("versionCode") + "0")
+        if (cdvMinSdkVersion != null) {
+            minSdkVersion cdvMinSdkVersion
         }
     }
 
@@ -179,13 +180,13 @@ android {
     if (Boolean.valueOf(cdvBuildMultipleApks)) {
         productFlavors {
             armv7 {
-                versionCode versionCodeOverride ?: defaultConfig.versionCode + 2
+                versionCode cdvVersionCode ?: defaultConfig.versionCode + 2
                 ndk {
                     abiFilters "armeabi-v7a", ""
                 }
             }
             x86 {
-                versionCode versionCodeOverride ?: defaultConfig.versionCode + 4
+                versionCode cdvVersionCode ?: defaultConfig.versionCode + 4
                 ndk {
                     abiFilters "x86", ""
                 }
@@ -196,8 +197,8 @@ android {
                 }
             }
         }
-    } else if (!versionCodeOverride) {
-      def minSdkVersion = minSdkVersionOverride ?: privateHelpers.extractIntFromManifest("minSdkVersion")
+    } else if (!cdvVersionCode) {
+      def minSdkVersion = cdvMinSdkVersion ?: privateHelpers.extractIntFromManifest("minSdkVersion")
       // Vary versionCode by the two most common API levels:
       // 14 is ICS, which is the lowest API level for many apps.
       // 20 is Lollipop, which is the lowest API level for the updatable system webview.
