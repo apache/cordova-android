@@ -19,16 +19,14 @@
        under the License.
 */
 
-var shell = require('shelljs'),
-    exec  = require('./exec'),
+/* jshint sub:true */
+
+var exec  = require('./exec'),
     Q     = require('q'),
-    path  = require('path'),
     os    = require('os'),
     appinfo = require('./appinfo'),
     build = require('./build'),
-    ROOT  = path.join(__dirname, '..', '..'),
-    child_process = require('child_process'),
-    new_emulator = 'cordova_emulator';
+    child_process = require('child_process');
 var check_reqs = require('./check_reqs');
 
 /**
@@ -78,7 +76,7 @@ module.exports.list_images = function() {
         }
         return emulator_list;
     });
-}
+};
 
 /**
  * Will return the closest avd to the projects target
@@ -91,21 +89,21 @@ module.exports.best_image = function() {
     .then(function(images) {
         var closest = 9999;
         var best = images[0];
-        for (i in images) {
+        for (var i in images) {
             var target = images[i].target;
             if(target) {
                 var num = target.split('(API level ')[1].replace(')', '');
                 if (num == project_target) {
                     return images[i];
                 } else if (project_target - num < closest && project_target > num) {
-                    var closest = project_target - num;
+                    closest = project_target - num;
                     best = images[i];
                 }
             }
         }
         return best;
     });
-}
+};
 
 // Returns a promise.
 module.exports.list_started = function() {
@@ -120,7 +118,7 @@ module.exports.list_started = function() {
         }
         return started_emulator_list;
     });
-}
+};
 
 // Returns a promise.
 module.exports.list_targets = function() {
@@ -135,7 +133,7 @@ module.exports.list_targets = function() {
         }
         return targets;
     });
-}
+};
 
 /*
  * Starts an emulator with the given ID,
@@ -185,7 +183,7 @@ module.exports.start = function(emulator_ID) {
         return self.wait_for_emulator(num_started);
     }).then(function(new_started) {
         if (new_started.length > 1) {
-            for (i in new_started) {
+            for (var i in new_started) {
                 if (started_emulators.indexOf(new_started[i]) < 0) {
                     emulator_id = new_started[i];
                 }
@@ -207,7 +205,7 @@ module.exports.start = function(emulator_ID) {
         //return the new emulator id for the started emulators
         return emulator_id;
     });
-}
+};
 
 /*
  * Waits for the new emulator to apear on the started-emulator list.
@@ -225,7 +223,7 @@ module.exports.wait_for_emulator = function(num_running) {
             });
         }
     });
-}
+};
 
 /*
  * Waits for the boot animation property of the emulator to switch to 'stopped'
@@ -243,7 +241,7 @@ module.exports.wait_for_boot = function(emulator_id) {
             });
         }
     });
-}
+};
 
 /*
  * Create avd
@@ -257,7 +255,7 @@ module.exports.create_image = function(name, target) {
         .then(null, function(error) {
             console.error('ERROR : Failed to create emulator image : ');
             console.error(' Do you have the latest android targets including ' + target + '?');
-            console.error(create.output);
+            console.error(error);
         });
     } else {
         console.log('WARNING : Project target not found, creating avd with a different target but the project may fail to install.');
@@ -272,7 +270,7 @@ module.exports.create_image = function(name, target) {
             console.error(error);
         });
     }
-}
+};
 
 module.exports.resolveTarget = function(target) {
     return this.list_started()
@@ -325,7 +323,7 @@ module.exports.install = function(target, buildResults) {
             // launch the application
             console.log('Launching application...');
             var launchName = appinfo.getActivityName();
-            cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
+            var cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
             return exec(cmd, os.tmpdir());
         }).then(function(output) {
             console.log('LAUNCH SUCCESS');
@@ -333,4 +331,4 @@ module.exports.install = function(target, buildResults) {
             return Q.reject('Failed to launch app on emulator: ' + err);
         });
     });
-}
+};

@@ -19,6 +19,8 @@
        under the License.
 */
 
+/* jshint sub:true */
+
 var shelljs = require('shelljs'),
     child_process = require('child_process'),
     Q     = require('q'),
@@ -63,7 +65,7 @@ module.exports.get_target = function() {
         return extractFromFile(path.join(ROOT, 'project.properties'));
     }
     throw new Error('Could not find android target. File missing: ' + path.join(ROOT, 'project.properties'));
-}
+};
 
 // Returns a promise. Called only by build and clean commands.
 module.exports.check_ant = function() {
@@ -140,7 +142,7 @@ module.exports.check_java = function() {
             return tryCommand('javac -version', msg);
         });
     });
-}
+};
 
 // Returns a promise.
 module.exports.check_android = function() {
@@ -242,5 +244,5 @@ module.exports.run = function() {
         console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
         console.log('JAVA_HOME=' + process.env['JAVA_HOME']);
     });
-}
+};
 

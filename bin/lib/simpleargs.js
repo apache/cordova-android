@@ -20,7 +20,7 @@
 exports.getArgs = function(argv) {
     var ret = {};
     var posArgs = [];
-    for (var i = 2, arg; arg = argv[i] || i < argv.length; ++i) {
+    for (var i = 2, arg; (arg = argv[i] || i < argv.length); ++i) {
         if (/^--/.exec(arg)) {
             ret[arg] = true;
         } else {
