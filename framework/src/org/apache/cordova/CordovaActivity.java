@@ -155,6 +155,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void init() {
         appView = makeWebView();
         createViews();
+        appView.init(this, pluginEntries, internalWhitelist, externalWhitelist, preferences);
 
         // Wire the hardware volume controls to control media if desired.
         String volumePref = preferences.getString("DefaultVolumeStream", "");
@@ -222,7 +223,6 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             Class<?> webViewClass = Class.forName(webViewClassName);
             Constructor<?> constructor = webViewClass.getConstructor(Context.class);
             CordovaWebView ret = (CordovaWebView) constructor.newInstance((Context)this);
-            ret.init(this, pluginEntries, internalWhitelist, externalWhitelist, preferences);
             return ret;
         } catch (Exception e) {
             throw new RuntimeException("Failed to create webview. ", e);
