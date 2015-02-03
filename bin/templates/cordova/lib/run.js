@@ -19,6 +19,8 @@
        under the License.
 */
 
+/* jshint loopfunc:true */
+
 var path  = require('path'),
     build = require('./build'),
     emulator = require('./emulator'),
@@ -122,7 +124,7 @@ var path  = require('path'),
                 return emulator.list_images()
                 .then(function(avds) {
                     // if target emulator isn't started, then start it.
-                    for (avd in avds) {
+                    for (var avd in avds) {
                         if (avds[avd].name == install_target) {
                             return emulator.start(install_target)
                             .then(function(emulatorId) {
@@ -142,7 +144,7 @@ var path  = require('path'),
             return device.install(resolvedTarget, buildResults);
         });
     });
-}
+};
 
 module.exports.help = function(args) {
     console.log('Usage: ' + path.relative(process.cwd(), args[1]) + ' [options]');
@@ -155,4 +157,4 @@ module.exports.help = function(args) {
     console.log('    --emulator : Will deploy the built project to an emulator if one exists');
     console.log('    --target=<target_id> : Installs to the target with the specified id.');
     process.exit(0);
-}
+};

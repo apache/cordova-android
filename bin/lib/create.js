@@ -18,26 +18,13 @@
        specific language governing permissions and limitations
        under the License.
 */
+
 var shell = require('shelljs'),
-    child_process = require('child_process'),
     Q     = require('q'),
     path  = require('path'),
     fs    = require('fs'),
     check_reqs = require('./check_reqs'),
     ROOT    = path.join(__dirname, '..', '..');
-
-// Returns a promise.
-function exec(command, opt_cwd) {
-    var d = Q.defer();
-    console.log('Running: ' + command);
-    child_process.exec(command, { cwd: opt_cwd }, function(err, stdout, stderr) {
-        stdout && console.log(stdout);
-        stderr && console.error(stderr);
-        if (err) d.reject(err);
-        else d.resolve(stdout);
-    });
-    return d.promise;
-}
 
 function setShellFatal(value, func) {
     var oldVal = shell.config.fatal;
@@ -56,13 +43,13 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
     // Don't fail if there are no old jars.
     setShellFatal(false, function() {
         shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function(oldJar) {
-            console.log("Deleting " + oldJar);
+            console.log('Deleting ' + oldJar);
             shell.rm('-f', oldJar);
         });
         var wasSymlink = true;
         try {
             // Delete the symlink if it was one.
-            fs.unlinkSync(nestedCordovaLibPath)
+            fs.unlinkSync(nestedCordovaLibPath);
         } catch (e) {
             wasSymlink = false;
         }
@@ -96,9 +83,9 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
 
 function extractSubProjectPaths(data) {
     var ret = {};
-    var r = /^\s*android\.library\.reference\.\d+=(.*)(?:\s|$)/mg
+    var r = /^\s*android\.library\.reference\.\d+=(.*)(?:\s|$)/mg;
     var m;
-    while (m = r.exec(data)) {
+    while ((m = r.exec(data))) {
         ret[m[1]] = 1;
     }
     return Object.keys(ret);
@@ -208,10 +195,8 @@ function validateProjectName(project_name) {
  */
 
 exports.createProject = function(project_path, package_name, project_name, project_template_dir, use_shared_project, use_cli_template) {
-    var VERSION = fs.readFileSync(path.join(ROOT, 'VERSION'), 'utf-8').trim();
-
     // Set default values for path, package and name
-    project_path = typeof project_path !== 'undefined' ? project_path : "CordovaExample";
+    project_path = typeof project_path !== 'undefined' ? project_path : 'CordovaExample';
     project_path = path.relative(process.cwd(), project_path);
     package_name = typeof package_name !== 'undefined' ? package_name : 'my.cordova.project';
     project_name = typeof project_name !== 'undefined' ? project_name : 'CordovaExample';
@@ -290,7 +275,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
         writeProjectProperties(project_path, target_api);
         console.log(generateDoneMessage('create', use_shared_project));
     });
-}
+};
 
 function generateDoneMessage(type, link) {
     var pkg = require('../../package');

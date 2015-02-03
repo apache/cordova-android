@@ -19,6 +19,8 @@
        under the License.
 */
 
+/* jshint sub:true */
+
 var shell   = require('shelljs'),
     spawn   = require('./spawn'),
     Q       = require('q'),
@@ -73,7 +75,9 @@ function findOutputApksHelper(dir, build_type, arch) {
     var archSpecific = !!/-x86|-arm/.exec(ret[0]);
     // And show only arch-specific ones (or non-arch-specific)
     ret = ret.filter(function(p) {
+        /*jshint -W018 */
         return !!/-x86|-arm/.exec(p) == archSpecific;
+        /*jshint +W018 */
     });
     if (arch && ret.length > 1) {
         ret = ret.filter(function(p) {
@@ -100,7 +104,7 @@ function extractProjectNameFromManifest(projectPath) {
 function findAllUniq(data, r) {
     var s = {};
     var m;
-    while (m = r.exec(data)) {
+    while ((m = r.exec(data))) {
         s[m[1]] = 1;
     }
     return Object.keys(s);
@@ -165,7 +169,6 @@ var builders = {
                 ret = this.clean();
             }
 
-            var builder = this;
             var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release');
             return check_reqs.check_ant()
             .then(function() {
@@ -243,7 +246,7 @@ var builders = {
                     }
                 }
 
-                var subProjectsAsGradlePaths = subProjects.map(function(p) { return ':' + p.replace(/[/\\]/g, ':') });
+                var subProjectsAsGradlePaths = subProjects.map(function(p) { return ':' + p.replace(/[/\\]/g, ':'); });
                 // Write the settings.gradle file.
                 fs.writeFileSync(path.join(projectPath, 'settings.gradle'),
                     '// GENERATED FILE - DO NOT EDIT\n' +
@@ -295,7 +298,6 @@ var builders = {
          * Returns a promise.
          */
         build: function(build_type, arch, extraArgs) {
-            var builder = this;
             var wrapper = path.join(ROOT, 'gradlew');
             var args = this.getArgs(build_type == 'debug' ? 'debug' : 'release', arch, extraArgs);
             return Q().then(function() {
@@ -339,7 +341,7 @@ var builders = {
 
 function parseOpts(options, resolvedTarget) {
     // Backwards-compatibility: Allow a single string argument
-    if (typeof options == "string") options = [options];
+    if (typeof options == 'string') options = [options];
 
     var ret = {
         buildType: 'debug',
@@ -480,7 +482,7 @@ module.exports.detectArchitecture = function(target) {
             }, function() {
                 // For non-killall OS's.
                 return Q.reject(err);
-            })
+            });
         }
         throw err;
     });

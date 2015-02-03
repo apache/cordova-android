@@ -37,5 +37,5 @@ module.exports = function(cmd, opt_cwd) {
         d.reject(e);
     }
     return d.promise;
-}
+};
 
