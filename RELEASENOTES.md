@@ -20,6 +20,9 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### Release 3.7.1 (January 2015) ###
+* CB-8411 Initialize plugins only after `createViews()` is called (regression in 3.7.0)
+
 ### Release 3.7.0 (January 2015) ###
 
 * CB-8328 Allow plugins to handle certificate challenges (close #150)
