@@ -22,8 +22,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -78,22 +76,16 @@ import android.widget.LinearLayout;
  * deprecated in favor of the config.xml file.
  *
  */
-public class CordovaActivity extends Activity implements CordovaInterface {
+public class CordovaActivity extends Activity {
     public static String TAG = "CordovaActivity";
 
     // The webview for our app
     protected CordovaWebView appView;
 
-    private final ExecutorService threadPool = Executors.newCachedThreadPool();
-
     private static int ACTIVITY_STARTING = 0;
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
     private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
-
-    // Plugin to call when activity result is received
-    protected int activityResultRequestCode;
-    protected CordovaPlugin activityResultCallback;
 
     /*
      * The variables below are used to cache some of the activity properties.
@@ -107,14 +99,14 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     // when another application (activity) is started.
     protected boolean keepRunning = true;
 
-    private String initCallbackClass;
-
     // Read from config.xml:
     protected CordovaPreferences preferences;
     protected Whitelist internalWhitelist;
     protected Whitelist externalWhitelist;
     protected String launchUrl;
     protected ArrayList<PluginEntry> pluginEntries;
+    protected CordovaInterfaceImpl cordovaInterface;
+
 
     /**
      * Called when the activity is first created.
@@ -146,16 +138,19 @@ public class CordovaActivity extends Activity implements CordovaInterface {
 
         super.onCreate(savedInstanceState);
 
+        cordovaInterface = makeCordovaInterface();
         if(savedInstanceState != null)
         {
-            initCallbackClass = savedInstanceState.getString("callbackClass");
+            cordovaInterface.restoreInstanceState(savedInstanceState);
         }
     }
     
     protected void init() {
         appView = makeWebView();
         createViews();
-        appView.init(this, pluginEntries, internalWhitelist, externalWhitelist, preferences);
+        //TODO: Add null check against CordovaInterfaceImpl, since this can be fragile
+        appView.init(cordovaInterface, pluginEntries, internalWhitelist, externalWhitelist, preferences);
+        cordovaInterface.setPluginManager(appView.getPluginManager());
 
         // Wire the hardware volume controls to control media if desired.
         String volumePref = preferences.getString("DefaultVolumeStream", "");
@@ -178,13 +173,15 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         Config.parser = parser;
     }
 
-    @SuppressWarnings("deprecation")
+    //Suppressing warnings in AndroidStudio
+    @SuppressWarnings({"deprecation", "ResourceType"})
     protected void createViews() {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
 
+        //Why are we setting a constant as the ID? This should be investigated
         appView.getView().setId(100);
         appView.getView().setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -206,27 +203,31 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     }
 
     /**
-     * Get the Android activity.
-     */
-    @Override public Activity getActivity() {
-        return this;
-    }
-
-    /**
-     * Construct the CordovaWebView object.
+     * Construct the default web view object.
      *
      * Override this to customize the webview that is used.
      */
     protected CordovaWebView makeWebView() {
         String webViewClassName = preferences.getString("webView", AndroidWebView.class.getCanonicalName());
+        CordovaWebView ret;
         try {
             Class<?> webViewClass = Class.forName(webViewClassName);
             Constructor<?> constructor = webViewClass.getConstructor(Context.class);
-            CordovaWebView ret = (CordovaWebView) constructor.newInstance((Context)this);
+            ret = (CordovaWebView) constructor.newInstance((Context)this);
             return ret;
         } catch (Exception e) {
             throw new RuntimeException("Failed to create webview. ", e);
         }
+    }
+
+    protected CordovaInterfaceImpl makeCordovaInterface() {
+        return new CordovaInterfaceImpl(this) {
+            @Override
+            public Object onMessage(String id, Object data) {
+                // Plumb this to CordovaActivity.onMessage for backwards compatibility
+                return CordovaActivity.this.onMessage(id, data);
+            }
+        };
     }
 
     /**
@@ -317,36 +318,17 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     public void endActivity() {
         finish();
     }
-    
+
     @Override
     public void finish() {
         this.activityState = ACTIVITY_EXITING;
         super.finish();
     }
 
-
-    /**
-     * Launch an activity for which you would like a result when it finished. When this activity exits,
-     * your onActivityResult() method will be called.
-     *
-     * @param command           The command object
-     * @param intent            The intent to start
-     * @param requestCode       The request code that is passed to callback to identify the activity
-     */
-    public void startActivityForResult(CordovaPlugin command, Intent intent, int requestCode) {
-        setActivityResultCallback(command);
-        try {
-            startActivityForResult(intent, requestCode);
-        } catch (RuntimeException e) { // E.g.: ActivityNotFoundException
-            activityResultCallback = null;
-            throw e;
-        }
-    }
-
     @Override
     public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
         // Capture requestCode here so that it is captured in the setActivityResultCallback() case.
-        activityResultRequestCode = requestCode;
+        cordovaInterface.setActivityResultRequestCode(requestCode);
         super.startActivityForResult(intent, requestCode, options);
     }
 
@@ -363,29 +345,7 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         LOG.d(TAG, "Incoming Result. Request code = " + requestCode);
         super.onActivityResult(requestCode, resultCode, intent);
-        CordovaPlugin callback = this.activityResultCallback;
-        if(callback == null && initCallbackClass != null) {
-            // The application was restarted, but had defined an initial callback
-            // before being shut down.
-            callback = appView.getPluginManager().getPlugin(initCallbackClass);
-        }
-        initCallbackClass = null;
-        activityResultCallback = null;
-
-        if (callback != null) {
-            LOG.d(TAG, "We have a callback to send this result to");
-            callback.onActivityResult(requestCode, resultCode, intent);
-        } else {
-            LOG.w(TAG, "Got an activity result, but no plugin was registered to receive it.");
-        }
-    }
-
-    public void setActivityResultCallback(CordovaPlugin plugin) {
-        // Cancel any previously pending activity.
-        if (activityResultCallback != null) {
-            activityResultCallback.onActivityResult(activityResultRequestCode, Activity.RESULT_CANCELED, null);
-        }
-        this.activityResultCallback = plugin;
+        cordovaInterface.onActivityResult(requestCode, resultCode, intent);
     }
 
     /**
@@ -499,24 +459,15 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-        else if ("exit".equals(id)) {
+        } else if ("exit".equals(id)) {
             this.endActivity();
         }
         return null;
     }
 
-    public ExecutorService getThreadPool() {
-        return threadPool;
-    }
-    
     protected void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
-        if(this.activityResultCallback != null)
-        {
-            String cClass = this.activityResultCallback.getClass().getName();
-            outState.putString("callbackClass", cClass);
-        }
+        cordovaInterface.onSaveInstanceState(outState);
     }
 }
