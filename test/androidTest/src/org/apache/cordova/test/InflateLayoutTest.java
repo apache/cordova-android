@@ -25,7 +25,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import org.apache.cordova.AndroidWebView;
+import org.apache.cordova.engine.SystemWebView;
 
 public class InflateLayoutTest extends ActivityInstrumentationTestCase2<CordovaWebViewTestActivity> {
 
@@ -48,7 +48,7 @@ public class InflateLayoutTest extends ActivityInstrumentationTestCase2<CordovaW
     }
 
     public void testBasicLoad() throws Exception {
-        assertTrue(testView instanceof AndroidWebView);
+        assertTrue(testView instanceof SystemWebView);
         assertTrue(innerContainer instanceof LinearLayout);
         String onPageFinishedUrl = testActivity.onPageFinishedUrl.take();
         assertEquals(CordovaWebViewTestActivity.START_URL, onPageFinishedUrl);

@@ -17,17 +17,20 @@
        under the License.
 */
 
-package org.apache.cordova;
+package org.apache.cordova.engine;
 
 import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 
-class AndroidCookieManager implements ICordovaCookieManager {
+import org.apache.cordova.ICordovaCookieManager;
+
+class SystemCookieManager implements ICordovaCookieManager {
+
     protected final WebView webView;
     private final CookieManager cookieManager;
 
-    public AndroidCookieManager(WebView webview) {
+    public SystemCookieManager(WebView webview) {
         webView = webview;
         cookieManager = CookieManager.getInstance();
 

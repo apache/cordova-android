@@ -283,11 +283,11 @@ public class NativeToJsMessageQueue {
 
     /** Uses webView.loadUrl("javascript:") to execute messages. */
     public static class LoadUrlBridgeMode extends BridgeMode {
-        private final CordovaWebView webView;
+        private final CordovaWebViewEngine engine;
         private final CordovaInterface cordova;
 
-        public LoadUrlBridgeMode(CordovaWebView webView, CordovaInterface cordova) {
-            this.webView = webView;
+        public LoadUrlBridgeMode(CordovaWebViewEngine engine, CordovaInterface cordova) {
+            this.engine = engine;
             this.cordova = cordova;
         }
 
@@ -297,7 +297,7 @@ public class NativeToJsMessageQueue {
                 public void run() {
                     String js = queue.popAndEncodeAsJs();
                     if (js != null) {
-                        webView.loadUrl("javascript:" + js);
+                        engine.loadUrl("javascript:" + js, false);
                     }
                 }
             });

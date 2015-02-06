@@ -16,9 +16,12 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova;
+package org.apache.cordova.engine;
 
 import android.webkit.JavascriptInterface;
+
+import org.apache.cordova.CordovaBridge;
+import org.apache.cordova.ExposedJsApi;
 import org.json.JSONException;
 
 /**
@@ -26,10 +29,10 @@ import org.json.JSONException;
  * an equivalent entry in CordovaChromeClient.java, and be added to
  * cordova-js/lib/android/plugin/android/promptbasednativeapi.js
  */
-class AndroidExposedJsApi implements ExposedJsApi {
+class SystemExposedJsApi implements ExposedJsApi {
     private final CordovaBridge bridge;
 
-    AndroidExposedJsApi(CordovaBridge bridge) {
+    SystemExposedJsApi(CordovaBridge bridge) {
         this.bridge = bridge;
     }
 

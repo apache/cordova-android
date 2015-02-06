@@ -21,15 +21,12 @@ package org.apache.cordova.test;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.apache.cordova.AndroidChromeClient;
-import org.apache.cordova.AndroidWebView;
-import org.apache.cordova.AndroidWebViewClient;
 import org.apache.cordova.Config;
 import org.apache.cordova.CordovaInterfaceImpl;
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.test.R;
+import org.apache.cordova.CordovaWebViewImpl;
+import org.apache.cordova.engine.SystemWebView;
+import org.apache.cordova.engine.SystemWebViewEngine;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -61,8 +58,8 @@ public class CordovaWebViewTestActivity extends Activity {
         //CB-7238: This has to be added now, because it got removed from somewhere else
         Config.init(this);
 
-        AndroidWebView webView = (AndroidWebView) findViewById(R.id.cordovaWebView);
-        cordovaWebView = webView;
+        SystemWebView webView = (SystemWebView) findViewById(R.id.cordovaWebView);
+        cordovaWebView = new CordovaWebViewImpl(this, new SystemWebViewEngine(webView));
         cordovaWebView.init(cordovaInterface, Config.getPluginEntries(), Config.getPreferences());
 
         cordovaWebView.loadUrl(START_URL);

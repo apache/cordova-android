@@ -16,14 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Hashtable;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+package org.apache.cordova.engine;
 
 import android.annotation.TargetApi;
 import android.content.pm.ApplicationInfo;
@@ -33,13 +26,23 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
-import android.view.View;
 import android.webkit.ClientCertRequest;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import org.apache.cordova.AuthenticationToken;
+import org.apache.cordova.CordovaClientCertRequest;
+import org.apache.cordova.CordovaHttpAuthHandler;
+import org.apache.cordova.CordovaResourceApi;
+import org.apache.cordova.LOG;
+import org.apache.cordova.PluginManager;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Hashtable;
 
 
 /**
@@ -48,28 +51,19 @@ import android.webkit.WebViewClient;
  * document instead of the chrome surrounding it, such as onPageStarted(), 
  * shouldOverrideUrlLoading(), etc. Related to but different than
  * CordovaChromeClient.
- *
- * @see <a href="http://developer.android.com/reference/android/webkit/WebViewClient.html">WebViewClient</a>
- * @see <a href="http://developer.android.com/guide/webapps/webview.html">WebView guide</a>
- * @see CordovaChromeClient
- * @see CordovaWebView
  */
-public class AndroidWebViewClient extends WebViewClient {
+public class SystemWebViewClient extends WebViewClient {
 
-    private static final String TAG = "AndroidWebViewClient";
-    protected final CordovaInterface cordova;
-    protected final AndroidWebView appView;
-    protected final CordovaUriHelper helper;
+    private static final String TAG = "SystemWebViewClient";
+    protected final SystemWebViewEngine parentEngine;
     private boolean doClearHistory = false;
     boolean isCurrentlyLoading;
 
     /** The authorization tokens. */
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
 
-    public AndroidWebViewClient(CordovaInterface cordova, AndroidWebView view) {
-        this.cordova = cordova;
-        this.appView = view;
-        helper = new CordovaUriHelper(cordova, view);
+    public SystemWebViewClient(SystemWebViewEngine parentEngine) {
+        this.parentEngine = parentEngine;
     }
 
     /**
@@ -82,7 +76,7 @@ public class AndroidWebViewClient extends WebViewClient {
      */
 	@Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        return helper.shouldOverrideUrlLoading(url);
+        return parentEngine.client.shouldOverrideUrlLoading(url);
     }
     
     /**
@@ -100,9 +94,9 @@ public class AndroidWebViewClient extends WebViewClient {
         }
 
         // Check if there is some plugin which can resolve this auth challenge
-        PluginManager pluginManager = this.appView.pluginManager;
-        if (pluginManager != null && pluginManager.onReceivedHttpAuthRequest(this.appView, new CordovaHttpAuthHandler(handler), host, realm)) {
-            this.appView.loadUrlTimeout++;
+        PluginManager pluginManager = this.parentEngine.pluginManager;
+        if (pluginManager != null && pluginManager.onReceivedHttpAuthRequest(null, new CordovaHttpAuthHandler(handler), host, realm)) {
+            parentEngine.client.clearLoadTimeoutTimer();
             return;
         }
 
@@ -123,9 +117,9 @@ public class AndroidWebViewClient extends WebViewClient {
     {
 
         // Check if there is some plugin which can resolve this certificate request
-        PluginManager pluginManager = this.appView.pluginManager;
-        if (pluginManager != null && pluginManager.onReceivedClientCertRequest(this.appView, new CordovaClientCertRequest(request))) {
-            this.appView.loadUrlTimeout++;
+        PluginManager pluginManager = this.parentEngine.pluginManager;
+        if (pluginManager != null && pluginManager.onReceivedClientCertRequest(null, new CordovaClientCertRequest(request))) {
+            parentEngine.client.clearLoadTimeoutTimer();
             return;
         }
 
@@ -146,12 +140,9 @@ public class AndroidWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         isCurrentlyLoading = true;
-        LOG.d(TAG, "onPageStarted(" + url + ")");
         // Flush stale messages & reset plugins.
-        this.appView.onPageReset();
-
-        // Broadcast message that page has loaded
-        this.appView.getPluginManager().postMessage("onPageStarted", url);
+        parentEngine.bridge.reset();
+        parentEngine.client.onPageStarted(url);
     }
 
     /**
@@ -170,7 +161,6 @@ public class AndroidWebViewClient extends WebViewClient {
             return;
         }
         isCurrentlyLoading = false;
-        LOG.d(TAG, "onPageFinished(" + url + ")");
 
         /**
          * Because of a timing issue we need to clear this history in onPageFinished as well as
@@ -182,35 +172,8 @@ public class AndroidWebViewClient extends WebViewClient {
             view.clearHistory();
             this.doClearHistory = false;
         }
+        parentEngine.client.onPageFinishedLoading(url);
 
-        // Clear timeout flag
-        appView.loadUrlTimeout++;
-
-        // Broadcast message that page has loaded
-        this.appView.getPluginManager().postMessage("onPageFinished", url);
-
-        // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
-        if (this.appView.getVisibility() == View.INVISIBLE) {
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(2000);
-                        cordova.getActivity().runOnUiThread(new Runnable() {
-                            public void run() {
-                                appView.getPluginManager().postMessage("spinner", "stop");
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                    }
-                }
-            });
-            t.start();
-        }
-
-        // Shutdown if blank loaded
-        if (url.equals("about:blank")) {
-            appView.getPluginManager().postMessage("exit", null);
-        }
     }
 
     /**
@@ -230,13 +193,12 @@ public class AndroidWebViewClient extends WebViewClient {
         }
         LOG.d(TAG, "CordovaWebViewClient.onReceivedError: Error code=%s Description=%s URL=%s", errorCode, description, failingUrl);
 
-        // Clear timeout flag
-        appView.loadUrlTimeout++;
-
         // If this is a "Protocol Not Supported" error, then revert to the previous
         // page. If there was no previous page, then punt. The application's config
         // is likely incorrect (start page set to sms: or something like that)
         if (errorCode == WebViewClient.ERROR_UNSUPPORTED_SCHEME) {
+            parentEngine.client.clearLoadTimeoutTimer();
+
             if (view.canGoBack()) {
                 view.goBack();
                 return;
@@ -244,17 +206,7 @@ public class AndroidWebViewClient extends WebViewClient {
                 super.onReceivedError(view, errorCode, description, failingUrl);
             }
         }
-
-        // Handle other errors by passing them to the webview in JS
-        JSONObject data = new JSONObject();
-        try {
-            data.put("errorCode", errorCode);
-            data.put("description", description);
-            data.put("url", failingUrl);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        this.appView.getPluginManager().postMessage("onReceivedError", data);
+        parentEngine.client.onReceivedError(errorCode, description, failingUrl);
     }
 
     /**
@@ -271,8 +223,8 @@ public class AndroidWebViewClient extends WebViewClient {
     @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
 
-        final String packageName = this.cordova.getActivity().getPackageName();
-        final PackageManager pm = this.cordova.getActivity().getPackageManager();
+        final String packageName = parentEngine.cordova.getActivity().getPackageName();
+        final PackageManager pm = parentEngine.cordova.getActivity().getPackageManager();
 
         ApplicationInfo appInfo;
         try {
@@ -370,13 +322,13 @@ public class AndroidWebViewClient extends WebViewClient {
         try {
             // Check the against the whitelist and lock out access to the WebView directory
             // Changing this will cause problems for your application
-            if (!appView.getPluginManager().shouldAllowRequest(url)) {
+            if (!parentEngine.pluginManager.shouldAllowRequest(url)) {
                 LOG.w(TAG, "URL blocked by whitelist: " + url);
                 // Results in a 404.
                 return new WebResourceResponse("text/plain", "UTF-8", null);
             }
 
-            CordovaResourceApi resourceApi = appView.getResourceApi();
+            CordovaResourceApi resourceApi = parentEngine.resourceApi;
             Uri origUri = Uri.parse(url);
             // Allow plugins to intercept WebView requests.
             Uri remappedUri = resourceApi.remapUri(origUri);
@@ -389,7 +341,7 @@ public class AndroidWebViewClient extends WebViewClient {
             return null;
         } catch (IOException e) {
             if (!(e instanceof FileNotFoundException)) {
-                LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file (returning a 404).", e);
+                LOG.e(TAG, "Error occurred while loading a file (returning a 404).", e);
             }
             // Results in a 404.
             return new WebResourceResponse("text/plain", "UTF-8", null);

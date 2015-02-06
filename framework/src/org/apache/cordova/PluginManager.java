@@ -217,7 +217,7 @@ public class PluginManager {
      */
     public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null && plugin.onReceivedHttpAuthRequest(view, handler, host, realm)) {
+            if (plugin != null && plugin.onReceivedHttpAuthRequest(app, handler, host, realm)) {
                 return true;
             }
         }
@@ -236,7 +236,7 @@ public class PluginManager {
      */
     public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null && plugin.onReceivedClientCertRequest(view, request)) {
+            if (plugin != null && plugin.onReceivedClientCertRequest(app, request)) {
                 return true;
             }
         }

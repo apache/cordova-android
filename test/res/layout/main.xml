@@ -22,7 +22,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
     
-    <org.apache.cordova.AndroidWebView
+    <org.apache.cordova.engine.SystemWebView
         android:id="@+id/cordovaWebView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />

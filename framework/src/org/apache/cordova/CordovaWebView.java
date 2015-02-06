@@ -16,18 +16,26 @@
 */
 package org.apache.cordova;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
 import android.webkit.WebChromeClient.CustomViewCallback;
 
+/**
+ * Main interface for interacting with a Cordova webview - implemented by CordovaWebViewImpl.
+ * This is an interface so that it can be easily mocked in tests.
+ * Methods may be added to this interface without a major version bump, as plugins & embedders
+ * are not expected to implement it.
+ */
 public interface CordovaWebView {
     public static final String CORDOVA_VERSION = "4.0.0-dev";
 
     void init(CordovaInterface cordova, List<PluginEntry> pluginEntries, CordovaPreferences preferences);
+
+    boolean isInitialized();
 
     View getView();
 
@@ -37,6 +45,10 @@ public interface CordovaWebView {
 
     boolean canGoBack();
 
+    void clearCache();
+
+    /** Use parameter-less overload */
+    @Deprecated
     void clearCache(boolean b);
 
     void clearHistory();
@@ -75,7 +87,17 @@ public interface CordovaWebView {
     @Deprecated
     void sendJavascript(String statememt);
 
-    void showWebPage(String errorUrl, boolean b, boolean c, Map<String, Object> params);
+    /**
+     * Load the specified URL in the Cordova webview or a new browser instance.
+     *
+     * NOTE: If openExternal is false, only whitelisted URLs can be loaded.
+     *
+     * @param url           The url to load.
+     * @param openExternal  Load url in browser instead of Cordova webview.
+     * @param clearHistory  Clear the history stack, so new page becomes top of history
+     * @param params        Parameters for new app
+     */
+    void showWebPage(String url, boolean openExternal, boolean clearHistory, Map<String, Object> params);
 
     /**
      * Deprecated in 4.0.0. Use your own View-toggling logic.
@@ -103,12 +125,10 @@ public interface CordovaWebView {
     void sendPluginResult(PluginResult cr, String callbackId);
 
     PluginManager getPluginManager();
-
+    CordovaWebViewEngine getEngine();
     CordovaPreferences getPreferences();
     ICordovaCookieManager getCookieManager();
 
-    void setNetworkAvailable(boolean online);
-    
     String getUrl();
 
     // TODO: Work on deleting these by removing refs from plugins.

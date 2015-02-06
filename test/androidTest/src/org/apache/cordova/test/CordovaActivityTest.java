@@ -23,7 +23,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import org.apache.cordova.AndroidWebView;
+import org.apache.cordova.CordovaWebViewEngine;
+import org.apache.cordova.engine.SystemWebView;
 
 public class CordovaActivityTest extends BaseCordovaIntegrationTest {
     private ViewGroup innerContainer;
@@ -37,8 +38,9 @@ public class CordovaActivityTest extends BaseCordovaIntegrationTest {
     }
 
     public void testBasicLoad() throws Exception {
-        assertTrue(testView instanceof AndroidWebView);
+        assertTrue(testView instanceof SystemWebView);
         assertTrue(innerContainer instanceof LinearLayout);
+        assertTrue(((CordovaWebViewEngine.EngineView)testView).getCordovaWebView() != null);
         String onPageFinishedUrl = testActivity.onPageFinishedUrl.take();
         assertEquals(MainTestActivity.START_URL, onPageFinishedUrl);
     }

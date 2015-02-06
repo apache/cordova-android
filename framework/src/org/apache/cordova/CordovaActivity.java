@@ -18,16 +18,15 @@
 */
 package org.apache.cordova;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -97,7 +96,6 @@ public class CordovaActivity extends Activity {
     protected ArrayList<PluginEntry> pluginEntries;
     protected CordovaInterfaceImpl cordovaInterface;
 
-
     /**
      * Called when the activity is first created.
      */
@@ -138,8 +136,9 @@ public class CordovaActivity extends Activity {
     protected void init() {
         appView = makeWebView();
         createViews();
-        //TODO: Add null check against CordovaInterfaceImpl, since this can be fragile
-        appView.init(cordovaInterface, pluginEntries, preferences);
+        if (!appView.isInitialized()) {
+            appView.init(cordovaInterface, pluginEntries, preferences);
+        }
         cordovaInterface.setPluginManager(appView.getPluginManager());
 
         // Wire the hardware volume controls to control media if desired.
@@ -198,16 +197,12 @@ public class CordovaActivity extends Activity {
      * Override this to customize the webview that is used.
      */
     protected CordovaWebView makeWebView() {
-        String webViewClassName = preferences.getString("webView", AndroidWebView.class.getCanonicalName());
-        CordovaWebView ret;
-        try {
-            Class<?> webViewClass = Class.forName(webViewClassName);
-            Constructor<?> constructor = webViewClass.getConstructor(Context.class);
-            ret = (CordovaWebView) constructor.newInstance((Context)this);
-            return ret;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create webview. ", e);
-        }
+        return new CordovaWebViewImpl(this, makeWebViewEngine());
+    }
+
+    protected CordovaWebViewEngine makeWebViewEngine() {
+        String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
+        return CordovaWebViewImpl.createEngine(className, this, preferences);
     }
 
     protected CordovaInterfaceImpl makeCordovaInterface() {

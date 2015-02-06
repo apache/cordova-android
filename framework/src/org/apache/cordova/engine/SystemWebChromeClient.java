@@ -16,7 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova;
+package org.apache.cordova.engine;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -40,29 +40,34 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import org.apache.cordova.CordovaDialogsHelper;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.LOG;
+
 /**
  * This class is the WebChromeClient that implements callbacks for our web view.
  * The kind of callbacks that happen here are on the chrome outside the document,
  * such as onCreateWindow(), onConsoleMessage(), onProgressChanged(), etc. Related
  * to but different than CordovaWebViewClient.
  */
-public class AndroidChromeClient extends WebChromeClient {
+public class SystemWebChromeClient extends WebChromeClient {
 
-    public static final int FILECHOOSER_RESULTCODE = 5173;
-    private static final String LOG_TAG = "AndroidChromeClient";
+    private static final int FILECHOOSER_RESULTCODE = 5173;
+    private static final String LOG_TAG = "SystemWebChromeClient";
     private long MAX_QUOTA = 100 * 1024 * 1024;
-    protected final CordovaInterface cordova;
-    protected final AndroidWebView appView;
+    protected final SystemWebViewEngine parentEngine;
 
     // the video progress view
     private View mVideoProgressView;
     
     private CordovaDialogsHelper dialogsHelper;
 
-    public AndroidChromeClient(CordovaInterface ctx, AndroidWebView webView) {
-        this.cordova = ctx;
-        this.appView = webView;
-        dialogsHelper = new CordovaDialogsHelper(webView.getContext());
+    private WebChromeClient.CustomViewCallback mCustomViewCallback;
+    private View mCustomView;
+
+    public SystemWebChromeClient(SystemWebViewEngine parentEngine) {
+        this.parentEngine = parentEngine;
+        dialogsHelper = new CordovaDialogsHelper(parentEngine.webView.getContext());
     }
 
     /**
@@ -111,7 +116,7 @@ public class AndroidChromeClient extends WebChromeClient {
     @Override
     public boolean onJsPrompt(WebView view, String origin, String message, String defaultValue, final JsPromptResult result) {
         // Unlike the @JavascriptInterface bridge, this method is always called on the UI thread.
-        String handledRet = appView.bridge.promptOnJsPrompt(origin, message, defaultValue);
+        String handledRet = parentEngine.bridge.promptOnJsPrompt(origin, message, defaultValue);
         if (handledRet != null) {
             result.confirm(handledRet);
         } else {
@@ -178,14 +183,14 @@ public class AndroidChromeClient extends WebChromeClient {
     // API level 7 is required for this, see if we could lower this using something else
     @Override
     public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
-        this.appView.showCustomView(view, callback);
+        parentEngine.getCordovaWebView().showCustomView(view, callback);
     }
 
     @Override
     public void onHideCustomView() {
-        this.appView.hideCustomView();
+        parentEngine.getCordovaWebView().hideCustomView();
     }
-    
+
     @Override
     /**
      * Ask the host application for a custom progress view to show while
@@ -198,13 +203,13 @@ public class AndroidChromeClient extends WebChromeClient {
             // Create a new Loading view programmatically.
             
             // create the linear layout
-            LinearLayout layout = new LinearLayout(this.appView.getContext());
+            LinearLayout layout = new LinearLayout(parentEngine.getView().getContext());
             layout.setOrientation(LinearLayout.VERTICAL);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
             layout.setLayoutParams(layoutParams);
             // the proress bar
-            ProgressBar bar = new ProgressBar(this.appView.getContext());
+            ProgressBar bar = new ProgressBar(parentEngine.getView().getContext());
             LinearLayout.LayoutParams barLayoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             barLayoutParams.gravity = Gravity.CENTER;
             bar.setLayoutParams(barLayoutParams);   
@@ -231,7 +236,7 @@ public class AndroidChromeClient extends WebChromeClient {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        cordova.startActivityForResult(new CordovaPlugin() {
+        parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
             @Override
             public void onActivityResult(int requestCode, int resultCode, Intent intent) {
                 Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
@@ -246,7 +251,7 @@ public class AndroidChromeClient extends WebChromeClient {
     public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final WebChromeClient.FileChooserParams fileChooserParams) {
         Intent intent = fileChooserParams.createIntent();
         try {
-            cordova.startActivityForResult(new CordovaPlugin() {
+            parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
                 @Override
                 public void onActivityResult(int requestCode, int resultCode, Intent intent) {
                     Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, intent);
@@ -264,5 +269,4 @@ public class AndroidChromeClient extends WebChromeClient {
     public void destroyLastDialog(){
         dialogsHelper.destroyLastDialog();
     }
-
 }

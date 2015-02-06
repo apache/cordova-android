@@ -23,6 +23,9 @@ import android.webkit.WebView;
 import android.webkit.GeolocationPermissions.Callback;
 
 import org.apache.cordova.*;
+import org.apache.cordova.engine.SystemWebChromeClient;
+import org.apache.cordova.engine.SystemWebViewClient;
+import org.apache.cordova.engine.SystemWebViewEngine;
 
 public class userwebview extends MainTestActivity {
     
@@ -32,17 +35,19 @@ public class userwebview extends MainTestActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        testViewClient = new TestViewClient(cordovaInterface, ((AndroidWebView)appView));
-        testChromeClient = new TestChromeClient(cordovaInterface, ((AndroidWebView)appView));
+        SystemWebViewEngine engine = (SystemWebViewEngine)appView.getEngine();
+        testViewClient = new TestViewClient(engine);
+        testChromeClient = new TestChromeClient(engine);
         super.init();
-        ((AndroidWebView)appView).setWebViewClient(testViewClient);
-        ((AndroidWebView)appView).setWebChromeClient(testChromeClient);
+        WebView webView = (WebView)engine.getView();
+        webView.setWebViewClient(testViewClient);
+        webView.setWebChromeClient(testChromeClient);
         super.loadUrl("file:///android_asset/www/userwebview/index.html");
     }
 
-    public class TestChromeClient extends AndroidChromeClient {
-        public TestChromeClient(CordovaInterface ctx, AndroidWebView app) {
-            super(ctx, app);
+    public class TestChromeClient extends SystemWebChromeClient {
+        public TestChromeClient(SystemWebViewEngine parentEngine) {
+            super(parentEngine);
             LOG.d("userwebview", "TestChromeClient()");
         }
 
@@ -57,9 +62,9 @@ public class userwebview extends MainTestActivity {
     /**
      * This class can be used to override the GapViewClient and receive notification of webview events.
      */
-    public class TestViewClient extends AndroidWebViewClient {
-        public TestViewClient(CordovaInterface ctx, AndroidWebView app) {
-            super(ctx, app);
+    public class TestViewClient extends SystemWebViewClient {
+        public TestViewClient(SystemWebViewEngine parentEngine) {
+            super(parentEngine);
             LOG.d("userwebview", "TestViewClient()");
         }
 
