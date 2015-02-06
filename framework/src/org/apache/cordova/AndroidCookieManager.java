@@ -54,7 +54,8 @@ class AndroidCookieManager implements ICordovaCookieManager {
     }
 
     public void flush() {
-        CookieManager.getInstance().flush();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            CookieManager.getInstance().flush();
+        }
     }
 };
-
