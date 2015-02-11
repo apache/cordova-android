@@ -87,13 +87,6 @@ public class CordovaActivity extends Activity {
     private static int ACTIVITY_EXITING = 2;
     private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
 
-    /*
-     * The variables below are used to cache some of the activity properties.
-     */
-
-    // LoadUrl timeout value in msec (default of 20 sec)
-    protected int loadUrlTimeoutValue = 20000;
-
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
