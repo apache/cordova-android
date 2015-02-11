@@ -18,15 +18,15 @@
 */
 package org.apache.cordova.test;
 
-import org.apache.cordova.CordovaActivity;
-
 import android.os.Bundle;
+import org.apache.cordova.*;
 
-public class MainTestActivity extends CordovaActivity {
-    /** Called when the activity is first created. */
+public class tests extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        super.init();
+        //super.pluginManager.addService("Activity", "org.apache.cordova.test.ActivityPlugin");
         super.loadUrl("file:///android_asset/www/index.html");
     }
 }

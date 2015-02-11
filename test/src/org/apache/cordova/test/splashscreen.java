@@ -18,15 +18,18 @@
 */
 package org.apache.cordova.test;
 
-import org.apache.cordova.CordovaActivity;
-
 import android.os.Bundle;
+import org.apache.cordova.*;
 
-public class MainTestActivity extends CordovaActivity {
-    /** Called when the activity is first created. */
+public class splashscreen extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.loadUrl("file:///android_asset/www/index.html");
+        super.init();
+
+        // Show splashscreen
+        preferences.set("splashscreen", "sandy");
+
+        super.loadUrl("file:///android_asset/www/splashscreen/index.html");
     }
 }

@@ -18,15 +18,20 @@
 */
 package org.apache.cordova.test;
 
-import org.apache.cordova.CordovaActivity;
-
+import android.graphics.Color;
 import android.os.Bundle;
+import org.apache.cordova.*;
 
-public class MainTestActivity extends CordovaActivity {
-    /** Called when the activity is first created. */
+public class backgroundcolor extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.loadUrl("file:///android_asset/www/index.html");
+
+        // backgroundColor can also be set in cordova.xml, but you must use the number equivalent of the color.  For example, Color.RED is
+        //      <preference name="backgroundColor" value="-65536" />
+        preferences.set("backgroundColor", Color.GREEN);
+
+        super.loadUrl("file:///android_asset/www/backgroundcolor/index.html");
     }
+
 }

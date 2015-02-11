@@ -15,18 +15,19 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
-*/
+ */
 package org.apache.cordova.test;
-
-import org.apache.cordova.CordovaActivity;
 
 import android.os.Bundle;
 
-public class MainTestActivity extends CordovaActivity {
-    /** Called when the activity is first created. */
+import org.apache.cordova.*;
+
+public class background extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.loadUrl("file:///android_asset/www/index.html");
+        //super.init(new FixWebView(this), new CordovaWebViewClient(this), new CordovaChromeClient(this));
+        preferences.set("keepRunning", false);
+        super.loadUrl("file:///android_asset/www/background/index.html");
     }
 }

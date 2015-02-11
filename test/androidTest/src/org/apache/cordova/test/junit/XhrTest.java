@@ -1,4 +1,4 @@
-package org.apache.cordova.test;
+package org.apache.cordova.test.junit;
 /*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,22 +21,14 @@ package org.apache.cordova.test;
 */
 
 
-public class ErrorUrlTest extends BaseCordovaIntegrationTest {
-    private static final String START_URL = "file:///android_asset/www/htmlnotfound/index.html";
-    private static final String ERROR_URL = "file:///android_asset/www/htmlnotfound/error.html";
+import org.apache.cordova.test.xhr;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        setUpWithStartUrl(START_URL, "testErrorUrl", ERROR_URL);
-    }
+import android.test.ActivityInstrumentationTestCase2;
 
-    public void testUrl() throws Throwable {
-        assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
-        assertEquals(ERROR_URL, testActivity.onPageFinishedUrl.take());
-        runTestOnUiThread(new Runnable() {
-            public void run() {
-                assertEquals(ERROR_URL, testActivity.getCordovaWebView().getUrl());
-            }
-        });
-    }
+public class XhrTest extends ActivityInstrumentationTestCase2<xhr> {
+
+  public XhrTest()
+  {
+    super(xhr.class);
+  }
 }

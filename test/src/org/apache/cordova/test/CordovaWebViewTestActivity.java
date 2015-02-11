@@ -19,57 +19,90 @@
 
 package org.apache.cordova.test;
 
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.cordova.AndroidChromeClient;
-import org.apache.cordova.AndroidWebView;
 import org.apache.cordova.AndroidWebViewClient;
 import org.apache.cordova.Config;
-import org.apache.cordova.CordovaInterfaceImpl;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.test.R;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
-/**
- * Tests creating the views via inflating a layout, and also tests *not* using CordovaActivity.
- */
-public class CordovaWebViewTestActivity extends Activity {
-    private CordovaWebView cordovaWebView;
-    public final ArrayBlockingQueue<String> onPageFinishedUrl = new ArrayBlockingQueue<String>(5);
-    public static final String START_URL = "file:///android_asset/www/index.html";
+public class CordovaWebViewTestActivity extends Activity implements CordovaInterface {
+    public CordovaWebView cordovaWebView;
 
-    protected CordovaInterfaceImpl cordovaInterface = new CordovaInterfaceImpl(this) {
-        @Override
-        public Object onMessage(String id, Object data) {
-            if ("onPageFinished".equals(id)) {
-                onPageFinishedUrl.add((String) data);
-            }
-            return super.onMessage(id, data);
-        }
-    };
-
+    private final ExecutorService threadPool = Executors.newCachedThreadPool();
+    
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.main);
 
         //CB-7238: This has to be added now, because it got removed from somewhere else
         Config.init(this);
-
-        AndroidWebView webView = (AndroidWebView) findViewById(R.id.cordovaWebView);
-        cordovaWebView = webView;
-        cordovaWebView.init(cordovaInterface, Config.getPluginEntries(), Config.getWhitelist(),
+        
+        cordovaWebView = (CordovaWebView) findViewById(R.id.cordovaWebView);
+        cordovaWebView.init(this, Config.getPluginEntries(), Config.getWhitelist(),
             Config.getExternalWhitelist(), Config.getPreferences());
 
-        cordovaWebView.loadUrl(START_URL);
+        cordovaWebView.loadUrl("file:///android_asset/www/index.html");
+
     }
 
-    public CordovaWebView getCordovaWebView() {
-        return cordovaWebView;
+    public Context getContext() {
+        return this;
+    }
+
+    public void startActivityForResult(CordovaPlugin command, Intent intent,
+            int requestCode) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void setActivityResultCallback(CordovaPlugin plugin) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    //Note: This must always return an activity!
+    public Activity getActivity() {
+        return this;
+    }
+
+    @Deprecated
+    public void cancelLoadUrl() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public Object onMessage(String id, Object data) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public ExecutorService getThreadPool() {
+        // TODO Auto-generated method stub
+        return threadPool;
+    }
+    
+    @Override
+    /**
+     * The final call you receive before your activity is destroyed.
+     */
+    public void onDestroy() {
+        super.onDestroy();
+        if (cordovaWebView != null) {
+            // Send destroy event to JavaScript
+            cordovaWebView.handleDestroy();
+        }
     }
 }

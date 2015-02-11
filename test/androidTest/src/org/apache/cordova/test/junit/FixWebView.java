@@ -16,17 +16,28 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
+package org.apache.cordova.test.junit;
 
-import org.apache.cordova.CordovaActivity;
+import android.content.Context;
+import android.webkit.WebView;
 
-import android.os.Bundle;
+public class FixWebView extends WebView {
 
-public class MainTestActivity extends CordovaActivity {
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        super.loadUrl("file:///android_asset/www/index.html");
+    public FixWebView(Context context) {
+        super(context);
     }
+
+    @Override
+    public void pauseTimers() {
+        // Do nothing
+    }
+
+    /**
+     * This method is with different signature in order to stop the timers while move application to background
+     * @param realPause
+     */
+    public void pauseTimers(@SuppressWarnings("unused") boolean realPause) {
+        super.pauseTimers();
+    }
+
 }

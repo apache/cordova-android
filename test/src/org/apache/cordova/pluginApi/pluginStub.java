@@ -16,17 +16,24 @@
        specific language governing permissions and limitations
        under the License.
 */
-package org.apache.cordova.test;
 
-import org.apache.cordova.CordovaActivity;
+/*
+ * This plugin is a test of all the message callbacks and actions available to plugins
+ * 
+ */
 
-import android.os.Bundle;
+package org.apache.cordova.pluginApi;
 
-public class MainTestActivity extends CordovaActivity {
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        super.loadUrl("file:///android_asset/www/index.html");
+import org.apache.cordova.CordovaPlugin;
+
+public class pluginStub extends CordovaPlugin {
+    
+    public String id;
+    public Object data;
+    
+    public Object onMessage(String id, Object input)
+    {
+       this.data = input;
+       return input;
     }
 }

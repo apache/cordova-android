@@ -16,30 +16,24 @@
        specific language governing permissions and limitations
        under the License.
 */
-
 package org.apache.cordova.test;
 
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.os.Bundle;
+import org.apache.cordova.*;
 
-import org.apache.cordova.AndroidWebView;
+public class fullscreen extends CordovaActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-public class CordovaActivityTest extends BaseCordovaIntegrationTest {
-    private ViewGroup innerContainer;
-    private View testView;
+        // Properties must be set before init() is called, since some are processed during init(). 
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        setUpWithStartUrl(null);
-        innerContainer = (ViewGroup)containerView.getChildAt(0);
-        testView = innerContainer.getChildAt(0);
+        // fullscreen can also be set in cordova.xml.  For example, 
+        //      <preference name="fullscreen" value="true" />
+        preferences.set("fullscreen", true);
+
+        super.init();
+        super.loadUrl("file:///android_asset/www/fullscreen/index.html");
     }
 
-    public void testBasicLoad() throws Exception {
-        assertTrue(testView instanceof AndroidWebView);
-        assertTrue(innerContainer instanceof LinearLayout);
-        String onPageFinishedUrl = testActivity.onPageFinishedUrl.take();
-        assertEquals(MainTestActivity.START_URL, onPageFinishedUrl);
-    }
 }

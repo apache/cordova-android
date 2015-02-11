@@ -1,4 +1,4 @@
-package org.apache.cordova.test;
+package org.apache.cordova.test.junit;
 /*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,21 +21,29 @@ package org.apache.cordova.test;
 */
 
 
-public class HtmlNotFoundTest extends BaseCordovaIntegrationTest {
-  private static final String START_URL = "file:///android_asset/www/htmlnotfound/index.html";
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.test.splashscreen;
 
-  protected void setUp() throws Exception {
-    super.setUp();
-    setUpWithStartUrl(START_URL);
-  }
-  public void testUrl() throws Throwable
+import android.app.Dialog;
+import android.test.ActivityInstrumentationTestCase2;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+
+public class SplashscreenTest extends ActivityInstrumentationTestCase2<splashscreen> {
+  
+  private splashscreen testActivity;
+  private Dialog containerView;
+
+  public SplashscreenTest()
   {
-      assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
-      // TODO: Should this be null? Or some other way to indicate it didn't actually load?
-      runTestOnUiThread(new Runnable() {
-          public void run() {
-              assertEquals(START_URL, testActivity.getCordovaWebView().getUrl());
-          }
-      });
+      super("org.apache.cordova.test",splashscreen.class);
   }
+  
+  protected void setUp() throws Exception {
+      super.setUp();
+      testActivity = this.getActivity();
+      //containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
+      //containerView = (Dialog) testActivity.findViewById(id);
+    }
+
 }

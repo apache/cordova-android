@@ -28,40 +28,52 @@ import android.content.Intent;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
-import org.json.JSONObject;
 
-import java.util.Collections;
-import java.util.Iterator;
-
+/**
+ * This class provides a service.
+ */
 public class ActivityPlugin extends CordovaPlugin {
 
     static String TAG = "ActivityPlugin";
-    public static final String BACKBUTTONMULTIPAGE_URL = "file:///android_asset/www/backbuttonmultipage/index.html";
 
-    public boolean execute(String action, CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        if (action.equals("start")) {
-            String className = args.isNull(0) ? MainTestActivity.class.getCanonicalName() : args.getString(0);
-            String startUrl = args.getString(1);
-            JSONObject extraPrefs = args.getJSONObject(2);
-            this.startActivity(className, startUrl, extraPrefs);
-            callbackContext.success();
-            return true;
+    /**
+     * Constructor.
+     */
+    public ActivityPlugin() {
+    }
+
+    /**
+     * Executes the request and returns PluginResult.
+     *
+     * @param action        The action to execute.
+     * @param args          JSONArry of arguments for the plugin.
+     * @param callbackId    The callback id used when calling back into JavaScript.
+     * @return              A PluginResult object with a status and message.
+     */
+    public boolean execute(String action, CordovaArgs args, final CallbackContext callbackContext) {
+        PluginResult result = new PluginResult(PluginResult.Status.OK, "");
+        try {
+            if (action.equals("start")) {
+                this.startActivity(args.getString(0));
+                callbackContext.sendPluginResult(result);
+                callbackContext.success();
+                return true;
+            }
+        } catch (JSONException e) {
+            result = new PluginResult(PluginResult.Status.JSON_EXCEPTION, "JSON Exception");
+            callbackContext.sendPluginResult(result);
+            return false;
         }
         return false;
     }
 
-    public void startActivity(String className, String startUrl, JSONObject extraPrefs) throws JSONException {
+    // --------------------------------------------------------------------------
+    // LOCAL METHODS
+    // --------------------------------------------------------------------------
+
+    public void startActivity(String className) {
         try {
-            if (!startUrl.contains(":")) {
-                startUrl = "file:///android_asset/www/" + startUrl;
-            }
-            Intent intent = new Intent(this.cordova.getActivity(), Class.forName(className));
-            intent.putExtra("testStartUrl", startUrl);
-            Iterator<String> iter = extraPrefs.keys();
-            while (iter.hasNext()) {
-                String key = iter.next();
-                intent.putExtra(key, extraPrefs.getString(key));
-            }
+            Intent intent = new Intent().setClass(this.cordova.getActivity(), Class.forName(className));
             LOG.d(TAG, "Starting activity %s", className);
             this.cordova.getActivity().startActivity(intent);
         } catch (ClassNotFoundException e) {

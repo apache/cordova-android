@@ -18,15 +18,34 @@
 */
 package org.apache.cordova.test;
 
-import org.apache.cordova.CordovaActivity;
-
 import android.os.Bundle;
+import android.webkit.WebView;
 
-public class MainTestActivity extends CordovaActivity {
-    /** Called when the activity is first created. */
+import org.apache.cordova.*;
+
+public class whitelist extends MainTestActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.loadUrl("file:///android_asset/www/index.html");
+        super.init();
+        ((AndroidWebView)appView).setWebViewClient(new TestViewClient(cordovaInterface, ((AndroidWebView)appView)));
+        super.loadUrl("file:///android_asset/www/whitelist/index.html");
+    }
+
+    /**
+     * This class can be used to override the GapViewClient and receive notification of webview events.
+     */
+    public class TestViewClient extends AndroidWebViewClient {
+
+        public TestViewClient(CordovaInterface ctx, AndroidWebView app) {
+            super(ctx, app);
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            LOG.d("whitelist", "shouldOverrideUrlLoading(" + url + ")");
+            LOG.d("whitelist", "originalUrl=" + view.getOriginalUrl());
+            return super.shouldOverrideUrlLoading(view, url);
+        }
     }
 }

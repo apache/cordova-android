@@ -1,4 +1,4 @@
-package org.apache.cordova.test;
+package org.apache.cordova.test.junit;
 /*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,44 +21,65 @@ package org.apache.cordova.test;
 */
 
 
-import android.test.TouchUtils;
-
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.test.iframe;
 import org.apache.cordova.test.util.Purity;
 
-public class IFrameTest extends BaseCordovaIntegrationTest {
-    private static final String START_URL = "file:///android_asset/www/iframe/index.html";
+import android.app.Activity;
+import android.app.Instrumentation;
+import android.test.ActivityInstrumentationTestCase2;
+import android.test.TouchUtils;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
+public class IFrameTest extends ActivityInstrumentationTestCase2 {
+  
+    
+    private Instrumentation mInstr;
+    private Activity testActivity;
+    private FrameLayout containerView;
+    private LinearLayout innerContainer;
+    private CordovaWebView testView;
     private TouchUtils touch;
     private Purity touchTool;
     
+    public IFrameTest() {
+        super("org.apache.cordova.test",iframe.class);
+    }
+
+  
     protected void setUp() throws Exception {
       super.setUp();
-      setUpWithStartUrl(START_URL);
+      mInstr = this.getInstrumentation();
+      testActivity = this.getActivity();
+      containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
+      innerContainer = (LinearLayout) containerView.getChildAt(0);
+      testView = (CordovaWebView) innerContainer.getChildAt(0);
       touch = new TouchUtils();
       touchTool = new Purity(testActivity, getInstrumentation());
     }
   
   
-    public void testIframeDest() throws Throwable {
-        assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
+    public void testIframeDest() throws Throwable
+    {
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                cordovaWebView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+                testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
             }
         });
         sleep(3000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                cordovaWebView.sendJavascript("loadUrl('index2.html')");
+                testView.sendJavascript("loadUrl('index2.html')");
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = cordovaWebView.getUrl();
+                String url = testView.getUrl();
                 assertTrue(url.endsWith("index.html"));
             }
         });
@@ -69,29 +90,29 @@ public class IFrameTest extends BaseCordovaIntegrationTest {
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                cordovaWebView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+                testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
             }
         });
         sleep(3000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                cordovaWebView.sendJavascript("loadUrl('index2.html')");
+                testView.sendJavascript("loadUrl('index2.html')");
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = cordovaWebView.getUrl();
-                cordovaWebView.backHistory();
+                String url = testView.getUrl();
+                testView.backHistory();
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = cordovaWebView.getUrl();
+                String url = testView.getUrl();
                 assertTrue(url.endsWith("index.html"));
             }
         });
