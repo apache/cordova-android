@@ -171,11 +171,8 @@ public class CordovaBridge {
             // Protect against random iframes being able to talk through the bridge.
             // Trust only file URLs and pages which the app would have been allowed
             // to navigate to anyway.
-            // Trust only file URLs and the start URL's domain.
-            // The extra origin.startsWith("http") is to protect against iframes with data: having "" as origin.
             if (origin.startsWith("file:") ||
                 origin.startsWith(this.appContentUrlPrefix) ||
-                (origin.startsWith("http") && loadedUrl.startsWith(origin)) ||
                 helper.shouldAllowNavigation(origin)) {
                 // Enable the bridge
                 int bridgeMode = Integer.parseInt(defaultValue.substring(9));
