@@ -22,6 +22,7 @@ example
 /test/assets/www/cordova.js
 /test/gradle
 /test/gradlew
+/test/gradlew.bat
 /test/build
 .gradle
 tmp/**
