@@ -1,4 +1,4 @@
-package org.apache.cordova.test.junit;
+package org.apache.cordova.test;
 /*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,65 +21,44 @@ package org.apache.cordova.test.junit;
 */
 
 
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.test.iframe;
+import android.test.TouchUtils;
+
 import org.apache.cordova.test.util.Purity;
 
-import android.app.Activity;
-import android.app.Instrumentation;
-import android.test.ActivityInstrumentationTestCase2;
-import android.test.TouchUtils;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+public class IFrameTest extends BaseCordovaIntegrationTest {
+    private static final String START_URL = "file:///android_asset/www/iframe/index.html";
 
-public class IFrameTest extends ActivityInstrumentationTestCase2 {
-  
-    
-    private Instrumentation mInstr;
-    private Activity testActivity;
-    private FrameLayout containerView;
-    private LinearLayout innerContainer;
-    private CordovaWebView testView;
     private TouchUtils touch;
     private Purity touchTool;
     
-    public IFrameTest() {
-        super("org.apache.cordova.test",iframe.class);
-    }
-
-  
     protected void setUp() throws Exception {
       super.setUp();
-      mInstr = this.getInstrumentation();
-      testActivity = this.getActivity();
-      containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
-      innerContainer = (LinearLayout) containerView.getChildAt(0);
-      testView = (CordovaWebView) innerContainer.getChildAt(0);
+      setUpWithStartUrl(START_URL);
       touch = new TouchUtils();
       touchTool = new Purity(testActivity, getInstrumentation());
     }
   
   
-    public void testIframeDest() throws Throwable
-    {
+    public void testIframeDest() throws Throwable {
+        assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+                cordovaWebView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
             }
         });
         sleep(3000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                testView.sendJavascript("loadUrl('index2.html')");
+                cordovaWebView.sendJavascript("loadUrl('index2.html')");
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = testView.getUrl();
+                String url = cordovaWebView.getUrl();
                 assertTrue(url.endsWith("index.html"));
             }
         });
@@ -90,29 +69,29 @@ public class IFrameTest extends ActivityInstrumentationTestCase2 {
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                testView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+                cordovaWebView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
             }
         });
         sleep(3000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                testView.sendJavascript("loadUrl('index2.html')");
+                cordovaWebView.sendJavascript("loadUrl('index2.html')");
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = testView.getUrl();
-                testView.backHistory();
+                String url = cordovaWebView.getUrl();
+                cordovaWebView.backHistory();
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = testView.getUrl();
+                String url = cordovaWebView.getUrl();
                 assertTrue(url.endsWith("index.html"));
             }
         });
