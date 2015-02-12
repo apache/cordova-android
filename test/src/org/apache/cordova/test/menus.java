@@ -28,7 +28,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import org.apache.cordova.*;
 import org.apache.cordova.LOG;
 
-public class menus extends CordovaActivity {
+public class menus extends BaseTestCordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

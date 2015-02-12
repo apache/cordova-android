@@ -16,63 +16,35 @@
        specific language governing permissions and limitations
        under the License.
 */
-
 package org.apache.cordova.test;
 
-import java.util.concurrent.ExecutorService;
-
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import org.apache.cordova.CordovaActivity;
+import org.apache.cordova.CordovaWebView;
 
-public class CordovaDriverAction extends Activity implements CordovaInterface {
+import java.util.concurrent.ArrayBlockingQueue;
+
+public class BaseTestCordovaActivity extends CordovaActivity {
+    public final ArrayBlockingQueue<String> onPageFinishedUrl = new ArrayBlockingQueue<String>(500);
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
-    public void startActivityForResult(CordovaPlugin command, Intent intent,
-            int requestCode) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void setActivityResultCallback(CordovaPlugin plugin) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public Activity getActivity() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Deprecated
-    public Context getContext() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Deprecated
-    public void cancelLoadUrl() {
-        // TODO Auto-generated method stub
-        
-    }
-
+    @Override
     public Object onMessage(String id, Object data) {
-        // TODO Auto-generated method stub
-        return null;
+        if ("onPageFinished".equals(id)) {
+            onPageFinishedUrl.add((String) data);
+        }
+        return super.onMessage(id, data);
     }
 
-    public ExecutorService getThreadPool() {
-        // TODO Auto-generated method stub
-        return null;
+    public CordovaWebView getCordovaWebView() {
+        return appView;
     }
 
 }
