@@ -209,9 +209,71 @@ var builders = {
             return args;
         },
 
+        // Makes the project buildable, minus the gradle wrapper.
+        prepBuildFiles: function() {
+            var projectPath = ROOT;
+            // Update the version of build.gradle in each dependent library.
+            var pluginBuildGradle = path.join(projectPath, 'cordova', 'lib', 'plugin-build.gradle');
+            var propertiesObj = readProjectProperties();
+            var subProjects = propertiesObj.libs;
+            for (var i = 0; i < subProjects.length; ++i) {
+                if (subProjects[i] !== 'CordovaLib') {
+                    shell.cp('-f', pluginBuildGradle, path.join(ROOT, subProjects[i], 'build.gradle'));
+                }
+            }
+
+            var subProjectsAsGradlePaths = subProjects.map(function(p) { return ':' + p.replace(/[/\\]/g, ':'); });
+            // Write the settings.gradle file.
+            fs.writeFileSync(path.join(projectPath, 'settings.gradle'),
+                '// GENERATED FILE - DO NOT EDIT\n' +
+                'include ":"\n' +
+                'include "' + subProjectsAsGradlePaths.join('"\ninclude "') + '"\n');
+            // Update dependencies within build.gradle.
+            var buildGradle = fs.readFileSync(path.join(projectPath, 'build.gradle'), 'utf8');
+            var depsList = '';
+            subProjectsAsGradlePaths.forEach(function(p) {
+                depsList += '    debugCompile project(path: "' + p + '", configuration: "debug")\n';
+                depsList += '    releaseCompile project(path: "' + p + '", configuration: "release")\n';
+            });
+            // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
+            var SYSTEM_LIBRARY_MAPPINGS = [
+                [/^\/?extras\/android\/support\/(.*)$/, 'com.android.support:support-$1:+'],
+                [/^\/?google\/google_play_services\/libproject\/google-play-services_lib\/?$/, 'com.google.android.gms:play-services:+']
+            ];
+            propertiesObj.systemLibs.forEach(function(p) {
+                var mavenRef;
+                // It's already in gradle form if it has two ':'s
+                if (/:.*:/.exec(p)) {
+                    mavenRef = p;
+                } else {
+                    for (var i = 0; i < SYSTEM_LIBRARY_MAPPINGS.length; ++i) {
+                        var pair = SYSTEM_LIBRARY_MAPPINGS[i];
+                        if (pair[0].exec(p)) {
+                            mavenRef = p.replace(pair[0], pair[1]);
+                            break;
+                        }
+                    }
+                    if (!mavenRef) {
+                        throw new Error('Unsupported system library (does not work with gradle): ' + p);
+                    }
+                }
+                depsList += '    compile "' + mavenRef + '"\n';
+            });
+            buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
+            var includeList = '';
+            propertiesObj.gradleIncludes.forEach(function(includePath) {
+                includeList += 'apply from: "' + includePath + '"\n';
+            });
+            buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
+            fs.writeFileSync(path.join(projectPath, 'build.gradle'), buildGradle);
+        },
+
         prepEnv: function() {
+            var self = this;
             return check_reqs.check_gradle()
             .then(function() {
+                return self.prepBuildFiles();
+            }).then(function() {
                 // Copy the gradle wrapper on each build so that:
                 // A) we don't require the Android SDK at project creation time, and
                 // B) we always use the SDK's latest version of it.
@@ -235,61 +297,6 @@ var builders = {
                 var distributionUrl = 'distributionUrl=http\\://services.gradle.org/distributions/gradle-2.2.1-all.zip';
                 var gradleWrapperPropertiesPath = path.join(projectPath, 'gradle', 'wrapper', 'gradle-wrapper.properties');
                 shell.sed('-i', distributionUrlRegex, distributionUrl, gradleWrapperPropertiesPath);
-
-                // Update the version of build.gradle in each dependent library.
-                var pluginBuildGradle = path.join(projectPath, 'cordova', 'lib', 'plugin-build.gradle');
-                var propertiesObj = readProjectProperties();
-                var subProjects = propertiesObj.libs;
-                for (var i = 0; i < subProjects.length; ++i) {
-                    if (subProjects[i] !== 'CordovaLib') {
-                        shell.cp('-f', pluginBuildGradle, path.join(ROOT, subProjects[i], 'build.gradle'));
-                    }
-                }
-
-                var subProjectsAsGradlePaths = subProjects.map(function(p) { return ':' + p.replace(/[/\\]/g, ':'); });
-                // Write the settings.gradle file.
-                fs.writeFileSync(path.join(projectPath, 'settings.gradle'),
-                    '// GENERATED FILE - DO NOT EDIT\n' +
-                    'include ":"\n' +
-                    'include "' + subProjectsAsGradlePaths.join('"\ninclude "') + '"\n');
-                // Update dependencies within build.gradle.
-                var buildGradle = fs.readFileSync(path.join(projectPath, 'build.gradle'), 'utf8');
-                var depsList = '';
-                subProjectsAsGradlePaths.forEach(function(p) {
-                    depsList += '    debugCompile project(path: "' + p + '", configuration: "debug")\n';
-                    depsList += '    releaseCompile project(path: "' + p + '", configuration: "release")\n';
-                });
-                // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
-                var SYSTEM_LIBRARY_MAPPINGS = [
-                    [/^\/?extras\/android\/support\/(.*)$/, 'com.android.support:support-$1:+'],
-                    [/^\/?google\/google_play_services\/libproject\/google-play-services_lib\/?$/, 'com.google.android.gms:play-services:+']
-                ];
-                propertiesObj.systemLibs.forEach(function(p) {
-                    var mavenRef;
-                    // It's already in gradle form if it has two ':'s
-                    if (/:.*:/.exec(p)) {
-                        mavenRef = p;
-                    } else {
-                        for (var i = 0; i < SYSTEM_LIBRARY_MAPPINGS.length; ++i) {
-                            var pair = SYSTEM_LIBRARY_MAPPINGS[i];
-                            if (pair[0].exec(p)) {
-                                mavenRef = p.replace(pair[0], pair[1]);
-                                break;
-                            }
-                        }
-                        if (!mavenRef) {
-                            throw new Error('Unsupported system library (does not work with gradle): ' + p);
-                        }
-                    }
-                    depsList += '    compile "' + mavenRef + '"\n';
-                });
-                buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
-                var includeList = '';
-                propertiesObj.gradleIncludes.forEach(function(includePath) {
-                    includeList += 'apply from: "' + includePath + '"\n';
-                });
-                buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
-                fs.writeFileSync(path.join(projectPath, 'build.gradle'), buildGradle);
             });
         },
 
@@ -380,6 +387,8 @@ function parseOpts(options, resolvedTarget) {
                     // Don't need to do anything special to when building for device vs emulator.
                     // iOS uses this flag to switch on architecture.
                     break;
+                case 'prepenv' :
+                    ret.prepEnv = true;
                 case 'nobuild' :
                     ret.buildMethod = 'none';
                     break;
@@ -429,17 +438,28 @@ module.exports.run = function(options, optResolvedTarget) {
     var builder = builders[opts.buildMethod];
     return builder.prepEnv()
     .then(function() {
-        return builder.build(opts.buildType, opts.arch, opts.extraArgs);
-    }).then(function() {
-        var apkPaths = builder.findOutputApks(opts.buildType, opts.arch);
-        console.log('Built the following apk(s):');
-        console.log('    ' + apkPaths.join('\n    '));
-        return {
-            apkPaths: apkPaths,
-            buildType: opts.buildType,
-            buildMethod: opts.buildMethod
-        };
+        if (opts.prepEnv) {
+            console.log('Build file successfully prepared.');
+            return;
+        }
+        return builder.build(opts.buildType, opts.arch, opts.extraArgs)
+        .then(function() {
+            var apkPaths = builder.findOutputApks(opts.buildType, opts.arch);
+            console.log('Built the following apk(s):');
+            console.log('    ' + apkPaths.join('\n    '));
+            return {
+                apkPaths: apkPaths,
+                buildType: opts.buildType,
+                buildMethod: opts.buildMethod
+            };
+        });
     });
+};
+
+// Called by plugman after installing plugins, and by create script after creating project.
+module.exports.prepBuildFiles = function() {
+    var builder = builders['gradle'];
+    return builder.prepBuildFiles();
 };
 
 /*
@@ -517,6 +537,7 @@ module.exports.help = function() {
     console.log('    \'--ant\': will build project with ant');
     console.log('    \'--gradle\': will build project with gradle (default)');
     console.log('    \'--nobuild\': will skip build process (useful when using run command)');
+    console.log('    \'--prepenv\': don\'t build, but copy in build scripts where necessary');
     console.log('    \'--versionCode=#\': Override versionCode for this build. Useful for uploading multiple APKs. Requires --gradle.');
     console.log('    \'--minSdkVersion=#\': Override minSdkVersion for this build. Useful for uploading multiple APKs. Requires --gradle.');
     console.log('    \'--gradleArg=<gradle command line arg>\': Extra args to pass to the gradle command. Use one flag per arg. Ex. --gradleArg=-PcdvBuildMultipleApks=true');

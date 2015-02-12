@@ -115,6 +115,11 @@ function writeProjectProperties(projectPath, target_api) {
     fs.writeFileSync(dstPath, data);
 }
 
+function prepBuildFiles(projectPath) {
+    var buildModule = require(path.join(path.resolve(projectPath), 'cordova', 'lib', 'build'));
+    buildModule.prepBuildFiles();
+}
+
 function copyBuildRules(projectPath) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
@@ -273,6 +278,7 @@ exports.createProject = function(project_path, package_name, project_name, proje
         });
         // Link it to local android install.
         writeProjectProperties(project_path, target_api);
+        prepBuildFiles(project_path);
         console.log(generateDoneMessage('create', use_shared_project));
     });
 };
@@ -313,6 +319,7 @@ exports.updateProject = function(projectPath, shared) {
         copyBuildRules(projectPath);
         removeDebuggableFromManifest(projectPath);
         writeProjectProperties(projectPath, target_api);
+        prepBuildFiles(project_path);
         console.log(generateDoneMessage('update', shared));
     });
 };
