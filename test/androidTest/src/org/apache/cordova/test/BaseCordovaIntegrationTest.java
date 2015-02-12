@@ -37,14 +37,11 @@ public class BaseCordovaIntegrationTest extends ActivityInstrumentationTestCase2
     super(MainTestActivity.class);
   }
 
-    protected void setUpWithStartUrl(String url) {
-        setUpWithStartUrl(url, null, null);
-    }
-    protected void setUpWithStartUrl(String url, String prefKey, String prefValue) {
+    protected void setUpWithStartUrl(String url, String... prefsAndValues) {
         Intent intent = new Intent(getInstrumentation().getContext(), MainTestActivity.class);
         intent.putExtra("testStartUrl", url);
-        if (prefKey != null) {
-            intent.putExtra(prefKey, prefValue);
+        for (int i = 0; i < prefsAndValues.length; i += 2) {
+            intent.putExtra(prefsAndValues[i], prefsAndValues[i + 1]);
         }
         setActivityIntent(intent);
         testActivity = getActivity();

@@ -24,10 +24,12 @@ package org.apache.cordova.test;
 public class ErrorUrlTest extends BaseCordovaIntegrationTest {
     private static final String START_URL = "file:///android_asset/www/htmlnotfound/index.html";
     private static final String ERROR_URL = "file:///android_asset/www/htmlnotfound/error.html";
+    private static final String INVALID_URL = "file:///android_asset/www/htmlnotfound/invalid.html";
 
     protected void setUp() throws Exception {
         super.setUp();
-        setUpWithStartUrl(START_URL, "testErrorUrl", ERROR_URL);
+        // INVALID_URL tests that errorUrl and url are *not* settable via the intent.
+        setUpWithStartUrl(START_URL, "testErrorUrl", ERROR_URL, "errorurl", INVALID_URL, "url", INVALID_URL);
     }
 
     public void testUrl() throws Throwable {
