@@ -319,7 +319,7 @@ exports.updateProject = function(projectPath, shared) {
         copyBuildRules(projectPath);
         removeDebuggableFromManifest(projectPath);
         writeProjectProperties(projectPath, target_api);
-        prepBuildFiles(project_path);
+        prepBuildFiles(projectPath);
         console.log(generateDoneMessage('update', shared));
     });
 };
