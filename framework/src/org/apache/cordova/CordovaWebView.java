@@ -13,7 +13,6 @@ public interface CordovaWebView {
     public static final String CORDOVA_VERSION = "4.0.0-dev";
 
     void init(CordovaInterface cordova, List<PluginEntry> pluginEntries,
-            Whitelist internalWhitelist, Whitelist externalWhitelist,
             CordovaPreferences preferences);
 
     View getView();
@@ -81,8 +80,6 @@ public interface CordovaWebView {
 
     PluginManager getPluginManager();
 
-    Whitelist getWhitelist();
-    Whitelist getExternalWhitelist();
     CordovaPreferences getPreferences();
     ICordovaCookieManager getCookieManager();
 

@@ -63,8 +63,7 @@ public class CordovaWebViewTestActivity extends Activity {
 
         AndroidWebView webView = (AndroidWebView) findViewById(R.id.cordovaWebView);
         cordovaWebView = webView;
-        cordovaWebView.init(cordovaInterface, Config.getPluginEntries(), Config.getWhitelist(),
-            Config.getExternalWhitelist(), Config.getPreferences());
+        cordovaWebView.init(cordovaInterface, Config.getPluginEntries(), Config.getPreferences());
 
         cordovaWebView.loadUrl(START_URL);
     }
