@@ -389,6 +389,7 @@ function parseOpts(options, resolvedTarget) {
                     break;
                 case 'prepenv' :
                     ret.prepEnv = true;
+                    break;
                 case 'nobuild' :
                     ret.buildMethod = 'none';
                     break;
