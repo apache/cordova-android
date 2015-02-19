@@ -138,7 +138,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
                 cordova.getActivity().runOnUiThread(r);
             }
         }));
-        bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue, this.cordova.getActivity().getPackageName(), helper);
+        bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue, this.cordova.getActivity().getPackageName());
         initWebViewSettings();
         pluginManager.addService(CoreAndroid.PLUGIN_NAME, CoreAndroid.class.getCanonicalName());
         pluginManager.init();
@@ -383,7 +383,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         if (LOG.isLoggable(LOG.DEBUG) && !url.startsWith("javascript:")) {
             LOG.d(TAG, ">>> loadUrlNow()");
         }
-        if (url.startsWith("javascript:") || helper.shouldAllowNavigation(url)) {
+        if (url.startsWith("javascript:") || pluginManager.shouldAllowNavigation(url)) {
             super.loadUrl(url);
         }
     }
@@ -458,7 +458,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         if (!openExternal) {
 
             // Make sure url is in whitelist
-            if (helper.shouldAllowNavigation(url)) {
+            if (pluginManager.shouldAllowNavigation(url)) {
                 // TODO: What about params?
                 // Load new URL
                 loadUrlIntoView(url, true);

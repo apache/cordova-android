@@ -38,13 +38,11 @@ public class CordovaBridge {
     private volatile int expectedBridgeSecret = -1; // written by UI thread, read by JS thread.
     private String loadedUrl;
     private String appContentUrlPrefix;
-    protected CordovaUriHelper helper;
 
-    public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue, String packageName, CordovaUriHelper helper) {
+    public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue, String packageName) {
         this.pluginManager = pluginManager;
         this.jsMessageQueue = jsMessageQueue;
         this.appContentUrlPrefix = "content://" + packageName + ".";
-        this.helper = helper;
     }
 
     public String jsExec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
@@ -173,7 +171,7 @@ public class CordovaBridge {
             // to navigate to anyway.
             if (origin.startsWith("file:") ||
                 origin.startsWith(this.appContentUrlPrefix) ||
-                helper.shouldAllowNavigation(origin)) {
+                pluginManager.shouldAllowNavigation(origin)) {
                 // Enable the bridge
                 int bridgeMode = Integer.parseInt(defaultValue.substring(9));
                 jsMessageQueue.setBridgeMode(bridgeMode);

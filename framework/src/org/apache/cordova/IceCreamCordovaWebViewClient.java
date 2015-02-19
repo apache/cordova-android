@@ -45,7 +45,7 @@ public class IceCreamCordovaWebViewClient extends AndroidWebViewClient {
         try {
             // Check the against the whitelist and lock out access to the WebView directory
             // Changing this will cause problems for your application
-            if (!helper.shouldAllowRequest(url)) {
+            if (!appView.getPluginManager().shouldAllowRequest(url)) {
                 LOG.w(TAG, "URL blocked by whitelist: " + url);
                 // Results in a 404.
                 return new WebResourceResponse("text/plain", "UTF-8", null);

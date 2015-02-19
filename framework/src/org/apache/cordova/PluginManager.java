@@ -313,22 +313,25 @@ public class PluginManager {
      *                    false: At least one plugin returned false (block the
      *                           resource)
      */
-    public Boolean shouldAllowRequest(String url) {
-        Boolean anyResponded = null;
+    public boolean shouldAllowRequest(String url) {
         for (PluginEntry entry : this.entryMap.values()) {
             CordovaPlugin plugin = pluginMap.get(entry.service);
             if (plugin != null) {
                 Boolean result = plugin.shouldAllowRequest(url);
                 if (result != null) {
-                    anyResponded = true;
-                    if (!result) {
-                        return false;
-                    }
+                    return result;
                 }
             }
         }
-        // This will be true if all plugins allow the request, or null if no plugins override the method
-        return anyResponded;
+
+        // Default policy:
+        // Internal urls on file:// or data:// that do not contain "/app_webview/" are allowed for navigation
+        if (url.startsWith("file://") || url.startsWith("data:")) {
+            //This directory on WebKit/Blink based webviews contains SQLite databases!
+            //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
+            return !url.contains("/app_webview/");
+        }
+        return false;
     }
 
     /**
@@ -347,22 +350,25 @@ public class PluginManager {
      *                    false: At least one plugin returned false (block the
      *                           navigation)
      */
-    public Boolean shouldAllowNavigation(String url) {
-        Boolean anyResponded = null;
+    public boolean shouldAllowNavigation(String url) {
         for (PluginEntry entry : this.entryMap.values()) {
             CordovaPlugin plugin = pluginMap.get(entry.service);
             if (plugin != null) {
                 Boolean result = plugin.shouldAllowNavigation(url);
                 if (result != null) {
-                    anyResponded = true;
-                    if (!result) {
-                        return false;
-                    }
+                    return result;
                 }
             }
         }
-        // This will be true if all plugins allow the request, or null if no plugins override the method
-        return anyResponded;
+
+        // Default policy:
+        // Internal urls on file:// or data:// that do not contain "/app_webview/" are allowed for navigation
+        if (url.startsWith("file://") || url.startsWith("data:")) {
+            // This directory on WebKit/Blink based webviews contains SQLite databases!
+            // DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
+            return !url.contains("/app_webview/");
+        }
+        return false;
     }
 
     /**
@@ -384,21 +390,18 @@ public class PluginManager {
      *                           intent)
      */
     public Boolean shouldOpenExternalUrl(String url) {
-        Boolean anyResponded = null;
         for (PluginEntry entry : this.entryMap.values()) {
             CordovaPlugin plugin = pluginMap.get(entry.service);
             if (plugin != null) {
                 Boolean result = plugin.shouldOpenExternalUrl(url);
                 if (result != null) {
-                    anyResponded = true;
-                    if (!result) {
-                        return false;
-                    }
+                    return result;
                 }
             }
         }
-        // This will be true if all plugins allow the request, or null if no plugins override the method
-        return anyResponded;
+        // Default policy:
+        // External URLs are not allowed
+        return false;
     }
 
     /**

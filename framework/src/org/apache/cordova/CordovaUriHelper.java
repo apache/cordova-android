@@ -40,67 +40,6 @@ public class CordovaUriHelper {
     }
 
     /**
-     * Determine whether the webview should be allowed to navigate to a given URL.
-     *
-     * This method implements the default whitelist policy when no plugins override
-     * shouldAllowNavigation
-     */
-    public boolean shouldAllowNavigation(String url) {
-        Boolean pluginManagerAllowsNavigation = this.appView.getPluginManager().shouldAllowNavigation(url);
-        if (pluginManagerAllowsNavigation == null) {
-            // Default policy:
-            // Internal urls on file:// or data:// that do not contain "/app_webview/" are allowed for navigation
-            if(url.startsWith("file://") || url.startsWith("data:"))
-            {
-                //This directory on WebKit/Blink based webviews contains SQLite databases!
-                //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
-                return !url.contains("/app_webview/");
-            }
-            return false;
-        }
-        return pluginManagerAllowsNavigation;
-    }
-
-    /**
-     * Determine whether the webview should be allowed to launch an intent for a given URL.
-     *
-     * This method implements the default whitelist policy when no plugins override
-     * shouldOpenExternalUrl
-     */
-    public boolean shouldOpenExternalUrl(String url) {
-        Boolean pluginManagerAllowsExternalUrl = this.appView.getPluginManager().shouldOpenExternalUrl(url);
-        if (pluginManagerAllowsExternalUrl == null) {
-            // Default policy:
-            // External URLs are not allowed
-            return false;
-        }
-        return pluginManagerAllowsExternalUrl;
-    }
-
-    /**
-     * Determine whether the webview should be allowed to request a resource from a given URL.
-     *
-     * This method implements the default whitelist policy when no plugins override
-     * shouldAllowRequest
-     */
-    public boolean shouldAllowRequest(String url) {
-
-        Boolean pluginManagerAllowsRequest = this.appView.getPluginManager().shouldAllowRequest(url);
-        if (pluginManagerAllowsRequest == null) {
-            // Default policy:
-            // Internal urls on file:// or data:// that do not contain "/app_webview/" are allowed for navigation
-            if(url.startsWith("file://") || url.startsWith("data:"))
-            {
-                //This directory on WebKit/Blink based webviews contains SQLite databases!
-                //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
-                return !url.contains("/app_webview/");
-            }
-            return false;
-        }
-        return pluginManagerAllowsRequest;
-    }
-
-    /**
      * Give the host application a chance to take over the control when a new url
      * is about to be loaded in the current WebView.
      *
@@ -109,18 +48,17 @@ public class CordovaUriHelper {
      *   Internal urls on file:// or data:// that do not contain "app_webview" are allowed for navigation
      *   External urls are not allowed.
      *
-     * @param view          The WebView that is initiating the callback.
      * @param url           The url to be loaded.
      * @return              true to override, false for default behavior
      */
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     public boolean shouldOverrideUrlLoading(String url) {
         // Give plugins the chance to handle the url
-        if (shouldAllowNavigation(url)) {
+        if (appView.getPluginManager().shouldAllowNavigation(url)) {
             // Allow internal navigation
             return false;
         }
-        if (shouldOpenExternalUrl(url)) {
+        if (appView.getPluginManager().shouldOpenExternalUrl(url)) {
             // Do nothing other than what the plugins wanted.
             // If any returned false, then the request was either blocked
             // completely, or handled out-of-band by the plugin. If they all
