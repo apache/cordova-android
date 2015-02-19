@@ -163,16 +163,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     private void initWebViewSettings() {
         this.setInitialScale(0);
         this.setVerticalScrollBarEnabled(false);
-        // TODO: The Activity is the one that should call requestFocus().
-        if (shouldRequestFocusOnInit()) {
-            this.requestFocusFromTouch();
-        }
-        this.setInitialScale(0);
-        this.setVerticalScrollBarEnabled(false);
-        if (shouldRequestFocusOnInit()) {
-            this.requestFocusFromTouch();
-        }
-        // Enable JavaScript
         final WebSettings settings = this.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
@@ -266,16 +256,6 @@ public class AndroidWebView extends WebView implements CordovaWebView {
             e.printStackTrace();
         }
     }
-
-	/**
-	 * Override this method to decide whether or not you need to request the
-	 * focus when your application start
-	 * 
-	 * @return true unless this method is overriden to return a different value
-	 */
-    protected boolean shouldRequestFocusOnInit() {
-		return true;
-	}
 
     private void exposeJsInterface() {
         if ((Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1)) {

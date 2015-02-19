@@ -147,6 +147,8 @@ public class CordovaActivity extends Activity {
         if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
+
+        appView.getView().requestFocusFromTouch();
     }
 
     @SuppressWarnings("deprecation")
