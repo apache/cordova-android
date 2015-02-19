@@ -1,6 +1,6 @@
 package org.apache.cordova;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 import android.content.Context;
@@ -63,7 +63,7 @@ public interface CordovaWebView {
     @Deprecated
     void sendJavascript(String statememt);
 
-    void showWebPage(String errorUrl, boolean b, boolean c, HashMap<String, Object> params);
+    void showWebPage(String errorUrl, boolean b, boolean c, Map<String, Object> params);
 
     boolean isCustomViewShowing();
 

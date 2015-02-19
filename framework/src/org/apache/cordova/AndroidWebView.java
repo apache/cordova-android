@@ -21,9 +21,9 @@ package org.apache.cordova;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -442,7 +442,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
      * @param clearHistory  Clear the history stack, so new page becomes top of history
      * @param params        Parameters for new app
      */
-    public void showWebPage(String url, boolean openExternal, boolean clearHistory, HashMap<String, Object> params) {
+    public void showWebPage(String url, boolean openExternal, boolean clearHistory, Map<String, Object> params) {
         LOG.d(TAG, "showWebPage(%s, %b, %b, HashMap", url, openExternal, clearHistory);
 
         // If clearing history
