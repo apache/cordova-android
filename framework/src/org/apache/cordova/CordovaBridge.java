@@ -20,7 +20,6 @@ package org.apache.cordova;
 
 import java.security.SecureRandom;
 
-import org.apache.cordova.PluginManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -36,13 +35,10 @@ public class CordovaBridge {
     private PluginManager pluginManager;
     private NativeToJsMessageQueue jsMessageQueue;
     private volatile int expectedBridgeSecret = -1; // written by UI thread, read by JS thread.
-    private String loadedUrl;
-    private String appContentUrlPrefix;
 
     public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue, String packageName) {
         this.pluginManager = pluginManager;
         this.jsMessageQueue = jsMessageQueue;
-        this.appContentUrlPrefix = "content://" + packageName + ".";
     }
 
     public String jsExec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
@@ -118,10 +114,9 @@ public class CordovaBridge {
         return expectedBridgeSecret;
     }
 
-    public void reset(String loadedUrl) {
+    public void reset() {
         jsMessageQueue.reset();
         clearBridgeSecret();        
-        this.loadedUrl = loadedUrl;
     }
 
     public String promptOnJsPrompt(String origin, String message, String defaultValue) {
@@ -167,11 +162,8 @@ public class CordovaBridge {
         }
         else if (defaultValue != null && defaultValue.startsWith("gap_init:")) {
             // Protect against random iframes being able to talk through the bridge.
-            // Trust only file URLs and pages which the app would have been allowed
-            // to navigate to anyway.
-            if (origin.startsWith("file:") ||
-                origin.startsWith(this.appContentUrlPrefix) ||
-                pluginManager.shouldAllowNavigation(origin)) {
+            // Trust only pages which the app would have been allowed to navigate to anyway.
+            if (pluginManager.shouldAllowNavigation(origin)) {
                 // Enable the bridge
                 int bridgeMode = Integer.parseInt(defaultValue.substring(9));
                 jsMessageQueue.setBridgeMode(bridgeMode);

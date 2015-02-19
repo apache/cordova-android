@@ -780,7 +780,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
     void onPageReset() {
         boundKeyCodes.clear();
         pluginManager.onReset();
-        bridge.reset(loadedUrl);
+        bridge.reset();
     }
 
     @Override
