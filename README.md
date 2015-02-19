@@ -18,36 +18,30 @@
 # under the License.
 #
 -->
-Cordova Android
-===
+# Cordova Android
 
 Cordova Android is an Android application library that allows for Cordova-based
 projects to be built for the Android Platform. Cordova based applications are,
 at the core, applications written with web technology: HTML, CSS and JavaScript.
 
-[Apache Cordova](http://cordova.io) is a project of The Apache Software Foundation (ASF).
+[Apache Cordova](https://cordova.apache.org) is a project of The Apache Software Foundation (ASF).
 
 
-Requires
----
+## Requires
 
-- Java JDK 1.5 or greater
-- Apache Ant 1.8.0 or greater
+- Java JDK 1.6 or greater
 - Android SDK [http://developer.android.com](http://developer.android.com)
 
 
-Cordova Android Developer Tools
----
+## Cordova Android Developer Tools
 
-The Cordova developer tooling is split between general tooling and project level tooling.
+We recommend using the [Cordova command-line tool](https://www.npmjs.com/package/cordova) to create projects and be able to easily install plugins.
 
-General Commands
+However, the following scripts can be used instead:
 
     ./bin/create [path package activity] ... creates the ./example app or a cordova android project
     ./bin/check_reqs ....................... checks that your environment is set up for cordova-android development
     ./bin/update [path] .................... updates an existing cordova-android project to the version of the framework
-
-Project Commands
 
 These commands live in a generated Cordova Android project. Any interactions with the emulator require you to have an AVD defined.
 
@@ -57,35 +51,8 @@ These commands live in a generated Cordova Android project. Any interactions wit
     ./cordova/run   ........................ calls `build` then deploys to a connected Android device. If no Android device is detected, will launch an emulator and deploy to it.
     ./cordova/version ...................... returns the cordova-android version of the current project
 
-Importing a Cordova Android Project into Eclipse
-----
+## Using Android Studio
 
-1. File > New > Project...
-2. Android > Android Project
-3. Create project from existing source (point to the generated app found in tmp/android)
-4. Right click on libs/cordova.jar and add to build path
-5. Right click on the project root: Run as > Run Configurations
-6. Click on the Target tab and select Manual (this way you can choose the emulator or device to build to)
+1. Create a project
+2. Import it via "Non-Android Studio Project"
 
-Building without the Tooling
----
-Note: The Developer Tools handle this.  This is only to be done if the tooling fails, or if
-you are developing directly against the framework.
-
-
-To create your `cordova.jar` file, run in the framework directory:
-
-    android update project -p . -t android-19
-    ant jar
-
-
-Running Tests
-----
-Please see details under test/README.md.
-
-Further Reading
-----
-
-- [http://developer.android.com](http://developer.android.com)
-- [http://cordova.apache.org/](http://cordova.apache.org)
-- [http://wiki.apache.org/cordova/](http://wiki.apache.org/cordova/)
