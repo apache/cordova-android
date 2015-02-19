@@ -18,14 +18,7 @@
 */
 package org.apache.cordova.test;
 
-import org.apache.cordova.CordovaActivity;
-import org.apache.cordova.CordovaInterfaceImpl;
-import org.apache.cordova.CordovaWebView;
-
-import android.content.Intent;
 import android.os.Bundle;
-
-import java.util.concurrent.ArrayBlockingQueue;
 
 public class MainTestActivity extends BaseTestCordovaActivity {
     public static final String START_URL = "file:///android_asset/www/index.html";
@@ -41,7 +34,7 @@ public class MainTestActivity extends BaseTestCordovaActivity {
         super.loadUrl(url);
     }
 
-    @Override protected  void loadConfig() {
+    @Override protected void loadConfig() {
         super.loadConfig();
         // Need to set this explicitly in prefs since it's not settable via bundle extras (for security reasons).
         String errorUrl = getIntent().getStringExtra("testErrorUrl");
