@@ -19,7 +19,6 @@
 package org.apache.cordova;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -350,7 +349,6 @@ public class CordovaActivity extends Activity {
 
         // If errorUrl specified, then load it
         final String errorUrl = preferences.getString("errorUrl", null);
-        CordovaUriHelper helper = new CordovaUriHelper(this.cordovaInterface, appView);
         if ((errorUrl != null) && (!failingUrl.equals(errorUrl)) && (appView != null)) {
             // Load URL on UI thread
             me.runOnUiThread(new Runnable() {

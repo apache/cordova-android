@@ -36,7 +36,7 @@ public class CordovaBridge {
     private NativeToJsMessageQueue jsMessageQueue;
     private volatile int expectedBridgeSecret = -1; // written by UI thread, read by JS thread.
 
-    public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue, String packageName) {
+    public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue) {
         this.pluginManager = pluginManager;
         this.jsMessageQueue = jsMessageQueue;
     }
@@ -176,9 +176,5 @@ public class CordovaBridge {
             return "";
         }
         return null;
-    }
-    
-    public NativeToJsMessageQueue getMessageQueue() {
-        return jsMessageQueue;
     }
 }

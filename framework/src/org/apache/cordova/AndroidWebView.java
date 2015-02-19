@@ -80,6 +80,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
 
     private long lastMenuEventTime = 0;
 
+    private NativeToJsMessageQueue nativeToJsMessageQueue;
     CordovaBridge bridge;
 
     /** custom view created by the browser (a video player for example) */
@@ -123,7 +124,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
         pluginManager = new PluginManager(this, this.cordova, pluginEntries);
         cookieManager = new AndroidCookieManager(this);
         resourceApi = new CordovaResourceApi(this.getContext(), pluginManager);
-        NativeToJsMessageQueue nativeToJsMessageQueue = new NativeToJsMessageQueue();
+        nativeToJsMessageQueue = new NativeToJsMessageQueue();
         nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.NoOpBridgeMode());
         nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.LoadUrlBridgeMode(this, cordova));
         nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.OnlineEventsBridgeMode(new NativeToJsMessageQueue.OnlineEventsBridgeMode.OnlineEventsBridgeModeDelegate() {
@@ -137,7 +138,7 @@ public class AndroidWebView extends WebView implements CordovaWebView {
                 cordova.getActivity().runOnUiThread(r);
             }
         }));
-        bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue, this.cordova.getActivity().getPackageName());
+        bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue);
         initWebViewSettings();
         pluginManager.addService(CoreAndroid.PLUGIN_NAME, CoreAndroid.class.getCanonicalName());
         pluginManager.init();
@@ -403,14 +404,14 @@ public class AndroidWebView extends WebView implements CordovaWebView {
      * (This is a convenience method)
      */
     public void sendJavascript(String statement) {
-        bridge.getMessageQueue().addJavaScript(statement);
+        nativeToJsMessageQueue.addJavaScript(statement);
     }
 
     /**
      * Send a plugin result back to JavaScript.
      */
     public void sendPluginResult(PluginResult result, String callbackId) {
-        bridge.getMessageQueue().addPluginResult(result, callbackId);
+        nativeToJsMessageQueue.addPluginResult(result, callbackId);
     }
 
     /**
