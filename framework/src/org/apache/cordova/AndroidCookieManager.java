@@ -24,38 +24,37 @@ import android.webkit.CookieManager;
 import android.webkit.WebView;
 
 class AndroidCookieManager implements ICordovaCookieManager {
-
-    protected WebView webView;
+    protected final WebView webView;
+    private final CookieManager cookieManager;
 
     public AndroidCookieManager(WebView webview) {
         webView = webview;
+        cookieManager = CookieManager.getInstance();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-            CookieManager cookieManager = CookieManager.getInstance();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             cookieManager.setAcceptThirdPartyCookies(webView, true);
         }
     }
 
     public void setCookiesEnabled(boolean accept) {
-        CookieManager.getInstance().setAcceptCookie(accept);
+        cookieManager.setAcceptCookie(accept);
     }
 
     public void setCookie(final String url, final String value) {
-        CookieManager.getInstance().setCookie(url, value);
+        cookieManager.setCookie(url, value);
     }
 
     public String getCookie(final String url) {
-        return CookieManager.getInstance().getCookie(url);
+        return cookieManager.getCookie(url);
     }
 
     public void clearCookies() {
-        CookieManager.getInstance().removeAllCookie();
+        cookieManager.removeAllCookie();
     }
 
     public void flush() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CookieManager.getInstance().flush();
+            cookieManager.flush();
         }
     }
 };
