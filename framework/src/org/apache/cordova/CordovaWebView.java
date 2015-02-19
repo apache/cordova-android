@@ -77,10 +77,22 @@ public interface CordovaWebView {
 
     void showWebPage(String errorUrl, boolean b, boolean c, Map<String, Object> params);
 
+    /**
+     * Deprecated in 4.0.0. Use your own View-toggling logic.
+     */
+    @Deprecated
     boolean isCustomViewShowing();
 
+    /**
+     * Deprecated in 4.0.0. Use your own View-toggling logic.
+     */
+    @Deprecated
     void showCustomView(View view, CustomViewCallback callback);
 
+    /**
+     * Deprecated in 4.0.0. Use your own View-toggling logic.
+     */
+    @Deprecated
     void hideCustomView();
 
     CordovaResourceApi getResourceApi();
