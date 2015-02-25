@@ -181,12 +181,13 @@ public class CordovaActivity extends Activity {
             LOG.d(TAG, "removing appView from existing parent");
             ViewGroup parentGroup = (ViewGroup) parent;
             parentGroup.removeView(appView.getView());
+        if (preferences.contains("BackgroundColor")) {
+            int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
+            // Background of activity:
+            appView.getView().setBackgroundColor(backgroundColor);
         }
         root.addView(appView.getView());
         setContentView(root);
-
-        int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
-        root.setBackgroundColor(backgroundColor);
         appView.getView().requestFocusFromTouch();
     }
 
