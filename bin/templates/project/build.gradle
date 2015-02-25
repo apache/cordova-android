@@ -274,17 +274,18 @@ def addSigningProps(propsFilePath, signingConfig) {
     propsFile.withReader { reader ->
         props.load(reader)
     }
-    def storeFile = new File(privateHelpers.ensureValueExists(propsFilePath, props, 'storeFile'))
+
+    def storeFile = new File(props.get('key.store') ?: privateHelpers.ensureValueExists(propsFilePath, props, 'storeFile'))
     if (!storeFile.isAbsolute()) {
         storeFile = RelativePath.parse(true, storeFile.toString()).getFile(propsFile.getParentFile())
     }
     if (!storeFile.exists()) {
         throw new FileNotFoundException('Keystore file does not exist: ' + storeFile.getAbsolutePath())
     }
-    signingConfig.keyAlias = privateHelpers.ensureValueExists(propsFilePath, props, 'keyAlias')
-    signingConfig.keyPassword = props.get('keyPassword', signingConfig.keyPassword)
+    signingConfig.keyAlias = props.get('key.alias') ?: privateHelpers.ensureValueExists(propsFilePath, props, 'keyAlias')
+    signingConfig.keyPassword = props.get('keyPassword', props.get('key.alias.password', signingConfig.keyPassword))
     signingConfig.storeFile = storeFile
-    signingConfig.storePassword = props.get('storePassword', signingConfig.storePassword)
+    signingConfig.storePassword = props.get('storePassword', props.get('key.store.password', signingConfig.storePassword))
     def storeType = props.get('storeType')
     if (!storeType) {
         def filename = storeFile.getName().toLowerCase();
