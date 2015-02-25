@@ -476,8 +476,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
     }
 
     protected class EngineClient implements CordovaWebViewEngine.Client {
-        private long lastMenuEventTime = 0;
-
         @Override
         public void clearLoadTimeoutTimer() {
             loadUrlTimeout++;
@@ -539,75 +537,47 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
 
         @Override
-        public Boolean onKeyDown(int keyCode, KeyEvent event) {
-            if (boundKeyCodes.contains(keyCode))
-            {
-                if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-                    sendJavascriptEvent("volumedownbutton");
+        public Boolean onDispatchKeyEvent(KeyEvent event) {
+            int keyCode = event.getKeyCode();
+            boolean isBackButton = keyCode == KeyEvent.KEYCODE_BACK;
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (isBackButton && mCustomView != null) {
                     return true;
-                } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-                    sendJavascriptEvent("volumeupbutton");
+                } else if (boundKeyCodes.contains(keyCode)) {
                     return true;
+                } else if (isBackButton) {
+                    return engine.canGoBack();
                 }
-                return null;
-            }
-            else if (keyCode == KeyEvent.KEYCODE_BACK)
-            {
-                return !engine.canGoBack() || isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK);
-            }
-            else if(keyCode == KeyEvent.KEYCODE_MENU)
-            {
-                //How did we get here?  Is there a childView?
-                View childView = ((ViewGroup)engine.getView().getParent()).getFocusedChild();
-                if(childView != null)
-                {
-                    //Make sure we close the keyboard if it's present
-                    InputMethodManager imm = (InputMethodManager) cordova.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(childView.getWindowToken(), 0);
-                    cordova.getActivity().openOptionsMenu();
-                    return true;
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public Boolean onKeyUp(int keyCode, KeyEvent event)
-        {
-            // If back key
-            if (keyCode == KeyEvent.KEYCODE_BACK) {
-                // A custom view is currently displayed  (e.g. playing a video)
-                if(mCustomView != null) {
+            } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                if (isBackButton && mCustomView != null) {
                     hideCustomView();
                     return true;
-                } else {
-                    // The webview is currently displayed
-                    // If back key is bound, then send event to JavaScript
-                    if (isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK)) {
-                        sendJavascriptEvent("backbutton");
-                        return true;
-                    } else {
-                        // If not bound
-                        // Go to previous page in webview if it is possible to go back
-                        if (engine.goBack()) {
-                            return true;
-                        }
-                        // If not, then invoke default behavior
+                } else if (boundKeyCodes.contains(keyCode)) {
+                    String eventName = null;
+                    switch (keyCode) {
+                        case KeyEvent.KEYCODE_VOLUME_DOWN:
+                            eventName = "volumedownbutton";
+                            break;
+                        case KeyEvent.KEYCODE_VOLUME_UP:
+                            eventName = "volumeupbutton";
+                            break;
+                        case KeyEvent.KEYCODE_SEARCH:
+                            eventName = "searchbutton";
+                            break;
+                        case KeyEvent.KEYCODE_MENU:
+                            eventName = "menubutton";
+                            break;
+                        case KeyEvent.KEYCODE_BACK:
+                            eventName = "backbutton";
+                            break;
                     }
+                    if (eventName != null) {
+                        sendJavascriptEvent(eventName);
+                        return true;
+                    }
+                } else if (isBackButton) {
+                    return engine.goBack();
                 }
-            }
-            // Legacy
-            else if (keyCode == KeyEvent.KEYCODE_MENU) {
-                if (lastMenuEventTime < event.getEventTime()) {
-                    sendJavascriptEvent("menubutton");
-                }
-                lastMenuEventTime = event.getEventTime();
-                return null;
-            }
-            // If search key
-            else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-                sendJavascriptEvent("searchbutton");
-                return true;
             }
             return null;
         }
@@ -640,6 +610,14 @@ public class CordovaWebViewImpl implements CordovaWebView {
             }
             // Block by default
             return true;
+        }
+
+        @Override
+        public void onScrollChanged(int l, int t, int oldl, int oldt) {
+            // TODO: scrolling is perf-sensitive, so we'd probably be better to no use postMessage
+            // here, and also not to create any new objects.
+            ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, getView());
+            pluginManager.postMessage("onScrollChanged", myEvent);
         }
     }
 }

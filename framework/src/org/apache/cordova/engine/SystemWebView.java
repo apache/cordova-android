@@ -63,26 +63,15 @@ public class SystemWebView extends WebView implements CordovaWebViewEngine.Engin
     public void onScrollChanged(int l, int t, int oldl, int oldt)
     {
         super.onScrollChanged(l, t, oldl, oldt);
-        //We should post a message that the scroll changed
-        ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, this);
-        parentEngine.pluginManager.postMessage("onScrollChanged", myEvent);
+        parentEngine.client.onScrollChanged(l, t, oldl, oldt);
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Boolean ret = parentEngine.client.onKeyDown(keyCode, event);
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        Boolean ret = parentEngine.client.onDispatchKeyEvent(event);
         if (ret != null) {
             return ret.booleanValue();
         }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        Boolean ret = parentEngine.client.onKeyUp(keyCode, event);
-        if (ret != null) {
-            return ret.booleanValue();
-        }
-        return super.onKeyUp(keyCode, event);
+        return super.dispatchKeyEvent(event);
     }
 }

@@ -71,12 +71,12 @@ public interface CordovaWebViewEngine {
      * Methods may be added in future cordova versions, but never removed.
      */
     public interface Client {
-        Boolean onKeyDown(int keyCode, KeyEvent event);
-        Boolean onKeyUp(int keyCode, KeyEvent event);
+        Boolean onDispatchKeyEvent(KeyEvent event);
         boolean shouldOverrideUrlLoading(String url);
         void clearLoadTimeoutTimer();
         void onPageStarted(String newUrl);
         void onReceivedError(int errorCode, String description, String failingUrl);
         void onPageFinishedLoading(String url);
+        void onScrollChanged(int l, int t, int oldl, int oldt);
     }
 }
