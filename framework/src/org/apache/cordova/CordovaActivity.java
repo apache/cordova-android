@@ -37,11 +37,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebViewClient;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -163,31 +162,20 @@ public class CordovaActivity extends Activity {
     //Suppressing warnings in AndroidStudio
     @SuppressWarnings({"deprecation", "ResourceType"})
     protected void createViews() {
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
-
         //Why are we setting a constant as the ID? This should be investigated
         appView.getView().setId(100);
-        appView.getView().setLayoutParams(new LinearLayout.LayoutParams(
+        appView.getView().setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                1.0F));
+                ViewGroup.LayoutParams.MATCH_PARENT));
 
-        // need to remove appView from any existing parent before invoking root.addView(appView)
-        ViewParent parent = appView.getView().getParent();
-        if ((parent != null) && (parent != root)) {
-            LOG.d(TAG, "removing appView from existing parent");
-            ViewGroup parentGroup = (ViewGroup) parent;
-            parentGroup.removeView(appView.getView());
+        setContentView(appView.getView());
+
         if (preferences.contains("BackgroundColor")) {
             int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
             // Background of activity:
             appView.getView().setBackgroundColor(backgroundColor);
         }
-        root.addView(appView.getView());
-        setContentView(root);
+
         appView.getView().requestFocusFromTouch();
     }
 
