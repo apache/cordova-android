@@ -278,8 +278,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
     @Deprecated
     public void hideCustomView() {
         // This code is adapted from the original Android Browser code, licensed under the Apache License, Version 2.0
-        Log.d(TAG, "Hiding Custom View");
         if (mCustomView == null) return;
+        Log.d(TAG, "Hiding Custom View");
 
         // Hide the custom view.
         mCustomView.setVisibility(View.GONE);

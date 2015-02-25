@@ -146,8 +146,6 @@ public class CordovaActivity extends Activity {
         if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
-
-        appView.getView().requestFocusFromTouch();
     }
 
     @SuppressWarnings("deprecation")
@@ -189,6 +187,7 @@ public class CordovaActivity extends Activity {
 
         int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
         root.setBackgroundColor(backgroundColor);
+        appView.getView().requestFocusFromTouch();
     }
 
     /**
