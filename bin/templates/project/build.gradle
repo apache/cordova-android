@@ -274,18 +274,18 @@ def addSigningProps(propsFilePath, signingConfig) {
     propsFile.withReader { reader ->
         props.load(reader)
     }
-    def storeFile = new File(privateHelpers.ensureValueExists(propsFilePath, props, 'storeFile'))
+    def storeFile = new File(privateHelpers.ensureValueExists(propsFilePath, props, 'key.store'))
     if (!storeFile.isAbsolute()) {
         storeFile = RelativePath.parse(true, storeFile.toString()).getFile(propsFile.getParentFile())
     }
     if (!storeFile.exists()) {
         throw new FileNotFoundException('Keystore file does not exist: ' + storeFile.getAbsolutePath())
     }
-    signingConfig.keyAlias = privateHelpers.ensureValueExists(propsFilePath, props, 'keyAlias')
-    signingConfig.keyPassword = props.get('keyPassword', signingConfig.keyPassword)
+    signingConfig.keyAlias = privateHelpers.ensureValueExists(propsFilePath, props, 'key.alias')
+    signingConfig.keyPassword = props.get('key.alias.password', signingConfig.keyPassword)
     signingConfig.storeFile = storeFile
-    signingConfig.storePassword = props.get('storePassword', signingConfig.storePassword)
-    def storeType = props.get('storeType')
+    signingConfig.storePassword = props.get('key.store.password', signingConfig.storePassword)
+    def storeType = props.get('key.storeType')
     if (!storeType) {
         def filename = storeFile.getName().toLowerCase();
         if (filename.endsWith('.p12') || filename.endsWith('.pfx')) {
