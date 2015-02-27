@@ -25,10 +25,9 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.cordova.LOG;
 import org.xmlpull.v1.XmlPullParserException;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.XmlResourceParser;
 
 public class ConfigXmlParser {
@@ -50,7 +49,7 @@ public class ConfigXmlParser {
         return launchUrl;
     }
 
-    public void parse(Activity action) {
+    public void parse(Context action) {
         // First checking the class namespace for config.xml
         int id = action.getResources().getIdentifier("config", "xml", action.getClass().getPackage().getName());
         if (id == 0) {
