@@ -608,6 +608,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
                 }
                 return true;
             }
+            LOG.w(TAG, "Blocked navigation because URL was not whitelisted: " + url);
             // Block by default
             return true;
         }
