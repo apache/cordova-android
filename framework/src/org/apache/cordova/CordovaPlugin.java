@@ -192,7 +192,8 @@ public class CordovaPlugin {
     }
 
     /**
-     * Hook for blocking navigation by the Cordova WebView.
+     * Hook for blocking navigation by the Cordova WebView. This applies both to top-level and
+     * iframe navigations.
      *
      * This will be called when the WebView's needs to know whether to navigate
      * to a new page. Return false to block the navigation: if any plugin
@@ -202,6 +203,15 @@ public class CordovaPlugin {
      */
     public Boolean shouldAllowNavigation(String url) {
         return null;
+    }
+
+    /**
+     * Hook for allowing page to call exec(). By default, this returns the result of
+     * shouldAllowNavigation(). It's generally unsafe to allow untrusted content to be loaded
+     * into a CordovaWebView, even within an iframe, so it's best not to touch this.
+     */
+    public Boolean shouldAllowBridgeAccess(String url) {
+        return shouldAllowNavigation(url);
     }
 
     /**

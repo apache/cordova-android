@@ -365,6 +365,25 @@ public class PluginManager {
         return url.startsWith("file://");
     }
 
+
+    /**
+     * Called when the webview is requesting the exec() bridge be enabled.
+     */
+    public boolean shouldAllowBridgeAccess(String url) {
+        for (PluginEntry entry : this.entryMap.values()) {
+            CordovaPlugin plugin = pluginMap.get(entry.service);
+            if (plugin != null) {
+                Boolean result = plugin.shouldAllowBridgeAccess(url);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+
+        // Default policy:
+        return url.startsWith("file://");
+    }
+
     /**
      * Called when the webview is going not going to navigate, but may launch
      * an Intent for an URL.
