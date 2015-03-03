@@ -325,8 +325,10 @@ public class PluginManager {
         }
 
         // Default policy:
-        // Internal urls on file:// or data:// that do not contain "/app_webview/" are allowed for navigation
-        if (url.startsWith("file://") || url.startsWith("data:")) {
+        if (url.startsWith("data:") || url.startsWith("about:blank")) {
+            return true;
+        }
+        if (url.startsWith("file://")) {
             //This directory on WebKit/Blink based webviews contains SQLite databases!
             //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
             return !url.contains("/app_webview/");
@@ -362,7 +364,7 @@ public class PluginManager {
         }
 
         // Default policy:
-        return url.startsWith("file://");
+        return url.startsWith("file://") || url.startsWith("about:blank");
     }
 
 
