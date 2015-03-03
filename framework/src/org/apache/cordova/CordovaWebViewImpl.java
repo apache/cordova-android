@@ -423,14 +423,12 @@ public class CordovaWebViewImpl implements CordovaWebView {
     }
     @Override
     public void handlePause(boolean keepRunning) {
-        LOG.d(TAG, "Handle the pause");
-        // Send pause event to JavaScript
-        sendJavascriptEvent("pause");
-
-        // Forward to plugins
-        if (pluginManager != null) {
-            pluginManager.onPause(keepRunning);
+        if (!isInitialized()) {
+            return;
         }
+        LOG.d(TAG, "Handle the pause");
+        sendJavascriptEvent("pause");
+        pluginManager.onPause(keepRunning);
 
         // If app doesn't want to run in background
         if (!keepRunning) {
@@ -439,29 +437,27 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
     }
     @Override
-    public void handleResume(boolean keepRunning)
-    {
+    public void handleResume(boolean keepRunning) {
+        if (!isInitialized()) {
+            return;
+        }
+
         // Resume JavaScript timers. This affects all webviews within the app!
         engine.setPaused(false);
-
         sendJavascriptEvent("resume");
-
-        // Forward to plugins
-        if (this.pluginManager != null) {
-            this.pluginManager.onResume(keepRunning);
-        }
+        this.pluginManager.onResume(keepRunning);
     }
 
     @Override
-    public void handleDestroy()
-    {
+    public void handleDestroy() {
+        if (!isInitialized()) {
+            return;
+        }
         // Cancel pending timeout timer.
         loadUrlTimeout++;
 
         // Forward to plugins
-        if (this.pluginManager != null) {
-            this.pluginManager.onDestroy();
-        }
+        this.pluginManager.onDestroy();
 
         // Load blank page so that JavaScript onunload is called
         this.loadUrl("about:blank");
