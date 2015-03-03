@@ -21,13 +21,11 @@ package org.apache.cordova;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
@@ -53,7 +51,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     // Public for backwards-compatibility :(
     public PluginManager pluginManager;
 
-    protected CordovaWebViewEngine engine;
+    protected final CordovaWebViewEngine engine;
     private CordovaInterface cordova;
 
     // Flag to track that a loadUrl timeout occurred
@@ -75,7 +73,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     private Set<Integer> boundKeyCodes = new HashSet<Integer>();
 
-    public static CordovaWebViewEngine createEngine(String className, Context context, CordovaPreferences preferences) {
+    public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
+        String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
         try {
             Class<?> webViewClass = Class.forName(className);
             Constructor<?> constructor = webViewClass.getConstructor(Context.class, CordovaPreferences.class);
@@ -85,9 +84,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
     }
 
-    public CordovaWebViewImpl(Context context) {
-        this(context, null);
-    }
     public CordovaWebViewImpl(Context context, CordovaWebViewEngine cordovaWebViewEngine) {
         this.context = context;
         this.engine = cordovaWebViewEngine;
@@ -101,11 +97,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
     public void init(CordovaInterface cordova, List<PluginEntry> pluginEntries, CordovaPreferences preferences) {
         if (this.cordova != null) {
             throw new IllegalStateException();
-        }
-        // Happens only when not using CordovaActivity. Usually, engine is set in the constructor.
-        if (engine == null) {
-            String className = preferences.getString("webView", SystemWebViewEngine.class.getCanonicalName());
-            engine = createEngine(className, context, preferences);
         }
         this.cordova = cordova;
         this.preferences = preferences;

@@ -21,7 +21,6 @@ package org.apache.cordova;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -189,8 +188,7 @@ public class CordovaActivity extends Activity {
     }
 
     protected CordovaWebViewEngine makeWebViewEngine() {
-        String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
-        return CordovaWebViewImpl.createEngine(className, this, preferences);
+        return CordovaWebViewImpl.createEngine(this, preferences);
     }
 
     protected CordovaInterfaceImpl makeCordovaInterface() {
