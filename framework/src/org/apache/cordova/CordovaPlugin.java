@@ -229,7 +229,7 @@ public class CordovaPlugin {
     }
 
     /**
-     * By specifying a <url-filter> in config.xml you can map a URL (using startsWith atm) to this method.
+     * Allows plugins to handle a link being clicked. Return true here to cancel the navigation.
      *
      * @param url           The URL that is trying to be loaded in the Cordova webview.
      * @return              Return true to prevent the URL from loading. Default is false.

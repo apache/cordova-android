@@ -424,10 +424,6 @@ public class PluginManager {
      * @return                  Return false to allow the URL to load, return true to prevent the URL from loading.
      */
     public boolean onOverrideUrlLoading(String url) {
-        // Deprecated way to intercept URLs. (process <url-filter> tags).
-        // Instead, plugins should not include <url-filter> and instead ensure
-        // that they are loaded before this function is called (either by setting
-        // the onload <param> or by making an exec() call to them)
         for (PluginEntry entry : this.entryMap.values()) {
             CordovaPlugin plugin = pluginMap.get(entry.service);
             if (plugin != null && plugin.onOverrideUrlLoading(url)) {
