@@ -232,10 +232,12 @@ public class CordovaWebViewImpl implements CordovaWebView {
             return;
         }
         try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            Uri uri = Uri.parse(url);
             // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
             // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            Uri uri = Uri.parse(url);
             if ("file".equals(uri.getScheme())) {
                 intent.setDataAndType(uri, resourceApi.getMimeType(uri));
             } else {
