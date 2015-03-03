@@ -72,7 +72,6 @@ public interface CordovaWebViewEngine {
      */
     public interface Client {
         Boolean onDispatchKeyEvent(KeyEvent event);
-        boolean shouldOverrideUrlLoading(String url);
         void clearLoadTimeoutTimer();
         void onPageStarted(String newUrl);
         void onReceivedError(int errorCode, String description, String failingUrl);
