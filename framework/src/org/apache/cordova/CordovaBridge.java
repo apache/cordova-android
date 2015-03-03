@@ -107,6 +107,10 @@ public class CordovaBridge {
         expectedBridgeSecret = -1;
     }
 
+    public boolean isSecretEstablished() {
+        return expectedBridgeSecret != -1;
+    }
+
     /** Called by cordova.js to initialize the bridge. */
     int generateBridgeSecret() {
         SecureRandom randGen = new SecureRandom();
