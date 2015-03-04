@@ -325,7 +325,7 @@ public class PluginManager {
         }
 
         // Default policy:
-        if (url.startsWith("data:") || url.startsWith("about:blank")) {
+        if (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("about:blank")) {
             return true;
         }
         if (url.startsWith("file://")) {
