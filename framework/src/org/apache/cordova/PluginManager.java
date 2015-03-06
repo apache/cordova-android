@@ -328,6 +328,10 @@ public class PluginManager {
         if (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("about:blank")) {
             return true;
         }
+        // TalkBack requires this, so allow it by default.
+        if (url.startsWith("https://ssl.gstatic.com/accessibility/javascript/android/")) {
+            return true;
+        }
         if (url.startsWith("file://")) {
             //This directory on WebKit/Blink based webviews contains SQLite databases!
             //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
