@@ -33,13 +33,11 @@ public class CordovaActivityTest extends BaseCordovaIntegrationTest {
     protected void setUp() throws Exception {
         super.setUp();
         setUpWithStartUrl(null);
-        innerContainer = (ViewGroup)containerView.getChildAt(0);
-        testView = innerContainer.getChildAt(0);
+        testView = (ViewGroup)containerView.getChildAt(0);
     }
 
     public void testBasicLoad() throws Exception {
         assertTrue(testView instanceof SystemWebView);
-        assertTrue(innerContainer instanceof LinearLayout);
         assertTrue(((CordovaWebViewEngine.EngineView)testView).getCordovaWebView() != null);
         String onPageFinishedUrl = testActivity.onPageFinishedUrl.take();
         assertEquals(MainTestActivity.START_URL, onPageFinishedUrl);
