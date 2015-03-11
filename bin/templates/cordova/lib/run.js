@@ -41,7 +41,7 @@ var path  = require('path'),
     var list = false;
 
     for (var i=2; i<args.length; i++) {
-        if (/^--(debug|release|ant|gradle|nobuild|versionCode=|minSdkVersion=|gradleArg=)/.exec(args[i])) {
+        if (build.isBuildFlag(args[i])) {
             buildFlags.push(args[i]);
         } else if (args[i] == '--device') {
             install_target = '--device';
