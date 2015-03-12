@@ -44,6 +44,7 @@ public class PluginManager {
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
+    private boolean isInitialized;
 
     public PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, Collection<PluginEntry> pluginEntries) {
         this.ctx = cordova;
@@ -56,12 +57,17 @@ public class PluginManager {
     }
 
     public void setPluginEntries(Collection<PluginEntry> pluginEntries) {
-        this.onPause(false);
-        this.onDestroy();
-        pluginMap.clear();
-        entryMap.clear();
+        if (isInitialized) {
+            this.onPause(false);
+            this.onDestroy();
+            pluginMap.clear();
+            entryMap.clear();
+        }
         for (PluginEntry entry : pluginEntries) {
             addService(entry);
+        }
+        if (isInitialized) {
+            startupPlugins();
         }
     }
 
@@ -70,6 +76,7 @@ public class PluginManager {
      */
     public void init() {
         LOG.d(TAG, "init()");
+        isInitialized = true;
         this.onPause(false);
         this.onDestroy();
         pluginMap.clear();
