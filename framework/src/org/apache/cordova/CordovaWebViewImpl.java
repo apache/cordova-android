@@ -581,5 +581,20 @@ public class CordovaWebViewImpl implements CordovaWebView {
             ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, getView());
             pluginManager.postMessage("onScrollChanged", myEvent);
         }
+
+        @Override
+        public boolean onNavigationAttempt(String url) {
+            // Give plugins the chance to handle the url
+            if (pluginManager.onOverrideUrlLoading(url)) {
+                return true;
+            } else if (pluginManager.shouldAllowNavigation(url)) {
+                return false;
+            } else if (pluginManager.shouldOpenExternalUrl(url)) {
+                showWebPage(url, true, false, null);
+                return true;
+            }
+            LOG.w(TAG, "Blocked (possibly sub-frame) navigation to non-allowed URL: " + url);
+            return true;
+        }
     }
 }
