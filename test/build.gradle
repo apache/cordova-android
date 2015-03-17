@@ -17,8 +17,6 @@
        under the License.
 */
 
-// GENERATED FILE! DO NOT EDIT!
-
 apply plugin: 'android'
 
 buildscript {
@@ -72,4 +70,12 @@ dependencies {
     releaseCompile project(path: ":CordovaLib", configuration: "release")
     androidTestCompile fileTree(dir: 'androidTest/libs', include: '*.jar')
 }
+
+task copyCordovaJs (type: Copy) {
+    from '../bin/templates/project/assets/www'
+    into 'assets/www'
+    include('cordova.js')
+}
+preBuild.dependsOn copyCordovaJs
+
 

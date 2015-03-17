@@ -39,7 +39,8 @@ function getFrameworkDir(projectPath, shared) {
 
 function copyJsAndLibrary(projectPath, shared, projectName) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
-    shell.cp('-f', path.join(ROOT, 'framework', 'assets', 'www', 'cordova.js'), path.join(projectPath, 'assets', 'www', 'cordova.js'));
+    var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
+    shell.cp('-f', srcCordovaJsPath, path.join(projectPath, 'assets', 'www', 'cordova.js'));
     // Don't fail if there are no old jars.
     setShellFatal(false, function() {
         shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function(oldJar) {
@@ -241,7 +242,6 @@ exports.createProject = function(project_path, package_name, project_name, activ
             // copy project template
             shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
-            shell.cp('-r', path.join(ROOT, 'framework', 'res', 'xml'), path.join(project_path, 'res'));
             shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
 
             // Manually create directories that would be empty within the template (since git doesn't track directories).
