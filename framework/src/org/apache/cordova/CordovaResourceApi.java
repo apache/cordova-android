@@ -336,7 +336,10 @@ public class CordovaResourceApi {
                 if (input.assetFd != null) {
                     offset = input.assetFd.getStartOffset();
                 }
-                outChannel.transferFrom(inChannel, offset, length);
+                // transferFrom()'s 2nd arg is a relative position. Need to set the absolute
+                // position first.
+                inChannel.position(offset);
+                outChannel.transferFrom(inChannel, 0, length);
             } else {
                 final int BUFFER_SIZE = 8192;
                 byte[] buffer = new byte[BUFFER_SIZE];
