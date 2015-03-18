@@ -28,6 +28,9 @@ import org.json.JSONException;
 import android.content.Intent;
 import android.net.Uri;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 /**
  * Plugins must extend this class and override one of the execute methods.
  */
@@ -249,11 +252,53 @@ public class CordovaPlugin {
 
     /**
      * Hook for redirecting requests. Applies to WebView requests as well as requests made by plugins.
+     * To handle the request directly, return a URI in the form:
+     *
+     *    cdvplugin://pluginId/...
+     *
+     * And implement handleOpenForRead().
+     * To make this easier, use the toPluginUri() and fromPluginUri() helpers:
+     *
+     *     public Uri remapUri(Uri uri) { return toPluginUri(uri); }
+     *
+     *     public CordovaResourceApi.OpenForReadResult handleOpenForRead(Uri uri) throws IOException {
+     *         Uri origUri = fromPluginUri(uri);
+     *         ...
+     *     }
      */
     public Uri remapUri(Uri uri) {
         return null;
     }
-    
+
+    /**
+     * Called to handle CordovaResourceApi.openForRead() calls for a cdvplugin://pluginId/ URL.
+     * Should never return null.
+     * Added in cordova-android@4.0.0
+     */
+    public CordovaResourceApi.OpenForReadResult handleOpenForRead(Uri uri) throws IOException {
+        throw new FileNotFoundException("Plugin can't handle uri: " + uri);
+    }
+
+    /**
+     * Refer to remapUri()
+     * Added in cordova-android@4.0.0
+     */
+    protected Uri toPluginUri(Uri origUri) {
+        return new Uri.Builder()
+            .scheme(CordovaResourceApi.PLUGIN_URI_SCHEME)
+            .authority(serviceName)
+            .appendQueryParameter("origUri", origUri.toString())
+            .build();
+    }
+
+    /**
+     * Refer to remapUri()
+     * Added in cordova-android@4.0.0
+     */
+    protected Uri fromPluginUri(Uri pluginUri) {
+        return Uri.parse(pluginUri.getQueryParameter("origUri"));
+    }
+
     /**
      * Called when the WebView does a top-level navigation or refreshes.
      *

@@ -36,9 +36,11 @@ import org.apache.cordova.PluginEntry;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class CordovaResourceApiTest extends BaseCordovaIntegrationTest {
@@ -58,8 +60,18 @@ public class CordovaResourceApiTest extends BaseCordovaIntegrationTest {
                     return cordovaWebView.getResourceApi().remapUri(
                             Uri.parse("data:text/plain;charset=utf-8,pass"));
                 }
+                if (uri.getQuery() != null && uri.getQuery().contains("pluginUri")) {
+                    return toPluginUri(uri);
+                }
                 return null;
             }
+            @Override
+            public OpenForReadResult handleOpenForRead(Uri uri) throws IOException {
+                Uri orig = fromPluginUri(uri);
+                ByteArrayInputStream retStream = new ByteArrayInputStream(orig.toString().getBytes(StandardCharsets.UTF_8));
+                return new OpenForReadResult(uri, retStream, "text/plain", retStream.available(), null);
+            }
+            @Override
             public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
                 synchronized (CordovaResourceApiTest.this) {
                     execPayload = args.getString(0);
@@ -213,6 +225,16 @@ public class CordovaResourceApiTest extends BaseCordovaIntegrationTest {
             assertEquals("text/js", readResult.mimeType);
             String data = new Scanner(readResult.inputStream, "UTF-8").useDelimiter("\\A").next();
             assertEquals("pass", data);
+        }
+        // testPluginUris
+        {
+            String origUri = "http://orig/foo?pluginUri";
+            Uri uri = resourceApi.remapUri(Uri.parse(origUri));
+            OpenForReadResult readResult = resourceApi.openForRead(uri);
+            assertEquals("openForRead mime-type", "text/plain", readResult.mimeType);
+            String data = new Scanner(readResult.inputStream, "UTF-8").useDelimiter("\\A").next();
+            assertEquals(origUri, data);
+            assertEquals(origUri.length(), readResult.length);
         }
     }
     
