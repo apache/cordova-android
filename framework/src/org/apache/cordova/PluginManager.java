@@ -165,7 +165,7 @@ public class PluginManager {
             } else {
                 ret = instantiatePlugin(pe.pluginClass);
             }
-            ret.privateInitialize(ctx, app, app.getPreferences());
+            ret.privateInitialize(service, ctx, app, app.getPreferences());
             pluginMap.put(service, ret);
         }
         return ret;
@@ -192,7 +192,7 @@ public class PluginManager {
     public void addService(PluginEntry entry) {
         this.entryMap.put(entry.service, entry);
         if (entry.plugin != null) {
-            entry.plugin.privateInitialize(ctx, app, app.getPreferences());
+            entry.plugin.privateInitialize(entry.service, ctx, app, app.getPreferences());
             pluginMap.put(entry.service, entry.plugin);
         }
     }

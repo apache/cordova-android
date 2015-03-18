@@ -35,13 +35,15 @@ public class CordovaPlugin {
     public CordovaWebView webView;
     public CordovaInterface cordova;
     protected CordovaPreferences preferences;
+    private String serviceName;
 
     /**
      * Call this after constructing to initialize the plugin.
      * Final because we want to be able to change args without breaking plugins.
      */
-    public final void privateInitialize(CordovaInterface cordova, CordovaWebView webView, CordovaPreferences preferences) {
+    public final void privateInitialize(String serviceName, CordovaInterface cordova, CordovaWebView webView, CordovaPreferences preferences) {
         assert this.cordova == null;
+        this.serviceName = serviceName;
         this.cordova = cordova;
         this.webView = webView;
         this.preferences = preferences;
@@ -61,6 +63,13 @@ public class CordovaPlugin {
      * Called after plugin construction and fields have been initialized.
      */
     protected void pluginInitialize() {
+    }
+
+    /**
+     * Returns the plugin's service name (what you'd use when calling pluginManger.getPlugin())
+     */
+    public String getServiceName() {
+        return serviceName;
     }
     
     /**
