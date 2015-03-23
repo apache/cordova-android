@@ -148,6 +148,7 @@ function copyScripts(projectPath) {
  */
 function validatePackageName(package_name) {
     //Make the package conform to Java package types
+    //http://developer.android.com/guide/topics/manifest/manifest-element.html#package
     //Enforce underscore limitation
     if (!/^[a-zA-Z][a-zA-Z0-9_]+(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(package_name)) {
         return Q.reject('Package name must look like: com.company.Name');
