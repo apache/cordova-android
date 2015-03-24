@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import org.json.JSONException;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Debug;
 import android.util.Log;
@@ -487,5 +488,18 @@ public class PluginManager {
             System.out.println("Error adding plugin " + className + ".");
         }
         return ret;
+    }
+
+    /**
+     * Called by the system when the device configuration changes while your activity is running.
+     *
+     * @param newConfig		The new device configuration
+     */
+    public void onConfigurationChanged(Configuration newConfig) {
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            if (plugin != null) {
+                plugin.onConfigurationChanged(newConfig);
+            }
+        }
     }
 }
