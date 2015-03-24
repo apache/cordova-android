@@ -28,6 +28,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -440,5 +441,22 @@ public class CordovaActivity extends Activity {
     {
         super.onSaveInstanceState(outState);
         cordovaInterface.onSaveInstanceState(outState);
+    }
+
+    /**
+     * Called by the system when the device configuration changes while your activity is running.
+     *
+     * @param newConfig		The new device configuration
+     */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (this.appView == null) {
+            return;
+        }
+        PluginManager pm = this.appView.getPluginManager();
+        if (pm != null) {
+            pm.onConfigurationChanged(newConfig);
+        }
     }
 }

@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 
 import java.io.FileNotFoundException;
@@ -337,5 +338,13 @@ public class CordovaPlugin {
      */
     public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
         return false;
+    }
+
+    /**
+     * Called by the system when the device configuration changes while your activity is running.
+     *
+     * @param newConfig		The new device configuration
+     */
+    public void onConfigurationChanged(Configuration newConfig) {
     }
 }
