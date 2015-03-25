@@ -20,6 +20,8 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### Release 4.0.0 (March 2015) ###
+
 * CB-7085 Add onConfigurationChanged hook for plugins
 * CB-8735 bin/create regex is too strict and has issues with numbers
 * CB-8702 Add API for plugins to override `shouldInterceptRequest` with a stream
