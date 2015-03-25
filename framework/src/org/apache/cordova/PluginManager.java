@@ -308,18 +308,13 @@ public class PluginManager {
     /**
      * Called when the webview is going to request an external resource.
      *
-     * This delegates to the installed plugins, which must all return true for
-     * this method to return true.
+     * This delegates to the installed plugins, and returns true/false for the
+     * first plugin to provide a non-null result.  If no plugins respond, then
+     * the default policy is applied.
      *
      * @param url       The URL that is being requested.
-     * @return          Tri-State:
-     *                    null: All plugins returned null (the default). This
-     *                          indicates that the default policy should be
-     *                          followed.
-     *                    true: All plugins returned true (allow the resource
-     *                          to load)
-     *                    false: At least one plugin returned false (block the
-     *                           resource)
+     * @return          Returns true to allow the resource to load,
+     *                  false to block the resource.
      */
     public boolean shouldAllowRequest(String url) {
         for (PluginEntry entry : this.entryMap.values()) {
@@ -351,18 +346,13 @@ public class PluginManager {
     /**
      * Called when the webview is going to change the URL of the loaded content.
      *
-     * This delegates to the installed plugins, which must all return true for
-     * this method to return true. A true result will allow the new page to load;
-     * a false result will prevent the page from loading.
+     * This delegates to the installed plugins, and returns true/false for the
+     * first plugin to provide a non-null result.  If no plugins respond, then
+     * the default policy is applied.
      *
      * @param url       The URL that is being requested.
-     * @return          Tri-State:
-     *                    null: All plugins returned null (the default). This
-     *                          indicates that the default policy should be
-     *                          followed.
-     *                    true: All plugins returned true (allow the navigation)
-     *                    false: At least one plugin returned false (block the
-     *                           navigation)
+     * @return          Returns true to allow the navigation,
+     *                  false to block the navigation.
      */
     public boolean shouldAllowNavigation(String url) {
         for (PluginEntry entry : this.entryMap.values()) {
@@ -402,19 +392,13 @@ public class PluginManager {
      * Called when the webview is going not going to navigate, but may launch
      * an Intent for an URL.
      *
-     * This delegates to the installed plugins, which must all return true for
-     * this method to return true. A true result will allow the URL to launch;
-     * a false result will prevent the URL from loading.
+     * This delegates to the installed plugins, and returns true/false for the
+     * first plugin to provide a non-null result.  If no plugins respond, then
+     * the default policy is applied.
      *
      * @param url       The URL that is being requested.
-     * @return          Tri-State:
-     *                    null: All plugins returned null (the default). This
-     *                          indicates that the default policy should be
-     *                          followed.
-     *                    true: All plugins returned true (allow the URL to
-     *                          launch an intent)
-     *                    false: At least one plugin returned false (block the
-     *                           intent)
+     * @return          Returns true to allow the URL to launch an intent,
+     *                  false to block the intent.
      */
     public Boolean shouldOpenExternalUrl(String url) {
         for (PluginEntry entry : this.entryMap.values()) {
