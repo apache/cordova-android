@@ -20,6 +20,25 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+* CB-7085 Add onConfigurationChanged hook for plugins
+* CB-8735 bin/create regex is too strict and has issues with numbers
+* CB-8702 Add API for plugins to override `shouldInterceptRequest` with a stream
+* CB-8699 Fix CordovaResourceApi copyResource creating zero-length files when src=uncompressed asset
+* CB-8693 CordovaLib should not contain icons / splashscreens
+* CB-8295 Update CSP meta tag of app template
+* CB-7747 Extract whitelist functionality into a plugin
+  * __NOTE__: Whitelist functionality has changed significantly.  Refer to the updated "Whitelist Guide" in the Cordova documentation.
+* CB-8592 Fix NPE if lifecycle events reach CordovaWebView before `init()` has been called
+* CB-8588 Add CATEGORY_BROWSABLE to intents from showWebPage openExternal=true
+* CB-8587 Don't allow webview navigations within showWebPage that are not whitelisted
+* CB-8548 Allow ant-style property keys in signing.properties files
+* CB-7827 Add `--activity-name` for `bin/create`
+* CB-8548 Use debug-signing.properties and release-signing.properties when they exist
+* CB-8545 Don't add a layout as a parent of the WebView
+* CB-7159 BackgroundColor not used when &lt;html style="opacity:0&gt;, nor during screen rotation.
+* CB-8510 Create a new abstraction for sharing common logic of WebView engines
+* Deprecate custom view methods in CordovaWebView.
+
 ### Release 3.7.1 (January 2015) ###
 * CB-8411 Initialize plugins only after `createViews()` is called (regression in 3.7.0)
 
