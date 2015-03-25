@@ -34,6 +34,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -131,6 +132,11 @@ public class CordovaActivity extends Activity implements CordovaInterface {
     protected Whitelist externalWhitelist;
     protected String launchUrl;
     protected ArrayList<PluginEntry> pluginEntries;
+    
+    /**
+     * Last orientation of device. Used to detect orientation changes.
+     */
+    private int orientation;
 
     /**
     * Sets the authentication token.
@@ -219,6 +225,9 @@ public class CordovaActivity extends Activity implements CordovaInterface {
         }
 
         super.onCreate(savedInstanceState);
+        
+        // Save startup orientation. Used to determine when orientation changes in "onConfigurationChanged".
+        orientation = getResources().getConfiguration().orientation;
 
         if(savedInstanceState != null)
         {
@@ -948,4 +957,13 @@ public class CordovaActivity extends Activity implements CordovaInterface {
             outState.putString("callbackClass", cClass);
         }
     }
+    
+    @Override
+	public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+	    if (newConfig.orientation != orientation) {
+	    	orientation = newConfig.orientation;
+	    	postMessage("orientationChanged", orientation);
+	    }
+	}
 }
