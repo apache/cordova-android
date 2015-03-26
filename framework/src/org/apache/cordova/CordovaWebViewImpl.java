@@ -426,9 +426,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
         if (!isInitialized()) {
             return;
         }
-        LOG.d(TAG, "Handle the pause");
-        sendJavascriptEvent("pause");
         pluginManager.onPause(keepRunning);
+        sendJavascriptEvent("pause");
 
         // If app doesn't want to run in background
         if (!keepRunning) {
@@ -444,8 +443,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // Resume JavaScript timers. This affects all webviews within the app!
         engine.setPaused(false);
-        sendJavascriptEvent("resume");
         this.pluginManager.onResume(keepRunning);
+        sendJavascriptEvent("resume");
     }
 
     @Override
