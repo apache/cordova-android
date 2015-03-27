@@ -439,8 +439,8 @@ public class CordovaActivity extends Activity {
 
     protected void onSaveInstanceState(Bundle outState)
     {
-        super.onSaveInstanceState(outState);
         cordovaInterface.onSaveInstanceState(outState);
+        super.onSaveInstanceState(outState);
     }
 
     /**
