@@ -20,6 +20,54 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### Release 4.0.0 (March 2015) ###
+
+This release adds significant functionality, and also introduces a number
+of breaking changes.  Some of the changes to the code base will be of
+particular interest to plugin developers.
+
+#### Major Changes ####
+* Support for pluggable WebViews
+  * The system WebView can be replaced in your app, via a plugin
+  * Core WebView functionality is encapsulated, with extension points exposed
+    via interfaces
+* Support for Crosswalk to bring the modern Chromium WebView to older devices
+  * Uses the pluggable WebView framework
+  * You will need to add the new [cordova-crosswalk-engine](https://github.com/MobileChromeApps/cordova-crosswalk-engine) plugin
+* Splash screen functionality is now provided via plugin
+  * You will need to add the new [cordova-plugin-splashscreen](https://github.com/apache/cordova-plugin-splashscreen) plugin to continue using a splash screen
+* Whitelist functionality is now provided via plugin
+  * The whitelist has been enhanced to be more secure and configurable
+  * You will need to add the new [cordova-plugin-whitelist](https://github.com/apache/cordova-plugin-whitelist) plugin
+  * Legacy whitelist behaviour is still available via plugin (although not recommended).
+  * Refer to the updated Whitelist Guide in the Cordova documentation
+
+Changes For Plugin Developers:
+
+* Develop in Android Studio
+  * Android Studio is now fully supported, and recommended over Eclipse
+* Build using Gradle
+  * All builds use Gradle by default, instead of Ant
+
+#### Detailed Change List ####
+* CB-7085 Add onConfigurationChanged hook for plugins
+* CB-8735 `bin/create` regex relaxed / better support for numbers
+* CB-8702 Add API for plugins to override `shouldInterceptRequest` with a stream
+* CB-8699 Fix CordovaResourceApi `copyResource` creating zero-length files when src=uncompressed asset
+* CB-8693 CordovaLib should not contain icons / splashscreens
+* CB-8295 Update CSP meta tag of app template
+* CB-7747 Extract whitelist functionality into a plugin
+* CB-8592 Fix NPE if lifecycle events reach CordovaWebView before `init()` has been called
+* CB-8588 Add CATEGORY_BROWSABLE to intents from showWebPage openExternal=true
+* CB-8587 Don't allow WebView navigations within showWebPage that are not whitelisted
+* CB-8548 Allow ant-style property keys in signing.properties files
+* CB-7827 Add `--activity-name` for `bin/create`
+* CB-8548 Use debug-signing.properties and release-signing.properties when they exist
+* CB-8545 Don't add a layout as a parent of the WebView
+* CB-7159 BackgroundColor not used when &lt;html style="opacity:0&gt;, nor during screen rotation
+* CB-8510 Create a new abstraction for sharing common logic of WebView engines
+* Deprecate custom view methods in CordovaWebView
+
 ### Release 3.7.1 (January 2015) ###
 * CB-8411 Initialize plugins only after `createViews()` is called (regression in 3.7.0)
 
