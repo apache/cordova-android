@@ -62,6 +62,7 @@ Changes For Plugin Developers:
 * CB-8548 Use debug-signing.properties and release-signing.properties when they exist
 * CB-8545 Don't add a layout as a parent of the WebView
 * CB-7159 BackgroundColor not used when `<html style="opacity:0">`, nor during screen rotation
+* CB-6630 Removed OkHttp from core library. It's now available as a plugin: [cordova-plugin-okhttp](https://www.npmjs.com/package/cordova-plugin-okhttp)
 
 ### Release 3.7.1 (January 2015) ###
 * CB-8411 Initialize plugins only after `createViews()` is called (regression in 3.7.0)
