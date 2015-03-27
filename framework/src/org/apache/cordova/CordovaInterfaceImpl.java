@@ -18,7 +18,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     protected PluginManager pluginManager;
 
     protected CordovaPlugin activityResultCallback;
-    protected String initCallbackClass;
+    protected String initCallbackService;
     protected int activityResultRequestCode;
 
     public CordovaInterfaceImpl(Activity activity) {
@@ -77,12 +77,12 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      */
     public boolean onActivityResult(int requestCode, int resultCode, Intent intent) {
         CordovaPlugin callback = activityResultCallback;
-        if(callback == null && initCallbackClass != null) {
+        if(callback == null && initCallbackService != null) {
             // The application was restarted, but had defined an initial callback
             // before being shut down.
-            callback = pluginManager.getPlugin(initCallbackClass);
+            callback = pluginManager.getPlugin(initCallbackService);
         }
-        initCallbackClass = null;
+        initCallbackService = null;
         activityResultCallback = null;
 
         if (callback != null) {
@@ -108,8 +108,8 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      */
     public void onSaveInstanceState(Bundle outState) {
         if (activityResultCallback != null) {
-            String cClass = activityResultCallback.getClass().getName();
-            outState.putString("callbackClass", cClass);
+            String serviceName = activityResultCallback.getServiceName();
+            outState.putString("callbackService", serviceName);
         }
     }
 
@@ -117,6 +117,6 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      * Call this from onCreate() so that any saved startActivityForResult parameters will be restored.
      */
     public void restoreInstanceState(Bundle savedInstanceState) {
-        initCallbackClass = savedInstanceState.getString("callbackClass");
+        initCallbackService = savedInstanceState.getString("callbackService");
     }
 }
