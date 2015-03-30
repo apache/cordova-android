@@ -235,7 +235,7 @@ public class CordovaActivity extends Activity {
 
         if (this.appView != null) {
             this.appView.handlePause(this.keepRunning);
-        } 
+        }
     }
 
     /**
