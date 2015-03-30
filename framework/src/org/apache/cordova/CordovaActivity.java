@@ -20,6 +20,8 @@ package org.apache.cordova;
 
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -83,6 +85,8 @@ public class CordovaActivity extends Activity {
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
     private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
+    private boolean pluginsReady = false;
+    private int findCallbackTries = 0;
 
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
@@ -252,6 +256,7 @@ public class CordovaActivity extends Activity {
     protected void onResume() {
         super.onResume();
         LOG.d(TAG, "Resumed the activity.");
+        this.pluginsReady = true;
         
         if (this.activityState == ACTIVITY_STARTING) {
             this.activityState = ACTIVITY_RUNNING;
@@ -264,7 +269,6 @@ public class CordovaActivity extends Activity {
         // Force window to have focus, so application always
         // receive user input. Workaround for some devices (Samsung Galaxy Note 3 at least)
         this.getWindow().getDecorView().requestFocus();
-
         this.appView.handleResume(this.keepRunning);
     }
 
@@ -314,10 +318,52 @@ public class CordovaActivity extends Activity {
      * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
         LOG.d(TAG, "Incoming Result. Request code = " + requestCode);
         super.onActivityResult(requestCode, resultCode, intent);
-        cordovaInterface.onActivityResult(requestCode, resultCode, intent);
+        // check if plugins are ready to receive the result
+        if (this.pluginsReady) {
+            cordovaInterface.onActivityResult(requestCode, resultCode, intent);
+            this.findCallbackTries = 0;
+        } else {
+            /**
+             * If the Android OS kills this activity when a plugin launches an a new activity 
+             * the onActivityResult event fires before the onResume event 
+             * so we have to wait for the plugins to be loaded again before we can hand the result to the correct plugin.
+             */
+            final ScheduledThreadPoolExecutor exec = new ScheduledThreadPoolExecutor(1);
+            long period = 100; // the period between successive executions
+            exec.scheduleAtFixedRate(new Runnable() {
+                
+                @Override
+                public void run() {
+                    CordovaActivity.this.incrementFindCallbackTries();
+                    if (CordovaActivity.this.arePluginsReady()){
+                        Log.d(CordovaActivity.TAG,"plugins are finally ready after " + CordovaActivity.this.getFindCallbackTries() + " tries");
+                        cordovaInterface.onActivityResult(requestCode, resultCode, intent);
+                        CordovaActivity.this.resetfindCallbackTries();
+                        exec.shutdown();
+                    }
+               }
+            }, period, period, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    protected void resetfindCallbackTries() {
+        this.findCallbackTries = 0;
+    }
+
+    protected int getFindCallbackTries() {
+        return this.findCallbackTries;
+    }
+
+    protected boolean arePluginsReady() {
+        // check if plugins are ready or if we tried this more than 100 times (fail-safe to stop it doing this forever)
+        return this.pluginsReady || this.findCallbackTries > 100;
+    }
+
+    protected void incrementFindCallbackTries() {
+        this.findCallbackTries += 1;
     }
 
     /**
