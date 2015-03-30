@@ -256,6 +256,7 @@ public class CordovaActivity extends Activity {
     protected void onResume() {
         super.onResume();
         LOG.d(TAG, "Resumed the activity.");
+        this.pluginsReady = true;
         
         if (this.activityState == ACTIVITY_STARTING) {
             this.activityState = ACTIVITY_RUNNING;
@@ -269,7 +270,6 @@ public class CordovaActivity extends Activity {
         // receive user input. Workaround for some devices (Samsung Galaxy Note 3 at least)
         this.getWindow().getDecorView().requestFocus();
         this.appView.handleResume(this.keepRunning);
-        this.pluginsReady = true;
     }
 
     /**
