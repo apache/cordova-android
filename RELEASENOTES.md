@@ -50,7 +50,8 @@ Changes For Plugin Developers:
   * All builds [use Gradle by default](Android%20Shell%20Tool%20Guide_building_with_gradle), instead of Ant
 
 #### Other Changes ####
-* CB-7085 Add onConfigurationChanged hook for plugins
+* CB-8378 Removed `hidekeyboard` and `showkeyboard` events (apps should use a plugin instead)
+* CB-7085 Add `onConfigurationChanged` hook for plugins
 * CB-8735 `bin/create` regex relaxed / better support for numbers
 * CB-8702 Add API for plugins to override `shouldInterceptRequest` with a stream
 * CB-8699 Fix CordovaResourceApi `copyResource` creating zero-length files when src=uncompressed asset
