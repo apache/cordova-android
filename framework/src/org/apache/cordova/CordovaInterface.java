@@ -69,4 +69,11 @@ public interface CordovaInterface {
      * Returns a shared thread pool that can be used for background tasks.
      */
     public ExecutorService getThreadPool();
+
+    /**
+     * called when plugins are fully loaded (both native and javascript parts)
+     * 
+     * @param pluginManager
+     */
+    void onCordovaInit(PluginManager pluginManager);
 }
