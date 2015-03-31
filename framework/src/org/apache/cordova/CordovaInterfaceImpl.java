@@ -37,7 +37,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     public void onCordovaInit(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
         if (savedResult != null) {
-            onActivityResult(savedResult.getRequestCode(), savedResult.getResultCode(), savedResult.getIntent());
+            onActivityResult(savedResult.requestCode, savedResult.resultCode, savedResult.intent);
         }
     }
 
@@ -131,7 +131,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
         initCallbackService = savedInstanceState.getString("callbackService");
     }
     
-    private class ActivityResultHolder {
+    private static class ActivityResultHolder {
 
         private int requestCode;
         private int resultCode;
@@ -141,18 +141,6 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             this.requestCode = requestCode;
             this.resultCode = resultCode;
             this.intent = intent;
-        }
-
-        public int getRequestCode() {
-            return requestCode;
-        }
-
-        public int getResultCode() {
-            return resultCode;
-        }
-
-        public Intent getIntent() {
-            return intent;
         }
     }
 }

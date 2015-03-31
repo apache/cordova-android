@@ -500,7 +500,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
             clearLoadTimeoutTimer();
 
-            cordova.onCordovaInit(pluginManager);
             // Broadcast message that page has loaded
             pluginManager.postMessage("onPageFinished", url);
 
