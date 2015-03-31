@@ -1,32 +1,32 @@
 {
-    "name": "cordova-android",
-    "version": "4.0.0-dev",
-    "description": "cordova-android release",
-    "main": "bin/create",
-    "repository": {
-        "type": "git",
-        "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
-    },
-    "keywords": [
-        "android",
-        "cordova",
-        "apache"
-    ],
-    "scripts": {
-        "test": "npm run jshint && jasmine-node --color spec",
-        "test-build": "rm -rf \"test create\"; ./bin/create \"test create\" com.test.app 応用 && \"./test create/cordova/build\" && rm -rf \"test create\"",
-        "jshint": "node node_modules/jshint/bin/jshint bin && node node_modules/jshint/bin/jshint spec"
-    },
-    "author": "Apache Software Foundation",
-    "license": "Apache version 2.0",
-    "dependencies": {
-        "q": "^0.9.0",
-        "shelljs": "^0.2.6",
-        "which": "^1.0.5"
-    },
-    "devDependencies": {
-        "jasmine-node": "~1",
-        "jshint": "^2.6.0",
-        "promise-matchers": "~0"
-    }
+  "name": "cordova-android",
+  "version": "4.0.0-dev",
+  "description": "cordova-android release",
+  "main": "bin/create",
+  "repository": {
+    "type": "git",
+    "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
+  },
+  "keywords": [
+    "android",
+    "cordova",
+    "apache"
+  ],
+  "scripts": {
+    "test": "npm run jshint && jasmine-node --color spec",
+    "test-build": "rm -rf \"test create\"; ./bin/create \"test create\" com.test.app 応用 && \"./test create/cordova/build\" && rm -rf \"test create\"",
+    "jshint": "node node_modules/jshint/bin/jshint bin && node node_modules/jshint/bin/jshint spec"
+  },
+  "author": "Apache Software Foundation",
+  "license": "Apache version 2.0",
+  "dependencies": {
+    "q": "^0.9.0",
+    "shelljs": "^0.2.6",
+    "which": "^1.0.5"
+  },
+  "devDependencies": {
+    "jasmine-node": "^1.14.5",
+    "jshint": "^2.6.0",
+    "promise-matchers": "~0"
+  }
 }

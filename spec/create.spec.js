@@ -27,8 +27,8 @@ describe("create", function () {
     var valid = [
         "org.apache.mobilespec"
       , "com.example"
-      , "com.floors42.package",
-      , "ball8.ball8.ball8ball",
+      , "com.floors42.package"
+      , "ball8.ball8.ball8ball"
     ];
     var invalid = [
         ""
@@ -41,9 +41,9 @@ describe("create", function () {
       , "_underscore.anything"
       , "underscore._something"
       , "_underscore._all._the._things"
-      , "8.ball",
-      , "8ball.ball",
-      , "ball8.8ball",
+      , "8.ball"
+      , "8ball.ball"
+      , "ball8.8ball"
       , "ball8.com.8ball"
     ];
 
