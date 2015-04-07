@@ -21,7 +21,6 @@
 # Android Native Tests
 
 These tests are designed to verify Android native features and other Android specific features.
-They currently are in disrepair, and don't pass / work on KitKat+ :(.
 
 ## Initial Setup
 
@@ -41,14 +40,6 @@ Copy it from a freshly created project:
     (cd foo && cordova/build --gradle; cp -r gradlew gradle ..)
     rm -r foo
 
-### Robotium
-
-Robotium has to be installed for the onScrollChanged tests to work correctly.  It can be
-found at https://code.google.com/p/robotium/ and the jar should be put in the
-'androidTest/libs' directory'.
-
-    mkdir -p androidTest/libs && curl 'http://dl.bintray.com/robotium/generic/robotium-solo-5.2.1.jar' > androidTest/libs/robotium-solo-5.2.1.jar
-
 ## Running
 
 To run manual tests:
@@ -58,6 +49,8 @@ To run manual tests:
 To run unit tests:
 
     ./gradlew connectedAndroidTest
+
+`BUILD SUCCESSFUL` means that the tests all passed :)
 
 ## Android Studio
 
