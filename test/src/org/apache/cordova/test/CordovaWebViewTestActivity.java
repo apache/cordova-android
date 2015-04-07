@@ -59,6 +59,7 @@ public class CordovaWebViewTestActivity extends Activity {
 
         //Set up the webview
         ConfigXmlParser parser = new ConfigXmlParser();
+        parser.parse(this);
 
         SystemWebView webView = (SystemWebView) findViewById(R.id.cordovaWebView);
         cordovaWebView = new CordovaWebViewImpl(this, new SystemWebViewEngine(webView));
