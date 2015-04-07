@@ -54,6 +54,8 @@ To run unit tests:
 
 ## Android Studio
 
-1. Use "Non-Android Studio Project" to import the `test` directory.
-2. Right click on the `junit` package in the left-side nav
-3. Select "Debug"`->`_The one with the Android icon_
+1. Use "Import Project" and import the `test` directory.
+2. Right click on the `org.apache.cordova.test` package on the left-hand nav.
+3. Select `Create Run Configuration` -> `Tests in ...` (The one with the Android icon)
+4. Review options (mainly - target device)
+5. Click the bug icon in the top toolbar to run with debugger attached
