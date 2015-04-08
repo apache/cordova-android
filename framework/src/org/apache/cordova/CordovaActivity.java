@@ -95,9 +95,6 @@ public class CordovaActivity extends Activity {
     protected ArrayList<PluginEntry> pluginEntries;
     protected CordovaInterfaceImpl cordovaInterface;
 
-    //flag for case when appView is null during onStart
-    private boolean shouldHandleStartOnAppViewInit = false;
-
     /**
      * Called when the activity is first created.
      */
@@ -141,10 +138,7 @@ public class CordovaActivity extends Activity {
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
         }
-        if(shouldHandleStartOnAppViewInit) {
-            shouldHandleStartOnAppViewInit = false;
-            appView.handleStart();
-        }
+
         cordovaInterface.onCordovaInit(appView.getPluginManager());
 
         // Wire the hardware volume controls to control media if desired.
@@ -298,8 +292,6 @@ public class CordovaActivity extends Activity {
         LOG.d(TAG, "Started the activity.");
         
         if (this.appView == null) {
-            //set flag so that handleStart will be called when appView is initialized
-            shouldHandleStartOnAppViewInit = true;
             return;
         }
         this.appView.handleStart();

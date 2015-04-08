@@ -1,6 +1,3 @@
-
-package org.apache.cordova.test;
-
 /*
  *
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,6 +18,9 @@ package org.apache.cordova.test;
  * under the License.
  *
  */
+
+package org.apache.cordova.test;
+
 
 import android.app.Activity;
 import android.test.ActivityInstrumentationTestCase2;
