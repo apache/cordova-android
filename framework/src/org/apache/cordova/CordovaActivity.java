@@ -95,6 +95,9 @@ public class CordovaActivity extends Activity {
     protected ArrayList<PluginEntry> pluginEntries;
     protected CordovaInterfaceImpl cordovaInterface;
 
+    //flag for case when appView is null during onStart
+    private boolean shouldHandleStartOnAppViewInit = false;
+
     /**
      * Called when the activity is first created.
      */
@@ -137,6 +140,10 @@ public class CordovaActivity extends Activity {
         createViews();
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
+        }
+        if(shouldHandleStartOnAppViewInit) {
+            shouldHandleStartOnAppViewInit = false;
+            appView.handleStart();
         }
         cordovaInterface.onCordovaInit(appView.getPluginManager());
 
@@ -267,6 +274,37 @@ public class CordovaActivity extends Activity {
 
         this.appView.handleResume(this.keepRunning);
     }
+
+    /**
+     * Called when the activity is no longer visible to the user.
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LOG.d(TAG, "Stopped the activity.");
+
+        if (this.appView == null) {
+            return;
+        }
+        this.appView.handleStop();
+    }
+
+    /**
+     * Called when the activity is becoming visible to the user.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LOG.d(TAG, "Started the activity.");
+        
+        if (this.appView == null) {
+            //set flag so that handleStart will be called when appView is initialized
+            shouldHandleStartOnAppViewInit = true;
+            return;
+        }
+        this.appView.handleStart();
+    }
+
 
     /**
      * The final call you receive before your activity is destroyed.

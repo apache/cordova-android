@@ -73,6 +73,9 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     private Set<Integer> boundKeyCodes = new HashSet<Integer>();
 
+    //flag to track if the start event needs to be dispatched during init
+    private boolean shouldCallOnStartDuringInit;
+
     public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
         String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
         try {
@@ -115,6 +118,11 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         pluginManager.addService(CoreAndroid.PLUGIN_NAME, "org.apache.cordova.CoreAndroid");
         pluginManager.init();
+
+        if(shouldCallOnStartDuringInit) {
+            shouldCallOnStartDuringInit = false;
+            pluginManager.onStart();
+        }
     }
 
     @Override
@@ -445,6 +453,21 @@ public class CordovaWebViewImpl implements CordovaWebView {
         engine.setPaused(false);
         this.pluginManager.onResume(keepRunning);
         sendJavascriptEvent("resume");
+    }
+    @Override
+    public void handleStart() {
+        if (!isInitialized()) {
+            shouldCallOnStartDuringInit = true;
+            return;
+        }
+        pluginManager.onStart();
+    }
+    @Override
+    public void handleStop() {
+        if (!isInitialized()) {
+            return;
+        }
+        pluginManager.onStop();
     }
 
     @Override
