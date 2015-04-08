@@ -138,6 +138,7 @@ public class CordovaActivity extends Activity {
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
         }
+
         cordovaInterface.onCordovaInit(appView.getPluginManager());
 
         // Wire the hardware volume controls to control media if desired.
@@ -267,6 +268,35 @@ public class CordovaActivity extends Activity {
 
         this.appView.handleResume(this.keepRunning);
     }
+
+    /**
+     * Called when the activity is no longer visible to the user.
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LOG.d(TAG, "Stopped the activity.");
+
+        if (this.appView == null) {
+            return;
+        }
+        this.appView.handleStop();
+    }
+
+    /**
+     * Called when the activity is becoming visible to the user.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LOG.d(TAG, "Started the activity.");
+        
+        if (this.appView == null) {
+            return;
+        }
+        this.appView.handleStart();
+    }
+
 
     /**
      * The final call you receive before your activity is destroyed.

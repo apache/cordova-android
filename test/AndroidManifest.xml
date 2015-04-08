@@ -73,6 +73,12 @@
         </activity>
         <activity
             android:windowSoftInputMode="adjustPan"
+            android:label="@string/app_name"
+            android:configChanges="orientation|keyboardHidden"
+            android:name="org.apache.cordova.test.LifeCyclePluginTestActivity" >
+        </activity>
+        <activity
+            android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name" 
             android:configChanges="orientation|keyboardHidden"
             android:name="org.apache.cordova.test.menus" >
