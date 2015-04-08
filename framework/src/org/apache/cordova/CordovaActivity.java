@@ -269,6 +269,34 @@ public class CordovaActivity extends Activity {
     }
 
     /**
+     * Called when the activity is no longer visible to the user.
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LOG.d(TAG, "Stopped the activity.");
+
+        if (this.appView == null) {
+            return;
+        }
+        this.appView.handleStop();
+    }
+
+    /**
+     * Called when the activity is becoming visible to the user.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LOG.d(TAG, "Started the activity.");
+
+        if (this.appView == null) {
+            return;
+        }
+        this.appView.handleStart();
+    }
+
+    /**
      * The final call you receive before your activity is destroyed.
      */
     @Override

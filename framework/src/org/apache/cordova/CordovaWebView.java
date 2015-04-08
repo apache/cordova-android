@@ -61,6 +61,10 @@ public interface CordovaWebView {
 
     void handleResume(boolean keepRunning);
 
+    void handleStart();
+
+    void handleStop();
+
     void handleDestroy();
 
     /**
