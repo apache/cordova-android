@@ -287,11 +287,13 @@ def addSigningProps(propsFilePath, signingConfig) {
     signingConfig.keyPassword = props.get('keyPassword', props.get('key.alias.password', signingConfig.keyPassword))
     signingConfig.storeFile = storeFile
     signingConfig.storePassword = props.get('storePassword', props.get('key.store.password', signingConfig.storePassword))
-    def storeType = props.get('storeType', props.get('key.store.type', signingConfig.storeType))
+    def storeType = props.get('storeType', props.get('key.store.type', ''))
     if (!storeType) {
         def filename = storeFile.getName().toLowerCase();
         if (filename.endsWith('.p12') || filename.endsWith('.pfx')) {
             storeType = 'pkcs12'
+        } else {
+            storeType = signingConfig.storeType // "jks"
         }
     }
     signingConfig.storeType = storeType
