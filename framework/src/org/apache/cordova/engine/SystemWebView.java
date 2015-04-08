@@ -62,8 +62,13 @@ public class SystemWebView extends WebView implements CordovaWebViewEngine.Engin
     @Override
     public void onScrollChanged(int l, int t, int oldl, int oldt)
     {
-        super.onScrollChanged(l, t, oldl, oldt);
-        parentEngine.client.onScrollChanged(l, t, oldl, oldt);
+        // TODO: scrolling is perf-sensitive, so we'd be better to not use postMessage
+        // here, and also not create any new objects. Instead, plugins should use:
+        //     webView.getView().getViewTreeObserver().addOnScrollChangedListener(...)
+        if (parentEngine != null && parentEngine.pluginManager != null) {
+            ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, this);
+            parentEngine.pluginManager.postMessage("onScrollChanged", myEvent);
+        }
     }
 
     @Override

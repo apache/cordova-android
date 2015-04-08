@@ -574,14 +574,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
 
         @Override
-        public void onScrollChanged(int l, int t, int oldl, int oldt) {
-            // TODO: scrolling is perf-sensitive, so we'd probably be better to no use postMessage
-            // here, and also not to create any new objects.
-            ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, getView());
-            pluginManager.postMessage("onScrollChanged", myEvent);
-        }
-
-        @Override
         public boolean onNavigationAttempt(String url) {
             // Give plugins the chance to handle the url
             if (pluginManager.onOverrideUrlLoading(url)) {

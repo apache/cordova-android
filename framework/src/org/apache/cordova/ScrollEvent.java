@@ -22,11 +22,9 @@ package org.apache.cordova;
 import android.view.View;
 
 /*
- * This can be used by any view, including native views
- * 
+ * @deprecated As of release 4.0. Use view.getViewTreeObserver().addOnScrollChangedListener(...) instead.
  */
-
-
+@Deprecated
 public class ScrollEvent {
     
     public int l, t, nl, nt;
