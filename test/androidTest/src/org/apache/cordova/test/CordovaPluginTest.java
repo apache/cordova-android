@@ -30,52 +30,29 @@ import org.apache.cordova.CordovaWebView;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-public class CordovaPluginTest extends ActivityInstrumentationTestCase2<LifeCyclePluginTestActivity> {
+public class CordovaPluginTest extends BaseCordovaIntegrationTest {
 
     public static String TAG = "CordovaPluginTest";
-    protected LifeCyclePluginTestActivity testActivity;
     protected LifeCyclePlugin testPlugin;
-    protected CordovaWebView cordovaWebView;
-
-    @SuppressWarnings("deprecation")
-    public CordovaPluginTest() {
-
-        super("org.apache.cordova.test", LifeCyclePluginTestActivity.class);
-    }
 
     protected void setUp() throws Exception {
         super.setUp();
-        testActivity = getActivity();
-        cordovaWebView = testActivity.getCordovaWebView();
-        testPlugin = (LifeCyclePlugin)cordovaWebView.getPluginManager().getPlugin("LifeCycle");
+        testPlugin = (LifeCyclePlugin)getActivity().getCordovaWebView().getPluginManager().getPlugin("LifeCycle");
     }
 
     private void invokeBlockingCallToLifeCycleEvent(final String lifeCycleEventName) {
-        final CordovaPluginTest me = this;
-        final Activity activity = this.testActivity;
-        Runnable blockingRunnable = new Runnable() {
+        final Activity activity = getActivity();
+        activity.runOnUiThread( new Runnable() {
             public void run() {
                 try {
-                    Method method = me.getInstrumentation().getClass().getMethod(lifeCycleEventName, Activity.class);
-                    method.invoke(me.getInstrumentation(), activity);
+                    Method method = getInstrumentation().getClass().getMethod(lifeCycleEventName, Activity.class);
+                    method.invoke(getInstrumentation(), activity);
                 } catch (Exception e) {
                     fail("An Exception occurred in invokeBlockingCallToLifeCycleEvent while invoking " + lifeCycleEventName);
                 }
-                me.getInstrumentation().callActivityOnStart(testActivity);
-                synchronized(this)
-                {
-                    this.notify();
-                }
             }
-        };
-        synchronized( blockingRunnable ) {
-            testActivity.runOnUiThread(blockingRunnable);
-            try {
-                blockingRunnable.wait();
-            } catch (InterruptedException e) {
-                fail("An InterruptedException occurred in invokeBlockingCallToLifeCycleEvent while waiting for " + lifeCycleEventName);
-            }
-        }
+        });
+        getInstrumentation().waitForIdleSync();
 
     }
 
