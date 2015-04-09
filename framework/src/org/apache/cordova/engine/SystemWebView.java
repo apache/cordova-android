@@ -10,7 +10,6 @@ import android.webkit.WebViewClient;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaWebViewEngine;
-import org.apache.cordova.ScrollEvent;
 
 /**
  * Custom WebView subclass that enables us to capture events needed for Cordova.
@@ -57,18 +56,6 @@ public class SystemWebView extends WebView implements CordovaWebViewEngine.Engin
     public void setWebChromeClient(WebChromeClient client) {
         chromeClient = (SystemWebChromeClient)client;
         super.setWebChromeClient(client);
-    }
-
-    @Override
-    public void onScrollChanged(int l, int t, int oldl, int oldt)
-    {
-        // TODO: scrolling is perf-sensitive, so we'd be better to not use postMessage
-        // here, and also not create any new objects. Instead, plugins should use:
-        //     webView.getView().getViewTreeObserver().addOnScrollChangedListener(...)
-        if (parentEngine != null && parentEngine.pluginManager != null) {
-            ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, this);
-            parentEngine.pluginManager.postMessage("onScrollChanged", myEvent);
-        }
     }
 
     @Override

@@ -48,12 +48,15 @@ Changes For Plugin Developers:
   * Android Studio is now fully supported, and recommended over Eclipse
 * Build using Gradle
   * All builds [use Gradle by default](Android%20Shell%20Tool%20Guide_building_with_gradle), instead of Ant
+  * Plugins can add their own gradle build steps!
+  * Plugins can depend on Maven libraries using `<framework>` tags
+* New APIs: `onStart`, `onStop`, `onConfigurationChanged`
+* `"onScrollChanged"` message removed. Use `view.getViewTreeObserver().addOnScrollChangedListener(...)` instead
+* CB-8702 New API for plugins to override `shouldInterceptRequest` with a stream
 
 #### Other Changes ####
 * CB-8378 Removed `hidekeyboard` and `showkeyboard` events (apps should use a plugin instead)
-* CB-7085 Add `onConfigurationChanged` hook for plugins
 * CB-8735 `bin/create` regex relaxed / better support for numbers
-* CB-8702 Add API for plugins to override `shouldInterceptRequest` with a stream
 * CB-8699 Fix CordovaResourceApi `copyResource` creating zero-length files when src=uncompressed asset
 * CB-8693 CordovaLib should not contain icons / splashscreens
 * CB-8592 Fix NPE if lifecycle events reach CordovaWebView before `init()` has been called

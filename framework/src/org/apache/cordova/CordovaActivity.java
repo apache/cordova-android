@@ -421,10 +421,6 @@ public class CordovaActivity extends Activity {
      * @return              Object or null
      */
     public Object onMessage(String id, Object data) {
-        if (!"onScrollChanged".equals(id)) {
-            LOG.d(TAG, "onMessage(" + id + "," + data + ")");
-        }
-
         if ("onReceivedError".equals(id)) {
             JSONObject d = (JSONObject) data;
             try {
