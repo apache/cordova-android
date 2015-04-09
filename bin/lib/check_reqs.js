@@ -33,6 +33,7 @@ var isWindows = process.platform == 'win32';
 
 function forgivingWhichSync(cmd) {
     try {
+        // TODO: Should use shelljs.which() here to have one less dependency.
         return fs.realpathSync(which.sync(cmd));
     } catch (e) {
         return '';
