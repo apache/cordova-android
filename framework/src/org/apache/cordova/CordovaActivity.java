@@ -185,7 +185,7 @@ public class CordovaActivity extends Activity {
      * Override this to customize the webview that is used.
      */
     protected CordovaWebView makeWebView() {
-        return new CordovaWebViewImpl(this, makeWebViewEngine());
+        return new CordovaWebViewImpl(makeWebViewEngine());
     }
 
     protected CordovaWebViewEngine makeWebViewEngine() {

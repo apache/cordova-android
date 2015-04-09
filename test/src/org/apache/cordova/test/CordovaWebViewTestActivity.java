@@ -62,7 +62,7 @@ public class CordovaWebViewTestActivity extends Activity {
         parser.parse(this);
 
         SystemWebView webView = (SystemWebView) findViewById(R.id.cordovaWebView);
-        cordovaWebView = new CordovaWebViewImpl(this, new SystemWebViewEngine(webView));
+        cordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(webView));
         cordovaWebView.init(cordovaInterface, parser.getPluginEntries(), parser.getPreferences());
 
         cordovaWebView.loadUrl(START_URL);

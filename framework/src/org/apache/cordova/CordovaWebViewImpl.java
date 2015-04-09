@@ -48,8 +48,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     public static final String TAG = "CordovaWebViewImpl";
 
-    // Public for backwards-compatibility :(
-    public PluginManager pluginManager;
+    private PluginManager pluginManager;
 
     protected final CordovaWebViewEngine engine;
     private CordovaInterface cordova;
@@ -84,10 +83,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
     }
 
-    public CordovaWebViewImpl(Context context, CordovaWebViewEngine cordovaWebViewEngine) {
-        this.context = context;
+    public CordovaWebViewImpl(CordovaWebViewEngine cordovaWebViewEngine) {
         this.engine = cordovaWebViewEngine;
     }
+
     // Convenience method for when creating programmatically (not from Config.xml).
     public void init(CordovaInterface cordova) {
         init(cordova, new ArrayList<PluginEntry>(), new CordovaPreferences());
@@ -461,7 +460,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
         pluginManager.onStop();
     }
-
     @Override
     public void handleDestroy() {
         if (!isInitialized()) {
@@ -473,7 +471,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // Forward to plugins
         this.pluginManager.onDestroy();
 
-        // Load blank page so that JavaScript onunload is called
+        // TODO: about:blank is a bit special (and the default URL for new frames)
+        // We should use a blank data: url instead so it's more obvious
         this.loadUrl("about:blank");
 
         // TODO: Should not destroy webview until after about:blank is done loading.
