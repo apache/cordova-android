@@ -1,5 +1,5 @@
 // Platform: android
-// fc4db9145934bd0053161cbf9ffc0caf83b770c6
+// b4af1c5ec477dd98cd651932ea6df6d46705d7f9
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '4.0.0-dev';
+var PLATFORM_VERSION_BUILD_LABEL = '4.0.0';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
@@ -100,6 +100,8 @@ if (typeof module === "object" && typeof require === "function") {
 
 // file: src/cordova.js
 define("cordova", function(require, exports, module) {
+
+if ("cordova" in window) { throw new Error("cordova already defined"); };
 
 
 var channel = require('cordova/channel');
