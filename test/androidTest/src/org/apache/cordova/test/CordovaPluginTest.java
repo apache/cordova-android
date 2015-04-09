@@ -58,7 +58,7 @@ public class CordovaPluginTest extends BaseCordovaIntegrationTest {
         //currently only one of the cases is covered
         LifeCyclePlugin testPlugin = (LifeCyclePlugin)cordovaWebView.getPluginManager().getPlugin("LifeCycle");
 
-        assertEquals("start,pause,stop,", testPlugin.calls);
+        assertEquals("start,resume,pause,stop,", testPlugin.calls);
         testPlugin.calls = "";
         // testOnStart
         invokeBlockingCallToLifeCycleEvent("callActivityOnStart");

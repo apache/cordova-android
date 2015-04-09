@@ -61,7 +61,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private CoreAndroid appPlugin;
     private NativeToJsMessageQueue nativeToJsMessageQueue;
     private EngineClient engineClient = new EngineClient();
-    private Context context;
+    private boolean hasPausedEver;
 
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
@@ -426,6 +426,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         if (!isInitialized()) {
             return;
         }
+        hasPausedEver = true;
         pluginManager.onPause(keepRunning);
         sendJavascriptEvent("pause");
 
@@ -444,7 +445,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // Resume JavaScript timers. This affects all webviews within the app!
         engine.setPaused(false);
         this.pluginManager.onResume(keepRunning);
-        sendJavascriptEvent("resume");
+        // To be the same as other platforms, fire this event only when resumed after a "pause".
+        if (hasPausedEver) {
+            sendJavascriptEvent("resume");
+        }
     }
     @Override
     public void handleStart() {

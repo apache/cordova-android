@@ -82,7 +82,6 @@ public class CordovaActivity extends Activity {
     private static int ACTIVITY_STARTING = 0;
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
-    private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
 
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
@@ -224,11 +223,6 @@ public class CordovaActivity extends Activity {
         super.onPause();
         LOG.d(TAG, "Paused the activity.");
 
-        // Don't process pause if shutting down, since onDestroy() will be called
-        if (this.activityState == ACTIVITY_EXITING) {
-            return;
-        }
-
         if (this.appView != null) {
             this.appView.handlePause(this.keepRunning);
         }
@@ -253,11 +247,6 @@ public class CordovaActivity extends Activity {
         super.onResume();
         LOG.d(TAG, "Resumed the activity.");
         
-        if (this.activityState == ACTIVITY_STARTING) {
-            this.activityState = ACTIVITY_RUNNING;
-            return;
-        }
-
         if (this.appView == null) {
             return;
         }
@@ -307,22 +296,6 @@ public class CordovaActivity extends Activity {
         if (this.appView != null) {
             appView.handleDestroy();
         }
-        else {
-            this.activityState = ACTIVITY_EXITING; 
-        }
-    }
-
-    /**
-     * End this activity by calling finish for activity
-     */
-    public void endActivity() {
-        finish();
-    }
-
-    @Override
-    public void finish() {
-        this.activityState = ACTIVITY_EXITING;
-        super.finish();
     }
 
     @Override
@@ -400,7 +373,7 @@ public class CordovaActivity extends Activity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                     if (exit) {
-                                        me.endActivity();
+                                        finish();
                                     }
                                 }
                             });
@@ -460,7 +433,7 @@ public class CordovaActivity extends Activity {
                 e.printStackTrace();
             }
         } else if ("exit".equals(id)) {
-            this.endActivity();
+            finish();
         }
         return null;
     }
