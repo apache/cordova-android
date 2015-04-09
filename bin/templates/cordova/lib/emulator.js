@@ -308,7 +308,7 @@ module.exports.install = function(target, buildResults) {
         var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
         console.log('Installing app on emulator...');
         console.log('Using apk: ' + apk_path);
-        return exec('adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"', os.tmpdir())
+        return exec('adb -s ' + resolvedTarget.target + ' install -r -d "' + apk_path + '"', os.tmpdir())
         .then(function(output) {
             if (output.match(/Failure/)) {
                 return Q.reject('Failed to install apk to emulator: ' + output);
