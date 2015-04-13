@@ -60,6 +60,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
 
     protected final SystemWebView webView;
     protected final SystemCookieManager cookieManager;
+    protected final CordovaPreferences preferences;
     protected CordovaBridge bridge;
     protected CordovaWebViewEngine.Client client;
     protected CordovaWebView parentWebView;
@@ -71,10 +72,11 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
 
     /** Used when created via reflection. */
     public SystemWebViewEngine(Context context, CordovaPreferences preferences) {
-        this(new SystemWebView(context));
+        this(new SystemWebView(context), preferences);
     }
 
-    public SystemWebViewEngine(SystemWebView webView) {
+    public SystemWebViewEngine(SystemWebView webView, CordovaPreferences preferences) {
+        this.preferences = preferences;
         this.webView = webView;
         cookieManager = new SystemCookieManager(webView);
     }
@@ -202,11 +204,11 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         String defaultUserAgent = settings.getUserAgentString();
 
         // Fix for CB-3360
-        String overrideUserAgent = getCordovaWebView().getPreferences().getString("OverrideUserAgent", null);
+        String overrideUserAgent = preferences.getString("OverrideUserAgent", null);
         if (overrideUserAgent != null) {
             settings.setUserAgentString(overrideUserAgent);
         } else {
-            String appendUserAgent = getCordovaWebView().getPreferences().getString("AppendUserAgent", null);
+            String appendUserAgent = preferences.getString("AppendUserAgent", null);
             if (appendUserAgent != null) {
                 settings.setUserAgentString(defaultUserAgent + " " + appendUserAgent);
             }
