@@ -107,6 +107,10 @@ public class CordovaBridge {
         expectedBridgeSecret = -1;
     }
 
+    public boolean isSecretEstablished() {
+        return expectedBridgeSecret != -1;
+    }
+
     /** Called by cordova.js to initialize the bridge. */
     int generateBridgeSecret() {
         SecureRandom randGen = new SecureRandom();
@@ -163,7 +167,7 @@ public class CordovaBridge {
         else if (defaultValue != null && defaultValue.startsWith("gap_init:")) {
             // Protect against random iframes being able to talk through the bridge.
             // Trust only pages which the app would have been allowed to navigate to anyway.
-            if (pluginManager.shouldAllowNavigation(origin)) {
+            if (pluginManager.shouldAllowBridgeAccess(origin)) {
                 // Enable the bridge
                 int bridgeMode = Integer.parseInt(defaultValue.substring(9));
                 jsMessageQueue.setBridgeMode(bridgeMode);

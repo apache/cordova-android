@@ -22,6 +22,7 @@ package org.apache.cordova.test;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.apache.cordova.Config;
+import org.apache.cordova.ConfigXmlParser;
 import org.apache.cordova.CordovaInterfaceImpl;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaWebViewImpl;
@@ -55,12 +56,14 @@ public class CordovaWebViewTestActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        //CB-7238: This has to be added now, because it got removed from somewhere else
-        Config.init(this);
+
+        //Set up the webview
+        ConfigXmlParser parser = new ConfigXmlParser();
+        parser.parse(this);
 
         SystemWebView webView = (SystemWebView) findViewById(R.id.cordovaWebView);
-        cordovaWebView = new CordovaWebViewImpl(this, new SystemWebViewEngine(webView));
-        cordovaWebView.init(cordovaInterface, Config.getPluginEntries(), Config.getPreferences());
+        cordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(webView));
+        cordovaWebView.init(cordovaInterface, parser.getPluginEntries(), parser.getPreferences());
 
         cordovaWebView.loadUrl(START_URL);
     }

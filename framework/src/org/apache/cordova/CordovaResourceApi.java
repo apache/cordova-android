@@ -72,8 +72,11 @@ public class CordovaResourceApi {
     public static final int URI_TYPE_DATA = 4;
     public static final int URI_TYPE_HTTP = 5;
     public static final int URI_TYPE_HTTPS = 6;
+    public static final int URI_TYPE_PLUGIN = 7;
     public static final int URI_TYPE_UNKNOWN = -1;
-    
+
+    public static final String PLUGIN_URI_SCHEME = "cdvplugin";
+
     private static final String[] LOCAL_FILE_PROJECTION = { "_data" };
     
     public static Thread jsThread;
@@ -122,6 +125,9 @@ public class CordovaResourceApi {
         }
         if ("https".equals(scheme)) {
             return URI_TYPE_HTTPS;
+        }
+        if (PLUGIN_URI_SCHEME.equals(scheme)) {
+            return URI_TYPE_PLUGIN;
         }
         return URI_TYPE_UNKNOWN;
     }
@@ -282,6 +288,14 @@ public class CordovaResourceApi {
                 InputStream inputStream = conn.getInputStream();
                 return new OpenForReadResult(uri, inputStream, mimeType, length, null);
             }
+            case URI_TYPE_PLUGIN: {
+                String pluginId = uri.getHost();
+                CordovaPlugin plugin = pluginManager.getPlugin(pluginId);
+                if (plugin == null) {
+                    throw new FileNotFoundException("Invalid plugin ID in URI: " + uri);
+                }
+                return plugin.handleOpenForRead(uri);
+            }
         }
         throw new FileNotFoundException("URI not supported by CordovaResourceApi: " + uri);
     }
@@ -336,7 +350,10 @@ public class CordovaResourceApi {
                 if (input.assetFd != null) {
                     offset = input.assetFd.getStartOffset();
                 }
-                outChannel.transferFrom(inChannel, offset, length);
+                // transferFrom()'s 2nd arg is a relative position. Need to set the absolute
+                // position first.
+                inChannel.position(offset);
+                outChannel.transferFrom(inChannel, 0, length);
             } else {
                 final int BUFFER_SIZE = 8192;
                 byte[] buffer = new byte[BUFFER_SIZE];
@@ -428,7 +445,7 @@ public class CordovaResourceApi {
         public final long length;
         public final AssetFileDescriptor assetFd;
         
-        OpenForReadResult(Uri uri, InputStream inputStream, String mimeType, long length, AssetFileDescriptor assetFd) {
+        public OpenForReadResult(Uri uri, InputStream inputStream, String mimeType, long length, AssetFileDescriptor assetFd) {
             this.uri = uri;
             this.inputStream = inputStream;
             this.mimeType = mimeType;

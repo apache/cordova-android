@@ -72,11 +72,10 @@ public interface CordovaWebViewEngine {
      */
     public interface Client {
         Boolean onDispatchKeyEvent(KeyEvent event);
-        boolean shouldOverrideUrlLoading(String url);
         void clearLoadTimeoutTimer();
         void onPageStarted(String newUrl);
         void onReceivedError(int errorCode, String description, String failingUrl);
         void onPageFinishedLoading(String url);
-        void onScrollChanged(int l, int t, int oldl, int oldt);
+        boolean onNavigationAttempt(String url);
     }
 }

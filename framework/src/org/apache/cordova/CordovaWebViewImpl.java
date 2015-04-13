@@ -21,13 +21,11 @@ package org.apache.cordova;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
@@ -50,10 +48,9 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     public static final String TAG = "CordovaWebViewImpl";
 
-    // Public for backwards-compatibility :(
-    public PluginManager pluginManager;
+    private PluginManager pluginManager;
 
-    protected CordovaWebViewEngine engine;
+    protected final CordovaWebViewEngine engine;
     private CordovaInterface cordova;
 
     // Flag to track that a loadUrl timeout occurred
@@ -64,7 +61,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private CoreAndroid appPlugin;
     private NativeToJsMessageQueue nativeToJsMessageQueue;
     private EngineClient engineClient = new EngineClient();
-    private Context context;
+    private boolean hasPausedEver;
 
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
@@ -75,7 +72,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     private Set<Integer> boundKeyCodes = new HashSet<Integer>();
 
-    public static CordovaWebViewEngine createEngine(String className, Context context, CordovaPreferences preferences) {
+    public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
+        String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
         try {
             Class<?> webViewClass = Class.forName(className);
             Constructor<?> constructor = webViewClass.getConstructor(Context.class, CordovaPreferences.class);
@@ -85,13 +83,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
     }
 
-    public CordovaWebViewImpl(Context context) {
-        this(context, null);
-    }
-    public CordovaWebViewImpl(Context context, CordovaWebViewEngine cordovaWebViewEngine) {
-        this.context = context;
+    public CordovaWebViewImpl(CordovaWebViewEngine cordovaWebViewEngine) {
         this.engine = cordovaWebViewEngine;
     }
+
     // Convenience method for when creating programmatically (not from Config.xml).
     public void init(CordovaInterface cordova) {
         init(cordova, new ArrayList<PluginEntry>(), new CordovaPreferences());
@@ -101,11 +96,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
     public void init(CordovaInterface cordova, List<PluginEntry> pluginEntries, CordovaPreferences preferences) {
         if (this.cordova != null) {
             throw new IllegalStateException();
-        }
-        // Happens only when not using CordovaActivity. Usually, engine is set in the constructor.
-        if (engine == null) {
-            String className = preferences.getString("webView", SystemWebViewEngine.class.getCanonicalName());
-            engine = createEngine(className, context, preferences);
         }
         this.cordova = cordova;
         this.preferences = preferences;
@@ -124,6 +114,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         pluginManager.addService(CoreAndroid.PLUGIN_NAME, "org.apache.cordova.CoreAndroid");
         pluginManager.init();
+
     }
 
     @Override
@@ -209,7 +200,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     @Override
     public void showWebPage(String url, boolean openExternal, boolean clearHistory, Map<String, Object> params) {
-        LOG.d(TAG, "showWebPage(%s, %b, %b, HashMap", url, openExternal, clearHistory);
+        LOG.d(TAG, "showWebPage(%s, %b, %b, HashMap)", url, openExternal, clearHistory);
 
         // If clearing history
         if (clearHistory) {
@@ -223,16 +214,21 @@ public class CordovaWebViewImpl implements CordovaWebView {
                 // TODO: What about params?
                 // Load new URL
                 loadUrlIntoView(url, true);
-                return;
+            } else {
+                LOG.w(TAG, "showWebPage: Refusing to load URL into webview since it is not in the <allow-navigation> whitelist. URL=" + url);
             }
-            // Load in default viewer if not
-            LOG.w(TAG, "showWebPage: Cannot load URL into webview since it is not in white list.  Loading into browser instead. (URL=" + url + ")");
+        }
+        if (!pluginManager.shouldOpenExternalUrl(url)) {
+            LOG.w(TAG, "showWebPage: Refusing to send intent for URL since it is not in the <allow-intent> whitelist. URL=" + url);
+            return;
         }
         try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            Uri uri = Uri.parse(url);
             // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
             // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            Uri uri = Uri.parse(url);
             if ("file".equals(uri.getScheme())) {
                 intent.setDataAndType(uri, resourceApi.getMimeType(uri));
             } else {
@@ -427,14 +423,12 @@ public class CordovaWebViewImpl implements CordovaWebView {
     }
     @Override
     public void handlePause(boolean keepRunning) {
-        LOG.d(TAG, "Handle the pause");
-        // Send pause event to JavaScript
-        sendJavascriptEvent("pause");
-
-        // Forward to plugins
-        if (pluginManager != null) {
-            pluginManager.onPause(keepRunning);
+        if (!isInitialized()) {
+            return;
         }
+        hasPausedEver = true;
+        pluginManager.onPause(keepRunning);
+        sendJavascriptEvent("pause");
 
         // If app doesn't want to run in background
         if (!keepRunning) {
@@ -443,31 +437,46 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
     }
     @Override
-    public void handleResume(boolean keepRunning)
-    {
+    public void handleResume(boolean keepRunning) {
+        if (!isInitialized()) {
+            return;
+        }
+
         // Resume JavaScript timers. This affects all webviews within the app!
         engine.setPaused(false);
-
-        sendJavascriptEvent("resume");
-
-        // Forward to plugins
-        if (this.pluginManager != null) {
-            this.pluginManager.onResume(keepRunning);
+        this.pluginManager.onResume(keepRunning);
+        // To be the same as other platforms, fire this event only when resumed after a "pause".
+        if (hasPausedEver) {
+            sendJavascriptEvent("resume");
         }
     }
-
     @Override
-    public void handleDestroy()
-    {
+    public void handleStart() {
+        if (!isInitialized()) {
+            return;
+        }
+        pluginManager.onStart();
+    }
+    @Override
+    public void handleStop() {
+        if (!isInitialized()) {
+            return;
+        }
+        pluginManager.onStop();
+    }
+    @Override
+    public void handleDestroy() {
+        if (!isInitialized()) {
+            return;
+        }
         // Cancel pending timeout timer.
         loadUrlTimeout++;
 
         // Forward to plugins
-        if (this.pluginManager != null) {
-            this.pluginManager.onDestroy();
-        }
+        this.pluginManager.onDestroy();
 
-        // Load blank page so that JavaScript onunload is called
+        // TODO: about:blank is a bit special (and the default URL for new frames)
+        // We should use a blank data: url instead so it's more obvious
         this.loadUrl("about:blank");
 
         // TODO: Should not destroy webview until after about:blank is done loading.
@@ -583,41 +592,18 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
 
         @Override
-        public boolean shouldOverrideUrlLoading(String url) {
+        public boolean onNavigationAttempt(String url) {
             // Give plugins the chance to handle the url
-            if (pluginManager.shouldAllowNavigation(url)) {
-                // Allow internal navigation
+            if (pluginManager.onOverrideUrlLoading(url)) {
+                return true;
+            } else if (pluginManager.shouldAllowNavigation(url)) {
                 return false;
             } else if (pluginManager.shouldOpenExternalUrl(url)) {
-                // Do nothing other than what the plugins wanted.
-                // If any returned false, then the request was either blocked
-                // completely, or handled out-of-band by the plugin. If they all
-                // returned true, then we should open the URL here.
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(url));
-                    intent.addCategory(Intent.CATEGORY_BROWSABLE);
-                    intent.setComponent(null);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                        intent.setSelector(null);
-                    }
-                    getContext().startActivity(intent);
-                    return true;
-                } catch (android.content.ActivityNotFoundException e) {
-                    Log.e(TAG, "Error loading url " + url, e);
-                }
+                showWebPage(url, true, false, null);
                 return true;
             }
-            // Block by default
+            LOG.w(TAG, "Blocked (possibly sub-frame) navigation to non-allowed URL: " + url);
             return true;
-        }
-
-        @Override
-        public void onScrollChanged(int l, int t, int oldl, int oldt) {
-            // TODO: scrolling is perf-sensitive, so we'd probably be better to no use postMessage
-            // here, and also not to create any new objects.
-            ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, getView());
-            pluginManager.postMessage("onScrollChanged", myEvent);
         }
     }
 }

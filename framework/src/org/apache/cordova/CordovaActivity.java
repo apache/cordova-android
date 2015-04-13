@@ -21,7 +21,6 @@ package org.apache.cordova;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +28,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -82,7 +82,6 @@ public class CordovaActivity extends Activity {
     private static int ACTIVITY_STARTING = 0;
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
-    private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
 
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
@@ -138,7 +137,7 @@ public class CordovaActivity extends Activity {
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
         }
-        cordovaInterface.setPluginManager(appView.getPluginManager());
+        cordovaInterface.onCordovaInit(appView.getPluginManager());
 
         // Wire the hardware volume controls to control media if desired.
         String volumePref = preferences.getString("DefaultVolumeStream", "");
@@ -185,12 +184,11 @@ public class CordovaActivity extends Activity {
      * Override this to customize the webview that is used.
      */
     protected CordovaWebView makeWebView() {
-        return new CordovaWebViewImpl(this, makeWebViewEngine());
+        return new CordovaWebViewImpl(makeWebViewEngine());
     }
 
     protected CordovaWebViewEngine makeWebViewEngine() {
-        String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
-        return CordovaWebViewImpl.createEngine(className, this, preferences);
+        return CordovaWebViewImpl.createEngine(this, preferences);
     }
 
     protected CordovaInterfaceImpl makeCordovaInterface() {
@@ -225,11 +223,6 @@ public class CordovaActivity extends Activity {
         super.onPause();
         LOG.d(TAG, "Paused the activity.");
 
-        // Don't process pause if shutting down, since onDestroy() will be called
-        if (this.activityState == ACTIVITY_EXITING) {
-            return;
-        }
-
         if (this.appView != null) {
             this.appView.handlePause(this.keepRunning);
         }
@@ -254,11 +247,6 @@ public class CordovaActivity extends Activity {
         super.onResume();
         LOG.d(TAG, "Resumed the activity.");
         
-        if (this.activityState == ACTIVITY_STARTING) {
-            this.activityState = ACTIVITY_RUNNING;
-            return;
-        }
-
         if (this.appView == null) {
             return;
         }
@@ -267,6 +255,34 @@ public class CordovaActivity extends Activity {
         this.getWindow().getDecorView().requestFocus();
 
         this.appView.handleResume(this.keepRunning);
+    }
+
+    /**
+     * Called when the activity is no longer visible to the user.
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LOG.d(TAG, "Stopped the activity.");
+
+        if (this.appView == null) {
+            return;
+        }
+        this.appView.handleStop();
+    }
+
+    /**
+     * Called when the activity is becoming visible to the user.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LOG.d(TAG, "Started the activity.");
+
+        if (this.appView == null) {
+            return;
+        }
+        this.appView.handleStart();
     }
 
     /**
@@ -280,22 +296,6 @@ public class CordovaActivity extends Activity {
         if (this.appView != null) {
             appView.handleDestroy();
         }
-        else {
-            this.activityState = ACTIVITY_EXITING; 
-        }
-    }
-
-    /**
-     * End this activity by calling finish for activity
-     */
-    public void endActivity() {
-        finish();
-    }
-
-    @Override
-    public void finish() {
-        this.activityState = ACTIVITY_EXITING;
-        super.finish();
     }
 
     @Override
@@ -373,7 +373,7 @@ public class CordovaActivity extends Activity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                     if (exit) {
-                                        me.endActivity();
+                                        finish();
                                     }
                                 }
                             });
@@ -421,10 +421,6 @@ public class CordovaActivity extends Activity {
      * @return              Object or null
      */
     public Object onMessage(String id, Object data) {
-        if (!"onScrollChanged".equals(id)) {
-            LOG.d(TAG, "onMessage(" + id + "," + data + ")");
-        }
-
         if ("onReceivedError".equals(id)) {
             JSONObject d = (JSONObject) data;
             try {
@@ -433,14 +429,31 @@ public class CordovaActivity extends Activity {
                 e.printStackTrace();
             }
         } else if ("exit".equals(id)) {
-            this.endActivity();
+            finish();
         }
         return null;
     }
 
     protected void onSaveInstanceState(Bundle outState)
     {
-        super.onSaveInstanceState(outState);
         cordovaInterface.onSaveInstanceState(outState);
+        super.onSaveInstanceState(outState);
+    }
+
+    /**
+     * Called by the system when the device configuration changes while your activity is running.
+     *
+     * @param newConfig		The new device configuration
+     */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (this.appView == null) {
+            return;
+        }
+        PluginManager pm = this.appView.getPluginManager();
+        if (pm != null) {
+            pm.onConfigurationChanged(newConfig);
+        }
     }
 }

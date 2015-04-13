@@ -1,3 +1,22 @@
+/*
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+*/
+
 package org.apache.cordova;
 
 import android.app.Activity;
@@ -17,8 +36,9 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     protected ExecutorService threadPool;
     protected PluginManager pluginManager;
 
+    protected ActivityResultHolder savedResult;
     protected CordovaPlugin activityResultCallback;
-    protected String initCallbackClass;
+    protected String initCallbackService;
     protected int activityResultRequestCode;
 
     public CordovaInterfaceImpl(Activity activity) {
@@ -28,10 +48,6 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     public CordovaInterfaceImpl(Activity activity, ExecutorService threadPool) {
         this.activity = activity;
         this.threadPool = threadPool;
-    }
-
-    public void setPluginManager(PluginManager pluginManager) {
-        this.pluginManager = pluginManager;
     }
 
     @Override
@@ -73,24 +89,38 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     }
 
     /**
+     * Dispatches any pending onActivityResult callbacks.
+     */
+    public void onCordovaInit(PluginManager pluginManager) {
+        this.pluginManager = pluginManager;
+        if (savedResult != null) {
+            onActivityResult(savedResult.requestCode, savedResult.resultCode, savedResult.intent);
+        }
+    }
+
+    /**
      * Routes the result to the awaiting plugin. Returns false if no plugin was waiting.
      */
     public boolean onActivityResult(int requestCode, int resultCode, Intent intent) {
         CordovaPlugin callback = activityResultCallback;
-        if(callback == null && initCallbackClass != null) {
+        if(callback == null && initCallbackService != null) {
             // The application was restarted, but had defined an initial callback
             // before being shut down.
-            callback = pluginManager.getPlugin(initCallbackClass);
+            savedResult = new ActivityResultHolder(requestCode, resultCode, intent);
+            if (pluginManager != null) {
+                callback = pluginManager.getPlugin(initCallbackService);
+            }
         }
-        initCallbackClass = null;
         activityResultCallback = null;
 
         if (callback != null) {
             Log.d(TAG, "Sending activity result to plugin");
+            initCallbackService = null;
+            savedResult = null;
             callback.onActivityResult(requestCode, resultCode, intent);
             return true;
         }
-        Log.w(TAG, "Got an activity result, but no plugin was registered to receive it.");
+        Log.w(TAG, "Got an activity result, but no plugin was registered to receive it" + (savedResult != null ? " yet!": "."));
         return false;
     }
 
@@ -108,8 +138,8 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      */
     public void onSaveInstanceState(Bundle outState) {
         if (activityResultCallback != null) {
-            String cClass = activityResultCallback.getClass().getName();
-            outState.putString("callbackClass", cClass);
+            String serviceName = activityResultCallback.getServiceName();
+            outState.putString("callbackService", serviceName);
         }
     }
 
@@ -117,6 +147,18 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      * Call this from onCreate() so that any saved startActivityForResult parameters will be restored.
      */
     public void restoreInstanceState(Bundle savedInstanceState) {
-        initCallbackClass = savedInstanceState.getString("callbackClass");
+        initCallbackService = savedInstanceState.getString("callbackService");
+    }
+
+    private static class ActivityResultHolder {
+        private int requestCode;
+        private int resultCode;
+        private Intent intent;
+
+        public ActivityResultHolder(int requestCode, int resultCode, Intent intent) {
+            this.requestCode = requestCode;
+            this.resultCode = resultCode;
+            this.intent = intent;
+        }
     }
 }

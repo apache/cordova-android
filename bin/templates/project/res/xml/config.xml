@@ -30,28 +30,26 @@
         Apache Cordova Team
     </author>
 
-    <!-- Allow access to arbitrary URLs in the Cordova WebView. This is a
-         development mode setting, and should be changed for production. -->
-    <access origin="http://*/*"/>
-    <access origin="https://*/*"/>
+    <!-- <content src="http://mysite.com/myapp.html" /> for external pages -->
+    <content src="index.html" />
 
+    <!-- Whitelist docs: https://github.com/apache/cordova-plugin-whitelist -->
+    <access origin="*" />
     <!-- Grant certain URLs the ability to launch external applications. This
          behaviour is set to match that of Cordova versions before 3.6.0, and
          should be reviewed before launching an application in production. It
          may be changed in the future. -->
-    <access origin="tel:*" launch-external="yes"/>
-    <access origin="geo:*" launch-external="yes"/>
-    <access origin="mailto:*" launch-external="yes"/>
-    <access origin="sms:*" launch-external="yes"/>
-    <access origin="market:*" launch-external="yes"/>
-
-    <!-- <content src="http://mysite.com/myapp.html" /> for external pages -->
-    <content src="index.html" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <allow-intent href="market:*" />
 
     <preference name="loglevel" value="DEBUG" />
-        
     <!--
-      <preference name="splashscreen" value="resourceName" />
+      <preference name="splashscreen" value="splash" />
       <preference name="backgroundColor" value="0xFFF" />
       <preference name="loadUrlTimeoutValue" value="20000" />
       <preference name="InAppBrowserStorageEnabled" value="true" />

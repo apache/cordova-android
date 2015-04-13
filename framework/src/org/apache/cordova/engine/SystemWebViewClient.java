@@ -76,9 +76,9 @@ public class SystemWebViewClient extends WebViewClient {
      */
 	@Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        return parentEngine.client.shouldOverrideUrlLoading(url);
+        return parentEngine.client.onNavigationAttempt(url);
     }
-    
+
     /**
      * On received http auth request.
      * The method reacts on all registered authentication tokens. There is one and only one authentication token for any host + realm combination

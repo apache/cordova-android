@@ -1,6 +1,6 @@
 {
     "name": "cordova-android",
-    "version": "4.0.0-dev",
+    "version": "4.1.0-dev",
     "description": "cordova-android release",
     "main": "bin/create",
     "repository": {
@@ -21,11 +21,10 @@
     "license": "Apache version 2.0",
     "dependencies": {
         "q": "^0.9.0",
-        "shelljs": "^0.2.6",
-        "which": "^1.0.5"
+        "shelljs": "^0.2.6"
     },
     "devDependencies": {
-        "jasmine-node": "~1",
+        "jasmine-node": "^1.14.5",
         "jshint": "^2.6.0",
         "promise-matchers": "~0"
     }

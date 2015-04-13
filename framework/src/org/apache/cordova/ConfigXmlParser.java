@@ -25,11 +25,10 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.cordova.LOG;
+import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import android.app.Activity;
-import android.content.res.XmlResourceParser;
+import android.content.Context;
 
 public class ConfigXmlParser {
     private static String TAG = "ConfigXmlParser";
@@ -50,7 +49,7 @@ public class ConfigXmlParser {
         return launchUrl;
     }
 
-    public void parse(Activity action) {
+    public void parse(Context action) {
         // First checking the class namespace for config.xml
         int id = action.getResources().getIdentifier("config", "xml", action.getClass().getPackage().getName());
         if (id == 0) {
@@ -68,14 +67,14 @@ public class ConfigXmlParser {
     String service = "", pluginClass = "", paramType = "";
     boolean onload = false;
 
-    public void parse(XmlResourceParser xml) {
+    public void parse(XmlPullParser xml) {
         int eventType = -1;
 
-        while (eventType != XmlResourceParser.END_DOCUMENT) {
-            if (eventType == XmlResourceParser.START_TAG) {
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            if (eventType == XmlPullParser.START_TAG) {
                 handleStartTag(xml);
             }
-            else if (eventType == XmlResourceParser.END_TAG)
+            else if (eventType == XmlPullParser.END_TAG)
             {
                 handleEndTag(xml);
             }
@@ -89,7 +88,7 @@ public class ConfigXmlParser {
         }
     }
 
-    public void handleStartTag(XmlResourceParser xml) {
+    public void handleStartTag(XmlPullParser xml) {
         String strNode = xml.getName();
         if (strNode.equals("feature")) {
             //Check for supported feature sets  aka. plugins (Accelerometer, Geolocation, etc)
@@ -119,7 +118,7 @@ public class ConfigXmlParser {
         }
     }
 
-    public void handleEndTag(XmlResourceParser xml) {
+    public void handleEndTag(XmlPullParser xml) {
         String strNode = xml.getName();
         if (strNode.equals("feature")) {
             pluginEntries.add(new PluginEntry(service, pluginClass, onload));
