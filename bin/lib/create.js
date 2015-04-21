@@ -58,7 +58,7 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
         if (shared) {
             shell.rm('-rf', nestedCordovaLibPath);
         } else if (!wasSymlink) {
-            // Delete only the src, since eclipse can't handle its .project file being deleted.
+            // Delete only the src, since Eclipse / Android Studio can't handle their project files being deleted.
             shell.rm('-rf', path.join(nestedCordovaLibPath, 'src'));
         }
     });
@@ -72,13 +72,6 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
         shell.cp('-f', path.join(ROOT, 'framework', 'build.gradle'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'cordova.gradle'), nestedCordovaLibPath);
         shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
-        // Create an eclipse project file and set the name of it to something unique.
-        // Without this, you can't import multiple CordovaLib projects into the same workspace.
-        var eclipseProjectFilePath = path.join(nestedCordovaLibPath, '.project');
-        if (!fs.existsSync(eclipseProjectFilePath)) {
-            var data = '<?xml version="1.0" encoding="UTF-8"?><projectDescription><name>' + projectName + '-' + 'CordovaLib</name></projectDescription>';
-            fs.writeFileSync(eclipseProjectFilePath, data, 'utf8');
-        }
     }
 }
 
@@ -248,17 +241,6 @@ exports.createProject = function(project_path, package_name, project_name, activ
             // Manually create directories that would be empty within the template (since git doesn't track directories).
             shell.mkdir(path.join(project_path, 'libs'));
 
-            // Add in the proper eclipse project file.
-            if (use_cli_template) {
-                var note = 'To show `assets/www` or `res/xml/config.xml`, go to:\n' +
-                           '    Project -> Properties -> Resource -> Resource Filters\n' +
-                           'And delete the exclusion filter.\n';
-                shell.cp(path.join(project_template_dir, 'eclipse-project-CLI'), path.join(project_path, '.project'));
-                fs.writeFileSync(path.join(project_path, 'assets', '_where-is-www.txt'), note);
-            } else {
-                shell.cp(path.join(project_template_dir, 'eclipse-project'), path.join(project_path, '.project'));
-            }
-
             // copy cordova.js, cordova.jar
             copyJsAndLibrary(project_path, use_shared_project, safe_activity_name);
 
@@ -267,7 +249,6 @@ exports.createProject = function(project_path, package_name, project_name, activ
             shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
             shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
             shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
-            shell.sed('-i', /__NAME__/, project_name, path.join(project_path, '.project'));
             shell.sed('-i', /__ID__/, package_name, activity_path);
 
             shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
