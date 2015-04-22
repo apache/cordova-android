@@ -152,6 +152,26 @@ def doPromptForPassword(msg) {
     }
 }
 
+def doGetConfigXml() {
+    def xml = file("res/xml/config.xml").getText()
+    // Disable namespace awareness since Cordova doesn't use them properly
+    return new XmlParser(false, false).parseText(xml)
+}
+
+def doGetConfigPreference(name, defaultValue) {
+    name = name.toLowerCase()
+    def root = doGetConfigXml()
+
+    def ret = defaultValue
+    root.preference.each { it ->
+        def attrName = it.attribute("name")
+        if (attrName && attrName.toLowerCase() == name) {
+            ret = it.attribute("value")
+        }
+    }
+    return ret
+}
+
 // Properties exported here are visible to all plugins.
 ext {
     // These helpers are shared, but are not guaranteed to be stable / unchanged.
@@ -161,5 +181,10 @@ ext {
     privateHelpers.extractIntFromManifest = { name -> doExtractIntFromManifest(name) }
     privateHelpers.promptForPassword = { msg -> doPromptForPassword(msg) }
     privateHelpers.ensureValueExists = { filePath, props, key -> doEnsureValueExists(filePath, props, key) }
+
+    // These helpers can be used by plugins / projects and will not change.
+    cdvHelpers = {}
+    cdvHelpers.getConfigXml = { doGetConfigXml() }
+    cdvHelpers.getConfigPreference = { name, defaultValue -> doGetConfigPreference(name, defaultValue) }
 }
 
