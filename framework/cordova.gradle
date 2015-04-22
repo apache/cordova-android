@@ -184,7 +184,9 @@ ext {
 
     // These helpers can be used by plugins / projects and will not change.
     cdvHelpers = {}
+    // Returns a XmlParser for the config.xml. Added in 4.1.0.
     cdvHelpers.getConfigXml = { doGetConfigXml() }
+    // Returns the value for the desired <preference>. Added in 4.1.0.
     cdvHelpers.getConfigPreference = { name, defaultValue -> doGetConfigPreference(name, defaultValue) }
 }
 
