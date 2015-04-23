@@ -305,10 +305,10 @@ var builders = {
                 var sdkDir = process.env['ANDROID_HOME'];
                 var wrapperDir = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper');
                 if (process.platform == 'win32') {
-                    shell.rm('-f', path.join(wrapperDir, 'gradlew.bat'), projectPath);
+                    shell.rm('-f', path.join(projectPath, 'gradlew.bat'));
                     shell.cp(path.join(wrapperDir, 'gradlew.bat'), projectPath);
                 } else {
-                    shell.rm('-f', path.join(wrapperDir, 'gradlew'), projectPath);
+                    shell.rm('-f', path.join(projectPath, 'gradlew'));
                     shell.cp(path.join(wrapperDir, 'gradlew'), projectPath);
                 }
                 shell.rm('-rf', path.join(projectPath, 'gradle', 'wrapper'));
