@@ -28,8 +28,6 @@ import android.os.Looper;
 import android.util.Base64;
 import android.webkit.MimeTypeMap;
 
-import org.apache.http.util.EncodingUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileChannel;
@@ -427,7 +426,16 @@ public class CordovaResourceApi {
             }
         }
         String dataPartAsString = uriAsString.substring(commaPos + 1);
-        byte[] data = base64 ? Base64.decode(dataPartAsString, Base64.DEFAULT) : EncodingUtils.getBytes(dataPartAsString, "UTF-8");
+        byte[] data;
+        if (base64) {
+            data = Base64.decode(dataPartAsString, Base64.DEFAULT);
+        } else {
+            try {
+                data = dataPartAsString.getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                data = dataPartAsString.getBytes();
+            }
+        }
         InputStream inputStream = new ByteArrayInputStream(data);
         return new OpenForReadResult(uri, inputStream, contentType, data.length, null);
     }
