@@ -270,9 +270,9 @@ public class NativeToJsMessageQueue {
     }
 
     public static abstract class BridgeMode {
-        abstract void onNativeToJsMessageAvailable(NativeToJsMessageQueue queue);
-        void notifyOfFlush(NativeToJsMessageQueue queue, boolean fromOnlineEvent) {}
-        void reset() {}
+        public abstract void onNativeToJsMessageAvailable(NativeToJsMessageQueue queue);
+        public void notifyOfFlush(NativeToJsMessageQueue queue, boolean fromOnlineEvent) {}
+        public void reset() {}
     }
 
     /** Uses JS polls for messages on a timer.. */
