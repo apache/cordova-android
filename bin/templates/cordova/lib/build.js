@@ -319,6 +319,7 @@ var builders = {
                 var distributionUrlRegex = /distributionUrl.*zip/;
                 var distributionUrl = 'distributionUrl=http\\://services.gradle.org/distributions/gradle-2.2.1-all.zip';
                 var gradleWrapperPropertiesPath = path.join(projectPath, 'gradle', 'wrapper', 'gradle-wrapper.properties');
+                shell.chmod('u+w', gradleWrapperPropertiesPath);
                 shell.sed('-i', distributionUrlRegex, distributionUrl, gradleWrapperPropertiesPath);
 
                 var propertiesFile = opts.buildType + SIGNING_PROPERTIES;
