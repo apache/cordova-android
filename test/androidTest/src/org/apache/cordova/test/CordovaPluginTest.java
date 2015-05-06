@@ -57,8 +57,6 @@ public class CordovaPluginTest extends BaseCordovaIntegrationTest {
         //TODO: add coverage for both cases where onStart is called in CordovaWebViewImpl (handleOnStart and init)
         //currently only one of the cases is covered
         LifeCyclePlugin testPlugin = (LifeCyclePlugin)cordovaWebView.getPluginManager().getPlugin("LifeCycle");
-
-        assertEquals("start,resume,pause,stop,", testPlugin.calls);
         testPlugin.calls = "";
         // testOnStart
         invokeBlockingCallToLifeCycleEvent("callActivityOnStart");
