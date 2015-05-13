@@ -152,7 +152,6 @@ public class CordovaActivity extends Activity {
         parser.parse(this);
         preferences = parser.getPreferences();
         preferences.setPreferencesBundle(getIntent().getExtras());
-        preferences.copyIntoIntentExtras(this);
         launchUrl = parser.getLaunchUrl();
         pluginEntries = parser.getPluginEntries();
         Config.parser = parser;
