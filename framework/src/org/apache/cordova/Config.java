@@ -36,8 +36,8 @@ public class Config {
     public static void init(Activity action) {
         parser = new ConfigXmlParser();
         parser.parse(action);
+        //TODO: Add feature to bring this back.  Some preferences should be overridden by intents, but not all
         parser.getPreferences().setPreferencesBundle(action.getIntent().getExtras());
-        parser.getPreferences().copyIntoIntentExtras(action);
     }
 
     // Intended to be used for testing only; creates an empty configuration.
