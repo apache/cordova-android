@@ -36,7 +36,7 @@ public class MainTestActivity extends BaseTestCordovaActivity {
 
     @Override protected void loadConfig() {
         super.loadConfig();
-        // Need to set this explicitly in prefs since it's not settable via bundle extras (for security reasons).
+        // Need to set this explicitly in prefs since it's not settable via bundle extras.
         String errorUrl = getIntent().getStringExtra("testErrorUrl");
         if (errorUrl != null) {
             preferences.set("errorUrl", errorUrl);
