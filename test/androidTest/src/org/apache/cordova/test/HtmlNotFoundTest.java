@@ -31,10 +31,9 @@ public class HtmlNotFoundTest extends BaseCordovaIntegrationTest {
   public void testUrl() throws Throwable
   {
       assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
-      // TODO: Should this be null? Or some other way to indicate it didn't actually load?
       runTestOnUiThread(new Runnable() {
           public void run() {
-              assertEquals(START_URL, testActivity.getCordovaWebView().getUrl());
+              assertFalse(START_URL.equals(testActivity.getCordovaWebView().getUrl()));
           }
       });
   }

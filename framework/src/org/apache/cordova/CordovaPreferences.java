@@ -61,13 +61,6 @@ public class CordovaPreferences {
         String value = prefs.get(name);
         if (value != null) {
             return Boolean.parseBoolean(value);
-        } else if (preferencesBundleExtras != null) {
-            Object bundleValue = preferencesBundleExtras.get(name);
-            if (bundleValue instanceof String) {
-                return "true".equals(bundleValue);
-            }
-            // Gives a nice warning if type is wrong.
-            return preferencesBundleExtras.getBoolean(name, defaultValue);
         }
         return defaultValue;
     }
