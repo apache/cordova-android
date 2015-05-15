@@ -37,7 +37,6 @@ public class Config {
         parser = new ConfigXmlParser();
         parser.parse(action);
         parser.getPreferences().setPreferencesBundle(action.getIntent().getExtras());
-        parser.getPreferences().copyIntoIntentExtras(action);
     }
 
     // Intended to be used for testing only; creates an empty configuration.
