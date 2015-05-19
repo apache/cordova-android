@@ -20,6 +20,14 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### Release 4.0.2 (May 2015) ###
+
+* Removed Intent Functionality from Preferences - Preferences can no longer be set by intents
+
+### Release 4.0.1 (April 2015) ### 
+
+* Bug fixed where platform failed to install on a version downgrade
+
 ### Release 4.0.0 (March 2015) ###
 
 This release adds significant functionality, and also introduces a number
