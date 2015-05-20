@@ -20,6 +20,6 @@
 */
 
 // Coho updates this line:
-var VERSION = "4.0.1";
+var VERSION = "4.0.2";
 
 console.log(VERSION);
