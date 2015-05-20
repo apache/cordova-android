@@ -20,6 +20,10 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### Release 3.7.2 (May 2015) ###
+
+* Removed Intent Functionality from Preferences - Preferences can no longer be set by intents
+
 ### Release 3.7.1 (January 2015) ###
 * CB-8411 Initialize plugins only after `createViews()` is called (regression in 3.7.0)
 
