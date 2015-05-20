@@ -1,5 +1,5 @@
 // Platform: android
-// b0463746dd842818c1f08560e998ec847460596c
+// 23738581906992092a43ad2e643b1e0c43bba38a
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -328,7 +328,7 @@ module.exports = cordova;
 
 });
 
-// file: src/android/android/nativeapiprovider.js
+// file: node_modules/cordova-android/cordova-js-src/android/nativeapiprovider.js
 define("cordova/android/nativeapiprovider", function(require, exports, module) {
 
 /**
@@ -351,7 +351,7 @@ module.exports = {
 
 });
 
-// file: src/android/android/promptbasednativeapi.js
+// file: node_modules/cordova-android/cordova-js-src/android/promptbasednativeapi.js
 define("cordova/android/promptbasednativeapi", function(require, exports, module) {
 
 /**
@@ -861,7 +861,7 @@ module.exports = channel;
 
 });
 
-// file: src/android/exec.js
+// file: node_modules/cordova-android/cordova-js-src/exec.js
 define("cordova/exec", function(require, exports, module) {
 
 /**
@@ -896,7 +896,11 @@ var cordova = require('cordova'),
         // For the ONLINE_EVENT to be viable, it would need to intercept all event
         // listeners (both through addEventListener and window.ononline) as well
         // as set the navigator property itself.
-        ONLINE_EVENT: 2
+        ONLINE_EVENT: 2,
+        // Uses reflection to access private APIs of the WebView that can send JS
+        // to be executed.
+        // Requires Android 3.2.4 or above.
+        PRIVATE_API: 3
     },
     jsToNativeBridgeMode,  // Set lazily.
     nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT,
@@ -1500,7 +1504,7 @@ exports.reset();
 
 });
 
-// file: src/android/platform.js
+// file: node_modules/cordova-android/cordova-js-src/platform.js
 define("cordova/platform", function(require, exports, module) {
 
 module.exports = {
@@ -1576,7 +1580,7 @@ function onMessageFromNative(msg) {
 
 });
 
-// file: src/android/plugin/android/app.js
+// file: node_modules/cordova-android/cordova-js-src/plugin/android/app.js
 define("cordova/plugin/android/app", function(require, exports, module) {
 
 var exec = require('cordova/exec');
