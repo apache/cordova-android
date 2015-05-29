@@ -354,6 +354,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
             case KeyEvent.KEYCODE_VOLUME_DOWN:
             case KeyEvent.KEYCODE_VOLUME_UP:
             case KeyEvent.KEYCODE_BACK:
+            case KeyEvent.KEYCODE_BUTTON_A:
+            case KeyEvent.KEYCODE_BUTTON_B:
+            case KeyEvent.KEYCODE_BUTTON_X:
+            case KeyEvent.KEYCODE_BUTTON_Y:
                 // TODO: Why are search and menu buttons handled separately?
                 if (override) {
                     boundKeyCodes.add(keyCode);
@@ -578,6 +582,18 @@ public class CordovaWebViewImpl implements CordovaWebView {
                             break;
                         case KeyEvent.KEYCODE_BACK:
                             eventName = "backbutton";
+                            break;
+                        case KeyEvent.KEYCODE_BUTTON_A:
+                            eventName = "gamepadabutton";
+                            break;
+                        case KeyEvent.KEYCODE_BUTTON_B:
+                            eventName = "gamepadbbutton";
+                            break;
+                        case KeyEvent.KEYCODE_BUTTON_X:
+                            eventName = "gamepadxbutton";
+                            break;
+                        case KeyEvent.KEYCODE_BUTTON_Y:
+                            eventName = "gamepadybutton";
                             break;
                     }
                     if (eventName != null) {
