@@ -231,6 +231,7 @@ class CoreAndroid extends CordovaPlugin {
     public void overrideBackbutton(boolean override) {
         LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
         webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, override);
+        webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BUTTON_B, override);
     }
 
     /**
@@ -256,7 +257,7 @@ class CoreAndroid extends CordovaPlugin {
      * @return boolean
      */
     public boolean isBackbuttonOverridden() {
-        return webView.isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK);
+        return webView.isButtonPlumbedToJs(KeyEvent.KEYCODE_BACK) || webView.isButtonPlumbedToJs(KeyEvent.KEYCODE_BUTTON_B);
     }
 
     /**
