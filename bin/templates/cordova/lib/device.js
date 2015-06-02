@@ -98,7 +98,7 @@ module.exports.install = function(target, buildResults) {
         var launchName = appinfo.getActivityName();
         console.log('Using apk: ' + apk_path);
         console.log('Installing app on device...');
-        var cmd = 'adb -s ' + resolvedTarget.target + ' install -r -d "' + apk_path + '"';
+        var cmd = 'adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"';
         return exec(cmd, os.tmpdir())
         .then(function(output) {
             if (output.match(/Failure/)) return Q.reject('ERROR: Failed to install apk to device: ' + output);
