@@ -18,6 +18,7 @@
 */
 package org.apache.cordova.engine;
 
+import java.util.Arrays;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -36,6 +37,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
+import android.webkit.PermissionRequest;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -264,6 +266,13 @@ public class SystemWebChromeClient extends WebChromeClient {
             filePathsCallback.onReceiveValue(null);
         }
         return true;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public void onPermissionRequest(final PermissionRequest request) {
+        Log.d(LOG_TAG, "onPermissionRequest: " + Arrays.toString(request.getResources()));
+        request.grant(request.getResources());
     }
 
     public void destroyLastDialog(){
