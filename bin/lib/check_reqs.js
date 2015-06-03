@@ -86,7 +86,7 @@ module.exports.check_gradle = function() {
     if (!sdkDir) return Q.reject(message + 'Might need to install Android SDK or set up \'ADROID_HOME\' env variable.');
     var wrapper = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper', 'gradlew');
     return tryCommand('"' + wrapper + '" -v', message + 'Might need to update your Android SDK.\n' +
-            'Looked here: ' + path.basename(wrapper))
+            'Looked here: ' + path.dirname(wrapper))
     .then(function (output) {
         // Parse Gradle version from command output
         return/^gradle ((?:\d+\.)+(?:\d+))/gim.exec(output)[1];
