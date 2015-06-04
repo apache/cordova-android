@@ -17,7 +17,7 @@
     under the License.
 */
 
-/* jshint node:true */
+/* jshint node:true, sub:true */
 
 var fs = require('fs'),
     et = require('elementtree'),
