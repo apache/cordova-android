@@ -470,11 +470,10 @@ function parseOpts(options, resolvedTarget) {
     // If some values are not specified as command line arguments - use build config to supplement them.
     // Command line arguemnts have precedence over build config.
     if (buildConfig) {
-        console.log(path.resolve(buildConfig));
         if (!fs.existsSync(buildConfig)) {
             throw new Error('Specified build config file does not exist: ' + buildConfig);
         }
-        console.log('Reading build config file: '+ buildConfig);
+        console.log('Reading build config file: '+ path.resolve(buildConfig));
         var config = JSON.parse(fs.readFileSync(buildConfig, 'utf8'));
         if (config.android && config.android[ret.buildType]) {
             var androidInfo = config.android[ret.buildType];
