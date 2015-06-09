@@ -21,13 +21,21 @@
 
 /* jshint sub:true */
 
-var exec  = require('./exec'),
-    Q     = require('q'),
-    os    = require('os'),
-    appinfo = require('./appinfo'),
-    build = require('./build'),
-    child_process = require('child_process');
+var exec       = require('./exec');
+var appinfo    = require('./appinfo');
+var retry      = require('./retry');
+var build      = require('./build');
 var check_reqs = require('./check_reqs');
+
+var Q             = require('q');
+var os            = require('os');
+var child_process = require('child_process');
+
+// constants
+var ONE_SECOND              = 1000; // in milliseconds
+var INSTALL_COMMAND_TIMEOUT = 120 * ONE_SECOND; // in milliseconds
+var NUM_INSTALL_RETRIES     = 3;
+var EXEC_KILL_SIGNAL        = 'SIGKILL';
 
 /**
  * Returns a Promise for a list of emulator images in the form of objects
@@ -298,37 +306,67 @@ module.exports.resolveTarget = function(target) {
  * If no started emulators are found, error out.
  * Returns a promise.
  */
-module.exports.install = function(target, buildResults) {
-    return Q().then(function() {
-        if (target && typeof target == 'object') {
-            return target;
+module.exports.install = function(givenTarget, buildResults) {
+
+    var target;
+
+    // resolve the target emulator
+    return Q().then(function () {
+        if (givenTarget && typeof givenTarget == 'object') {
+            return givenTarget;
+        } else {
+            return module.exports.resolveTarget(givenTarget);
         }
-        return module.exports.resolveTarget(target);
-    }).then(function(resolvedTarget) {
-        var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
+
+    // set the resolved target
+    }).then(function (resolvedTarget) {
+        target = resolvedTarget;
+
+    // install the app
+    }).then(function () {
+
+        var apk_path    = build.findBestApkForArchitecture(buildResults, target.arch);
+        var execOptions = {
+            timeout:    INSTALL_COMMAND_TIMEOUT, // in milliseconds
+            killSignal: EXEC_KILL_SIGNAL
+        };
+
         console.log('Installing app on emulator...');
         console.log('Using apk: ' + apk_path);
-        return exec('adb -s ' + resolvedTarget.target + ' install -r -d "' + apk_path + '"', os.tmpdir())
-        .then(function(output) {
+
+        var retriedInstall = retry.retryPromise(
+            NUM_INSTALL_RETRIES,
+            exec, 'adb -s ' + target.target + ' install -r -d "' + apk_path + '"', os.tmpdir(), execOptions
+        );
+
+        return retriedInstall.then(function (output) {
             if (output.match(/Failure/)) {
                 return Q.reject('Failed to install apk to emulator: ' + output);
+            } else {
+                console.log('INSTALL SUCCESS');
             }
-            return Q();
-        }, function(err) {
+        }, function (err) {
             return Q.reject('Failed to install apk to emulator: ' + err);
-        }).then(function() {
-            //unlock screen
-            return exec('adb -s ' + resolvedTarget.target + ' shell input keyevent 82', os.tmpdir());
-        }).then(function() {
-            // launch the application
-            console.log('Launching application...');
-            var launchName = appinfo.getActivityName();
-            var cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
-            return exec(cmd, os.tmpdir());
-        }).then(function(output) {
-            console.log('LAUNCH SUCCESS');
-        }, function(err) {
-            return Q.reject('Failed to launch app on emulator: ' + err);
         });
+
+    // unlock screen
+    }).then(function () {
+
+        console.log('Unlocking screen...');
+        return exec('adb -s ' + target.target + ' shell input keyevent 82', os.tmpdir());
+
+    // launch the application
+    }).then(function () {
+
+        console.log('Launching application...');
+        var launchName = appinfo.getActivityName();
+        var cmd = 'adb -s ' + target.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
+        return exec(cmd, os.tmpdir());
+
+    // report success or failure
+    }).then(function (output) {
+        console.log('LAUNCH SUCCESS');
+    }, function (err) {
+        return Q.reject('Failed to launch app on emulator: ' + err);
     });
 };
