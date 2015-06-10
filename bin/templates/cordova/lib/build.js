@@ -102,6 +102,19 @@ function hasCustomRules() {
     return fs.existsSync(path.join(ROOT, 'custom_rules.xml'));
 }
 
+function extractRealProjectNameFromManifest(projectPath) {
+    var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
+    var manifestData = fs.readFileSync(manifestPath, 'utf8');
+    var m = /<manifest[\s\S]*?package\s*=\s*"(.*?)"/i.exec(manifestData);
+    if (!m) {
+        throw new Error('Could not find package name in ' + manifestPath);
+    }
+
+    var packageName=m[1];
+    var lastDotIndex = packageName.lastIndexOf('.');
+    return packageName.substring(lastDotIndex + 1);
+}
+
 function extractProjectNameFromManifest(projectPath) {
     var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
     var manifestData = fs.readFileSync(manifestPath, 'utf8');
@@ -245,18 +258,29 @@ var builders = {
                 }
             }
 
+            var name=extractRealProjectNameFromManifest(ROOT);
             var subProjectsAsGradlePaths = subProjects.map(function(p) { return ':' + p.replace(/[/\\]/g, ':'); });
+            //Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
+            var settingsGradlePaths =  subProjects.map(function(p){
+                var realDir=p.replace(/[/\\]/g, ':');
+                var libName=realDir.replace(name+'-','');
+                var str='include ":'+libName+'"\n';
+                if(realDir.indexOf(name+'-')!==-1)
+                    str+='project(":'+libName+'").projectDir = new File("'+p+'")\n';
+                return str;
+            });
+
             // Write the settings.gradle file.
             fs.writeFileSync(path.join(projectPath, 'settings.gradle'),
                 '// GENERATED FILE - DO NOT EDIT\n' +
-                'include ":"\n' +
-                'include "' + subProjectsAsGradlePaths.join('"\ninclude "') + '"\n');
+                'include ":"\n' + settingsGradlePaths.join(''));
             // Update dependencies within build.gradle.
             var buildGradle = fs.readFileSync(path.join(projectPath, 'build.gradle'), 'utf8');
             var depsList = '';
-            subProjectsAsGradlePaths.forEach(function(p) {
-                depsList += '    debugCompile project(path: "' + p + '", configuration: "debug")\n';
-                depsList += '    releaseCompile project(path: "' + p + '", configuration: "release")\n';
+            subProjects.forEach(function(p) {
+                var libName=p.replace(/[/\\]/g, ':').replace(name+'-','');
+                depsList += '    debugCompile project(path: "' + libName + '", configuration: "debug")\n';
+                depsList += '    releaseCompile project(path: "' + libName + '", configuration: "release")\n';
             });
             // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
             var SYSTEM_LIBRARY_MAPPINGS = [
