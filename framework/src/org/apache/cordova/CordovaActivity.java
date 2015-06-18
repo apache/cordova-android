@@ -235,7 +235,7 @@ public class CordovaActivity extends Activity {
         LOG.d(TAG, "Paused the activity.");
 
         if (this.appView != null) {
-            this.appView.handlePause(this.keepRunning);
+            return; // this.appView.handlePause(this.keepRunning); causes ionic to pause between splashscreen and app and this shows white screen, instead use return;
         }
     }
 
