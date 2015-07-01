@@ -74,7 +74,7 @@ function findOutputApksHelper(dir, build_type, arch) {
             return /-debug/.exec(candidate) && !/-unaligned|-unsigned/.exec(candidate);
         }
         if (build_type === 'release') {
-            return /-release/.exec(candidate) && !/-unaligned/.exec(candidate);
+            return /-release/.exec(candidate) && !/-unaligned|-unsigned/.exec(candidate);
         }
         return true;
     });
