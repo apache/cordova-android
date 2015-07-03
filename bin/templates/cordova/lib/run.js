@@ -139,7 +139,9 @@ var path  = require('path'),
     }).then(function(resolvedTarget) {
         return build.run(buildFlags, resolvedTarget).then(function(buildResults) {
             if (resolvedTarget.isEmulator) {
-                return emulator.install(resolvedTarget, buildResults);
+                return emulator.wait_for_boot(resolvedTarget.target).then(function () {
+                    return emulator.install(resolvedTarget, buildResults);
+                });
             }
             return device.install(resolvedTarget, buildResults);
         });
