@@ -33,7 +33,8 @@ var child_process = require('child_process');
 
 // constants
 var ONE_SECOND              = 1000; // in milliseconds
-var INSTALL_COMMAND_TIMEOUT = 120 * ONE_SECOND; // in milliseconds
+var ONE_MINUTE              = 60 * ONE_SECOND; // in milliseconds
+var INSTALL_COMMAND_TIMEOUT = 5 * ONE_MINUTE; // in milliseconds
 var NUM_INSTALL_RETRIES     = 3;
 var EXEC_KILL_SIGNAL        = 'SIGKILL';
 
@@ -146,19 +147,18 @@ module.exports.list_targets = function() {
 /*
  * Starts an emulator with the given ID,
  * and returns the started ID of that emulator.
- * If no ID is given it will used the first image available,
+ * If no ID is given it will use the first image available,
  * if no image is available it will error out (maybe create one?).
  *
  * Returns a promise.
  */
 module.exports.start = function(emulator_ID) {
     var self = this;
-    var emulator_id, num_started, started_emulators;
+    var now = new Date();
+    var uuid = 'cordova_emulator_' + now.getTime();
+    var emulator_id;
 
-    return self.list_started()
-    .then(function(list) {
-        started_emulators = list;
-        num_started = started_emulators.length;
+    return Q().then(function(list) {
         if (!emulator_ID) {
             return self.list_images()
             .then(function(emulator_list) {
@@ -182,24 +182,17 @@ module.exports.start = function(emulator_ID) {
         }
     }).then(function() {
         var cmd = 'emulator';
-        var args = ['-avd', emulator_ID];
+        var uuidProp = 'emu.uuid=' + uuid;
+        var args = ['-avd', emulator_ID, '-prop', uuidProp];
         var proc = child_process.spawn(cmd, args, { stdio: 'inherit', detached: true });
         proc.unref(); // Don't wait for it to finish, since the emulator will probably keep running for a long time.
     }).then(function() {
         // wait for emulator to start
         console.log('Waiting for emulator...');
-        return self.wait_for_emulator(num_started);
-    }).then(function(new_started) {
-        if (new_started.length > 1) {
-            for (var i in new_started) {
-                if (started_emulators.indexOf(new_started[i]) < 0) {
-                    emulator_id = new_started[i];
-                }
-            }
-        } else {
-            emulator_id = new_started[0];
-        }
-        if (!emulator_id) return Q.reject('ERROR :  Failed to start emulator, could not find new emulator');
+        return self.wait_for_emulator(uuid);
+    }).then(function(emId) {
+        emulator_id = emId;
+        if (!emulator_id) return Q.reject('ERROR :  Failed to start emulator');
 
         //wait for emulator to boot up
         process.stdout.write('Booting up emulator (this may take a while)...');
@@ -216,31 +209,40 @@ module.exports.start = function(emulator_ID) {
 };
 
 /*
- * Waits for the new emulator to apear on the started-emulator list.
- * Returns a promise with a list of newly started emulators' IDs.
+ * Waits for an emulator with given uuid to apear on the started-emulator list.
+ * Returns a promise with this emulator's ID.
  */
-module.exports.wait_for_emulator = function(num_running) {
+module.exports.wait_for_emulator = function(uuid) {
     var self = this;
     return self.list_started()
     .then(function(new_started) {
-        if (new_started.length > num_running) {
-            return new_started;
-        } else {
-            return Q.delay(1000).then(function() {
-                return self.wait_for_emulator(num_running);
-            });
-        }
-    });
+        var emulator_id = null;
+        var promises = [];
+
+        new_started.forEach(function (emulator) {
+            promises.push(exec('adb -s ' + emulator + ' shell getprop emu.uuid', os.tmpdir())
+                .then(function (output) {
+                    if (output.indexOf(uuid) >= 0) {
+                        emulator_id = emulator;
+                    }
+                })
+            );
+        });
+
+        return Q.all(promises).then(function () {
+            return emulator_id || self.wait_for_emulator(uuid);
+        });
+     });
 };
 
 /*
- * Waits for the boot animation property of the emulator to switch to 'stopped'
+ * Waits for the core android process of the emulator to start
  */
 module.exports.wait_for_boot = function(emulator_id) {
     var self = this;
-    return exec('adb -s ' + emulator_id + ' shell getprop init.svc.bootanim', os.tmpdir())
+    return exec('adb -s ' + emulator_id + ' shell ps', os.tmpdir())
     .then(function(output) {
-        if (output.match(/stopped/)) {
+        if (output.match(/android\.process\.acore/)) {
             return;
         } else {
             process.stdout.write('.');
