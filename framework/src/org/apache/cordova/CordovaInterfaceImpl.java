@@ -40,13 +40,15 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     protected CordovaPlugin activityResultCallback;
     protected String initCallbackService;
     protected int activityResultRequestCode;
+    protected CordovaPreferences preferences;
 
-    public CordovaInterfaceImpl(Activity activity) {
-        this(activity, Executors.newCachedThreadPool());
+    public CordovaInterfaceImpl(Activity activity, CordovaPreferences prefs) {
+        this(activity, prefs, Executors.newCachedThreadPool());
     }
 
-    public CordovaInterfaceImpl(Activity activity, ExecutorService threadPool) {
+    public CordovaInterfaceImpl(Activity activity, CordovaPreferences prefs, ExecutorService threadPool) {
         this.activity = activity;
+        this.preferences = prefs;
         this.threadPool = threadPool;
     }
 
@@ -144,6 +146,14 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     }
 
     /**
+     * Returns the preference object so plugins can set runtime properties in config.xml
+     */
+    public CordovaPreferences getPreferences()
+    {
+        return preferences;
+    }
+
+    /**
      * Call this from onCreate() so that any saved startActivityForResult parameters will be restored.
      */
     public void restoreInstanceState(Bundle savedInstanceState) {
@@ -161,4 +171,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             this.intent = intent;
         }
     }
+
+
+
 }
