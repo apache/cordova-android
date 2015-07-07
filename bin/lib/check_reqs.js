@@ -260,7 +260,7 @@ module.exports.check_android_target = function(valid_target) {
 
 // Returns a promise.
 module.exports.run = function() {
-    return Q.all([this.check_java(), this.check_android(), this.check_android_target()])
+    return Q.all([this.check_java(), this.check_android().then(this.check_android_target)])
     .then(function() {
         console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
         console.log('JAVA_HOME=' + process.env['JAVA_HOME']);

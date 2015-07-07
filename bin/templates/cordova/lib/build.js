@@ -477,8 +477,12 @@ function parseOpts(options, resolvedTarget) {
         var config = JSON.parse(fs.readFileSync(buildConfig, 'utf8'));
         if (config.android && config.android[ret.buildType]) {
             var androidInfo = config.android[ret.buildType];
-            if(androidInfo.keystore) {
-                packageArgs.keystore = packageArgs.keystore || path.relative(ROOT, path.join(path.dirname(buildConfig), androidInfo.keystore));
+            if(androidInfo.keystore && !packageArgs.keystore) {
+                if(path.isAbsolute(androidInfo.keystore)) {
+                    packageArgs.keystore = androidInfo.keystore;
+                } else {
+                    packageArgs.keystore = path.relative(ROOT, path.join(path.dirname(buildConfig), androidInfo.keystore));
+                }
             }
 
             ['alias', 'storePassword', 'password','keystoreType'].forEach(function (key){
