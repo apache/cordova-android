@@ -396,7 +396,7 @@ public class PluginManager {
             if ((className != null) && !("".equals(className))) {
                 c = Class.forName(className);
             }
-            if (c != null & CordovaPlugin.class.isAssignableFrom(c)) {
+            if (c != null && CordovaPlugin.class.isAssignableFrom(c)) {
                 ret = (CordovaPlugin) c.newInstance();
             }
         } catch (Exception e) {
