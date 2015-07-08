@@ -18,21 +18,14 @@
  */
 package org.apache.cordova;
 
-import java.util.HashMap;
-import java.util.List;
-
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.PluginEntry;
-import org.apache.cordova.PluginResult;
-import org.json.JSONException;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Debug;
 import android.util.Log;
+import org.json.JSONException;
+
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
@@ -381,15 +374,17 @@ public class PluginManager {
     }
 
     Uri remapUri(Uri uri) {
+        Uri remap = null;
         for (CordovaPlugin plugin : this.pluginMap.values()) {
             if (plugin != null) {
                 Uri ret = plugin.remapUri(uri);
                 if (ret != null) {
-                    return ret;
+                    remap = ret;
+                    uri = ret;
                 }
             }
         }
-        return null;
+        return remap;
     }
 
     /**
