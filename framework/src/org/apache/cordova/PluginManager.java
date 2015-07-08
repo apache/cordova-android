@@ -374,17 +374,16 @@ public class PluginManager {
     }
 
     Uri remapUri(Uri uri) {
-        Uri remap = null;
+        Uri remap = uri;
         for (CordovaPlugin plugin : this.pluginMap.values()) {
             if (plugin != null) {
-                Uri ret = plugin.remapUri(uri);
+                Uri ret = plugin.remapUri(remap);
                 if (ret != null) {
                     remap = ret;
-                    uri = ret;
                 }
             }
         }
-        return remap;
+        return uri.equals(remap) ? null : remap;
     }
 
     /**
