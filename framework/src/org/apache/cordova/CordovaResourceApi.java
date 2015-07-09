@@ -188,7 +188,11 @@ public class CordovaResourceApi {
                     HttpURLConnection conn = (HttpURLConnection)new URL(uri.toString()).openConnection();
                     conn.setDoInput(false);
                     conn.setRequestMethod("HEAD");
-                    return conn.getHeaderField("Content-Type");
+                    String mimeType = conn.getHeaderField("Content-Type");
+                    if (mimeType != null) {
+                        mimeType = mimeType.split(";")[0];
+                    }
+                    return mimeType;
                 } catch (IOException e) {
                 }
             }
@@ -283,6 +287,9 @@ public class CordovaResourceApi {
                 HttpURLConnection conn = (HttpURLConnection)new URL(uri.toString()).openConnection();
                 conn.setDoInput(true);
                 String mimeType = conn.getHeaderField("Content-Type");
+                if (mimeType != null) {
+                    mimeType = mimeType.split(";")[0];
+                }
                 int length = conn.getContentLength();
                 InputStream inputStream = conn.getInputStream();
                 return new OpenForReadResult(uri, inputStream, mimeType, length, null);
