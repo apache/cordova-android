@@ -174,12 +174,21 @@ public class SystemWebChromeClient extends WebChromeClient {
     /**
      * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin.
      *
+     * This also checks for the Geolocation Plugin and requests permission from the application  to use Geolocation.
+     *
      * @param origin
      * @param callback
      */
     public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
         super.onGeolocationPermissionsShowPrompt(origin, callback);
         callback.invoke(origin, true, false);
+        //Get the plugin, it should be loaded
+        CordovaPlugin geolocation = parentEngine.pluginManager.getPlugin("org.apache.cordova.geolocation.PermissionHandler");
+        if(geolocation != null && !geolocation.hasPermisssion())
+        {
+            parentEngine.pluginManager.requestPermission(geolocation);
+        }
+
     }
     
     // API level 7 is required for this, see if we could lower this using something else
