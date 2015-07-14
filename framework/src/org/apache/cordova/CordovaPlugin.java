@@ -41,7 +41,7 @@ public class CordovaPlugin {
     public CordovaInterface cordova;
     protected CordovaPreferences preferences;
     private String serviceName;
-    private String [] permissions;
+    protected String [] permissions;
 
     /**
      * Call this after constructing to initialize the plugin.
@@ -387,6 +387,8 @@ public class CordovaPlugin {
                 return false;
             }
         }
+
+        return true;
     }
 
     /**
