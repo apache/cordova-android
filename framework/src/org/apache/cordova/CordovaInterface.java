@@ -69,4 +69,6 @@ public interface CordovaInterface {
      * Returns a shared thread pool that can be used for background tasks.
      */
     public ExecutorService getThreadPool();
+
+    public void requestPermission(CordovaPlugin plugin);
 }

@@ -161,4 +161,10 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             this.intent = intent;
         }
     }
+
+    public void requestPermission(CordovaPlugin plugin)
+    {
+        pluginManager.requestPermission(plugin);
+    }
+
 }
