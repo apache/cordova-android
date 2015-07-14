@@ -183,7 +183,7 @@ public class SystemWebChromeClient extends WebChromeClient {
         super.onGeolocationPermissionsShowPrompt(origin, callback);
         callback.invoke(origin, true, false);
         //Get the plugin, it should be loaded
-        CordovaPlugin geolocation = parentEngine.pluginManager.getPlugin("org.apache.cordova.geolocation.PermissionHandler");
+        CordovaPlugin geolocation = parentEngine.pluginManager.getPlugin("Geolocation");
         if(geolocation != null && !geolocation.hasPermisssion())
         {
             parentEngine.pluginManager.requestPermission(geolocation);
