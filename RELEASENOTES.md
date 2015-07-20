@@ -21,7 +21,7 @@
 ## Release Notes for Cordova (Android) ##
 Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merges *remote*/4.1.x...HEAD
 
-### Release 4.1.0 (Jul 2014) ###
+### Release 4.1.0 (Jul 2015) ###
 * CB-9392 Fixed printing flavored versions. This closes #184.
 * CB-9382 [Android] Fix KeepRunning setting when Plugin activity is showed. This closes #200
 * CB-9391 Fixes cdvBuildMultipleApks option casting
@@ -45,10 +45,8 @@ Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merge
 * CB-9080: -d option is not supported on Android 4.1.1 and lower, removing
 * CB-8954 Adds `requirements` command support to check_reqs module
 * Update JS snapshot to version 4.1.0-dev (via coho)
-* Updating Release Notes
 * CB-8417 updated platform specific files from cordova.js repo
 * Adding tests to confirm that preferences aren't changed by Intents
-* updating existing test code
 * Forgot to remove the method that copied over the intent data
 * Getting around to removing this old Intent code
 * Update JS snapshot to version 4.1.0-dev (via coho)
@@ -67,10 +65,6 @@ Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merge
 * CB-8891 Add a gradle helper for retrieving config.xml preference values
 * CB-8884 Delete Eclipse tweaks from create script
 * CB-8834 Don't fail to install on VERSION_DOWNGRADE
-* Update JS snapshot to version 4.1.0-dev (via coho)
-* Set VERSION to 4.1.0-dev (via coho)
-* Set VERSION to 4.0.2 (via coho)
-* Update JS snapshot to version 4.0.2 (via coho)
 * Automated tools fail, and you have to remember all four places where this is set.
 * Update the package.json
 * CB-9042 coho failed to update version, so here we are
@@ -79,11 +73,7 @@ Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merge
 * updating existing test code
 * Forgot to remove the method that copied over the intent data
 * Getting around to removing this old Intent code
-* Set VERSION to 4.0.1 (via coho)
-* Update JS snapshot to version 4.0.1 (via coho)
 * CB-8834 Don't fail to install on VERSION_DOWNGRADE
-* Set VERSION to 4.0.0 (via coho)
-* Update JS snapshot to version 4.0.0 (via coho)
 
 ### Release 4.0.2 (May 2015) ###
 
