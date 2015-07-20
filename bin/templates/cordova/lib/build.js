@@ -258,8 +258,7 @@ var builders = {
                 }
             }
 
-            var name=extractRealProjectNameFromManifest(ROOT);
-            var subProjectsAsGradlePaths = subProjects.map(function(p) { return ':' + p.replace(/[/\\]/g, ':'); });
+            var name = extractRealProjectNameFromManifest(ROOT);
             //Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
             var settingsGradlePaths =  subProjects.map(function(p){
                 var realDir=p.replace(/[/\\]/g, ':');
