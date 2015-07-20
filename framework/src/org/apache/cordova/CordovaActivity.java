@@ -235,7 +235,10 @@ public class CordovaActivity extends Activity {
         LOG.d(TAG, "Paused the activity.");
 
         if (this.appView != null) {
-            this.appView.handlePause(this.keepRunning);
+            // CB-9382 If there is an activity that started for result and main activity is waiting for callback
+            // result, we shoudn't stop WebView Javascript timers, as activity for result might be using them
+            boolean keepRunning = this.keepRunning || this.cordovaInterface.activityResultCallback != null;
+            this.appView.handlePause(keepRunning);
         }
     }
 
