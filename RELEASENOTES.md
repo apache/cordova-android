@@ -19,6 +19,71 @@
 #
 -->
 ## Release Notes for Cordova (Android) ##
+Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merges *remote*/4.1.x...HEAD
+
+### Release 4.1.0 (Jul 2014) ###
+* CB-9392 Fixed printing flavored versions. This closes #184.
+* CB-9382 [Android] Fix KeepRunning setting when Plugin activity is showed. This closes #200
+* CB-9391 Fixes cdvBuildMultipleApks option casting
+* CB-9343 Split the Content-Type to obtain a clean mimetype
+* CB-9255 Make getUriType case insensitive.
+* CB-9149 Fixes JSHint issue introduced by 899daa9
+* CB-9372: Remove unused files: 'main.js' & 'master.css'. This closes #198
+* CB-9149 Make gradle alias subprojects in order to handle libs that depend on libs. This closes #182
+* Update min SDK version to 14
+* Update licenses. This closes #190
+* CB-9185 Fix signed release build exception. This closes #193.
+* CB-9286 Fixes build failure when ANDROID_HOME is not set.
+* CB-9284 Fix for handling absolute path for keystore in build.json
+* CB-9260 Install Android-22 on Travis-CI
+* Adding .ratignore file.
+* CB-9119 Adding lib/retry.js for retrying promise-returning functions. Retrying 'adb install' in emulator.js because it sometimes hangs.
+* CB-9115 android: Grant Lollipop permission req
+* Remove extra console message
+* CB-8898 Report expected gradle location properly
+* CB-8898 Fixes gradle check failure due to missing quotes
+* CB-9080: -d option is not supported on Android 4.1.1 and lower, removing
+* CB-8954 Adds `requirements` command support to check_reqs module
+* Update JS snapshot to version 4.1.0-dev (via coho)
+* Updating Release Notes
+* CB-8417 updated platform specific files from cordova.js repo
+* Adding tests to confirm that preferences aren't changed by Intents
+* updating existing test code
+* Forgot to remove the method that copied over the intent data
+* Getting around to removing this old Intent code
+* Update JS snapshot to version 4.1.0-dev (via coho)
+* Fix CordovaPluginTest on KitKat (start-up events seem to change)
+* CB-3360 Allow setting a custom User-Agent (close #162)
+* CB-8902 Use immersive mode when available when going fullscreen (close #175)
+* Make BridgeMode methods public (they were always supposed to be)
+* Simplify: EncodingUtils.getBytes(str) -> str.getBytes()
+* Don't show warning when gradlew file is read-only
+* Don't show warning when prepEnv copies gradlew and it's read-only
+* Make gradle wrapper prepEnv code work even when android-sdk is read-only
+* CB-8897 Delete drawable/icon.png since it duplicates drawable-mdpi/icon.png
+* Updating the template to target mininumSdkTarget=14
+* CB-8894: Updating the template to target mininumSdkTarget=14
+* CB-8891 Add a note about when the gradle helpers were added
+* CB-8891 Add a gradle helper for retrieving config.xml preference values
+* CB-8884 Delete Eclipse tweaks from create script
+* CB-8834 Don't fail to install on VERSION_DOWNGRADE
+* Update JS snapshot to version 4.1.0-dev (via coho)
+* Set VERSION to 4.1.0-dev (via coho)
+* Set VERSION to 4.0.2 (via coho)
+* Update JS snapshot to version 4.0.2 (via coho)
+* Automated tools fail, and you have to remember all four places where this is set.
+* Update the package.json
+* CB-9042 coho failed to update version, so here we are
+* CB9042 - Updating Release Notes
+* Adding tests to confirm that preferences aren't changed by Intents
+* updating existing test code
+* Forgot to remove the method that copied over the intent data
+* Getting around to removing this old Intent code
+* Set VERSION to 4.0.1 (via coho)
+* Update JS snapshot to version 4.0.1 (via coho)
+* CB-8834 Don't fail to install on VERSION_DOWNGRADE
+* Set VERSION to 4.0.0 (via coho)
+* Update JS snapshot to version 4.0.0 (via coho)
 
 ### Release 4.0.2 (May 2015) ###
 
