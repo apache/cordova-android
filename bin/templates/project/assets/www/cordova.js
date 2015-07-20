@@ -1,5 +1,5 @@
 // Platform: android
-// 23738581906992092a43ad2e643b1e0c43bba38a
+// a83e94b489774dc8e514671e81c6154eda650af1
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '4.1.0-dev';
+var PLATFORM_VERSION_BUILD_LABEL = '4.2.0-dev';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
@@ -328,7 +328,7 @@ module.exports = cordova;
 
 });
 
-// file: node_modules/cordova-android/cordova-js-src/android/nativeapiprovider.js
+// file: D:/cordova/cordova-android/cordova-js-src/android/nativeapiprovider.js
 define("cordova/android/nativeapiprovider", function(require, exports, module) {
 
 /**
@@ -351,7 +351,7 @@ module.exports = {
 
 });
 
-// file: node_modules/cordova-android/cordova-js-src/android/promptbasednativeapi.js
+// file: D:/cordova/cordova-android/cordova-js-src/android/promptbasednativeapi.js
 define("cordova/android/promptbasednativeapi", function(require, exports, module) {
 
 /**
@@ -861,7 +861,7 @@ module.exports = channel;
 
 });
 
-// file: node_modules/cordova-android/cordova-js-src/exec.js
+// file: D:/cordova/cordova-android/cordova-js-src/exec.js
 define("cordova/exec", function(require, exports, module) {
 
 /**
@@ -896,11 +896,7 @@ var cordova = require('cordova'),
         // For the ONLINE_EVENT to be viable, it would need to intercept all event
         // listeners (both through addEventListener and window.ononline) as well
         // as set the navigator property itself.
-        ONLINE_EVENT: 2,
-        // Uses reflection to access private APIs of the WebView that can send JS
-        // to be executed.
-        // Requires Android 3.2.4 or above.
-        PRIVATE_API: 3
+        ONLINE_EVENT: 2
     },
     jsToNativeBridgeMode,  // Set lazily.
     nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT,
@@ -1504,7 +1500,7 @@ exports.reset();
 
 });
 
-// file: node_modules/cordova-android/cordova-js-src/platform.js
+// file: D:/cordova/cordova-android/cordova-js-src/platform.js
 define("cordova/platform", function(require, exports, module) {
 
 module.exports = {
@@ -1580,7 +1576,7 @@ function onMessageFromNative(msg) {
 
 });
 
-// file: node_modules/cordova-android/cordova-js-src/plugin/android/app.js
+// file: D:/cordova/cordova-android/cordova-js-src/plugin/android/app.js
 define("cordova/plugin/android/app", function(require, exports, module) {
 
 var exec = require('cordova/exec');
