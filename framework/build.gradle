@@ -44,6 +44,12 @@ buildscript {
 
 apply plugin: 'android-library'
 
+ext {
+    apply from: 'cordova.gradle'
+    cdvCompileSdkVersion = privateHelpers.getProjectTarget()
+    cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+}
+
 android {
     compileSdkVersion cdvCompileSdkVersion
     buildToolsVersion cdvBuildToolsVersion
