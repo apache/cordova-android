@@ -22,6 +22,10 @@
 Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merges *remote*/4.1.x...HEAD
 
 ### Release 4.1.0 (Jul 2015) ###
+
+* CB-9185 Fixed an issue when unsigned apks couldn't be found. This closes #202
+* CB-9397 Fixes minor issues with `cordova requirements android`
+* CB-9389 Fixes build/check_reqs hang
 * CB-9392 Fixed printing flavored versions. This closes #184.
 * CB-9382 [Android] Fix KeepRunning setting when Plugin activity is showed. This closes #200
 * CB-9391 Fixes cdvBuildMultipleApks option casting
