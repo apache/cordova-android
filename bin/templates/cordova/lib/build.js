@@ -74,7 +74,7 @@ function findOutputApksHelper(dir, build_type, arch) {
             return /-debug/.exec(candidate) && !/-unaligned|-unsigned/.exec(candidate);
         }
         if (build_type === 'release') {
-            return /-release/.exec(candidate) && !/-unaligned|-unsigned/.exec(candidate);
+            return /-release/.exec(candidate) && !/-unaligned/.exec(candidate);
         }
         return true;
     });
@@ -82,7 +82,7 @@ function findOutputApksHelper(dir, build_type, arch) {
     if (ret.length === 0) {
         return ret;
     }
-    // Assume arch-specific build if newest api has -x86 or -arm.
+    // Assume arch-specific build if newest apk has -x86 or -arm.
     var archSpecific = !!/-x86|-arm/.exec(ret[0]);
     // And show only arch-specific ones (or non-arch-specific)
     ret = ret.filter(function(p) {
@@ -90,11 +90,12 @@ function findOutputApksHelper(dir, build_type, arch) {
         return !!/-x86|-arm/.exec(p) == archSpecific;
         /*jshint +W018 */
     });
-    if (arch && ret.length > 1) {
+    if (archSpecific && ret.length > 1) {
         ret = ret.filter(function(p) {
             return p.indexOf('-' + arch) != -1;
         });
     }
+
     return ret;
 }
 
