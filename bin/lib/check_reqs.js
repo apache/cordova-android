@@ -82,15 +82,12 @@ module.exports.check_ant = function() {
 // Returns a promise. Called only by build and clean commands.
 module.exports.check_gradle = function() {
     var sdkDir = process.env['ANDROID_HOME'];
-    var message = 'Could not find gradle wrapper within Android SDK. ';
-    if (!sdkDir) return Q.reject(message + 'Might need to install Android SDK or set up \'ADROID_HOME\' env variable.');
-    var wrapper = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper', 'gradlew');
-    return tryCommand('"' + wrapper + '" -v', message + 'Might need to update your Android SDK.\n' +
-            'Looked here: ' + path.dirname(wrapper))
-    .then(function (output) {
-        // Parse Gradle version from command output
-        return/^gradle ((?:\d+\.)+(?:\d+))/gim.exec(output)[1];
-    });
+    var wrapperDir = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper');
+    if (!fs.existsSync(wrapperDir)) {
+        return Q.reject(new Error('Could not find gradle wrapper within android sdk. Might need to update your Android SDK.\n' +
+            'Looked here: ' + wrapperDir));
+    }
+    return Q.when();
 };
 
 // Returns a promise.
