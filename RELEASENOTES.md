@@ -21,6 +21,11 @@
 ## Release Notes for Cordova (Android) ##
 Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merges *remote*/4.1.x...HEAD
 
+### Release 4.1.1 (Aug 2015) ###
+
+* CB-9428 update script now bumps up minSdkVersion to 14 if it is less than that
+* CB-9430 Fixes check_reqs failure when javac returns an extra line
+
 ### Release 4.1.0 (Jul 2015) ###
 * CB-9392 Fixed printing flavored versions. This closes #184.
 * CB-9382 [Android] Fix KeepRunning setting when Plugin activity is showed. This closes #200
