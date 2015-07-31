@@ -290,12 +290,31 @@ function extractProjectNameFromManifest(projectPath) {
     return m[1];
 }
 
+// Cordova-android updates sometimes drop support for older versions. Need to update minSDK in existing projects.
+function updateMinSDKInManifest(projectPath) {
+    var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
+    var manifestData = fs.readFileSync(manifestPath, 'utf8');
+    var minSDKVersion = 14; 
+
+    //grab minSdkVersion from Android.
+    var m = /android:minSdkVersion\s*=\s*"(.*?)"/i.exec(manifestData);
+    if (!m) {
+      throw new Error('Could not find minSDKVersion in ' + manifestPath);
+    }
+    //if minSDKVersion in Android.manifest is less than our current min, replace it
+    if(Number(m[1]) < minSDKVersion) {
+        console.log('Updating minSdkVersion from ' + m[1] + ' to ' + minSDKVersion + ' in AndroidManifest.xml');
+        shell.sed('-i', /android:minSdkVersion\s*=\s*"(.*?)"/, 'android:minSdkVersion="'+minSDKVersion+'"', manifestPath);
+    }
+}
+
 // Returns a promise.
 exports.updateProject = function(projectPath, shared) {
     return Q()
     .then(function() {
         var projectName = extractProjectNameFromManifest(projectPath);
         var target_api = check_reqs.get_target();
+        updateMinSDKInManifest(projectPath);
         copyJsAndLibrary(projectPath, shared, projectName);
         copyScripts(projectPath);
         copyBuildRules(projectPath);
