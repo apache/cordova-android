@@ -479,8 +479,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // We should use a blank data: url instead so it's more obvious
         this.loadUrl("about:blank");
 
-        // TODO: Should not destroy webview until after about:blank is done loading.
-        engine.destroy();
         hideCustomView();
     }
 
@@ -541,6 +539,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
             // Shutdown if blank loaded
             if (url.equals("about:blank")) {
+                engine.destroy();
                 pluginManager.postMessage("exit", null);
             }
         }
