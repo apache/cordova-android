@@ -326,31 +326,37 @@ module.exports.install = function(givenTarget, buildResults) {
 
     // install the app
     }).then(function () {
+        var pkgName = appinfo.getPackageName();
+        console.log('Uninstalling ' + pkgName + ' from emulator...');
+        // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
+        // or the app doesn't installed at all, so no error catching needed.
+        return exec('adb -s ' + target.target + ' uninstall ' + pkgName, os.tmpdir())
+        .then(function() {
 
-        var apk_path    = build.findBestApkForArchitecture(buildResults, target.arch);
-        var execOptions = {
-            timeout:    INSTALL_COMMAND_TIMEOUT, // in milliseconds
-            killSignal: EXEC_KILL_SIGNAL
-        };
+            var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
+            var execOptions = {
+                timeout:    INSTALL_COMMAND_TIMEOUT, // in milliseconds
+                killSignal: EXEC_KILL_SIGNAL
+            };
 
-        console.log('Installing app on emulator...');
-        console.log('Using apk: ' + apk_path);
+            console.log('Installing app on emulator...');
+            console.log('Using apk: ' + apk_path);
 
-        var retriedInstall = retry.retryPromise(
-            NUM_INSTALL_RETRIES,
-            exec, 'adb -s ' + target.target + ' install -r -d "' + apk_path + '"', os.tmpdir(), execOptions
-        );
+            var retriedInstall = retry.retryPromise(
+                NUM_INSTALL_RETRIES,
+                exec, 'adb -s ' + target.target + ' install -r -d "' + apk_path + '"', os.tmpdir(), execOptions
+            );
 
-        return retriedInstall.then(function (output) {
-            if (output.match(/Failure/)) {
-                return Q.reject('Failed to install apk to emulator: ' + output);
-            } else {
-                console.log('INSTALL SUCCESS');
-            }
-        }, function (err) {
-            return Q.reject('Failed to install apk to emulator: ' + err);
+            return retriedInstall.then(function (output) {
+                if (output.match(/Failure/)) {
+                    return Q.reject('Failed to install apk to emulator: ' + output);
+                } else {
+                    console.log('INSTALL SUCCESS');
+                }
+            }, function (err) {
+                return Q.reject('Failed to install apk to emulator: ' + err);
+            });
         });
-
     // unlock screen
     }).then(function () {
 

@@ -96,10 +96,17 @@ module.exports.install = function(target, buildResults) {
     }).then(function(resolvedTarget) {
         var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
         var launchName = appinfo.getActivityName();
+        var pkgName = appinfo.getPackageName();
         console.log('Using apk: ' + apk_path);
-        console.log('Installing app on device...');
-        var cmd = 'adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"';
-        return exec(cmd, os.tmpdir())
+        console.log('Uninstalling ' + pkgName + ' from device...');
+        // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
+        // or the app doesn't installed at all, so no error catching needed.
+        return exec('adb -s ' + resolvedTarget.target + ' uninstall ' + pkgName, os.tmpdir())
+        .then(function() {
+            console.log('Installing app on device...');
+            var cmd = 'adb -s ' + resolvedTarget.target + ' install -r -d "' + apk_path + '"';
+            return exec(cmd, os.tmpdir());
+        })
         .then(function(output) {
             if (output.match(/Failure/)) return Q.reject('ERROR: Failed to install apk to device: ' + output);
 

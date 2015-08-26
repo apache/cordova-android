@@ -33,9 +33,16 @@ function readAppInfoFromManifest() {
     var activityName = /\bandroid:name\s*=\s*"(.+?)"/.exec(activityTag);
     if (!activityName) throw new Error('Could not find android:name within ' + manifestPath);
 
-    return packageName[1] + '/.' + activityName[1];
+    return (cachedAppInfo = {
+        packageName: packageName[1],
+        activityName: packageName[1] + '/.' + activityName[1]
+    });
 }
 
 exports.getActivityName = function() {
-    return (cachedAppInfo = cachedAppInfo || readAppInfoFromManifest());
+    return cachedAppInfo ? cachedAppInfo.activityName : readAppInfoFromManifest().activityName;
+};
+
+exports.getPackageName = function() {
+    return cachedAppInfo ? cachedAppInfo.packageName : readAppInfoFromManifest().packageName;
 };
