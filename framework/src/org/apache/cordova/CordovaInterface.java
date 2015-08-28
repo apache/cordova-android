@@ -70,5 +70,6 @@ public interface CordovaInterface {
      */
     public ExecutorService getThreadPool();
 
-    public void requestPermission(CordovaPlugin plugin);
+    public void requestPermission(CordovaPlugin plugin, String permission);
+    public void requestPermissions(CordovaPlugin plugin);
 }

@@ -493,8 +493,7 @@ public class CordovaActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[],
                                            int[] grantResults) {
-        PluginManager pm = this.appView.getPluginManager();
-        pm.onRequestPermissionResult(requestCode, permissions, grantResults);
+        cordovaInterface.onRequestPermissionResult(requestCode, permissions, grantResults);
     }
 
 }
