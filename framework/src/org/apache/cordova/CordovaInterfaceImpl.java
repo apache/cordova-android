@@ -38,6 +38,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
 
     protected ActivityResultHolder savedResult;
     protected CordovaPlugin activityResultCallback;
+    protected CordovaPlugin permissionResultCallback;
     protected String initCallbackService;
     protected int activityResultRequestCode;
 
@@ -162,9 +163,36 @@ public class CordovaInterfaceImpl implements CordovaInterface {
         }
     }
 
-    public void requestPermission(CordovaPlugin plugin)
+    /**
+     * Called by the system when the user grants permissions
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) {
+        if(permissionResultCallback != null)
+        {
+            permissionResultCallback.onRequestPermissionResult(requestCode, permissions, grantResults);
+            permissionResultCallback = null;
+        }
+    }
+
+    public void requestPermission(CordovaPlugin plugin, String permission) {
+        permissionResultCallback = plugin;
+        String[] permissions = new String [1];
+        permissions[0] = permission;
+        int requestCode = 1;
+        getActivity().requestPermissions(permissions, requestCode);
+    }
+
+    public void requestPermissions(CordovaPlugin plugin)
     {
-        pluginManager.requestPermission(plugin);
+        permissionResultCallback = plugin;
+        String[] permissions = plugin.getPermissionRequest();
+        int requestCode = 1;
+        getActivity().requestPermissions(permissions, requestCode);
     }
 
 }

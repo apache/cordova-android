@@ -372,13 +372,6 @@ public class CordovaPlugin {
         return permissions;
     }
 
-    /**
-     * requestPermission
-     */
-    public void requestPermission() {
-        cordova.requestPermission(this);
-    }
-
     public boolean hasPermisssion() {
         for(String p : permissions)
         {

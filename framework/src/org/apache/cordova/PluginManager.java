@@ -511,26 +511,4 @@ public class PluginManager {
         }
     }
 
-    /**
-     * Called by the system when the user grants permissions
-     *
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
-     */
-    public void onRequestPermissionResult(int requestCode, String[] permissions,
-                                          int[] grantResults) {
-        if(permissionRequester != null)
-        {
-            permissionRequester.onRequestPermissionResult(requestCode, permissions, grantResults);
-            permissionRequester = null;
-        }
-    }
-
-    public void requestPermission(CordovaPlugin plugin) {
-        permissionRequester = plugin;
-        String[] permissions = plugin.getPermissionRequest();
-        int requestCode = 1;
-        ctx.getActivity().requestPermissions(permissions, requestCode);
-    }
 }
