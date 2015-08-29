@@ -98,19 +98,19 @@ module.exports.install = function(target, buildResults) {
         var launchName = appinfo.getActivityName();
         console.log('Using apk: ' + apk_path);
         console.log('Installing app on device...');
-        var cmd = 'adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"';
+        var cmd = 'adb -s "' + resolvedTarget.target + '" install -r "' + apk_path + '"';
         return exec(cmd, os.tmpdir())
         .then(function(output) {
             if (output.match(/Failure/)) return Q.reject('ERROR: Failed to install apk to device: ' + output);
 
             //unlock screen
-            var cmd = 'adb -s ' + resolvedTarget.target + ' shell input keyevent 82';
+            var cmd = 'adb -s "' + resolvedTarget.target + '" shell input keyevent 82';
             return exec(cmd, os.tmpdir());
         }, function(err) { return Q.reject('ERROR: Failed to install apk to device: ' + err); })
         .then(function() {
             // launch the application
             console.log('Launching application...');
-            var cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
+            var cmd = 'adb -s "' + resolvedTarget.target + '" shell am start -W -a android.intent.action.MAIN -n ' + launchName;
             return exec(cmd, os.tmpdir());
         }).then(function() {
             console.log('LAUNCH SUCCESS');

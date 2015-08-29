@@ -201,7 +201,7 @@ module.exports.start = function(emulator_ID) {
         console.log('BOOT COMPLETE');
 
         //unlock screen
-        return exec('adb -s ' + emulator_id + ' shell input keyevent 82', os.tmpdir());
+        return exec('adb -s "' + emulator_id + '" shell input keyevent 82', os.tmpdir());
     }).then(function() {
         //return the new emulator id for the started emulators
         return emulator_id;
@@ -220,7 +220,7 @@ module.exports.wait_for_emulator = function(uuid) {
         var promises = [];
 
         new_started.forEach(function (emulator) {
-            promises.push(exec('adb -s ' + emulator + ' shell getprop emu.uuid', os.tmpdir())
+            promises.push(exec('adb -s "' + emulator + '" shell getprop emu.uuid', os.tmpdir())
                 .then(function (output) {
                     if (output.indexOf(uuid) >= 0) {
                         emulator_id = emulator;
@@ -240,7 +240,7 @@ module.exports.wait_for_emulator = function(uuid) {
  */
 module.exports.wait_for_boot = function(emulator_id) {
     var self = this;
-    return exec('adb -s ' + emulator_id + ' shell ps', os.tmpdir())
+    return exec('adb -s "' + emulator_id + '" shell ps', os.tmpdir())
     .then(function(output) {
         if (output.match(/android\.process\.acore/)) {
             return;
@@ -338,7 +338,7 @@ module.exports.install = function(givenTarget, buildResults) {
 
         var retriedInstall = retry.retryPromise(
             NUM_INSTALL_RETRIES,
-            exec, 'adb -s ' + target.target + ' install -r -d "' + apk_path + '"', os.tmpdir(), execOptions
+            exec, 'adb -s "' + target.target + '" install -r -d "' + apk_path + '"', os.tmpdir(), execOptions
         );
 
         return retriedInstall.then(function (output) {
@@ -355,14 +355,14 @@ module.exports.install = function(givenTarget, buildResults) {
     }).then(function () {
 
         console.log('Unlocking screen...');
-        return exec('adb -s ' + target.target + ' shell input keyevent 82', os.tmpdir());
+        return exec('adb -s "' + target.target + '" shell input keyevent 82', os.tmpdir());
 
     // launch the application
     }).then(function () {
 
         console.log('Launching application...');
         var launchName = appinfo.getActivityName();
-        var cmd = 'adb -s ' + target.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
+        var cmd = 'adb -s "' + target.target + '" shell am start -W -a android.intent.action.MAIN -n ' + launchName;
         return exec(cmd, os.tmpdir());
 
     // report success or failure
