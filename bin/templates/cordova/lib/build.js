@@ -591,7 +591,7 @@ module.exports.prepBuildFiles = function() {
  */
 module.exports.detectArchitecture = function(target) {
     function helper() {
-        return exec('adb -s ' + target + ' shell cat /proc/cpuinfo', os.tmpdir())
+        return exec('adb -s "' + target + '" shell cat /proc/cpuinfo', os.tmpdir())
         .then(function(output) {
             if (/intel/i.exec(output)) {
                 return 'x86';
