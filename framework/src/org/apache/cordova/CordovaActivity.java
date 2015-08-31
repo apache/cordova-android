@@ -493,7 +493,16 @@ public class CordovaActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[],
                                            int[] grantResults) {
-        cordovaInterface.onRequestPermissionResult(requestCode, permissions, grantResults);
+        try
+        {
+            cordovaInterface.onRequestPermissionResult(requestCode, permissions, grantResults);
+        }
+        catch (JSONException e)
+        {
+            LOG.d(TAG, "JSONException: Parameters fed into the method are not valid");
+            e.printStackTrace();
+        }
+
     }
 
 }
