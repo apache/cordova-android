@@ -21,6 +21,7 @@ package org.apache.cordova.engine;
 import java.util.Arrays;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
@@ -63,13 +64,15 @@ public class SystemWebChromeClient extends WebChromeClient {
     private View mVideoProgressView;
     
     private CordovaDialogsHelper dialogsHelper;
+    private Context appContext;
 
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
     private View mCustomView;
 
     public SystemWebChromeClient(SystemWebViewEngine parentEngine) {
         this.parentEngine = parentEngine;
-        dialogsHelper = new CordovaDialogsHelper(parentEngine.webView.getContext());
+        appContext = parentEngine.webView.getContext();
+        dialogsHelper = new CordovaDialogsHelper(appContext);
     }
 
     /**
@@ -186,7 +189,7 @@ public class SystemWebChromeClient extends WebChromeClient {
         CordovaPlugin geolocation = parentEngine.pluginManager.getPlugin("Geolocation");
         if(geolocation != null && !geolocation.hasPermisssion())
         {
-            parentEngine.pluginManager.requestPermission(geolocation);
+            //cordova.requestPermissions(geolocation);
         }
 
     }

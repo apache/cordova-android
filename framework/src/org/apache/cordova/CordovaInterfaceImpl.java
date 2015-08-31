@@ -24,6 +24,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import org.json.JSONException;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -171,7 +173,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      * @param grantResults
      */
     public void onRequestPermissionResult(int requestCode, String[] permissions,
-                                          int[] grantResults) {
+                                          int[] grantResults) throws JSONException {
         if(permissionResultCallback != null)
         {
             permissionResultCallback.onRequestPermissionResult(requestCode, permissions, grantResults);
@@ -179,19 +181,17 @@ public class CordovaInterfaceImpl implements CordovaInterface {
         }
     }
 
-    public void requestPermission(CordovaPlugin plugin, String permission) {
+    public void requestPermission(CordovaPlugin plugin, int requestCode, String permission) {
         permissionResultCallback = plugin;
         String[] permissions = new String [1];
         permissions[0] = permission;
-        int requestCode = 1;
         getActivity().requestPermissions(permissions, requestCode);
     }
 
-    public void requestPermissions(CordovaPlugin plugin)
+    public void requestPermissions(CordovaPlugin plugin, int requestCode)
     {
         permissionResultCallback = plugin;
         String[] permissions = plugin.getPermissionRequest();
-        int requestCode = 1;
         getActivity().requestPermissions(permissions, requestCode);
     }
 

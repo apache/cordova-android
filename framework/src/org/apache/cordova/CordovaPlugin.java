@@ -391,15 +391,8 @@ public class CordovaPlugin {
      * @param permissions
      * @param grantResults
      */
-    public boolean onRequestPermissionResult(int requestCode, String[] permissions,
-                                          int[] grantResults) {
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) throws JSONException {
 
-        for(int r:grantResults)
-        {
-            if(r == PackageManager.PERMISSION_DENIED)
-                return false;
-        }
-
-        return true;
     }
 }
