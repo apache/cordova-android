@@ -26,6 +26,7 @@ at the core, applications written with web technology: HTML, CSS and JavaScript.
 
 [Apache Cordova](https://cordova.apache.org) is a project of The Apache Software Foundation (ASF).
 
+:warning: Check issues on the [JIRA issue tracker](https://issues.apache.org/jira/browse/CB-9460?jql=project%20%3D%20CB%20AND%20resolution%20%3D%20Unresolved%20AND%20component%20%3D%20Android%20ORDER%20BY%20priority%20DESC)
 
 ## Requires
 
