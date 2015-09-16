@@ -104,28 +104,28 @@ public class CordovaResourceApi {
     public static int getUriType(Uri uri) {
         assertNonRelative(uri);
         String scheme = uri.getScheme();
-        if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+        if (ContentResolver.SCHEME_CONTENT.equalsIgnoreCase(scheme)) {
             return URI_TYPE_CONTENT;
         }
-        if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(scheme)) {
+        if (ContentResolver.SCHEME_ANDROID_RESOURCE.equalsIgnoreCase(scheme)) {
             return URI_TYPE_RESOURCE;
         }
-        if (ContentResolver.SCHEME_FILE.equals(scheme)) {
+        if (ContentResolver.SCHEME_FILE.equalsIgnoreCase(scheme)) {
             if (uri.getPath().startsWith("/android_asset/")) {
                 return URI_TYPE_ASSET;
             }
             return URI_TYPE_FILE;
         }
-        if ("data".equals(scheme)) {
+        if ("data".equalsIgnoreCase(scheme)) {
             return URI_TYPE_DATA;
         }
-        if ("http".equals(scheme)) {
+        if ("http".equalsIgnoreCase(scheme)) {
             return URI_TYPE_HTTP;
         }
-        if ("https".equals(scheme)) {
+        if ("https".equalsIgnoreCase(scheme)) {
             return URI_TYPE_HTTPS;
         }
-        if (PLUGIN_URI_SCHEME.equals(scheme)) {
+        if (PLUGIN_URI_SCHEME.equalsIgnoreCase(scheme)) {
             return URI_TYPE_PLUGIN;
         }
         return URI_TYPE_UNKNOWN;
@@ -188,7 +188,11 @@ public class CordovaResourceApi {
                     HttpURLConnection conn = (HttpURLConnection)new URL(uri.toString()).openConnection();
                     conn.setDoInput(false);
                     conn.setRequestMethod("HEAD");
-                    return conn.getHeaderField("Content-Type");
+                    String mimeType = conn.getHeaderField("Content-Type");
+                    if (mimeType != null) {
+                        mimeType = mimeType.split(";")[0];
+                    }
+                    return mimeType;
                 } catch (IOException e) {
                 }
             }
@@ -283,6 +287,9 @@ public class CordovaResourceApi {
                 HttpURLConnection conn = (HttpURLConnection)new URL(uri.toString()).openConnection();
                 conn.setDoInput(true);
                 String mimeType = conn.getHeaderField("Content-Type");
+                if (mimeType != null) {
+                    mimeType = mimeType.split(";")[0];
+                }
                 int length = conn.getContentLength();
                 InputStream inputStream = conn.getInputStream();
                 return new OpenForReadResult(uri, inputStream, mimeType, length, null);

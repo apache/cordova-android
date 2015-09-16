@@ -19,6 +19,7 @@
 
 package org.apache.cordova.engine;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
@@ -30,6 +31,8 @@ class SystemCookieManager implements ICordovaCookieManager {
     protected final WebView webView;
     private final CookieManager cookieManager;
 
+    //Added because lint can't see the conditional RIGHT ABOVE this
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public SystemCookieManager(WebView webview) {
         webView = webview;
         cookieManager = CookieManager.getInstance();

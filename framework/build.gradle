@@ -23,26 +23,19 @@ buildscript {
         mavenCentral()
     }
 
-    // Switch the Android Gradle plugin version requirement depending on the
-    // installed version of Gradle. This dependency is documented at
-    // http://tools.android.com/tech-docs/new-build-system/version-compatibility
-    // and https://issues.apache.org/jira/browse/CB-8143
-    if (gradle.gradleVersion >= "2.2") {
-        dependencies {
-            classpath 'com.android.tools.build:gradle:1.0.0+'
-        }
-    } else if (gradle.gradleVersion >= "2.1") {
-        dependencies {
-            classpath 'com.android.tools.build:gradle:0.14.0+'
-        }
-    } else {
-        dependencies {
-            classpath 'com.android.tools.build:gradle:0.12.0+'
-        }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.0.0+'
     }
+
 }
 
 apply plugin: 'android-library'
+
+ext {
+    apply from: 'cordova.gradle'
+    cdvCompileSdkVersion = privateHelpers.getProjectTarget()
+    cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+}
 
 android {
     compileSdkVersion cdvCompileSdkVersion
