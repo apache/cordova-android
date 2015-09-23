@@ -104,7 +104,7 @@ module.exports.install = function(target, buildResults) {
         return exec('adb -s ' + resolvedTarget.target + ' uninstall ' + pkgName, os.tmpdir())
         .then(function() {
             console.log('Installing app on device...');
-            var cmd = 'adb -s ' + resolvedTarget.target + ' install -r -d "' + apk_path + '"';
+            var cmd = 'adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"';
             return exec(cmd, os.tmpdir());
         })
         .then(function(output) {

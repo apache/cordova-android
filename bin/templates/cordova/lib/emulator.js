@@ -344,7 +344,7 @@ module.exports.install = function(givenTarget, buildResults) {
 
             var retriedInstall = retry.retryPromise(
                 NUM_INSTALL_RETRIES,
-                exec, 'adb -s ' + target.target + ' install -r -d "' + apk_path + '"', os.tmpdir(), execOptions
+                exec, 'adb -s ' + target.target + ' install -r "' + apk_path + '"', os.tmpdir(), execOptions
             );
 
             return retriedInstall.then(function (output) {
