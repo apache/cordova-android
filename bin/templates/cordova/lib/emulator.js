@@ -62,13 +62,18 @@ module.exports.list_images = function() {
             var img_obj = {};
             if (response[i].match(/Name:\s/)) {
                 img_obj['name'] = response[i].split('Name: ')[1].replace('\r', '');
+                if (response[i + 1].match(/Device:\s/)) {
+                    i++;
+                    img_obj['device'] = response[i].split('Device: ')[1].replace('\r', '');
+                }
                 if (response[i + 1].match(/Path:\s/)) {
                     i++;
                     img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
                 }
-                if (response[i + 1].match(/\(API\slevel\s/)) {
+                if (response[i + 1].match(/\(API\slevel\s/) || response[i + 2].match(/\(API\slevel\s/)) {
                     i++;
-                    img_obj['target'] = response[i].replace('\r', '');
+                    var secondLine = response[i + 1].match(/\(API\slevel\s/) ? response[i + 1] : '';
+                    img_obj['target'] = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
                 }
                 if (response[i + 1].match(/ABI:\s/)) {
                     i++;
