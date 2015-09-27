@@ -355,6 +355,28 @@ public class CordovaActivity extends Activity {
         cordovaInterface.onActivityResult(requestCode, resultCode, intent);
     }
 
+
+    /**
+     * Called for the result from requesting permissions
+     * CB-9616
+     *
+     * @param requestCode       The request code originally supplied to requestPermissions(),
+     *                          allowing you to identify who this result came from.
+     * @param permissions       The requested permissions. Never null.  
+     * @param grantResults      The grant results for the corresponding permissions which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.  
+     */
+ 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        LOG.d(TAG, "Incoming Permissions Result = " + requestCode);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+         if (this.appView != null) {
+            this.appView.handleRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+
     /**
      * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable).
      * The errorCode parameter corresponds to one of the ERROR_* constants.

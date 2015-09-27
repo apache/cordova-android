@@ -149,6 +149,12 @@ public class CordovaPlugin {
     }
 
     /**
+     * Called after a permission is being requested
+     */
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    }
+
+    /**
      * Called when the activity is becoming visible to the user.
      */
     public void onStart() {

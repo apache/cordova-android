@@ -450,6 +450,16 @@ public class CordovaWebViewImpl implements CordovaWebView {
             sendJavascriptEvent("resume");
         }
     }
+    
+    @Override
+    public void handleRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (!isInitialized()) {
+            return;
+        }
+
+        this.pluginManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+    }
     @Override
     public void handleStart() {
         if (!isInitialized()) {
