@@ -29,6 +29,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -365,14 +366,27 @@ public class CordovaPlugin {
     /**
      * Called by the Plugin Manager when we need to actually request permissions
      *
+     * @param requestCode   Passed to the activity to track the request
+     *
      * @return              Returns the permission that was stored in the plugin
      */
 
-    public String[] getPermissionRequest() {
-        return permissions;
+    public void requestPermissions(int requestCode) {
+        cordova.requestPermissions(this, requestCode, permissions);
     }
 
+    /*
+     * Called by the WebView implementation to check for geolocation permissions, can be used
+     * by other Java methods in the event that a plugin is using this as a dependency.
+     *
+     * @return          Returns true if the plugin has all the permissions it needs to operate.
+     */
+
     public boolean hasPermisssion() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+        {
+            return true;
+        }
         for(String p : permissions)
         {
             if(PackageManager.PERMISSION_DENIED == cordova.getActivity().checkSelfPermission(p))

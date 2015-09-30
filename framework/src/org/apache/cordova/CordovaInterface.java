@@ -70,6 +70,19 @@ public interface CordovaInterface {
      */
     public ExecutorService getThreadPool();
 
+    /**
+     * Sends a permission request to the activity for one permission.
+     */
     public void requestPermission(CordovaPlugin plugin, int requestCode, String permission);
-    public void requestPermissions(CordovaPlugin plugin, int requestCode);
+
+    /**
+     * Sends a permission request to the activity for a group of permissions
+     */
+    public void requestPermissions(CordovaPlugin plugin, int requestCode, String [] permissions);
+
+    /**
+     * Check for a permission.  Returns true if the permission is granted, false otherwise.
+     */
+    public boolean hasPermission(String permission);
+
 }
