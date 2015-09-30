@@ -47,6 +47,8 @@ public class PluginManager {
     private final CordovaWebView app;
     private boolean isInitialized;
 
+    private CordovaPlugin permissionRequester;
+
     public PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, Collection<PluginEntry> pluginEntries) {
         this.ctx = cordova;
         this.app = cordovaWebView;
@@ -508,4 +510,5 @@ public class PluginManager {
             }
         }
     }
+
 }

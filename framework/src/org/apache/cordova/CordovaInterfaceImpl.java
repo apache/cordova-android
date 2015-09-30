@@ -19,10 +19,15 @@
 
 package org.apache.cordova;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+
+import org.json.JSONException;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +43,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
 
     protected ActivityResultHolder savedResult;
     protected CordovaPlugin activityResultCallback;
+    protected CordovaPlugin permissionResultCallback;
     protected String initCallbackService;
     protected int activityResultRequestCode;
 
@@ -161,4 +167,48 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             this.intent = intent;
         }
     }
+
+    /**
+     * Called by the system when the user grants permissions
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) throws JSONException {
+        if(permissionResultCallback != null)
+        {
+            permissionResultCallback.onRequestPermissionResult(requestCode, permissions, grantResults);
+            permissionResultCallback = null;
+        }
+    }
+
+    public void requestPermission(CordovaPlugin plugin, int requestCode, String permission) {
+        permissionResultCallback = plugin;
+        String[] permissions = new String [1];
+        permissions[0] = permission;
+        getActivity().requestPermissions(permissions, requestCode);
+    }
+
+    public void requestPermissions(CordovaPlugin plugin, int requestCode, String [] permissions)
+    {
+        permissionResultCallback = plugin;
+        getActivity().requestPermissions(permissions, requestCode);
+    }
+
+    public boolean hasPermission(String permission)
+    {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            int result = activity.checkSelfPermission(permission);
+            return PackageManager.PERMISSION_GRANTED == result;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+
 }

@@ -26,8 +26,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,6 +42,7 @@ public class CordovaPlugin {
     public CordovaInterface cordova;
     protected CordovaPreferences preferences;
     private String serviceName;
+    protected String [] permissions;
 
     /**
      * Call this after constructing to initialize the plugin.
@@ -358,5 +361,52 @@ public class CordovaPlugin {
      * @param newConfig		The new device configuration
      */
     public void onConfigurationChanged(Configuration newConfig) {
+    }
+
+    /**
+     * Called by the Plugin Manager when we need to actually request permissions
+     *
+     * @param requestCode   Passed to the activity to track the request
+     *
+     * @return              Returns the permission that was stored in the plugin
+     */
+
+    public void requestPermissions(int requestCode) {
+        cordova.requestPermissions(this, requestCode, permissions);
+    }
+
+    /*
+     * Called by the WebView implementation to check for geolocation permissions, can be used
+     * by other Java methods in the event that a plugin is using this as a dependency.
+     *
+     * @return          Returns true if the plugin has all the permissions it needs to operate.
+     */
+
+    public boolean hasPermisssion() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+        {
+            return true;
+        }
+        for(String p : permissions)
+        {
+            if(PackageManager.PERMISSION_DENIED == cordova.getActivity().checkSelfPermission(p))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Called by the system when the user grants permissions
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) throws JSONException {
+
     }
 }

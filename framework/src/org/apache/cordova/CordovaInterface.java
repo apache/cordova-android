@@ -69,4 +69,20 @@ public interface CordovaInterface {
      * Returns a shared thread pool that can be used for background tasks.
      */
     public ExecutorService getThreadPool();
+
+    /**
+     * Sends a permission request to the activity for one permission.
+     */
+    public void requestPermission(CordovaPlugin plugin, int requestCode, String permission);
+
+    /**
+     * Sends a permission request to the activity for a group of permissions
+     */
+    public void requestPermissions(CordovaPlugin plugin, int requestCode, String [] permissions);
+
+    /**
+     * Check for a permission.  Returns true if the permission is granted, false otherwise.
+     */
+    public boolean hasPermission(String permission);
+
 }
