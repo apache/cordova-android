@@ -432,10 +432,14 @@ PlatformApiPoly.prototype.run = function(runOptions) {
  * @return  {Promise}  Return a promise either fulfilled, or rejected with
  *   CordovaError.
  */
-// PlatformApiPoly.prototype.clean = function() {
-//     var cmd = path.join(this.root, 'cordova', 'clean');
-//     return superspawn.spawn(cmd, [], { printCommand: true, stdio: 'inherit', chmod: true });
-// };
+PlatformApiPoly.prototype.clean = function(cleanOptions) {
+    var self = this;
+    // TODO: Ensure that this always rejected with CordovaError
+    return require('./lib/check_reqs').run()
+    .then(function () {
+        return require('./lib/build').runClean.call(self, cleanOptions);
+    });
+};
 
 /**
  * Performs a requirements check for current platform. Each platform defines its
