@@ -19,8 +19,11 @@
 
 package org.apache.cordova;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -188,11 +191,24 @@ public class CordovaInterfaceImpl implements CordovaInterface {
         getActivity().requestPermissions(permissions, requestCode);
     }
 
-    public void requestPermissions(CordovaPlugin plugin, int requestCode)
+    public void requestPermissions(CordovaPlugin plugin, int requestCode, String [] permissions)
     {
         permissionResultCallback = plugin;
-        String[] permissions = plugin.getPermissionRequest();
         getActivity().requestPermissions(permissions, requestCode);
     }
+
+    public boolean hasPermission(String permission)
+    {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        {
+            int result = activity.checkSelfPermission(permission);
+            return PackageManager.PERMISSION_GRANTED == result;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
 
 }
