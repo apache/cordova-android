@@ -417,12 +417,14 @@ PlatformApiPoly.prototype.build = function (buildOptions) {
  * @return {Promise} A promise either fulfilled if package was built and ran
  *   successfully, or rejected with CordovaError.
  */
-// PlatformApiPoly.prototype.run = function(runOptions) {
-//     var command = path.join(this.root, 'cordova', 'run');
-//     var commandArguments = getBuildArgs(runOptions);
-//     return superspawn.spawn(command, commandArguments, {
-//         printCommand: true, stdio: 'inherit', chmod: true });
-// };
+PlatformApiPoly.prototype.run = function(runOptions) {
+    var self = this;
+    // TODO: Ensure that this always rejected with CordovaError
+    return require('./lib/check_reqs').run()
+    .then(function () {
+        return require('./lib/run').run.call(self, runOptions);
+    });
+};
 
 /**
  * Cleans out the build artifacts from platform's directory.
