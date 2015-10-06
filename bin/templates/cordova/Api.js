@@ -456,16 +456,9 @@ PlatformApiPoly.prototype.clean = function(cleanOptions) {
  * @return  {Promise<Requirement[]>}  Promise, resolved with set of Requirement
  *   objects for current platform.
  */
-// PlatformApiPoly.prototype.requirements = function() {
-//     var modulePath = path.join(this.root, 'cordova', 'lib', 'check_reqs');
-//     try {
-//         return require(modulePath).check_all();
-//     } catch (e) {
-//         var errorMsg = 'Failed to check requirements for ' + this.platform + ' platform. ' +
-//             'check_reqs module is missing for platfrom. Skipping it...';
-//         return Q.reject(errorMsg);
-//     }
-// };
+PlatformApiPoly.prototype.requirements = function() {
+    return require('./lib/check_reqs').check_all();
+};
 
 module.exports = PlatformApiPoly;
 
