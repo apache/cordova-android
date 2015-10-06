@@ -19,15 +19,13 @@
        under the License.
 */
 
-var shell   = require('shelljs'),
-    Q       = require('q'),
+var Q       = require('q'),
     path    = require('path'),
     fs      = require('fs'),
     os      = require('os'),
     nopt = require('nopt');
 
 var builders = require('./builders/builders');
-var check_reqs = require('./check_reqs');
 var exec  = require('./exec');
 
 function parseOpts(options, resolvedTarget) {
@@ -71,7 +69,7 @@ function parseOpts(options, resolvedTarget) {
     var packageArgs = {};
 
     if (options.argv.keystore)
-        packageArgs.keystore = path.relative(this.root, path.resolve(flagValue));
+        packageArgs.keystore = path.relative(this.root, path.resolve(options.argv.keystore));
 
     ['alias','storePassword','password','keystoreType'].forEach(function (flagName) {
         if (options.argv[flagName])
@@ -127,12 +125,18 @@ module.exports.runClean = function(options) {
     });
 };
 
-/*
- * Builds the project with the specifed options
- * Returns a promise.
+/**
+ * Builds the project with the specifed options.
+ *
+ * @param   {BuildOptions}  options      A set of options. See PlatformApi.build
+ *   method documentation for reference.
+ * @param   {Object}  optResolvedTarget  A deployment target. Used to pass
+ *   target architecture from upstream 'run' call. TODO: remove this option in
+ *   favor of setting buildOptions.archs field.
+ *
+ * @return  {Promise<Object>}            Promise, resolved with built packages
+ *   information.
  */
-// TODO: JSDoc
-// TODO: Check if parameters being handled appropriately
 module.exports.run = function(options, optResolvedTarget) {
     var opts = parseOpts(options, optResolvedTarget);
     var builder = builders.getBuilder(opts.buildMethod, this.events);

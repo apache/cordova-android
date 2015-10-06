@@ -1,17 +1,29 @@
-console.log('Required new Api');
+/**
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+*/
 
 var Q = require('q');
 var fs = require('fs');
 var path = require('path');
-// var unorm = require('unorm');
 var shell = require('shelljs');
-// var semver = require('semver');
 
-// var superspawn = require('../cordova/superspawn');
 var xmlHelpers = require('cordova-common').xmlHelpers;
-// var knownPlatforms = require('./platforms');
 var CordovaError = require('cordova-common').CordovaError;
-// var PluginInfo = require('../PluginInfo');
 var ConfigParser = require('cordova-common').ConfigParser;
 var PlatformJson = require('cordova-common').PlatformJson;
 var ActionStack = require('cordova-common').ActionStack;
@@ -137,14 +149,13 @@ function PlatformApiPoly(platform, platformRootDir, events) {
  *   platform's file structure and other properties of platform.
  */
 PlatformApiPoly.prototype.getPlatformInfo = function () {
-    var self = this;
     var result = {};
     result.locations = this.locations;
-    result.root = self.root;
-    result.name = self.platform;
+    result.root = this.root;
+    result.name = this.platform;
     // TODO: replace version with one from package.json
     result.version = '4.2.0-dev';
-    result.projectConfig = self._config;
+    result.projectConfig = this._config;
 
     return result;
 };
@@ -166,20 +177,10 @@ PlatformApiPoly.prototype.getPlatformInfo = function () {
 PlatformApiPoly.prototype.prepare = function (cordovaProject) {
     // First cleanup current config and merge project's one into own
     var defaultConfig = path.join(this.root, 'cordova/defaults.xml');
-    // TODO: reuse getPlatformInfo method here
-    var ownConfig = path.join(this.root, 'res/xml/config.xml');
-    var sourceCfg = cordovaProject.projectConfig.path;
+    var ownConfig = this.locations.configXml;
     // If defaults.xml is present, overwrite platform config.xml with it.
-    // Otherwise save whatever is there as defaults so it can be
-    // restored or copy project config into platform if none exists.
-    if (fs.existsSync(defaultConfig)) {
-        this.events.emit('verbose', 'Generating config.xml from defaults for platform "' + this.platform + '"');
-        shell.cp('-f', defaultConfig, ownConfig);
-    } else if (fs.existsSync(ownConfig)) {
-        shell.cp('-f', ownConfig, defaultConfig);
-    } else {
-        shell.cp('-f', sourceCfg.path, ownConfig);
-    }
+    this.events.emit('verbose', 'Generating config.xml from defaults for platform "' + this.platform + '"');
+    shell.cp('-f', defaultConfig, ownConfig);
 
     this._munger.reapply_global_munge().save_all();
 
@@ -322,8 +323,8 @@ PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
             .save_all();
 
         var targetDir = uninstallOptions.usePlatformWww ?
-            self.getPlatformInfo().locations.platformWww :
-            self.getPlatformInfo().locations.www;
+            self.locations.platformWww :
+            self.locations.www;
 
         self._removeModulesInfo(plugin, targetDir);
         // Remove stale plugin directory
@@ -392,6 +393,7 @@ PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
  */
 PlatformApiPoly.prototype.build = function (buildOptions) {
     var self = this;
+    // TODO: Ensure that this always rejected with CordovaError
     return require('./lib/check_reqs').run()
     .then(function () {
         return require('./lib/build').run.call(self, buildOptions);
@@ -507,50 +509,6 @@ module.exports = PlatformApiPoly;
 //     }
 
 //     return args;
-// }
-
-/**
- * Reconstructs the buildOptions tat will be passed along to platform scripts.
- *   This is an ugly temporary fix. The code spawning or otherwise calling into
- *   platform code should be dealing with this based on the parsed args object.
- *
- * @param   {Object}  options  A build options set, passed to `build` method
- *
- * @return  {String[]}         An array or arguments which can be passed to
- *   `create` build script.
- */
-// function getBuildArgs(options) {
-//     // if no options passed, empty object will be returned
-//     if (!options) return [];
-
-//     var downstreamArgs = [];
-//     var argNames =[
-//         'debug',
-//         'release',
-//         'device',
-//         'emulator',
-//         'nobuild',
-//         'list'
-//     ];
-
-//     argNames.forEach(function(flag) {
-//         if (options[flag]) {
-//             downstreamArgs.push('--' + flag);
-//         }
-//     });
-
-//     if (options.buildConfig) {
-//         downstreamArgs.push('--buildConfig=' + options.buildConfig);
-//     }
-//     if (options.target) {
-//         downstreamArgs.push('--target=' + options.target);
-//     }
-//     if (options.archs) {
-//         downstreamArgs.push('--archs=' + options.archs);
-//     }
-
-//     var unparsedArgs = options.argv || [];
-//     return downstreamArgs.concat(unparsedArgs);
 // }
 
 /**
@@ -697,14 +655,17 @@ PlatformApiPoly.prototype._getUninstaller = function(type) {
 //     }
 // }
 
-//TODO: add JSDoc here
-// Replace the www dir with contents of platform_www and app www.
+/**
+ * Updates platform www directory by replacing it with contents of platform_www
+ *   and app www.
+ *
+ * @param   {String}  sourceWww  Location of source (app's) www directory
+ */
 PlatformApiPoly.prototype._updateWww = function(sourceWww) {
-    var locations = this.getPlatformInfo().locations;
-    shell.rm('-rf', locations.www);
-    shell.mkdir('-p', locations.www);
-    shell.cp('-rf', path.join(sourceWww, '*'), locations.www);
-    shell.cp('-rf', path.join(locations.platformWww, '*'), locations.www);
+    shell.rm('-rf', this.locations.www);
+    shell.mkdir('-p', this.locations.www);
+    shell.cp('-rf', path.join(sourceWww, '*'), this.locations.www);
+    shell.cp('-rf', path.join(this.locations.platformWww, '*'), this.locations.www);
 };
 
 // TODO: JSDoc
@@ -780,7 +741,7 @@ PlatformApiPoly.prototype._updateProject = function() {
     if (java_files.length === 0) {
       throw new Error('No Java files found which extend CordovaActivity.');
     } else if(java_files.length > 1) {
-      events.emit('log', 'Multiple candidate Java files (.java files which extend CordovaActivity) found. Guessing at the first one, ' + java_files[0]);
+      this.events.emit('log', 'Multiple candidate Java files (.java files which extend CordovaActivity) found. Guessing at the first one, ' + java_files[0]);
     }
 
     var orig_java_class = java_files[0];
@@ -794,7 +755,6 @@ PlatformApiPoly.prototype._updateProject = function() {
     fs.writeFileSync(new_javs, javs_contents, 'utf-8');
 };
 
-
 PlatformApiPoly.prototype.copyImage = function(src, density, name) {
     var destFolder = path.join(this.path, 'res', (density ? 'drawable-': 'drawable') + density);
     var isNinePatch = !!/\.9\.png$/.exec(src);
@@ -806,7 +766,7 @@ PlatformApiPoly.prototype.copyImage = function(src, density, name) {
     }
 
     var destFilePath = path.join(destFolder, isNinePatch ? ninePatchName : name);
-    events.emit('verbose', 'copying image from ' + src + ' to ' + destFilePath);
+    this.events.emit('verbose', 'copying image from ' + src + ' to ' + destFilePath);
     shell.cp('-f', src, destFilePath);
 };
 
@@ -884,7 +844,7 @@ PlatformApiPoly.prototype.handleIcons = function() {
         }
         if (!size && !icon.density) {
             if (default_icon) {
-                events.emit('verbose', 'more than one default icon: ' + JSON.stringify(icon));
+                this.events.emit('verbose', 'more than one default icon: ' + JSON.stringify(icon));
             } else {
                 default_icon = icon;
             }
@@ -914,12 +874,12 @@ PlatformApiPoly.prototype.deleteDefaultResource = function(name) {
             var imgPath = path.join(res, filename, name);
             if (fs.existsSync(imgPath)) {
                 fs.unlinkSync(imgPath);
-                events.emit('verbose', 'deleted: ' + imgPath);
+                this.events.emit('verbose', 'deleted: ' + imgPath);
             }
             imgPath = imgPath.replace(/\.png$/, '.9.png');
             if (fs.existsSync(imgPath)) {
                 fs.unlinkSync(imgPath);
-                events.emit('verbose', 'deleted: ' + imgPath);
+                this.events.emit('verbose', 'deleted: ' + imgPath);
             }
         }
     }
@@ -953,8 +913,8 @@ PlatformApiPoly.prototype.findAndroidLaunchModePreference = function() {
     var expectedValues = ['standard', 'singleTop', 'singleTask', 'singleInstance'];
     var valid = expectedValues.indexOf(launchMode) !== -1;
     if (!valid) {
-        events.emit('warn', 'Unrecognized value for AndroidLaunchMode preference: ' + launchMode);
-        events.emit('warn', '  Expected values are: ' + expectedValues.join(', '));
+        this.events.emit('warn', 'Unrecognized value for AndroidLaunchMode preference: ' + launchMode);
+        this.events.emit('warn', '  Expected values are: ' + expectedValues.join(', '));
         // Note: warn, but leave the launch mode as developer wanted, in case the list of options changes in the future
     }
 
