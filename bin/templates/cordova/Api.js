@@ -28,6 +28,7 @@ var ConfigParser = require('cordova-common').ConfigParser;
 var PlatformJson = require('cordova-common').PlatformJson;
 var ActionStack = require('cordova-common').ActionStack;
 var AndroidProject = require('./lib/AndroidProject');
+var AndroidManifest = require('./lib/AndroidManifest');
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
@@ -680,79 +681,44 @@ PlatformApiPoly.prototype._updateProject = function() {
     this.handleSplashes();
     this.handleIcons();
 
-    var manifest = xmlHelpers.parseElementtreeSync(this.locations.manifest);
+    var manifest = new AndroidManifest(this.locations.manifest);
+    var orig_pkg = manifest.getPackageId();
+    // Java packages cannot support dashes
+    var pkg = (this._config.android_packageName() || this._config.packageName()).replace(/-/g, '_');
+
+    manifest.getActivity()
+        // TODO: pick orientationHelper implementation form android_parser
+        // .setOrientation(this.helper.getOrientation(this._config))
+        // Set android:launchMode in AndroidManifest
+        .setLaunchMode(this.findAndroidLaunchModePreference(this._config));
+
     // Update the version by changing the AndroidManifest android:versionName
-    var version = this._config.version();
-    var versionCode = this._config.android_versionCode() || default_versionCode(version);
-    manifest.getroot().attrib["android:versionName"] = version;
-    manifest.getroot().attrib["android:versionCode"] = versionCode;
-
+    // Set min/max/target SDK version <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19" ... />
     // Update package name by changing the AndroidManifest id and moving the entry class around to the proper package directory
-    var pkg = this._config.android_packageName() || this._config.packageName();
-    pkg = pkg.replace(/-/g, '_'); // Java packages cannot support dashes
-    var orig_pkg = manifest.getroot().attrib.package;
-    manifest.getroot().attrib.package = pkg;
-
-    var act = manifest.getroot().find('./application/activity');
-
-    // Set the android:screenOrientation in the AndroidManifest
-    // TODO: pick orientationHelper implementation form android_parser
-    // var orientation = this.helper.getOrientation(this._config);
-
-    // if (orientation && !this.helper.isDefaultOrientation(orientation)) {
-    //     act.attrib['android:screenOrientation'] = orientation;
-    // } else {
-    //     delete act.attrib['android:screenOrientation'];
-    // }
-
-    // Set android:launchMode in AndroidManifest
-    var androidLaunchModePref = this.findAndroidLaunchModePreference(this._config);
-    if (androidLaunchModePref) {
-        act.attrib["android:launchMode"] = androidLaunchModePref;
-    } else { // User has (explicitly) set an invalid value for AndroidLaunchMode preference
-        delete act.attrib["android:launchMode"]; // use Android default value (standard)
-    }
-
-    // Set min/max/target SDK version
-    //<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19" ... />
-    var usesSdk = manifest.getroot().find('./uses-sdk');
-    var self = this;
-    ['minSdkVersion', 'maxSdkVersion', 'targetSdkVersion'].forEach(function(sdkPrefName) {
-        var sdkPrefValue = self._config.getPreference('android-' + sdkPrefName, 'android');
-        if (!sdkPrefValue) return;
-
-        if (!usesSdk) { // if there is no required uses-sdk element, we should create it first
-            usesSdk = new et.Element('uses-sdk');
-            manifest.getroot().append(usesSdk);
-        }
-        usesSdk.attrib['android:' + sdkPrefName] = sdkPrefValue;
-    });
-
     // Write out AndroidManifest.xml
-    fs.writeFileSync(this.locations.manifest, manifest.write({indent: 4}), 'utf-8');
+    manifest.setVersionName(this._config.version())
+        .setVersionCode(this._config.android_versionCode() || default_versionCode(this._config.version()))
+        .setPackageId(pkg)
+        .setMinSdkVersion(this._config.getPreference('android-minSdkVersion', this.platform))
+        .setMaxSdkVersion(this._config.getPreference('android-maxSdkVersion', this.platform))
+        .setTargetSdkVersion(this._config.getPreference('android-targetSdkVersion', this.platform))
+        .write();
 
-    var orig_pkgDir = path.join(this.root, 'src', path.join.apply(null, orig_pkg.split('.')));
-    var java_files = fs.readdirSync(orig_pkgDir)
-    .filter(function(f) {
-      return f.indexOf('.svn') == -1 && f.indexOf('.java') >= 0 &&
-        fs.readFileSync(path.join(orig_pkgDir, f), 'utf-8').match(/extends\s+CordovaActivity/);
+    var javaPattern = path.join(this.root, 'src', orig_pkg.replace(/\./g, '/'), '*.java');
+    var java_files = shell.ls(javaPattern).filter(function(f) {
+        return shell.grep(/extends\s+CordovaActivity/g, f);
     });
 
     if (java_files.length === 0) {
-      throw new Error('No Java files found which extend CordovaActivity.');
+        throw new CordovaError('No Java files found which extend CordovaActivity.');
     } else if(java_files.length > 1) {
-      this.events.emit('log', 'Multiple candidate Java files (.java files which extend CordovaActivity) found. Guessing at the first one, ' + java_files[0]);
+        this.events.emit('log', 'Multiple candidate Java files (.java files which extend CordovaActivity) found. Guessing at the first one, ' + java_files[0]);
     }
 
-    var orig_java_class = java_files[0];
-    var pkgDir = path.join(this.root, 'src', path.join.apply(null, pkg.split('.')));
-    shell.mkdir('-p', pkgDir);
-    var orig_javs = path.join(orig_pkgDir, orig_java_class);
-    var new_javs = path.join(pkgDir, orig_java_class);
-    var javs_contents = fs.readFileSync(orig_javs, 'utf-8');
-    javs_contents = javs_contents.replace(/package [\w\.]*;/, 'package ' + pkg + ';');
+    var destFile = path.join(this.root, 'src', pkg.replace(/\./g, '/'), path.basename(java_files[0]));
+    shell.mkdir('-p', path.dirname(destFile));
+    shell.sed(/package [\w\.]*;/, 'package ' + pkg + ';', java_files[0]).to(destFile);
     this.events.emit('verbose', 'Wrote out Android package name to "' + pkg + '"');
-    fs.writeFileSync(new_javs, javs_contents, 'utf-8');
 };
 
 PlatformApiPoly.prototype.copyImage = function(src, density, name) {
@@ -865,24 +831,14 @@ PlatformApiPoly.prototype.handleIcons = function() {
 // remove the default resource name from all drawable folders
 // return the array of the densities in this project
 PlatformApiPoly.prototype.deleteDefaultResource = function(name) {
-    var res = path.join(this.path, 'res');
-    var dirs = fs.readdirSync(res);
-
-    for (var i=0; i<dirs.length; i++) {
-        var filename = dirs[i];
-        if (filename.indexOf('drawable-') === 0) {
-            var imgPath = path.join(res, filename, name);
-            if (fs.existsSync(imgPath)) {
-                fs.unlinkSync(imgPath);
-                this.events.emit('verbose', 'deleted: ' + imgPath);
-            }
-            imgPath = imgPath.replace(/\.png$/, '.9.png');
-            if (fs.existsSync(imgPath)) {
-                fs.unlinkSync(imgPath);
-                this.events.emit('verbose', 'deleted: ' + imgPath);
-            }
-        }
-    }
+    var self = this;
+    //TODO: verify it works
+    shell.ls(path.join(this.path, 'res/drawable-*', name))
+    .forEach(function (drawableFolder) {
+        var imagePath = path.join(drawableFolder, name);
+        shell.rm('-f', [imagePath, imagePath.replace(/\.png$/, '.9.png')]);
+        self.events.emit('verbose', 'Deleted ' + imagePath);
+    });
 };
 
 // Consturct the default value for versionCode as

@@ -22,10 +22,11 @@
 /* jshint sub:true */
 
 var exec       = require('./exec');
-var appinfo    = require('./appinfo');
 var retry      = require('./retry');
 var build      = require('./build');
 var check_reqs = require('./check_reqs');
+var path = require('path');
+var AndroidManifest = require('./AndroidManifest');
 
 var Q             = require('q');
 var os            = require('os');
@@ -311,6 +312,8 @@ module.exports.resolveTarget = function(target) {
 module.exports.install = function(givenTarget, buildResults) {
 
     var target;
+    var manifest = new AndroidManifest(path.join(__dirname, '../../AndroidManifest.xml'));
+    var pkgName = manifest.getPackage();
 
     // resolve the target emulator
     return Q().then(function () {
@@ -326,7 +329,6 @@ module.exports.install = function(givenTarget, buildResults) {
 
     // install the app
     }).then(function () {
-        var pkgName = appinfo.getPackageName();
         console.log('Uninstalling ' + pkgName + ' from emulator...');
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
@@ -367,7 +369,7 @@ module.exports.install = function(givenTarget, buildResults) {
     }).then(function () {
 
         console.log('Launching application...');
-        var launchName = appinfo.getActivityName();
+        var launchName = pkgName + '/.' + manifest.getActivity().getName();
         var cmd = 'adb -s ' + target.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
         return exec(cmd, os.tmpdir());
 

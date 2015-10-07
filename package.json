@@ -20,6 +20,8 @@
     "author": "Apache Software Foundation",
     "license": "Apache version 2.0",
     "dependencies": {
+        "elementtree": "0.1.6",
+        "properties-parser": "^0.3.0",
         "q": "^0.9.0",
         "shelljs": "^0.2.6"
     },

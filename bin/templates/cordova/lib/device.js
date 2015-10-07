@@ -22,8 +22,9 @@
 var exec  = require('./exec'),
     Q     = require('q'),
     os    = require('os'),
-    build = require('./build'),
-    appinfo = require('./appinfo');
+    build = require('./build');
+var path = require('path');
+var AndroidManifest = require('./AndroidManifest');
 
 /**
  * Returns a promise for the list of the device ID's found
@@ -95,8 +96,9 @@ module.exports.install = function(target, buildResults) {
         return module.exports.resolveTarget(target);
     }).then(function(resolvedTarget) {
         var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
-        var launchName = appinfo.getActivityName();
-        var pkgName = appinfo.getPackageName();
+        var manifest = new AndroidManifest(path.join(__dirname, '../../AndroidManifest.xml'));
+        var pkgName = manifest.getPackage();
+        var launchName = pkgName + '/.' + manifest.getActivity().getName();
         console.log('Using apk: ' + apk_path);
         console.log('Uninstalling ' + pkgName + ' from device...');
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
