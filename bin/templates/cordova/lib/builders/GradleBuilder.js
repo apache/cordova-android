@@ -22,8 +22,7 @@ var fs = require('fs');
 var util = require('util');
 var path = require('path');
 var shell = require('shelljs');
-// TODO: replace with cordova-common's superspawn
-var spawn = require('../spawn');
+var spawn = require('cordova-common').superspawn.spawn;
 var check_reqs = require('../check_reqs');
 
 var GenericBuilder = require('./GenericBuilder');
@@ -177,12 +176,10 @@ GradleBuilder.prototype.prepEnv = function(opts) {
  * Returns a promise.
  */
 GradleBuilder.prototype.build = function(opts) {
-    var self = this;
     var wrapper = path.join(ROOT, 'gradlew');
     var args = this.getArgs(opts.buildType == 'debug' ? 'debug' : 'release', opts);
     return Q().then(function() {
-        self.events.emit('verbose', 'Running: ' + wrapper + ' ' + args.join(' '));
-        return spawn(wrapper, args);
+        return spawn(wrapper, args, {stdio: 'inherit'});
     });
 };
 
@@ -191,8 +188,7 @@ GradleBuilder.prototype.clean = function(opts) {
     var wrapper = path.join(ROOT, 'gradlew');
     var args = builder.getArgs('clean', opts);
     return Q().then(function() {
-        builder.events.emit('verbose', 'Running: ' + wrapper + ' ' + args.join(' '));
-        return spawn(wrapper, args);
+        return spawn(wrapper, args, {stdio: 'inherit'});
     })
     .then(function () {
         shell.rm('-rf', path.join(ROOT, 'out'));

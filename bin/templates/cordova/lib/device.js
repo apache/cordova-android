@@ -19,12 +19,12 @@
        under the License.
 */
 
-var exec  = require('./exec'),
-    Q     = require('q'),
+var Q     = require('q'),
     os    = require('os'),
     build = require('./build');
 var path = require('path');
 var AndroidManifest = require('./AndroidManifest');
+var spawn = require('cordova-common').superspawn.spawn;
 
 /**
  * Returns a promise for the list of the device ID's found
@@ -32,7 +32,7 @@ var AndroidManifest = require('./AndroidManifest');
  */
 module.exports.list = function(lookHarder) {
     function helper() {
-        return exec('adb devices', os.tmpdir())
+        return spawn('adb', ['devices'], {cwd: os.tmpdir()})
         .then(function(output) {
             var response = output.split('\n');
             var device_list = [];
@@ -50,7 +50,7 @@ module.exports.list = function(lookHarder) {
             // adb kill-server doesn't seem to do the trick.
             // Could probably find a x-platform version of killall, but I'm not actually
             // sure that this scenario even happens on non-OSX machines.
-            return exec('killall adb')
+            return spawn('killall', ['adb'])
             .then(function() {
                 console.log('Restarting adb to see if more devices are detected.');
                 return helper();
@@ -97,30 +97,30 @@ module.exports.install = function(target, buildResults) {
     }).then(function(resolvedTarget) {
         var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
         var manifest = new AndroidManifest(path.join(__dirname, '../../AndroidManifest.xml'));
-        var pkgName = manifest.getPackage();
+        var pkgName = manifest.getPackageId();
         var launchName = pkgName + '/.' + manifest.getActivity().getName();
         console.log('Using apk: ' + apk_path);
         console.log('Uninstalling ' + pkgName + ' from device...');
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
-        return exec('adb -s ' + resolvedTarget.target + ' uninstall ' + pkgName, os.tmpdir())
+        return spawn('adb', ['-s', resolvedTarget.target, 'uninstall', pkgName], {cwd: os.tmpdir()})
         .then(function() {
             console.log('Installing app on device...');
-            var cmd = 'adb -s ' + resolvedTarget.target + ' install -r "' + apk_path + '"';
-            return exec(cmd, os.tmpdir());
+            var args = ['-s', resolvedTarget.target, 'install', '-r', apk_path];
+            return spawn('adb', args, {cwd: os.tmpdir()});
         })
         .then(function(output) {
             if (output.match(/Failure/)) return Q.reject('ERROR: Failed to install apk to device: ' + output);
 
             //unlock screen
-            var cmd = 'adb -s ' + resolvedTarget.target + ' shell input keyevent 82';
-            return exec(cmd, os.tmpdir());
+            var args = ['-s', resolvedTarget.target, 'shell', 'input', 'keyevent', '82'];
+            return spawn('adb', args, {cwd: os.tmpdir()});
         }, function(err) { return Q.reject('ERROR: Failed to install apk to device: ' + err); })
         .then(function() {
             // launch the application
             console.log('Launching application...');
-            var cmd = 'adb -s ' + resolvedTarget.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
-            return exec(cmd, os.tmpdir());
+            var args = ['-s', resolvedTarget.target, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.MAIN', '-n', launchName];
+            return spawn('adb', args, {cwd: os.tmpdir()});
         }).then(function() {
             console.log('LAUNCH SUCCESS');
         }, function(err) {

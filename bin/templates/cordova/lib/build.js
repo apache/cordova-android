@@ -26,7 +26,7 @@ var Q       = require('q'),
     nopt = require('nopt');
 
 var builders = require('./builders/builders');
-var exec  = require('./exec');
+var spawn = require('cordova-common').superspawn.spawn;
 
 function parseOpts(options, resolvedTarget) {
     options = options || {};
@@ -171,12 +171,9 @@ module.exports.prepBuildFiles = function() {
  */
 module.exports.detectArchitecture = function(target) {
     function helper() {
-        return exec('adb -s ' + target + ' shell cat /proc/cpuinfo', os.tmpdir())
+        return spawn('adb', ['-s',target,'shell','cat','/proc/cpuinfo'], {cwd: os.tmpdir()})
         .then(function(output) {
-            if (/intel/i.exec(output)) {
-                return 'x86';
-            }
-            return 'arm';
+            return /intel/i.exec(output) ? 'x86' : 'arm';
         });
     }
     // It sometimes happens (at least on OS X), that this command will hang forever.
@@ -187,14 +184,14 @@ module.exports.detectArchitecture = function(target) {
             // adb kill-server doesn't seem to do the trick.
             // Could probably find a x-platform version of killall, but I'm not actually
             // sure that this scenario even happens on non-OSX machines.
-            return exec('killall adb')
+            return spawn('killall', ['adb'])
             .then(function() {
                 console.log('adb seems hung. retrying.');
                 return helper()
                 .then(null, function() {
                     // The double kill is sadly often necessary, at least on mac.
                     console.log('Now device not found... restarting adb again.');
-                    return exec('killall adb')
+                    return spawn('killall', ['adb'])
                     .then(function() {
                         return helper()
                         .then(null, function() {

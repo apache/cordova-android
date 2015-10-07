@@ -21,12 +21,12 @@
 
 /* jshint sub:true */
 
-var exec       = require('./exec');
 var retry      = require('./retry');
 var build      = require('./build');
 var check_reqs = require('./check_reqs');
 var path = require('path');
 var AndroidManifest = require('./AndroidManifest');
+var spawn = require('cordova-common').superspawn.spawn;
 
 var Q             = require('q');
 var os            = require('os');
@@ -50,7 +50,7 @@ var EXEC_KILL_SIGNAL        = 'SIGKILL';
    }
  */
 module.exports.list_images = function() {
-    return exec('android list avds')
+    return spawn('android', ['list', 'avds'])
     .then(function(output) {
         var response = output.split('\n');
         var emulator_list = [];
@@ -117,7 +117,7 @@ module.exports.best_image = function() {
 
 // Returns a promise.
 module.exports.list_started = function() {
-    return exec('adb devices', os.tmpdir())
+    return spawn('adb', ['devices'], {cwd: os.tmpdir()})
     .then(function(output) {
         var response = output.split('\n');
         var started_emulator_list = [];
@@ -132,7 +132,7 @@ module.exports.list_started = function() {
 
 // Returns a promise.
 module.exports.list_targets = function() {
-    return exec('android list targets', os.tmpdir())
+    return spawn('android', ['list', 'targets'], {cwd: os.tmpdir()})
     .then(function(output) {
         var target_out = output.split('\n');
         var targets = [];
@@ -202,7 +202,7 @@ module.exports.start = function(emulator_ID) {
         console.log('BOOT COMPLETE');
 
         //unlock screen
-        return exec('adb -s ' + emulator_id + ' shell input keyevent 82', os.tmpdir());
+        return spawn('adb', ['-s', emulator_id, 'shell', 'input', 'keyevent', '82'], {cwd: os.tmpdir()});
     }).then(function() {
         //return the new emulator id for the started emulators
         return emulator_id;
@@ -221,7 +221,7 @@ module.exports.wait_for_emulator = function(uuid) {
         var promises = [];
 
         new_started.forEach(function (emulator) {
-            promises.push(exec('adb -s ' + emulator + ' shell getprop emu.uuid', os.tmpdir())
+            promises.push(spawn('adb', ['-s', emulator, 'shell', 'getprop', 'emu.uuid'], {cwd: os.tmpdir()})
                 .then(function (output) {
                     if (output.indexOf(uuid) >= 0) {
                         emulator_id = emulator;
@@ -241,7 +241,7 @@ module.exports.wait_for_emulator = function(uuid) {
  */
 module.exports.wait_for_boot = function(emulator_id) {
     var self = this;
-    return exec('adb -s ' + emulator_id + ' shell ps', os.tmpdir())
+    return spawn('adb', ['-s', emulator_id, 'shell', 'ps'], {cwd: os.tmpdir()})
     .then(function(output) {
         if (output.match(/android\.process\.acore/)) {
             return;
@@ -262,7 +262,7 @@ module.exports.wait_for_boot = function(emulator_id) {
 module.exports.create_image = function(name, target) {
     console.log('Creating avd named ' + name);
     if (target) {
-        return exec('android create avd --name ' + name + ' --target ' + target)
+        return spawn('android', ['create', 'avd', '--name', name, '--target', target])
         .then(null, function(error) {
             console.error('ERROR : Failed to create emulator image : ');
             console.error(' Do you have the latest android targets including ' + target + '?');
@@ -270,7 +270,7 @@ module.exports.create_image = function(name, target) {
         });
     } else {
         console.log('WARNING : Project target not found, creating avd with a different target but the project may fail to install.');
-        return exec('android create avd --name ' + name + ' --target ' + this.list_targets()[0])
+        return spawn('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]])
         .then(function() {
             // TODO: This seems like another error case, even though it always happens.
             console.error('ERROR : Unable to create an avd emulator, no targets found.');
@@ -313,7 +313,7 @@ module.exports.install = function(givenTarget, buildResults) {
 
     var target;
     var manifest = new AndroidManifest(path.join(__dirname, '../../AndroidManifest.xml'));
-    var pkgName = manifest.getPackage();
+    var pkgName = manifest.getPackageId();
 
     // resolve the target emulator
     return Q().then(function () {
@@ -332,11 +332,12 @@ module.exports.install = function(givenTarget, buildResults) {
         console.log('Uninstalling ' + pkgName + ' from emulator...');
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
-        return exec('adb -s ' + target.target + ' uninstall ' + pkgName, os.tmpdir())
+        return spawn('adb', ['-s', target.target, 'uninstall', pkgName], {cwd: os.tmpdir()})
         .then(function() {
 
             var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
             var execOptions = {
+                cwd: os.tmpdir(),
                 timeout:    INSTALL_COMMAND_TIMEOUT, // in milliseconds
                 killSignal: EXEC_KILL_SIGNAL
             };
@@ -344,9 +345,18 @@ module.exports.install = function(givenTarget, buildResults) {
             console.log('Installing app on emulator...');
             console.log('Using apk: ' + apk_path);
 
+            function exec(command, opts) {
+                return Q.promise(function (resolve, reject) {
+                    child_process.exec(command, opts, function(err, stdout, stderr) {
+                        if (err) reject('Error executing "' + command + '": ' + stderr);
+                        else resolve(stdout);
+                    });
+                });
+            }
+
             var retriedInstall = retry.retryPromise(
                 NUM_INSTALL_RETRIES,
-                exec, 'adb -s ' + target.target + ' install -r "' + apk_path + '"', os.tmpdir(), execOptions
+                exec, 'adb -s ' + target.target + ' install -r "' + apk_path + '"', execOptions
             );
 
             return retriedInstall.then(function (output) {
@@ -363,15 +373,15 @@ module.exports.install = function(givenTarget, buildResults) {
     }).then(function () {
 
         console.log('Unlocking screen...');
-        return exec('adb -s ' + target.target + ' shell input keyevent 82', os.tmpdir());
+        return spawn('adb', ['-s', target.target, 'shell', 'input', 'keyevent', '82'], os.tmpdir());
 
     // launch the application
     }).then(function () {
 
         console.log('Launching application...');
         var launchName = pkgName + '/.' + manifest.getActivity().getName();
-        var cmd = 'adb -s ' + target.target + ' shell am start -W -a android.intent.action.MAIN -n ' + launchName;
-        return exec(cmd, os.tmpdir());
+        var args = ['-s', target.target, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.MAIN', '-n', launchName];
+        return spawn('adb', args, os.tmpdir());
 
     // report success or failure
     }).then(function (output) {

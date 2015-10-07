@@ -22,7 +22,7 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 var shell = require('shelljs');
-var spawn = require('../spawn');
+var spawn = require('cordova-common').superspawn.spawn;
 var check_reqs = require('../check_reqs');
 
 var ROOT = path.resolve(__dirname, '../../..');
@@ -104,8 +104,7 @@ AntBuilder.prototype.build = function(opts) {
     var args = this.getArgs(opts.buildType == 'debug' ? 'debug' : 'release', opts);
     return check_reqs.check_ant()
     .then(function() {
-        self.events.emit('verbose', 'Executing: ant ' + args.join(' '));
-        return spawn('ant', args);
+        return spawn('ant', args, {stdio: 'inherit'});
     });
 };
 
@@ -114,7 +113,7 @@ AntBuilder.prototype.clean = function(opts) {
     var self = this;
     return check_reqs.check_ant()
     .then(function() {
-        return spawn('ant', args);
+        return spawn('ant', args, {stdio: 'inherit'});
     })
     .then(function () {
         shell.rm('-rf', path.join(self.root, 'out'));
