@@ -737,7 +737,8 @@ PlatformApiPoly.prototype.handleSplashes = function() {
         this.deleteDefaultResource('screen.png');
         this.events.emit('verbose', 'splash screens: ' + JSON.stringify(resources));
 
-        var projectRoot = util.isCordova(this.path);
+        // TODO: get rid of referencing cordova utils
+        var projectRoot/* = util.isCordova(this.path)*/;
 
         var hadMdpi = false;
         resources.forEach(function (resource) {
@@ -811,7 +812,8 @@ PlatformApiPoly.prototype.handleIcons = function() {
             parseIcon(icon, size);
         }
     }
-    var projectRoot = util.isCordova(this.path);
+    // TODO: get rid of referencing cordova utils
+    var projectRoot/* = util.isCordova(this.path)*/;
     for (var density in android_icons) {
         this.copyImage(path.join(projectRoot, android_icons[density].src), density, 'icon.png');
     }
