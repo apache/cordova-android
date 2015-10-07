@@ -127,7 +127,7 @@ function copyScripts(projectPath) {
     shell.rm('-rf', destScriptsDir);
     // Copy in the new ones.
     shell.cp('-r', srcScriptsDir, projectPath);
-    shell.cp('-r', path.join(ROOT, 'bin', 'node_modules'), destScriptsDir);
+    shell.cp('-r', path.join(ROOT, 'node_modules'), destScriptsDir);
     shell.cp(path.join(ROOT, 'bin', 'check_reqs*'), destScriptsDir);
     shell.cp(path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), path.join(projectPath, 'cordova', 'lib', 'check_reqs.js'));
     shell.cp(path.join(ROOT, 'bin', 'android_sdk_version'), path.join(destScriptsDir, 'android_sdk_version'));
@@ -201,8 +201,8 @@ exports.createProject = function(project_path, package_name, project_name, activ
     project_path = path.relative(process.cwd(), project_path);
     package_name = typeof package_name !== 'undefined' ? package_name : 'my.cordova.project';
     project_name = typeof project_name !== 'undefined' ? project_name : 'CordovaExample';
-    project_template_dir = typeof project_template_dir !== 'undefined' ? 
-                           project_template_dir : 
+    project_template_dir = typeof project_template_dir !== 'undefined' ?
+                           project_template_dir :
                            path.join(ROOT, 'bin', 'templates', 'project');
 
     var package_as_path = package_name.replace(/\./g, path.sep);
@@ -294,7 +294,7 @@ function extractProjectNameFromManifest(projectPath) {
 function updateMinSDKInManifest(projectPath) {
     var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
     var manifestData = fs.readFileSync(manifestPath, 'utf8');
-    var minSDKVersion = 14; 
+    var minSDKVersion = 14;
 
     //grab minSdkVersion from Android.
     var m = /android:minSdkVersion\s*=\s*"(.*?)"/i.exec(manifestData);
