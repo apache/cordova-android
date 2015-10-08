@@ -21,7 +21,9 @@
 
 var build = require('./lib/build'),
     reqs  = require('./lib/check_reqs'),
-    args  = process.argv;
+    args  = process.argv,
+    fs = require('fs'),
+    path = require('path');
 
 // Support basic help commands
 if(args[2] == '--help' ||
@@ -32,9 +34,25 @@ if(args[2] == '--help' ||
    args[2] == '/help') {
     build.help();
 } else {
+    try{
+      fs.renameSync(path.join(__dirname+"/../local.properties"),path.join(__dirname+"/../.local.properties"));
+    }catch(err){
+      //DO NOTHING file does not exist.
+    }
     reqs.run().done(function() {
-        return build.run(args.slice(2));
+       return build.run(args.slice(2)).then(function(data){
+          try{
+            fs.renameSync(path.join(__dirname+"/../.local.properties"),path.join(__dirname+"/../local.properties"));  
+          }catch(err){
+            //DO NOTHING file does not exist.
+          }
+        });
     }, function(err) {
+        try{
+          fs.renameSync(path.join(__dirname+"/../.local.properties"),path.join(__dirname+"/../local.properties"));  
+        }catch(err){
+          //DO NOTHING file does not exist.
+        }
         console.error(err);
         process.exit(2);
     });
