@@ -21,7 +21,9 @@
 
 var build = require('./lib/build'),
     reqs  = require('./lib/check_reqs'),
-    args  = process.argv;
+    args  = process.argv,
+    fs = require('fs'),
+    path = require('path');
 
 // Support basic help commands
 if(args[2] == '--help' ||
@@ -32,9 +34,13 @@ if(args[2] == '--help' ||
    args[2] == '/help') {
     build.help();
 } else {
+    fs.renameSync(path.join(__dirname+"/../local.properties"),path.join(__dirname+"/../.local.properties"));
     reqs.run().done(function() {
-        return build.run(args.slice(2));
+        return build.run(args.slice(2)).then(function(){
+          fs.renameSync(path.join(__dirname+"/../.local.properties"),path.join(__dirname+"/../local.properties"));  
+        });
     }, function(err) {
+        fs.renameSync(path.join(__dirname+"/../.local.properties"),path.join(__dirname+"/../local.properties"));
         console.error(err);
         process.exit(2);
     });
