@@ -26,7 +26,6 @@ var shelljs = require('shelljs'),
     Q     = require('q'),
     path  = require('path'),
     fs    = require('fs'),
-    which = require('which'),
     ROOT  = path.join(__dirname, '..', '..');
 
 var isWindows = process.platform == 'win32';
@@ -34,7 +33,7 @@ var isWindows = process.platform == 'win32';
 function forgivingWhichSync(cmd) {
     try {
         // TODO: Should use shelljs.which() here to have one less dependency.
-        return fs.realpathSync(which.sync(cmd));
+        return fs.realpathSync(shelljs.which(cmd));
     } catch (e) {
         return '';
     }

@@ -23,13 +23,12 @@
     "author": "Apache Software Foundation",
     "license": "Apache version 2.0",
     "dependencies": {
-        "cordova-common": "0.1.0",
+        "cordova-common": "^0.1.0",
         "elementtree": "^0.1.6",
         "nopt": "^3.0.1",
         "properties-parser": "^0.3.0",
-        "q": "^0.9.0",
-        "shelljs": "^0.2.6",
-        "which": "^1.0.5"
+        "q": "^1.4.1",
+        "shelljs": "^0.5.3"
     },
     "bundledDependencies": [
         "cordova-common",
@@ -37,8 +36,7 @@
         "nopt",
         "properties-parser",
         "q",
-        "shelljs",
-        "which"
+        "shelljs"
     ],
     "devDependencies": {
         "jasmine-node": "^1.14.5",
