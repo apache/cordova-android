@@ -19,7 +19,7 @@
        under the License.
 */
 var path   = require('path');
-var create = require('./lib/create');
+var Api = require('./templates/cordova/Api');
 var args  = require('./lib/simpleargs').getArgs(process.argv);
 
 if (args['--help'] || args._.length === 0) {
@@ -27,5 +27,5 @@ if (args['--help'] || args._.length === 0) {
     console.log('    --link will use the CordovaLib project directly instead of making a copy.');
     process.exit(1);
 }
-create.updateProject(args._[0], args['--link'] || args['--shared']).done();
 
+Api.updatePlatform(args._[0], {link: (args['--link'] || args['--shared'])}).done();

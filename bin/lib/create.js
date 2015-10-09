@@ -26,6 +26,11 @@ var shell = require('shelljs'),
     check_reqs = require('./check_reqs'),
     ROOT    = path.join(__dirname, '..', '..');
 
+var MIN_SDK_VERSION = 14;
+
+var CordovaError = require('cordova-common').CordovaError;
+var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
+
 function setShellFatal(value, func) {
     var oldVal = shell.config.fatal;
     shell.config.fatal = value;
@@ -89,6 +94,7 @@ function writeProjectProperties(projectPath, target_api) {
     var dstPath = path.join(projectPath, 'project.properties');
     var templatePath = path.join(ROOT, 'bin', 'templates', 'project', 'project.properties');
     var srcPath = fs.existsSync(dstPath) ? dstPath : templatePath;
+
     var data = fs.readFileSync(srcPath, 'utf8');
     data = data.replace(/^target=.*/m, 'target=' + target_api);
     var subProjects = extractSubProjectPaths(data);
@@ -143,13 +149,14 @@ function validatePackageName(package_name) {
     //Make the package conform to Java package types
     //http://developer.android.com/guide/topics/manifest/manifest-element.html#package
     //Enforce underscore limitation
+    var msg = 'Error validating package name. ';
     if (!/^[a-zA-Z][a-zA-Z0-9_]+(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(package_name)) {
-        return Q.reject('Package name must look like: com.company.Name');
+        return Q.reject(new CordovaError(msg + 'Package name must look like: com.company.Name'));
     }
 
     //Class is a reserved word
     if(/\b[Cc]lass\b/.test(package_name)) {
-        return Q.reject('class is a reserved word');
+        return Q.reject(new CordovaError(msg + '"class" is a reserved word'));
     }
 
     return Q.resolve();
@@ -161,61 +168,60 @@ function validatePackageName(package_name) {
  * otherwise.
  */
 function validateProjectName(project_name) {
+    var msg = 'Error validating project name. ';
     //Make sure there's something there
     if (project_name === '') {
-        return Q.reject('Project name cannot be empty');
+        return Q.reject(new CordovaError(msg + 'Project name cannot be empty'));
     }
 
     //Enforce stupid name error
     if (project_name === 'CordovaActivity') {
-        return Q.reject('Project name cannot be CordovaActivity');
+        return Q.reject(new CordovaError(msg + 'Project name cannot be CordovaActivity'));
     }
 
     //Classes in Java don't begin with numbers
     if (/^[0-9]/.test(project_name)) {
-        return Q.reject('Project name must not begin with a number');
+        return Q.reject(new CordovaError(msg + 'Project name must not begin with a number'));
     }
 
     return Q.resolve();
 }
 
 /**
- * $ create [options]
- *
  * Creates an android application with the given options.
  *
- * Options:
+ * @param   {String}  project_path  Path to the new Cordova android project.
+ * @param   {ConfigParser}  config  Instance of ConfigParser to retrieve basic
+ *   project properties.
+ * @param   {Object}  [options={}]  Various options
+ * @param   {String}  [options.activityName='MainActivity']  Name for the
+ *   activity
+ * @param   {Boolean}  [options.link=false]  Specifies whether javascript files
+ *   and CordovaLib framework will be symlinked to created application.
+ * @param   {String}  [options.customTemplate]  Path to project template
+ *   (override)
+ * @param   {EventEmitter}  [events]  An EventEmitter instance for logging
+ *   events
  *
- *   - `project_path` 	{String} Path to the new Cordova android project.
- *   - `package_name`{String} Package name, following reverse-domain style convention.
- *   - `project_name` 	{String} Project name.
- *   - `activity_name` {String} Name for the activity
- *   - 'project_template_dir' {String} Path to project template (override).
- *
- * Returns a promise.
+ * @return  {Promise<String>}  Directory where application has been created
  */
+exports.create = function(project_path, config, options, events) {
 
-exports.createProject = function(project_path, package_name, project_name, activity_name, project_template_dir, use_shared_project, use_cli_template) {
+    options = options || {};
+
     // Set default values for path, package and name
-    project_path = typeof project_path !== 'undefined' ? project_path : 'CordovaExample';
-    project_path = path.relative(process.cwd(), project_path);
-    package_name = typeof package_name !== 'undefined' ? package_name : 'my.cordova.project';
-    project_name = typeof project_name !== 'undefined' ? project_name : 'CordovaExample';
-    project_template_dir = typeof project_template_dir !== 'undefined' ?
-                           project_template_dir :
-                           path.join(ROOT, 'bin', 'templates', 'project');
-
-    var package_as_path = package_name.replace(/\./g, path.sep);
-    var activity_dir    = path.join(project_path, 'src', package_as_path);
-    var safe_activity_name = typeof activity_name !== 'undefined' ? activity_name : 'MainActivity';
-    var activity_path   = path.join(activity_dir, safe_activity_name + '.java');
-    var target_api      = check_reqs.get_target();
-    var manifest_path   = path.join(project_path, 'AndroidManifest.xml');
-
+    project_path = path.relative(process.cwd(), (project_path || 'CordovaExample'));
     // Check if project already exists
     if(fs.existsSync(project_path)) {
-        return Q.reject('Project already exists! Delete and recreate');
+        return Q.reject(new CordovaError('Project already exists! Delete and recreate'));
     }
+
+    var package_name = config.packageName() || 'my.cordova.project';
+    var project_name = config.name() ?
+        config.name().replace(/[^\w.]/g,'_') : 'CordovaExample';
+
+    var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
+    var target_api      = check_reqs.get_target();
 
     //Make the package conform to Java package types
     return validatePackageName(package_name)
@@ -223,16 +229,17 @@ exports.createProject = function(project_path, package_name, project_name, activ
         validateProjectName(project_name);
     }).then(function() {
         // Log the given values for the project
-        console.log('Creating Cordova project for the Android platform:');
-        console.log('\tPath: ' + project_path);
-        console.log('\tPackage: ' + package_name);
-        console.log('\tName: ' + project_name);
-        console.log('\tActivity: ' + safe_activity_name);
-        console.log('\tAndroid target: ' + target_api);
+        events.emit('log', 'Creating Cordova project for the Android platform:');
+        events.emit('log', '\tPath: ' + project_path);
+        events.emit('log', '\tPackage: ' + package_name);
+        events.emit('log', '\tName: ' + project_name);
+        events.emit('log', '\tActivity: ' + safe_activity_name);
+        events.emit('log', '\tAndroid target: ' + target_api);
 
-        console.log('Copying template files...');
+        events.emit('verbose', 'Copying template files...');
 
         setShellFatal(true, function() {
+            var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
             // copy project template
             shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
@@ -242,27 +249,34 @@ exports.createProject = function(project_path, package_name, project_name, activ
             shell.mkdir(path.join(project_path, 'libs'));
 
             // copy cordova.js, cordova.jar
-            copyJsAndLibrary(project_path, use_shared_project, safe_activity_name);
+            copyJsAndLibrary(project_path, options.link, safe_activity_name);
 
             // interpolate the activity name and package
+            var packagePath = package_name.replace(/\./g, path.sep);
+            var activity_dir = path.join(project_path, 'src', packagePath);
+            var activity_path = path.join(activity_dir, safe_activity_name + '.java');
             shell.mkdir('-p', activity_dir);
             shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
             shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
             shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
             shell.sed('-i', /__ID__/, package_name, activity_path);
 
-            shell.cp('-f', path.join(project_template_dir, 'AndroidManifest.xml'), manifest_path);
-            shell.sed('-i', /__ACTIVITY__/, safe_activity_name, manifest_path);
-            shell.sed('-i', /__PACKAGE__/, package_name, manifest_path);
-            shell.sed('-i', /__APILEVEL__/, target_api.split('-')[1], manifest_path);
+            var manifest = new AndroidManifest(path.join(project_template_dir, 'AndroidManifest.xml'));
+            manifest.setPackageId(package_name)
+                .setTargetSdkVersion(target_api.split('-')[1])
+                .getActivity().setName(safe_activity_name);
+
+            var manifest_path = path.join(project_path, 'AndroidManifest.xml');
+            manifest.write(manifest_path);
+
             copyScripts(project_path);
             copyBuildRules(project_path);
         });
         // Link it to local android install.
         writeProjectProperties(project_path, target_api);
         prepBuildFiles(project_path);
-        console.log(generateDoneMessage('create', use_shared_project));
-    });
+        events.emit('log', generateDoneMessage('create', options.link));
+    }).thenResolve(project_path);
 };
 
 function generateDoneMessage(type, link) {
@@ -274,55 +288,32 @@ function generateDoneMessage(type, link) {
     return msg;
 }
 
-// Attribute removed in Cordova 4.4 (CB-5447).
-function removeDebuggableFromManifest(projectPath) {
-    var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
-    shell.sed('-i', /\s*android:debuggable="true"/, '', manifestPath);
-}
-
-function extractProjectNameFromManifest(projectPath) {
-    var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
-    var manifestData = fs.readFileSync(manifestPath, 'utf8');
-    var m = /<activity[\s\S]*?android:name\s*=\s*"(.*?)"/i.exec(manifestData);
-    if (!m) {
-      throw new Error('Could not find activity name in ' + manifestPath);
-    }
-    return m[1];
-}
-
-// Cordova-android updates sometimes drop support for older versions. Need to update minSDK in existing projects.
-function updateMinSDKInManifest(projectPath) {
-    var manifestPath = path.join(projectPath, 'AndroidManifest.xml');
-    var manifestData = fs.readFileSync(manifestPath, 'utf8');
-    var minSDKVersion = 14;
-
-    //grab minSdkVersion from Android.
-    var m = /android:minSdkVersion\s*=\s*"(.*?)"/i.exec(manifestData);
-    if (!m) {
-      throw new Error('Could not find minSDKVersion in ' + manifestPath);
-    }
-    //if minSDKVersion in Android.manifest is less than our current min, replace it
-    if(Number(m[1]) < minSDKVersion) {
-        console.log('Updating minSdkVersion from ' + m[1] + ' to ' + minSDKVersion + ' in AndroidManifest.xml');
-        shell.sed('-i', /android:minSdkVersion\s*=\s*"(.*?)"/, 'android:minSdkVersion="'+minSDKVersion+'"', manifestPath);
-    }
-}
-
 // Returns a promise.
-exports.updateProject = function(projectPath, shared) {
+exports.update = function(projectPath, options, events) {
+    options = options || {};
+
     return Q()
     .then(function() {
-        var projectName = extractProjectNameFromManifest(projectPath);
+
+        var manifest = new AndroidManifest(path.join(projectPath, 'AndroidManifest.xml'));
+
+        if (Number(manifest.getMinSDKVersion()) < MIN_SDK_VERSION) {
+            events.emit('verbose', 'Updating minSdkVersion to ' + MIN_SDK_VERSION + ' in AndroidManifest.xml');
+            manifest.setMinSDKVersion(MIN_SDK_VERSION);
+        }
+
+        manifest.setDebuggable(false).write();
+
+        var projectName = manifest.getActivity().getName();
         var target_api = check_reqs.get_target();
-        updateMinSDKInManifest(projectPath);
-        copyJsAndLibrary(projectPath, shared, projectName);
+
+        copyJsAndLibrary(projectPath, options.link, projectName);
         copyScripts(projectPath);
         copyBuildRules(projectPath);
-        removeDebuggableFromManifest(projectPath);
         writeProjectProperties(projectPath, target_api);
         prepBuildFiles(projectPath);
-        console.log(generateDoneMessage('update', shared));
-    });
+        events.emit('log', generateDoneMessage('update', options.link));
+    }).thenResolve(projectPath);
 };
 
 

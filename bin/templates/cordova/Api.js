@@ -32,6 +32,21 @@ var AndroidManifest = require('./lib/AndroidManifest');
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
+var GENERIC_EVENTS = new (require('events').EventEmitter)()
+    .on('verbose', function (message) {
+        if (process.argv.indexOf('-d') >= 0 || process.argv.indexOf('--verbose') >= 0)
+            console.log(message);
+    })
+    .on('log', console.log)
+    .on('warn', console.warn)
+    .on('error', function (error) {
+        if (process.argv.indexOf('-d') >= 0 || process.argv.indexOf('--verbose') >= 0) {
+            console.error((error && error.message) || error);
+        } else {
+            console.error((error && error.stack) || error);
+        }
+    });
+
 /**
  * Class, that acts as abstraction over particular platform. Encapsulates the
  *   platform's properties and methods.
@@ -46,8 +61,8 @@ var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 function PlatformApiPoly(platform, platformRootDir, events) {
     this.platform = 'android';
     this.root = path.resolve(__dirname, '..');
-    this.events = events || require('cordova-common').events;
-    // TODO: trick to share one EventEmitter instance across all js code
+    this.events = events || GENERIC_EVENTS;
+    // NOTE: trick to share one EventEmitter instance across all js code
     require('cordova-common').events = this.events;
 
     // var ParserConstructor = require(knownPlatforms[platform].parser_file);
@@ -90,24 +105,17 @@ function PlatformApiPoly(platform, platformRootDir, events) {
  * @return {Promise<PlatformApi>} Promise either fulfilled with PlatformApi
  *   instance or rejected with CordovaError.
  */
-// PlatformApiPoly.createPlatform = function (cordovaProject, options) {
-//     if (!options || !options.platformDetails)
-//         return Q.reject(CordovaError('Failed to find platform\'s \'create\' script. ' +
-//             'Either \'options\' parameter or \'platformDetails\' option is missing'));
-
-//     var command = path.join(options.platformDetails.libDir, 'bin', 'create');
-//     var commandArguments = getCreateArgs(cordovaProject, options);
-
-//     return superspawn.spawn(command, commandArguments,
-//         { printCommand: true, stdio: 'inherit', chmod: true })
-//     .then(function () {
-//         var destination = path.join(cordovaProject.locations.platforms, options.platformDetails.platform);
-//         var platformApi = knownPlatforms
-//             .getPlatformApi(options.platformDetails.platform, destination);
-//         copyCordovaSrc(options.platformDetails.libDir, platformApi.getPlatformInfo());
-//         return platformApi;
-//     });
-// };
+// TODO: update JSDoc according to changed input parameters
+PlatformApiPoly.createPlatform = function (destination, config, options, events) {
+    return require('../../lib/create')
+    .create(destination, config, options, events || GENERIC_EVENTS)
+    .then(function (destination) {
+        // TODO: uncomment this
+        // copyCordovaSrc(options.platformDetails.libDir, platformApi.getPlatformInfo());
+        var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
+        return new PlatformApi('android', destination, events);
+    });
+};
 
 /**
  * Updates already installed platform.
@@ -127,23 +135,17 @@ function PlatformApiPoly(platform, platformRootDir, events) {
  * @return {Promise<PlatformApi>} Promise either fulfilled with PlatformApi
  *   instance or rejected with CordovaError.
  */
-// PlatformApiPoly.updatePlatform = function (cordovaProject, options) {
-//     if (!options || !options.platformDetails)
-//         return Q.reject(CordovaError('Failed to find platform\'s \'create\' script. ' +
-//             'Either \'options\' parameter or \'platformDetails\' option is missing'));
-
-//     var command = path.join(options.platformDetails.libDir, 'bin', 'update');
-//     var destination = path.join(cordovaProject.locations.platforms, options.platformDetails.platform);
-
-//     return superspawn.spawn(command, [destination],
-//         { printCommand: true, stdio: 'inherit', chmod: true })
-//     .then(function () {
-//         var platformApi = knownPlatforms
-//             .getPlatformApi(options.platformDetails.platform, destination);
-//         copyCordovaSrc(options.platformDetails.libDir, platformApi.getPlatformInfo());
-//         return platformApi;
-//     });
-// };
+// TODO: update JSDoc according to changed input parameters
+PlatformApiPoly.updatePlatform = function (destination, options, events) {
+    return require('../../lib/create')
+    .update(destination, options, events || GENERIC_EVENTS)
+    .then(function (destination) {
+        // TODO: uncomment this
+        // copyCordovaSrc(options.platformDetails.libDir, platformApi.getPlatformInfo());
+        var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
+        return new PlatformApi('android', destination, events);
+    });
+};
 
 /**
  * Gets a CordovaPlatform object, that represents the platform structure.
@@ -463,49 +465,6 @@ PlatformApiPoly.prototype.requirements = function() {
 };
 
 module.exports = PlatformApiPoly;
-
-/**
- * Converts arguments, passed to createPlatform to command-line args to
- *   'bin/create' script for specific platform.
- *
- * @param   {ProjectInfo}  project  A current project information. The vauest
- *   which this method interested in are project.config - config.xml abstraction
- *   - and platformsLocation - to get install destination.
- * @param   {Object}       options  Set of properties for create script.
- *
- * @return  {String[]}     An array or arguments which can be passed to
- *   'bin/create'.
- */
-// function getCreateArgs(project, options) {
-//     var platformName = options.platformDetails.platform;
-//     var platformVersion = options.platformDetails.version;
-
-//     var args = [];
-//     args.push(path.join(project.locations.platforms, platformName)); // output
-//     args.push(project.projectConfig.packageName().replace(/[^\w.]/g,'_'));
-//     // CB-6992 it is necessary to normalize characters
-//     // because node and shell scripts handles unicode symbols differently
-//     // We need to normalize the name to NFD form since iOS uses NFD unicode form
-//     args.push(platformName == 'ios' ? unorm.nfd(project.projectConfig.name()) : project.projectConfig.name());
-
-//     if (options.customTemplate) {
-//         args.push(options.customTemplate);
-//     }
-
-//     if (/android|ios/.exec(platformName) &&
-//         semver.gt(platformVersion, '3.3.0')) args.push('--cli');
-
-//     if (options.link) args.push('--link');
-
-//     if (platformName === 'android' && semver.gte(platformVersion, '4.0.0-dev')) {
-//         var activityName = project.projectConfig.android_activityName();
-//         if (activityName) {
-//             args.push('--activity-name', activityName.replace(/\W/g, ''));
-//         }
-//     }
-
-//     return args;
-// }
 
 /**
  * Removes the specified modules from list of installed modules and updates

@@ -22,7 +22,6 @@ var et = require('elementtree');
 var xml= require('cordova-common').xmlHelpers;
 var CordovaError = require('cordova-common').CordovaError;
 
-
 /** Wraps an AndroidManifest file */
 function AndroidManifest(path) {
     this.path = path;
@@ -130,8 +129,15 @@ AndroidManifest.prototype.getActivity = function() {
     };
 });
 
-AndroidManifest.prototype.write = function() {
-    fs.writeFileSync(this.path, this.doc.write({indent: 4}), 'utf-8');
+/**
+ * Writes manifest to disk syncronously. If filename is specified, then manifest
+ *   will be written to that file
+ *
+ * @param   {String}  [destPath]  File to write manifest to. If omitted,
+ *   manifest will be written to file it has been read from.
+ */
+AndroidManifest.prototype.write = function(destPath) {
+    fs.writeFileSync(destPath || this.path, this.doc.write({indent: 4}), 'utf-8');
 };
 
 module.exports = AndroidManifest;
