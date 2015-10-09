@@ -22,7 +22,6 @@
 var Q       = require('q'),
     path    = require('path'),
     fs      = require('fs'),
-    os      = require('os'),
     nopt = require('nopt');
 
 var Adb = require('./Adb');
@@ -122,7 +121,7 @@ function parseOpts(options, resolvedTarget) {
  */
 module.exports.runClean = function(options) {
     var opts = parseOpts(options);
-    var builder = builders.getBuilder(opts.buildMethod, this.events);
+    var builder = builders.getBuilder(opts.buildMethod);
     return builder.prepEnv(opts)
     .then(function() {
         return builder.clean(opts);
@@ -143,7 +142,7 @@ module.exports.runClean = function(options) {
  */
 module.exports.run = function(options, optResolvedTarget) {
     var opts = parseOpts(options, optResolvedTarget);
-    var builder = builders.getBuilder(opts.buildMethod, this.events);
+    var builder = builders.getBuilder(opts.buildMethod);
     var self = this;
     return builder.prepEnv(opts)
     .then(function() {

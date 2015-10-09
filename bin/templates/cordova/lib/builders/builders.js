@@ -31,18 +31,16 @@ var knownBuilders = {
  *
  * @param   {String}  builderType   Builder name to construct and return. Must
  *   be one of 'ant', 'gradle' or 'none'
- * @param   {EventEmitter}  [eventEmitter] An EventEmitter instance used by
- *   builder to log events. Passed directly to builder constructor.
  *
  * @return  {Builder}               A builder instance for specified build type.
  */
-module.exports.getBuilder = function (builderType, eventEmitter) {
+module.exports.getBuilder = function (builderType, projectRoot) {
     if (!knownBuilders[builderType])
         throw new CordovaError('Builder ' + builderType + ' is not supported.');
 
     try {
         var Builder = require('./' + knownBuilders[builderType]);
-        return new Builder(eventEmitter);
+        return new Builder(projectRoot);
     } catch (err) {
         throw new CordovaError('Failed to instantiate ' + knownBuilders[builderType] + ' builder: ' + err);
     }
