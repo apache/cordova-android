@@ -28,7 +28,9 @@ var Q       = require('q'),
 var Adb = require('./Adb');
 
 var builders = require('./builders/builders');
+var events = require('cordova-common').events;
 var spawn = require('cordova-common').superspawn.spawn;
+var CordovaError = require('cordova-common').CordovaError;
 
 function parseOpts(options, resolvedTarget) {
     options = options || {};
@@ -86,7 +88,7 @@ function parseOpts(options, resolvedTarget) {
         if (!fs.existsSync(buildConfig)) {
             throw new Error('Specified build config file does not exist: ' + buildConfig);
         }
-        console.log('Reading build config file: '+ path.resolve(buildConfig));
+        events.emit('log', 'Reading build config file: '+ path.resolve(buildConfig));
         var config = JSON.parse(fs.readFileSync(buildConfig, 'utf8'));
         if (config.android && config.android[ret.buildType]) {
             var androidInfo = config.android[ret.buildType];
@@ -107,7 +109,7 @@ function parseOpts(options, resolvedTarget) {
 
     if(!ret.packageInfo) {
         if(Object.keys(packageArgs).length > 0) {
-            console.warn('\'keystore\' and \'alias\' need to be specified to generate a signed archive.');
+            events.emit('warn', '\'keystore\' and \'alias\' need to be specified to generate a signed archive.');
         }
     }
 
@@ -180,7 +182,8 @@ module.exports.detectArchitecture = function(target) {
     }
     // It sometimes happens (at least on OS X), that this command will hang forever.
     // To fix it, either unplug & replug device, or restart adb server.
-    return helper().timeout(1000, 'Device communication timed out. Try unplugging & replugging the device.')
+    return helper()
+    .timeout(1000, new CordovaError('Device communication timed out. Try unplugging & replugging the device.'))
     .then(null, function(err) {
         if (/timed out/.exec('' + err)) {
             // adb kill-server doesn't seem to do the trick.
@@ -188,16 +191,16 @@ module.exports.detectArchitecture = function(target) {
             // sure that this scenario even happens on non-OSX machines.
             return spawn('killall', ['adb'])
             .then(function() {
-                console.log('adb seems hung. retrying.');
+                events.emit('verbose', 'adb seems hung. retrying.');
                 return helper()
                 .then(null, function() {
                     // The double kill is sadly often necessary, at least on mac.
-                    console.log('Now device not found... restarting adb again.');
+                    events.emit('warn', 'Now device not found... restarting adb again.');
                     return spawn('killall', ['adb'])
                     .then(function() {
                         return helper()
                         .then(null, function() {
-                            return Q.reject('USB is flakey. Try unplugging & replugging the device.');
+                            return Q.reject(new CordovaError('USB is flakey. Try unplugging & replugging the device.'));
                         });
                     });
                 });

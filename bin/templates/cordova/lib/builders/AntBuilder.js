@@ -23,6 +23,7 @@ var path = require('path');
 var util = require('util');
 var shell = require('shelljs');
 var spawn = require('cordova-common').superspawn.spawn;
+var CordovaError = require('cordova-common').CordovaError;
 var check_reqs = require('../check_reqs');
 
 var ROOT = path.resolve(__dirname, '../../..');
@@ -77,7 +78,7 @@ AntBuilder.prototype.prepEnv = function(opts) {
             writeBuildXml(path.join(ROOT, subProjects[i]));
         }
         if (propertiesObj.systemLibs.length > 0) {
-            throw new Error('Project contains at least one plugin that requires a system library. This is not supported with ANT. Please build using gradle.');
+            throw new CordovaError('Project contains at least one plugin that requires a system library. This is not supported with ANT. Please build using gradle.');
         }
 
         var propertiesFile = opts.buildType + SIGNING_PROPERTIES;

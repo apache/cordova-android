@@ -46,7 +46,9 @@ var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 function PlatformApiPoly(platform, platformRootDir, events) {
     this.platform = 'android';
     this.root = path.resolve(__dirname, '..');
-    this.events = events || new (require('events').EventEmitter)();
+    this.events = events || require('cordova-common').events;
+    // TODO: trick to share one EventEmitter instance across all js code
+    require('cordova-common').events = this.events;
 
     // var ParserConstructor = require(knownPlatforms[platform].parser_file);
     // this._parser = new ParserConstructor(this.root);

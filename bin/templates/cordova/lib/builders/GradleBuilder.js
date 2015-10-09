@@ -23,6 +23,7 @@ var util = require('util');
 var path = require('path');
 var shell = require('shelljs');
 var spawn = require('cordova-common').superspawn.spawn;
+var CordovaError = require('cordova-common').CordovaError;
 var check_reqs = require('../check_reqs');
 
 var GenericBuilder = require('./GenericBuilder');
@@ -114,7 +115,7 @@ GradleBuilder.prototype.prepBuildFiles = function() {
                 }
             }
             if (!mavenRef) {
-                throw new Error('Unsupported system library (does not work with gradle): ' + p);
+                throw new CordovaError('Unsupported system library (does not work with gradle): ' + p);
             }
         }
         depsList += '    compile "' + mavenRef + '"\n';

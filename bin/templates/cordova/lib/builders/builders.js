@@ -17,6 +17,8 @@
        under the License.
 */
 
+var CordovaError = require('cordova-common').CordovaError;
+
 var knownBuilders = {
     ant: 'AntBuilder',
     gradle: 'GradleBuilder',
@@ -36,12 +38,12 @@ var knownBuilders = {
  */
 module.exports.getBuilder = function (builderType, eventEmitter) {
     if (!knownBuilders[builderType])
-        throw new Error('Builder ' + builderType + ' is not supported.');
+        throw new CordovaError('Builder ' + builderType + ' is not supported.');
 
     try {
         var Builder = require('./' + knownBuilders[builderType]);
         return new Builder(eventEmitter);
     } catch (err) {
-        throw new Error('Failed to instantiate ' + knownBuilders[builderType] + ' builder: ' + err);
+        throw new CordovaError('Failed to instantiate ' + knownBuilders[builderType] + ' builder: ' + err);
     }
 };

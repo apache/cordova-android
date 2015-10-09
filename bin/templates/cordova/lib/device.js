@@ -20,12 +20,13 @@
 */
 
 var Q     = require('q'),
-    os    = require('os'),
     build = require('./build');
 var path = require('path');
 var Adb = require('./Adb');
 var AndroidManifest = require('./AndroidManifest');
 var spawn = require('cordova-common').superspawn.spawn;
+var CordovaError = require('cordova-common').CordovaError;
+var events = require('cordova-common').events;
 
 /**
  * Returns a promise for the list of the device ID's found
@@ -40,7 +41,7 @@ module.exports.list = function(lookHarder) {
             // sure that this scenario even happens on non-OSX machines.
             return spawn('killall', ['adb'])
             .then(function() {
-                console.log('Restarting adb to see if more devices are detected.');
+                events.emit('verbose', 'Restarting adb to see if more devices are detected.');
                 return Adb.devices();
             }, function() {
                 // For non-killall OS's.
@@ -55,7 +56,7 @@ module.exports.resolveTarget = function(target) {
     return this.list(true)
     .then(function(device_list) {
         if (!device_list || !device_list.length) {
-            return Q.reject('ERROR: Failed to deploy to device, no devices found.');
+            return Q.reject(new CordovaError('Failed to deploy to device, no devices found.'));
         }
         // default device
         target = target || device_list[0];
@@ -87,7 +88,7 @@ module.exports.install = function(target, buildResults) {
         var manifest = new AndroidManifest(path.join(__dirname, '../../AndroidManifest.xml'));
         var pkgName = manifest.getPackageId();
         var launchName = pkgName + '/.' + manifest.getActivity().getName();
-        console.log('Using apk: ' + apk_path);
+        events.emit('log', 'Using apk: ' + apk_path);
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
         return Adb.uninstall(resolvedTarget.target, pkgName)
@@ -99,7 +100,7 @@ module.exports.install = function(target, buildResults) {
         }).then(function() {
             return Adb.start(resolvedTarget.target, launchName);
         }).then(function() {
-            console.log('LAUNCH SUCCESS');
+            events.emit('log', 'LAUNCH SUCCESS');
         });
     });
 };
