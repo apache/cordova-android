@@ -32,6 +32,7 @@ var AndroidManifest = require('./lib/AndroidManifest');
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
+var PLATFORM = 'android';
 var GENERIC_EVENTS = new (require('events').EventEmitter)()
     .on('verbose', function (message) {
         if (process.argv.indexOf('-d') >= 0 || process.argv.indexOf('--verbose') >= 0)
@@ -59,14 +60,12 @@ var GENERIC_EVENTS = new (require('events').EventEmitter)()
  * * platform: String that defines a platform name.
  */
 function PlatformApiPoly(platform, platformRootDir, events) {
-    this.platform = 'android';
+    this.platform = PLATFORM;
     this.root = path.resolve(__dirname, '..');
     this.events = events || GENERIC_EVENTS;
     // NOTE: trick to share one EventEmitter instance across all js code
     require('cordova-common').events = this.events;
 
-    // var ParserConstructor = require(knownPlatforms[platform].parser_file);
-    // this._parser = new ParserConstructor(this.root);
     this._handler = require('./lib/android_plugin_handler');
 
     this._platformJson = PlatformJson.load(this.root, platform);
@@ -110,10 +109,8 @@ PlatformApiPoly.createPlatform = function (destination, config, options, events)
     return require('../../lib/create')
     .create(destination, config, options, events || GENERIC_EVENTS)
     .then(function (destination) {
-        // TODO: uncomment this
-        // copyCordovaSrc(options.platformDetails.libDir, platformApi.getPlatformInfo());
         var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
-        return new PlatformApi('android', destination, events);
+        return new PlatformApi(PLATFORM, destination, events);
     });
 };
 
@@ -140,8 +137,6 @@ PlatformApiPoly.updatePlatform = function (destination, options, events) {
     return require('../../lib/create')
     .update(destination, options, events || GENERIC_EVENTS)
     .then(function (destination) {
-        // TODO: uncomment this
-        // copyCordovaSrc(options.platformDetails.libDir, platformApi.getPlatformInfo());
         var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
         return new PlatformApi('android', destination, events);
     });
@@ -195,12 +190,11 @@ PlatformApiPoly.prototype.prepare = function (cordovaProject) {
     this._config.write();
 
     // Update own www dir with project's www assets and plugins' assets and js-files
-    this._updateWww(cordovaProject.locations.www);
+    this._updateWww(cordovaProject);
 
     // update project according to config.xml changes.
     try {
         this._updateProject();
-        this._updateOverrides();
         this.events.emit('verbose', 'updated project successfully');
         return Q();
     } catch (err) {
@@ -337,19 +331,6 @@ PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
         shell.rm('-rf', path.resolve(self.root, 'Plugins', plugin.id));
     });
 };
-
-// PlatformApiPoly.prototype.updatePlugin = function (plugin, updateOptions) {
-//     var self = this;
-
-//     // Set up assets installer to copy asset files into platform_www dir instead of www
-//     updateOptions = updateOptions || {};
-//     updateOptions.usePlatformWww = true;
-
-//     return this.removePlugin(plugin, updateOptions)
-//     .then(function () {
-//         return  self.addPlugin(plugin, updateOptions);
-//     });
-// };
 
 /**
  * Builds an application package for current platform.
@@ -585,42 +566,23 @@ PlatformApiPoly.prototype._getUninstaller = function(type) {
 };
 
 /**
- * Copies cordova.js itself and cordova-js source into installed/updated
- *   platform's `platform_www` directory.
- *
- * @param   {String}  sourceLib    Path to platform library. Required to acquire
- *   cordova-js sources.
- * @param   {PlatformInfo}  platformInfo  PlatformInfo structure, required for
- *   detecting copied files destination.
- */
-// function copyCordovaSrc(sourceLib, platformInfo) {
-//     // Copy the cordova.js file to platforms/<platform>/platform_www/
-//     // The www dir is nuked on each prepare so we keep cordova.js in platform_www
-//     shell.mkdir('-p', platformInfo.locations.platformWww);
-//     shell.cp('-f', path.join(platformInfo.locations.www, 'cordova.js'),
-//         path.join(platformInfo.locations.platformWww, 'cordova.js'));
-
-//     // Copy cordova-js-src directory into platform_www directory.
-//     // We need these files to build cordova.js if using browserify method.
-//     var cordovaJsSrcPath = path.resolve(sourceLib, platformInfo.locations.cordovaJsSrc);
-
-//     //only exists for platforms that have shipped cordova-js-src directory
-//     if(fs.existsSync(cordovaJsSrcPath)) {
-//         shell.cp('-rf', cordovaJsSrcPath, platformInfo.locations.platformWww);
-//     }
-// }
-
-/**
- * Updates platform www directory by replacing it with contents of platform_www
- *   and app www.
+ * Updates platform 'www' directory by replacing it with contents of
+ *   'platform_www' and app www. Also copies project's overrides' folder into
+ *   the platform 'www' folder
  *
  * @param   {String}  sourceWww  Location of source (app's) www directory
  */
-PlatformApiPoly.prototype._updateWww = function(sourceWww) {
+PlatformApiPoly.prototype._updateWww = function(cordovaProject) {
     shell.rm('-rf', this.locations.www);
     shell.mkdir('-p', this.locations.www);
-    shell.cp('-rf', path.join(sourceWww, '*'), this.locations.www);
+    shell.cp('-rf', path.join(cordovaProject.locations.www, '*'), this.locations.www);
     shell.cp('-rf', path.join(this.locations.platformWww, '*'), this.locations.www);
+
+    var merges_path = path.join(cordovaProject.root, 'merges', PLATFORM);
+    if (fs.existsSync(merges_path)) {
+        var overrides = path.join(merges_path, '*');
+        shell.cp('-rf', overrides, this.locations.www);
+    }
 };
 
 // TODO: JSDoc
@@ -635,21 +597,17 @@ PlatformApiPoly.prototype._updateProject = function() {
     this.handleSplashes();
     this.handleIcons();
 
-    var manifest = new AndroidManifest(this.locations.manifest);
-    var orig_pkg = manifest.getPackageId();
     // Java packages cannot support dashes
     var pkg = (this._config.android_packageName() || this._config.packageName()).replace(/-/g, '_');
+
+    var manifest = new AndroidManifest(this.locations.manifest);
+    var orig_pkg = manifest.getPackageId();
 
     manifest.getActivity()
         // TODO: pick orientationHelper implementation form android_parser
         // .setOrientation(this.helper.getOrientation(this._config))
-        // Set android:launchMode in AndroidManifest
         .setLaunchMode(this.findAndroidLaunchModePreference(this._config));
 
-    // Update the version by changing the AndroidManifest android:versionName
-    // Set min/max/target SDK version <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19" ... />
-    // Update package name by changing the AndroidManifest id and moving the entry class around to the proper package directory
-    // Write out AndroidManifest.xml
     manifest.setVersionName(this._config.version())
         .setVersionCode(this._config.android_versionCode() || default_versionCode(this._config.version()))
         .setPackageId(pkg)
@@ -691,7 +649,7 @@ PlatformApiPoly.prototype.copyImage = function(src, density, name) {
 };
 
 PlatformApiPoly.prototype.handleSplashes = function() {
-    var resources = this._config.getSplashScreens('android');
+    var resources = this._config.getSplashScreens(PLATFORM);
     var me = this;
     // if there are "splash" elements in config.xml
     if (resources.length > 0) {
@@ -719,7 +677,7 @@ PlatformApiPoly.prototype.handleSplashes = function() {
 };
 
 PlatformApiPoly.prototype.handleIcons = function() {
-    var icons = this._config.getIcons('android');
+    var icons = this._config.getIcons(PLATFORM);
 
     // if there are icon elements in config.xml
     if (icons.length === 0) {
@@ -831,18 +789,4 @@ PlatformApiPoly.prototype.findAndroidLaunchModePreference = function() {
     }
 
     return launchMode;
-};
-
-
-// update the overrides folder into the www folder
-// TODO: this is still rely on cordova project structure and need to
-// be reworked to accept source directory to merge into www dir.
-// TODO: Probably move into _updateWww?
-PlatformApiPoly.prototype._updateOverrides = function() {
-//     var projectRoot = util.isCordova(this.path);
-//     var merges_path = path.join(util.appDir(projectRoot), 'merges', 'android');
-//     if (fs.existsSync(merges_path)) {
-//         var overrides = path.join(merges_path, '*');
-//         shell.cp('-rf', overrides, this.www_dir());
-//     }
 };
