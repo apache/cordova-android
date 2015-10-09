@@ -25,6 +25,8 @@ var Q       = require('q'),
     os      = require('os'),
     nopt = require('nopt');
 
+var Adb = require('./Adb');
+
 var builders = require('./builders/builders');
 var spawn = require('cordova-common').superspawn.spawn;
 
@@ -171,7 +173,7 @@ module.exports.prepBuildFiles = function() {
  */
 module.exports.detectArchitecture = function(target) {
     function helper() {
-        return spawn('adb', ['-s',target,'shell','cat','/proc/cpuinfo'], {cwd: os.tmpdir()})
+        return Adb.shell(target, 'cat /proc/cpuinfo')
         .then(function(output) {
             return /intel/i.exec(output) ? 'x86' : 'arm';
         });

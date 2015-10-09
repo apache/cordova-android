@@ -25,6 +25,7 @@ var retry      = require('./retry');
 var build      = require('./build');
 var check_reqs = require('./check_reqs');
 var path = require('path');
+var Adb = require('./Adb');
 var AndroidManifest = require('./AndroidManifest');
 var spawn = require('cordova-common').superspawn.spawn;
 
@@ -117,17 +118,7 @@ module.exports.best_image = function() {
 
 // Returns a promise.
 module.exports.list_started = function() {
-    return spawn('adb', ['devices'], {cwd: os.tmpdir()})
-    .then(function(output) {
-        var response = output.split('\n');
-        var started_emulator_list = [];
-        for (var i = 1; i < response.length; i++) {
-            if (response[i].match(/device/) && response[i].match(/emulator/)) {
-                started_emulator_list.push(response[i].replace(/\tdevice/, '').replace('\r', ''));
-            }
-        }
-        return started_emulator_list;
-    });
+    return Adb.devices({emulators: true});
 };
 
 // Returns a promise.
@@ -202,7 +193,7 @@ module.exports.start = function(emulator_ID) {
         console.log('BOOT COMPLETE');
 
         //unlock screen
-        return spawn('adb', ['-s', emulator_id, 'shell', 'input', 'keyevent', '82'], {cwd: os.tmpdir()});
+            return Adb.shell(emulatorId, 'input keyevent 82');
     }).then(function() {
         //return the new emulator id for the started emulators
         return emulator_id;
@@ -221,7 +212,8 @@ module.exports.wait_for_emulator = function(uuid) {
         var promises = [];
 
         new_started.forEach(function (emulator) {
-            promises.push(spawn('adb', ['-s', emulator, 'shell', 'getprop', 'emu.uuid'], {cwd: os.tmpdir()})
+            promises.push(
+                Adb.shell(emulator, 'getprop emu.uuid')
                 .then(function (output) {
                     if (output.indexOf(uuid) >= 0) {
                         emulator_id = emulator;
@@ -241,7 +233,7 @@ module.exports.wait_for_emulator = function(uuid) {
  */
 module.exports.wait_for_boot = function(emulator_id) {
     var self = this;
-    return spawn('adb', ['-s', emulator_id, 'shell', 'ps'], {cwd: os.tmpdir()})
+    return Adb.shell(emulator_id, 'ps')
     .then(function(output) {
         if (output.match(/android\.process\.acore/)) {
             return;
@@ -329,10 +321,9 @@ module.exports.install = function(givenTarget, buildResults) {
 
     // install the app
     }).then(function () {
-        console.log('Uninstalling ' + pkgName + ' from emulator...');
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
-        return spawn('adb', ['-s', target.target, 'uninstall', pkgName], {cwd: os.tmpdir()})
+        return Adb.uninstall(target.target, pkgName)
         .then(function() {
 
             var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
@@ -373,20 +364,11 @@ module.exports.install = function(givenTarget, buildResults) {
     }).then(function () {
 
         console.log('Unlocking screen...');
-        return spawn('adb', ['-s', target.target, 'shell', 'input', 'keyevent', '82'], os.tmpdir());
-
-    // launch the application
+        return Adb.shell(target.target, 'input keyevent 82');
     }).then(function () {
-
-        console.log('Launching application...');
-        var launchName = pkgName + '/.' + manifest.getActivity().getName();
-        var args = ['-s', target.target, 'shell', 'am', 'start', '-W', '-a', 'android.intent.action.MAIN', '-n', launchName];
-        return spawn('adb', args, os.tmpdir());
-
+        Adb.start(target.target, pkgName + '/.' + manifest.getActivity().getName());
     // report success or failure
     }).then(function (output) {
         console.log('LAUNCH SUCCESS');
-    }, function (err) {
-        return Q.reject('Failed to launch app on emulator: ' + err);
     });
 };
