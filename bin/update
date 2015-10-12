@@ -20,12 +20,16 @@
 */
 var path   = require('path');
 var Api = require('./templates/cordova/Api');
-var args  = require('./lib/simpleargs').getArgs(process.argv);
+var args  = require('nopt')({
+    'link': Boolean,
+    'shared': Boolean,
+    'help': Boolean
+});
 
-if (args['--help'] || args._.length === 0) {
+if (args.help || args.argv.remain.length === 0) {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'update')) + ' <path_to_project> [--link]');
     console.log('    --link will use the CordovaLib project directly instead of making a copy.');
     process.exit(1);
 }
 
-Api.updatePlatform(args._[0], {link: (args['--link'] || args['--shared'])}).done();
+Api.updatePlatform(args.argv.remain[0], {link: (args.link || args.shared)}).done();
