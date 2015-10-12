@@ -22,13 +22,10 @@ var fs = require('fs');
 var path = require('path');
 var shell = require('shelljs');
 
-var xmlHelpers = require('cordova-common').xmlHelpers;
 var CordovaError = require('cordova-common').CordovaError;
-var ConfigParser = require('cordova-common').ConfigParser;
 var PlatformJson = require('cordova-common').PlatformJson;
 var ActionStack = require('cordova-common').ActionStack;
 var AndroidProject = require('./lib/AndroidProject');
-var AndroidManifest = require('./lib/AndroidManifest');
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
@@ -75,9 +72,11 @@ function PlatformApiPoly(platform, platformRootDir, events) {
     var self = this;
 
     this.locations = {
+        root: self.root,
         www: path.join(self.root, 'assets/www'),
         platformWww: path.join(self.root, 'platform_www'),
         configXml: path.join(self.root, 'res/xml/config.xml'),
+        defaultConfigXml: path.join(self.root, 'cordova/defaults.xml'),
         strings: path.join(self.root, 'res/values/strings.xml'),
         manifest: path.join(self.root, 'AndroidManifest.xml'),
         // NOTE: Due to platformApi spec we need to return relative paths here
@@ -175,32 +174,7 @@ PlatformApiPoly.prototype.getPlatformInfo = function () {
  *   CordovaError instance.
  */
 PlatformApiPoly.prototype.prepare = function (cordovaProject) {
-    // First cleanup current config and merge project's one into own
-    var defaultConfig = path.join(this.root, 'cordova/defaults.xml');
-    var ownConfig = this.locations.configXml;
-    // If defaults.xml is present, overwrite platform config.xml with it.
-    this.events.emit('verbose', 'Generating config.xml from defaults for platform "' + this.platform + '"');
-    shell.cp('-f', defaultConfig, ownConfig);
-
-    this._munger.reapply_global_munge().save_all();
-
-    this._config = new ConfigParser(ownConfig);
-    xmlHelpers.mergeXml(cordovaProject.projectConfig.doc.getroot(),
-        this._config.doc.getroot(), this.platform, true);
-    this._config.write();
-
-    // Update own www dir with project's www assets and plugins' assets and js-files
-    this._updateWww(cordovaProject);
-
-    // update project according to config.xml changes.
-    try {
-        this._updateProject();
-        this.events.emit('verbose', 'updated project successfully');
-        return Q();
-    } catch (err) {
-        this.events.emit('error', err);
-        return Q.reject(err);
-    }
+    return require('./lib/prepare').prepare.call(this, cordovaProject);
 };
 
 /**
@@ -547,7 +521,6 @@ PlatformApiPoly.prototype._writePluginModules = function (targetDir) {
 };
 
 PlatformApiPoly.prototype._getInstaller = function(type) {
-
     if (!this._handler[type]) {
         this.events.emit('verbose', '<' + type + '> is not supported for android plugins');
         return;
@@ -563,230 +536,4 @@ PlatformApiPoly.prototype._getUninstaller = function(type) {
     }
 
     return this._handler[type].uninstall.bind(this);
-};
-
-/**
- * Updates platform 'www' directory by replacing it with contents of
- *   'platform_www' and app www. Also copies project's overrides' folder into
- *   the platform 'www' folder
- *
- * @param   {String}  sourceWww  Location of source (app's) www directory
- */
-PlatformApiPoly.prototype._updateWww = function(cordovaProject) {
-    shell.rm('-rf', this.locations.www);
-    shell.mkdir('-p', this.locations.www);
-    shell.cp('-rf', path.join(cordovaProject.locations.www, '*'), this.locations.www);
-    shell.cp('-rf', path.join(this.locations.platformWww, '*'), this.locations.www);
-
-    var merges_path = path.join(cordovaProject.root, 'merges', PLATFORM);
-    if (fs.existsSync(merges_path)) {
-        var overrides = path.join(merges_path, '*');
-        shell.cp('-rf', overrides, this.locations.www);
-    }
-};
-
-// TODO: JSDoc
-PlatformApiPoly.prototype._updateProject = function() {
-    // Update app name by editing res/values/strings.xml
-    var name = this._config.name();
-    var strings = xmlHelpers.parseElementtreeSync(this.locations.strings);
-    strings.find('string[@name="app_name"]').text = name;
-    fs.writeFileSync(this.locations.strings, strings.write({indent: 4}), 'utf-8');
-    this.events.emit('verbose', 'Wrote out Android application name to "' + name + '"');
-
-    this.handleSplashes();
-    this.handleIcons();
-
-    // Java packages cannot support dashes
-    var pkg = (this._config.android_packageName() || this._config.packageName()).replace(/-/g, '_');
-
-    var manifest = new AndroidManifest(this.locations.manifest);
-    var orig_pkg = manifest.getPackageId();
-
-    manifest.getActivity()
-        // TODO: pick orientationHelper implementation form android_parser
-        // .setOrientation(this.helper.getOrientation(this._config))
-        .setLaunchMode(this.findAndroidLaunchModePreference(this._config));
-
-    manifest.setVersionName(this._config.version())
-        .setVersionCode(this._config.android_versionCode() || default_versionCode(this._config.version()))
-        .setPackageId(pkg)
-        .setMinSdkVersion(this._config.getPreference('android-minSdkVersion', this.platform))
-        .setMaxSdkVersion(this._config.getPreference('android-maxSdkVersion', this.platform))
-        .setTargetSdkVersion(this._config.getPreference('android-targetSdkVersion', this.platform))
-        .write();
-
-    var javaPattern = path.join(this.root, 'src', orig_pkg.replace(/\./g, '/'), '*.java');
-    var java_files = shell.ls(javaPattern).filter(function(f) {
-        return shell.grep(/extends\s+CordovaActivity/g, f);
-    });
-
-    if (java_files.length === 0) {
-        throw new CordovaError('No Java files found which extend CordovaActivity.');
-    } else if(java_files.length > 1) {
-        this.events.emit('log', 'Multiple candidate Java files (.java files which extend CordovaActivity) found. Guessing at the first one, ' + java_files[0]);
-    }
-
-    var destFile = path.join(this.root, 'src', pkg.replace(/\./g, '/'), path.basename(java_files[0]));
-    shell.mkdir('-p', path.dirname(destFile));
-    shell.sed(/package [\w\.]*;/, 'package ' + pkg + ';', java_files[0]).to(destFile);
-    this.events.emit('verbose', 'Wrote out Android package name to "' + pkg + '"');
-};
-
-PlatformApiPoly.prototype.copyImage = function(src, density, name) {
-    var destFolder = path.join(this.path, 'res', (density ? 'drawable-': 'drawable') + density);
-    var isNinePatch = !!/\.9\.png$/.exec(src);
-    var ninePatchName = name.replace(/\.png$/, '.9.png');
-
-    // default template does not have default asset for this density
-    if (!fs.existsSync(destFolder)) {
-        fs.mkdirSync(destFolder);
-    }
-
-    var destFilePath = path.join(destFolder, isNinePatch ? ninePatchName : name);
-    this.events.emit('verbose', 'copying image from ' + src + ' to ' + destFilePath);
-    shell.cp('-f', src, destFilePath);
-};
-
-PlatformApiPoly.prototype.handleSplashes = function() {
-    var resources = this._config.getSplashScreens(PLATFORM);
-    var me = this;
-    // if there are "splash" elements in config.xml
-    if (resources.length > 0) {
-        this.deleteDefaultResource('screen.png');
-        this.events.emit('verbose', 'splash screens: ' + JSON.stringify(resources));
-
-        // TODO: get rid of referencing cordova utils
-        var projectRoot/* = util.isCordova(this.path)*/;
-
-        var hadMdpi = false;
-        resources.forEach(function (resource) {
-            if (!resource.density) {
-                return;
-            }
-            if (resource.density == 'mdpi') {
-                hadMdpi = true;
-            }
-            me.copyImage(path.join(projectRoot, resource.src), resource.density, 'screen.png');
-        });
-        // There's no "default" drawable, so assume default == mdpi.
-        if (!hadMdpi && resources.defaultResource) {
-            me.copyImage(path.join(projectRoot, resources.defaultResource.src), 'mdpi', 'screen.png');
-        }
-    }
-};
-
-PlatformApiPoly.prototype.handleIcons = function() {
-    var icons = this._config.getIcons(PLATFORM);
-
-    // if there are icon elements in config.xml
-    if (icons.length === 0) {
-        this.events.emit('verbose', 'This app does not have launcher icons defined');
-        return;
-    }
-
-    this.deleteDefaultResource('icon.png');
-
-    var android_icons = {};
-    var default_icon;
-    // http://developer.android.com/design/style/iconography.html
-    var sizeToDensityMap = {
-        36: 'ldpi',
-        48: 'mdpi',
-        72: 'hdpi',
-        96: 'xhdpi',
-        144: 'xxhdpi',
-        192: 'xxxhdpi'
-    };
-    // find the best matching icon for a given density or size
-    // @output android_icons
-    var parseIcon = function(icon, icon_size) {
-        // do I have a platform icon for that density already
-        var density = icon.density || sizeToDensityMap[icon_size];
-        if (!density) {
-            // invalid icon defition ( or unsupported size)
-            return;
-        }
-        var previous = android_icons[density];
-        if (previous && previous.platform) {
-            return;
-        }
-        android_icons[density] = icon;
-    };
-
-    // iterate over all icon elements to find the default icon and call parseIcon
-    for (var i=0; i<icons.length; i++) {
-        var icon = icons[i];
-        var size = icon.width;
-        if (!size) {
-            size = icon.height;
-        }
-        if (!size && !icon.density) {
-            if (default_icon) {
-                this.events.emit('verbose', 'more than one default icon: ' + JSON.stringify(icon));
-            } else {
-                default_icon = icon;
-            }
-        } else {
-            parseIcon(icon, size);
-        }
-    }
-    // TODO: get rid of referencing cordova utils
-    var projectRoot/* = util.isCordova(this.path)*/;
-    for (var density in android_icons) {
-        this.copyImage(path.join(projectRoot, android_icons[density].src), density, 'icon.png');
-    }
-    // There's no "default" drawable, so assume default == mdpi.
-    if (default_icon && !android_icons.mdpi) {
-        this.copyImage(path.join(projectRoot, default_icon.src), 'mdpi', 'icon.png');
-    }
-};
-
-// remove the default resource name from all drawable folders
-// return the array of the densities in this project
-PlatformApiPoly.prototype.deleteDefaultResource = function(name) {
-    var self = this;
-    //TODO: verify it works
-    shell.ls(path.join(this.path, 'res/drawable-*', name))
-    .forEach(function (drawableFolder) {
-        var imagePath = path.join(drawableFolder, name);
-        shell.rm('-f', [imagePath, imagePath.replace(/\.png$/, '.9.png')]);
-        self.events.emit('verbose', 'Deleted ' + imagePath);
-    });
-};
-
-// Consturct the default value for versionCode as
-// PATCH + MINOR * 100 + MAJOR * 10000
-// see http://developer.android.com/tools/publishing/versioning.html
-function default_versionCode(version) {
-    var nums = version.split('-')[0].split('.');
-    var versionCode = 0;
-    if (+nums[0]) {
-        versionCode += +nums[0] * 10000;
-    }
-    if (+nums[1]) {
-        versionCode += +nums[1] * 100;
-    }
-    if (+nums[2]) {
-        versionCode += +nums[2];
-    }
-    return versionCode;
-}
-
-PlatformApiPoly.prototype.findAndroidLaunchModePreference = function() {
-    var launchMode = this._config.getPreference('AndroidLaunchMode');
-    if (!launchMode) {
-        // Return a default value
-        return 'singleTop';
-    }
-
-    var expectedValues = ['standard', 'singleTop', 'singleTask', 'singleInstance'];
-    var valid = expectedValues.indexOf(launchMode) !== -1;
-    if (!valid) {
-        this.events.emit('warn', 'Unrecognized value for AndroidLaunchMode preference: ' + launchMode);
-        this.events.emit('warn', '  Expected values are: ' + expectedValues.join(', '));
-        // Note: warn, but leave the launch mode as developer wanted, in case the list of options changes in the future
-    }
-
-    return launchMode;
 };
