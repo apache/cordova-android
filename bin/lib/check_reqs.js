@@ -27,6 +27,7 @@ var shelljs = require('shelljs'),
     path  = require('path'),
     fs    = require('fs'),
     ROOT  = path.join(__dirname, '..', '..');
+var CordovaError = require('cordova-common').CordovaError;
 
 var isWindows = process.platform == 'win32';
 
@@ -41,7 +42,7 @@ function forgivingWhichSync(cmd) {
 function tryCommand(cmd, errMsg, catchStderr) {
     var d = Q.defer();
     child_process.exec(cmd, function(err, stdout, stderr) {
-        if (err) d.reject(new Error(errMsg));
+        if (err) d.reject(new CordovaError(errMsg));
         // Sometimes it is necessary to return an stderr instead of stdout in case of success, since
         // some commands prints theirs output to stderr instead of stdout. 'javac' is the example
         else d.resolve((catchStderr ? stderr : stdout).trim());
@@ -81,12 +82,12 @@ module.exports.check_ant = function() {
 module.exports.check_gradle = function() {
     var sdkDir = process.env['ANDROID_HOME'];
     if (!sdkDir)
-        return Q.reject('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.\n' +
-            'Might need to install Android SDK or set up \'ANDROID_HOME\' env variable.');
+        return Q.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.\n' +
+            'Might need to install Android SDK or set up \'ANDROID_HOME\' env variable.'));
 
     var wrapperDir = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper');
     if (!fs.existsSync(wrapperDir)) {
-        return Q.reject(new Error('Could not find gradle wrapper within Android SDK. Might need to update your Android SDK.\n' +
+        return Q.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Might need to update your Android SDK.\n' +
             'Looked here: ' + wrapperDir));
     }
     return Q.when();
@@ -118,7 +119,7 @@ module.exports.check_java = function() {
                     if (fs.existsSync(path.join(maybeJavaHome, 'lib', 'tools.jar'))) {
                         process.env['JAVA_HOME'] = maybeJavaHome;
                     } else {
-                        throw new Error(msg);
+                        throw new CordovaError(msg);
                     }
                 }
             } else if (isWindows) {
@@ -210,7 +211,7 @@ module.exports.check_android = function() {
                 process.env['ANDROID_HOME'] = grandParentDir;
                 hasAndroidHome = true;
             } else {
-                throw new Error('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
+                throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
                     'Detected \'android\' command at ' + parentDir + ' but no \'tools\' directory found near.\n' +
                     'Try reinstall Android SDK or update your PATH to include path to valid SDK directory.');
             }
@@ -219,11 +220,11 @@ module.exports.check_android = function() {
             process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'platform-tools');
         }
         if (!process.env['ANDROID_HOME']) {
-            throw new Error('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
+            throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
                 'Failed to find \'android\' command in your \'PATH\'. Try update your \'PATH\' to include path to valid SDK directory.');
         }
         if (!fs.existsSync(process.env['ANDROID_HOME'])) {
-            throw new Error('\'ANDROID_HOME\' environment variable is set to non-existent path: ' + process.env['ANDROID_HOME'] +
+            throw new CordovaError('\'ANDROID_HOME\' environment variable is set to non-existent path: ' + process.env['ANDROID_HOME'] +
                 '\nTry update it manually to point to valid SDK directory.');
         }
     });
@@ -249,7 +250,7 @@ module.exports.check_android_target = function(valid_target) {
         }
 
         var androidCmd = module.exports.getAbsoluteAndroidCmd();
-        throw new Error('Please install Android target: "' + valid_target + '".\n\n' +
+        throw new CordovaError('Please install Android target: "' + valid_target + '".\n\n' +
             'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
             'You will require:\n' +
             '1. "SDK Platform" for ' + valid_target + '\n' +
