@@ -58,7 +58,7 @@ var GENERIC_EVENTS = new (require('events').EventEmitter)()
  *
  * * platform: String that defines a platform name.
  */
-function PlatformApiPoly(platform, platformRootDir, events) {
+function Api(platform, platformRootDir, events) {
     this.platform = PLATFORM;
     this.root = path.resolve(__dirname, '..');
     this.events = events || GENERIC_EVENTS;
@@ -103,7 +103,7 @@ function PlatformApiPoly(platform, platformRootDir, events) {
  * @return {Promise<PlatformApi>} Promise either fulfilled with PlatformApi
  *   instance or rejected with CordovaError.
  */
-PlatformApiPoly.createPlatform = function (destination, config, options, events) {
+Api.createPlatform = function (destination, config, options, events) {
     return require('../../lib/create')
     .create(destination, config, options, events || GENERIC_EVENTS)
     .then(function (destination) {
@@ -129,7 +129,7 @@ PlatformApiPoly.createPlatform = function (destination, config, options, events)
  * @return {Promise<PlatformApi>} Promise either fulfilled with PlatformApi
  *   instance or rejected with CordovaError.
  */
-PlatformApiPoly.updatePlatform = function (destination, options, events) {
+Api.updatePlatform = function (destination, options, events) {
     return require('../../lib/create')
     .update(destination, options, events || GENERIC_EVENTS)
     .then(function (destination) {
@@ -144,7 +144,7 @@ PlatformApiPoly.updatePlatform = function (destination, options, events) {
  * @return  {CordovaPlatform}  A structure that contains the description of
  *   platform's file structure and other properties of platform.
  */
-PlatformApiPoly.prototype.getPlatformInfo = function () {
+Api.prototype.getPlatformInfo = function () {
     var result = {};
     result.locations = this.locations;
     result.root = this.root;
@@ -169,7 +169,7 @@ PlatformApiPoly.prototype.getPlatformInfo = function () {
  * @return  {Promise}  Return a promise either fulfilled, or rejected with
  *   CordovaError instance.
  */
-PlatformApiPoly.prototype.prepare = function (cordovaProject) {
+Api.prototype.prepare = function (cordovaProject) {
     return require('./lib/prepare').prepare.call(this, cordovaProject);
 };
 
@@ -193,7 +193,7 @@ PlatformApiPoly.prototype.prepare = function (cordovaProject) {
  * @return  {Promise}  Return a promise either fulfilled, or rejected with
  *   CordovaError instance.
  */
-PlatformApiPoly.prototype.addPlugin = function (plugin, installOptions) {
+Api.prototype.addPlugin = function (plugin, installOptions) {
 
     if (!plugin || plugin.constructor.name !== 'PluginInfo')
         return Q.reject(new CordovaError('The parameter is incorrect. The first parameter to addPlugin should be a PluginInfo instance'));
@@ -254,7 +254,7 @@ PlatformApiPoly.prototype.addPlugin = function (plugin, installOptions) {
  * @return  {Promise}  Return a promise either fulfilled, or rejected with
  *   CordovaError instance.
  */
-PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
+Api.prototype.removePlugin = function (plugin, uninstallOptions) {
 
     if (!plugin || plugin.constructor.name !== 'PluginInfo')
         return Q.reject(new CordovaError('The parameter is incorrect. The first parameter to addPlugin should be a PluginInfo instance'));
@@ -339,7 +339,7 @@ PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
  *   there could be multiple items in output array, e.g. when multiple
  *   arhcitectures is specified.
  */
-PlatformApiPoly.prototype.build = function (buildOptions) {
+Api.prototype.build = function (buildOptions) {
     var self = this;
     return require('./lib/check_reqs').run()
     .then(function () {
@@ -370,7 +370,7 @@ PlatformApiPoly.prototype.build = function (buildOptions) {
  * @return {Promise} A promise either fulfilled if package was built and ran
  *   successfully, or rejected with CordovaError.
  */
-PlatformApiPoly.prototype.run = function(runOptions) {
+Api.prototype.run = function(runOptions) {
     var self = this;
     return require('./lib/check_reqs').run()
     .then(function () {
@@ -384,7 +384,7 @@ PlatformApiPoly.prototype.run = function(runOptions) {
  * @return  {Promise}  Return a promise either fulfilled, or rejected with
  *   CordovaError.
  */
-PlatformApiPoly.prototype.clean = function(cleanOptions) {
+Api.prototype.clean = function(cleanOptions) {
     var self = this;
     return require('./lib/check_reqs').run()
     .then(function () {
@@ -400,11 +400,11 @@ PlatformApiPoly.prototype.clean = function(cleanOptions) {
  * @return  {Promise<Requirement[]>}  Promise, resolved with set of Requirement
  *   objects for current platform.
  */
-PlatformApiPoly.prototype.requirements = function() {
+Api.prototype.requirements = function() {
     return require('./lib/check_reqs').check_all();
 };
 
-module.exports = PlatformApiPoly;
+module.exports = Api;
 
 /**
  * Removes the specified modules from list of installed modules and updates
@@ -415,7 +415,7 @@ module.exports = PlatformApiPoly;
  * @param   {String}  targetDir  The directory, where updated cordova_plugins.js
  *   should be written to.
  */
-PlatformApiPoly.prototype._addModulesInfo = function(plugin, targetDir) {
+Api.prototype._addModulesInfo = function(plugin, targetDir) {
     var installedModules = this._platformJson.root.modules || [];
 
     var installedPaths = installedModules.map(function (installedModule) {
@@ -458,7 +458,7 @@ PlatformApiPoly.prototype._addModulesInfo = function(plugin, targetDir) {
  * @param   {String}  targetDir  The directory, where updated cordova_plugins.js
  *   should be written to.
  */
-PlatformApiPoly.prototype._removeModulesInfo = function(plugin, targetDir) {
+Api.prototype._removeModulesInfo = function(plugin, targetDir) {
     var installedModules = this._platformJson.root.modules || [];
     var modulesToRemove = plugin.getJsModules(this.platform)
     .map(function (jsModule) {
@@ -483,7 +483,7 @@ PlatformApiPoly.prototype._removeModulesInfo = function(plugin, targetDir) {
  *   Ususally it is either <platform>/www or <platform>/platform_www
  *   directories.
  */
-PlatformApiPoly.prototype._writePluginModules = function (targetDir) {
+Api.prototype._writePluginModules = function (targetDir) {
     var self = this;
     // Write out moduleObjects as JSON wrapped in a cordova module to cordova_plugins.js
     var final_contents = 'cordova.define(\'cordova/plugin_list\', function(require, exports, module) {\n';
