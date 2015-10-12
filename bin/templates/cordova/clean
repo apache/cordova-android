@@ -29,7 +29,6 @@ if(['--help', '/?', '-h', 'help', '-help', '/help'].indexOf(process.argv[2]) >= 
     process.exit(0);
 }
 
-// TODO: Create and pass logger instance to constructed `Api`
 new Api().clean({argv: process.argv.slice(2)})
 .catch(function(err) {
     console.error(err.stack);

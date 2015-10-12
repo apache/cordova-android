@@ -293,8 +293,7 @@ function handleIcons(projectConfig, platformRoot) {
 
 // remove the default resource name from all drawable folders
 function deleteDefaultResourceAt(baseDir, resourceName) {
-    //TODO: verify it works
-    shell.ls(path.join(baseDir, 'res/drawable-*', resourceName))
+    shell.ls(path.join(baseDir, 'res/drawable-*'))
     .forEach(function (drawableFolder) {
         var imagePath = path.join(drawableFolder, resourceName);
         shell.rm('-f', [imagePath, imagePath.replace(/\.png$/, '.9.png')]);
@@ -343,18 +342,17 @@ function findAndroidLaunchModePreference(platformConfig) {
 function findOrientationValue(platformConfig) {
 
     var ORIENTATION_DEFAULT = 'default';
-    var GLOBAL_ORIENTATIONS = ['default', 'portrait','landscape'];
 
+    var orientation = platformConfig.getPreference('orientation');
+    if (!orientation) {
+        return ORIENTATION_DEFAULT;
+    }
+
+    var GLOBAL_ORIENTATIONS = ['default', 'portrait','landscape'];
     function isSupported(orientation) {
         return GLOBAL_ORIENTATIONS.indexOf(orientation.toLowerCase()) >= 0;
     }
 
-    var orientation = platformConfig.getPlatformPreference('orientation', 'android');
-    if (orientation) {
-        return orientation;
-    }
-
-    orientation = platformConfig.getGlobalPreference('orientation');
     // Check if the given global orientation is supported
     if (orientation && isSupported(orientation)) {
         return orientation;

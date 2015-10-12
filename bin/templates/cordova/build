@@ -41,7 +41,6 @@ var buildOpts = nopt({
 // Make buildOptions compatible with PlatformApi build method spec
 buildOpts.argv = buildOpts.argv.remain;
 
-// TODO: Create and pass logger instance to constructed `Api`
 new Api().build(buildOpts)
 .catch(function(err) {
     console.error(err.stack);

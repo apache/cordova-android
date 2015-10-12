@@ -35,7 +35,6 @@ var runOpts = nopt({
     'release' : Boolean,
     'nobuild': Boolean,
     'buildConfig' : path,
-    // TODO: need for archs here?
     'archs' : String,
     'device' : Boolean,
     'emulator': Boolean,
@@ -45,7 +44,6 @@ var runOpts = nopt({
 // Make runOptions compatible with PlatformApi run method spec
 runOpts.argv = runOpts.argv.remain;
 
-// TODO: Create and pass logger instance to constructed `Api`
 new Api().run(runOpts)
 .catch(function(err) {
     console.error(err, err.stack);

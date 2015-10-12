@@ -20,7 +20,7 @@
 var fs = require('fs');
 var path = require('path');
 var properties_parser = require('properties-parser');
-var xml = require('cordova-common').xmlHelpers;
+var AndroidManifest = require('./AndroidManifest');
 
 var projectFileCache = {};
 
@@ -65,7 +65,6 @@ function AndroidProject(projectDir) {
 }
 
 AndroidProject.getProjectFile = function (projectDir) {
-    // TODO: validate input parameter here
     if (!projectFileCache[projectDir]) {
         projectFileCache[projectDir] = new AndroidProject(projectDir);
     }
@@ -81,18 +80,21 @@ AndroidProject.purgeCache = function (projectDir) {
     }
 };
 
-// TODO: to JSDoc
-// reads the package name out of the Android Manifest file
-// @param string project_dir the absolute path to the directory containing the project
-// @return string the name of the package
-AndroidProject.getPackageName = function(projectDir) {
-    return xml.parseElementtreeSync(path.join(projectDir, 'AndroidManifest.xml'))._root.attrib.package;
+/**
+ * Reads the package name out of the Android Manifest file
+ *
+ * @param   {String}  projectDir  The absolute path to the directory containing the project
+ *
+ * @return  {String}              The name of the package
+ */
+AndroidProject.prototype.getPackageName = function() {
+    return new AndroidManifest(path.join(this.projectDir, 'AndroidManifest.xml')).getPackageId();
 };
 
 AndroidProject.prototype.getCustomSubprojectRelativeDir = function(plugin_id, src) {
     // All custom subprojects are prefixed with the last portion of the package id.
     // This is to avoid collisions when opening multiple projects in Eclipse that have subprojects with the same name.
-    var packageName = AndroidProject.getPackageName(this.projectDir);
+    var packageName = this.getPackageName();
     var lastDotIndex = packageName.lastIndexOf('.');
     var prefix = packageName.substring(lastDotIndex + 1);
     var subRelativeDir = path.join(plugin_id, prefix + '-' + path.basename(src));

@@ -29,6 +29,8 @@ var AndroidProject = require('./lib/AndroidProject');
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
+var pluginHandlers = require('./lib/pluginHandlers');
+
 var PLATFORM = 'android';
 var GENERIC_EVENTS = new (require('events').EventEmitter)()
     .on('verbose', function (message) {
@@ -63,8 +65,6 @@ function PlatformApiPoly(platform, platformRootDir, events) {
     // NOTE: trick to share one EventEmitter instance across all js code
     require('cordova-common').events = this.events;
 
-    this._handler = require('./lib/android_plugin_handler');
-
     this._platformJson = PlatformJson.load(this.root, platform);
     this._pluginInfoProvider = new PluginInfoProvider();
     this._munger = new PlatformMunger(this.platform, this.root, this._platformJson, this._pluginInfoProvider);
@@ -88,22 +88,21 @@ function PlatformApiPoly(platform, platformRootDir, events) {
 /**
  * Installs platform to specified directory and creates a platform project.
  *
- * @param  {CordovaProject} cordovaProject A CordovaProject instance, that defines a
- *   project structure and configuration, that should be applied to new platform
- *   (contains platform's target location and ConfigParser instance for
- *   project's config). This argument is optional and if not defined, this means
- *   that platform is used as standalone project and is not a part of cordova
- *   project.
- * @param  {Object}  options  An options object. The most common options are:
- * @param  {String}  options.customTemplate  A path to custom template, that
+ * @param  {String}  destination Destination directory, where insatll platform to
+ * @param  {ConfigParser}  [config] ConfgiParser instance, used to retrieve
+ *   project creation options, such as package id and project name.
+ * @param  {Object}  [options]  An options object. The most common options are:
+ * @param  {String}  [options.customTemplate]  A path to custom template, that
  *   should override the default one from platform.
- * @param  {Boolean}  options.link  Flag that indicates that platform's sources
- *   will be linked to installed platform instead of copying.
+ * @param  {Boolean}  [options.link]  Flag that indicates that platform's
+ *   sources will be linked to installed platform instead of copying.
+ * @param {EventEmitter} [events] An EventEmitter instance that will be used for
+ *   logging purposes. If no EventEmitter provided, all events will be logged to
+ *   console
  *
  * @return {Promise<PlatformApi>} Promise either fulfilled with PlatformApi
  *   instance or rejected with CordovaError.
  */
-// TODO: update JSDoc according to changed input parameters
 PlatformApiPoly.createPlatform = function (destination, config, options, events) {
     return require('../../lib/create')
     .create(destination, config, options, events || GENERIC_EVENTS)
@@ -116,22 +115,20 @@ PlatformApiPoly.createPlatform = function (destination, config, options, events)
 /**
  * Updates already installed platform.
  *
- * @param   {CordovaProject}  cordovaProject  A CordovaProject instance, that
- *   defines a project structure and configuration, that should be applied to
- *   new platform (contains platform's target location and ConfigParser instance
- *   for project's config). This argument is optional and if not defined, this
- *   means that platform is used as standalone project and is not a part of
- *   cordova project.
- * @param  {Object}  options  An options object. The most common options are:
- * @param  {String}  options.customTemplate  A path to custom template, that
+ * @param  {String}  destination Destination directory, where insatll platform
+ *   to
+ * @param  {Object}  [options]  An options object. The most common options are:
+ * @param  {String}  [options.customTemplate]  A path to custom template, that
  *   should override the default one from platform.
- * @param  {Boolean}  options.link  Flag that indicates that platform's sources
- *   will be linked to installed platform instead of copying.
+ * @param  {Boolean}  [options.link]  Flag that indicates that platform's
+ *   sources will be linked to installed platform instead of copying.
+ * @param {EventEmitter} [events] An EventEmitter instance that will be used for
+ *   logging purposes. If no EventEmitter provided, all events will be logged to
+ *   console
  *
  * @return {Promise<PlatformApi>} Promise either fulfilled with PlatformApi
  *   instance or rejected with CordovaError.
  */
-// TODO: update JSDoc according to changed input parameters
 PlatformApiPoly.updatePlatform = function (destination, options, events) {
     return require('../../lib/create')
     .update(destination, options, events || GENERIC_EVENTS)
@@ -152,8 +149,7 @@ PlatformApiPoly.prototype.getPlatformInfo = function () {
     result.locations = this.locations;
     result.root = this.root;
     result.name = this.platform;
-    // TODO: replace version with one from package.json
-    result.version = '4.2.0-dev';
+    result.version = require('./version');
     result.projectConfig = this._config;
 
     return result;
@@ -198,8 +194,6 @@ PlatformApiPoly.prototype.prepare = function (cordovaProject) {
  *   CordovaError instance.
  */
 PlatformApiPoly.prototype.addPlugin = function (plugin, installOptions) {
-    //TODO: pick removed events logging from lib's prepare and addplugin methods
-    //TODO: check if plugin already installed
 
     if (!plugin || plugin.constructor.name !== 'PluginInfo')
         return Q.reject(new CordovaError('The parameter is incorrect. The first parameter to addPlugin should be a PluginInfo instance'));
@@ -209,7 +203,7 @@ PlatformApiPoly.prototype.addPlugin = function (plugin, installOptions) {
 
     var self = this;
     var actions = new ActionStack();
-    var projectFile = AndroidProject.getProjectFile(this.root);
+    var project = AndroidProject.getProjectFile(this.root);
 
     // gather all files needs to be handled during install
     plugin.getFilesAndFrameworks(this.platform)
@@ -217,20 +211,20 @@ PlatformApiPoly.prototype.addPlugin = function (plugin, installOptions) {
         .concat(plugin.getJsModules(this.platform))
     .forEach(function(item) {
         actions.push(actions.createAction(
-            self._getInstaller(item.itemType), [item, plugin, projectFile, installOptions],
-            self._getUninstaller(item.itemType), [item, plugin, projectFile, installOptions]));
+            pluginHandlers.getInstaller(item.itemType), [item, plugin, project, installOptions],
+            pluginHandlers.getUninstaller(item.itemType), [item, plugin, project, installOptions]));
     });
 
     // run through the action stack
-    return actions.process(this.platform, this.root)
+    return actions.process(this.platform)
     .then(function () {
-        if (projectFile) {
-            projectFile.write();
+        if (project) {
+            project.write();
         }
 
         // Add PACKAGE_NAME variable into vars
         if (!installOptions.variables.PACKAGE_NAME) {
-            installOptions.variables.PACKAGE_NAME = AndroidProject.getPackageName(self.root);
+            installOptions.variables.PACKAGE_NAME = project.getPackageName();
         }
 
         self._munger
@@ -262,15 +256,12 @@ PlatformApiPoly.prototype.addPlugin = function (plugin, installOptions) {
  */
 PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
 
-    //TODO: pick removed events logging from lib's prepare and addplugin methods
-    //TODO: check if plugin already installed
-
     if (!plugin || plugin.constructor.name !== 'PluginInfo')
         return Q.reject(new CordovaError('The parameter is incorrect. The first parameter to addPlugin should be a PluginInfo instance'));
 
     var self = this;
     var actions = new ActionStack();
-    var projectFile = AndroidProject.getProjectFile(this.root);
+    var project = AndroidProject.getProjectFile(this.root);
 
     // queue up plugin files
     plugin.getFilesAndFrameworks(this.platform)
@@ -278,15 +269,15 @@ PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
         .concat(plugin.getJsModules(this.platform))
     .forEach(function(item) {
         actions.push(actions.createAction(
-            self._getUninstaller(item.itemType), [item, plugin, projectFile, uninstallOptions],
-            self._getInstaller(item.itemType), [item, plugin, projectFile, uninstallOptions]));
+            pluginHandlers.getUninstaller(item.itemType), [item, plugin, project, uninstallOptions],
+            pluginHandlers.getInstaller(item.itemType), [item, plugin, project, uninstallOptions]));
     });
 
     // run through the action stack
-    return actions.process(this.platform, this.root)
+    return actions.process(this.platform)
     .then(function() {
-        if (projectFile) {
-            projectFile.write();
+        if (project) {
+            project.write();
         }
 
         self._munger
@@ -300,9 +291,6 @@ PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
             self.locations.www;
 
         self._removeModulesInfo(plugin, targetDir);
-        // Remove stale plugin directory
-        // TODO: this should be done by plugin files uninstaller
-        shell.rm('-rf', path.resolve(self.root, 'Plugins', plugin.id));
     });
 };
 
@@ -353,7 +341,6 @@ PlatformApiPoly.prototype.removePlugin = function (plugin, uninstallOptions) {
  */
 PlatformApiPoly.prototype.build = function (buildOptions) {
     var self = this;
-    // TODO: Ensure that this always rejected with CordovaError
     return require('./lib/check_reqs').run()
     .then(function () {
         return require('./lib/build').run.call(self, buildOptions);
@@ -385,7 +372,6 @@ PlatformApiPoly.prototype.build = function (buildOptions) {
  */
 PlatformApiPoly.prototype.run = function(runOptions) {
     var self = this;
-    // TODO: Ensure that this always rejected with CordovaError
     return require('./lib/check_reqs').run()
     .then(function () {
         return require('./lib/run').run.call(self, runOptions);
@@ -400,7 +386,6 @@ PlatformApiPoly.prototype.run = function(runOptions) {
  */
 PlatformApiPoly.prototype.clean = function(cleanOptions) {
     var self = this;
-    // TODO: Ensure that this always rejected with CordovaError
     return require('./lib/check_reqs').run()
     .then(function () {
         return require('./lib/build').runClean.call(self, cleanOptions);
@@ -518,22 +503,4 @@ PlatformApiPoly.prototype._writePluginModules = function (targetDir) {
 
     shell.mkdir('-p', targetDir);
     fs.writeFileSync(path.join(targetDir, 'cordova_plugins.js'), final_contents, 'utf-8');
-};
-
-PlatformApiPoly.prototype._getInstaller = function(type) {
-    if (!this._handler[type]) {
-        this.events.emit('verbose', '<' + type + '> is not supported for android plugins');
-        return;
-    }
-
-    return this._handler[type].install.bind(this);
-};
-
-PlatformApiPoly.prototype._getUninstaller = function(type) {
-    if (!this._handler[type]) {
-        this.events.emit('verbose', '<' + type + '> is not supported for android plugins');
-        return;
-    }
-
-    return this._handler[type].uninstall.bind(this);
 };

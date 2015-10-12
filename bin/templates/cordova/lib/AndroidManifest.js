@@ -20,14 +20,15 @@
 var fs = require('fs');
 var et = require('elementtree');
 var xml= require('cordova-common').xmlHelpers;
-var CordovaError = require('cordova-common').CordovaError;
+
+var DEFAULT_ORIENTATION = 'default';
 
 /** Wraps an AndroidManifest file */
 function AndroidManifest(path) {
     this.path = path;
     this.doc = xml.parseElementtreeSync(path);
     if (this.doc.getroot().tag !== 'manifest') {
-        throw new CordovaError(path + ' has incorrect root node name (expected "manifest")');
+        throw new Error(path + ' has incorrect root node name (expected "manifest")');
     }
 }
 
@@ -69,7 +70,6 @@ AndroidManifest.prototype.getActivity = function() {
             return activity.attrib['android:name'];
         },
         setName: function (name) {
-            // TODO: validate name and throw if not valid
             if (!name) {
                 delete activity.attrib['android:name'];
             } else {
@@ -81,8 +81,7 @@ AndroidManifest.prototype.getActivity = function() {
             return activity.attrib['android:screenOrientation'];
         },
         setOrientation: function (orientation) {
-            // TODO: move default value to constant
-            if (!orientation || orientation.toLowerCase() === 'default') {
+            if (!orientation || orientation.toLowerCase() === DEFAULT_ORIENTATION) {
                 delete activity.attrib['android:screenOrientation'];
             } else {
                 activity.attrib['android:screenOrientation'] = orientation;

@@ -19,16 +19,13 @@
 
 /* jshint unused: vars */
 
-// TODO: rename this file appropriately
-
 var fs = require('fs');
 var path = require('path');
 var shell = require('shelljs');
-// TODO: switch to PlatformApi events
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 
-module.exports = {
+var handlers = {
     'source-file':{
         install:function(obj, plugin, project, options) {
             if (!obj.src) throw new CordovaError('<source-file> element is missing "src" attribute for plugin: ' + plugin.id);
@@ -162,6 +159,22 @@ module.exports = {
             removeFileAndParents(www, pluginRelativePath);
         }
     }
+};
+
+module.exports.getInstaller = function (type) {
+    if (handlers[type] && handlers[type].install) {
+        return handlers[type].install;
+    }
+
+    events.emit('verbose', '<' + type + '> is not supported for android plugins');
+};
+
+module.exports.getUninstaller = function(type) {
+    if (handlers[type] && handlers[type].uninstall) {
+        return handlers[type].uninstall;
+    }
+
+    events.emit('verbose', '<' + type + '> is not supported for android plugins');
 };
 
 function copyFile (plugin_dir, src, project_dir, dest, link) {
