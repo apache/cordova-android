@@ -29,23 +29,10 @@ var AndroidProject = require('./lib/AndroidProject');
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
+var ConsoleLogger = require('./lib/ConsoleLogger');
 var pluginHandlers = require('./lib/pluginHandlers');
 
 var PLATFORM = 'android';
-var GENERIC_EVENTS = new (require('events').EventEmitter)()
-    .on('verbose', function (message) {
-        if (process.argv.indexOf('-d') >= 0 || process.argv.indexOf('--verbose') >= 0)
-            console.log(message);
-    })
-    .on('log', console.log)
-    .on('warn', console.warn)
-    .on('error', function (error) {
-        if (process.argv.indexOf('-d') >= 0 || process.argv.indexOf('--verbose') >= 0) {
-            console.error((error && error.message) || error);
-        } else {
-            console.error((error && error.stack) || error);
-        }
-    });
 
 /**
  * Class, that acts as abstraction over particular platform. Encapsulates the
@@ -61,7 +48,7 @@ var GENERIC_EVENTS = new (require('events').EventEmitter)()
 function Api(platform, platformRootDir, events) {
     this.platform = PLATFORM;
     this.root = path.resolve(__dirname, '..');
-    this.events = events || GENERIC_EVENTS;
+    this.events = events || ConsoleLogger.get();
     // NOTE: trick to share one EventEmitter instance across all js code
     require('cordova-common').events = this.events;
 
@@ -105,7 +92,7 @@ function Api(platform, platformRootDir, events) {
  */
 Api.createPlatform = function (destination, config, options, events) {
     return require('../../lib/create')
-    .create(destination, config, options, events || GENERIC_EVENTS)
+    .create(destination, config, options, events || ConsoleLogger.get())
     .then(function (destination) {
         var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
         return new PlatformApi(PLATFORM, destination, events);
@@ -131,7 +118,7 @@ Api.createPlatform = function (destination, config, options, events) {
  */
 Api.updatePlatform = function (destination, options, events) {
     return require('../../lib/create')
-    .update(destination, options, events || GENERIC_EVENTS)
+    .update(destination, options, events || ConsoleLogger.get())
     .then(function (destination) {
         var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
         return new PlatformApi('android', destination, events);
