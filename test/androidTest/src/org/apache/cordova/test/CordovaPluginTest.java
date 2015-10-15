@@ -25,8 +25,6 @@ package org.apache.cordova.test;
 import android.app.Activity;
 import android.test.ActivityInstrumentationTestCase2;
 
-import org.apache.cordova.CordovaWebView;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 
@@ -56,7 +54,7 @@ public class CordovaPluginTest extends BaseCordovaIntegrationTest {
         //currently only one of the cases is covered
         //TODO: add coverage for both cases where onStart is called in CordovaWebViewImpl (handleOnStart and init)
         //currently only one of the cases is covered
-        LifeCyclePlugin testPlugin = (LifeCyclePlugin)cordovaWebView.getPluginManager().getPlugin("LifeCycle");
+        LifeCyclePlugin testPlugin = (LifeCyclePlugin) cordovaWebInterface.getPluginManager().getPlugin("LifeCycle");
         testPlugin.calls = "";
         // testOnStart
         invokeBlockingCallToLifeCycleEvent("callActivityOnStart");

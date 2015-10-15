@@ -27,7 +27,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebInterface;
 import org.apache.cordova.CordovaWebViewEngine;
 
 /**
@@ -61,7 +61,7 @@ public class SystemWebView extends WebView implements CordovaWebViewEngine.Engin
     }
 
     @Override
-    public CordovaWebView getCordovaWebView() {
+    public CordovaWebInterface getCordovaWebView() {
         return parentEngine != null ? parentEngine.getCordovaWebView() : null;
     }
 

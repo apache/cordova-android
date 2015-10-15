@@ -18,10 +18,6 @@
 */
 package org.apache.cordova;
 
-import org.apache.cordova.CordovaArgs;
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CallbackContext;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -36,7 +32,7 @@ import java.io.IOException;
  * Plugins must extend this class and override one of the execute methods.
  */
 public class CordovaPlugin {
-    public CordovaWebView webView;
+    public CordovaWebInterface webView;
     public CordovaInterface cordova;
     protected CordovaPreferences preferences;
     private String serviceName;
@@ -45,7 +41,7 @@ public class CordovaPlugin {
      * Call this after constructing to initialize the plugin.
      * Final because we want to be able to change args without breaking plugins.
      */
-    public final void privateInitialize(String serviceName, CordovaInterface cordova, CordovaWebView webView, CordovaPreferences preferences) {
+    public final void privateInitialize(String serviceName, CordovaInterface cordova, CordovaWebInterface webView, CordovaPreferences preferences) {
         assert this.cordova == null;
         this.serviceName = serviceName;
         this.cordova = cordova;
@@ -60,7 +56,7 @@ public class CordovaPlugin {
      * Prefer to use pluginInitialize instead since there is no value in
      * having parameters on the initialize() function.
      */
-    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+    public void initialize(CordovaInterface cordova, CordovaWebInterface webView) {
     }
 
     /**
@@ -334,7 +330,7 @@ public class CordovaPlugin {
      * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
      * 
      */
-    public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
+    public boolean onReceivedHttpAuthRequest(CordovaWebInterface view, ICordovaHttpAuthHandler handler, String host, String realm) {
         return false;
     }
     
@@ -348,7 +344,7 @@ public class CordovaPlugin {
      * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
      *
      */
-    public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
+    public boolean onReceivedClientCertRequest(CordovaWebInterface view, ICordovaClientCertRequest request) {
         return false;
     }
 

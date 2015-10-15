@@ -44,21 +44,21 @@ public class IFrameTest extends BaseCordovaIntegrationTest {
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                cordovaWebView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+                cordovaWebInterface.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
             }
         });
         sleep(3000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                cordovaWebView.sendJavascript("loadUrl('index2.html')");
+                cordovaWebInterface.sendJavascript("loadUrl('index2.html')");
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = cordovaWebView.getUrl();
+                String url = cordovaWebInterface.getUrl();
                 assertTrue(url.endsWith("index.html"));
             }
         });
@@ -69,29 +69,29 @@ public class IFrameTest extends BaseCordovaIntegrationTest {
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                cordovaWebView.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
+                cordovaWebInterface.sendJavascript("loadUrl('http://maps.google.com/maps?output=embed');");
             }
         });
         sleep(3000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                cordovaWebView.sendJavascript("loadUrl('index2.html')");
+                cordovaWebInterface.sendJavascript("loadUrl('index2.html')");
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = cordovaWebView.getUrl();
-                cordovaWebView.backHistory();
+                String url = cordovaWebInterface.getUrl();
+                cordovaWebInterface.backHistory();
             }
         });
         sleep(1000);
         runTestOnUiThread(new Runnable() {
             public void run()
             {
-                String url = cordovaWebView.getUrl();
+                String url = cordovaWebInterface.getUrl();
                 assertTrue(url.endsWith("index.html"));
             }
         });

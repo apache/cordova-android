@@ -34,7 +34,7 @@ public class IntentPreferenceTest extends BaseCordovaIntegrationTest {
         super.setUp();
         // INVALID_URL tests that errorUrl and url are *not* settable via the intent.
         setUpWithStartUrl(START_URL, "backgroundcolor", GREEN);
-        prefs = cordovaWebView.getPreferences();
+        prefs = cordovaWebInterface.getPreferences();
     }
 
     public void testUrl() throws Throwable {

@@ -44,12 +44,12 @@ public class PluginManager {
     private final LinkedHashMap<String, PluginEntry> entryMap = new LinkedHashMap<String, PluginEntry>();
 
     private final CordovaInterface ctx;
-    private final CordovaWebView app;
+    private final CordovaWebInterface app;
     private boolean isInitialized;
 
-    public PluginManager(CordovaWebView cordovaWebView, CordovaInterface cordova, Collection<PluginEntry> pluginEntries) {
+    public PluginManager(CordovaWebInterface cordovaWebInterface, CordovaInterface cordova, Collection<PluginEntry> pluginEntries) {
         this.ctx = cordova;
-        this.app = cordovaWebView;
+        this.app = cordovaWebInterface;
         setPluginEntries(pluginEntries);
     }
 
@@ -223,7 +223,7 @@ public class PluginManager {
      * @return                  Returns True if there is a plugin which will resolve this auth challenge, otherwise False
      * 
      */
-    public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
+    public boolean onReceivedHttpAuthRequest(CordovaWebInterface view, ICordovaHttpAuthHandler handler, String host, String realm) {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
             if (plugin != null && plugin.onReceivedHttpAuthRequest(app, handler, host, realm)) {
                 return true;
@@ -242,7 +242,7 @@ public class PluginManager {
      * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
      *
      */
-    public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
+    public boolean onReceivedClientCertRequest(CordovaWebInterface view, ICordovaClientCertRequest request) {
         for (CordovaPlugin plugin : this.pluginMap.values()) {
             if (plugin != null && plugin.onReceivedClientCertRequest(app, request)) {
                 return true;
