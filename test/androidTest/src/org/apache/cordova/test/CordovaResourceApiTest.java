@@ -51,13 +51,13 @@ public class CordovaResourceApiTest extends BaseCordovaIntegrationTest {
     protected void setUp() throws Exception {
         super.setUp();
         setUpWithStartUrl(null);
-        resourceApi = cordovaWebView.getResourceApi();
+        resourceApi = cordovaWebInterface.getResourceApi();
         resourceApi.setThreadCheckingEnabled(false);
-        cordovaWebView.getPluginManager().addService(new PluginEntry("CordovaResourceApiTestPlugin1", new CordovaPlugin() {
+        cordovaWebInterface.getPluginManager().addService(new PluginEntry("CordovaResourceApiTestPlugin1", new CordovaPlugin() {
             @Override
             public Uri remapUri(Uri uri) {
                 if (uri.getQuery() != null && uri.getQuery().contains("pluginRewrite")) {
-                    return cordovaWebView.getResourceApi().remapUri(
+                    return cordovaWebInterface.getResourceApi().remapUri(
                             Uri.parse("data:text/plain;charset=utf-8,pass"));
                 }
                 if (uri.getQuery() != null && uri.getQuery().contains("pluginUri")) {
@@ -243,7 +243,7 @@ public class CordovaResourceApiTest extends BaseCordovaIntegrationTest {
         testActivity.onPageFinishedUrl.take();
         execPayload = null;
         execStatus = null;
-        cordovaWebView.sendJavascript(
+        cordovaWebInterface.sendJavascript(
                 "var x = new XMLHttpRequest;\n" +
                         "x.open('GET', 'file:///foo?pluginRewrite=1', false);\n" +
                         "x.send();\n" +
@@ -263,7 +263,7 @@ public class CordovaResourceApiTest extends BaseCordovaIntegrationTest {
         testActivity.onPageFinishedUrl.take();
         execPayload = null;
         execStatus = null;
-        cordovaWebView.sendJavascript(
+        cordovaWebInterface.sendJavascript(
             "var x = new XMLHttpRequest;\n" +
             "x.open('GET', 'http://foo/bar', false);\n" + 
             "x.send();\n" + 

@@ -27,11 +27,11 @@ import android.view.View;
  * Instead, we will create a new interface: e.g. CordovaWebViewEngineV2
  */
 public interface CordovaWebViewEngine {
-    void init(CordovaWebView parentWebView, CordovaInterface cordova, Client client,
+    void init(CordovaWebInterface parentWebView, CordovaInterface cordova, Client client,
               CordovaResourceApi resourceApi, PluginManager pluginManager,
               NativeToJsMessageQueue nativeToJsMessageQueue);
 
-    CordovaWebView getCordovaWebView();
+    CordovaWebInterface getCordovaWebView();
     ICordovaCookieManager getCookieManager();
     View getView();
 
@@ -63,7 +63,7 @@ public interface CordovaWebViewEngine {
      * E.g. ((CordovaWebView.EngineView)activity.findViewById(android.R.id.webView)).getCordovaWebView();
      */
     public interface EngineView {
-        CordovaWebView getCordovaWebView();
+        CordovaWebInterface getCordovaWebView();
     }
 
     /**

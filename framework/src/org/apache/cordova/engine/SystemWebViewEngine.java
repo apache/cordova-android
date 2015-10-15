@@ -37,7 +37,7 @@ import org.apache.cordova.CordovaBridge;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPreferences;
 import org.apache.cordova.CordovaResourceApi;
-import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebInterface;
 import org.apache.cordova.CordovaWebViewEngine;
 import org.apache.cordova.ICordovaCookieManager;
 import org.apache.cordova.NativeToJsMessageQueue;
@@ -63,7 +63,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     protected CordovaPreferences preferences;
     protected CordovaBridge bridge;
     protected CordovaWebViewEngine.Client client;
-    protected CordovaWebView parentWebView;
+    protected CordovaWebInterface parentWebView;
     protected CordovaInterface cordova;
     protected PluginManager pluginManager;
     protected CordovaResourceApi resourceApi;
@@ -86,7 +86,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     }
 
     @Override
-    public void init(CordovaWebView parentWebView, CordovaInterface cordova, CordovaWebViewEngine.Client client,
+    public void init(CordovaWebInterface parentWebView, CordovaInterface cordova, CordovaWebViewEngine.Client client,
               CordovaResourceApi resourceApi, PluginManager pluginManager,
               NativeToJsMessageQueue nativeToJsMessageQueue) {
         if (this.cordova != null) {
@@ -121,7 +121,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     }
 
     @Override
-    public CordovaWebView getCordovaWebView() {
+    public CordovaWebInterface getCordovaWebView() {
         return parentWebView;
     }
 

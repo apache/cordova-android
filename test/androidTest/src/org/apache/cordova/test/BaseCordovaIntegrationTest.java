@@ -25,12 +25,12 @@ import android.content.Intent;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.FrameLayout;
 
-import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebInterface;
 
 public class BaseCordovaIntegrationTest extends ActivityInstrumentationTestCase2<MainTestActivity> {
     protected MainTestActivity testActivity;
     protected FrameLayout containerView;
-    protected CordovaWebView cordovaWebView;
+    protected CordovaWebInterface cordovaWebInterface;
 
 
     public BaseCordovaIntegrationTest() {
@@ -46,7 +46,7 @@ public class BaseCordovaIntegrationTest extends ActivityInstrumentationTestCase2
         setActivityIntent(intent);
         testActivity = getActivity();
         containerView = (FrameLayout) testActivity.findViewById(android.R.id.content);
-        cordovaWebView = testActivity.getCordovaWebView();
+        cordovaWebInterface = testActivity.getCordovaWebView();
     }
 }
 

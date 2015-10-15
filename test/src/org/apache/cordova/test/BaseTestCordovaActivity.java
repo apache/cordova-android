@@ -18,11 +18,10 @@
 */
 package org.apache.cordova.test;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import org.apache.cordova.CordovaActivity;
-import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebInterface;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -43,7 +42,7 @@ public class BaseTestCordovaActivity extends CordovaActivity {
         return super.onMessage(id, data);
     }
 
-    public CordovaWebView getCordovaWebView() {
+    public CordovaWebInterface getCordovaWebView() {
         return appView;
     }
 

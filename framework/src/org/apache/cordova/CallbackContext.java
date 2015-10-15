@@ -22,19 +22,17 @@ import org.json.JSONArray;
 
 import android.util.Log;
 
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.PluginResult;
 import org.json.JSONObject;
 
 public class CallbackContext {
     private static final String LOG_TAG = "CordovaPlugin";
 
     private String callbackId;
-    private CordovaWebView webView;
+    private CordovaWebInterface webView;
     private boolean finished;
     private int changingThreads;
 
-    public CallbackContext(String callbackId, CordovaWebView webView) {
+    public CallbackContext(String callbackId, CordovaWebInterface webView) {
         this.callbackId = callbackId;
         this.webView = webView;
     }

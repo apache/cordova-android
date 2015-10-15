@@ -38,35 +38,35 @@ public class BackButtonMultiPageTest extends BaseCordovaIntegrationTest {
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              cordovaWebView.sendJavascript("window.location = 'sample2.html';");
+              cordovaWebInterface.sendJavascript("window.location = 'sample2.html';");
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              cordovaWebView.sendJavascript("window.location = 'sample3.html';");          }
+              cordovaWebInterface.sendJavascript("window.location = 'sample3.html';");          }
       });
 
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample3.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              assertTrue(cordovaWebView.backHistory());
+              assertTrue(cordovaWebInterface.backHistory());
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              assertTrue(cordovaWebView.backHistory());
+              assertTrue(cordovaWebInterface.backHistory());
           }
       });
       assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              assertFalse(cordovaWebView.backHistory());
+              assertFalse(cordovaWebInterface.backHistory());
           }
       });
   }
@@ -76,35 +76,35 @@ public class BackButtonMultiPageTest extends BaseCordovaIntegrationTest {
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              cordovaWebView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+              cordovaWebInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              cordovaWebView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+              cordovaWebInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample3.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              assertTrue(cordovaWebView.backHistory());
+              assertTrue(cordovaWebInterface.backHistory());
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              assertTrue(cordovaWebView.backHistory());
+              assertTrue(cordovaWebInterface.backHistory());
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/index.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              assertFalse(cordovaWebView.backHistory());
+              assertFalse(cordovaWebInterface.backHistory());
           }
       });
   }
@@ -113,22 +113,22 @@ public class BackButtonMultiPageTest extends BaseCordovaIntegrationTest {
       assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run() {
-              cordovaWebView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+              cordovaWebInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run() {
-              cordovaWebView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+              cordovaWebInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample3.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              String url = cordovaWebView.getUrl();
+              String url = cordovaWebInterface.getUrl();
               assertTrue(url.endsWith("sample3.html"));
-              BaseInputConnection viewConnection = new BaseInputConnection(cordovaWebView.getView(), true);
+              BaseInputConnection viewConnection = new BaseInputConnection(cordovaWebInterface.getView(), true);
               KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
               KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
               viewConnection.sendKeyEvent(backDown);
@@ -139,9 +139,9 @@ public class BackButtonMultiPageTest extends BaseCordovaIntegrationTest {
       runTestOnUiThread(new Runnable() {
           public void run()
           {
-              String url = cordovaWebView.getUrl();
+              String url = cordovaWebInterface.getUrl();
               assertTrue(url.endsWith("sample2.html"));
-              BaseInputConnection viewConnection = new BaseInputConnection(cordovaWebView.getView(), true);
+              BaseInputConnection viewConnection = new BaseInputConnection(cordovaWebInterface.getView(), true);
               KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
               KeyEvent backUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK);
               viewConnection.sendKeyEvent(backDown);
@@ -155,19 +155,19 @@ public class BackButtonMultiPageTest extends BaseCordovaIntegrationTest {
       assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run() {
-              cordovaWebView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+              cordovaWebInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run() {
-              cordovaWebView.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+              cordovaWebInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
           }
       });
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample3.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run() {
-              String url = cordovaWebView.getUrl();
+              String url = cordovaWebInterface.getUrl();
               assertTrue(url.endsWith("sample3.html"));
               BaseInputConnection viewConnection = new BaseInputConnection(containerView, true);
               KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
@@ -179,7 +179,7 @@ public class BackButtonMultiPageTest extends BaseCordovaIntegrationTest {
       assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run() {
-              String url = cordovaWebView.getUrl();
+              String url = cordovaWebInterface.getUrl();
               assertTrue(url.endsWith("sample2.html"));
               BaseInputConnection viewConnection = new BaseInputConnection(containerView, true);
               KeyEvent backDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);

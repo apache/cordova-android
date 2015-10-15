@@ -44,7 +44,7 @@ import java.util.Set;
  * Main class for interacting with a Cordova webview. Manages plugins, events, and a CordovaWebViewEngine.
  * Class uses two-phase initialization. You must call init() before calling any other methods.
  */
-public class CordovaWebViewImpl implements CordovaWebView {
+public class CordovaWebViewImpl implements CordovaWebInterface {
 
     public static final String TAG = "CordovaWebViewImpl";
 

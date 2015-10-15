@@ -79,7 +79,7 @@ public class CordovaActivity extends Activity {
     public static String TAG = "CordovaActivity";
 
     // The webview for our app
-    protected CordovaWebView appView;
+    protected CordovaWebInterface appView;
 
     private static int ACTIVITY_STARTING = 0;
     private static int ACTIVITY_RUNNING = 1;
@@ -104,7 +104,7 @@ public class CordovaActivity extends Activity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebView.CORDOVA_VERSION + " is starting");
+        LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebInterface.CORDOVA_VERSION + " is starting");
         LOG.d(TAG, "CordovaActivity.onCreate()");
 
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
@@ -195,7 +195,7 @@ public class CordovaActivity extends Activity {
      *
      * Override this to customize the webview that is used.
      */
-    protected CordovaWebView makeWebView() {
+    protected CordovaWebInterface makeWebView() {
         return new CordovaWebViewImpl(makeWebViewEngine());
     }
 

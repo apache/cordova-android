@@ -21,10 +21,9 @@ package org.apache.cordova.test;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.apache.cordova.Config;
 import org.apache.cordova.ConfigXmlParser;
 import org.apache.cordova.CordovaInterfaceImpl;
-import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebInterface;
 import org.apache.cordova.CordovaWebViewImpl;
 import org.apache.cordova.engine.SystemWebView;
 import org.apache.cordova.engine.SystemWebViewEngine;
@@ -36,7 +35,7 @@ import android.os.Bundle;
  * Tests creating the views via inflating a layout, and also tests *not* using CordovaActivity.
  */
 public class CordovaWebViewTestActivity extends Activity {
-    private CordovaWebView cordovaWebView;
+    private CordovaWebInterface cordovaWebInterface;
     public final ArrayBlockingQueue<String> onPageFinishedUrl = new ArrayBlockingQueue<String>(5);
     public static final String START_URL = "file:///android_asset/www/index.html";
 
@@ -62,13 +61,13 @@ public class CordovaWebViewTestActivity extends Activity {
         parser.parse(this);
 
         SystemWebView webView = (SystemWebView) findViewById(R.id.cordovaWebView);
-        cordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(webView));
-        cordovaWebView.init(cordovaInterface, parser.getPluginEntries(), parser.getPreferences());
+        cordovaWebInterface = new CordovaWebViewImpl(new SystemWebViewEngine(webView));
+        cordovaWebInterface.init(cordovaInterface, parser.getPluginEntries(), parser.getPreferences());
 
-        cordovaWebView.loadUrl(START_URL);
+        cordovaWebInterface.loadUrl(START_URL);
     }
 
-    public CordovaWebView getCordovaWebView() {
-        return cordovaWebView;
+    public CordovaWebInterface getCordovaWebInterface() {
+        return cordovaWebInterface;
     }
 }
