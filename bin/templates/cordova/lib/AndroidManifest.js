@@ -128,6 +128,21 @@ AndroidManifest.prototype.getActivity = function() {
     };
 });
 
+AndroidManifest.prototype.getDebuggable = function() {
+    return this.doc.getroot().find('./application').attrib['android:debuggable'] === 'true';
+};
+
+AndroidManifest.prototype.setDebuggable = function(value) {
+    var application = this.doc.getroot().find('./application');
+    if (value) {
+        application.attrib['android:debuggable'] = 'true';
+    } else {
+        // The default value is "false", so we can remove attribute at all.
+        delete application.attrib['android:debuggable'];
+    }
+    return this;
+};
+
 /**
  * Writes manifest to disk syncronously. If filename is specified, then manifest
  *   will be written to that file

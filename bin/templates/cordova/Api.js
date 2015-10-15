@@ -102,8 +102,7 @@ Api.createPlatform = function (destination, config, options, events) {
 /**
  * Updates already installed platform.
  *
- * @param  {String}  destination Destination directory, where insatll platform
- *   to
+ * @param  {String}  destination Destination directory, where platform installed
  * @param  {Object}  [options]  An options object. The most common options are:
  * @param  {String}  [options.customTemplate]  A path to custom template, that
  *   should override the default one from platform.
