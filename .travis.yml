@@ -2,7 +2,7 @@ language: android
 sudo: false
 install:
     - npm install
-    - echo y | android update sdk -u --filter android-22
+    - echo y | android update sdk -u --filter android-23
 script:
     - npm test
     - npm run test-build
