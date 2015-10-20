@@ -19,23 +19,30 @@
        under the License.
 */
 
-var build = require('./lib/build'),
-    reqs  = require('./lib/check_reqs'),
-    args  = process.argv;
+var args  = process.argv;
+var Api = require('./Api');
+var nopt = require('nopt');
+var path = require('path');
 
 // Support basic help commands
-if(args[2] == '--help' ||
-   args[2] == '/?' ||
-   args[2] == '-h' ||
-   args[2] == 'help' ||
-   args[2] == '-help' ||
-   args[2] == '/help') {
-    build.help();
-} else {
-    reqs.run().done(function() {
-        return build.run(args.slice(2));
-    }, function(err) {
-        console.error(err);
-        process.exit(2);
-    });
-}
+if(['--help', '/?', '-h', 'help', '-help', '/help'].indexOf(process.argv[2]) >= 0)
+    require('./lib/build').help();
+
+// Do some basic argument parsing
+var buildOpts = nopt({
+    'verbose' : Boolean,
+    'silent' : Boolean,
+    'debug' : Boolean,
+    'release' : Boolean,
+    'nobuild': Boolean,
+    'buildConfig' : path
+}, { 'd' : '--verbose' });
+
+// Make buildOptions compatible with PlatformApi build method spec
+buildOpts.argv = buildOpts.argv.remain;
+
+new Api().build(buildOpts)
+.catch(function(err) {
+    console.error(err.stack);
+    process.exit(2);
+});

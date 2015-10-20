@@ -19,7 +19,9 @@
        under the License.
 */
 var path = require('path');
-var create = require('./lib/create');
+var ConfigParser = require('cordova-common').ConfigParser;
+var Api = require('./templates/cordova/Api');
+
 var argv = require('nopt')({
     'help' : Boolean,
     'cli' : Boolean,
@@ -39,11 +41,16 @@ if (argv.help || argv.argv.remain.length === 0) {
     process.exit(1);
 }
 
-var project_path = argv.argv.remain[0];
-var package_name = argv.argv.remain[1];
-var project_name = argv.argv.remain[2];
-var template_path = argv.argv.remain[3];
-var activity_name = argv['activity-name'];
+var config = new ConfigParser(path.resolve(__dirname, 'templates/project/res/xml/config.xml'));
 
-create.createProject(project_path, package_name, project_name, activity_name, template_path, argv.link || argv.shared, argv.cli).done();
+if (argv.argv.remain[1]) config.setPackageName(argv.argv.remain[1]);
+if (argv.argv.remain[2]) config.setName(argv.argv.remain[2]);
+if (argv['activity-name']) config.setName(argv['activity-name']);
 
+var options = {
+    link: argv.link || argv.shared,
+    customTemplate: argv.argv.remain[3],
+    activityName: argv['activity-name']
+};
+
+Api.createPlatform(argv.argv.remain[0], config, options).done();

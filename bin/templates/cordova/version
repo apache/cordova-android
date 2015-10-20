@@ -22,4 +22,8 @@
 // Coho updates this line:
 var VERSION = "5.0.0-dev";
 
-console.log(VERSION);
+module.exports.version = VERSION;
+
+if (!module.parent) {
+    console.log(VERSION);
+}
