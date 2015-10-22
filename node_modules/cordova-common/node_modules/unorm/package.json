@@ -1,0 +1,69 @@
+{
+  "name": "unorm",
+  "version": "1.4.1",
+  "description": "JavaScript Unicode 8.0 Normalization - NFC, NFD, NFKC, NFKD. Read <http://unicode.org/reports/tr15/> UAX #15 Unicode Normalization Forms.",
+  "author": {
+    "name": "Bjarke Walling",
+    "email": "bwp@bwp.dk"
+  },
+  "license": "MIT or GPL-2.0",
+  "contributors": [
+    {
+      "name": "Bjarke Walling",
+      "email": "bwp@bwp.dk"
+    },
+    {
+      "name": "Oleg Grenrus",
+      "email": "oleg.grenrus@iki.fi"
+    },
+    {
+      "name": "Matsuza",
+      "email": "matsuza@gmail.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/walling/unorm.git"
+  },
+  "main": "./lib/unorm.js",
+  "engines": {
+    "node": ">= 0.4.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "benchmark": "~1.0.0",
+    "unorm": "1.4.1",
+    "grunt-contrib-jshint": "~0.8.0",
+    "grunt-contrib-watch": "~0.5.0",
+    "grunt-simple-mocha": "~0.4.0",
+    "grunt": "~0.4.1"
+  },
+  "gitHead": "e802d0d7844cf74b03742bce1147a82ace218396",
+  "bugs": {
+    "url": "https://github.com/walling/unorm/issues"
+  },
+  "homepage": "https://github.com/walling/unorm",
+  "_id": "unorm@1.4.1",
+  "_shasum": "364200d5f13646ca8bcd44490271335614792300",
+  "_from": "unorm@>=1.3.3 <2.0.0",
+  "_npmVersion": "1.4.28",
+  "_npmUser": {
+    "name": "walling",
+    "email": "bwp@bwp.dk"
+  },
+  "maintainers": [
+    {
+      "name": "walling",
+      "email": "bwp@bwp.dk"
+    }
+  ],
+  "dist": {
+    "shasum": "364200d5f13646ca8bcd44490271335614792300",
+    "tarball": "http://registry.npmjs.org/unorm/-/unorm-1.4.1.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/unorm/-/unorm-1.4.1.tgz",
+  "readme": "ERROR: No README data found!"
+}
