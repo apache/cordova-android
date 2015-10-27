@@ -22,10 +22,12 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Debug;
 import android.util.Log;
 
@@ -511,4 +513,38 @@ public class PluginManager {
         }
     }
 
+    /**
+     * Collects the state of all managed plugins in a JSONObject. This is used to generate the event
+     * object passed to the js when the resume event is fired.
+     *
+     * @return  JSONObject in which the state of each plugin is mapped to its respective serviceName
+     */
+    public JSONObject savePluginsJSON(JSONObject appState) {
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            if (plugin != null) {
+                JSONObject pluginState = plugin.saveStateForApplication();
+                try {
+                    if(pluginState != null) {
+                        appState.put(plugin.getServiceName(), pluginState);
+                    }
+                } catch(JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return appState;
+    }
+
+    public Bundle onSaveInstanceState() {
+        Bundle state = new Bundle();
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            if (plugin != null) {
+                Bundle pluginState = plugin.onSaveInstanceState();
+                if(pluginState != null) {
+                    state.putBundle(plugin.getServiceName(), pluginState);
+                }
+            }
+        }
+        return state;
+    }
 }

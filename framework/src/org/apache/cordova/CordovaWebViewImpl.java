@@ -337,6 +337,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
     }
 
     private void sendJavascriptEvent(String event) {
+        sendJavascriptEvent(event, new JSONObject());
+    }
+
+    private void sendJavascriptEvent(String event, JSONObject payload) {
         if (appPlugin == null) {
             appPlugin = (CoreAndroid)pluginManager.getPlugin(CoreAndroid.PLUGIN_NAME);
         }
@@ -345,7 +349,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
             LOG.w(TAG, "Unable to fire event without existing plugin");
             return;
         }
-        appPlugin.fireJavascriptEvent(event);
+        appPlugin.fireJavascriptEvent(event, payload);
     }
 
     @Override
@@ -445,9 +449,18 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // Resume JavaScript timers. This affects all webviews within the app!
         engine.setPaused(false);
         this.pluginManager.onResume(keepRunning);
-        // To be the same as other platforms, fire this event only when resumed after a "pause".
+
+        // In order to match the behavior of the other platforms, we only send onResume after an
+        // onPause has occurred. The resume event might still be sent if the Activity was killed
+        // while waiting for the result of an external Activity once the page loads (see CoreAndroid)
         if (hasPausedEver) {
-            sendJavascriptEvent("resume");
+            JSONObject payload = new JSONObject();
+            try {
+                payload.put("state", cordova.getSavedApplicationState());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            sendJavascriptEvent("resume", payload);
         }
     }
     @Override

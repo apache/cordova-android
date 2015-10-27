@@ -104,5 +104,19 @@ module.exports = {
     */
     exitApp:function() {
         return exec(null, null, APP_PLUGIN_NAME, "exitApp", []);
+    },
+
+    /**
+    * Save an object representing this application's state. When the resume
+    * event is fired, the event object passed to callback functions will contain
+    * the information saved using this function (as well as any information
+    * saved by plugins) for use in restoring the application's state.
+    *
+    * @param state  An object that represents the state of the application
+    */
+
+    saveState:function(state) {
+        console.log("Cordova: IN SAVESTATE");
+        exec(null, null, APP_PLUGIN_NAME, "saveState", [state]);
     }
 };
