@@ -22,7 +22,7 @@ import android.view.KeyEvent;
 import android.view.View;
 
 /**
- * Interfcae for all Cordova engines.
+ * Interface for all Cordova engines.
  * No methods will be added to this class (in order to be compatible with existing engines).
  * Instead, we will create a new interface: e.g. CordovaWebViewEngineV2
  */
