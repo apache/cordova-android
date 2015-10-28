@@ -29,12 +29,15 @@ public class ResumeCallback extends CallbackContext {
             }
         }
 
-        JSONObject event = new JSONObject();
+        JSONObject event = cordovaInterface.getSavedApplicationState();
+        JSONObject pluginResultObject = new JSONObject();
 
         try {
+            pluginResultObject.put("pluginServiceName", this.serviceName);
+            pluginResultObject.put("pluginStatus", PluginResult.StatusMessages[pluginResult.getStatus()]);
+
             event.put("action", "resume");
-            event.put("state", cordovaInterface.getSavedApplicationState());
-            event.put("pluginResult", this.serviceName);
+            event.put("pendingResult", pluginResultObject);
         } catch (JSONException e) {
         }
 

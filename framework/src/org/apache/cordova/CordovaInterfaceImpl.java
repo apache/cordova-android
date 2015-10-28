@@ -232,11 +232,15 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     }
 
     public JSONObject getSavedApplicationState() {
-        if(savedApplicationState != null) {
-            return pluginManager.savePluginsJSON(savedApplicationState);
-        } else {
-            return pluginManager.savePluginsJSON(new JSONObject());
+        JSONObject result = new JSONObject();
+        try {
+            result.put("plugins", pluginManager.savePluginsJSON(new JSONObject()));
+            if(savedApplicationState != null) {
+                result.put("state", savedApplicationState);
+            }
+        } catch (JSONException e) {
         }
+        return result;
     }
 
     public void saveApplicationState(JSONObject object) {

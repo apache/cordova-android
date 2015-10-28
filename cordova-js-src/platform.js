@@ -85,8 +85,8 @@ function onMessageFromNative(msg) {
             cordova.fireDocumentEvent(action);
             break;
         case 'resume':
-            if(arguments.length > 1) {
-                msg.data = arguments[1];
+            if(arguments.length > 1 && msg.pendingResult) {
+                msg.pendingResult.result = arguments[1];
             }
             cordova.fireDocumentEvent(action, msg);
             break;

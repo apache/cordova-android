@@ -454,13 +454,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // onPause has occurred. The resume event might still be sent if the Activity was killed
         // while waiting for the result of an external Activity once the page loads (see CoreAndroid)
         if (hasPausedEver) {
-            JSONObject payload = new JSONObject();
-            try {
-                payload.put("state", cordova.getSavedApplicationState());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            sendJavascriptEvent("resume", payload);
+            sendJavascriptEvent("resume", cordova.getSavedApplicationState());
         }
     }
     @Override
