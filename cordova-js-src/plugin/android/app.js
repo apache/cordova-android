@@ -116,7 +116,6 @@ module.exports = {
     */
 
     saveState:function(state) {
-        console.log("Cordova: IN SAVESTATE");
         exec(null, null, APP_PLUGIN_NAME, "saveState", [state]);
     }
 };
