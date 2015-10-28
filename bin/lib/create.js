@@ -309,7 +309,7 @@ exports.update = function(projectPath, options, events) {
 
         if (Number(manifest.getMinSdkVersion()) < MIN_SDK_VERSION) {
             events.emit('verbose', 'Updating minSdkVersion to ' + MIN_SDK_VERSION + ' in AndroidManifest.xml');
-            manifest.setMinSDKVersion(MIN_SDK_VERSION);
+            manifest.setMinSdkVersion(MIN_SDK_VERSION);
         }
 
         manifest.setDebuggable(false).write();
