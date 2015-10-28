@@ -157,8 +157,23 @@ function updateProjectAccordingTo(platformConfig, locations) {
     shell.mkdir('-p', path.dirname(destFile));
     shell.sed(/package [\w\.]*;/, 'package ' + pkg + ';', java_files[0]).to(destFile);
     events.emit('verbose', 'Wrote out Android package name to "' + pkg + '"');
-}
 
+    if (orig_pkg !== pkg) {
+        // If package was name changed we need to remove old java with main activity
+        shell.rm('-Rf',java_files[0]);
+        // remove any empty directories
+        var currentDir = path.dirname(java_files[0]);
+        var sourcesRoot = path.resolve(locations.root, 'src');
+        while(currentDir !== sourcesRoot) {
+            if(fs.existsSync(currentDir) && fs.readdirSync(currentDir).length === 0) {
+                fs.rmdirSync(currentDir);
+                currentDir = path.resolve(currentDir, '..');
+            } else {
+                break;
+            }
+        }
+    }
+}
 
 // Consturct the default value for versionCode as
 // PATCH + MINOR * 100 + MAJOR * 10000

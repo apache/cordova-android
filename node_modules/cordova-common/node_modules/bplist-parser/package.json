@@ -1,0 +1,52 @@
+{
+  "name": "bplist-parser",
+  "version": "0.1.0",
+  "description": "Binary plist parser.",
+  "main": "bplistParser.js",
+  "scripts": {
+    "test": "./node_modules/nodeunit/bin/nodeunit test"
+  },
+  "keywords": [
+    "bplist",
+    "plist",
+    "parser"
+  ],
+  "author": {
+    "name": "Joe Ferner",
+    "email": "joe.ferner@nearinfinity.com"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "nodeunit": "~0.9.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nearinfinity/node-bplist-parser.git"
+  },
+  "gitHead": "82d14f8defa7fc1e9f78a469c76c235ac244fd8f",
+  "bugs": {
+    "url": "https://github.com/nearinfinity/node-bplist-parser/issues"
+  },
+  "homepage": "https://github.com/nearinfinity/node-bplist-parser",
+  "_id": "bplist-parser@0.1.0",
+  "_shasum": "630823f2056437d4dbefc20e84017f8bac48e008",
+  "_from": "bplist-parser@>=0.1.0 <0.2.0",
+  "_npmVersion": "1.4.14",
+  "_npmUser": {
+    "name": "joeferner",
+    "email": "joe@fernsroth.com"
+  },
+  "maintainers": [
+    {
+      "name": "joeferner",
+      "email": "joe@fernsroth.com"
+    }
+  ],
+  "dist": {
+    "shasum": "630823f2056437d4dbefc20e84017f8bac48e008",
+    "tarball": "http://registry.npmjs.org/bplist-parser/-/bplist-parser-0.1.0.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/bplist-parser/-/bplist-parser-0.1.0.tgz",
+  "readme": "ERROR: No README data found!"
+}
