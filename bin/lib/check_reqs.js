@@ -230,8 +230,12 @@ module.exports.check_android = function() {
     });
 };
 
-module.exports.getAbsoluteAndroidCmd = function() {
-    return forgivingWhichSync('android').replace(/(\s)/g, '\\$1');
+module.exports.getAbsoluteAndroidCmd = function () {
+    var cmd = forgivingWhichSync('android');
+    if (process.platform === 'win32') {
+        return '"' + cmd + '"';
+    }
+    return cmd.replace(/(\s)/g, '\\$1');
 };
 
 module.exports.check_android_target = function(valid_target) {
