@@ -21,9 +21,9 @@
         "jshint": "node node_modules/jshint/bin/jshint bin && node node_modules/jshint/bin/jshint spec"
     },
     "author": "Apache Software Foundation",
-    "license": "Apache version 2.0",
+    "license": "Apache-2.0",
     "dependencies": {
-        "cordova-common": "^0.1.0",
+        "cordova-common": "~1.0.0",
         "elementtree": "^0.1.6",
         "nopt": "^3.0.1",
         "properties-parser": "^0.2.3",
