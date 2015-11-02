@@ -1,10 +1,8 @@
 language: android
 sudo: false
 install:
-    - "(pushd .. && git clone https://github.com/apache/cordova-lib.git && popd)"
-    - npm link ../cordova-lib/cordova-common
     - npm install
-    - echo y | android update sdk -u --filter android-23
+    - echo y | android update sdk -u --filter android-22,android-23
 script:
     - npm test
     - npm run test-build

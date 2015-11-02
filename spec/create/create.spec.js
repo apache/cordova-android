@@ -20,7 +20,7 @@
 
 require("promise-matchers");
 
-var create = require("../bin/lib/create");
+var create = require("../../bin/lib/create");
 
 describe("create", function () {
   describe("validatePackageName", function() {

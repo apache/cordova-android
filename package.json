@@ -16,8 +16,8 @@
         "apache"
     ],
     "scripts": {
-        "test": "npm run jshint && jasmine-node --color spec",
-        "test-build": "rm -rf \"test create\" && node ./bin/create \"test create\" com.test.app 応用 && \"./test create/cordova/build\" && rm -rf \"test create\"",
+        "test": "npm run jshint && jasmine-node --color spec/create",
+        "test-build": "jasmine-node --captureExceptions --color spec/e2e",
         "jshint": "node node_modules/jshint/bin/jshint bin && node node_modules/jshint/bin/jshint spec"
     },
     "author": "Apache Software Foundation",
