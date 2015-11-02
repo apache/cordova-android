@@ -21,6 +21,36 @@
 ## Release Notes for Cordova (Android) ##
 Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merges *remote*/4.1.x...HEAD
 
+### 5.0.0 (Nov 01, 2015)
+* Update CordovaWebViewEngine.java
+* CB-9909 Shouldn't escape spaces in paths on Windows.
+* CB-9870 updated hello world template
+* CB-9880 Fixes platform update failure when upgrading from android@<4.1.0
+* CB-9844 Remove old .java after renaming activity
+* CB-9800 Fixing contribute link.
+* CB-9782 Check in `cordova-common` dependency
+* Adds licence header to Adb to pass rat audit
+* CB-9835 Downgrade `properties-parser` to prevent failures in Node < 4.x
+* CB-9782 Implements PlatformApi contract for Android platform.
+* CB-9826 Fixed `test-build` script on windows. 
+* Refactor of the Cordova Plugin/Permissions API
+* Manually updating version to 5.0.0-dev for engine tags
+* Bump up to API level 23
+* Commiting code to handle permissions, and the special case of the Geolocation Plugin
+* CB-9608 cordova-android no longer builds on Node 0.10 or below
+* CB-9080 Cordova CLI run for Android versions 4.1.1 and lower throws error
+* CB-9557 Fixes apk install failure when switching from debug to release build
+* CB-9496 removed permissions added for crosswalk
+* CB-9402 Allow to set gradle distubutionUrl via env variable CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL
+* CB-9428 update script now bumps up minSdkVersion to 14 if it is less than that.
+* CB-9430 Fixes check_reqs failure when javac returns an extra line
+* CB-9172 Improved emulator deploy stability. This closes #188.
+* CB-9404 Fixed an exception when path contained -debug or -release
+* CB-8320 Setting up gradle so we can use CordovaLib as a standard Android Library
+* CB-9185 Fixed an issue when unsigned apks couldn't be found. 
+* CB-9397 Fixes minor issues with `cordova requirements android`
+* CB-9389 Fixes build/check_reqs hang
+
 ### Release 4.1.1 (Aug 2015) ###
 
 * CB-9428 update script now bumps up minSdkVersion to 14 if it is less than that
