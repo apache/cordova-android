@@ -40,3 +40,4 @@ Desktop.ini
 .idea
 npm-debug.log
 /framework/build
+node_modules/
