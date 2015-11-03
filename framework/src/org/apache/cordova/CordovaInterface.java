@@ -22,6 +22,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import org.apache.cordova.CordovaPlugin;
+import org.json.JSONObject;
 
 import java.util.concurrent.ExecutorService;
 
@@ -85,4 +86,21 @@ public interface CordovaInterface {
      */
     public boolean hasPermission(String permission);
 
+    /**
+     * Gets a JSONObject to be sent to the js as part of the resume event. This JSONObject contains
+     * the information saved by the js (using the app.saveState method) as well as information from
+     * the plugins.
+     *
+     * @return  JSONObject to be used as the payload of the resume js event
+     */
+    public JSONObject getSavedApplicationState();
+
+    /**
+     * Saves a JSONObject representing the js's state to be returned as part of the payload of the
+     * resume event. This corresponds to the app.saveState method available in the js and is used to
+     * persist state across CordovaActivity creation/destruction
+     *
+     * @param state A JSONObject containing the js application's state
+     */
+    public void saveApplicationState(JSONObject state);
 }

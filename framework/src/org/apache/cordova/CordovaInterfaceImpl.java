@@ -19,7 +19,6 @@
 
 package org.apache.cordova;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -28,6 +27,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,7 +45,9 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     protected CordovaPlugin activityResultCallback;
     protected CordovaPlugin permissionResultCallback;
     protected String initCallbackService;
+    protected JSONObject savedApplicationState;
     protected int activityResultRequestCode;
+    protected Bundle savedPluginState;
 
     public CordovaInterfaceImpl(Activity activity) {
         this(activity, Executors.newCachedThreadPool());
@@ -115,6 +117,10 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             savedResult = new ActivityResultHolder(requestCode, resultCode, intent);
             if (pluginManager != null) {
                 callback = pluginManager.getPlugin(initCallbackService);
+                if(callback != null) {
+                    callback.onRestoreInstanceState(savedPluginState.getBundle(callback.getServiceName()),
+                            new ResumeCallback(this, callback.getServiceName(), pluginManager));
+                }
             }
         }
         activityResultCallback = null;
@@ -147,6 +153,12 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             String serviceName = activityResultCallback.getServiceName();
             outState.putString("callbackService", serviceName);
         }
+
+        if(savedApplicationState != null) {
+            outState.putString("savedApplicationState", savedApplicationState.toString());
+        }
+
+        outState.putBundle("plugin", pluginManager.onSaveInstanceState());
     }
 
     /**
@@ -154,6 +166,15 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      */
     public void restoreInstanceState(Bundle savedInstanceState) {
         initCallbackService = savedInstanceState.getString("callbackService");
+
+        if(savedInstanceState.get("savedApplicationState") != null) {
+            try {
+                savedApplicationState = new JSONObject(savedInstanceState.getString("savedApplicationState"));
+            } catch (JSONException e) {
+                LOG.e(TAG, "Error parsing saved application state");
+            }
+        }
+        savedPluginState = savedInstanceState.getBundle("plugin");
     }
 
     private static class ActivityResultHolder {
@@ -210,5 +231,19 @@ public class CordovaInterfaceImpl implements CordovaInterface {
         }
     }
 
+    public JSONObject getSavedApplicationState() {
+        JSONObject result = new JSONObject();
+        try {
+            result.put("plugins", pluginManager.savePluginsJSON(new JSONObject()));
+            if(savedApplicationState != null) {
+                result.put("state", savedApplicationState);
+            }
+        } catch (JSONException e) {
+        }
+        return result;
+    }
 
+    public void saveApplicationState(JSONObject object) {
+        savedApplicationState = object;
+    }
 }
