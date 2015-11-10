@@ -445,7 +445,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // Resume JavaScript timers. This affects all webviews within the app!
         engine.setPaused(false);
         this.pluginManager.onResume(keepRunning);
-        // To be the same as other platforms, fire this event only when resumed after a "pause".
+
+        // In order to match the behavior of the other platforms, we only send onResume after an
+        // onPause has occurred. The resume event might still be sent if the Activity was killed
+        // while waiting for the result of an external Activity once the result is obtained
         if (hasPausedEver) {
             sendJavascriptEvent("resume");
         }

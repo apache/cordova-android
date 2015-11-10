@@ -19,7 +19,6 @@
 
 package org.apache.cordova;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -28,6 +27,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,6 +46,8 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     protected CordovaPlugin permissionResultCallback;
     protected String initCallbackService;
     protected int activityResultRequestCode;
+    protected boolean activityWasDestroyed = false;
+    protected Bundle savedPluginState;
 
     public CordovaInterfaceImpl(Activity activity) {
         this(activity, Executors.newCachedThreadPool());
@@ -95,12 +97,28 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     }
 
     /**
-     * Dispatches any pending onActivityResult callbacks.
+     * Dispatches any pending onActivityResult callbacks and sends the resume event if the
+     * Activity was destroyed by the OS.
      */
     public void onCordovaInit(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
         if (savedResult != null) {
             onActivityResult(savedResult.requestCode, savedResult.resultCode, savedResult.intent);
+        } else if(activityWasDestroyed) {
+            // If there was no Activity result, we still need to send out the resume event if the
+            // Activity was destroyed by the OS
+            activityWasDestroyed = false;
+
+            CoreAndroid appPlugin = (CoreAndroid) pluginManager.getPlugin(CoreAndroid.PLUGIN_NAME);
+            if(appPlugin != null) {
+                JSONObject obj = new JSONObject();
+                try {
+                    obj.put("action", "resume");
+                } catch (JSONException e) {
+                    LOG.e(TAG, "Failed to create event message", e);
+                }
+                appPlugin.sendResumeEvent(new PluginResult(PluginResult.Status.OK, obj));
+            }
         }
     }
 
@@ -115,6 +133,10 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             savedResult = new ActivityResultHolder(requestCode, resultCode, intent);
             if (pluginManager != null) {
                 callback = pluginManager.getPlugin(initCallbackService);
+                if(callback != null) {
+                    callback.onRestoreStateForActivityResult(savedPluginState.getBundle(callback.getServiceName()),
+                            new ResumeCallback(callback.getServiceName(), pluginManager));
+                }
             }
         }
         activityResultCallback = null;
@@ -126,7 +148,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             callback.onActivityResult(requestCode, resultCode, intent);
             return true;
         }
-        Log.w(TAG, "Got an activity result, but no plugin was registered to receive it" + (savedResult != null ? " yet!": "."));
+        Log.w(TAG, "Got an activity result, but no plugin was registered to receive it" + (savedResult != null ? " yet!" : "."));
         return false;
     }
 
@@ -147,6 +169,8 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             String serviceName = activityResultCallback.getServiceName();
             outState.putString("callbackService", serviceName);
         }
+
+        outState.putBundle("plugin", pluginManager.onSaveInstanceState());
     }
 
     /**
@@ -154,6 +178,8 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      */
     public void restoreInstanceState(Bundle savedInstanceState) {
         initCallbackService = savedInstanceState.getString("callbackService");
+        savedPluginState = savedInstanceState.getBundle("plugin");
+        activityWasDestroyed = true;
     }
 
     private static class ActivityResultHolder {
@@ -209,6 +235,4 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             return true;
         }
     }
-
-
 }
