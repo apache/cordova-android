@@ -61,13 +61,13 @@ function parseOpts(options, resolvedTarget) {
     if (options.nobuild) ret.buildMethod = 'none';
 
     if (options.argv.versionCode)
-        ret.extraArgs.push('-PcdvVersionCode=' + options.versionCode);
+        ret.extraArgs.push('-PcdvVersionCode=' + options.argv.versionCode);
 
     if (options.argv.minSdkVersion)
-        ret.extraArgs.push('-PcdvMinSdkVersion=' + options.minSdkVersion);
+        ret.extraArgs.push('-PcdvMinSdkVersion=' + options.argv.minSdkVersion);
 
     if (options.argv.gradleArg)
-        ret.extraArgs.push(options.gradleArg);
+        ret.extraArgs.push(options.argv.gradleArg);
 
     var packageArgs = {};
 
