@@ -94,7 +94,8 @@ module.exports.install = function(target, buildResults) {
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
         return Aapt.getApplicationId(apk_path)
-        .then(function(applicationId) {
+        .then(function(output) {
+            applicationId = output;
             launchName = applicationId + '/' + pkgName + '.' + manifest.getActivity().getName();
         }).then(function() {
             return Adb.uninstall(resolvedTarget.target, applicationId);
