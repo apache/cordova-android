@@ -135,6 +135,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
         if (recreatePlugins) {
             // Don't re-initialize on first load.
             if (loadedUrl != null) {
+                //reset appPlugin
+                resetCoreAndroidPlugin();
                 pluginManager.init();
             }
             loadedUrl = url;
@@ -485,6 +487,11 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // TODO: Should not destroy webview until after about:blank is done loading.
         engine.destroy();
         hideCustomView();
+    }
+
+    public void resetCoreAndroidPlugin(){
+        //In order to set the variable appPlugin null when open other url
+        appPlugin = null;
     }
 
     protected class EngineClient implements CordovaWebViewEngine.Client {
