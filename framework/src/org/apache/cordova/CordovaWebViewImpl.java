@@ -354,6 +354,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
             case KeyEvent.KEYCODE_VOLUME_DOWN:
             case KeyEvent.KEYCODE_VOLUME_UP:
             case KeyEvent.KEYCODE_BACK:
+            case KeyEvent.KEYCODE_BUTTON_B:
                 // TODO: Why are search and menu buttons handled separately?
                 if (override) {
                     boundKeyCodes.add(keyCode);
@@ -551,7 +552,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         @Override
         public Boolean onDispatchKeyEvent(KeyEvent event) {
             int keyCode = event.getKeyCode();
-            boolean isBackButton = keyCode == KeyEvent.KEYCODE_BACK;
+            boolean isBackButton = keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_BUTTON_B;
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (isBackButton && mCustomView != null) {
                     return true;
@@ -580,6 +581,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
                             eventName = "menubutton";
                             break;
                         case KeyEvent.KEYCODE_BACK:
+                        case KeyEvent.KEYCODE_BUTTON_B:
                             eventName = "backbutton";
                             break;
                     }
