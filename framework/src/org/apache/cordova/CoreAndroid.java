@@ -252,6 +252,9 @@ class CoreAndroid extends CordovaPlugin {
         else if (button.equals("volumedown")) {
             webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_VOLUME_DOWN, override);
         }
+        else if (button.equals("menubutton")) {
+            webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_MENU, override);
+        }
     }
 
     /**
