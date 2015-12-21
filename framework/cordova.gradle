@@ -128,6 +128,14 @@ def doExtractIntFromManifest(name) {
     return Integer.parseInt(matcher.group(1))
 }
 
+def doExtractStringFromManifest(name) {
+    def manifestFile = file(android.sourceSets.main.manifest.srcFile)
+    def pattern = Pattern.compile(name + "=\"(\\S+)\"")
+    def matcher = pattern.matcher(manifestFile.getText())
+    matcher.find()
+    return matcher.group(1)
+}
+
 def doPromptForPassword(msg) {
     if (System.console() == null) {
         def ret = null
@@ -179,6 +187,7 @@ ext {
     privateHelpers.getProjectTarget = { doGetProjectTarget() }
     privateHelpers.findLatestInstalledBuildTools = { doFindLatestInstalledBuildTools('19.1.0') }
     privateHelpers.extractIntFromManifest = { name -> doExtractIntFromManifest(name) }
+    privateHelpers.extractStringFromManifest = { name -> doExtractStringFromManifest(name) }
     privateHelpers.promptForPassword = { msg -> doPromptForPassword(msg) }
     privateHelpers.ensureValueExists = { filePath, props, key -> doEnsureValueExists(filePath, props, key) }
 
