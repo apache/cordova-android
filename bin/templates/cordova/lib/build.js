@@ -88,11 +88,16 @@ function parseOpts(options, resolvedTarget) {
             throw new Error('Specified build config file does not exist: ' + buildConfig);
         }
         events.emit('log', 'Reading build config file: '+ path.resolve(buildConfig));
-        var config = JSON.parse(fs.readFileSync(buildConfig, 'utf8'));
+        var buildjson = fs.readFileSync(buildConfig, 'utf8');
+        //var config = JSON.parse(fs.readFileSync(buildConfig, 'utf8'));
+        var config = JSON.parse(buildjson);
         if (config.android && config.android[ret.buildType]) {
             var androidInfo = config.android[ret.buildType];
             if(androidInfo.keystore && !packageArgs.keystore) {
+                if(androidInfo.keystore.substr(0,1) === '~')
+                    androidInfo.keystore = process.env.HOME + androidInfo.keystore.substr(1)
                 packageArgs.keystore = path.resolve(path.dirname(buildConfig), androidInfo.keystore);
+                events.emit('log', 'Reading the keystore from: ' + packageArgs.keystore);
             }
 
             ['alias', 'storePassword', 'password','keystoreType'].forEach(function (key){
