@@ -170,6 +170,10 @@ android {
         }
     }
 
+    lintOptions {
+      abortOnError false;
+    }
+
     compileSdkVersion cdvCompileSdkVersion
     buildToolsVersion cdvBuildToolsVersion
 
