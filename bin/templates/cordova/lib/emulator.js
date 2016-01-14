@@ -26,6 +26,7 @@ var build      = require('./build');
 var check_reqs = require('./check_reqs');
 var path = require('path');
 var Adb = require('./Adb');
+var Aapt = require('./Aapt');
 var AndroidManifest = require('./AndroidManifest');
 var events = require('cordova-common').events;
 var spawn = require('cordova-common').superspawn.spawn;
@@ -304,6 +305,7 @@ module.exports.install = function(givenTarget, buildResults) {
     var target;
     var manifest = new AndroidManifest(path.join(__dirname, '../../AndroidManifest.xml'));
     var pkgName = manifest.getPackageId();
+    var applicationId;
 
     // resolve the target emulator
     return Q().then(function () {
@@ -319,12 +321,18 @@ module.exports.install = function(givenTarget, buildResults) {
 
     // install the app
     }).then(function () {
+        var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
+        
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
-        return Adb.uninstall(target.target, pkgName)
+        return Aapt.getApplicationId(apk_path)
+        .then(function (output) {
+            applicationId = output;
+        })
         .then(function() {
-
-            var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
+            return Adb.uninstall(target.target, applicationId);
+        })
+        .then(function() {
             var execOptions = {
                 cwd: os.tmpdir(),
                 timeout:    INSTALL_COMMAND_TIMEOUT, // in milliseconds
@@ -364,7 +372,7 @@ module.exports.install = function(givenTarget, buildResults) {
         events.emit('verbose', 'Unlocking screen...');
         return Adb.shell(target.target, 'input keyevent 82');
     }).then(function () {
-        Adb.start(target.target, pkgName + '/.' + manifest.getActivity().getName());
+        Adb.start(target.target, applicationId + '/' + pkgName + '.' + manifest.getActivity().getName());
     // report success or failure
     }).then(function (output) {
         events.emit('log', 'LAUNCH SUCCESS');
