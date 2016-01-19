@@ -94,8 +94,9 @@ function parseOpts(options, resolvedTarget) {
         if (config.android && config.android[ret.buildType]) {
             var androidInfo = config.android[ret.buildType];
             if(androidInfo.keystore && !packageArgs.keystore) {
-                if(androidInfo.keystore.substr(0,1) === '~')
-                    androidInfo.keystore = process.env.HOME + androidInfo.keystore.substr(1)
+                if(androidInfo.keystore.substr(0,1) === '~') {
+                    androidInfo.keystore = process.env.HOME + androidInfo.keystore.substr(1);
+                }
                 packageArgs.keystore = path.resolve(path.dirname(buildConfig), androidInfo.keystore);
                 events.emit('log', 'Reading the keystore from: ' + packageArgs.keystore);
             }
