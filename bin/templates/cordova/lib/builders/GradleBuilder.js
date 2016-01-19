@@ -56,6 +56,8 @@ GradleBuilder.prototype.getArgs = function(cmd, opts) {
 
     // 10 seconds -> 6 seconds
     args.push('-Dorg.gradle.daemon=true');
+    // allow NDK to be used - required by Gradle 1.5 plugin
+    args.push('-Pandroid.useDeprecatedNdk=true');
     args.push.apply(args, opts.extraArgs);
     // Shaves another 100ms, but produces a "try at own risk" warning. Not worth it (yet):
     // args.push('-Dorg.gradle.parallel=true');
