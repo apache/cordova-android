@@ -19,7 +19,19 @@
 #
 -->
 ## Release Notes for Cordova (Android) ##
-Update these notes using: git log --pretty=format:'* %s' --topo-order --no-merges *remote*/4.1.x...HEAD
+
+### 5.1.0 (Jan 19, 2016)
+* CB-10386 Add `android.useDeprecatedNdk=true` to support `NDK` in `gradle`
+* CB-8864: Fixing this to mitigate CB-8685 and CB-10104
+* CB-10105: Spot fix for tilde errors on paths.
+* Update theme to `Theme.DeviceDefault.NoActionBar`
+* CB-10014: Set gradle `applicationId` to `package name`.
+* CB-9949: Fixing menu button event not fired in **Android**
+* CB-9479: Fixing the conditionals again, we should 
+* CB-8917: New Plugin API for passing results on resume after Activity destruction
+* CB-9971 Suppress `gradlew _JAVA_OPTIONS` output during build
+* CB-9836 Add `.gitattributes` to prevent `CRLF` line endings in repos
+* added node_modules back into `.gitignore`
 
 ### 5.0.0 (Nov 01, 2015)
 * Update CordovaWebViewEngine.java

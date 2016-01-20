@@ -2,7 +2,7 @@
 //[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
 //[5]   	Name	   ::=   	NameStartChar (NameChar)*
 var nameStartChar = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]///\u10000-\uEFFFF
-var nameChar = new RegExp("[\\-\\.0-9"+nameStartChar.source.slice(1,-1)+"\u00B7\u0300-\u036F\\ux203F-\u2040]");
+var nameChar = new RegExp("[\\-\\.0-9"+nameStartChar.source.slice(1,-1)+"\u00B7\u0300-\u036F\\u203F-\u2040]");
 var tagNamePattern = new RegExp('^'+nameStartChar.source+nameChar.source+'*(?:\:'+nameStartChar.source+nameChar.source+'*)?$');
 //var tagNamePattern = /^[a-zA-Z_][\w\-\.]*(?:\:[a-zA-Z_][\w\-\.]*)?$/
 //var handlers = 'resolveEntity,getExternalSubset,characters,endDocument,endElement,endPrefixMapping,ignorableWhitespace,processingInstruction,setDocumentLocator,skippedEntity,startDocument,startElement,startPrefixMapping,notationDecl,unparsedEntityDecl,error,fatalError,warning,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,comment,endCDATA,endDTD,endEntity,startCDATA,startDTD,startEntity'.split(',')
@@ -58,22 +58,24 @@ function parse(source,defaultNSMapCopy,entityMap,domBuilder,errorHandler){
 		}
 	}
 	function appendText(end){//has some bugs
-		var xt = source.substring(start,end).replace(/&#?\w+;/g,entityReplacer);
-		locator&&position(start);
-		domBuilder.characters(xt,0,end-start);
-		start = end
+		if(end>start){
+			var xt = source.substring(start,end).replace(/&#?\w+;/g,entityReplacer);
+			locator&&position(start);
+			domBuilder.characters(xt,0,end-start);
+			start = end
+		}
 	}
-	function position(start,m){
-		while(start>=endPos && (m = linePattern.exec(source))){
-			startPos = m.index;
-			endPos = startPos + m[0].length;
+	function position(p,m){
+		while(p>=lineEnd && (m = linePattern.exec(source))){
+			lineStart = m.index;
+			lineEnd = lineStart + m[0].length;
 			locator.lineNumber++;
 			//console.log('line++:',locator,startPos,endPos)
 		}
-		locator.columnNumber = start-startPos+1;
+		locator.columnNumber = p-lineStart+1;
 	}
-	var startPos = 0;
-	var endPos = 0;
+	var lineStart = 0;
+	var lineEnd = 0;
 	var linePattern = /.+(?:\r\n?|\n)|.*$/g
 	var locator = domBuilder.locator;
 	
@@ -81,64 +83,66 @@ function parse(source,defaultNSMapCopy,entityMap,domBuilder,errorHandler){
 	var closeMap = {};
 	var start = 0;
 	while(true){
-		var i = source.indexOf('<',start);
-		if(i<0){
-			if(!source.substr(start).match(/^\s*$/)){
-				var doc = domBuilder.document;
-    			var text = doc.createTextNode(source.substr(start));
-    			doc.appendChild(text);
-    			domBuilder.currentElement = text;
-			}
-			return;
-		}
-		if(i>start){
-			appendText(i);
-		}
-		switch(source.charAt(i+1)){
-		case '/':
-			var end = source.indexOf('>',i+3);
-			var tagName = source.substring(i+2,end);
-			var config = parseStack.pop();
-			var localNSMap = config.localNSMap;
-			
-	        if(config.tagName != tagName){
-	            errorHandler.fatalError("end tag name: "+tagName+' is not match the current start tagName:'+config.tagName );
-	        }
-			domBuilder.endElement(config.uri,config.localName,tagName);
-			if(localNSMap){
-				for(var prefix in localNSMap){
-					domBuilder.endPrefixMapping(prefix) ;
+		try{
+			var tagStart = source.indexOf('<',start);
+			if(tagStart<0){
+				if(!source.substr(start).match(/^\s*$/)){
+					var doc = domBuilder.document;
+	    			var text = doc.createTextNode(source.substr(start));
+	    			doc.appendChild(text);
+	    			domBuilder.currentElement = text;
 				}
+				return;
 			}
-			end++;
-			break;
-			// end elment
-		case '?':// <?...?>
-			locator&&position(i);
-			end = parseInstruction(source,i,domBuilder);
-			break;
-		case '!':// <!doctype,<![CDATA,<!--
-			locator&&position(i);
-			end = parseDCC(source,i,domBuilder,errorHandler);
-			break;
-		default:
-			try{
-				locator&&position(i);
+			if(tagStart>start){
+				appendText(tagStart);
+			}
+			switch(source.charAt(tagStart+1)){
+			case '/':
+				var end = source.indexOf('>',tagStart+3);
+				var tagName = source.substring(tagStart+2,end);
+				var config = parseStack.pop();
+				var localNSMap = config.localNSMap;
+		        if(config.tagName != tagName){
+		            errorHandler.fatalError("end tag name: "+tagName+' is not match the current start tagName:'+config.tagName );
+		        }
+				domBuilder.endElement(config.uri,config.localName,tagName);
+				if(localNSMap){
+					for(var prefix in localNSMap){
+						domBuilder.endPrefixMapping(prefix) ;
+					}
+				}
+				end++;
+				break;
+				// end elment
+			case '?':// <?...?>
+				locator&&position(tagStart);
+				end = parseInstruction(source,tagStart,domBuilder);
+				break;
+			case '!':// <!doctype,<![CDATA,<!--
+				locator&&position(tagStart);
+				end = parseDCC(source,tagStart,domBuilder,errorHandler);
+				break;
+			default:
+			
+				locator&&position(tagStart);
 				
 				var el = new ElementAttributes();
 				
 				//elStartEnd
-				var end = parseElementStartPart(source,i,el,entityReplacer,errorHandler);
+				var end = parseElementStartPart(source,tagStart,el,entityReplacer,errorHandler);
 				var len = el.length;
-				//position fixed
-				if(len && locator){
-					var backup = copyLocator(locator,{});
-					for(var i = 0;i<len;i++){
-						var a = el[i];
-						position(a.offset);
-						a.offset = copyLocator(locator,{});
+				
+				if(locator){
+					if(len){
+						//attribute position fixed
+						for(var i = 0;i<len;i++){
+							var a = el[i];
+							position(a.offset);
+							a.offset = copyLocator(locator,{});
+						}
 					}
-					copyLocator(backup,locator);
+					position(end);
 				}
 				if(!el.closed && fixSelfClosed(source,end,el.tagName,closeMap)){
 					el.closed = true;
@@ -154,17 +158,16 @@ function parse(source,defaultNSMapCopy,entityMap,domBuilder,errorHandler){
 				}else{
 					end++;
 				}
-			}catch(e){
-				errorHandler.error('element parse error: '+e);
-				end = -1;
 			}
-
+		}catch(e){
+			errorHandler.error('element parse error: '+e);
+			end = -1;
 		}
-		if(end<0){
-			//TODO: 这里有可能sax回退，有位置错误风险
-			appendText(i+1);
-		}else{
+		if(end>start){
 			start = end;
+		}else{
+			//TODO: 这里有可能sax回退，有位置错误风险
+			appendText(Math.max(tagStart,start)+1);
 		}
 	}
 }
@@ -172,7 +175,6 @@ function copyLocator(f,t){
 	t.lineNumber = f.lineNumber;
 	t.columnNumber = f.columnNumber;
 	return t;
-	
 }
 
 /**

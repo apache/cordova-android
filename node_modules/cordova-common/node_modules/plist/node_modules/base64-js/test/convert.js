@@ -10,8 +10,7 @@ var test = require('tape'),
 		'sup',
 		'sup?',
 		'sup?!'
-	],
-	res;
+	];
 
 test('convert to base64 and back', function (t) {
   t.plan(checks.length);

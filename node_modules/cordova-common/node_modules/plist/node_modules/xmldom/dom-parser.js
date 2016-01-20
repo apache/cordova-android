@@ -21,6 +21,7 @@ DOMParser.prototype.parseFromString = function(source,mimeType){
 		entityMap.copy = '\xa9';
 		defaultNSMap['']= 'http://www.w3.org/1999/xhtml';
 	}
+	defaultNSMap.xml = defaultNSMap.xml || 'http://www.w3.org/XML/1998/namespace';
 	if(source){
 		sax.parse(source,defaultNSMap,entityMap);
 	}else{

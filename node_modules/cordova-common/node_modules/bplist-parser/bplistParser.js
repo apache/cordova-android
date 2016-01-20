@@ -3,6 +3,7 @@
 // adapted from http://code.google.com/p/plist/source/browse/trunk/src/com/dd/plist/BinaryPropertyListParser.java
 
 var fs = require('fs');
+var bigInt = require("big-integer");
 var debug = false;
 
 exports.maxObjectSize = 100 * 1000 * 1000; // 100Meg
@@ -138,9 +139,28 @@ var parseBuffer = exports.parseBuffer = function (buffer) {
       }
     }
 
+    function bufferToHexString(buffer) {
+      var str = '';
+      var i;
+      for (i = 0; i < buffer.length; i++) {
+        if (buffer[i] != 0x00) {
+          break;
+        }
+      }
+      for (; i < buffer.length; i++) {
+        var part = '00' + buffer[i].toString(16);
+        str += part.substr(part.length - 2);
+      }
+      return str;
+    }
+
     function parseInteger() {
       var length = Math.pow(2, objInfo);
-      if (length < exports.maxObjectSize) {
+      if (length > 4) {
+        var data = buffer.slice(offset + 1, offset + 1 + length);
+        var str = bufferToHexString(data);
+        return bigInt(str, 16);
+      } if (length < exports.maxObjectSize) {
         return readUInt(buffer.slice(offset + 1, offset + 1 + length));
       } else {
         throw new Error("To little heap space available! Wanted to read " + length + " bytes, but only " + exports.maxObjectSize + " are available.");

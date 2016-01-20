@@ -1,3 +1,13 @@
+1.2.0 / 2015-11-10
+
+* package: update "browserify" to v12.0.1
+* package: update "zuul" to v3.7.2
+* package: update "xmlbuilder" to v4.0.0
+* package: update "util-deprecate" to v1.0.2
+* package: update "mocha" to v2.3.3
+* package: update "base64-js" to v0.0.8
+* build: omit undefined values
+* travis: add node 4.0 and 4.1 to test matrix
 
 1.1.0 / 2014-08-27
 ==================
