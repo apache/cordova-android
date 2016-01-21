@@ -1,5 +1,5 @@
 // Platform: android
-// 6b83950ffdd6b84977dfae49d8147ef640b8097f
+// ded62dda172755defaf75378ed007dc05730ec22
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '5.1.0-dev';
+var PLATFORM_VERSION_BUILD_LABEL = '5.2.0-dev';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
@@ -1674,11 +1674,25 @@ function onMessageFromNative(msg) {
         case 'searchbutton':
         // App life cycle events
         case 'pause':
-        case 'resume':
         // Volume events
         case 'volumedownbutton':
         case 'volumeupbutton':
             cordova.fireDocumentEvent(action);
+            break;
+        case 'resume':
+            if(arguments.length > 1 && msg.pendingResult) {
+                if(arguments.length === 2) {
+                    msg.pendingResult.result = arguments[1];
+                } else {
+                    // The plugin returned a multipart message
+                    var res = [];
+                    for(var i = 1; i < arguments.length; i++) {
+                        res.push(arguments[i]);
+                    }
+                    msg.pendingResult.result = res;
+                }
+            }
+            cordova.fireDocumentEvent(action, msg);
             break;
         default:
             throw new Error('Unknown event action ' + action);
