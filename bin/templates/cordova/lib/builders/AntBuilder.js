@@ -45,7 +45,7 @@ util.inherits(AntBuilder, GenericBuilder);
 AntBuilder.prototype.getArgs = function(cmd, opts) {
     var args = [cmd, '-f', path.join(this.root, 'build.xml')];
     // custom_rules.xml is required for incremental builds.
-    if (hasCustomRules()) {
+    if (hasCustomRules(this.root)) {
         args.push('-Dout.dir=ant-build', '-Dgen.absolute.dir=ant-gen');
     }
     if(opts.packageInfo) {
@@ -99,7 +99,7 @@ AntBuilder.prototype.prepEnv = function(opts) {
 AntBuilder.prototype.build = function(opts) {
     // Without our custom_rules.xml, we need to clean before building.
     var ret = Q();
-    if (!hasCustomRules()) {
+    if (!hasCustomRules(this.root)) {
         // clean will call check_ant() for us.
         ret = this.clean(opts);
     }
