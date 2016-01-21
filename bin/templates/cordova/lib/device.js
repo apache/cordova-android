@@ -89,12 +89,25 @@ module.exports.install = function(target, buildResults) {
         var pkgName = manifest.getPackageId();
         var launchName = pkgName + '/.' + manifest.getActivity().getName();
         events.emit('log', 'Using apk: ' + apk_path);
-        // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
-        // or the app doesn't installed at all, so no error catching needed.
-        return Adb.uninstall(resolvedTarget.target, pkgName)
+
+        return Adb.install(resolvedTarget.target, apk_path, {replace: true})
+        .catch(function (error) {
+            // CB-9557 CB-10157 only uninstall and reinstall app if the one that
+            // is already installed on device was signed w/different certificate
+            if (!/INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES/.test(error.toString()))
+                throw error;
+
+            events.emit('warn', 'Uninstalling app from device and reinstalling it again because the ' +
+                'installed app already signed with different key');
+
+            // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
+            // or the app doesn't installed at all, so no error catching needed.
+            return Adb.uninstall(resolvedTarget.target, pkgName)
+            .then(function() {
+                return Adb.install(resolvedTarget.target, apk_path, {replace: true});
+            });
+        })
         .then(function() {
-            return Adb.install(resolvedTarget.target, apk_path, {replace: true});
-        }).then(function() {
             //unlock screen
             return Adb.shell(resolvedTarget.target, 'input keyevent 82');
         }).then(function() {
