@@ -40,4 +40,6 @@ Desktop.ini
 .idea
 npm-debug.log
 /framework/build
-node_modules/
+node_modules/jshint
+node_modules/promise-matchers
+node_modules/jasmine-node
