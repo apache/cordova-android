@@ -108,17 +108,20 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             // If there was no Activity result, we still need to send out the resume event if the
             // Activity was destroyed by the OS
             activityWasDestroyed = false;
-
-            CoreAndroid appPlugin = (CoreAndroid) pluginManager.getPlugin(CoreAndroid.PLUGIN_NAME);
-            if(appPlugin != null) {
-                JSONObject obj = new JSONObject();
-                try {
-                    obj.put("action", "resume");
-                } catch (JSONException e) {
-                    LOG.e(TAG, "Failed to create event message", e);
+            if(pluginManager != null)
+            {
+                CoreAndroid appPlugin = (CoreAndroid) pluginManager.getPlugin(CoreAndroid.PLUGIN_NAME);
+                if(appPlugin != null) {
+                    JSONObject obj = new JSONObject();
+                    try {
+                        obj.put("action", "resume");
+                    } catch (JSONException e) {
+                        LOG.e(TAG, "Failed to create event message", e);
+                    }
+                    appPlugin.sendResumeEvent(new PluginResult(PluginResult.Status.OK, obj));
                 }
-                appPlugin.sendResumeEvent(new PluginResult(PluginResult.Status.OK, obj));
             }
+
         }
     }
 
@@ -169,8 +172,10 @@ public class CordovaInterfaceImpl implements CordovaInterface {
             String serviceName = activityResultCallback.getServiceName();
             outState.putString("callbackService", serviceName);
         }
+        if(pluginManager != null){
+            outState.putBundle("plugin", pluginManager.onSaveInstanceState());
+        }
 
-        outState.putBundle("plugin", pluginManager.onSaveInstanceState());
     }
 
     /**
