@@ -39,7 +39,7 @@ var buildOpts = nopt({
 }, { 'd' : '--verbose' });
 
 // Make buildOptions compatible with PlatformApi build method spec
-buildOpts.argv = buildOpts.argv.remain;
+buildOpts.argv = buildOpts.argv.original;
 
 new Api().build(buildOpts)
 .catch(function(err) {
