@@ -31,7 +31,7 @@ var events = require('cordova-common').events;
 var spawn = require('cordova-common').superspawn.spawn;
 var CordovaError = require('cordova-common').CordovaError;
 
-function parseOpts(options, resolvedTarget) {
+function parseOpts(options, resolvedTarget, projectRoot) {
     options = options || {};
     options.argv = nopt({
         gradle: Boolean,
@@ -72,7 +72,7 @@ function parseOpts(options, resolvedTarget) {
     var packageArgs = {};
 
     if (options.argv.keystore)
-        packageArgs.keystore = path.relative(this.root, path.resolve(options.argv.keystore));
+        packageArgs.keystore = path.relative(projectRoot, path.resolve(options.argv.keystore));
 
     ['alias','storePassword','password','keystoreType'].forEach(function (flagName) {
         if (options.argv[flagName])
@@ -126,7 +126,7 @@ function parseOpts(options, resolvedTarget) {
  * Returns a promise.
  */
 module.exports.runClean = function(options) {
-    var opts = parseOpts(options);
+    var opts = parseOpts(options, null, this.root);
     var builder = builders.getBuilder(opts.buildMethod);
     return builder.prepEnv(opts)
     .then(function() {
@@ -147,7 +147,7 @@ module.exports.runClean = function(options) {
  *   information.
  */
 module.exports.run = function(options, optResolvedTarget) {
-    var opts = parseOpts(options, optResolvedTarget);
+    var opts = parseOpts(options, optResolvedTarget, this.root);
     var builder = builders.getBuilder(opts.buildMethod);
     var self = this;
     return builder.prepEnv(opts)
