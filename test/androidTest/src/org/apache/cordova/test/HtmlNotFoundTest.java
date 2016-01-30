@@ -30,11 +30,17 @@ public class HtmlNotFoundTest extends BaseCordovaIntegrationTest {
   }
   public void testUrl() throws Throwable
   {
-      assertEquals(START_URL, testActivity.onPageFinishedUrl.take());
       runTestOnUiThread(new Runnable() {
           public void run() {
-              assertFalse(START_URL.equals(testActivity.getCordovaWebView().getUrl()));
+              assertTrue(START_URL.equals(testActivity.getCordovaWebView().getUrl()));
           }
       });
+
+      //loading a not-found file causes an application error and displayError is called
+      //the test activity overrides displayError to add message to onPageFinishedUrl
+      String message = testActivity.onPageFinishedUrl.take();
+      assertTrue(message.contains(START_URL));
+      assertTrue(message.contains("ERR_FILE_NOT_FOUND"));
   }
+
 }

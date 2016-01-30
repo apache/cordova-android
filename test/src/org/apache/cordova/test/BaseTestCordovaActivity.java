@@ -47,4 +47,10 @@ public class BaseTestCordovaActivity extends CordovaActivity {
         return appView;
     }
 
+    // By default, displayError shows a dialog, but for tests we just add the message to the queue
+    @Override
+    public void displayError(String title, String message, String button, boolean exit) {
+        onPageFinishedUrl.add(message);
+    }
+
 }
