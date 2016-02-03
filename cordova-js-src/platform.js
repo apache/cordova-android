@@ -19,6 +19,9 @@
  *
 */
 
+// The last resume event that was received that had the result of a plugin call.
+var lastResumeEvent = null;
+
 module.exports = {
     id: 'android',
     bootstrap: function() {
@@ -58,6 +61,19 @@ module.exports = {
         bindButtonChannel('volumeup');
         bindButtonChannel('volumedown');
 
+        // The resume event is not "sticky", but it is possible that the event
+        // will contain the result of a plugin call. We need to ensure that the
+        // plugin result is delivered even after the event is fired (CB-10498)
+        var cordovaAddEventListener = document.addEventListener;
+
+        document.addEventListener = function(evt, handler, capture) {
+            cordovaAddEventListener(evt, handler, capture);
+
+            if (evt === 'resume' && lastResumeEvent) {
+                handler(lastResumeEvent);
+            }
+        };
+
         // Let native code know we are all done on the JS side.
         // Native code will then un-hide the WebView.
         channel.onCordovaReady.subscribe(function() {
@@ -96,6 +112,10 @@ function onMessageFromNative(msg) {
                     }
                     msg.pendingResult.result = res;
                 }
+
+                // Save the plugin result so that it can be delivered to the js
+                // even if they miss the initial firing of the event
+                lastResumeEvent = msg;
             }
             cordova.fireDocumentEvent(action, msg);
             break;

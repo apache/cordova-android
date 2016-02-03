@@ -1,5 +1,5 @@
 // Platform: android
-// ded62dda172755defaf75378ed007dc05730ec22
+// 533e1bfdbc57d54106ca39a02b21a1909f84fda7
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -8,9 +8,9 @@
  to you under the Apache License, Version 2.0 (the
  "License"); you may not use this file except in compliance
  with the License.  You may obtain a copy of the License at
- 
+
      http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing,
  software distributed under the License is distributed on an
  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -330,7 +330,7 @@ module.exports = cordova;
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/android/nativeapiprovider.js
+// file: cordova-android/cordova-js-src/android/nativeapiprovider.js
 define("cordova/android/nativeapiprovider", function(require, exports, module) {
 
 /**
@@ -353,7 +353,7 @@ module.exports = {
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/android/promptbasednativeapi.js
+// file: cordova-android/cordova-js-src/android/promptbasednativeapi.js
 define("cordova/android/promptbasednativeapi", function(require, exports, module) {
 
 /**
@@ -862,7 +862,7 @@ module.exports = channel;
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/exec.js
+// file: cordova-android/cordova-js-src/exec.js
 define("cordova/exec", function(require, exports, module) {
 
 /**
@@ -1611,8 +1611,11 @@ exports.reset();
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/platform.js
+// file: cordova-android/cordova-js-src/platform.js
 define("cordova/platform", function(require, exports, module) {
+
+// The last resume event that was received that had the result of a plugin call.
+var lastResumeEvent = null;
 
 module.exports = {
     id: 'android',
@@ -1653,6 +1656,19 @@ module.exports = {
         bindButtonChannel('volumeup');
         bindButtonChannel('volumedown');
 
+        // The resume event is not "sticky", but it is possible that the event
+        // will contain the result of a plugin call. We need to ensure that the
+        // plugin result is delivered even after the event is fired (CB-10498)
+        var cordovaAddEventListener = document.addEventListener;
+
+        document.addEventListener = function(evt, handler, capture) {
+            cordovaAddEventListener(evt, handler, capture);
+
+            if (evt === 'resume' && lastResumeEvent) {
+                handler(lastResumeEvent);
+            }
+        };
+
         // Let native code know we are all done on the JS side.
         // Native code will then un-hide the WebView.
         channel.onCordovaReady.subscribe(function() {
@@ -1691,6 +1707,10 @@ function onMessageFromNative(msg) {
                     }
                     msg.pendingResult.result = res;
                 }
+
+                // Save the plugin result so that it can be delivered to the js
+                // even if they miss the initial firing of the event
+                lastResumeEvent = msg;
             }
             cordova.fireDocumentEvent(action, msg);
             break;
@@ -1701,7 +1721,7 @@ function onMessageFromNative(msg) {
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/plugin/android/app.js
+// file: cordova-android/cordova-js-src/plugin/android/app.js
 define("cordova/plugin/android/app", function(require, exports, module) {
 
 var exec = require('cordova/exec');
