@@ -40,6 +40,7 @@ var ONE_SECOND              = 1000; // in milliseconds
 var ONE_MINUTE              = 60 * ONE_SECOND; // in milliseconds
 var INSTALL_COMMAND_TIMEOUT = 5 * ONE_MINUTE; // in milliseconds
 var NUM_INSTALL_RETRIES     = 3;
+var CHECK_BOOTED_INTERVAL   = 3 * ONE_SECOND; // in milliseconds
 var EXEC_KILL_SIGNAL        = 'SIGKILL';
 
 /**
@@ -146,10 +147,12 @@ module.exports.list_targets = function() {
  * and returns the started ID of that emulator.
  * If no ID is given it will use the first image available,
  * if no image is available it will error out (maybe create one?).
+ * If no boot timeout is given or the value is negative it will wait forever for
+ * the emulator to boot
  *
  * Returns a promise.
  */
-module.exports.start = function(emulator_ID) {
+module.exports.start = function(emulator_ID, boot_timeout) {
     var self = this;
 
     return Q().then(function() {
@@ -186,14 +189,20 @@ module.exports.start = function(emulator_ID) {
 
         //wait for emulator to boot up
         process.stdout.write('Booting up emulator (this may take a while)...');
-        return self.wait_for_boot(emulatorId)
-        .then(function() {
-            events.emit('log','BOOT COMPLETE');
-            //unlock screen
-            return Adb.shell(emulatorId, 'input keyevent 82');
-        }).then(function() {
-            //return the new emulator id for the started emulators
-            return emulatorId;
+        return self.wait_for_boot(emulatorId, boot_timeout)
+        .then(function(success) {
+            if (success) {
+                events.emit('log','BOOT COMPLETE');
+                //unlock screen
+                return Adb.shell(emulatorId, 'input keyevent 82')
+                .then(function() {
+                    //return the new emulator id for the started emulators
+                    return emulatorId;
+                });
+            } else {
+                // We timed out waiting for the boot to happen
+                return null;
+            }
         });
     });
 };
@@ -227,18 +236,25 @@ module.exports.wait_for_emulator = function(uuid) {
 };
 
 /*
- * Waits for the core android process of the emulator to start
+ * Waits for the core android process of the emulator to start. Returns a
+ * promise that resolves to a boolean indicating success. Not specifying a
+ * time_remaining or passing a negative value will cause it to wait forever
  */
-module.exports.wait_for_boot = function(emulator_id) {
+module.exports.wait_for_boot = function(emulator_id, time_remaining) {
     var self = this;
     return Adb.shell(emulator_id, 'ps')
     .then(function(output) {
         if (output.match(/android\.process\.acore/)) {
-            return;
+            return true;
+        } else if (time_remaining === 0) {
+            return false;
         } else {
             process.stdout.write('.');
-            return Q.delay(3000).then(function() {
-                return self.wait_for_boot(emulator_id);
+
+            // Check at regular intervals
+            return Q.delay(time_remaining < CHECK_BOOTED_INTERVAL ? time_remaining : CHECK_BOOTED_INTERVAL).then(function() {
+                var updated_time = time_remaining >= 0 ? Math.max(time_remaining - CHECK_BOOTED_INTERVAL, 0) : time_remaining;
+                return self.wait_for_boot(emulator_id, updated_time);
             });
         }
     });
