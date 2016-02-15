@@ -219,6 +219,11 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
             .add_plugin_changes(plugin, installOptions.variables, /*is_top_level=*/true, /*should_increment=*/true)
             .save_all();
 
+        if (plugin.getFrameworks(self.platform).length > 0) {
+            self.events.emit('verbose', 'Updating build files since android plugin contained <framework>');
+            require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
+        }
+
         var targetDir = installOptions.usePlatformWww ?
             self.locations.platformWww :
             self.locations.www;
@@ -271,6 +276,11 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
             // anything about managing dependencies - it's responsibility of caller.
             .remove_plugin_changes(plugin, /*is_top_level=*/true)
             .save_all();
+
+        if (plugin.getFrameworks(self.platform).length > 0) {
+            self.events.emit('verbose', 'Updating build files since android plugin contained <framework>');
+            require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
+        }
 
         var targetDir = uninstallOptions.usePlatformWww ?
             self.locations.platformWww :

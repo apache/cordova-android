@@ -126,8 +126,8 @@ function writeProjectProperties(projectPath, target_api) {
 }
 
 function prepBuildFiles(projectPath) {
-    var buildModule = require(path.join(path.resolve(projectPath), 'cordova', 'lib', 'build'));
-    buildModule.prepBuildFiles();
+    var buildModule = require(path.resolve(projectPath, 'cordova/lib/builders/builders'));
+    buildModule.getBuilder('gradle').prepBuildFiles();
 }
 
 function copyBuildRules(projectPath) {
