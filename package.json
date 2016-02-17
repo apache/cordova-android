@@ -16,7 +16,7 @@
         "apache"
     ],
     "scripts": {
-        "test": "npm run jshint && jasmine-node --color spec/create",
+        "test": "npm run jshint && jasmine-node --color spec/unit",
         "test-build": "jasmine-node --captureExceptions --color spec/e2e",
         "jshint": "node node_modules/jshint/bin/jshint bin && node node_modules/jshint/bin/jshint spec"
     },
