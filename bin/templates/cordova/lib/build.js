@@ -169,11 +169,6 @@ module.exports.run = function(options, optResolvedTarget) {
     });
 };
 
-// Called by plugman after installing plugins, and by create script after creating project.
-module.exports.prepBuildFiles = function() {
-    return builders.getBuilder('gradle').prepBuildFiles();
-};
-
 /*
  * Detects the architecture of a device/emulator
  * Returns "arm" or "x86".
