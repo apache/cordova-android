@@ -41,6 +41,7 @@
     "devDependencies": {
         "jasmine-node": "^1.14.5",
         "jshint": "^2.6.0",
-        "promise-matchers": "~0"
+        "promise-matchers": "~0",
+        "rewire": "^2.1.3"
     }
 }
