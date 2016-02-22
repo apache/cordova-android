@@ -96,7 +96,7 @@ var handlers = {
                 subDir = path.resolve(project.projectDir, subRelativeDir);
                 // If it's the last framework in the plugin, remove the parent directory.
                 var parDir = path.dirname(subDir);
-                if (fs.readdirSync(parDir).length === 0) {
+                if (fs.existsSync(parDir) && fs.readdirSync(parDir).length === 0) {
                     fs.rmdirSync(parDir);
                 }
             } else {
