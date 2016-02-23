@@ -35,4 +35,11 @@ package org.apache.cordova;
      * @param password The password
      */
     public void proceed (String username, String password);
+    
+    /**
+     * Gets whether the credentials stored for the current host are suitable for use.
+     * Credentials are not suitable if they have previously been rejected by the server for the
+     * current request.
+     */
+    public boolean isFirstAttempt();
 }
