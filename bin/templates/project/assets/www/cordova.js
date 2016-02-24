@@ -1,5 +1,5 @@
 // Platform: android
-// 533e1bfdbc57d54106ca39a02b21a1909f84fda7
+// c517ca811b4948b630e0b74dbae6c9637939da24
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -8,9 +8,9 @@
  to you under the Apache License, Version 2.0 (the
  "License"); you may not use this file except in compliance
  with the License.  You may obtain a copy of the License at
-
+ 
      http://www.apache.org/licenses/LICENSE-2.0
-
+ 
  Unless required by applicable law or agreed to in writing,
  software distributed under the License is distributed on an
  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -330,7 +330,7 @@ module.exports = cordova;
 
 });
 
-// file: cordova-android/cordova-js-src/android/nativeapiprovider.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/android/nativeapiprovider.js
 define("cordova/android/nativeapiprovider", function(require, exports, module) {
 
 /**
@@ -353,7 +353,7 @@ module.exports = {
 
 });
 
-// file: cordova-android/cordova-js-src/android/promptbasednativeapi.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/android/promptbasednativeapi.js
 define("cordova/android/promptbasednativeapi", function(require, exports, module) {
 
 /**
@@ -862,7 +862,7 @@ module.exports = channel;
 
 });
 
-// file: cordova-android/cordova-js-src/exec.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/exec.js
 define("cordova/exec", function(require, exports, module) {
 
 /**
@@ -1611,7 +1611,7 @@ exports.reset();
 
 });
 
-// file: cordova-android/cordova-js-src/platform.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/platform.js
 define("cordova/platform", function(require, exports, module) {
 
 // The last resume event that was received that had the result of a plugin call.
@@ -1721,7 +1721,7 @@ function onMessageFromNative(msg) {
 
 });
 
-// file: cordova-android/cordova-js-src/plugin/android/app.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/plugin/android/app.js
 define("cordova/plugin/android/app", function(require, exports, module) {
 
 var exec = require('cordova/exec');
