@@ -1,0 +1,81 @@
+{
+  "_args": [
+    [
+      "bplist-parser@^0.1.0",
+      "/Users/steveng/repo/cordova/cordova-android/node_modules/cordova-common"
+    ]
+  ],
+  "_from": "bplist-parser@>=0.1.0 <0.2.0",
+  "_id": "bplist-parser@0.1.1",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/bplist-parser",
+  "_nodeVersion": "5.1.0",
+  "_npmUser": {
+    "email": "joe@fernsroth.com",
+    "name": "joeferner"
+  },
+  "_npmVersion": "3.4.0",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "bplist-parser",
+    "raw": "bplist-parser@^0.1.0",
+    "rawSpec": "^0.1.0",
+    "scope": null,
+    "spec": ">=0.1.0 <0.2.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/cordova-common"
+  ],
+  "_resolved": "http://registry.npmjs.org/bplist-parser/-/bplist-parser-0.1.1.tgz",
+  "_shasum": "d60d5dcc20cba6dc7e1f299b35d3e1f95dafbae6",
+  "_shrinkwrap": null,
+  "_spec": "bplist-parser@^0.1.0",
+  "_where": "/Users/steveng/repo/cordova/cordova-android/node_modules/cordova-common",
+  "author": {
+    "email": "joe.ferner@nearinfinity.com",
+    "name": "Joe Ferner"
+  },
+  "bugs": {
+    "url": "https://github.com/nearinfinity/node-bplist-parser/issues"
+  },
+  "dependencies": {
+    "big-integer": "^1.6.7"
+  },
+  "description": "Binary plist parser.",
+  "devDependencies": {
+    "nodeunit": "~0.9.1"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "d60d5dcc20cba6dc7e1f299b35d3e1f95dafbae6",
+    "tarball": "http://registry.npmjs.org/bplist-parser/-/bplist-parser-0.1.1.tgz"
+  },
+  "gitHead": "c4f22650de2cc95edd21a6e609ff0654a2b951bd",
+  "homepage": "https://github.com/nearinfinity/node-bplist-parser#readme",
+  "keywords": [
+    "bplist",
+    "parser",
+    "plist"
+  ],
+  "license": "MIT",
+  "main": "bplistParser.js",
+  "maintainers": [
+    {
+      "name": "joeferner",
+      "email": "joe@fernsroth.com"
+    }
+  ],
+  "name": "bplist-parser",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nearinfinity/node-bplist-parser.git"
+  },
+  "scripts": {
+    "test": "./node_modules/nodeunit/bin/nodeunit test"
+  },
+  "version": "0.1.1"
+}

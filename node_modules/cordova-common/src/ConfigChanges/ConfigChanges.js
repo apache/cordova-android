@@ -106,8 +106,8 @@ function remove_plugin_changes(pluginInfo, is_top_level) {
         // CB-6976 Windows Universal Apps. Compatibility fix for existing plugins.
         if (self.platform == 'windows' && file == 'package.appxmanifest' &&
             !fs.existsSync(path.join(self.project_dir, 'package.appxmanifest'))) {
-            // New windows template separate manifest files for Windows8, Windows8.1 and WP8.1
-            var substs = ['package.phone.appxmanifest', 'package.windows.appxmanifest', 'package.windows80.appxmanifest', 'package.windows10.appxmanifest'];
+            // New windows template separate manifest files for Windows10, Windows8.1 and WP8.1
+            var substs = ['package.phone.appxmanifest', 'package.windows.appxmanifest', 'package.windows10.appxmanifest'];
             /* jshint loopfunc:true */
             substs.forEach(function(subst) {
                 events.emit('verbose', 'Applying munge to ' + subst);
@@ -149,7 +149,7 @@ function add_plugin_changes(pluginInfo, plugin_vars, is_top_level, should_increm
         // CB-6976 Windows Universal Apps. Compatibility fix for existing plugins.
         if (self.platform == 'windows' && file == 'package.appxmanifest' &&
             !fs.existsSync(path.join(self.project_dir, 'package.appxmanifest'))) {
-            var substs = ['package.phone.appxmanifest', 'package.windows.appxmanifest', 'package.windows80.appxmanifest', 'package.windows10.appxmanifest'];
+            var substs = ['package.phone.appxmanifest', 'package.windows.appxmanifest', 'package.windows10.appxmanifest'];
             /* jshint loopfunc:true */
             substs.forEach(function(subst) {
                 events.emit('verbose', 'Applying munge to ' + subst);
@@ -203,7 +203,6 @@ function generate_plugin_config_munge(pluginInfo, vars) {
     {
         var manifests = {
             'windows': {
-                '8.0.0': 'package.windows80.appxmanifest',
                 '8.1.0': 'package.windows.appxmanifest',
                 '10.0.0': 'package.windows10.appxmanifest'
             },
@@ -212,7 +211,6 @@ function generate_plugin_config_munge(pluginInfo, vars) {
                 '10.0.0': 'package.windows10.appxmanifest'
             },
             'all': {
-                '8.0.0': 'package.windows80.appxmanifest',
                 '8.1.0': ['package.windows.appxmanifest', 'package.phone.appxmanifest'],
                 '10.0.0': 'package.windows10.appxmanifest'
             }

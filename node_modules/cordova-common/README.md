@@ -107,6 +107,10 @@ Usage:
 ```
 var superspawn = require('cordova-common').superspawn;
 superspawn.spawn('adb', ['devices'])
+.progress(function(data){
+    if (data.stderr)
+        console.error('"adb devices" raised an error: ' + data.stderr);
+})
 .then(function(devices){
     // Do something...
 })

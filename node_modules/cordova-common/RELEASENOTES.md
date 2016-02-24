@@ -20,6 +20,14 @@
 -->
 # Cordova-common Release Notes
 
+### 1.1.0 (Feb 16, 2016)
+* CB-10482 Remove references to windows8 from cordova-lib/cli
+* CB-10430 Adds forwardEvents method to easily connect two EventEmitters
+* CB-10176 Adds CordovaLogger class, based on logger module from cordova-cli
+* CB-10052 Expose child process' io streams via promise progress notification
+* CB-10497 Prefer .bat over .cmd on windows platform
+* CB-9984 Bumps plist version and fixes failing cordova-common test
+
 ### 1.0.0 (Oct 29, 2015)
 
 * CB-9890 Documents cordova-common

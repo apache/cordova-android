@@ -28,7 +28,7 @@ var iswin32 = process.platform == 'win32';
 
 // On Windows, spawn() for batch files requires absolute path & having the extension.
 function resolveWindowsExe(cmd) {
-    var winExtensions = ['.exe', '.cmd', '.bat', '.js', '.vbs'];
+    var winExtensions = ['.exe', '.bat', '.cmd', '.js', '.vbs'];
     function isValidExe(c) {
         return winExtensions.indexOf(path.extname(c)) !== -1 && fs.existsSync(c);
     }
@@ -52,15 +52,39 @@ function maybeQuote(a) {
     return a;
 }
 
-// opts:
-//   printCommand: Whether to log the command (default: false)
-//   stdio: 'default' is to capture output and returning it as a string to success (same as exec)
-//          'ignore' means don't bother capturing it
-//          'inherit' means pipe the input & output. This is required for anything that prompts.
-//   env: Map of extra environment variables.
-//   cwd: Working directory for the command.
-//   chmod: If truthy, will attempt to set the execute bit before executing on non-Windows platforms.
-// Returns a promise that succeeds only for return code = 0.
+/**
+ * A special implementation for child_process.spawn that handles
+ *   Windows-specific issues with batch files and spaces in paths. Returns a
+ *   promise that succeeds only for return code 0. It is also possible to
+ *   subscribe on spawned process' stdout and stderr streams using progress
+ *   handler for resultant promise.
+ *
+ * @example spawn('mycommand', [], {stdio: 'pipe'}) .progress(function (stdio){
+ *   if (stdio.stderr) { console.error(stdio.stderr); } })
+ *   .then(function(result){ // do other stuff })
+ *
+ * @param   {String}   cmd       A command to spawn
+ * @param   {String[]} [args=[]]  An array of arguments, passed to spawned
+ *   process
+ * @param   {Object}   [opts={}]  A configuration object
+ * @param   {String|String[]|Object} opts.stdio Property that configures how
+ *   spawned process' stdio will behave. Has the same meaning and possible
+ *   values as 'stdio' options for child_process.spawn method
+ *   (https://nodejs.org/api/child_process.html#child_process_options_stdio).
+ * @param {Object}     [env={}]  A map of extra environment variables
+ * @param {String}     [cwd=process.cwd()]  Working directory for the command
+ * @param {Boolean}    [chmod=false]  If truthy, will attempt to set the execute
+ *   bit before executing on non-Windows platforms
+ *
+ * @return  {Promise}        A promise that is either fulfilled if the spawned
+ *   process is exited with zero error code or rejected otherwise. If the
+ *   'stdio' option set to 'default' or 'pipe', the promise also emits progress
+ *   messages with the following contents:
+ *   {
+ *       'stdout': ...,
+ *       'stderr': ...
+ *   }
+ */
 exports.spawn = function(cmd, args, opts) {
     args = args || [];
     opts = opts || {};
@@ -83,17 +107,19 @@ exports.spawn = function(cmd, args, opts) {
         }
     }
 
-    if (opts.stdio == 'ignore') {
-        spawnOpts.stdio = 'ignore';
-    } else if (opts.stdio == 'inherit') {
-        spawnOpts.stdio = 'inherit';
+    if (opts.stdio !== 'default') {
+        // Ignore 'default' value for stdio because it corresponds to child_process's default 'pipe' option
+        spawnOpts.stdio = opts.stdio;
     }
+
     if (opts.cwd) {
         spawnOpts.cwd = opts.cwd;
     }
+
     if (opts.env) {
         spawnOpts.env = _.extend(_.extend({}, process.env), opts.env);
     }
+
     if (opts.chmod && !iswin32) {
         try {
             // This fails when module is installed in a system directory (e.g. via sudo npm install)
@@ -113,11 +139,15 @@ exports.spawn = function(cmd, args, opts) {
         child.stdout.setEncoding('utf8');
         child.stdout.on('data', function(data) {
             capturedOut += data;
+            d.notify({'stdout': data});
         });
+    }
 
+    if (child.stderr) {
         child.stderr.setEncoding('utf8');
         child.stderr.on('data', function(data) {
             capturedErr += data;
+            d.notify({'stderr': data});
         });
     }
 

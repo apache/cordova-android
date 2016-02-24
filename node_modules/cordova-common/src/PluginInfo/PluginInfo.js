@@ -376,9 +376,6 @@ function addCordova(someArray) {
 // applied to each element.
 function _getTags(pelem, tag, platform, transform) {
     var platformTag = pelem.find('./platform[@name="' + platform + '"]');
-    if (platform == 'windows' && !platformTag) {
-        platformTag = pelem.find('platform[@name="' + 'windows8' + '"]');
-    }
     var tagsInRoot = pelem.findall(tag);
     tagsInRoot = tagsInRoot || [];
     var tagsInPlatform = platformTag ? platformTag.findall(tag) : [];
@@ -392,9 +389,6 @@ function _getTags(pelem, tag, platform, transform) {
 // Same as _getTags() but only looks inside a platfrom section.
 function _getTagsInPlatform(pelem, tag, platform, transform) {
     var platformTag = pelem.find('./platform[@name="' + platform + '"]');
-    if (platform == 'windows' && !platformTag) {
-        platformTag = pelem.find('platform[@name="' + 'windows8' + '"]');
-    }
     var tags = platformTag ? platformTag.findall(tag) : [];
     if ( typeof transform === 'function' ) {
         tags = tags.map(transform);

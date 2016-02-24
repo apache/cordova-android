@@ -26,6 +26,7 @@ exports = module.exports = {
 
     ActionStack: require('./src/ActionStack'),
     CordovaError: require('./src/CordovaError/CordovaError'),
+    CordovaLogger: require('./src/CordovaLogger'),
     CordovaExternalToolErrorContext: require('./src/CordovaError/CordovaExternalToolErrorContext'),
     PlatformJson: require('./src/PlatformJson'),
     ConfigParser: require('./src/ConfigParser/ConfigParser.js'),

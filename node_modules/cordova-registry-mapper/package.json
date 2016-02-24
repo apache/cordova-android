@@ -1,0 +1,77 @@
+{
+  "_args": [
+    [
+      "cordova-registry-mapper@^1.1.8",
+      "/Users/steveng/repo/cordova/cordova-android/node_modules/cordova-common"
+    ]
+  ],
+  "_from": "cordova-registry-mapper@>=1.1.8 <2.0.0",
+  "_id": "cordova-registry-mapper@1.1.15",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/cordova-registry-mapper",
+  "_nodeVersion": "5.4.1",
+  "_npmUser": {
+    "email": "stevengill97@gmail.com",
+    "name": "stevegill"
+  },
+  "_npmVersion": "3.5.3",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "cordova-registry-mapper",
+    "raw": "cordova-registry-mapper@^1.1.8",
+    "rawSpec": "^1.1.8",
+    "scope": null,
+    "spec": ">=1.1.8 <2.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/cordova-common"
+  ],
+  "_resolved": "http://registry.npmjs.org/cordova-registry-mapper/-/cordova-registry-mapper-1.1.15.tgz",
+  "_shasum": "e244b9185b8175473bff6079324905115f83dc7c",
+  "_shrinkwrap": null,
+  "_spec": "cordova-registry-mapper@^1.1.8",
+  "_where": "/Users/steveng/repo/cordova/cordova-android/node_modules/cordova-common",
+  "author": {
+    "name": "Steve Gill"
+  },
+  "bugs": {
+    "url": "https://github.com/stevengill/cordova-registry-mapper/issues"
+  },
+  "dependencies": {},
+  "description": "Maps old plugin ids to new plugin names for fetching from npm",
+  "devDependencies": {
+    "tape": "^3.5.0"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "e244b9185b8175473bff6079324905115f83dc7c",
+    "tarball": "http://registry.npmjs.org/cordova-registry-mapper/-/cordova-registry-mapper-1.1.15.tgz"
+  },
+  "gitHead": "00af0f028ec94154a364eeabe38b8e22320647bd",
+  "homepage": "https://github.com/stevengill/cordova-registry-mapper#readme",
+  "keywords": [
+    "cordova",
+    "plugins"
+  ],
+  "license": "Apache version 2.0",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "stevegill",
+      "email": "stevengill97@gmail.com"
+    }
+  ],
+  "name": "cordova-registry-mapper",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevengill/cordova-registry-mapper.git"
+  },
+  "scripts": {
+    "test": "node tests/test.js"
+  },
+  "version": "1.1.15"
+}
