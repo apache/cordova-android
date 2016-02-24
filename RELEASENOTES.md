@@ -20,6 +20,22 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 5.1.1 (Feb 24, 2016)
+* updated `cordova-common` dependnecy to `1.1.0`
+* CB-10628 Fix `emulate android --target`
+* CB-10618 Handle gradle frameworks on plugin installation/uninstallation
+* CB-10510: Add an optional timeout to `emu` start script
+* CB-10498: Resume event should be sticky if it has a plugin result
+* fix `HtmlNotFoundTest` so that it passes when file not found is handled correctly
+* CB-10472 `NullPointerException`: `org.apache.cordova.PluginManager.onSaveInstanceState` check if `pluginManager` is `null` before using it
+* CB-10138 Adds missing plugin metadata to `plugin_list` module.
+* CB-10443 Pass original options instead of remaining
+* CB-10443 Fix `this.root` null reference
+* CB-10421 Fixes exception when calling run script with `--help` option
+* updated `.gitignore`
+* CB-10406 Fixes an exception, thrown when building using Ant. 
+* CB-10157 Uninstall app from device/emulator only when signed apk is already installed
+
 ### 5.1.0 (Jan 19, 2016)
 * CB-10386 Add `android.useDeprecatedNdk=true` to support `NDK` in `gradle`
 * CB-8864: Fixing this to mitigate CB-8685 and CB-10104
