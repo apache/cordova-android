@@ -31,7 +31,7 @@ var handlers = {
             if (!obj.src) throw new CordovaError('<source-file> element is missing "src" attribute for plugin: ' + plugin.id);
             if (!obj.targetDir) throw new CordovaError('<source-file> element is missing "target-dir" attribute for plugin: ' + plugin.id);
             var dest = path.join(obj.targetDir, path.basename(obj.src));
-            copyNewFile(plugin.dir, obj.src, project.projectDir, dest, options && options.link);
+            copyNewFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
         },
         uninstall:function(obj, plugin, project, options) {
             var dest = path.join(obj.targetDir, path.basename(obj.src));
@@ -41,7 +41,7 @@ var handlers = {
     'lib-file':{
         install:function(obj, plugin, project, options) {
             var dest = path.join('libs', path.basename(obj.src));
-            copyFile(plugin.dir, obj.src, project.projectDir, dest, options && options.link);
+            copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
         },
         uninstall:function(obj, plugin, project, options) {
             var dest = path.join('libs', path.basename(obj.src));
@@ -50,7 +50,7 @@ var handlers = {
     },
     'resource-file':{
         install:function(obj, plugin, project, options) {
-            copyFile(plugin.dir, obj.src, project.projectDir, path.normalize(obj.target), options && options.link);
+            copyFile(plugin.dir, obj.src, project.projectDir, path.normalize(obj.target), !!(options && options.link));
         },
         uninstall:function(obj, plugin, project, options) {
             removeFile(project.projectDir, path.normalize(obj.target));
@@ -65,22 +65,24 @@ var handlers = {
             var parentDir = obj.parent ? path.resolve(project.projectDir, obj.parent) : project.projectDir;
             var subDir;
 
-            if (obj.custom) {
-                var subRelativeDir = project.getCustomSubprojectRelativeDir(plugin.id, src);
-                copyNewFile(plugin.dir, src, project.projectDir, subRelativeDir, options && options.link);
-                subDir = path.resolve(project.projectDir, subRelativeDir);
-            } else {
-                obj.type = 'sys';
-                subDir = src;
+             if (obj.custom) {
+                 var subRelativeDir = project.getCustomSubprojectRelativeDir(plugin.id, src);
+                 copyNewFile(plugin.dir, src, project.projectDir, subRelativeDir, !!(options && options.link));
+                 subDir = path.resolve(project.projectDir, subRelativeDir);
+             } else {
+                 obj.type = 'sys';
+                 subDir = src;
             }
 
             if (obj.type == 'gradleReference') {
                 project.addGradleReference(parentDir, subDir);
-            } else if (obj.type == 'sys') {
-                project.addSystemLibrary(parentDir, subDir);
-            } else {
-                project.addSubProject(parentDir, subDir);
+             } else if (obj.type == 'sys') {
+                 project.addSystemLibrary(parentDir, subDir);
+             } else {
+                 project.addSubProject(parentDir, subDir);
             }
+
+            project.addSubProject(parentDir, subDir);
         },
         uninstall:function(obj, plugin, project, options) {
             var src = obj.src;

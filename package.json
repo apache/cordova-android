@@ -17,6 +17,7 @@
     ],
     "scripts": {
         "test": "npm run jshint && jasmine-node --color spec/unit",
+        "cover": "istanbul cover --root bin/templates/cordova --print detail node_modules/jasmine-node/bin/jasmine-node -- spec/unit",
         "test-build": "jasmine-node --captureExceptions --color spec/e2e",
         "jshint": "node node_modules/jshint/bin/jshint bin && node node_modules/jshint/bin/jshint spec"
     },
@@ -39,6 +40,7 @@
         "shelljs"
     ],
     "devDependencies": {
+        "istanbul": "^0.4.2",
         "jasmine-node": "^1.14.5",
         "jshint": "^2.6.0",
         "promise-matchers": "~0",
