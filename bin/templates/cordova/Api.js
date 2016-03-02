@@ -184,8 +184,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
     if (!plugin || plugin.constructor.name !== 'PluginInfo')
         return Q.reject(new CordovaError('The parameter is incorrect. The first parameter to addPlugin should be a PluginInfo instance'));
 
-    installOptions = installOptions || {};
-    installOptions.variables = installOptions.variables || {};
+    installOptions = this._processPluginOptions(installOptions);
 
     var self = this;
     var actions = new ActionStack();
@@ -224,11 +223,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }
 
-        var targetDir = installOptions.usePlatformWww ?
-            self.locations.platformWww :
-            self.locations.www;
-
-        self._addModulesInfo(plugin, targetDir);
+        self._addModulesInfo(plugin, installOptions.www_dir);
     });
 };
 
@@ -253,6 +248,8 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
     var self = this;
     var actions = new ActionStack();
     var project = AndroidProject.getProjectFile(this.root);
+
+    uninstallOptions = this._processPluginOptions(uninstallOptions);
 
     // queue up plugin files
     plugin.getFilesAndFrameworks(this.platform)
@@ -282,11 +279,7 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }
 
-        var targetDir = uninstallOptions.usePlatformWww ?
-            self.locations.platformWww :
-            self.locations.www;
-
-        self._removeModulesInfo(plugin, targetDir);
+        self._removeModulesInfo(plugin, uninstallOptions.www_dir);
     });
 };
 
@@ -501,4 +494,25 @@ Api.prototype._writePluginModules = function (targetDir) {
 
     shell.mkdir('-p', targetDir);
     fs.writeFileSync(path.join(targetDir, 'cordova_plugins.js'), final_contents, 'utf-8');
+};
+
+/**
+ * Process options for addPlugin/removePlugin methods. Sets up www directory
+ *  location based on options object.
+ *
+ * @param   {Object}  options  Options object for add/removePlugin methods
+ * @return  {Object}  Processed options
+ */
+Api.prototype._processPluginOptions = function (options) {
+    options = options || {};
+    options.variables = options.variables || {};
+
+    // CB-10710 Use Plugman's CLI www_dir option as www files destination. If
+    // not specified, choose either "www" or "platform_www" depending on
+    // "usePlatformWww" option.
+    if (!options.www_dir) {
+        options.www_dir = (options.usePlatformWww === true) ?
+            this.locations.www :
+            this.locations.platformWww;
+    }
 };
