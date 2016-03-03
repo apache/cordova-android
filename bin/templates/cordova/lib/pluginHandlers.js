@@ -34,7 +34,8 @@ var handlers = {
             if (options && options.forceCopyingSrc) {
                 copyFile(plugin.dir, obj.src, project.projectDir, dest, options && options.link);
             } else {
-                copyNewFile(plugin.dir, obj.src, project.projectDir, dest, options && options.link);
+              copyNewFile(plugin.dir, obj.src, project.projectDir, dest, options && options.link);
+            }
         },
         uninstall:function(obj, plugin, project, options) {
             var dest = path.join(obj.targetDir, path.basename(obj.src));
