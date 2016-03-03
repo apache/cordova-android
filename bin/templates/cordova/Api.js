@@ -515,4 +515,6 @@ Api.prototype._processPluginOptions = function (options) {
             this.locations.www :
             this.locations.platformWww;
     }
+
+    return options;
 };
