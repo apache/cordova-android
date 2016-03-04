@@ -31,7 +31,7 @@ var handlers = {
             if (!obj.src) throw new CordovaError('<source-file> element is missing "src" attribute for plugin: ' + plugin.id);
             if (!obj.targetDir) throw new CordovaError('<source-file> element is missing "target-dir" attribute for plugin: ' + plugin.id);
             var dest = path.join(obj.targetDir, path.basename(obj.src));
-            if (options && options.forceCopyingSrc) {
+            if (options && options.force) {
                 copyFile(plugin.dir, obj.src, project.projectDir, dest, options && options.link);
             } else {
                 copyNewFile(plugin.dir, obj.src, project.projectDir, dest, options && options.link);
