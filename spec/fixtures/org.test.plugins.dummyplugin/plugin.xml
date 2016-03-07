@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ Copyright 2013 Anis Kadri
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+
+-->
+
+<plugin xmlns="http://cordova.apache.org/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="org.test.plugins.dummyplugin"
+    version="0.6.0">
+
+    <!-- new requirement: NO SPACES -->
+    <name>dummyplugin</name>
+    <!-- These are going to be required by plugman-registry -->
+    <description>my description</description>
+    <author>Jackson Badman</author>
+    <keywords>dummy,plugin</keywords>
+    <license>BSD</license>
+    <!-- end plugman-registry requirements -->
+
+    <asset src="www/dummyplugin.js" target="dummyplugin.js" />
+    <asset src="www/dummyplugin" target="dummyplugin" />
+
+    <config-file target="config.xml" parent="/*">
+        <access origin="build.phonegap.com" />
+        <access origin="s3.amazonaws.com" />
+    </config-file>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:name="DummyPlugin.org.test.plugins.dummyplugin"
+                      android:label="@string/app_name">
+                <intent-filter>
+                </intent-filter>
+            </activity>
+        </config-file>
+
+        <framework src="plugin-lib" custom="true" />
+        <framework src="plugin-lib2" custom="true" parent="plugin-lib" />
+        <framework src="extras/android/support/v7/appcompat" />
+        <framework src="extra.gradle" type="gradleReference" />
+        <resource-file src="android-resource.xml" target="res/xml/dummy.xml" />
+
+        <!-- CDV < 2.0 -->
+        <config-file target="res/xml/plugins.xml" parent="/plugins">
+            <plugin name="org.test.plugins.dummyplugin"
+                value="DummyPlugin.org.test.plugins.dummyplugin"/>
+        </config-file>
+
+        <!-- CDV 2.0+ (for now) -->
+        <config-file target="res/xml/config.xml" parent="/cordova/plugins">
+            <plugin name="org.test.plugins.dummyplugin"
+                value="DummyPlugin.org.test.plugins.dummyplugin"/>
+        </config-file>
+
+        <source-file src="src/android/DummyPlugin.java"
+                target-dir="src/com/phonegap/plugins/dummyplugin" />
+        <lib-file src="src/android/TestLib.jar" />
+    </platform>
+</plugin>

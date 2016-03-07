@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ Copyright 2013 Anis Kadri
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+
+-->
+
+<plugin xmlns="http://cordova.apache.org/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="org.test.plugins.faultyplugin"
+    version="0.6.0">
+
+    <name>Faulty Plugin</name>
+
+    <access origin="build.phonegap.com" />
+    <access origin="s3.amazonaws.com" />
+    <!-- file doesn't exist -->
+
+    <config-file target="config.xml" parent="/widget">
+        <asset src="www/main.js" target="faultyplugin/main.js" />
+        <asset src="www/index.js" target="faultyplugin/index.js" />
+    </config-file>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:name="org.test.plugins.faultyplugin.org.test.plugins.faultyplugin"
+                      android:label="@string/app_name">
+                <intent-filter>
+                </intent-filter>
+            </activity>
+        </config-file>
+
+        <!-- CDV < 2.0 -->
+        <config-file target="res/xml/plugins.xml" parent="/plugins">
+            <plugin name="org.test.plugins.faultyplugin"
+                value="org.test.plugins.faultyplugin.org.test.plugins.faultyplugin"/>
+        </config-file>
+
+        <!-- CDV 2.0+ (for now) -->
+        <config-file target="res/xml/config.xml" parent="/cordova/plugins">
+            <plugin name="org.test.plugins.faultyplugin"
+                value="org.test.plugins.faultyplugin.org.test.plugins.faultyplugin"/>
+        </config-file>
+
+        <!-- this file doesn't exist -->
+        <source-file src="src/android/NotHere.java"
+                target-dir="src/com/phonegap/plugins/faultyplugin" />
+    </platform>
+</plugin>

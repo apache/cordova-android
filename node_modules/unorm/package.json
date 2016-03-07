@@ -1,0 +1,95 @@
+{
+  "_args": [
+    [
+      "unorm@^1.3.3",
+      "/Users/steveng/repo/cordova/cordova-android/node_modules/cordova-common"
+    ]
+  ],
+  "_from": "unorm@>=1.3.3 <2.0.0",
+  "_id": "unorm@1.4.1",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/unorm",
+  "_npmUser": {
+    "email": "bwp@bwp.dk",
+    "name": "walling"
+  },
+  "_npmVersion": "1.4.28",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "unorm",
+    "raw": "unorm@^1.3.3",
+    "rawSpec": "^1.3.3",
+    "scope": null,
+    "spec": ">=1.3.3 <2.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/cordova-common"
+  ],
+  "_resolved": "http://registry.npmjs.org/unorm/-/unorm-1.4.1.tgz",
+  "_shasum": "364200d5f13646ca8bcd44490271335614792300",
+  "_shrinkwrap": null,
+  "_spec": "unorm@^1.3.3",
+  "_where": "/Users/steveng/repo/cordova/cordova-android/node_modules/cordova-common",
+  "author": {
+    "email": "bwp@bwp.dk",
+    "name": "Bjarke Walling"
+  },
+  "bugs": {
+    "url": "https://github.com/walling/unorm/issues"
+  },
+  "contributors": [
+    {
+      "name": "Bjarke Walling",
+      "email": "bwp@bwp.dk"
+    },
+    {
+      "name": "Oleg Grenrus",
+      "email": "oleg.grenrus@iki.fi"
+    },
+    {
+      "name": "Matsuza",
+      "email": "matsuza@gmail.com"
+    }
+  ],
+  "dependencies": {},
+  "description": "JavaScript Unicode 8.0 Normalization - NFC, NFD, NFKC, NFKD. Read <http://unicode.org/reports/tr15/> UAX #15 Unicode Normalization Forms.",
+  "devDependencies": {
+    "benchmark": "~1.0.0",
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.8.0",
+    "grunt-contrib-watch": "~0.5.0",
+    "grunt-simple-mocha": "~0.4.0",
+    "unorm": "1.4.1"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "364200d5f13646ca8bcd44490271335614792300",
+    "tarball": "http://registry.npmjs.org/unorm/-/unorm-1.4.1.tgz"
+  },
+  "engines": {
+    "node": ">= 0.4.0"
+  },
+  "gitHead": "e802d0d7844cf74b03742bce1147a82ace218396",
+  "homepage": "https://github.com/walling/unorm",
+  "license": "MIT or GPL-2.0",
+  "main": "./lib/unorm.js",
+  "maintainers": [
+    {
+      "name": "walling",
+      "email": "bwp@bwp.dk"
+    }
+  ],
+  "name": "unorm",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/walling/unorm.git"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "version": "1.4.1"
+}

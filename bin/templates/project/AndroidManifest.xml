@@ -29,15 +29,13 @@
         />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application android:icon="@drawable/icon" android:label="@string/app_name"
         android:hardwareAccelerated="true" android:supportsRtl="true">
         <activity android:name="__ACTIVITY__"
                 android:label="@string/activity_name"
                 android:launchMode="singleTop"
-                android:theme="@android:style/Theme.Black.NoTitleBar"
+                android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
                 android:windowSoftInputMode="adjustResize"
                 android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale">
             <intent-filter android:label="@string/launcher_name">

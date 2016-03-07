@@ -1,0 +1,101 @@
+{
+  "_args": [
+    [
+      "elementtree@^0.1.6",
+      "/Users/steveng/repo/cordova/cordova-android"
+    ]
+  ],
+  "_from": "elementtree@>=0.1.6 <0.2.0",
+  "_id": "elementtree@0.1.6",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/elementtree",
+  "_npmUser": {
+    "email": "ryan@trolocsis.com",
+    "name": "rphillips"
+  },
+  "_npmVersion": "1.3.24",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "elementtree",
+    "raw": "elementtree@^0.1.6",
+    "rawSpec": "^0.1.6",
+    "scope": null,
+    "spec": ">=0.1.6 <0.2.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/",
+    "/cordova-common"
+  ],
+  "_resolved": "http://registry.npmjs.org/elementtree/-/elementtree-0.1.6.tgz",
+  "_shasum": "2ac4c46ea30516c8c4cbdb5e3ac7418e592de20c",
+  "_shrinkwrap": null,
+  "_spec": "elementtree@^0.1.6",
+  "_where": "/Users/steveng/repo/cordova/cordova-android",
+  "author": {
+    "name": "Rackspace US, Inc."
+  },
+  "bugs": {
+    "url": "https://github.com/racker/node-elementtree/issues"
+  },
+  "contributors": [
+    {
+      "name": "Paul Querna",
+      "email": "paul.querna@rackspace.com"
+    },
+    {
+      "name": "Tomaz Muraus",
+      "email": "tomaz.muraus@rackspace.com"
+    }
+  ],
+  "dependencies": {
+    "sax": "0.3.5"
+  },
+  "description": "XML Serialization and Parsing module based on Python's ElementTree.",
+  "devDependencies": {
+    "whiskey": "0.8.x"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "dist": {
+    "shasum": "2ac4c46ea30516c8c4cbdb5e3ac7418e592de20c",
+    "tarball": "http://registry.npmjs.org/elementtree/-/elementtree-0.1.6.tgz"
+  },
+  "engines": {
+    "node": ">= 0.4.0"
+  },
+  "homepage": "https://github.com/racker/node-elementtree",
+  "keywords": [
+    "elementtree",
+    "parser",
+    "sax",
+    "seralization",
+    "xml"
+  ],
+  "licenses": [
+    {
+      "type": "Apache",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  ],
+  "main": "lib/elementtree.js",
+  "maintainers": [
+    {
+      "name": "rphillips",
+      "email": "ryan@trolocsis.com"
+    }
+  ],
+  "name": "elementtree",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/racker/node-elementtree.git"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "version": "0.1.6"
+}

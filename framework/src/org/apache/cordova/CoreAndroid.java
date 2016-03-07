@@ -19,10 +19,6 @@
 
 package org.apache.cordova;
 
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.LOG;
-import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,6 +41,8 @@ class CoreAndroid extends CordovaPlugin {
     protected static final String TAG = "CordovaApp";
     private BroadcastReceiver telephonyReceiver;
     private CallbackContext messageChannel;
+    private PluginResult pendingResume;
+    private final Object messageChannelLock = new Object();
 
     /**
      * Send an event to be fired on the Javascript side.
@@ -112,7 +110,13 @@ class CoreAndroid extends CordovaPlugin {
                 this.exitApp();
             }
 			else if (action.equals("messageChannel")) {
-                messageChannel = callbackContext;
+                synchronized(messageChannelLock) {
+                    messageChannel = callbackContext;
+                    if (pendingResume != null) {
+                        sendEventMessage(pendingResume);
+                        pendingResume = null;
+                    }
+                }
                 return true;
             }
 
@@ -248,6 +252,9 @@ class CoreAndroid extends CordovaPlugin {
         else if (button.equals("volumedown")) {
             webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_VOLUME_DOWN, override);
         }
+        else if (button.equals("menubutton")) {
+            webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_MENU, override);
+        }
     }
 
     /**
@@ -313,10 +320,13 @@ class CoreAndroid extends CordovaPlugin {
         } catch (JSONException e) {
             LOG.e(TAG, "Failed to create event message", e);
         }
-        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, obj);
-        pluginResult.setKeepCallback(true);
+        sendEventMessage(new PluginResult(PluginResult.Status.OK, obj));
+    }
+
+    private void sendEventMessage(PluginResult payload) {
+        payload.setKeepCallback(true);
         if (messageChannel != null) {
-            messageChannel.sendPluginResult(pluginResult);
+            messageChannel.sendPluginResult(payload);
         }
     }
 
@@ -327,5 +337,24 @@ class CoreAndroid extends CordovaPlugin {
     public void onDestroy()
     {
         webView.getContext().unregisterReceiver(this.telephonyReceiver);
+    }
+
+    /**
+     * Used to send the resume event in the case that the Activity is destroyed by the OS
+     *
+     * @param resumeEvent PluginResult containing the payload for the resume event to be fired
+     */
+    public void sendResumeEvent(PluginResult resumeEvent) {
+        // This operation must be synchronized because plugin results that trigger resume
+        // events can be processed asynchronously
+        synchronized(messageChannelLock) {
+            if (messageChannel != null) {
+                sendEventMessage(resumeEvent);
+            } else {
+                // Might get called before the page loads, so we need to store it until the
+                // messageChannel gets created
+                this.pendingResume = resumeEvent;
+            }
+        }
     }
 }

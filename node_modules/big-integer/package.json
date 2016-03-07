@@ -1,0 +1,100 @@
+{
+  "_args": [
+    [
+      "big-integer@^1.6.7",
+      "/Users/steveng/repo/cordova/cordova-android/node_modules/bplist-parser"
+    ]
+  ],
+  "_from": "big-integer@>=1.6.7 <2.0.0",
+  "_id": "big-integer@1.6.12",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/big-integer",
+  "_nodeVersion": "0.12.3",
+  "_npmOperationalInternal": {
+    "host": "packages-6-west.internal.npmjs.com",
+    "tmp": "tmp/big-integer-1.6.12.tgz_1455702804335_0.11810904298909009"
+  },
+  "_npmUser": {
+    "email": "peter.e.c.olson+npm@gmail.com",
+    "name": "peterolson"
+  },
+  "_npmVersion": "2.9.1",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "big-integer",
+    "raw": "big-integer@^1.6.7",
+    "rawSpec": "^1.6.7",
+    "scope": null,
+    "spec": ">=1.6.7 <2.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/bplist-parser"
+  ],
+  "_resolved": "http://registry.npmjs.org/big-integer/-/big-integer-1.6.12.tgz",
+  "_shasum": "39afcddafcd5c4480864efb757337d508938bb26",
+  "_shrinkwrap": null,
+  "_spec": "big-integer@^1.6.7",
+  "_where": "/Users/steveng/repo/cordova/cordova-android/node_modules/bplist-parser",
+  "author": {
+    "email": "peter.e.c.olson+npm@gmail.com",
+    "name": "Peter Olson"
+  },
+  "bin": {},
+  "bugs": {
+    "url": "https://github.com/peterolson/BigInteger.js/issues"
+  },
+  "contributors": [],
+  "dependencies": {},
+  "description": "An arbitrary length integer library for Javascript",
+  "devDependencies": {
+    "coveralls": "^2.11.4",
+    "jasmine": "2.1.x",
+    "jasmine-core": "^2.3.4",
+    "karma": "^0.13.3",
+    "karma-coverage": "^0.4.2",
+    "karma-jasmine": "^0.3.6",
+    "karma-phantomjs-launcher": "~0.1"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "39afcddafcd5c4480864efb757337d508938bb26",
+    "tarball": "http://registry.npmjs.org/big-integer/-/big-integer-1.6.12.tgz"
+  },
+  "engines": {
+    "node": ">=0.6"
+  },
+  "gitHead": "56f449108e31542f939e701f1fe562a46e6c1fab",
+  "homepage": "https://github.com/peterolson/BigInteger.js#readme",
+  "keywords": [
+    "arbitrary",
+    "arithmetic",
+    "big",
+    "bigint",
+    "biginteger",
+    "bignum",
+    "integer",
+    "math",
+    "precision"
+  ],
+  "license": "Unlicense",
+  "main": "./BigInteger",
+  "maintainers": [
+    {
+      "name": "peterolson",
+      "email": "peter.e.c.olson+npm@gmail.com"
+    }
+  ],
+  "name": "big-integer",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/peterolson/BigInteger.js.git"
+  },
+  "scripts": {
+    "test": "karma start my.conf.js"
+  },
+  "version": "1.6.12"
+}

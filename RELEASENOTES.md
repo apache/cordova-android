@@ -20,6 +20,124 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 5.1.1 (Feb 24, 2016)
+* updated `cordova-common` dependnecy to `1.1.0`
+* CB-10628 Fix `emulate android --target`
+* CB-10618 Handle gradle frameworks on plugin installation/uninstallation
+* CB-10510: Add an optional timeout to `emu` start script
+* CB-10498: Resume event should be sticky if it has a plugin result
+* fix `HtmlNotFoundTest` so that it passes when file not found is handled correctly
+* CB-10472 `NullPointerException`: `org.apache.cordova.PluginManager.onSaveInstanceState` check if `pluginManager` is `null` before using it
+* CB-10138 Adds missing plugin metadata to `plugin_list` module.
+* CB-10443 Pass original options instead of remaining
+* CB-10443 Fix `this.root` null reference
+* CB-10421 Fixes exception when calling run script with `--help` option
+* updated `.gitignore`
+* CB-10406 Fixes an exception, thrown when building using Ant. 
+* CB-10157 Uninstall app from device/emulator only when signed apk is already installed
+
+### 5.1.0 (Jan 19, 2016)
+* CB-10386 Add `android.useDeprecatedNdk=true` to support `NDK` in `gradle`
+* CB-8864: Fixing this to mitigate CB-8685 and CB-10104
+* CB-10105: Spot fix for tilde errors on paths.
+* Update theme to `Theme.DeviceDefault.NoActionBar`
+* CB-10014: Set gradle `applicationId` to `package name`.
+* CB-9949: Fixing menu button event not fired in **Android**
+* CB-9479: Fixing the conditionals again, we should 
+* CB-8917: New Plugin API for passing results on resume after Activity destruction
+* CB-9971 Suppress `gradlew _JAVA_OPTIONS` output during build
+* CB-9836 Add `.gitattributes` to prevent `CRLF` line endings in repos
+* added node_modules back into `.gitignore`
+
+### 5.0.0 (Nov 01, 2015)
+* Update CordovaWebViewEngine.java
+* CB-9909 Shouldn't escape spaces in paths on Windows.
+* CB-9870 updated hello world template
+* CB-9880 Fixes platform update failure when upgrading from android@<4.1.0
+* CB-9844 Remove old .java after renaming activity
+* CB-9800 Fixing contribute link.
+* CB-9782 Check in `cordova-common` dependency
+* Adds licence header to Adb to pass rat audit
+* CB-9835 Downgrade `properties-parser` to prevent failures in Node < 4.x
+* CB-9782 Implements PlatformApi contract for Android platform.
+* CB-9826 Fixed `test-build` script on windows. 
+* Refactor of the Cordova Plugin/Permissions API
+* Manually updating version to 5.0.0-dev for engine tags
+* Bump up to API level 23
+* Commiting code to handle permissions, and the special case of the Geolocation Plugin
+* CB-9608 cordova-android no longer builds on Node 0.10 or below
+* CB-9080 Cordova CLI run for Android versions 4.1.1 and lower throws error
+* CB-9557 Fixes apk install failure when switching from debug to release build
+* CB-9496 removed permissions added for crosswalk
+* CB-9402 Allow to set gradle distubutionUrl via env variable CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL
+* CB-9428 update script now bumps up minSdkVersion to 14 if it is less than that.
+* CB-9430 Fixes check_reqs failure when javac returns an extra line
+* CB-9172 Improved emulator deploy stability. This closes #188.
+* CB-9404 Fixed an exception when path contained -debug or -release
+* CB-8320 Setting up gradle so we can use CordovaLib as a standard Android Library
+* CB-9185 Fixed an issue when unsigned apks couldn't be found. 
+* CB-9397 Fixes minor issues with `cordova requirements android`
+* CB-9389 Fixes build/check_reqs hang
+
+### Release 4.1.1 (Aug 2015) ###
+
+* CB-9428 update script now bumps up minSdkVersion to 14 if it is less than that
+* CB-9430 Fixes check_reqs failure when javac returns an extra line
+
+### Release 4.1.0 (Jul 2015) ###
+* CB-9392 Fixed printing flavored versions. This closes #184.
+* CB-9382 [Android] Fix KeepRunning setting when Plugin activity is showed. This closes #200
+* CB-9391 Fixes cdvBuildMultipleApks option casting
+* CB-9343 Split the Content-Type to obtain a clean mimetype
+* CB-9255 Make getUriType case insensitive.
+* CB-9149 Fixes JSHint issue introduced by 899daa9
+* CB-9372: Remove unused files: 'main.js' & 'master.css'. This closes #198
+* CB-9149 Make gradle alias subprojects in order to handle libs that depend on libs. This closes #182
+* Update min SDK version to 14
+* Update licenses. This closes #190
+* CB-9185 Fix signed release build exception. This closes #193.
+* CB-9286 Fixes build failure when ANDROID_HOME is not set.
+* CB-9284 Fix for handling absolute path for keystore in build.json
+* CB-9260 Install Android-22 on Travis-CI
+* Adding .ratignore file.
+* CB-9119 Adding lib/retry.js for retrying promise-returning functions. Retrying 'adb install' in emulator.js because it sometimes hangs.
+* CB-9115 android: Grant Lollipop permission req
+* Remove extra console message
+* CB-8898 Report expected gradle location properly
+* CB-8898 Fixes gradle check failure due to missing quotes
+* CB-9080: -d option is not supported on Android 4.1.1 and lower, removing
+* CB-8954 Adds `requirements` command support to check_reqs module
+* Update JS snapshot to version 4.1.0-dev (via coho)
+* CB-8417 updated platform specific files from cordova.js repo
+* Adding tests to confirm that preferences aren't changed by Intents
+* Forgot to remove the method that copied over the intent data
+* Getting around to removing this old Intent code
+* Update JS snapshot to version 4.1.0-dev (via coho)
+* Fix CordovaPluginTest on KitKat (start-up events seem to change)
+* CB-3360 Allow setting a custom User-Agent (close #162)
+* CB-8902 Use immersive mode when available when going fullscreen (close #175)
+* Make BridgeMode methods public (they were always supposed to be)
+* Simplify: EncodingUtils.getBytes(str) -> str.getBytes()
+* Don't show warning when gradlew file is read-only
+* Don't show warning when prepEnv copies gradlew and it's read-only
+* Make gradle wrapper prepEnv code work even when android-sdk is read-only
+* CB-8897 Delete drawable/icon.png since it duplicates drawable-mdpi/icon.png
+* Updating the template to target mininumSdkTarget=14
+* CB-8894: Updating the template to target mininumSdkTarget=14
+* CB-8891 Add a note about when the gradle helpers were added
+* CB-8891 Add a gradle helper for retrieving config.xml preference values
+* CB-8884 Delete Eclipse tweaks from create script
+* CB-8834 Don't fail to install on VERSION_DOWNGRADE
+* Automated tools fail, and you have to remember all four places where this is set.
+* Update the package.json
+* CB-9042 coho failed to update version, so here we are
+* CB9042 - Updating Release Notes
+* Adding tests to confirm that preferences aren't changed by Intents
+* updating existing test code
+* Forgot to remove the method that copied over the intent data
+* Getting around to removing this old Intent code
+* CB-8834 Don't fail to install on VERSION_DOWNGRADE
+
 ### Release 4.0.2 (May 2015) ###
 
 * Removed Intent Functionality from Preferences - Preferences can no longer be set by intents

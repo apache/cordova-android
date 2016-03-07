@@ -35,9 +35,15 @@ Desktop.ini
 *.swp
 *.class
 *.jar
+!/spec/fixtures/org.test.plugins.dummyplugin/src/android/TestLib.jar
 # IntelliJ IDEA files
 *.iml
 .idea
 npm-debug.log
-/node_modules
 /framework/build
+node_modules/jshint
+node_modules/promise-matchers
+node_modules/jasmine-node
+node_modules/rewire
+node_modules/istanbul
+/coverage

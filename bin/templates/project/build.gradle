@@ -30,20 +30,10 @@ buildscript {
     // installed version of Gradle. This dependency is documented at
     // http://tools.android.com/tech-docs/new-build-system/version-compatibility
     // and https://issues.apache.org/jira/browse/CB-8143
-    if (gradle.gradleVersion >= "2.2") {
-        dependencies {
-            classpath 'com.android.tools.build:gradle:1.0.0+'
-        }
-    } else if (gradle.gradleVersion >= "2.1") {
-        dependencies {
-            classpath 'com.android.tools.build:gradle:0.14.0+'
-        }
-    } else {
-        dependencies {
-            classpath 'com.android.tools.build:gradle:0.12.0+'
-        }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5.0'
     }
-}
+   }
 
 // Allow plugins to declare Maven dependencies via build-extras.gradle.
 repositories {
@@ -51,7 +41,7 @@ repositories {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.2.1'
+    gradleVersion = '2.8'
 }
 
 // Configuration properties. Set these via environment variables, build-extras.gradle, or gradle.properties.
@@ -118,7 +108,7 @@ if (ext.cdvReleaseSigningPropertiesFile == null && file('release-signing.propert
 }
 
 // Cast to appropriate types.
-ext.cdvBuildMultipleApks = !!cdvBuildMultipleApks;
+ext.cdvBuildMultipleApks = cdvBuildMultipleApks == null ? false : cdvBuildMultipleApks.toBoolean();
 ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? null : Integer.parseInt('' + cdvMinSdkVersion)
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
 
@@ -152,11 +142,8 @@ task cdvPrintProps << {
     println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
     println('cdvBuildArch=' + cdvBuildArch)
     println('computedVersionCode=' + android.defaultConfig.versionCode)
-    if (android.productFlavors.has('armv7')) {
-        println('computedArmv7VersionCode=' + android.productFlavors.armv7.versionCode)
-    }
-    if (android.productFlavors.has('x86')) {
-        println('computedx86VersionCode=' + android.productFlavors.x86.versionCode)
+    android.productFlavors.each { flavor ->
+        println('computed' + flavor.name.capitalize() + 'VersionCode=' + flavor.versionCode)
     }
 }
 
@@ -175,10 +162,16 @@ android {
     }
 
     defaultConfig {
-        versionCode cdvVersionCode ?: Integer.parseInt("" + privateHelpers.extractIntFromManifest("versionCode") + "0")
+        versionCode cdvVersionCode ?: Integer.parseInt("" + privateHelpers.extractIntFromManifest("versionCode"))
+        applicationId privateHelpers.extractStringFromManifest("package")
+
         if (cdvMinSdkVersion != null) {
             minSdkVersion cdvMinSdkVersion
         }
+    }
+
+    lintOptions {
+      abortOnError false;
     }
 
     compileSdkVersion cdvCompileSdkVersion
@@ -187,13 +180,13 @@ android {
     if (Boolean.valueOf(cdvBuildMultipleApks)) {
         productFlavors {
             armv7 {
-                versionCode cdvVersionCode ?: defaultConfig.versionCode + 2
+                versionCode defaultConfig.versionCode*10 + 2
                 ndk {
                     abiFilters "armeabi-v7a", ""
                 }
             }
             x86 {
-                versionCode cdvVersionCode ?: defaultConfig.versionCode + 4
+                versionCode defaultConfig.versionCode*10 + 4
                 ndk {
                     abiFilters "x86", ""
                 }
@@ -204,7 +197,12 @@ android {
                 }
             }
         }
-    } else if (!cdvVersionCode) {
+    }
+    /*
+
+    ELSE NOTHING! DON'T MESS WITH THE VERSION CODE IF YOU DON'T HAVE TO!
+
+    else if (!cdvVersionCode) {
       def minSdkVersion = cdvMinSdkVersion ?: privateHelpers.extractIntFromManifest("minSdkVersion")
       // Vary versionCode by the two most common API levels:
       // 14 is ICS, which is the lowest API level for many apps.
@@ -215,6 +213,7 @@ android {
         defaultConfig.versionCode += 8
       }
     }
+    */
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_6

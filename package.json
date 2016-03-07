@@ -1,8 +1,11 @@
 {
     "name": "cordova-android",
-    "version": "4.1.0-dev",
+    "version": "5.2.0-dev",
     "description": "cordova-android release",
-    "main": "bin/create",
+    "bin": {
+        "create": "bin/create"
+    },
+    "main": "bin/templates/cordova/Api.js",
     "repository": {
         "type": "git",
         "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
@@ -13,19 +16,34 @@
         "apache"
     ],
     "scripts": {
-        "test": "npm run jshint && jasmine-node --color spec",
-        "test-build": "rm -rf \"test create\"; ./bin/create \"test create\" com.test.app 応用 && \"./test create/cordova/build\" && rm -rf \"test create\"",
+        "test": "npm run jshint && jasmine-node --color spec/unit",
+        "cover": "istanbul cover --root bin/templates/cordova --print detail node_modules/jasmine-node/bin/jasmine-node -- spec/unit",
+        "test-build": "jasmine-node --captureExceptions --color spec/e2e",
         "jshint": "node node_modules/jshint/bin/jshint bin && node node_modules/jshint/bin/jshint spec"
     },
     "author": "Apache Software Foundation",
-    "license": "Apache version 2.0",
+    "license": "Apache-2.0",
     "dependencies": {
-        "q": "^0.9.0",
-        "shelljs": "^0.2.6"
+        "cordova-common": "^1.1.0",
+        "elementtree": "^0.1.6",
+        "nopt": "^3.0.1",
+        "properties-parser": "^0.2.3",
+        "q": "^1.4.1",
+        "shelljs": "^0.5.3"
     },
+    "bundledDependencies": [
+        "cordova-common",
+        "elementtree",
+        "nopt",
+        "properties-parser",
+        "q",
+        "shelljs"
+    ],
     "devDependencies": {
+        "istanbul": "^0.4.2",
         "jasmine-node": "^1.14.5",
         "jshint": "^2.6.0",
-        "promise-matchers": "~0"
+        "promise-matchers": "~0",
+        "rewire": "^2.1.3"
     }
 }

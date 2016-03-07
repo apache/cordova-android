@@ -19,26 +19,18 @@
        under the License.
 */
 
-var build = require('./lib/build'),
-    reqs  = require('./lib/check_reqs'),
-    args  = process.argv;
+var Api = require('./Api');
 var path  = require('path');
 
 // Support basic help commands
-if(args[2] == '--help' ||
-   args[2] == '/?' ||
-   args[2] == '-h' ||
-   args[2] == 'help' ||
-   args[2] == '-help' ||
-   args[2] == '/help') {
+if(['--help', '/?', '-h', 'help', '-help', '/help'].indexOf(process.argv[2]) >= 0) {
     console.log('Usage: ' + path.relative(process.cwd(), process.argv[1]));
     console.log('Cleans the project directory.');
     process.exit(0);
-} else {
-    reqs.run().done(function() {
-        return build.runClean(args.slice(2));
-    }, function(err) {
-        console.error(err);
-        process.exit(2);
-    });
 }
+
+new Api().clean({argv: process.argv.slice(2)})
+.catch(function(err) {
+    console.error(err.stack);
+    process.exit(2);
+});
