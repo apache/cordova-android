@@ -149,17 +149,16 @@ module.exports.runClean = function(options) {
 module.exports.run = function(options, optResolvedTarget) {
     var opts = parseOpts(options, optResolvedTarget, this.root);
     var builder = builders.getBuilder(opts.buildMethod);
-    var self = this;
     return builder.prepEnv(opts)
     .then(function() {
         if (opts.prepEnv) {
-            self.events.emit('verbose', 'Build file successfully prepared.');
+            events.emit('verbose', 'Build file successfully prepared.');
             return;
         }
         return builder.build(opts)
         .then(function() {
             var apkPaths = builder.findOutputApks(opts.buildType, opts.arch);
-            self.events.emit('log', 'Built the following apk(s): \n\t' + apkPaths.join('\n\t'));
+            events.emit('log', 'Built the following apk(s): \n\t' + apkPaths.join('\n\t'));
             return {
                 apkPaths: apkPaths,
                 buildType: opts.buildType,

@@ -21,6 +21,7 @@
 
 var Api = require('./Api');
 var path  = require('path');
+var nopt = require('nopt');
 
 // Support basic help commands
 if(['--help', '/?', '-h', 'help', '-help', '/help'].indexOf(process.argv[2]) >= 0) {
@@ -29,7 +30,18 @@ if(['--help', '/?', '-h', 'help', '-help', '/help'].indexOf(process.argv[2]) >= 
     process.exit(0);
 }
 
-new Api().clean({argv: process.argv.slice(2)})
+// Do some basic argument parsing
+var opts = nopt({
+    'verbose' : Boolean,
+    'silent' : Boolean
+}, { 'd' : '--verbose' });
+
+// Make buildOptions compatible with PlatformApi clean method spec
+opts.argv = opts.argv.original;
+
+require('./loggingHelper').adjustLoggerLevel(opts);
+
+new Api().clean(opts)
 .catch(function(err) {
     console.error(err.stack);
     process.exit(2);

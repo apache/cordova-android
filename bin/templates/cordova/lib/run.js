@@ -25,7 +25,8 @@ var path  = require('path'),
     build = require('./build'),
     emulator = require('./emulator'),
     device   = require('./device'),
-    Q = require('q');
+    Q = require('q'),
+    events = require('cordova-common').events;
 
 function getInstallTarget(runOptions) {
     var install_target;
@@ -62,10 +63,10 @@ function getInstallTarget(runOptions) {
             return device.list()
             .then(function(device_list) {
                 if (device_list.length > 0) {
-                    self.events.emit('warn', 'No target specified, deploying to device \'' + device_list[0] + '\'.');
+                    events.emit('warn', 'No target specified, deploying to device \'' + device_list[0] + '\'.');
                     install_target = device_list[0];
                 } else {
-                    self.events.emit('warn', 'No target specified, deploying to emulator');
+                    events.emit('warn', 'No target specified, deploying to emulator');
                     install_target = '--emulator';
                 }
             });

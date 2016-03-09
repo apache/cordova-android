@@ -44,6 +44,8 @@ var runOpts = nopt({
 // Make runOptions compatible with PlatformApi run method spec
 runOpts.argv = runOpts.argv.remain;
 
+require('./loggingHelper').adjustLoggerLevel(runOpts);
+
 new Api().run(runOpts)
 .catch(function(err) {
     console.error(err, err.stack);

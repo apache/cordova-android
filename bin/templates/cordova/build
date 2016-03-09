@@ -41,6 +41,8 @@ var buildOpts = nopt({
 // Make buildOptions compatible with PlatformApi build method spec
 buildOpts.argv = buildOpts.argv.original;
 
+require('./loggingHelper').adjustLoggerLevel(buildOpts);
+
 new Api().build(buildOpts)
 .catch(function(err) {
     console.error(err.stack);

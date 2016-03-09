@@ -45,7 +45,7 @@ module.exports.prepare = function (cordovaProject) {
         handleSplashes(cordovaProject.projectConfig, self.root);
     })
     .then(function () {
-        self.events.emit('verbose', 'updated project successfully');
+        events.emit('verbose', 'updated project successfully');
     });
 };
 

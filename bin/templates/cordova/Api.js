@@ -29,10 +29,24 @@ var AndroidProject = require('./lib/AndroidProject');
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
-var ConsoleLogger = require('./lib/ConsoleLogger');
 var pluginHandlers = require('./lib/pluginHandlers');
+var CordovaLogger = require('cordova-common').CordovaLogger;
+var selfEvents = require('cordova-common').events;
 
 var PLATFORM = 'android';
+
+function setupEvents(externalEventEmitter) {
+    if (externalEventEmitter) {
+        // This will make the platform internal events visible outside
+        selfEvents.forwardEventsTo(externalEventEmitter);
+        return externalEventEmitter;
+    }
+
+    // There is no logger if external emitter is not present, 
+    // so attach a console logger
+    CordovaLogger.get().subscribe(selfEvents);
+    return selfEvents;
+}
 
 /**
  * Class, that acts as abstraction over particular platform. Encapsulates the
@@ -48,9 +62,8 @@ var PLATFORM = 'android';
 function Api(platform, platformRootDir, events) {
     this.platform = PLATFORM;
     this.root = path.resolve(__dirname, '..');
-    this.events = events || ConsoleLogger.get();
-    // NOTE: trick to share one EventEmitter instance across all js code
-    require('cordova-common').events = this.events;
+
+    setupEvents(events);
 
     this._platformJson = PlatformJson.load(this.root, platform);
     this._pluginInfoProvider = new PluginInfoProvider();
@@ -91,8 +104,10 @@ function Api(platform, platformRootDir, events) {
  *   instance or rejected with CordovaError.
  */
 Api.createPlatform = function (destination, config, options, events) {
+    events = setupEvents(events);
+
     return require('../../lib/create')
-    .create(destination, config, options, events || ConsoleLogger.get())
+    .create(destination, config, options, events)
     .then(function (destination) {
         var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
         return new PlatformApi(PLATFORM, destination, events);
@@ -116,8 +131,10 @@ Api.createPlatform = function (destination, config, options, events) {
  *   instance or rejected with CordovaError.
  */
 Api.updatePlatform = function (destination, options, events) {
+    events = setupEvents(events);
+
     return require('../../lib/create')
-    .update(destination, options, events || ConsoleLogger.get())
+    .update(destination, options, events)
     .then(function (destination) {
         var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
         return new PlatformApi('android', destination, events);
@@ -220,7 +237,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
             .save_all();
 
         if (plugin.getFrameworks(self.platform).length > 0) {
-            self.events.emit('verbose', 'Updating build files since android plugin contained <framework>');
+            selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }
 
@@ -278,7 +295,7 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
             .save_all();
 
         if (plugin.getFrameworks(self.platform).length > 0) {
-            self.events.emit('verbose', 'Updating build files since android plugin contained <framework>');
+            selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }
 

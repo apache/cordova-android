@@ -24,12 +24,14 @@ var args  = require('nopt')({
     'link': Boolean,
     'shared': Boolean,
     'help': Boolean
-});
+}, { 'd' : '--verbose' });
 
 if (args.help || args.argv.remain.length === 0) {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'update')) + ' <path_to_project> [--link]');
     console.log('    --link will use the CordovaLib project directly instead of making a copy.');
     process.exit(1);
 }
+
+require('./templates/cordova/loggingHelper').adjustLoggerLevel(args);
 
 Api.updatePlatform(args.argv.remain[0], {link: (args.link || args.shared)}).done();
