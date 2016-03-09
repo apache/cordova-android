@@ -349,6 +349,31 @@ public class NativeToJsMessageQueue {
         }
     }
 
+    /** Uses webView.evaluateJavascript to execute messages. */
+    public static class EvalBridgeMode extends BridgeMode {
+        private final CordovaWebViewEngine engine;
+        private final CordovaInterface cordova;
+
+        public EvalBridgeMode(CordovaWebViewEngine engine, CordovaInterface cordova) {
+            this.engine = engine;
+            this.cordova = cordova;
+        }
+
+        @Override
+        public void onNativeToJsMessageAvailable(final NativeToJsMessageQueue queue) {
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    String js = queue.popAndEncodeAsJs();
+                    if (js != null) {
+                        engine.evaluateJavascript(js, null);
+                    }
+                }
+            });
+        }
+    }
+
+
+
     private static class JsMessage {
         final String jsPayloadOrCallbackId;
         final PluginResult pluginResult;
