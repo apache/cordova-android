@@ -109,7 +109,7 @@ function findOutputApksHelper(dir, build_type, arch) {
             return /-debug/.exec(apkName) && !/-unaligned|-unsigned/.exec(apkName);
         }
         if (build_type === 'release') {
-            return /-release/.exec(apkName) && !/-unaligned/.exec(apkName);
+            return /-release/.exec(apkName) && !/-unaligned|-unsigned/.exec(apkName);
         }
         return true;
     })
