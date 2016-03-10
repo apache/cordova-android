@@ -17,9 +17,6 @@
     under the License.
 */
 
-/* jshint node:true */
-
-// For now expose plugman and cordova just as they were in the old repos
 exports = module.exports = {
     events: require('./src/events'),
     superspawn: require('./src/superspawn'),
@@ -33,6 +30,8 @@ exports = module.exports = {
 
     PluginInfo: require('./src/PluginInfo/PluginInfo.js'),
     PluginInfoProvider: require('./src/PluginInfo/PluginInfoProvider.js'),
+    
+    PluginManager: require('./src/PluginManager'),
 
     ConfigChanges: require('./src/ConfigChanges/ConfigChanges.js'),
     ConfigKeeper: require('./src/ConfigChanges/ConfigKeeper.js'),
