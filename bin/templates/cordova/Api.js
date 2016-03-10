@@ -19,11 +19,8 @@
 
 var path = require('path');
 
-var PlatformJson = require('cordova-common').PlatformJson;
 var AndroidProject = require('./lib/AndroidProject');
-var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginManager = require('cordova-common').PluginManager;
-var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
 var CordovaLogger = require('cordova-common').CordovaLogger;
 var selfEvents = require('cordova-common').events;
@@ -59,10 +56,6 @@ function Api(platform, platformRootDir, events) {
     this.root = path.resolve(__dirname, '..');
 
     setupEvents(events);
-
-    this._platformJson = PlatformJson.load(this.root, platform);
-    this._pluginInfoProvider = new PluginInfoProvider();
-    this._munger = new PlatformMunger(this.platform, this.root, this._platformJson, this._pluginInfoProvider);
 
     var self = this;
 
@@ -193,15 +186,15 @@ Api.prototype.prepare = function (cordovaProject) {
  */
 Api.prototype.addPlugin = function (plugin, installOptions) {
     var project = AndroidProject.getProjectFile(this.root);
-    
+
     installOptions = installOptions || {};
     installOptions.variables = installOptions.variables || {};
-    
+
     // Add PACKAGE_NAME variable into vars
     if (!installOptions.variables.PACKAGE_NAME) {
         installOptions.variables.PACKAGE_NAME = project.getPackageName();
     }
-    
+
     return PluginManager.get(this.platform, this.locations, project)
     .addPlugin(plugin, installOptions)
     .then(function () {
