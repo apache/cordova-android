@@ -120,7 +120,7 @@ function updateProjectAccordingTo(platformConfig, locations) {
     // Update app name by editing res/values/strings.xml
     var name = platformConfig.name();
     var strings = xmlHelpers.parseElementtreeSync(locations.strings);
-    strings.find('string[@name="app_name"]').text = name;
+    strings.find('string[@name="app_name"]').text = name.replace(/\'/g, '\\\'');
     fs.writeFileSync(locations.strings, strings.write({indent: 4}), 'utf-8');
     events.emit('verbose', 'Wrote out Android application name to "' + name + '"');
 
