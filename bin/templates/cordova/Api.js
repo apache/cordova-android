@@ -241,13 +241,11 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }
 
-        var targetDir = installOptions.usePlatformWww ?
-            self.locations.platformWww :
-            self.locations.www;
-            
-        self._platformJson.addPluginMetadata(plugin).save();
-        fs.writeFileSync(path.join(targetDir, 'cordova_plugins.js'),
-            self._platformJson.generateMetadata(), 'utf-8');
+        var targetDir = installOptions.usePlatformWww ? self.locations.platformWww : self.locations.www;
+
+        self._platformJson.addPluginMetadata(plugin)
+            .generateAndSaveMetadata(path.join(targetDir, 'cordova_plugins.js'))
+            .save();
     });
 };
 
@@ -305,9 +303,9 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
             self.locations.platformWww :
             self.locations.www;
 
-        self._platformJson.removePluginMetadata(plugin).save();
-        fs.writeFileSync(path.join(targetDir, 'cordova_plugins.js'),
-            self._platformJson().generateMetadata(), 'utf-8');
+        self._platformJson.removePluginMetadata(plugin)
+            .generateAndSaveMetadata(path.join(targetDir, 'cordova_plugins.js'))
+            .save();
     });
 };
 
