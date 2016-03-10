@@ -17,19 +17,14 @@
     under the License.
 */
 
-var Q = require('q');
-var fs = require('fs');
 var path = require('path');
-var shell = require('shelljs');
 
-var CordovaError = require('cordova-common').CordovaError;
 var PlatformJson = require('cordova-common').PlatformJson;
-var ActionStack = require('cordova-common').ActionStack;
 var AndroidProject = require('./lib/AndroidProject');
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
+var PluginManager = require('cordova-common').PluginManager;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
-var pluginHandlers = require('./lib/pluginHandlers');
 var CordovaLogger = require('cordova-common').CordovaLogger;
 var selfEvents = require('cordova-common').events;
 
@@ -197,56 +192,25 @@ Api.prototype.prepare = function (cordovaProject) {
  *   CordovaError instance.
  */
 Api.prototype.addPlugin = function (plugin, installOptions) {
-
-    if (!plugin || plugin.constructor.name !== 'PluginInfo')
-        return Q.reject(new CordovaError('The parameter is incorrect. The first parameter to addPlugin should be a PluginInfo instance'));
-
+    var project = AndroidProject.getProjectFile(this.root);
+    
     installOptions = installOptions || {};
     installOptions.variables = installOptions.variables || {};
-
-    var self = this;
-    var actions = new ActionStack();
-    var project = AndroidProject.getProjectFile(this.root);
-
-    // gather all files needs to be handled during install
-    plugin.getFilesAndFrameworks(this.platform)
-        .concat(plugin.getAssets(this.platform))
-        .concat(plugin.getJsModules(this.platform))
-    .forEach(function(item) {
-        actions.push(actions.createAction(
-            pluginHandlers.getInstaller(item.itemType), [item, plugin, project, installOptions],
-            pluginHandlers.getUninstaller(item.itemType), [item, plugin, project, installOptions]));
-    });
-
-    // run through the action stack
-    return actions.process(this.platform)
+    
+    // Add PACKAGE_NAME variable into vars
+    if (!installOptions.variables.PACKAGE_NAME) {
+        installOptions.variables.PACKAGE_NAME = project.getPackageName();
+    }
+    
+    return PluginManager.get(this.platform, this.locations, project)
+    .addPlugin(plugin, installOptions)
     .then(function () {
-        if (project) {
-            project.write();
-        }
+        if (plugin.getFrameworks(this.platform).length === 0) return;
 
-        // Add PACKAGE_NAME variable into vars
-        if (!installOptions.variables.PACKAGE_NAME) {
-            installOptions.variables.PACKAGE_NAME = project.getPackageName();
-        }
+        this.events.emit('verbose', 'Updating build files since android plugin contained <framework>');
+        require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
+    }.bind(this));
 
-        self._munger
-            // Ignore passed `is_top_level` option since platform itself doesn't know
-            // anything about managing dependencies - it's responsibility of caller.
-            .add_plugin_changes(plugin, installOptions.variables, /*is_top_level=*/true, /*should_increment=*/true)
-            .save_all();
-
-        if (plugin.getFrameworks(self.platform).length > 0) {
-            selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
-            require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
-        }
-
-        var targetDir = installOptions.usePlatformWww ? self.locations.platformWww : self.locations.www;
-
-        self._platformJson.addPluginMetadata(plugin)
-            .generateAndSaveMetadata(path.join(targetDir, 'cordova_plugins.js'))
-            .save();
-    });
 };
 
 /**
@@ -263,50 +227,15 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
  *   CordovaError instance.
  */
 Api.prototype.removePlugin = function (plugin, uninstallOptions) {
-
-    if (!plugin || plugin.constructor.name !== 'PluginInfo')
-        return Q.reject(new CordovaError('The parameter is incorrect. The first parameter to addPlugin should be a PluginInfo instance'));
-
-    var self = this;
-    var actions = new ActionStack();
     var project = AndroidProject.getProjectFile(this.root);
+    return PluginManager.get(this.platform, this.locations, project)
+    .addPlugin(plugin, uninstallOptions)
+    .then(function () {
+        if (plugin.getFrameworks(this.platform).length === 0) return;
 
-    // queue up plugin files
-    plugin.getFilesAndFrameworks(this.platform)
-        .concat(plugin.getAssets(this.platform))
-        .concat(plugin.getJsModules(this.platform))
-    .forEach(function(item) {
-        actions.push(actions.createAction(
-            pluginHandlers.getUninstaller(item.itemType), [item, plugin, project, uninstallOptions],
-            pluginHandlers.getInstaller(item.itemType), [item, plugin, project, uninstallOptions]));
-    });
-
-    // run through the action stack
-    return actions.process(this.platform)
-    .then(function() {
-        if (project) {
-            project.write();
-        }
-
-        self._munger
-            // Ignore passed `is_top_level` option since platform itself doesn't know
-            // anything about managing dependencies - it's responsibility of caller.
-            .remove_plugin_changes(plugin, /*is_top_level=*/true)
-            .save_all();
-
-        if (plugin.getFrameworks(self.platform).length > 0) {
-            selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
-            require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
-        }
-
-        var targetDir = uninstallOptions.usePlatformWww ?
-            self.locations.platformWww :
-            self.locations.www;
-
-        self._platformJson.removePluginMetadata(plugin)
-            .generateAndSaveMetadata(path.join(targetDir, 'cordova_plugins.js'))
-            .save();
-    });
+        this.events.emit('verbose', 'Updating build files since android plugin contained <framework>');
+        require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
+    }.bind(this));
 };
 
 /**
