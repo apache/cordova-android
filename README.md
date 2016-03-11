@@ -18,6 +18,10 @@
 # under the License.
 #
 -->
+
+[![Build status](https://ci.appveyor.com/api/projects/status/github/apache/cordova-android?branch=master)](https://ci.appveyor.com/project/Humbedooh/cordova-android)
+[![Build Status](https://travis-ci.org/apache/cordova-android.svg?branch=master)](https://travis-ci.org/apache/cordova-android)
+
 # Cordova Android
 
 Cordova Android is an Android application library that allows for Cordova-based
