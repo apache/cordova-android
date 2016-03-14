@@ -901,7 +901,7 @@ var cordova = require('cordova'),
         EVAL_BRIDGE: 3
     },
     jsToNativeBridgeMode,  // Set lazily.
-    nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT,
+    nativeToJsBridgeMode = nativeToJsModes.EVAL_BRIDGE,
     pollEnabled = false,
     bridgeSecret = -1;
 

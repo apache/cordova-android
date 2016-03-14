@@ -117,7 +117,8 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
                 SystemWebViewEngine.this.cordova.getActivity().runOnUiThread(r);
             }
         }));
-        bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue);
+        nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.EvalBridgeMode(this, cordova));
+	bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue);
         exposeJsInterface(webView, bridge);
     }
 
