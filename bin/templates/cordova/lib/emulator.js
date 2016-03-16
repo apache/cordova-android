@@ -368,8 +368,14 @@ module.exports.install = function(givenTarget, buildResults) {
                         if (err) reject(new CordovaError('Error executing "' + command + '": ' + stderr));
                         // adb does not return an error code even if installation fails. Instead it puts a specific
                         // message to stdout, so we have to use RegExp matching to detect installation failure.
-                        else if (/Failure/.test(stdout)) reject(new CordovaError('Failed to install apk to emulator: ' + stdout));
-                        else resolve(stdout);
+                        else if (/Failure/.test(stdout)) {
+                            if (stdout.match(/INSTALL_PARSE_FAILED_NO_CERTIFICATES/)) {
+                                stdout += 'Sign the build using \'-- --keystore\' or \'--buildConfig\'' +
+                                    ' or sign and deploy the unsigned apk manually using Android tools.';
+                            }
+                            
+                            reject(new CordovaError('Failed to install apk to emulator: ' + stdout));
+                        } else resolve(stdout);
                     });
                 });
             }
