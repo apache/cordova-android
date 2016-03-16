@@ -372,8 +372,11 @@ module.exports.install = function(givenTarget, buildResults) {
                             if (stdout.match(/INSTALL_PARSE_FAILED_NO_CERTIFICATES/)) {
                                 stdout += 'Sign the build using \'-- --keystore\' or \'--buildConfig\'' +
                                     ' or sign and deploy the unsigned apk manually using Android tools.';
+                            } else if (stdout.match(/INSTALL_FAILED_VERSION_DOWNGRADE/)) {
+                                stdout += 'You\'re trying to install apk with a lower versionCode that is already installed.' +
+                                    '\nEither uninstall an app or increment the versionCode.';
                             }
-                            
+
                             reject(new CordovaError('Failed to install apk to emulator: ' + stdout));
                         } else resolve(stdout);
                     });
