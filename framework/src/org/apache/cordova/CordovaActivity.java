@@ -121,7 +121,9 @@ public class CordovaActivity extends Activity {
             preferences.set("Fullscreen", true);
         }
         if (preferences.getBoolean("Fullscreen", false)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // NOTE: use the FullscreenNotImmersive configuration key to set the activity in a REAL full screen
+            // (as was the case in previous cordova versions)
+            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && !preferences.getBoolean("FullscreenNotImmersive", false)) {
                 immersiveMode = true;
             } else {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
