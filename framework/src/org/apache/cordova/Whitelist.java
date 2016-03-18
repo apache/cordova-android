@@ -26,8 +26,6 @@ import java.util.regex.Pattern;
 
 import org.apache.cordova.LOG;
 
-import android.net.Uri;
-
 public class Whitelist {
     private static class URLPattern {
         public Pattern scheme;
@@ -79,7 +77,7 @@ public class Whitelist {
             }
         }
 
-        public boolean matches(Uri uri) {
+        public boolean matches(URLParts uri) {
             try {
                 return ((scheme == null || scheme.matcher(uri.getScheme()).matches()) &&
                         (host == null || host.matcher(uri.getHost()).matches()) &&
@@ -100,6 +98,30 @@ public class Whitelist {
         this.whiteList = new ArrayList<URLPattern>();
     }
 
+    public void addWhiteListEntry(String origin, boolean subdomains) {
+        if (whiteList != null) {
+            try {
+                // Unlimited access to network resources
+                if (origin.compareTo("*") == 0) {
+                    LOG.d(TAG, "Unlimited access to network resources");
+                    whiteList = null;
+                }
+                else { // specific access
+                    URLParts parsedUri = parseURL(origin);
+                    if (parsedUri.scheme == null) {
+                        // XXX making it stupid friendly for people who forget to include protocol/SSL
+                        whiteList.add(new URLPattern("http", parsedUri.getHost(), parsedUri.getPort(), parsedUri.getPath()));
+                        whiteList.add(new URLPattern("https", parsedUri.getHost(), parsedUri.getPort(), parsedUri.getPath()));
+                    } else {
+                        whiteList.add(new URLPattern(parsedUri.getScheme(), parsedUri.getHost(), parsedUri.getPort(), parsedUri.getPath()));
+                    }
+                }
+            } catch (Exception e) {
+                LOG.d(TAG, "Failed to add origin %s", origin);
+            }
+        }
+    }
+
     /* Match patterns (from http://developer.chrome.com/extensions/match_patterns.html)
      *
      * <url-pattern> := <scheme>://<host><path>
@@ -111,36 +133,53 @@ public class Whitelist {
      * the scheme to be omitted for backwards compatibility. (Also host is not required
      * to begin with a "*" or "*.".)
      */
-    public void addWhiteListEntry(String origin, boolean subdomains) {
-        if (whiteList != null) {
-            try {
-                // Unlimited access to network resources
-                if (origin.compareTo("*") == 0) {
-                    LOG.d(TAG, "Unlimited access to network resources");
-                    whiteList = null;
-                }
-                else { // specific access
-                    Pattern parts = Pattern.compile("^((\\*|[A-Za-z-]+):(//)?)?(\\*|((\\*\\.)?[^*/:]+))?(:(\\d+))?(/.*)?");
-                    Matcher m = parts.matcher(origin);
-                    if (m.matches()) {
-                        String scheme = m.group(2);
-                        String host = m.group(4);
-                        // Special case for two urls which are allowed to have empty hosts
-                        if (("file".equals(scheme) || "content".equals(scheme)) && host == null) host = "*";
-                        String port = m.group(8);
-                        String path = m.group(9);
-                        if (scheme == null) {
-                            // XXX making it stupid friendly for people who forget to include protocol/SSL
-                            whiteList.add(new URLPattern("http", host, port, path));
-                            whiteList.add(new URLPattern("https", host, port, path));
-                        } else {
-                            whiteList.add(new URLPattern(scheme, host, port, path));
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                LOG.d(TAG, "Failed to add origin %s", origin);
+    public URLParts parseURL(String url) {
+        try {
+            Pattern parts = Pattern.compile("^((\\*|[A-Za-z-]+):(//)?)?(\\*|((\\*\\.)?[^*/:]+))?(:(\\d+))?(/.*)?");
+            Matcher m = parts.matcher(url);
+            if (m.matches()) {
+                String scheme = m.group(2);
+                String host = m.group(4);
+                // Special case for two urls which are allowed to have empty hosts
+                if (("file".equals(scheme) || "content".equals(scheme)) && host == null) host = "*";
+                String port = m.group(8);
+                String path = m.group(9);
+                return new URLParts(scheme, host, port, path);
             }
+            return null;
+        } catch (Exception e) {
+            LOG.d(TAG, "Failed to parse url %s", url);
+            return null;
+        }
+    }
+
+    private class URLParts {
+        private String scheme;
+        private String host;
+        private String port;
+        private String path;
+
+        public URLParts(String scheme, String host, String port, String path) {
+            this.scheme = scheme;
+            this.host = host;
+            this.port = port;
+            this.path = path;
+        }
+
+        public String getScheme() {
+            return this.scheme;
+        }
+
+        public String getHost() {
+            return this.host;
+        }
+
+        public String getPort() {
+            return this.port;
+        }
+
+        public String getPath() {
+            return this.path;
         }
     }
 
@@ -155,7 +194,7 @@ public class Whitelist {
         // If there is no whitelist, then it's wide open
         if (whiteList == null) return true;
 
-        Uri parsedUri = Uri.parse(uri);
+        URLParts parsedUri = parseURL(uri);
         // Look for match in white list
         Iterator<URLPattern> pit = whiteList.iterator();
         while (pit.hasNext()) {
