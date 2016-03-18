@@ -131,7 +131,7 @@ function updateProjectAccordingTo(platformConfig, locations) {
     var orig_pkg = manifest.getPackageId();
 
     manifest.getActivity()
-        .setOrientation(findOrientationValue(platformConfig))
+        .setOrientation(platformConfig.getPreference('orientation'))
         .setLaunchMode(findAndroidLaunchModePreference(platformConfig));
 
     manifest.setVersionName(platformConfig.version())
@@ -343,37 +343,4 @@ function findAndroidLaunchModePreference(platformConfig) {
     }
 
     return launchMode;
-}
-
-/**
- * Queries ConfigParser object for the orientation <preference> value. Warns if
- *   global preference value is not supported by platform.
- *
- * @param  {Object} platformConfig    ConfigParser object
- *
- * @return {String}           Global/platform-specific orientation in lower-case
- *   (or empty string if both are undefined).
- */
-function findOrientationValue(platformConfig) {
-
-    var ORIENTATION_DEFAULT = 'default';
-
-    var orientation = platformConfig.getPreference('orientation');
-    if (!orientation) {
-        return ORIENTATION_DEFAULT;
-    }
-
-    var GLOBAL_ORIENTATIONS = ['default', 'portrait','landscape'];
-    function isSupported(orientation) {
-        return GLOBAL_ORIENTATIONS.indexOf(orientation.toLowerCase()) >= 0;
-    }
-
-    // Check if the given global orientation is supported
-    if (orientation && isSupported(orientation)) {
-        return orientation;
-    }
-
-    events.emit('warn', 'Unsupported global orientation: ' + orientation +
-        '. Defaulting to value: ' + ORIENTATION_DEFAULT);
-    return ORIENTATION_DEFAULT;
 }
