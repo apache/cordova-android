@@ -60,6 +60,10 @@ public class CallbackContext {
                 finished = !pluginResult.getKeepCallback();
             }
         }
+
+        // CB-10881: Investigating
+        Log.v(LOG_TAG, "Successfully sent a callback for ID: " + callbackId + "\nResult was: " + pluginResult.getMessage());
+
         webView.sendPluginResult(pluginResult, callbackId);
     }
 
