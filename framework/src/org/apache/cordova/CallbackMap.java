@@ -43,7 +43,7 @@ public class CallbackMap {
      * @return              A unique request code that can be used to retrieve this callback
      *                      with getAndRemoveCallback()
      */
-    public int registerCallback(CordovaPlugin receiver, int requestCode) {
+    public synchronized int registerCallback(CordovaPlugin receiver, int requestCode) {
         int mappedId = this.currentCallbackId++;
         callbacks.put(mappedId, new Pair<CordovaPlugin, Integer>(receiver, requestCode));
         return mappedId;
@@ -57,7 +57,7 @@ public class CallbackMap {
      * @return              The CordovaPlugin and orignal request code that correspond to the
      *                      given mappedCode
      */
-    public Pair<CordovaPlugin, Integer> getAndRemoveCallback(int mappedId) {
+    public synchronized Pair<CordovaPlugin, Integer> getAndRemoveCallback(int mappedId) {
         Pair<CordovaPlugin, Integer> callback = callbacks.get(mappedId);
         callbacks.remove(mappedId);
         return callback;
