@@ -39,7 +39,7 @@ function parseOpts(options, resolvedTarget, projectRoot) {
         prepenv: Boolean,
         versionCode: String,
         minSdkVersion: String,
-        gradleArg: String,
+        gradleArg: [String, Array],
         keystore: path,
         alias: String,
         storePassword: String,
@@ -66,8 +66,9 @@ function parseOpts(options, resolvedTarget, projectRoot) {
     if (options.argv.minSdkVersion)
         ret.extraArgs.push('-PcdvMinSdkVersion=' + options.argv.minSdkVersion);
 
-    if (options.argv.gradleArg)
-        ret.extraArgs.push(options.argv.gradleArg);
+    if (options.argv.gradleArg) {
+        ret.extraArgs = ret.extraArgs.concat(options.argv.gradleArg);
+    }
 
     var packageArgs = {};
 
