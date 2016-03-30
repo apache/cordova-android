@@ -186,6 +186,7 @@ ConfigParser.prototype = {
         staticResources.forEach(function (elt) {
             var res = {};
             res.src = elt.attrib.src;
+            res.target = elt.attrib.target || undefined;
             res.density = elt.attrib['density'] || elt.attrib[that.cdvNamespacePrefix+':density'] || elt.attrib['gap:density'];
             res.platform = elt.platform || null; // null means icon represents default icon (shared between platforms)
             res.width = +elt.attrib.width || undefined;

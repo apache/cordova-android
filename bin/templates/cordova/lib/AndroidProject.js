@@ -21,6 +21,7 @@ var fs = require('fs');
 var path = require('path');
 var properties_parser = require('properties-parser');
 var AndroidManifest = require('./AndroidManifest');
+var pluginHandlers = require('./pluginHandlers');
 
 var projectFileCache = {};
 
@@ -178,6 +179,14 @@ AndroidProject.prototype._getPropertiesFile = function (filename) {
     }
 
     return this._propertiesEditors[filename];
+};
+
+AndroidProject.prototype.getInstaller = function (type) {
+    return pluginHandlers.getInstaller(type);
+};
+
+AndroidProject.prototype.getUninstaller = function (type) {
+    return pluginHandlers.getUninstaller(type);
 };
 
 
