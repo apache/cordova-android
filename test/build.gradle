@@ -21,11 +21,17 @@ apply plugin: 'android'
 
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.0+'
+        classpath 'com.android.tools.build:gradle:1.5.0+'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
     }
 }
 
@@ -56,6 +62,10 @@ android {
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     compileSdkVersion cdvCompileSdkVersion
     buildToolsVersion cdvBuildToolsVersion
 
@@ -69,6 +79,7 @@ dependencies {
     debugCompile project(path: ":CordovaLib", configuration: "debug")
     releaseCompile project(path: ":CordovaLib", configuration: "release")
     androidTestCompile fileTree(dir: 'androidTest/libs', include: '*.jar')
+    testCompile 'junit:junit:4.12'
 }
 
 task copyCordovaJs (type: Copy) {
