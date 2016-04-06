@@ -90,8 +90,7 @@ function parseOpts(options, resolvedTarget, projectRoot) {
         }
         events.emit('log', 'Reading build config file: '+ path.resolve(buildConfig));
         var buildjson = fs.readFileSync(buildConfig, 'utf8');
-        //var config = JSON.parse(fs.readFileSync(buildConfig, 'utf8'));
-        var config = JSON.parse(buildjson);
+        var config = JSON.parse(buildjson.replace(/^\ufeff/, '')); // Remove BOM
         if (config.android && config.android[ret.buildType]) {
             var androidInfo = config.android[ret.buildType];
             if(androidInfo.keystore && !packageArgs.keystore) {
