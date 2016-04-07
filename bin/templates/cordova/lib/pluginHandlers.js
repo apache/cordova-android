@@ -128,17 +128,24 @@ var handlers = {
                 throw new CordovaError('<asset> tag without required "target" attribute');
             }
 
-            var www = options.usePlatformWww ? project.platformWww : project.www;
-            copyFile(plugin.dir, obj.src, www, obj.target);
+            copyFile(plugin.dir, obj.src, project.www, obj.target);
+            if (options && options.usePlatformWww) {
+                // CB-11022 copy file to both directories if usePlatformWww is specified
+                copyFile(plugin.dir, obj.src, project.platformWww, obj.target);
+            }
         },
         uninstall:function(obj, plugin, project, options) {
             var target = obj.target || obj.src;
 
             if (!target) throw new CordovaError('<asset> tag without required "target" attribute');
 
-            var www = options.usePlatformWww ? project.platformWww : project.www;
-            removeFile(www, target);
-            removeFileF(path.resolve(www, 'plugins', plugin.id));
+            removeFileF(path.resolve(project.www, target));
+            removeFileF(path.resolve(project.www, 'plugins', plugin.id));
+            if (options && options.usePlatformWww) {
+                // CB-11022 remove file from both directories if usePlatformWww is specified
+                removeFileF(path.resolve(project.platformWww, target));
+                removeFileF(path.resolve(project.platformWww, 'plugins', plugin.id));
+            }
         }
     },
     'js-module': {
@@ -154,15 +161,24 @@ var handlers = {
             }
             scriptContent = 'cordova.define("' + moduleName + '", function(require, exports, module) {\n' + scriptContent + '\n});\n';
 
-            var www = options.usePlatformWww ? project.platformWww : project.www;
-            var moduleDestination = path.resolve(www, 'plugins', plugin.id, obj.src);
-            shell.mkdir('-p', path.dirname(moduleDestination));
-            fs.writeFileSync(moduleDestination, scriptContent, 'utf-8');
+            var wwwDest = path.resolve(project.www, 'plugins', plugin.id, obj.src);
+            shell.mkdir('-p', path.dirname(wwwDest));
+            fs.writeFileSync(wwwDest, scriptContent, 'utf-8');
+
+            if (options && options.usePlatformWww) {
+                // CB-11022 copy file to both directories if usePlatformWww is specified
+                var platformWwwDest = path.resolve(project.platformWww, 'plugins', plugin.id, obj.src);
+                shell.mkdir('-p', path.dirname(platformWwwDest));
+                fs.writeFileSync(platformWwwDest, scriptContent, 'utf-8');
+            }
         },
         uninstall: function (obj, plugin, project, options) {
             var pluginRelativePath = path.join('plugins', plugin.id, obj.src);
-            var www = options.usePlatformWww ? project.platformWww : project.www;
-            removeFileAndParents(www, pluginRelativePath);
+            removeFileAndParents(project.www, pluginRelativePath);
+            if (options && options.usePlatformWww) {
+                // CB-11022 remove file from both directories if usePlatformWww is specified
+                removeFileAndParents(project.platformWww, pluginRelativePath);
+            }
         }
     }
 };
