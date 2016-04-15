@@ -69,24 +69,22 @@ var handlers = {
             var parentDir = obj.parent ? path.resolve(project.projectDir, obj.parent) : project.projectDir;
             var subDir;
 
-             if (obj.custom) {
-                 var subRelativeDir = project.getCustomSubprojectRelativeDir(plugin.id, src);
-                 copyNewFile(plugin.dir, src, project.projectDir, subRelativeDir, !!(options && options.link));
-                 subDir = path.resolve(project.projectDir, subRelativeDir);
-             } else {
-                 obj.type = 'sys';
-                 subDir = src;
+            if (obj.custom) {
+                var subRelativeDir = project.getCustomSubprojectRelativeDir(plugin.id, src);
+                copyNewFile(plugin.dir, src, project.projectDir, subRelativeDir, !!(options && options.link));
+                subDir = path.resolve(project.projectDir, subRelativeDir);
+            } else {
+                obj.type = 'sys';
+                subDir = src;
             }
 
             if (obj.type == 'gradleReference') {
                 project.addGradleReference(parentDir, subDir);
-             } else if (obj.type == 'sys') {
-                 project.addSystemLibrary(parentDir, subDir);
-             } else {
-                 project.addSubProject(parentDir, subDir);
+            } else if (obj.type == 'sys') {
+                project.addSystemLibrary(parentDir, subDir);
+            } else {
+                project.addSubProject(parentDir, subDir);
             }
-
-            project.addSubProject(parentDir, subDir);
         },
         uninstall:function(obj, plugin, project, options) {
             var src = obj.src;
