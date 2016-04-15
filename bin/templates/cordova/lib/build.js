@@ -22,7 +22,8 @@
 var Q       = require('q'),
     path    = require('path'),
     fs      = require('fs'),
-    nopt = require('nopt');
+    nopt = require('nopt'),
+    _ = require('lodash');
 
 var Adb = require('./Adb');
 
@@ -31,8 +32,8 @@ var events = require('cordova-common').events;
 var spawn = require('cordova-common').superspawn.spawn;
 var CordovaError = require('cordova-common').CordovaError;
 
-function parseOpts(options, resolvedTarget, projectRoot) {
-    options = options || {};
+function parseOpts(optionsRef, resolvedTarget, projectRoot) {
+    var options = (optionsRef ? _.clone(optionsRef) : {});
     options.argv = nopt({
         gradle: Boolean,
         ant: Boolean,
