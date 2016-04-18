@@ -558,7 +558,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
                     return true;
                 } else if (boundKeyCodes.contains(keyCode)) {
                     return true;
-                } else if (isBackButton) {
+                } else if (isBackButton && boundKeyCodes.contains(keyCode)) {
                     return engine.canGoBack();
                 }
             } else if (event.getAction() == KeyEvent.ACTION_UP) {
@@ -588,7 +588,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
                         sendJavascriptEvent(eventName);
                         return true;
                     }
-                } else if (isBackButton) {
+                } else if (isBackButton && boundKeyCodes.contains(keyCode)) {
                     return engine.goBack();
                 }
             }
