@@ -164,7 +164,7 @@ describe('android project handler', function() {
         });
 
         describe('of <js-module> elements', function() {
-            var jsModule = {src: 'www/dummyPlugin.js'};
+            var jsModule = {src: 'www/dummyplugin.js'};
             var wwwDest, platformWwwDest;
 
             beforeEach(function () {
