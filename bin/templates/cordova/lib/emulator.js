@@ -354,6 +354,7 @@ module.exports.install = function(givenTarget, buildResults) {
             };
 
             events.emit('log', 'Using apk: ' + apk_path);
+            events.emit('log', 'Package name: ' + pkgName);
             events.emit('verbose', 'Installing app on emulator...');
 
             // A special function to call adb install in specific environment w/ specific options.
