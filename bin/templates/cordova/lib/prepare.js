@@ -49,8 +49,8 @@ module.exports.prepare = function (cordovaProject, options) {
         return updateProjectAccordingTo(self._config, self.locations);
     })
     .then(function () {
-        handleIcons(cordovaProject, self.root, incremental);
-        handleSplashes(cordovaProject, self.root, incremental);
+        handleIcons(cordovaProject, incremental);
+        handleSplashes(cordovaProject, incremental);
     })
     .then(function () {
         events.emit('verbose', 'Prepared android project successfully');
