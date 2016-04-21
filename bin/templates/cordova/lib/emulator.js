@@ -70,7 +70,7 @@ module.exports.list_images = function() {
                     i++;
                     img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
                 }
-                if (response[i + 1].match(/\(API\slevel\s/) || response[i + 2].match(/\(API\slevel\s/)) {
+                if (response[i + 1].match(/\(API\slevel\s/) || (response[i + 2] && response[i + 2].match(/\(API\slevel\s/))) {
                     i++;
                     var secondLine = response[i + 1].match(/\(API\slevel\s/) ? response[i + 1] : '';
                     img_obj['target'] = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
