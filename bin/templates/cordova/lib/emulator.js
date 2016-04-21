@@ -182,9 +182,26 @@ module.exports.start = function(emulator_ID, boot_timeout) {
         var uuidProp = 'emu.uuid=' + uuid;
         var args = ['-avd', emulatorId, '-prop', uuidProp];
         // Don't wait for it to finish, since the emulator will probably keep running for a long time.
-        child_process
-            .spawn('emulator', args, { stdio: 'inherit', detached: true })
-            .unref();
+        var emulatorProcess = child_process
+            .spawn('emulator', args, { detached: true });
+
+        emulatorProcess.stderr.on('data', function (data) {
+            throw new CordovaError(data);
+        });
+
+        emulatorProcess.stdout.on('data', function (data) {
+            if (/ERROR/.test(data)) {
+                throw new CordovaError(data);
+            }
+        });
+
+        emulatorProcess.on('exit', function(code) {
+            if (code !== 0) {
+                throw new CordovaError('Emulator process exited with code: ' + code);
+            }
+        });
+
+        emulatorProcess.unref();
 
         // wait for emulator to start
         events.emit('log', 'Waiting for emulator...');
