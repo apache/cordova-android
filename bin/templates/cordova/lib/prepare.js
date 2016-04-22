@@ -26,13 +26,18 @@ var AndroidManifest = require('./AndroidManifest');
 var xmlHelpers = require('cordova-common').xmlHelpers;
 var CordovaError = require('cordova-common').CordovaError;
 var ConfigParser = require('cordova-common').ConfigParser;
+var PlatformJson = require('cordova-common').PlatformJson;
+var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
+var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
 module.exports.prepare = function (cordovaProject) {
 
     var self = this;
 
-    this._config = updateConfigFilesFrom(cordovaProject.projectConfig,
-        this._munger, this.locations);
+    var platformJson = PlatformJson.load(this.locations.root, this.platform);
+    var munger = new PlatformMunger(this.platform, this.locations.root, platformJson, new PluginInfoProvider());
+
+    this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
 
     // Update own www dir with project's www assets and plugins' assets and js-files
     return Q.when(updateWwwFrom(cordovaProject, this.locations))
