@@ -36,19 +36,15 @@ describe('addPlugin method', function () {
     var api, fail, gradleBuilder;
 
     beforeEach(function() {
-        var ActionStack = jasmine.createSpyObj('ActionStack', ['createAction', 'push', 'process']);
-        ActionStack.process.andReturn(Q());
-        spyOn(common, 'ActionStack').andReturn(ActionStack);
+        var pluginManager = jasmine.createSpyObj('pluginManager', ['addPlugin']);
+        pluginManager.addPlugin.andReturn(Q());
+        spyOn(common.PluginManager, 'get').andReturn(pluginManager);
 
-        spyOn(AndroidProject, 'getProjectFile')
-            .andReturn(jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write']));
+        var projectSpy = jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write']);
+        spyOn(AndroidProject, 'getProjectFile').andReturn(projectSpy);
 
         var Api = require('../../bin/templates/cordova/Api');
         api = new Api('android', FAKE_PROJECT_DIR);
-
-        spyOn(api, '_addModulesInfo');
-        spyOn(api._munger, 'add_plugin_changes')
-            .andReturn(jasmine.createSpyObj('munger', ['save_all']));
 
         fail = jasmine.createSpy('fail');
         gradleBuilder = jasmine.createSpyObj('gradleBuilder', ['prepBuildFiles']);
