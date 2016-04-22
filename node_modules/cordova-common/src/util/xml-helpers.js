@@ -194,7 +194,7 @@ function findInsertIdx(children, after) {
 }
 
 var BLACKLIST = ['platform', 'feature','plugin','engine'];
-var SINGLETONS = ['content', 'author'];
+var SINGLETONS = ['content', 'author', 'name'];
 function mergeXml(src, dest, platform, clobber) {
     // Do nothing for blacklisted tags.
     if (BLACKLIST.indexOf(src.tag) != -1) return;
@@ -209,6 +209,9 @@ function mergeXml(src, dest, platform, clobber) {
     if (src.text && (clobber || !dest.text)) {
         dest.text = src.text;
     }
+    //Handle children
+    src.getchildren().forEach(mergeChild);
+
     //Handle platform
     if (platform) {
         src.findall('platform[@name="' + platform + '"]').forEach(function (platformElement) {
@@ -216,8 +219,8 @@ function mergeXml(src, dest, platform, clobber) {
         });
     }
 
-    //Handle children
-    src.getchildren().forEach(mergeChild);
+    //Handle duplicate preference tags (by name attribute)
+    removeDuplicatePreferences(dest);
 
     function mergeChild (srcChild) {
         var srcTag = srcChild.tag,
@@ -253,6 +256,26 @@ function mergeXml(src, dest, platform, clobber) {
             mergeXml(srcChild, destChild, platform, clobber && shouldMerge);
             dest.append(destChild);
         }
+    }
+    
+    function removeDuplicatePreferences(xml) {
+        // reduce preference tags to a hashtable to remove dupes
+        var prefHash = xml.findall('preference[@name][@value]').reduce(function(previousValue, currentValue) {
+            previousValue[ currentValue.attrib.name ] = currentValue.attrib.value;
+            return previousValue;
+        }, {});
+        
+        // remove all preferences
+        xml.findall('preference[@name][@value]').forEach(function(pref) {
+            xml.remove(pref);
+        });
+        
+        // write new preferences
+        Object.keys(prefHash).forEach(function(key, index) {
+            var element = et.SubElement(xml, 'preference');
+            element.set('name', key);
+            element.set('value', this[key]);
+        }, prefHash);
     }
 }
 

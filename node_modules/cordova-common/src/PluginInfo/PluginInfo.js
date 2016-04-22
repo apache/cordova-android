@@ -43,18 +43,14 @@ function PluginInfo(dirname) {
     // <preference> tag
     // Example: <preference name="API_KEY" />
     // Used to require a variable to be specified via --variable when installing the plugin.
+    // returns { key : default | null}
     self.getPreferences = getPreferences;
     function getPreferences(platform) {
-        var arprefs = _getTags(self._et, 'preference', platform, _parsePreference);
-
-        var prefs= {};
-        for(var i in arprefs)
-        {
-            var pref=arprefs[i];
-            prefs[pref.preference]=pref.default;
-        }
-        // returns { key : default | null}
-        return prefs;
+        return _getTags(self._et, 'preference', platform, _parsePreference)
+        .reduce(function (preferences, pref) {
+            preferences[pref.preference] = pref.default;
+            return preferences;
+        }, {});
     }
 
     function _parsePreference(prefTag) {

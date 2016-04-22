@@ -153,6 +153,23 @@ CordovaLogger.prototype.setLevel = function (logLevel) {
 };
 
 /**
+ * Adjusts the current logger level according to the passed options.
+ *
+ * @param   {Object|Array}  opts  An object or args array with options
+ *
+ * @return  {CordovaLogger}     Current instance, to allow calls chaining.
+ */
+CordovaLogger.prototype.adjustLevel = function (opts) {
+    if (opts.verbose || (Array.isArray(opts) && opts.indexOf('--verbose') !== -1)) {
+        this.setLevel('verbose');
+    } else if (opts.silent || (Array.isArray(opts) && opts.indexOf('--silent') !== -1)) {
+        this.setLevel('error');
+    }
+
+    return this;
+};
+
+/**
  * Attaches logger to EventEmitter instance provided.
  *
  * @param   {EventEmitter}  eventEmitter  An EventEmitter instance to attach
