@@ -42,7 +42,14 @@ module.exports.forwardEventsTo = function (eventEmitter) {
     if (!(eventEmitter instanceof EventEmitter))
         throw new Error('Cordova events could be redirected to another EventEmitter instance only');
 
-    EVENTS_RECEIVER = eventEmitter;
+    // CB-10940 Skipping forwarding to self to avoid infinite recursion.
+    // This is the case when the modules are npm-linked.
+    if (this !== eventEmitter) {
+        EVENTS_RECEIVER = eventEmitter;
+    } else {
+        // Reset forwarding if we are subscribing to self
+        EVENTS_RECEIVER = undefined;
+    }
 };
 
 var emit = INSTANCE.emit;

@@ -20,6 +20,22 @@
 -->
 # Cordova-common Release Notes
 
+### 1.2.0 (Apr 18, 2016)
+* CB-11022 Save modulesMetadata to both www and platform_www when necessary
+* CB-10833 Deduplicate common logic for plugin installation/uninstallation
+* CB-10822 Manage plugins/modules metadata using PlatformJson
+* CB-10940 Can't add Android platform from path
+* CB-10965 xml helper allows multiple instances to be merge in config.xml
+
+### 1.1.1 (Mar 18, 2016)
+* CB-10694 Update test to reflect merging of CB-9264 fix
+* CB-10694 Platform-specific configuration preferences don't override global settings
+* CB-9264 Duplicate entries in `config.xml`
+* CB-10791 Add `adjustLoggerLevel` to `cordova-common.CordovaLogger`
+* CB-10662 Add tests for `ConfigParser.getStaticResources`
+* CB-10622 fix target attribute being ignored for images in `config.xml`.
+* CB-10583 Protect plugin preferences from adding extra Array properties.
+
 ### 1.1.0 (Feb 16, 2016)
 * CB-10482 Remove references to windows8 from cordova-lib/cli
 * CB-10430 Adds forwardEvents method to easily connect two EventEmitters

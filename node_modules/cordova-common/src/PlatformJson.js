@@ -91,12 +91,73 @@ PlatformJson.prototype.addPlugin = function(pluginId, variables, isTopLevel) {
     return this;
 };
 
+/**
+ * @chaining
+ * Generates and adds metadata for provided plugin into associated <platform>.json file
+ *
+ * @param   {PluginInfo}  pluginInfo  A pluginInfo instance to add metadata from
+ * @returns {this} Current PlatformJson instance to allow calls chaining
+ */
+PlatformJson.prototype.addPluginMetadata = function (pluginInfo) {
+
+    var installedModules = this.root.modules || [];
+
+    var installedPaths = installedModules.map(function (installedModule) {
+        return installedModule.file;
+    });
+
+    var modulesToInstall = pluginInfo.getJsModules(this.platform)
+    .map(function (module) {
+        return new ModuleMetadata(pluginInfo.id, module);
+    })
+    .filter(function (metadata) {
+        // Filter out modules which are already added to metadata
+        return installedPaths.indexOf(metadata.file) === -1;
+    });
+
+    this.root.modules = installedModules.concat(modulesToInstall);
+
+    this.root.plugin_metadata = this.root.plugin_metadata || {};
+    this.root.plugin_metadata[pluginInfo.id] = pluginInfo.version;
+
+    return this;
+};
+
 PlatformJson.prototype.removePlugin = function(pluginId, isTopLevel) {
     var pluginsList = isTopLevel ?
         this.root.installed_plugins :
         this.root.dependent_plugins;
 
     delete pluginsList[pluginId];
+
+    return this;
+};
+
+/**
+ * @chaining
+ * Removes metadata for provided plugin from associated file
+ *
+ * @param   {PluginInfo}  pluginInfo A PluginInfo instance to which modules' metadata
+ *   we need to remove
+ *
+ * @returns {this} Current PlatformJson instance to allow calls chaining
+ */
+PlatformJson.prototype.removePluginMetadata = function (pluginInfo) {
+    var modulesToRemove = pluginInfo.getJsModules(this.platform)
+    .map(function (jsModule) {
+        return  ['plugins', pluginInfo.id, jsModule.src].join('/');
+    });
+
+    var installedModules = this.root.modules || [];
+    this.root.modules = installedModules
+    .filter(function (installedModule) {
+        // Leave only those metadatas which 'file' is not in removed modules
+        return (modulesToRemove.indexOf(installedModule.file) === -1);
+    });
+
+    if (this.root.plugin_metadata) {
+        delete this.root.plugin_metadata[pluginInfo.id];
+    }
 
     return this;
 };
@@ -125,6 +186,39 @@ PlatformJson.prototype.makeTopLevel = function(pluginId) {
     return this;
 };
 
+/**
+ * Generates a metadata for all installed plugins and js modules. The resultant
+ *   string is ready to be written to 'cordova_plugins.js'
+ *
+ * @returns {String} cordova_plugins.js contents
+ */
+PlatformJson.prototype.generateMetadata = function () {
+    return [
+        'cordova.define(\'cordova/plugin_list\', function(require, exports, module) {',
+        'module.exports = ' + JSON.stringify(this.root.modules, null, 4) + ';',
+        'module.exports.metadata = ',
+        '// TOP OF METADATA',
+        JSON.stringify(this.root.plugin_metadata, null, 4) + ';',
+        '// BOTTOM OF METADATA',
+        '});' // Close cordova.define.
+    ].join('\n');
+};
+
+/**
+ * @chaining
+ * Generates and then saves metadata to specified file. Doesn't check if file exists.
+ *
+ * @param {String} destination  File metadata will be written to
+ * @return {PlatformJson} PlatformJson instance
+ */
+PlatformJson.prototype.generateAndSaveMetadata = function (destination) {
+    var meta = this.generateMetadata();
+    shelljs.mkdir('-p', path.dirname(destination));
+    fs.writeFileSync(destination, meta, 'utf-8');
+
+    return this;
+};
+
 // convert a munge from the old format ([file][parent][xml] = count) to the current one
 function fix_munge(root) {
     root.prepare_queue = root.prepare_queue || {installed:[], uninstalled:[]};
@@ -149,6 +243,36 @@ function fix_munge(root) {
     }
 
     return root;
+}
+
+/**
+ * @constructor
+ * @class ModuleMetadata
+ *
+ * Creates a ModuleMetadata object that represents module entry in 'cordova_plugins.js'
+ *   file at run time
+ *
+ * @param {String}  pluginId  Plugin id where this module installed from
+ * @param (JsModule|Object)  jsModule  A js-module entry from PluginInfo class to generate metadata for
+ */
+function ModuleMetadata (pluginId, jsModule) {
+
+    if (!pluginId) throw new TypeError('pluginId argument must be a valid plugin id');
+    if (!jsModule.src && !jsModule.name) throw new TypeError('jsModule argument must contain src or/and name properties');
+
+    this.id  = pluginId + '.' + ( jsModule.name || jsModule.src.match(/([^\/]+)\.js/)[1] );
+    this.file = ['plugins', pluginId, jsModule.src].join('/');
+    this.pluginId = pluginId;
+
+    if (jsModule.clobbers && jsModule.clobbers.length > 0) {
+        this.clobbers = jsModule.clobbers.map(function(o) { return o.target; });
+    }
+    if (jsModule.merges && jsModule.merges.length > 0) {
+        this.merges = jsModule.merges.map(function(o) { return o.target; });
+    }
+    if (jsModule.runs) {
+        this.runs = true;
+    }
 }
 
 module.exports = PlatformJson;
