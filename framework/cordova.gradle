@@ -125,7 +125,7 @@ def doExtractIntFromManifest(name) {
     def pattern = Pattern.compile(name + "=\"(\\d+)\"")
     def matcher = pattern.matcher(manifestFile.getText())
     matcher.find()
-    return Integer.parseInt(matcher.group(1))
+    return new BigInteger(matcher.group(1))
 }
 
 def doExtractStringFromManifest(name) {
