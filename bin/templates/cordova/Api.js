@@ -328,6 +328,9 @@ Api.prototype.clean = function(cleanOptions) {
     return require('./lib/check_reqs').run()
     .then(function () {
         return require('./lib/build').runClean.call(self, cleanOptions);
+    })
+    .then(function () {
+        return require('./lib/prepare').clean.call(self, cleanOptions);
     });
 };
 

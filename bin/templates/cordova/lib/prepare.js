@@ -34,26 +34,40 @@ var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 module.exports.prepare = function (cordovaProject, options) {
 
     var self = this;
+    var platformResourcesDir = path.relative(cordovaProject.root, path.join(this.locations.root, 'res'));
 
     var platformJson = PlatformJson.load(this.locations.root, this.platform);
     var munger = new PlatformMunger(this.platform, this.locations.root, platformJson, new PluginInfoProvider());
 
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
 
-    var incremental = options && options.incremental;
-
     // Update own www dir with project's www assets and plugins' assets and js-files
-    return Q.when(updateWwwFrom(cordovaProject, this.locations, incremental))
+    return Q.when(updateWww.call(self, cordovaProject))
     .then(function () {
         // update project according to config.xml changes.
         return updateProjectAccordingTo(self._config, self.locations);
     })
     .then(function () {
-        handleIcons(cordovaProject, incremental);
-        handleSplashes(cordovaProject, incremental);
+        updateIcons.call(self, cordovaProject, platformResourcesDir);
+        updateSplashes.call(self, cordovaProject, platformResourcesDir);
     })
     .then(function () {
         events.emit('verbose', 'Prepared android project successfully');
+    });
+};
+
+module.exports.clean = function (options) {
+    // Unfortunately the cordovaProject isn't passed into the clean() function,
+    // but the project root dir and config can be resolved here easily.
+    var projectRoot = path.resolve(this.root, "../..");
+    var projectConfig = new ConfigParser(this.locations.configXml);
+    var platformResourcesDir = path.relative(projectRoot, path.join(this.locations.root, 'res'));
+
+    var self = this;
+    return Q().then(function () {
+        cleanWww.call(self, projectRoot);
+        cleanIcons.call(self, projectRoot, projectConfig, platformResourcesDir);
+        cleanSplashes.call(self, projectRoot, projectConfig, platformResourcesDir);
     });
 };
 
@@ -93,18 +107,23 @@ function updateConfigFilesFrom(sourceConfig, configMunger, locations) {
 }
 
 /**
+ * Logs all file operations via the verbose event stream, indented.
+ */
+function logFileOp(message) {
+    events.emit('verbose', '  ' + message);
+}
+
+/**
  * Updates platform 'www' directory by replacing it with contents of
  *   'platform_www' and app www. Also copies project's overrides' folder into
  *   the platform 'www' folder
  *
  * @param   {Object}  cordovaProject    An object which describes cordova project.
- * @param   {Object}  destinations      An object that contains destination
- *   paths for www files.
  */
-function updateWwwFrom(cordovaProject, destinations, incremental) {
+function updateWww(cordovaProject) {
     var sourceDirs = [
-        'www',
-        path.join('platforms', 'android', 'platform_www')
+        path.relative(cordovaProject.root, cordovaProject.locations.www),
+        path.relative(cordovaProject.root, this.locations.platformWww)
     ];
 
     // If project contains 'merges' for our platform, use them as another overrides
@@ -114,13 +133,23 @@ function updateWwwFrom(cordovaProject, destinations, incremental) {
         sourceDirs.push(path.join('merges', 'android'));
     }
 
+    var targetDir = path.relative(cordovaProject.root, this.locations.www);
     events.emit(
-        'verbose', "Merging and updating files from [" + sourceDirs.join(", ") + "] to " + destinations.www);
-    var targetDir = path.join('platforms', 'android', 'assets', 'www');
-    FileUpdater.mergeAndUpdateDir(cordovaProject.root, targetDir, sourceDirs, null, null, !incremental,
-        function (message) {
-            events.emit('verbose', message);
-        });
+        'verbose', "Merging and updating files from [" + sourceDirs.join(", ") + "] to " + targetDir);
+    FileUpdater.mergeAndUpdateDir(
+        sourceDirs, targetDir, { rootDir: cordovaProject.root }, logFileOp);
+}
+
+/**
+ * Cleans all files from the platform 'www' directory.
+ */
+function cleanWww(projectRoot) {
+    var targetDir = path.relative(projectRoot, this.locations.www);
+    events.emit('verbose', "Cleaning " + targetDir);
+
+    // No source paths are specified, so mergeAndUpdateDir() will clear the target directory.
+    FileUpdater.mergeAndUpdateDir(
+        [], targetDir, { rootDir: projectRoot, all: true }, logFileOp);
 }
 
 /**
@@ -217,7 +246,7 @@ function getImageResourcePath(resourcesDir, density, name, sourceName) {
     return resourcePath;
 }
 
-function handleSplashes(cordovaProject, incremental) {
+function updateSplashes(cordovaProject, platformResourcesDir) {
     var resources = cordovaProject.projectConfig.getSplashScreens('android');
 
     // if there are "splash" elements in config.xml
@@ -226,8 +255,7 @@ function handleSplashes(cordovaProject, incremental) {
         return;
     }
 
-    var platformResourcesRoot = path.join('platforms', 'android', 'res');
-    var resourceMap = mapImageResources(cordovaProject.root, platformResourcesRoot, 'screen.png');
+    var resourceMap = mapImageResources(cordovaProject.root, platformResourcesDir, 'screen.png');
 
     var hadMdpi = false;
     resources.forEach(function (resource) {
@@ -238,24 +266,35 @@ function handleSplashes(cordovaProject, incremental) {
             hadMdpi = true;
         }
         var targetPath = getImageResourcePath(
-            platformResourcesRoot, resource.density, 'screen.png', path.basename(resource.src));
+            platformResourcesDir, resource.density, 'screen.png', path.basename(resource.src));
         resourceMap[targetPath] = resource.src;
     });
 
     // There's no "default" drawable, so assume default == mdpi.
     if (!hadMdpi && resources.defaultResource) {
         var targetPath = getImageResourcePath(
-            platformResourcesRoot, 'mdpi', 'screen.png', path.basename(resources.defaultResource.src));
+            platformResourcesDir, 'mdpi', 'screen.png', path.basename(resources.defaultResource.src));
         resourceMap[targetPath] = resources.defaultResource.src;
     }
 
-    FileUpdater.updatePaths(cordovaProject.root, resourceMap, !incremental,
-        function (message) {
-            events.emit('verbose', message);
-        });
+    events.emit('verbose', 'Updating splash screens at ' + platformResourcesDir);
+    FileUpdater.updatePaths(
+        resourceMap, { rootDir: cordovaProject.root }, logFileOp);
 }
 
-function handleIcons(cordovaProject, incremental) {
+function cleanSplashes(projectRoot, projectConfig, platformResourcesDir) {
+    var resources = projectConfig.getSplashScreens('android');
+    if (resources.length > 0) {
+        var resourceMap = mapImageResources(projectRoot, platformResourcesDir, 'screen.png');
+        events.emit('verbose', 'Cleaning splash screens at ' + platformResourcesDir);
+
+        // No source paths are specified in the map, so updatePaths() will delete the target files.
+        FileUpdater.updatePaths(
+            resourceMap, { rootDir: projectRoot, all: true }, logFileOp);
+    }
+}
+
+function updateIcons(cordovaProject, platformResourcesDir) {
     var icons = cordovaProject.projectConfig.getIcons('android');
 
     // if there are icon elements in config.xml
@@ -264,8 +303,7 @@ function handleIcons(cordovaProject, incremental) {
         return;
     }
 
-    var platformResourcesRoot = path.join('platforms', 'android', 'res');
-    var resourceMap = mapImageResources(cordovaProject.root, platformResourcesRoot, 'icon.png');
+    var resourceMap = mapImageResources(cordovaProject.root, platformResourcesDir, 'icon.png');
 
     var android_icons = {};
     var default_icon;
@@ -316,21 +354,32 @@ function handleIcons(cordovaProject, incremental) {
     // project's config.xml location, so we use it as base path.
     for (var density in android_icons) {
         var targetPath = getImageResourcePath(
-            platformResourcesRoot, density, 'icon.png', path.basename(android_icons[density].src));
+            platformResourcesDir, density, 'icon.png', path.basename(android_icons[density].src));
         resourceMap[targetPath] = android_icons[density].src;
     }
 
     // There's no "default" drawable, so assume default == mdpi.
     if (default_icon && !android_icons.mdpi) {
         var targetPath = getImageResourcePath(
-            platformResourcesRoot, 'mdpi', 'icon.png', path.basename(default_icon.src));
+            platformResourcesDir, 'mdpi', 'icon.png', path.basename(default_icon.src));
         resourceMap[targetPath] = default_icon.src;
     }
 
-    FileUpdater.updatePaths(cordovaProject.root, resourceMap, !incremental,
-        function (message) {
-            events.emit('verbose', message);
-        });
+    events.emit('verbose', 'Updating icons at ' + platformResourcesDir);
+    FileUpdater.updatePaths(
+        resourceMap, { rootDir: cordovaProject.root }, logFileOp);
+}
+
+function cleanIcons(projectRoot, projectConfig, platformResourcesDir) {
+    var icons = projectConfig.getIcons('android');
+    if (icons.length > 0) {
+        var resourceMap = mapImageResources(projectRoot, platformResourcesDir, 'icon.png');
+        events.emit('verbose', 'Cleaning icons at ' + platformResourcesDir);
+
+        // No source paths are specified in the map, so updatePaths() will delete the target files.
+        FileUpdater.updatePaths(
+            resourceMap, { rootDir: projectRoot, all: true }, logFileOp);
+    }
 }
 
 /**
