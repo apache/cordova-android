@@ -39,6 +39,9 @@ var opts = nopt({
 // Make buildOptions compatible with PlatformApi clean method spec
 opts.argv = opts.argv.original;
 
+// Skip cleaning prepared files when not invoking via cordova CLI.
+opts.noPrepare = true;
+
 require('./loggingHelper').adjustLoggerLevel(opts);
 
 new Api().clean(opts)

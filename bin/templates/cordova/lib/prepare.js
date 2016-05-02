@@ -42,14 +42,14 @@ module.exports.prepare = function (cordovaProject, options) {
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
 
     // Update own www dir with project's www assets and plugins' assets and js-files
-    return Q.when(updateWww.call(self, cordovaProject))
+    return Q.when(updateWww(cordovaProject, this.locations))
     .then(function () {
         // update project according to config.xml changes.
         return updateProjectAccordingTo(self._config, self.locations);
     })
     .then(function () {
-        updateIcons.call(self, cordovaProject, platformResourcesDir);
-        updateSplashes.call(self, cordovaProject, platformResourcesDir);
+        updateIcons(cordovaProject, platformResourcesDir);
+        updateSplashes(cordovaProject, platformResourcesDir);
     })
     .then(function () {
         events.emit('verbose', 'Prepared android project successfully');
@@ -57,17 +57,25 @@ module.exports.prepare = function (cordovaProject, options) {
 };
 
 module.exports.clean = function (options) {
-    // Unfortunately the cordovaProject isn't passed into the clean() function,
-    // but the project root dir and config can be resolved here easily.
-    var projectRoot = path.resolve(this.root, "../..");
-    var projectConfig = new ConfigParser(this.locations.configXml);
+
+    // A cordovaProject isn't passed into the clean() function, because it might have
+    // been called from the platform shell script rather than the CLI. Check for the
+    // noPrepare option passed in by the non-CLI clean script. If that's present, or if
+    // there's no config.xml found at the project root, then don't clean prepared files.
+    var projectRoot = path.resolve(this.root, '../..');
+    var projectConfigFile = path.join(projectRoot, 'config.xml');
+    if ((options && options.noPrepare) || !fs.existsSync(projectConfigFile)) {
+        return Q();
+    }
+
+    var projectConfig = new ConfigParser(projectConfigFile);
     var platformResourcesDir = path.relative(projectRoot, path.join(this.locations.root, 'res'));
 
     var self = this;
     return Q().then(function () {
-        cleanWww.call(self, projectRoot);
-        cleanIcons.call(self, projectRoot, projectConfig, platformResourcesDir);
-        cleanSplashes.call(self, projectRoot, projectConfig, platformResourcesDir);
+        cleanWww(projectRoot, self.locations);
+        cleanIcons(projectRoot, projectConfig, platformResourcesDir);
+        cleanSplashes(projectRoot, projectConfig, platformResourcesDir);
     });
 };
 
@@ -119,11 +127,13 @@ function logFileOp(message) {
  *   the platform 'www' folder
  *
  * @param   {Object}  cordovaProject    An object which describes cordova project.
+ * @param   {Object}  destinations      An object that contains destination
+ *   paths for www files.
  */
-function updateWww(cordovaProject) {
+function updateWww(cordovaProject, destinations) {
     var sourceDirs = [
         path.relative(cordovaProject.root, cordovaProject.locations.www),
-        path.relative(cordovaProject.root, this.locations.platformWww)
+        path.relative(cordovaProject.root, destinations.platformWww)
     ];
 
     // If project contains 'merges' for our platform, use them as another overrides
@@ -133,9 +143,9 @@ function updateWww(cordovaProject) {
         sourceDirs.push(path.join('merges', 'android'));
     }
 
-    var targetDir = path.relative(cordovaProject.root, this.locations.www);
+    var targetDir = path.relative(cordovaProject.root, destinations.www);
     events.emit(
-        'verbose', "Merging and updating files from [" + sourceDirs.join(", ") + "] to " + targetDir);
+        'verbose', 'Merging and updating files from [' + sourceDirs.join(', ') + '] to ' + targetDir);
     FileUpdater.mergeAndUpdateDir(
         sourceDirs, targetDir, { rootDir: cordovaProject.root }, logFileOp);
 }
@@ -143,9 +153,9 @@ function updateWww(cordovaProject) {
 /**
  * Cleans all files from the platform 'www' directory.
  */
-function cleanWww(projectRoot) {
-    var targetDir = path.relative(projectRoot, this.locations.www);
-    events.emit('verbose', "Cleaning " + targetDir);
+function cleanWww(projectRoot, locations) {
+    var targetDir = path.relative(projectRoot, locations.www);
+    events.emit('verbose', 'Cleaning ' + targetDir);
 
     // No source paths are specified, so mergeAndUpdateDir() will clear the target directory.
     FileUpdater.mergeAndUpdateDir(
@@ -360,9 +370,9 @@ function updateIcons(cordovaProject, platformResourcesDir) {
 
     // There's no "default" drawable, so assume default == mdpi.
     if (default_icon && !android_icons.mdpi) {
-        var targetPath = getImageResourcePath(
+        var defaultTargetPath = getImageResourcePath(
             platformResourcesDir, 'mdpi', 'icon.png', path.basename(default_icon.src));
-        resourceMap[targetPath] = default_icon.src;
+        resourceMap[defaultTargetPath] = default_icon.src;
     }
 
     events.emit('verbose', 'Updating icons at ' + platformResourcesDir);
