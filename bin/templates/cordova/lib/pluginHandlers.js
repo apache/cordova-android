@@ -28,8 +28,8 @@ var CordovaError = require('cordova-common').CordovaError;
 var handlers = {
     'source-file':{
         install:function(obj, plugin, project, options) {
-            if (!obj.src) throw new CordovaError('<source-file> element is missing "src" attribute for plugin: ' + plugin.id);
-            if (!obj.targetDir) throw new CordovaError('<source-file> element is missing "target-dir" attribute for plugin: ' + plugin.id);
+            if (!obj.src) throw new CordovaError(generateAttributeError('src', 'source-file', plugin.id));
+            if (!obj.targetDir) throw new CordovaError(generateAttributeError('target-dir', 'source-file', plugin.id));
             var dest = path.join(obj.targetDir, path.basename(obj.src));
             if (options && options.force) {
                 copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
@@ -63,7 +63,7 @@ var handlers = {
     'framework': {
         install:function(obj, plugin, project, options) {
             var src = obj.src;
-            if (!src) throw new CordovaError('src not specified in <framework> for plugin: ' + plugin.id);
+            if (!src) throw new CordovaError(generateAttributeError('src', 'framework', plugin.id));
 
             events.emit('verbose', 'Installing Android library: ' + src);
             var parentDir = obj.parent ? path.resolve(project.projectDir, obj.parent) : project.projectDir;
@@ -88,7 +88,7 @@ var handlers = {
         },
         uninstall:function(obj, plugin, project, options) {
             var src = obj.src;
-            if (!src) throw new CordovaError('src not specified in <framework> for plugin: ' + plugin.id);
+            if (!src) throw new CordovaError(generateAttributeError('src', 'framework', plugin.id));
 
             events.emit('verbose', 'Uninstalling Android library: ' + src);
             var parentDir = obj.parent ? path.resolve(project.projectDir, obj.parent) : project.projectDir;
@@ -120,10 +120,10 @@ var handlers = {
     asset:{
         install:function(obj, plugin, project, options) {
             if (!obj.src) {
-                throw new CordovaError('<asset> tag without required "src" attribute. plugin=' + plugin.dir);
+                throw new CordovaError(generateAttributeError('src', 'asset', plugin.id));
             }
             if (!obj.target) {
-                throw new CordovaError('<asset> tag without required "target" attribute');
+                throw new CordovaError(generateAttributeError('target', 'asset', plugin.id));
             }
 
             copyFile(plugin.dir, obj.src, project.www, obj.target);
@@ -135,7 +135,7 @@ var handlers = {
         uninstall:function(obj, plugin, project, options) {
             var target = obj.target || obj.src;
 
-            if (!target) throw new CordovaError('<asset> tag without required "target" attribute');
+            if (!target) throw new CordovaError(generateAttributeError('target', 'asset', plugin.id));
 
             removeFileF(path.resolve(project.www, target));
             removeFileF(path.resolve(project.www, 'plugins', plugin.id));
@@ -269,4 +269,8 @@ function removeFileAndParents (baseDir, destFile, stopper) {
             break;
         }
     }
+}
+
+function generateAttributeError(attribute, element, id) {
+    return 'Required attribute "' + attribute + '" not specified in <' + element + '> element from plugin: ' + id;
 }

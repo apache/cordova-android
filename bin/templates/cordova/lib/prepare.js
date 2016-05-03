@@ -50,7 +50,7 @@ module.exports.prepare = function (cordovaProject) {
         handleSplashes(cordovaProject.projectConfig, self.root);
     })
     .then(function () {
-        events.emit('verbose', 'updated project successfully');
+        events.emit('verbose', 'Prepared android project successfully');
     });
 };
 
@@ -69,7 +69,7 @@ module.exports.prepare = function (cordovaProject) {
  *   configuration is already dumped to appropriate config.xml file.
  */
 function updateConfigFilesFrom(sourceConfig, configMunger, locations) {
-    events.emit('verbose', 'Generating config.xml from defaults for platform "android"');
+    events.emit('verbose', 'Generating platform-specific config.xml from defaults for android at ' + locations.configXml);
 
     // First cleanup current config and merge project's one into own
     // Overwrite platform config.xml with defaults.xml.
@@ -79,6 +79,7 @@ function updateConfigFilesFrom(sourceConfig, configMunger, locations) {
     // in project (including project's config)
     configMunger.reapply_global_munge().save_all();
 
+    events.emit('verbose', 'Merging project\'s config.xml into platform-specific android config.xml');
     // Merge changes from app's config.xml into platform's one
     var config = new ConfigParser(locations.configXml);
     xmlHelpers.mergeXml(sourceConfig.doc.getroot(),
@@ -108,7 +109,7 @@ function updateWwwFrom(cordovaProject, destinations) {
     // If project contains 'merges' for our platform, use them as another overrides
     var merges_path = path.join(cordovaProject.root, 'merges', 'android');
     if (fs.existsSync(merges_path)) {
-        events.emit('verbose', 'Found "merges" for android platform. Copying over existing "www" files.');
+        events.emit('verbose', 'Found "merges/android" folder. Copying its contents into the android project.');
         var overrides = path.join(merges_path, '*');
         shell.cp('-rf', overrides, destinations.www);
     }
@@ -127,7 +128,7 @@ function updateProjectAccordingTo(platformConfig, locations) {
     var strings = xmlHelpers.parseElementtreeSync(locations.strings);
     strings.find('string[@name="app_name"]').text = name;
     fs.writeFileSync(locations.strings, strings.write({indent: 4}), 'utf-8');
-    events.emit('verbose', 'Wrote out Android application name to "' + name + '"');
+    events.emit('verbose', 'Wrote out android application name "' + name + '" to ' + locations.strings);
 
     // Java packages cannot support dashes
     var pkg = (platformConfig.android_packageName() || platformConfig.packageName()).replace(/-/g, '_');
@@ -153,15 +154,15 @@ function updateProjectAccordingTo(platformConfig, locations) {
     });
 
     if (java_files.length === 0) {
-        throw new CordovaError('No Java files found which extend CordovaActivity.');
+        throw new CordovaError('No Java files found that extend CordovaActivity.');
     } else if(java_files.length > 1) {
-        events.emit('log', 'Multiple candidate Java files (.java files which extend CordovaActivity) found. Guessing at the first one, ' + java_files[0]);
+        events.emit('log', 'Multiple candidate Java files that extend CordovaActivity found. Guessing at the first one, ' + java_files[0]);
     }
 
     var destFile = path.join(locations.root, 'src', pkg.replace(/\./g, '/'), path.basename(java_files[0]));
     shell.mkdir('-p', path.dirname(destFile));
     shell.sed(/package [\w\.]*;/, 'package ' + pkg + ';', java_files[0]).to(destFile);
-    events.emit('verbose', 'Wrote out Android package name to "' + pkg + '"');
+    events.emit('verbose', 'Wrote out Android package name "' + pkg + '" to ' + destFile);
 
     if (orig_pkg !== pkg) {
         // If package was name changed we need to remove old java with main activity
@@ -195,6 +196,8 @@ function default_versionCode(version) {
     if (+nums[2]) {
         versionCode += +nums[2];
     }
+
+    events.emit('verbose', 'android-versionCode not found in config.xml. Generating a code based on version in config.xml (' + version + '): ' + versionCode);
     return versionCode;
 }
 
@@ -209,7 +212,7 @@ function copyImage(src, resourcesDir, density, name) {
     }
 
     var destFilePath = path.join(destFolder, isNinePatch ? ninePatchName : name);
-    events.emit('verbose', 'copying image from ' + src + ' to ' + destFilePath);
+    events.emit('verbose', 'Copying image from ' + src + ' to ' + destFilePath);
     shell.cp('-f', src, destFilePath);
 }
 
@@ -289,7 +292,7 @@ function handleIcons(projectConfig, platformRoot) {
         }
         if (!size && !icon.density) {
             if (default_icon) {
-                events.emit('verbose', 'more than one default icon: ' + JSON.stringify(icon));
+                events.emit('verbose', 'Found extra default icon: ' + icon.src + ' (ignoring in favor of ' + default_icon.src + ')');
             } else {
                 default_icon = icon;
             }

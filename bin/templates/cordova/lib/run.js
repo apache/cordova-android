@@ -66,7 +66,7 @@ function getInstallTarget(runOptions) {
                     events.emit('warn', 'No target specified, deploying to device \'' + device_list[0] + '\'.');
                     install_target = device_list[0];
                 } else {
-                    events.emit('warn', 'No target specified, deploying to emulator');
+                    events.emit('warn', 'No target specified and no devices found, deploying to emulator');
                     install_target = '--emulator';
                 }
             });
