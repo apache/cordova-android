@@ -187,14 +187,14 @@ module.exports.start = function(emulator_ID, boot_timeout) {
             .unref();
 
         // wait for emulator to start
-        events.emit('log', 'Waiting for emulator...');
+        events.emit('log', 'Waiting for emulator to start...');
         return self.wait_for_emulator(uuid);
     }).then(function(emulatorId) {
         if (!emulatorId)
             return Q.reject(new CordovaError('Failed to start emulator'));
 
         //wait for emulator to boot up
-        process.stdout.write('Booting up emulator (this may take a while)...');
+        process.stdout.write('Waiting for emulator to boot (this may take a while)...');
         return self.wait_for_boot(emulatorId, boot_timeout)
         .then(function(success) {
             if (success) {
@@ -272,7 +272,7 @@ module.exports.wait_for_boot = function(emulator_id, time_remaining) {
  * Returns a promise.
  */
 module.exports.create_image = function(name, target) {
-    console.log('Creating avd named ' + name);
+    console.log('Creating new avd named ' + name);
     if (target) {
         return spawn('android', ['create', 'avd', '--name', name, '--target', target])
         .then(null, function(error) {
@@ -286,7 +286,7 @@ module.exports.create_image = function(name, target) {
         .then(function() {
             // TODO: This seems like another error case, even though it always happens.
             console.error('ERROR : Unable to create an avd emulator, no targets found.');
-            console.error('Please insure you have targets available by running the "android" command');
+            console.error('Ensure you have targets available by running the "android" command');
             return Q.reject();
         }, function(error) {
             console.error('ERROR : Failed to create emulator image : ');
@@ -299,7 +299,7 @@ module.exports.resolveTarget = function(target) {
     return this.list_started()
     .then(function(emulator_list) {
         if (emulator_list.length < 1) {
-            return Q.reject('No started emulators found, please start an emultor before deploying your project.');
+            return Q.reject('No running Android emulators found, please start an emulator before deploying your project.');
         }
 
         // default emulator
@@ -392,8 +392,8 @@ module.exports.install = function(givenTarget, buildResults) {
                     if (!/INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES/.test(error.toString()))
                         throw error;
 
-                    events.emit('warn', 'Uninstalling app from device and reinstalling it again because the ' +
-                        'installed app already signed with different key');
+                    events.emit('warn', 'Uninstalling app from device and reinstalling it because the ' +
+                        'currently installed app was signed with different key');
 
                     // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
                     // or the app doesn't installed at all, so no error catching needed.

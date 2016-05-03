@@ -28,7 +28,7 @@ function AndroidManifest(path) {
     this.path = path;
     this.doc = xml.parseElementtreeSync(path);
     if (this.doc.getroot().tag !== 'manifest') {
-        throw new Error(path + ' has incorrect root node name (expected "manifest")');
+        throw new Error('AndroidManifest at ' + path + ' has incorrect root node name (expected "manifest")');
     }
 }
 

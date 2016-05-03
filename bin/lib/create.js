@@ -246,7 +246,7 @@ exports.create = function(project_path, config, options, events) {
         events.emit('log', '\tActivity: ' + safe_activity_name);
         events.emit('log', '\tAndroid target: ' + target_api);
 
-        events.emit('verbose', 'Copying template files...');
+        events.emit('verbose', 'Copying android template project to ' + project_path);
 
         setShellFatal(true, function() {
             var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');

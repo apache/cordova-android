@@ -56,7 +56,7 @@ Adb.devices = function (opts) {
 };
 
 Adb.install = function (target, packagePath, opts) {
-    events.emit('verbose', 'Installing apk ' + packagePath + ' on ' + target + '...');
+    events.emit('verbose', 'Installing apk ' + packagePath + ' on target ' + target + '...');
     var args = ['-s', target, 'install'];
     if (opts && opts.replace) args.push('-r');
     return spawn('adb', args.concat(packagePath), {cwd: os.tmpdir()})
@@ -78,12 +78,12 @@ Adb.install = function (target, packagePath, opts) {
 };
 
 Adb.uninstall = function (target, packageId) {
-    events.emit('verbose', 'Uninstalling ' + packageId + ' from ' + target + '...');
+    events.emit('verbose', 'Uninstalling package ' + packageId + ' from target ' + target + '...');
     return spawn('adb', ['-s', target, 'uninstall', packageId], {cwd: os.tmpdir()});
 };
 
 Adb.shell = function (target, shellCommand) {
-    events.emit('verbose', 'Running command "' + shellCommand + '" on ' + target + '...');
+    events.emit('verbose', 'Running adb shell command "' + shellCommand + '" on target ' + target + '...');
     var args = ['-s', target, 'shell'];
     shellCommand = shellCommand.split(/\s+/);
     return spawn('adb', args.concat(shellCommand), {cwd: os.tmpdir()})
@@ -94,7 +94,7 @@ Adb.shell = function (target, shellCommand) {
 };
 
 Adb.start = function (target, activityName) {
-    events.emit('verbose', 'Starting application "' + activityName + '" on ' + target + '...');
+    events.emit('verbose', 'Starting application "' + activityName + '" on target ' + target + '...');
     return Adb.shell(target, 'am start -W -a android.intent.action.MAIN -n' + activityName)
     .catch(function (output) {
         return Q.reject(new CordovaError('Failed to start application "' +

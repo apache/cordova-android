@@ -188,18 +188,18 @@ module.exports.detectArchitecture = function(target) {
             // adb kill-server doesn't seem to do the trick.
             // Could probably find a x-platform version of killall, but I'm not actually
             // sure that this scenario even happens on non-OSX machines.
+            events.emit('verbose', 'adb timed out while detecting device/emulator architecture. Killing adb and trying again.');
             return spawn('killall', ['adb'])
             .then(function() {
-                events.emit('verbose', 'adb seems hung. retrying.');
                 return helper()
                 .then(null, function() {
                     // The double kill is sadly often necessary, at least on mac.
-                    events.emit('warn', 'Now device not found... restarting adb again.');
+                    events.emit('warn', 'adb timed out a second time while detecting device/emulator architecture. Killing adb and trying again.');
                     return spawn('killall', ['adb'])
                     .then(function() {
                         return helper()
                         .then(null, function() {
-                            return Q.reject(new CordovaError('USB is flakey. Try unplugging & replugging the device.'));
+                            return Q.reject(new CordovaError('adb timed out a third time while detecting device/emulator architecture. Try unplugging & replugging the device.'));
                         });
                     });
                 });
