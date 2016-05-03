@@ -107,7 +107,18 @@ AntBuilder.prototype.build = function(opts) {
     var args = this.getArgs(opts.buildType == 'debug' ? 'debug' : 'release', opts);
     return check_reqs.check_ant()
     .then(function() {
-        return spawn('ant', args, {stdio: 'inherit'});
+        return spawn('ant', args, {stdio: 'pipe'});
+    }).progress(function (stdio){
+        if (stdio.stderr) {
+            process.stderr.write(stdio.stderr);
+        } else {
+            process.stdout.write(stdio.stdout);
+        }
+    }).catch(function (error) {
+        if (error.toString().indexOf('Unable to resolve project target') >= 0) {
+            return check_reqs.check_android_target(error);
+        }
+        return Q.reject(error);
     });
 };
 

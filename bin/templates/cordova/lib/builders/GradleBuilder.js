@@ -203,6 +203,11 @@ GradleBuilder.prototype.build = function(opts) {
         } else {
             process.stdout.write(stdio.stdout);
         }
+    }).catch(function (error) {
+        if (error.toString().indexOf('failed to find target with hash string') >= 0) {
+            return check_reqs.check_android_target(error);
+        }
+        return Q.reject(error);
     });
 };
 
