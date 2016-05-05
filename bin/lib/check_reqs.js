@@ -257,7 +257,7 @@ module.exports.check_android_target = function(originalError) {
             'You will require:\n' +
             '1. "SDK Platform" for ' + valid_target + '\n' +
             '2. "Android SDK Platform-tools (latest)\n' +
-            '3. "Android SDK Build-tools" (latest)'
+            '3. "Android SDK Build-tools" (latest)';
         if (originalError) {
             msg = originalError + '\n' + msg;
         }

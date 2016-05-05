@@ -116,7 +116,11 @@ AntBuilder.prototype.build = function(opts) {
         }
     }).catch(function (error) {
         if (error.toString().indexOf('Unable to resolve project target') >= 0) {
-            return check_reqs.check_android_target(error);
+            return check_reqs.check_android_target(error).then(function() {
+                // If due to some odd reason - check_android_target succeeds
+                // we should still fail here.
+                return Q.reject(error);
+            });
         }
         return Q.reject(error);
     });

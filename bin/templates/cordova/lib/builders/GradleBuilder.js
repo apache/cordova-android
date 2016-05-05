@@ -205,7 +205,11 @@ GradleBuilder.prototype.build = function(opts) {
         }
     }).catch(function (error) {
         if (error.toString().indexOf('failed to find target with hash string') >= 0) {
-            return check_reqs.check_android_target(error);
+            return check_reqs.check_android_target(error).then(function() {
+                // If due to some odd reason - check_android_target succeeds
+                // we should still fail here.
+                return Q.reject(error);
+            });
         }
         return Q.reject(error);
     });
