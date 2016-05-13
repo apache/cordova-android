@@ -47,8 +47,9 @@ describe('common platform handler', function() {
         it('should throw if src not in plugin directory', function(){
             shell.mkdir('-p', project_dir);
             fs.writeFileSync(non_plugin_file, 'contents', 'utf-8');
-            expect(function(){copyFile(test_dir, '../non_plugin_file', project_dir, dest);}).
-                toThrow(new Error('"' + non_plugin_file + '" not located within plugin!'));
+            var outside_file = '../non_plugin_file';
+            expect(function(){copyFile(test_dir, outside_file, project_dir, dest);}).
+                toThrow(new Error('File "' + path.resolve(test_dir, outside_file) + '" is located outside the plugin directory "' + test_dir + '"'));
             shell.rm('-rf', test_dir);
         });
 
@@ -75,7 +76,7 @@ describe('common platform handler', function() {
             }
 
             expect(function(){copyFile(test_dir, symlink_file, project_dir, dest);}).
-                toThrow(new Error('"' + symlink_file + '" not located within plugin!'));
+                toThrow(new Error('File "' + path.resolve(test_dir, symlink_file) + '" is located outside the plugin directory "' + test_dir + '"'));
             shell.rm('-rf', project_dir);
         });
 
@@ -83,7 +84,7 @@ describe('common platform handler', function() {
             shell.mkdir('-p', java_dir);
             fs.writeFileSync(java_file, 'contents', 'utf-8');
             expect(function(){copyFile(test_dir, java_file, project_dir, non_plugin_file);}).
-                toThrow(new Error('"' + non_plugin_file + '" not located within project!'));
+                toThrow(new Error('Destination "' + path.resolve(project_dir, non_plugin_file) + '" for source file "' + path.resolve(test_dir, java_file) + '" is located outside the project'));
             shell.rm('-rf', project_dir);
         });
 
