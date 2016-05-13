@@ -79,7 +79,7 @@ AntBuilder.prototype.prepEnv = function(opts) {
             writeBuildXml(path.join(self.root, subProjects[i]));
         }
         if (propertiesObj.systemLibs.length > 0) {
-            throw new CordovaError('Project contains at least one plugin that requires a system library. This is not supported with ANT. Please build using gradle.');
+            throw new CordovaError('Project contains at least one plugin that requires a system library. This is not supported with ANT. Use gradle instead.');
         }
 
         var propertiesFile = opts.buildType + SIGNING_PROPERTIES;

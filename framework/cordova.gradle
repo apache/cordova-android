@@ -61,7 +61,7 @@ String doFindLatestInstalledBuildTools(String minBuildToolsVersion) {
         highestBuildToolsVersion
     } else {
         throw new RuntimeException(
-            "No installed build tools found. Please install the Android build tools version " +
+            "No installed build tools found. Install the Android build tools version " +
             minBuildToolsVersion + " or higher.")
     }
 }
