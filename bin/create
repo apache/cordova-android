@@ -23,34 +23,17 @@ var ConfigParser = require('cordova-common').ConfigParser;
 var Api = require('./templates/cordova/Api');
 
 var argv = require('nopt')({
-    'help' : Boolean,
-    'cli' : Boolean,
-    'shared' : Boolean,
-    'link' : Boolean,
-    'activity-name' : [String, undefined]
+    'help' : Boolean
 });
 
 if (argv.help || argv.argv.remain.length === 0) {
-    console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'create')) + ' <path_to_new_project> <package_name> <project_name> [<template_path>] [--activity-name <activity_name>] [--link]');
+    console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'create')) + ' <path_to_new_project>');
     console.log('    <path_to_new_project>: Path to your new Cordova Android project');
-    console.log('    <package_name>: Package name, following reverse-domain style convention');
-    console.log('    <project_name>: Project name');
-    console.log('    <template_path>: Path to a custom application template to use');
-    console.log('    --activity-name <activity_name>: Activity name');
-    console.log('    --link will use the CordovaLib project directly instead of making a copy.');
     process.exit(1);
 }
 
 var config = new ConfigParser(path.resolve(__dirname, 'templates/project/res/xml/config.xml'));
 
-if (argv.argv.remain[1]) config.setPackageName(argv.argv.remain[1]);
-if (argv.argv.remain[2]) config.setName(argv.argv.remain[2]);
-if (argv['activity-name']) config.setName(argv['activity-name']);
-
-var options = {
-    link: argv.link || argv.shared,
-    customTemplate: argv.argv.remain[3],
-    activityName: argv['activity-name']
-};
+var options = {}
 
 Api.createPlatform(argv.argv.remain[0], config, options).done();

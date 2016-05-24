@@ -76,13 +76,9 @@ function Api(platform, platformRootDir, events) {
  * Installs platform to specified directory and creates a platform project.
  *
  * @param  {String}  destination Destination directory, where insatll platform to
- * @param  {ConfigParser}  [config] ConfgiParser instance, used to retrieve
+ * @param  {ConfigParser}  [config] ConfigParser instance, used to retrieve
  *   project creation options, such as package id and project name.
- * @param  {Object}  [options]  An options object. The most common options are:
- * @param  {String}  [options.customTemplate]  A path to custom template, that
- *   should override the default one from platform.
- * @param  {Boolean}  [options.link]  Flag that indicates that platform's
- *   sources will be linked to installed platform instead of copying.
+ * @param  {Object}  [options]  An options object.
  * @param {EventEmitter} [events] An EventEmitter instance that will be used for
  *   logging purposes. If no EventEmitter provided, all events will be logged to
  *   console

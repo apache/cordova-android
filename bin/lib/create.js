@@ -42,6 +42,20 @@ function getFrameworkDir(projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
+function copyJs(projectPath) {
+    var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
+    shell.cp('-f', srcCordovaJsPath, path.join(projectPath, 'assets', 'www', 'cordova.js'));
+
+    // Copy the cordova.js file to platforms/<platform>/platform_www/
+    // The www dir is nuked on each prepare so we keep cordova.js in platform_www
+    shell.mkdir('-p', path.join(projectPath, 'platform_www'));
+    shell.cp('-f', srcCordovaJsPath, path.join(projectPath, 'platform_www'));
+
+    // Copy cordova-js-src directory into platform_www directory.
+    // We need these files to build cordova.js if using browserify method.
+    shell.cp('-rf', path.join(ROOT, 'cordova-js-src'), path.join(projectPath, 'platform_www'));
+}
+
 function copyJsAndLibrary(projectPath, shared, projectName) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
@@ -114,7 +128,6 @@ function writeProjectProperties(projectPath, target_api) {
                  /^(\.\.[\\\/])+framework$/m.exec(p)
                  );
     });
-    subProjects.unshift('CordovaLib');
     data = data.replace(/^\s*android\.library\.reference\.\d+=.*\n/mg, '');
     if (!/\n$/.exec(data)) {
         data += '\n';
@@ -204,12 +217,6 @@ function validateProjectName(project_name) {
  * @param   {ConfigParser}  config  Instance of ConfigParser to retrieve basic
  *   project properties.
  * @param   {Object}  [options={}]  Various options
- * @param   {String}  [options.activityName='MainActivity']  Name for the
- *   activity
- * @param   {Boolean}  [options.link=false]  Specifies whether javascript files
- *   and CordovaLib framework will be symlinked to created application.
- * @param   {String}  [options.customTemplate]  Path to project template
- *   (override)
  * @param   {EventEmitter}  [events]  An EventEmitter instance for logging
  *   events
  *
@@ -220,26 +227,21 @@ exports.create = function(project_path, config, options, events) {
     options = options || {};
 
     // Set default values for path, package and name
-    project_path = path.relative(process.cwd(), (project_path || 'CordovaExample'));
+    project_path = path.relative(process.cwd(), (project_path || 'AEMMAndroid'));
     // Check if project already exists
     if(fs.existsSync(project_path)) {
         return Q.reject(new CordovaError('Project already exists! Delete and recreate'));
     }
 
-    var package_name = config.packageName() || 'my.cordova.project';
-    var project_name = config.name() ?
-        config.name().replace(/[^\w.]/g,'_') : 'CordovaExample';
+    // TODO: for debugging
+    var package_name = config.packageName();
+    var project_name = config.name();
+    var safe_activity_name = config.android_activityName();
+    var target_api = check_reqs.get_target();
 
-    var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
-    var target_api      = check_reqs.get_target();
-
-    //Make the package conform to Java package types
-    return validatePackageName(package_name)
-    .then(function() {
-        validateProjectName(project_name);
-    }).then(function() {
+    return Q.fcall(function() {
         // Log the given values for the project
-        events.emit('log', 'Creating Cordova project for the Android platform:');
+        events.emit('log', 'Creating AEMM project for the Android platform:');
         events.emit('log', '\tPath: ' + project_path);
         events.emit('log', '\tPackage: ' + package_name);
         events.emit('log', '\tName: ' + project_name);
@@ -249,32 +251,20 @@ exports.create = function(project_path, config, options, events) {
         events.emit('verbose', 'Copying template files...');
 
         setShellFatal(true, function() {
-            var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
+            var project_template_dir = path.join(ROOT, 'bin', 'templates', 'project');
             // copy project template
+            shell.cp('-r', path.join(project_template_dir, 'libs'), project_path);
             shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
             shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
+            shell.cp(path.join(project_template_dir, 'proguard-rules.pro'), project_path);
 
-            // Manually create directories that would be empty within the template (since git doesn't track directories).
-            shell.mkdir(path.join(project_path, 'libs'));
+            // copy cordova.js
+            copyJs(project_path);
 
-            // copy cordova.js, cordova.jar
-            copyJsAndLibrary(project_path, options.link, safe_activity_name);
-
-            // interpolate the activity name and package
-            var packagePath = package_name.replace(/\./g, path.sep);
-            var activity_dir = path.join(project_path, 'src', packagePath);
-            var activity_path = path.join(activity_dir, safe_activity_name + '.java');
-            shell.mkdir('-p', activity_dir);
-            shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
-            shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
-            shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
-            shell.sed('-i', /__ID__/, package_name, activity_path);
 
             var manifest = new AndroidManifest(path.join(project_template_dir, 'AndroidManifest.xml'));
-            manifest.setPackageId(package_name)
-                .setTargetSdkVersion(target_api.split('-')[1])
-                .getActivity().setName(safe_activity_name);
+            manifest.setPackageId(package_name);
 
             var manifest_path = path.join(project_path, 'AndroidManifest.xml');
             manifest.write(manifest_path);
@@ -283,7 +273,7 @@ exports.create = function(project_path, config, options, events) {
             copyBuildRules(project_path);
         });
         // Link it to local android install.
-        writeProjectProperties(project_path, target_api);
+        writeProjectProperties(project_path, 'project.properties');
         prepBuildFiles(project_path);
         events.emit('log', generateDoneMessage('create', options.link));
     }).thenResolve(project_path);
@@ -317,7 +307,7 @@ exports.update = function(projectPath, options, events) {
         var projectName = manifest.getActivity().getName();
         var target_api = check_reqs.get_target();
 
-        copyJsAndLibrary(projectPath, options.link, projectName);
+        copyJs(projectPath);
         copyScripts(projectPath);
         copyBuildRules(projectPath);
         writeProjectProperties(projectPath, target_api);

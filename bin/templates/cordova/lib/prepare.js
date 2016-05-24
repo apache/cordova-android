@@ -37,15 +37,7 @@ module.exports.prepare = function (cordovaProject) {
     // Update own www dir with project's www assets and plugins' assets and js-files
     return Q.when(updateWwwFrom(cordovaProject, this.locations))
     .then(function () {
-        // update project according to config.xml changes.
-        return updateProjectAccordingTo(self._config, self.locations);
-    })
-    .then(function () {
-        handleIcons(cordovaProject.projectConfig, self.root);
-        handleSplashes(cordovaProject.projectConfig, self.root);
-    })
-    .then(function () {
-        self.events.emit('verbose', 'updated project successfully');
+        events.emit('verbose', 'updated project successfully');
     });
 };
 

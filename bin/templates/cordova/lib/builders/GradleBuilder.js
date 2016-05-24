@@ -45,9 +45,9 @@ util.inherits(GradleBuilder, GenericBuilder);
 
 GradleBuilder.prototype.getArgs = function(cmd, opts) {
     if (cmd == 'release') {
-        cmd = 'cdvBuildRelease';
+        cmd = 'assembleRelease';
     } else if (cmd == 'debug') {
-        cmd = 'cdvBuildDebug';
+        cmd = 'assembleDebug';
     }
     var args = [cmd, '-b', path.join(this.root, 'build.gradle')];
     if (opts.arch) {
@@ -162,7 +162,7 @@ GradleBuilder.prototype.prepEnv = function(opts) {
         // For some reason, using ^ and $ don't work.  This does the job, though.
         var distributionUrlRegex = /distributionUrl.*zip/;
         /*jshint -W069 */
-        var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'http\\://services.gradle.org/distributions/gradle-2.2.1-all.zip';
+        var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'http\\://services.gradle.org/distributions/gradle-2.10-all.zip';
         /*jshint +W069 */
         var gradleWrapperPropertiesPath = path.join(self.root, 'gradle', 'wrapper', 'gradle-wrapper.properties');
         shell.chmod('u+w', gradleWrapperPropertiesPath);

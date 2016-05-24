@@ -1,14 +1,14 @@
 {
     "name": "cordova-android",
     "version": "0.1.0-dev",
-    "description": "cordova-android release",
+    "description": "aemm-android release",
     "bin": {
         "create": "bin/create"
     },
     "main": "bin/templates/cordova/Api.js",
     "repository": {
         "type": "git",
-        "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
+        "url": "https://github.com/adobe-marketing-cloud-mobile/aemm-android.git"
     },
     "keywords": [
         "android",
