@@ -331,7 +331,7 @@ function PluginInfo(dirname) {
     ///// PluginInfo Constructor logic  /////
     self.filepath = path.join(dirname, 'plugin.xml');
     if (!fs.existsSync(self.filepath)) {
-        throw new CordovaError('Cannot find plugin.xml for plugin \'' + path.basename(dirname) + '\'. Please try adding it again.');
+        throw new CordovaError('Cannot find plugin.xml for plugin "' + path.basename(dirname) + '". Please try adding it again.');
     }
 
     self.dir = dirname;

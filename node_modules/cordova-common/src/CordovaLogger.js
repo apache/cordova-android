@@ -89,7 +89,7 @@ CordovaLogger.prototype.log = function (logLevel, message) {
     var isVerbose = this.logLevel === 'verbose';
     var cursor = this.stdoutCursor;
 
-    if(message instanceof Error || logLevel === CordovaLogger.ERROR) {
+    if (message instanceof Error || logLevel === CordovaLogger.ERROR) {
         message = formatError(message, isVerbose);
         cursor = this.stderrCursor;
     }
@@ -196,10 +196,10 @@ CordovaLogger.prototype.subscribe = function (eventEmitter) {
 function formatError(error, isVerbose) {
     var message = '';
 
-    if(error instanceof CordovaError) {
+    if (error instanceof CordovaError) {
         message = error.toString(isVerbose);
-    } else if(error instanceof Error) {
-        if(isVerbose) {
+    } else if (error instanceof Error) {
+        if (isVerbose) {
             message = error.stack;
         } else {
             message = error.message;
@@ -209,7 +209,7 @@ function formatError(error, isVerbose) {
         message = error;
     }
 
-    if(message.toUpperCase().indexOf('ERROR:') !== 0) {
+    if (typeof message === 'string' && message.toUpperCase().indexOf('ERROR:') !== 0) {
         // Needed for backward compatibility with external tools
         message = 'Error: ' + message;
     }
