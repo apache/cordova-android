@@ -32,7 +32,6 @@ var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
 module.exports.prepare = function (cordovaProject, options) {
-
     var self = this;
     var platformResourcesDir = path.relative(cordovaProject.root, path.join(this.locations.root, 'res'));
 
@@ -57,18 +56,18 @@ module.exports.prepare = function (cordovaProject, options) {
 };
 
 module.exports.clean = function (options) {
-
     // A cordovaProject isn't passed into the clean() function, because it might have
     // been called from the platform shell script rather than the CLI. Check for the
     // noPrepare option passed in by the non-CLI clean script. If that's present, or if
     // there's no config.xml found at the project root, then don't clean prepared files.
     var projectRoot = path.resolve(this.root, '../..');
     var projectConfigFile = path.join(projectRoot, 'config.xml');
-    if ((options && options.noPrepare) || !fs.existsSync(projectConfigFile)) {
+    if ((options && options.noPrepare) || !fs.existsSync(projectConfigFile) ||
+            !fs.existsSync(this.locations.configXml)) {
         return Q();
     }
 
-    var projectConfig = new ConfigParser(projectConfigFile);
+    var projectConfig = new ConfigParser(this.locations.configXml);
     var platformResourcesDir = path.relative(projectRoot, path.join(this.locations.root, 'res'));
 
     var self = this;
