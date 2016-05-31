@@ -150,7 +150,7 @@ module.exports.check_java = function() {
             // javac writes version info to stderr instead of stdout
             return tryCommand('javac -version', msg, true)
                 .then(function (output) {
-                    var match = /javac ((?:\d+\.)+(?:\d+))/i.exec(output);
+                    var match = /javac ((?:\d+\.)*(?:\d+))/i.exec(output);
                     return match && match[1];
                 });
         });
