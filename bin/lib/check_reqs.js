@@ -134,9 +134,7 @@ module.exports.check_java = function() {
                 if (firstJdkDir) {
                     // shelljs always uses / in paths.
                     firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
-                    if (!javacPath) {
-                        process.env['PATH'] += path.delimiter + path.join(firstJdkDir, 'bin');
-                    }
+                    process.env['PATH'] += path.delimiter + path.join(firstJdkDir, 'bin');
                     process.env['JAVA_HOME'] = firstJdkDir;
                 }
             }
