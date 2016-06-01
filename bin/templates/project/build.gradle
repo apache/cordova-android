@@ -26,14 +26,10 @@ buildscript {
 }
 
 repositories {
-    //jcenter()
-
-	flatDir {
-		dirs 'libs'
-	}
+	jcenter()
 }
 
-apply plugin: 'com.android.application'  // 'android'?
+apply plugin: 'com.android.application'
 
 // PLUGIN GRADLE EXTENSIONS START
 // PLUGIN GRADLE EXTENSIONS END
@@ -57,7 +53,7 @@ android {
 	}
 
 	buildTypes {
-	    // TODO are these proguard refs necessary? how are the proguard rules from the aemm aar used?
+		// TODO are these proguard refs necessary? how are the proguard rules from the aemm aar used?
 		debug {
 			minifyEnabled true
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -70,14 +66,13 @@ android {
 	}
 }
 
+apply from: 'dependencies.gradle'
+
 dependencies {
 	compile (name:'aemm-lib-release', ext:'aar')
 
-	compile 'com.android.support:appcompat-v7:23.2.1'
-	compile 'com.android.support:cardview-v7:23.2.1' // TODO why is this necessary?
-
 	compile fileTree(dir: 'libs', include: ['*.jar'], excludes:['adobeMobileLibrary-*.jar'])
 
-    // SUB-PROJECT DEPENDENCIES START
-    // SUB-PROJECT DEPENDENCIES END
+	// SUB-PROJECT DEPENDENCIES START
+	// SUB-PROJECT DEPENDENCIES END
 }

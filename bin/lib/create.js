@@ -147,6 +147,7 @@ function copyBuildRules(projectPath) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
     shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
+    shell.cp('-f', path.join(srcDir, 'dependencies.gradle'), projectPath);
 }
 
 function copyScripts(projectPath) {
@@ -273,7 +274,7 @@ exports.create = function(project_path, config, options, events) {
             copyBuildRules(project_path);
         });
         // Link it to local android install.
-        writeProjectProperties(project_path, 'project.properties');
+        writeProjectProperties(project_path, 'android-22'); // TODO? usually target_api
         prepBuildFiles(project_path);
         events.emit('log', generateDoneMessage('create', options.link));
     }).thenResolve(project_path);
