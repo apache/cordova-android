@@ -226,7 +226,7 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
         .then(function () {
             if (plugin.getFrameworks(this.platform).length === 0) return;
 
-            this.events.emit('verbose', 'Updating build files since android plugin contained <framework>');
+            selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
