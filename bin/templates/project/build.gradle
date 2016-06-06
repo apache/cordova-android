@@ -17,13 +17,11 @@
        under the License.
 */
 
-// GENERATED FILE! DO NOT EDIT!
-
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
 
     // Switch the Android Gradle plugin version requirement depending on the
@@ -33,11 +31,13 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.0'
     }
-   }
+}
 
 // Allow plugins to declare Maven dependencies via build-extras.gradle.
-repositories {
-    mavenCentral()
+allprojects {
+    repositories {
+        jcenter()
+    }
 }
 
 task wrapper(type: Wrapper) {
