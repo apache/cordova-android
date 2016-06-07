@@ -71,10 +71,16 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     var subProjects = propertiesObj.libs;
     for (var i = 0; i < subProjects.length; ++i) {
         if (subProjects[i] !== 'CordovaLib') {
-            shell.cp('-f', pluginBuildGradle, path.join(this.root, subProjects[i], 'build.gradle'));
+            var subProjectGradle = path.join(this.root, subProjects[i], 'build.gradle');
+            // Only copy the gradle if it doesn't exist for the library
+            fs.exists(subProjectGradle, function(exists) {
+              if (!exists)
+                {
+                  shell.cp('-f', pluginBuildGradle, path.join(this.root, subProjects[i], 'build.gradle'));
+                }
+            });
         }
     }
-
     var name = this.extractRealProjectNameFromManifest();
     //Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
     var settingsGradlePaths =  subProjects.map(function(p){
