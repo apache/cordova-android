@@ -167,9 +167,16 @@ function cleanWww (projectRoot, locations) {
  */
 function updateProjectAccordingTo (platformConfig, locations) {
     // Update app name by editing res/values/strings.xml
-    var name = platformConfig.name();
     var strings = xmlHelpers.parseElementtreeSync(locations.strings);
+
+    var name = platformConfig.name();
     strings.find('string[@name="app_name"]').text = name.replace(/\'/g, '\\\'');
+
+    var shortName = platformConfig.shortName && platformConfig.shortName();
+    if (shortName && shortName != name) {
+        strings.find('string[@name="launcher_name"]').text = shortName.replace(/\'/g, '\\\'');
+    }
+
     fs.writeFileSync(locations.strings, strings.write({indent: 4}), 'utf-8');
     events.emit('verbose', 'Wrote out android application name "' + name + '" to ' + locations.strings);
 
