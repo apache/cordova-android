@@ -21,6 +21,7 @@ apply plugin: 'com.android.application'
 
 buildscript {
     repositories {
+        mavenCentral()
         jcenter()
     }
 
@@ -36,6 +37,7 @@ buildscript {
 // Allow plugins to declare Maven dependencies via build-extras.gradle.
 allprojects {
     repositories {
+        mavenCentral();
         jcenter()
     }
 }
