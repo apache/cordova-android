@@ -99,10 +99,20 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     // Update dependencies within build.gradle.
     var buildGradle = fs.readFileSync(path.join(this.root, 'build.gradle'), 'utf8');
     var depsList = '';
+    var insertExclude = function(libName) {
+        if(libName.indexOf("cordova-plugin") != -1) {
+          depsList += '{\n        exclude module:("CordovaLib")\n    }\n';
+        }
+        else {
+          depsList += "\n";
+        }
+    }
     subProjects.forEach(function(p) {
         var libName=p.replace(/[/\\]/g, ':').replace(name+'-','');
-        depsList += '    debugCompile project(path: "' + libName + '", configuration: "debug")\n';
-        depsList += '    releaseCompile project(path: "' + libName + '", configuration: "release")\n';
+        depsList += '    debugCompile(project(path: "' + libName + '", configuration: "debug"))';
+        insertExclude(libName);
+        depsList += '    releaseCompile(project(path: "' + libName + '", configuration: "release"))';
+        insertExclude(libName);
     });
     // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
     var SYSTEM_LIBRARY_MAPPINGS = [
