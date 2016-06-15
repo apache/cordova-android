@@ -44,6 +44,7 @@ android {
 		targetSdkVersion 22
 		versionName "1.2.3"
 		versionCode 30
+		resValue "bool", "isPreview", "true"
 	}
 
 	sourceSets {
