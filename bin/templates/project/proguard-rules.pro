@@ -15,3 +15,9 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# Suppress notes & warnings to reduce the noise at console output.
+# Most are coming from existing libraries and we don’t expect customer to 
+# act upon any of them.
+-dontnote *.**
+-dontwarn *.**
