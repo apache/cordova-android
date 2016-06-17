@@ -3,40 +3,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="__PACKAGE__">
 
-    <application
-        android:name="com.adobe.dps.viewer.MainApplication"
-        android:allowBackup="false"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/homeScreenTitle"
-        android:largeHeap="true"
-        android:theme="@style/AppTheme">
-        
-        <activity
-            android:name="com.adobe.dps.viewer.collectionview.CollectionActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:launchMode="singleTop"
-            android:exported="true"
-            android:hardwareAccelerated="true"
-            android:theme="@style/ContentTheme.NoActionBar">
+    <application android:name="com.adobe.dps.viewer.MainApplication">
+        <activity android:name="com.adobe.dps.viewer.collectionview.CollectionActivity">
             <intent-filter>
-                <category android:name="android.intent.category.LAUNCHER"/>
-                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="dps.replaceme"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH"/>
-            </intent-filter>
-
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable"/>
         </activity>
-
     </application>
 
 </manifest>
