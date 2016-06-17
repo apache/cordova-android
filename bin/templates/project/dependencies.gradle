@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-	compile 'com.android.support:appcompat-v7:23.2.1' // Keep in sync with app/src/main/project.properties
+	compile 'com.android.support:appcompat-v7:23.2.1' // Keep in sync with lib/src/main/project.properties
 	compile 'com.android.support:cardview-v7:23.2.1'
 	compile 'com.android.support:support-v4:23.2.1'
 	compile 'com.android.support:recyclerview-v7:23.2.1'
@@ -47,7 +47,7 @@ dependencies {
 	compile 'com.facebook.stetho:stetho:1.3.1'
 	compile 'com.facebook.stetho:stetho-okhttp:1.3.1'
 
-	compile 'com.adobe.creativesdk.foundation:auth:0.6.6'
+	compile 'com.adobe.creativesdk.foundation:auth:0.9.978'
 
 	compile (name:'adobeMobileLibrary-4.8.3', ext:'jar') // https://github.com/Adobe-Marketing-Cloud/mobile-services
 
