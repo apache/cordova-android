@@ -41,7 +41,7 @@ android {
 	defaultConfig {
 		applicationId "com.adobe.dps.viewer"
 		minSdkVersion 19
-		targetSdkVersion 22
+		targetSdkVersion 23
 		versionName "1.2.3"
 		versionCode 30
 		resValue "bool", "isPreview", "true"
