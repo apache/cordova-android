@@ -26,7 +26,7 @@ var shell = require('shelljs'),
     check_reqs = require('./check_reqs'),
     ROOT    = path.join(__dirname, '..', '..');
 
-var MIN_SDK_VERSION = 14;
+var MIN_SDK_VERSION = 16;
 
 var CordovaError = require('cordova-common').CordovaError;
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
