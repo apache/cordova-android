@@ -274,7 +274,7 @@ exports.create = function(project_path, config, options, events) {
             copyBuildRules(project_path);
         });
         // Link it to local android install.
-        writeProjectProperties(project_path, 'android-22'); // TODO? usually target_api
+        writeProjectProperties(project_path, 'android-23’); // TODO? usually target_api
         prepBuildFiles(project_path);
         events.emit('log', generateDoneMessage('create', options.link));
     }).thenResolve(project_path);
