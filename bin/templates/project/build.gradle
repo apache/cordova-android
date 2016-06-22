@@ -44,7 +44,7 @@ android {
 		targetSdkVersion 23
 		versionName "1.2.3"
 		versionCode 30
-		resValue "bool", "isPreview", "true"
+		resValue "bool", "isDevPreview", "true"
 
 		proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
 	}
