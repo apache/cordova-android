@@ -45,6 +45,8 @@ android {
 		versionName "1.2.3"
 		versionCode 30
 		resValue "bool", "isPreview", "true"
+
+		proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
 	}
 
 	sourceSets {
@@ -61,15 +63,12 @@ android {
 	}
 
 	buildTypes {
-		// TODO are these proguard refs necessary? how are the proguard rules from the aemm aar used?
 		debug {
 			minifyEnabled true
-			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 		}
 
 		release {
 			minifyEnabled true
-			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 		}
 	}
 }

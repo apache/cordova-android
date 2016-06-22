@@ -258,7 +258,7 @@ exports.create = function(project_path, config, options, events) {
             shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
             shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
             shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
-            shell.cp(path.join(project_template_dir, 'proguard-rules.pro'), project_path);
+            shell.cp(path.join(project_template_dir, 'proguard-rules.txt'), project_path);
 
             // copy cordova.js
             copyJs(project_path);

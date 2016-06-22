@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Settings Version="1.0.0" xmlns="http://schemas.adobe.com/dps/2015/Jupiter">
+    <Android>
+        <Endpoints>
+            <ConfigurationService>
+                https://cs.publish.adobe.com/configurationservice/environment/prod01
+            </ConfigurationService>
+        </Endpoints>
+
+        <ScreenOrientation>
+            <Tablet>Portrait</Tablet>
+            <Phone>Portrait</Phone>
+        </ScreenOrientation>
+    </Android>
+</Settings>
+
