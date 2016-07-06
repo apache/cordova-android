@@ -148,6 +148,25 @@ module.exports.list_targets = function() {
 };
 
 /*
+ * Gets unused port for android emulator, between 5554 and 5584
+ * Returns a promise.
+ */
+module.exports.get_available_port = function () {
+    var self = this;
+
+    return self.list_started()
+    .then(function (emulators) {
+        for (var p = 5584; p >= 5554; p-=2) {
+            if (emulators.indexOf('emulator-' + p) === -1) {
+                events.emit('verbose', 'Found available port: ' + p);
+                return p;
+            }
+        }
+        throw new CordovaError('Could not find an available avd port');
+    });
+};
+
+/*
  * Starts an emulator with the given ID,
  * and returns the started ID of that emulator.
  * If no ID is given it will use the first image available,
@@ -178,17 +197,18 @@ module.exports.start = function(emulator_ID, boot_timeout) {
                 'HINT: For a faster emulator, use an Intel System Image and install the HAXM device driver\n'));
         });
     }).then(function(emulatorId) {
-        var uuid = 'cordova_emulator_' + new Date().getTime();
-        var uuidProp = 'emu.uuid=' + uuid;
-        var args = ['-avd', emulatorId, '-prop', uuidProp];
-        // Don't wait for it to finish, since the emulator will probably keep running for a long time.
-        child_process
-            .spawn('emulator', args, { stdio: 'inherit', detached: true })
-            .unref();
+        return self.get_available_port()
+        .then(function (port) {
+            var args = ['-avd', emulatorId, '-port', port];
+            // Don't wait for it to finish, since the emulator will probably keep running for a long time.
+            child_process
+                .spawn('emulator', args, { stdio: 'inherit', detached: true })
+                .unref();
 
-        // wait for emulator to start
-        events.emit('log', 'Waiting for emulator to start...');
-        return self.wait_for_emulator(uuid);
+            // wait for emulator to start
+            events.emit('log', 'Waiting for emulator to start...');
+            return self.wait_for_emulator(port);
+        });
     }).then(function(emulatorId) {
         if (!emulatorId)
             return Q.reject(new CordovaError('Failed to start emulator'));
@@ -214,29 +234,29 @@ module.exports.start = function(emulator_ID, boot_timeout) {
 };
 
 /*
- * Waits for an emulator with given uuid to apear on the started-emulator list.
- * Returns a promise with this emulator's ID.
+ * Waits for an emulator to boot on a given port.
+ * Returns this emulator's ID in a promise.
  */
-module.exports.wait_for_emulator = function(uuid) {
+module.exports.wait_for_emulator = function(port) {
     var self = this;
-    return self.list_started()
-    .then(function(new_started) {
-        var emulator_id = null;
-        var promises = [];
-
-        new_started.forEach(function (emulator) {
-            promises.push(
-                Adb.shell(emulator, 'getprop emu.uuid')
-                .then(function (output) {
-                    if (output.indexOf(uuid) >= 0) {
-                        emulator_id = emulator;
-                    }
-                })
-            );
-        });
-
-        return Q.all(promises).then(function () {
-            return emulator_id || self.wait_for_emulator(uuid);
+    return Q().then(function() {
+        var emulator_id = 'emulator-' + port;
+        return Adb.shell(emulator_id, 'getprop dev.bootcomplete')
+        .then(function (output) {
+            if (output.indexOf('1') >= 0) {
+                return emulator_id;
+            }
+            return self.wait_for_emulator(port);
+        }, function (error) {
+            if (error && error.message &&
+            (error.message.indexOf('not found') > -1) ||
+            error.message.indexOf('device offline') > -1) {
+                // emulator not yet started, continue waiting
+                return self.wait_for_emulator(port);
+            } else {
+                // something unexpected has happened
+                throw error;
+            }
         });
      });
 };
