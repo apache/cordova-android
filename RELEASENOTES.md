@@ -20,6 +20,10 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 5.2.1 (Jul 11, 2016)
+* [CB-9489](https://issues.apache.org/jira/browse/CB-9489) Fixed "endless waiting for emulator" issue
+* [CB-11481](https://issues.apache.org/jira/browse/CB-11481) android-library is deprecated use com.android.library instead
+
 ### 5.2.0 (Jun 29, 2016)
 * [CB-11383](https://issues.apache.org/jira/browse/CB-11383) Update to gradle for using `jcenter` and correct Application plugin
 * [CB-11365](https://issues.apache.org/jira/browse/CB-11365) fixed plugin rm issue with emit being `undefined`
@@ -68,7 +72,7 @@
 * [CB-10443](https://issues.apache.org/jira/browse/CB-10443) Fix `this.root` null reference
 * [CB-10421](https://issues.apache.org/jira/browse/CB-10421) Fixes exception when calling run script with `--help` option
 * updated `.gitignore`
-* [CB-10406](https://issues.apache.org/jira/browse/CB-10406) Fixes an exception, thrown when building using Ant. 
+* [CB-10406](https://issues.apache.org/jira/browse/CB-10406) Fixes an exception, thrown when building using Ant.
 * [CB-10157](https://issues.apache.org/jira/browse/CB-10157) Uninstall app from device/emulator only when signed apk is already installed
 
 ### 5.1.0 (Jan 19, 2016)
@@ -78,7 +82,7 @@
 * Update theme to `Theme.DeviceDefault.NoActionBar`
 * [CB-10014](https://issues.apache.org/jira/browse/CB-10014) Set gradle `applicationId` to `package name`.
 * [CB-9949](https://issues.apache.org/jira/browse/CB-9949) Fixing menu button event not fired in **Android**
-* [CB-9479](https://issues.apache.org/jira/browse/CB-9479) Fixing the conditionals again, we should 
+* [CB-9479](https://issues.apache.org/jira/browse/CB-9479) Fixing the conditionals again, we should
 * [CB-8917](https://issues.apache.org/jira/browse/CB-8917) New Plugin API for passing results on resume after Activity destruction
 * [CB-9971](https://issues.apache.org/jira/browse/CB-9971) Suppress `gradlew _JAVA_OPTIONS` output during build
 * [CB-9836](https://issues.apache.org/jira/browse/CB-9836) Add `.gitattributes` to prevent `CRLF` line endings in repos
@@ -95,7 +99,7 @@
 * Adds licence header to Adb to pass rat audit
 * [CB-9835](https://issues.apache.org/jira/browse/CB-9835) Downgrade `properties-parser` to prevent failures in Node < 4.x
 * [CB-9782](https://issues.apache.org/jira/browse/CB-9782) Implements PlatformApi contract for Android platform.
-* [CB-9826](https://issues.apache.org/jira/browse/CB-9826) Fixed `test-build` script on windows. 
+* [CB-9826](https://issues.apache.org/jira/browse/CB-9826) Fixed `test-build` script on windows.
 * Refactor of the Cordova Plugin/Permissions API
 * Manually updating version to 5.0.0-dev for engine tags
 * Bump up to API level 23
@@ -110,7 +114,7 @@
 * [CB-9172](https://issues.apache.org/jira/browse/CB-9172) Improved emulator deploy stability. This closes #188.
 * [CB-9404](https://issues.apache.org/jira/browse/CB-9404) Fixed an exception when path contained -debug or -release
 * [CB-8320](https://issues.apache.org/jira/browse/CB-8320) Setting up gradle so we can use CordovaLib as a standard Android Library
-* [CB-9185](https://issues.apache.org/jira/browse/CB-9185) Fixed an issue when unsigned apks couldn't be found. 
+* [CB-9185](https://issues.apache.org/jira/browse/CB-9185) Fixed an issue when unsigned apks couldn't be found.
 * [CB-9397](https://issues.apache.org/jira/browse/CB-9397) Fixes minor issues with `cordova requirements android`
 * [CB-9389](https://issues.apache.org/jira/browse/CB-9389) Fixes build/check_reqs hang
 
@@ -177,7 +181,7 @@
 
 * Removed Intent Functionality from Preferences - Preferences can no longer be set by intents
 
-### Release 4.0.1 (April 2015) ### 
+### Release 4.0.1 (April 2015) ###
 
 * Bug fixed where platform failed to install on a version downgrade
 
