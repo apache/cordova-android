@@ -42,4 +42,7 @@ public class CordovaActivityTest extends BaseCordovaIntegrationTest {
         String onPageFinishedUrl = testActivity.onPageFinishedUrl.take();
         assertEquals(MainTestActivity.START_URL, onPageFinishedUrl);
     }
+    protected void createViews() {
+        assertTrue(testView instanceof SystemWebView);
+    }
 }
