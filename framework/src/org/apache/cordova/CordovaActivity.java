@@ -175,9 +175,13 @@ public class CordovaActivity extends Activity {
         setContentView(appView.getView());
 
         if (preferences.contains("BackgroundColor")) {
-            int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
-            // Background of activity:
-            appView.getView().setBackgroundColor(backgroundColor);
+            try {
+                int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
+                // Background of activity:
+                appView.getView().setBackgroundColor(backgroundColor);
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
         }
 
         appView.getView().requestFocusFromTouch();
