@@ -179,7 +179,7 @@ public class CordovaActivity extends Activity {
                 int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
                 // Background of activity:
                 appView.getView().setBackgroundColor(backgroundColor);
-            }catch (Exception e){
+            }catch (NumberFormatException e){
                 System.out.println(e.getMessage());
             }
         }
