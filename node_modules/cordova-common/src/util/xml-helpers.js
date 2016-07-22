@@ -29,6 +29,9 @@ var fs = require('fs')
   , et = require('elementtree')
   ;
 
+  var ROOT = /^\/([^\/]*)/,
+      ABSOLUTE = /^\/([^\/]*)\/(.*)/;
+
 module.exports = {
     // compare two et.XML nodes, see if they match
     // compares tagName, text, attributes and children (recursively)
@@ -68,7 +71,7 @@ module.exports = {
 
     // adds node to doc at selector, creating parent if it doesn't exist
     graftXML: function(doc, nodes, selector, after) {
-        var parent = resolveParent(doc, selector);
+        var parent = module.exports.resolveParent(doc, selector);
         if (!parent) {
             //Try to create the parent recursively if necessary
             try {
@@ -79,7 +82,7 @@ module.exports = {
             } catch (e) {
                 return false;
             }
-            parent = resolveParent(doc, selector);
+            parent = module.exports.resolveParent(doc, selector);
             if (!parent) return false;
         }
 
@@ -97,9 +100,54 @@ module.exports = {
         return true;
     },
 
+    // adds new attributes to doc at selector
+    // Will only merge if attribute has not been modified already or --force is used
+    graftXMLMerge: function(doc, nodes, selector, xml) {
+        var target = module.exports.resolveParent(doc, selector);
+        if (!target) return false;
+
+        // saves the attributes of the original xml before making changes
+        xml.oldAttrib = _.extend({}, target.attrib);
+
+        nodes.forEach(function (node) {
+            var attributes = node.attrib;
+            for (var attribute in attributes) {
+                target.attrib[attribute] = node.attrib[attribute];
+            }
+        });
+
+        return true;
+    },
+
+    // overwrite all attributes to doc at selector with new attributes
+    // Will only overwrite if attribute has not been modified already or --force is used
+    graftXMLOverwrite: function(doc, nodes, selector, xml) {
+        var target = module.exports.resolveParent(doc, selector);
+        if (!target) return false;
+
+        // saves the attributes of the original xml before making changes
+        xml.oldAttrib = _.extend({}, target.attrib);
+
+        // remove old attributes from target
+        var targetAttributes = target.attrib;
+        for (var targetAttribute in targetAttributes) {
+            delete targetAttributes[targetAttribute];
+        }
+
+        // add new attributes to target
+        nodes.forEach(function (node) {
+            var attributes = node.attrib;
+            for (var attribute in attributes) {
+                target.attrib[attribute] = node.attrib[attribute];
+            }
+        });
+
+        return true;
+    },
+
     // removes node from doc at selector
     pruneXML: function(doc, nodes, selector) {
-        var parent = resolveParent(doc, selector);
+        var parent = module.exports.resolveParent(doc, selector);
         if (!parent) return false;
 
         nodes.forEach(function (node) {
@@ -114,6 +162,19 @@ module.exports = {
         return true;
     },
 
+    // restores attributes from doc at selector
+    pruneXMLRestore: function(doc, selector, xml) {
+        var target = module.exports.resolveParent(doc, selector);
+        if (!target) return false;
+
+        if (xml.oldAttrib) {
+            target.attrib = _.extend({}, xml.oldAttrib);
+        }
+
+        return true;
+    },
+
+
     parseElementtreeSync: function (filename) {
         var contents = fs.readFileSync(filename, 'utf-8');
         if(contents) {
@@ -121,6 +182,30 @@ module.exports = {
             contents = contents.substring(contents.indexOf('<'));
         }
         return new et.ElementTree(et.XML(contents));
+    },
+
+    resolveParent: function (doc, selector) {
+        var parent, tagName, subSelector;
+
+        // handle absolute selector (which elementtree doesn't like)
+        if (ROOT.test(selector)) {
+            tagName = selector.match(ROOT)[1];
+            // test for wildcard "any-tag" root selector
+            if (tagName == '*' || tagName === doc._root.tag) {
+                parent = doc._root;
+
+                // could be an absolute path, but not selecting the root
+                if (ABSOLUTE.test(selector)) {
+                    subSelector = selector.match(ABSOLUTE)[2];
+                    parent = parent.find(subSelector);
+                }
+            } else {
+                return false;
+            }
+        } else {
+            parent = doc.find(selector);
+        }
+        return parent;
     }
 };
 
@@ -150,33 +235,6 @@ function uniqueChild(node, parent) {
         }
         return true;
     }
-}
-
-var ROOT = /^\/([^\/]*)/,
-    ABSOLUTE = /^\/([^\/]*)\/(.*)/;
-
-function resolveParent(doc, selector) {
-    var parent, tagName, subSelector;
-
-    // handle absolute selector (which elementtree doesn't like)
-    if (ROOT.test(selector)) {
-        tagName = selector.match(ROOT)[1];
-        // test for wildcard "any-tag" root selector
-        if (tagName == '*' || tagName === doc._root.tag) {
-            parent = doc._root;
-
-            // could be an absolute path, but not selecting the root
-            if (ABSOLUTE.test(selector)) {
-                subSelector = selector.match(ABSOLUTE)[2];
-                parent = parent.find(subSelector);
-            }
-        } else {
-            return false;
-        }
-    } else {
-        parent = doc.find(selector);
-    }
-    return parent;
 }
 
 // Find the index at which to insert an entry. After is a ;-separated priority list
@@ -257,19 +315,19 @@ function mergeXml(src, dest, platform, clobber) {
             dest.append(destChild);
         }
     }
-    
+
     function removeDuplicatePreferences(xml) {
         // reduce preference tags to a hashtable to remove dupes
         var prefHash = xml.findall('preference[@name][@value]').reduce(function(previousValue, currentValue) {
             previousValue[ currentValue.attrib.name ] = currentValue.attrib.value;
             return previousValue;
         }, {});
-        
+
         // remove all preferences
         xml.findall('preference[@name][@value]').forEach(function(pref) {
             xml.remove(pref);
         });
-        
+
         // write new preferences
         Object.keys(prefHash).forEach(function(key, index) {
             var element = et.SubElement(xml, 'preference');
