@@ -162,8 +162,8 @@ PlatformJson.prototype.removePluginMetadata = function (pluginInfo) {
     return this;
 };
 
-PlatformJson.prototype.addInstalledPluginToPrepareQueue = function(pluginDirName, vars, is_top_level) {
-    this.root.prepare_queue.installed.push({'plugin':pluginDirName, 'vars':vars, 'topLevel':is_top_level});
+PlatformJson.prototype.addInstalledPluginToPrepareQueue = function(pluginDirName, vars, is_top_level, force) {
+    this.root.prepare_queue.installed.push({'plugin':pluginDirName, 'vars':vars, 'topLevel':is_top_level, 'force':force});
 };
 
 PlatformJson.prototype.addUninstalledPluginToPrepareQueue = function(pluginId, is_top_level) {
@@ -276,4 +276,3 @@ function ModuleMetadata (pluginId, jsModule) {
 }
 
 module.exports = PlatformJson;
-

@@ -123,7 +123,7 @@ PluginManager.prototype.doOperation = function (operation, plugin, options) {
         if (operation === PluginManager.INSTALL) {
             // Ignore passed `is_top_level` option since platform itself doesn't know
             // anything about managing dependencies - it's responsibility of caller.
-            self.munger.add_plugin_changes(plugin, options.variables, /*is_top_level=*/true, /*should_increment=*/true);
+            self.munger.add_plugin_changes(plugin, options.variables, /*is_top_level=*/true, /*should_increment=*/true, options.force);
             self.munger.platformJson.addPluginMetadata(plugin);
         } else {
             self.munger.remove_plugin_changes(plugin, /*is_top_level=*/true);

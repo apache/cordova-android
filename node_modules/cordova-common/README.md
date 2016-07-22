@@ -28,7 +28,7 @@ Expoeses shared functionality used by [cordova-lib](https://github.com/apache/co
 Represents special instance of NodeJS EventEmitter which is intended to be used to post events to cordova-lib and cordova-cli
 
 Usage:
-```
+```js
 var events = require('cordova-common').events;
 events.emit('warn', 'Some warning message')
 ```
@@ -41,7 +41,7 @@ An error class used by Cordova to throw cordova-specific errors. The CordovaErro
 
 Usage:
 
-```
+```js
 var CordovaError = require('cordova-common').CordovaError;
 throw new CordovaError('Some error message', SOME_ERR_CODE);
 ```
@@ -53,7 +53,7 @@ See [CordovaError](src/CordovaError/CordovaError.js) for supported error codes.
 Exposes functionality to deal with cordova project `config.xml` files. For ConfigParser API reference check [ConfigParser Readme](src/ConfigParser/README.md).
 
 Usage:
-```
+```js
 var ConfigParser = require('cordova-common').ConfigParser;
 var appConfig = new ConfigParser('path/to/cordova-app/config.xml');
 console.log(appconfig.name() + ':' + appConfig.version());
@@ -64,7 +64,7 @@ console.log(appconfig.name() + ':' + appConfig.version());
 `PluginInfo` is a wrapper for cordova plugins' `plugin.xml` files. This class may be instantiated directly or via `PluginInfoProvider`. The difference is that `PluginInfoProvider` caches `PluginInfo` instances based on plugin source directory.
 
 Usage:
-```
+```js
 var PluginInfo: require('cordova-common').PluginInfo;
 var PluginInfoProvider: require('cordova-common').PluginInfoProvider;
 
@@ -80,7 +80,7 @@ console.log('The plugin ' + plugin1.id + ' has version ' + plugin1.version)
 Utility module for dealing with sequential tasks. Provides a set of tasks that are needed to be done and reverts all tasks that are already completed if one of those tasks fail to complete. Used internally by cordova-lib and platform's plugin installation routines.
 
 Usage:
-```
+```js
 var ActionStack = require('cordova-common').ActionStack;
 var stack = new ActionStack()
 
@@ -104,7 +104,7 @@ stack.process()
 Module for spawning child processes with some advanced logic.
 
 Usage:
-```
+```js
 var superspawn = require('cordova-common').superspawn;
 superspawn.spawn('adb', ['devices'])
 .progress(function(data){
@@ -121,7 +121,7 @@ superspawn.spawn('adb', ['devices'])
 A set of utility methods for dealing with xml files.
 
 Usage:
-```
+```js
 var xml = require('cordova-common').xmlHelpers;
 
 var xmlDoc1 = xml.parseElementtreeSync('some/xml/file');
