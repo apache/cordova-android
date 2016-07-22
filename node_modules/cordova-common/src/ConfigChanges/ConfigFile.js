@@ -103,7 +103,16 @@ ConfigFile.prototype.graft_child = function ConfigFile_graft_child(selector, xml
     var result;
     if (self.type === 'xml') {
         var xml_to_graft = [modules.et.XML(xml_child.xml)];
-        result = modules.xml_helpers.graftXML(self.data, xml_to_graft, selector, xml_child.after);
+        switch (xml_child.mode) {
+            case 'merge':
+                result = modules.xml_helpers.graftXMLMerge(self.data, xml_to_graft, selector, xml_child);
+                break;
+            case 'overwrite':
+                result = modules.xml_helpers.graftXMLOverwrite(self.data, xml_to_graft, selector, xml_child);
+                break;
+            default:
+                result = modules.xml_helpers.graftXML(self.data, xml_to_graft, selector, xml_child.after);
+        }
         if ( !result) {
             throw new Error('Unable to graft xml at selector "' + selector + '" from "' + filepath + '" during config install');
         }
@@ -123,7 +132,14 @@ ConfigFile.prototype.prune_child = function ConfigFile_prune_child(selector, xml
     var result;
     if (self.type === 'xml') {
         var xml_to_graft = [modules.et.XML(xml_child.xml)];
-        result = modules.xml_helpers.pruneXML(self.data, xml_to_graft, selector);
+        switch (xml_child.mode) {
+            case 'merge':
+            case 'overwrite':
+                result = modules.xml_helpers.pruneXMLRestore(self.data, selector, xml_child);
+                break;
+            default:
+                result = modules.xml_helpers.pruneXML(self.data, xml_to_graft, selector);
+        }
     } else {
         // plist file
         result = modules.plist_helpers.prunePLIST(self.data, xml_child.xml, selector);

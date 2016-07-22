@@ -52,6 +52,9 @@ exports.deep_remove = function deep_remove(obj, keys /* or key1, key2 .... */ ) 
             return element.xml == k.xml;
         });
         if (found) {
+            if (parentArray[index].oldAttrib) {
+                k.oldAttrib = _.extend({}, parentArray[index].oldAttrib);
+            }
             found.count -= k.count;
             if (found.count > 0) {
                 return false;

@@ -20,6 +20,9 @@
 -->
 # Cordova-common Release Notes
 
+### 1.4.0 (Jul 12, 2016)
+* [CB-11023](https://issues.apache.org/jira/browse/CB-11023) Add edit-config functionality
+
 ### 1.3.0 (May 12, 2016)
 * [CB-11259](https://issues.apache.org/jira/browse/CB-11259): Improving prepare and build logging
 * [CB-11194](https://issues.apache.org/jira/browse/CB-11194) Improve cordova load time

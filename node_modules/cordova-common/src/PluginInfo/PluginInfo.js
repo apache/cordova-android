@@ -146,6 +146,22 @@ function PluginInfo(dirname) {
         return configFile;
     }
 
+    self.getEditConfigs = getEditConfigs;
+    function getEditConfigs(platform) {
+        var editConfigs = _getTags(self._et, 'edit-config', platform, _parseEditConfigs);
+        return editConfigs;
+    }
+
+    function _parseEditConfigs(tag) {
+        var editConfig =
+        { file : tag.attrib['file']
+        , target : tag.attrib['target']
+        , mode : tag.attrib['mode']
+        , xmls : tag.getchildren()
+        };
+        return editConfig;
+    }
+
     // <info> tags, both global and within a <platform>
     // TODO (kamrik): Do we ever use <info> under <platform>? Example wanted.
     self.getInfo = getInfo;
@@ -382,7 +398,7 @@ function _getTags(pelem, tag, platform, transform) {
     return tags;
 }
 
-// Same as _getTags() but only looks inside a platfrom section.
+// Same as _getTags() but only looks inside a platform section.
 function _getTagsInPlatform(pelem, tag, platform, transform) {
     var platformTag = pelem.find('./platform[@name="' + platform + '"]');
     var tags = platformTag ? platformTag.findall(tag) : [];
