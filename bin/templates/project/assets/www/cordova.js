@@ -1,5 +1,5 @@
 // Platform: android
-// 2fd4bcb84048415922d13d80d35b8d1668e8e150
+// d403ce434788ffe1937711d6ebcbcc837fcbcb14
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -2083,7 +2083,7 @@ utils.clone = function(obj) {
 
     retVal = {};
     for(i in obj){
-        if(!(i in retVal) || retVal[i] != obj[i]) {
+        if((!(i in retVal) || retVal[i] != obj[i]) && typeof obj[i] != 'undefined') {
             retVal[i] = utils.clone(obj[i]);
         }
     }
