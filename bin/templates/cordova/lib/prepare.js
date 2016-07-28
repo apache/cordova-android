@@ -48,6 +48,7 @@ module.exports.prepare = function (cordovaProject, options) {
     .then(function () {
         updateIcons(cordovaProject, path.relative(cordovaProject.root, self.locations.res));
         updateSplashes(cordovaProject, path.relative(cordovaProject.root, self.locations.res));
+        updateFileResources(cordovaProject, path.relative(cordovaProject.root, self.locations.root));
     })
     .then(function () {
         events.emit('verbose', 'Prepared android project successfully');
@@ -72,6 +73,7 @@ module.exports.clean = function (options) {
         cleanWww(projectRoot, self.locations);
         cleanIcons(projectRoot, projectConfig, path.relative(projectRoot, self.locations.res));
         cleanSplashes(projectRoot, projectConfig, path.relative(projectRoot, self.locations.res));
+        cleanFileResources(projectRoot, projectConfig, path.relative(projectRoot, self.locations.root));
     });
 };
 
@@ -399,6 +401,44 @@ function mapImageResources(rootDir, subDir, type, resourceName) {
         pathMap[imagePath] = null;
     });
     return pathMap;
+}
+
+
+function updateFileResources(cordovaProject, platformDir) {
+    var files = cordovaProject.projectConfig.getFileResources('android');
+
+    // if there are resource-file elements in config.xml
+    if (files.length === 0) {
+        events.emit('verbose', 'This app does not have additional resource files defined');
+        return;
+    }
+
+    var resourceMap = {};
+    files.forEach(function(res) {
+        var targetPath = path.join(platformDir, res.target);
+        resourceMap[targetPath] = res.src;
+    });
+
+    events.emit('verbose', 'Updating resource files at ' + platformDir);
+    FileUpdater.updatePaths(
+        resourceMap, { rootDir: cordovaProject.root }, logFileOp);
+}
+
+
+function cleanFileResources(projectRoot, projectConfig, platformDir) {
+    var files = projectConfig.getFileResources('android');
+    if (files.length > 0) {
+        events.emit('verbose', 'Cleaning resource files at ' + platformDir);
+
+        var resourceMap = {};
+        files.forEach(function(res) {
+            var filePath = path.join(platformDir, res.target);
+            resourceMap[filePath] = null;
+        });
+
+        FileUpdater.updatePaths(
+                resourceMap, { rootDir: projectRoot, all: true}, logFileOp);
+    }
 }
 
 /**
