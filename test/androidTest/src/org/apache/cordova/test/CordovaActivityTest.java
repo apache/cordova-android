@@ -43,7 +43,6 @@ public class CordovaActivityTest extends BaseCordovaIntegrationTest {
         assertEquals(MainTestActivity.START_URL, onPageFinishedUrl);
     }
     protected void createViews() {
-
         assertTrue(testView instanceof SystemWebView);
     }
 }
