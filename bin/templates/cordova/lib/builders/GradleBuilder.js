@@ -101,17 +101,17 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     var depsList = '';
     var root = this.root;
     var insertExclude = function(p) {
-          var gradlePath = path.join(root, p, "build.gradle");
-          var projectGradleFile = fs.readFileSync(gradlePath, "utf-8");
-          if(projectGradleFile.indexOf("CordovaLib") != -1) {
+          var gradlePath = path.join(root, p, 'build.gradle');
+          var projectGradleFile = fs.readFileSync(gradlePath, 'utf-8');
+          if(projectGradleFile.indexOf('CordovaLib') != -1) {
             depsList += '{\n        exclude module:("CordovaLib")\n    }\n';
           }
           else {
-            depsList +="\n";
+            depsList +='\n';
           }
     }
     subProjects.forEach(function(p) {
-        console.log("Subproject Path: " + p);
+        console.log('Subproject Path: ' + p);
         var libName=p.replace(/[/\\]/g, ':').replace(name+'-','');
         depsList += '    debugCompile(project(path: "' + libName + '", configuration: "debug"))';
         insertExclude(p);
