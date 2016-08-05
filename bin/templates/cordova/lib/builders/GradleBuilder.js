@@ -69,16 +69,17 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     var pluginBuildGradle = path.join(this.root, 'cordova', 'lib', 'plugin-build.gradle');
     var propertiesObj = this.readProjectProperties();
     var subProjects = propertiesObj.libs;
+    var checkAndCopy = function(subProject, root) {
+      var subProjectGradle = path.join(root, subProject, 'build.gradle');
+      fs.exists(subProject, function(exists) {
+        if (!exists) {
+          shell.cp('-f', pluginBuildGradle, subProjectGradle);
+        }
+      });
+    };
     for (var i = 0; i < subProjects.length; ++i) {
         if (subProjects[i] !== 'CordovaLib') {
-            var subProjectGradle = path.join(this.root, subProjects[i], 'build.gradle');
-            // Only copy the gradle if it doesn't exist for the library
-            fs.exists(subProjectGradle, function(exists) {
-              if (!exists)
-                {
-                  shell.cp('-f', pluginBuildGradle, path.join(this.root, subProjects[i], 'build.gradle'));
-                }
-            });
+          checkAndCopy(subProjects[i], this.root);
         }
     }
     var name = this.extractRealProjectNameFromManifest();
@@ -109,7 +110,7 @@ GradleBuilder.prototype.prepBuildFiles = function() {
           else {
             depsList +='\n';
           }
-    }
+    };
     subProjects.forEach(function(p) {
         console.log('Subproject Path: ' + p);
         var libName=p.replace(/[/\\]/g, ':').replace(name+'-','');
