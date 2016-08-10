@@ -71,11 +71,13 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     var subProjects = propertiesObj.libs;
     var checkAndCopy = function(subProject, root) {
       var subProjectGradle = path.join(root, subProject, 'build.gradle');
-      fs.exists(subProject, function(exists) {
-        if (!exists) {
+      // This is the future-proof way of checking if a file exists
+      // This must be synchronous to satisfy a Travis test
+      try {
+          fs.accessSync(subProjectGradle, fs.F_OK);
+      } catch (e) {
           shell.cp('-f', pluginBuildGradle, subProjectGradle);
-        }
-      });
+      }
     };
     for (var i = 0; i < subProjects.length; ++i) {
         if (subProjects[i] !== 'CordovaLib') {
