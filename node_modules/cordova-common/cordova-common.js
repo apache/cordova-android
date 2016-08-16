@@ -27,6 +27,7 @@ addProperty(module, 'superspawn', './src/superspawn');
 addProperty(module, 'ActionStack', './src/ActionStack');
 addProperty(module, 'CordovaError', './src/CordovaError/CordovaError');
 addProperty(module, 'CordovaLogger', './src/CordovaLogger');
+addProperty(module, 'CordovaCheck', './src/CordovaCheck');
 addProperty(module, 'CordovaExternalToolErrorContext', './src/CordovaError/CordovaExternalToolErrorContext');
 addProperty(module, 'PlatformJson', './src/PlatformJson');
 addProperty(module, 'ConfigParser', './src/ConfigParser/ConfigParser');

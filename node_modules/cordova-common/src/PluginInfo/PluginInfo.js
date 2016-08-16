@@ -318,6 +318,7 @@ function PluginInfo(dirname) {
                 parent: el.attrib.parent,
                 custom: isStrTrue(el.attrib.custom),
                 src: el.attrib.src,
+                spec: el.attrib.spec,
                 weak: isStrTrue(el.attrib.weak),
                 versions: el.attrib.versions,
                 targetDir: el.attrib['target-dir'],
