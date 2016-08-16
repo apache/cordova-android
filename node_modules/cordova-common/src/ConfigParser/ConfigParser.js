@@ -90,20 +90,24 @@ function findElementAttributeValue(attributeName, elems) {
 }
 
 ConfigParser.prototype = {
+    getAttribute: function(attr) {
+        return this.doc.getroot().attrib[attr];
+    },
+
     packageName: function(id) {
-        return this.doc.getroot().attrib['id'];
+        return this.getAttribute('id');
     },
     setPackageName: function(id) {
         this.doc.getroot().attrib['id'] = id;
     },
     android_packageName: function() {
-        return this.doc.getroot().attrib['android-packageName'];
+        return this.getAttribute('android-packageName');
     },
     android_activityName: function() {
-	return this.doc.getroot().attrib['android-activityName'];
+        return this.getAttribute('android-activityName');
     },
     ios_CFBundleIdentifier: function() {
-        return this.doc.getroot().attrib['ios-CFBundleIdentifier'];
+        return this.getAttribute('ios-CFBundleIdentifier');
     },
     name: function() {
         return getNodeTextSafe(this.doc.find('name'));
@@ -120,16 +124,16 @@ ConfigParser.prototype = {
         el.text = text;
     },
     version: function() {
-        return this.doc.getroot().attrib['version'];
+        return this.getAttribute('version');
     },
     windows_packageVersion: function() {
-        return this.doc.getroot().attrib('windows-packageVersion');
+        return this.getAttribute('windows-packageVersion');
     },
     android_versionCode: function() {
-        return this.doc.getroot().attrib['android-versionCode'];
+        return this.getAttribute('android-versionCode');
     },
     ios_CFBundleVersion: function() {
-        return this.doc.getroot().attrib['ios-CFBundleVersion'];
+        return this.getAttribute('ios-CFBundleVersion');
     },
     setVersion: function(value) {
         this.doc.getroot().attrib['version'] = value;

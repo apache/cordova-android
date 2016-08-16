@@ -44,23 +44,9 @@ module.exports = {
             return false;
         }
 
-        var oneAttribKeys = Object.keys(one.attrib),
-            twoAttribKeys = Object.keys(two.attrib),
-            i = 0, attribName;
+        if (!attribMatch(one, two)) return false;
 
-        if (oneAttribKeys.length != twoAttribKeys.length) {
-            return false;
-        }
-
-        for (i; i < oneAttribKeys.length; i++) {
-            attribName = oneAttribKeys[i];
-
-            if (one.attrib[attribName] != two.attrib[attribName]) {
-                return false;
-            }
-        }
-
-        for (i; i < one._children.length; i++) {
+        for (var i = 0; i < one._children.length; i++) {
             if (!module.exports.equalNodes(one._children[i], two._children[i])) {
                 return false;
             }
@@ -287,33 +273,30 @@ function mergeXml(src, dest, platform, clobber) {
             query = srcTag + '',
             shouldMerge = true;
 
-        if (BLACKLIST.indexOf(srcTag) === -1) {
-            if (SINGLETONS.indexOf(srcTag) !== -1) {
-                foundChild = dest.find(query);
-                if (foundChild) {
-                    destChild = foundChild;
-                    dest.remove(destChild);
-                }
-            } else {
-                //Check for an exact match and if you find one don't add
-                Object.getOwnPropertyNames(srcChild.attrib).forEach(function (attribute) {
-                    query += '[@' + attribute + '="' + srcChild.attrib[attribute] + '"]';
-                });
-                var foundChildren = dest.findall(query);
-                for(var i = 0; i < foundChildren.length; i++) {
-                    foundChild = foundChildren[i];
-                    if (foundChild && textMatch(srcChild, foundChild) && (Object.keys(srcChild.attrib).length==Object.keys(foundChild.attrib).length)) {
-                        destChild = foundChild;
-                        dest.remove(destChild);
-                        shouldMerge = false;
-                        break;
-                    }
-                }
-            }
+        if (BLACKLIST.indexOf(srcTag) !== -1) return;
 
-            mergeXml(srcChild, destChild, platform, clobber && shouldMerge);
-            dest.append(destChild);
+        if (SINGLETONS.indexOf(srcTag) !== -1) {
+            foundChild = dest.find(query);
+            if (foundChild) {
+                destChild = foundChild;
+                dest.remove(destChild);
+            }
+        } else {
+            //Check for an exact match and if you find one don't add
+            var mergeCandidates = dest.findall(query)
+            .filter(function (foundChild) {
+                return foundChild && textMatch(srcChild, foundChild) && attribMatch(srcChild, foundChild);
+            });
+
+            if (mergeCandidates.length > 0) {
+                destChild = mergeCandidates[0];
+                dest.remove(destChild);
+                shouldMerge = false;
+            }
         }
+
+        mergeXml(srcChild, destChild, platform, clobber && shouldMerge);
+        dest.append(destChild);
     }
 
     function removeDuplicatePreferences(xml) {
@@ -344,4 +327,23 @@ function textMatch(elm1, elm2) {
     var text1 = elm1.text ? elm1.text.replace(/\s+/, '') : '',
         text2 = elm2.text ? elm2.text.replace(/\s+/, '') : '';
     return (text1 === '' || text1 === text2);
+}
+
+function attribMatch(one, two) {
+    var oneAttribKeys = Object.keys(one.attrib);
+    var twoAttribKeys = Object.keys(two.attrib);
+
+    if (oneAttribKeys.length != twoAttribKeys.length) {
+        return false;
+    }
+
+    for (var i = 0; i < oneAttribKeys.length; i++) {
+        var attribName = oneAttribKeys[i];
+
+        if (one.attrib[attribName] != two.attrib[attribName]) {
+            return false;
+        }
+    }
+
+    return true;
 }
