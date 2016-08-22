@@ -20,8 +20,6 @@ package org.apache.cordova;
 
 import org.json.JSONArray;
 
-import android.util.Log;
-
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 import org.json.JSONObject;
@@ -38,15 +36,15 @@ public class CallbackContext {
         this.callbackId = callbackId;
         this.webView = webView;
     }
-    
+
     public boolean isFinished() {
         return finished;
     }
-    
+
     public boolean isChangingThreads() {
         return changingThreads > 0;
     }
-    
+
     public String getCallbackId() {
         return callbackId;
     }
@@ -54,7 +52,7 @@ public class CallbackContext {
     public void sendPluginResult(PluginResult pluginResult) {
         synchronized (this) {
             if (finished) {
-                Log.w(LOG_TAG, "Attempted to send a second callback for ID: " + callbackId + "\nResult was: " + pluginResult.getMessage());
+                LOG.w(LOG_TAG, "Attempted to send a second callback for ID: " + callbackId + "\nResult was: " + pluginResult.getMessage());
                 return;
             } else {
                 finished = !pluginResult.getKeepCallback();
@@ -98,7 +96,7 @@ public class CallbackContext {
     public void success(byte[] message) {
         sendPluginResult(new PluginResult(PluginResult.Status.OK, message));
     }
-    
+
     /**
      * Helper for success callbacks that just returns the Status.OK by default
      *

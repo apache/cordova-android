@@ -21,8 +21,6 @@ package org.apache.cordova;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import android.util.Log;
-
 /**
  * Holds the list of messages to be sent to the WebView.
  */
@@ -42,13 +40,13 @@ public class NativeToJsMessageQueue {
     // This currently only chops up on message boundaries. It may be useful
     // to allow it to break up messages.
     private static int MAX_PAYLOAD_SIZE = 50 * 1024 * 10240;
-    
+
     /**
      * When true, the active listener is not fired upon enqueue. When set to false,
-     * the active listener will be fired if the queue is non-empty. 
+     * the active listener will be fired if the queue is non-empty.
      */
     private boolean paused;
-    
+
     /**
      * The list of JavaScript statements to be sent to JavaScript.
      */
@@ -58,7 +56,7 @@ public class NativeToJsMessageQueue {
      * The array of listeners that can be used to send messages to JS.
      */
     private ArrayList<BridgeMode> bridgeModes = new ArrayList<BridgeMode>();
-    
+
     /**
      * When null, the bridge is disabled. This occurs during page transitions.
      * When disabled, all callbacks are dropped since they are assumed to be
@@ -83,11 +81,11 @@ public class NativeToJsMessageQueue {
      */
     public void setBridgeMode(int value) {
         if (value < -1 || value >= bridgeModes.size()) {
-            Log.d(LOG_TAG, "Invalid NativeToJsBridgeMode: " + value);
+            LOG.d(LOG_TAG, "Invalid NativeToJsBridgeMode: " + value);
         } else {
             BridgeMode newMode = value < 0 ? null : bridgeModes.get(value);
             if (newMode != activeBridgeMode) {
-                Log.d(LOG_TAG, "Set native->JS mode to " + (newMode == null ? "null" : newMode.getClass().getSimpleName()));
+                LOG.d(LOG_TAG, "Set native->JS mode to " + (newMode == null ? "null" : newMode.getClass().getSimpleName()));
                 synchronized (this) {
                     activeBridgeMode = newMode;
                     if (newMode != null) {
@@ -100,7 +98,7 @@ public class NativeToJsMessageQueue {
             }
         }
     }
-    
+
     /**
      * Clears all messages and resets to the default bridge mode.
      */
@@ -114,16 +112,16 @@ public class NativeToJsMessageQueue {
     private int calculatePackedMessageLength(JsMessage message) {
         int messageLen = message.calculateEncodedLength();
         String messageLenStr = String.valueOf(messageLen);
-        return messageLenStr.length() + messageLen + 1;        
+        return messageLenStr.length() + messageLen + 1;
     }
-    
+
     private void packMessage(JsMessage message, StringBuilder sb) {
         int len = message.calculateEncodedLength();
         sb.append(len)
           .append(' ');
         message.encodeAsMessage(sb);
     }
-    
+
     /**
      * Combines and returns queued messages combined into a single string.
      * Combines as many messages as possible, while staying under MAX_PAYLOAD_SIZE.
@@ -154,7 +152,7 @@ public class NativeToJsMessageQueue {
                 JsMessage message = queue.removeFirst();
                 packMessage(message, sb);
             }
-            
+
             if (!queue.isEmpty()) {
                 // Attach a char to indicate that there are more messages pending.
                 sb.append('*');
@@ -163,7 +161,7 @@ public class NativeToJsMessageQueue {
             return ret;
         }
     }
-    
+
     /**
      * Same as popAndEncode(), except encodes in a form that can be executed as JS.
      */
@@ -185,7 +183,7 @@ public class NativeToJsMessageQueue {
             }
             boolean willSendAllMessages = numMessagesToSend == queue.size();
             StringBuilder sb = new StringBuilder(totalPayloadLen + (willSendAllMessages ? 0 : 100));
-            // Wrap each statement in a try/finally so that if one throws it does 
+            // Wrap each statement in a try/finally so that if one throws it does
             // not affect the next.
             for (int i = 0; i < numMessagesToSend; ++i) {
                 JsMessage message = queue.removeFirst();
@@ -206,7 +204,7 @@ public class NativeToJsMessageQueue {
             String ret = sb.toString();
             return ret;
         }
-    }   
+    }
 
     /**
      * Add a JavaScript statement to the list.
@@ -220,7 +218,7 @@ public class NativeToJsMessageQueue {
      */
     public void addPluginResult(PluginResult result, String callbackId) {
         if (callbackId == null) {
-            Log.e(LOG_TAG, "Got plugin result with no callbackId", new Throwable());
+            LOG.e(LOG_TAG, "Got plugin result with no callbackId", new Throwable());
             return;
         }
         // Don't send anything if there is no result and there is no need to
@@ -243,7 +241,7 @@ public class NativeToJsMessageQueue {
     private void enqueueMessage(JsMessage message) {
         synchronized (this) {
             if (activeBridgeMode == null) {
-                Log.d(LOG_TAG, "Dropping Native->JS message due to disabled bridge");
+                LOG.d(LOG_TAG, "Dropping Native->JS message due to disabled bridge");
                 return;
             }
             queue.add(message);
@@ -257,7 +255,7 @@ public class NativeToJsMessageQueue {
         if (paused && value) {
             // This should never happen. If a use-case for it comes up, we should
             // change pause to be a counter.
-            Log.e(LOG_TAG, "nested call to setPaused detected.", new Throwable());
+            LOG.e(LOG_TAG, "nested call to setPaused detected.", new Throwable());
         }
         paused = value;
         if (!value) {
@@ -265,7 +263,7 @@ public class NativeToJsMessageQueue {
                 if (!queue.isEmpty() && activeBridgeMode != null) {
                     activeBridgeMode.onNativeToJsMessageAvailable(this);
                 }
-            }   
+            }
         }
     }
 
@@ -368,7 +366,7 @@ public class NativeToJsMessageQueue {
             jsPayloadOrCallbackId = callbackId;
             this.pluginResult = pluginResult;
         }
-        
+
         static int calculateEncodedLengthHelper(PluginResult pluginResult) {
             switch (pluginResult.getMessageType()) {
                 case PluginResult.MESSAGE_TYPE_BOOLEAN: // f or t
@@ -395,7 +393,7 @@ public class NativeToJsMessageQueue {
                     return pluginResult.getMessage().length();
             }
         }
-        
+
         int calculateEncodedLength() {
             if (pluginResult == null) {
                 return jsPayloadOrCallbackId.length() + 1;
@@ -424,7 +422,7 @@ public class NativeToJsMessageQueue {
                 case PluginResult.MESSAGE_TYPE_BINARYSTRING: // S
                     sb.append('S');
                     sb.append(pluginResult.getMessage());
-                    break;                    
+                    break;
                 case PluginResult.MESSAGE_TYPE_ARRAYBUFFER: // A
                     sb.append('A');
                     sb.append(pluginResult.getMessage());
@@ -443,7 +441,7 @@ public class NativeToJsMessageQueue {
                     sb.append(pluginResult.getMessage()); // [ or {
             }
         }
-        
+
         void encodeAsMessage(StringBuilder sb) {
             if (pluginResult == null) {
                 sb.append('J')

@@ -158,6 +158,16 @@ public class LOG {
      * Warning log message.
      *
      * @param tag
+     * @param e
+     */
+    public static void w(String tag, Throwable e) {
+        if (LOG.WARN >= LOGLEVEL) Log.w(tag, e);
+    }
+
+    /**
+     * Warning log message.
+     *
+     * @param tag
      * @param s
      * @param e
      */
