@@ -231,17 +231,9 @@ function copyFile (plugin_dir, src, project_dir, dest, link) {
         throw new CordovaError('Destination "' + dest + '" for source file "' + src + '" is located outside the project');
 
     shell.mkdir('-p', path.dirname(dest));
-    var srcStat = fs.statSync(src);
     if (link) {
-        //CB-11683 We need to handle linking to directories on our own because Windows doesn't.
-        var type;
-        if (srcStat.isDirectory()) {
-            type = 'dir';
-        } else {
-            type = 'file';
-        }
-        fs.symlinkSync(path.relative(path.dirname(dest), src), dest, type);
-    } else if (srcStat.isDirectory()) {
+        symlinkFileOrDirTree(src, dest);
+    } else if (fs.statSync(src).isDirectory()) {
         // XXX shelljs decides to create a directory when -R|-r is used which sucks. http://goo.gl/nbsjq
         shell.cp('-Rf', src+'/*', dest);
     } else {
@@ -256,6 +248,22 @@ function copyNewFile (plugin_dir, src, project_dir, dest, link) {
         throw new CordovaError('"' + target_path + '" already exists!');
 
     copyFile(plugin_dir, src, project_dir, dest, !!link);
+}
+
+function symlinkFileOrDirTree(src, dest) {
+    if (fs.existsSync(dest)) {
+        shell.rm('-Rf', dest);
+    }
+
+    if (fs.statSync(src).isDirectory()) {
+        shell.mkdir('-p', dest);
+        fs.readdirSync(src).forEach(function(entry) {
+            symlinkFileOrDirTree(path.join(src, entry), path.join(dest, entry));
+        });
+    }
+    else {
+        fs.symlinkSync(path.relative(fs.realpathSync(path.dirname(dest)), src), dest);
+    }
 }
 
 // checks if file exists and then deletes. Error if doesn't exist
