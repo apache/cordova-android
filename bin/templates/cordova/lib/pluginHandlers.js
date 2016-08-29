@@ -30,7 +30,13 @@ var handlers = {
         install:function(obj, plugin, project, options) {
             if (!obj.src) throw new CordovaError(generateAttributeError('src', 'source-file', plugin.id));
             if (!obj.targetDir) throw new CordovaError(generateAttributeError('target-dir', 'source-file', plugin.id));
+
             var dest = path.join(obj.targetDir, path.basename(obj.src));
+
+            if(options && options.android_studio === true) {
+              dest = path.join("app/src/main/java", obj.targetDir.substring(4), path.basename(obj.src));
+            }
+
             if (options && options.force) {
                 copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
             } else {
@@ -39,16 +45,27 @@ var handlers = {
         },
         uninstall:function(obj, plugin, project, options) {
             var dest = path.join(obj.targetDir, path.basename(obj.src));
+            
+            if(options && options.android_studio === true) {
+              dest = path.join("app/src/main/java", obj.targetDir.substring(4), path.basename(obj.src));
+            }
+
             deleteJava(project.projectDir, dest);
         }
     },
     'lib-file':{
         install:function(obj, plugin, project, options) {
             var dest = path.join('libs', path.basename(obj.src));
+            if(options && options.android_studio === true) {
+              dest = path.join("app/libs", path.basename(obj.src));
+            }
             copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
         },
         uninstall:function(obj, plugin, project, options) {
             var dest = path.join('libs', path.basename(obj.src));
+            if(options && options.android_studio === true) {
+              dest = path.join("app/libs", path.basename(obj.src));
+            }
             removeFile(project.projectDir, dest);
         }
     },
