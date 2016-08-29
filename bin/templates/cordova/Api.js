@@ -18,8 +18,10 @@
 */
 
 var path = require('path');
+var fs = require('fs');
 
 var AndroidProject = require('./lib/AndroidProject');
+var AndroidStudio = require('./lib/AndroidStudio');
 var PluginManager = require('cordova-common').PluginManager;
 
 var CordovaLogger = require('cordova-common').CordovaLogger;
@@ -39,6 +41,7 @@ function setupEvents(externalEventEmitter) {
     CordovaLogger.get().subscribe(selfEvents);
     return selfEvents;
 }
+
 
 /**
  * Class, that acts as abstraction over particular platform. Encapsulates the
@@ -62,6 +65,7 @@ function Api(platform, platformRootDir, events) {
     this.locations = {
         root: self.root,
         www: path.join(self.root, 'assets/www'),
+        res: path.relative(self.root, path.join(self.root, 'res')),
         platformWww: path.join(self.root, 'platform_www'),
         configXml: path.join(self.root, 'res/xml/config.xml'),
         defaultConfigXml: path.join(self.root, 'cordova/defaults.xml'),
@@ -71,6 +75,17 @@ function Api(platform, platformRootDir, events) {
         cordovaJs: 'bin/templates/project/assets/www/cordova.js',
         cordovaJsSrc: 'cordova-js-src'
     };
+
+    // XXX Override some locations for Android Studio projects
+    if(AndroidStudio.isAndroidStudioProject(self.root) === true) {
+      selfEvents.emit('log', 'Android Studio project detected');
+      this.android_studio = true;
+      this.locations.configXml = path.join(self.root, 'app/src/main/res/xml/config.xml');
+      this.locations.strings = path.join(self.root, 'app/src/main/res/xml/strings.xml');
+      this.locations.manifest = path.join(self.root, 'app/src/main/AndroidManifest.xml');
+      this.locations.www = path.join(self.root, 'app/src/main/assets/www');
+      this.locations.res = path.relative(self.root, path.join(self.root, 'app/src/main/res'));
+    }
 }
 
 /**
@@ -193,6 +208,10 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
     if (!installOptions.variables.PACKAGE_NAME) {
         installOptions.variables.PACKAGE_NAME = project.getPackageName();
     }
+    
+    if(this.android_studio === true) {
+      installOptions.android_studio = true;
+    }
 
     return PluginManager.get(this.platform, this.locations, project)
         .addPlugin(plugin, installOptions)
@@ -203,7 +222,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
-        .thenResolve(true);
+        .thenResolve(true)
 };
 
 /**
@@ -221,6 +240,12 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
  */
 Api.prototype.removePlugin = function (plugin, uninstallOptions) {
     var project = AndroidProject.getProjectFile(this.root);
+
+    if(uninstallOptions && uninstallOptions.usePlatformWww === true && this.android_studio === true) {
+      uninstallOptions.usePlatformWww = false;
+      uninstallOptions.android_studio = true;
+    }
+
     return PluginManager.get(this.platform, this.locations, project)
         .removePlugin(plugin, uninstallOptions)
         .then(function () {

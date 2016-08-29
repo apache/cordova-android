@@ -33,7 +33,6 @@ var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
 module.exports.prepare = function (cordovaProject, options) {
     var self = this;
-    var platformResourcesDir = path.relative(cordovaProject.root, path.join(this.locations.root, 'res'));
 
     var platformJson = PlatformJson.load(this.locations.root, this.platform);
     var munger = new PlatformMunger(this.platform, this.locations.root, platformJson, new PluginInfoProvider());
@@ -47,8 +46,8 @@ module.exports.prepare = function (cordovaProject, options) {
         return updateProjectAccordingTo(self._config, self.locations);
     })
     .then(function () {
-        updateIcons(cordovaProject, platformResourcesDir);
-        updateSplashes(cordovaProject, platformResourcesDir);
+        updateIcons(cordovaProject, self.locations.res);
+        updateSplashes(cordovaProject, self.locations.res);
     })
     .then(function () {
         events.emit('verbose', 'Prepared android project successfully');
@@ -61,20 +60,18 @@ module.exports.clean = function (options) {
     // noPrepare option passed in by the non-CLI clean script. If that's present, or if
     // there's no config.xml found at the project root, then don't clean prepared files.
     var projectRoot = path.resolve(this.root, '../..');
-    var projectConfigFile = path.join(projectRoot, 'config.xml');
-    if ((options && options.noPrepare) || !fs.existsSync(projectConfigFile) ||
+    if ((options && options.noPrepare) || !fs.existsSync(this.locations.configXml) ||
             !fs.existsSync(this.locations.configXml)) {
         return Q();
     }
 
     var projectConfig = new ConfigParser(this.locations.configXml);
-    var platformResourcesDir = path.relative(projectRoot, path.join(this.locations.root, 'res'));
 
     var self = this;
     return Q().then(function () {
         cleanWww(projectRoot, self.locations);
-        cleanIcons(projectRoot, projectConfig, platformResourcesDir);
-        cleanSplashes(projectRoot, projectConfig, platformResourcesDir);
+        cleanIcons(projectRoot, projectConfig, self.locations.res);
+        cleanSplashes(projectRoot, projectConfig, self.locations.res);
     });
 };
 
