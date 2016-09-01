@@ -25,7 +25,7 @@ var actions      = require('./helpers/projectActions.js'),
     platformEdge = { version: getCurrentVersion(), path: '.' };
 
 var DOWNLOAD_TIMEOUT = 2 * 60 * 1000,
-    UPDATE_TIMEOUT   = 60 * 1000,
+    UPDATE_TIMEOUT   = 90 * 1000,
     PLATFORM_GIT_URL = 'https://github.com/apache/cordova-android';
 
 function getCurrentVersion() {

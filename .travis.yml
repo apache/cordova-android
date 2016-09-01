@@ -1,12 +1,18 @@
 language: android
 sudo: false
+jdk:
+    - oraclejdk8
 before_install:
     - nvm install 6
     - node --version
 install:
     - npm install
     - npm install -g codecov
-    - echo y | android update sdk -u --filter android-22,android-23
+    - echo y | android update sdk -u --filter android-22,android-23,android-24
+android:
+    components:
+      - tools
+      - tools
 script:
     - npm run jshint
     - npm run cover
