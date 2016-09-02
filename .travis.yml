@@ -1,4 +1,7 @@
 language: android
+components:
+    - tools
+    - android-24
 sudo: false
 before_install:
     - nvm install 6
@@ -6,7 +9,6 @@ before_install:
 install:
     - npm install
     - npm install -g codecov
-    - echo y | android update sdk -u --filter android-22,android-23
 script:
     - npm run jshint
     - npm run cover
