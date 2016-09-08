@@ -55,6 +55,8 @@ GradleBuilder.prototype.getArgs = function(cmd, opts) {
 
     // 10 seconds -> 6 seconds
     args.push('-Dorg.gradle.daemon=true');
+    // to allow dex in process
+    args.push('-Dorg.gradle.jvmargs=-Xmx2048m');
     // allow NDK to be used - required by Gradle 1.5 plugin
     args.push('-Pandroid.useDeprecatedNdk=true');
     args.push.apply(args, opts.extraArgs);
@@ -189,7 +191,7 @@ GradleBuilder.prototype.build = function(opts) {
     .progress(function (stdio){
         if (stdio.stderr) {
             /*
-             * Workaround for the issue with Java printing some unwanted information to 
+             * Workaround for the issue with Java printing some unwanted information to
              * stderr instead of stdout.
              * This function suppresses 'Picked up _JAVA_OPTIONS' message from being
              * printed to stderr. See https://issues.apache.org/jira/browse/CB-9971 for
