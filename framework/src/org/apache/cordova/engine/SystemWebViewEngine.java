@@ -117,7 +117,8 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
                 SystemWebViewEngine.this.cordova.getActivity().runOnUiThread(r);
             }
         }));
-        nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.EvalBridgeMode(this, cordova));
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2)
+            nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.EvalBridgeMode(this, cordova));
 	bridge = new CordovaBridge(pluginManager, nativeToJsMessageQueue);
         exposeJsInterface(webView, bridge);
     }
@@ -336,6 +337,12 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
 
     @Override
     public void evaluateJavascript(String js, ValueCallback<String> callback) {
-        webView.evaluateJavascript(js, callback);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            webView.evaluateJavascript(js, callback);
+        }
+        else
+        {
+            LOG.d(TAG, "This webview is using the old bridge");
+        }
     }
 }
