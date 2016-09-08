@@ -120,8 +120,8 @@ public class CordovaActivity extends Activity {
             LOG.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
             preferences.set("Fullscreen", true);
         }
-        if (preferences.getBoolean("Fullscreen", false)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if (preferences.getBoolean("Fullscreen", false))  {
+            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && preferences.getBoolean("Fullscreen-Immersive", true)) {
                 immersiveMode = true;
             } else {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
