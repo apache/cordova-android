@@ -1,5 +1,5 @@
 // Platform: android
-// d403ce434788ffe1937711d6ebcbcc837fcbcb14
+// 2fd4bcb84048415922d13d80d35b8d1668e8e150
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -901,7 +901,7 @@ var cordova = require('cordova'),
         EVAL_BRIDGE: 3
     },
     jsToNativeBridgeMode,  // Set lazily.
-    nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT,
+    nativeToJsBridgeMode = nativeToJsModes.EVAL_BRIDGE,
     pollEnabled = false,
     bridgeSecret = -1;
 
@@ -933,7 +933,6 @@ function androidExec(success, fail, service, action, args) {
 
     var callbackId = service + cordova.callbackId++,
         argsJson = JSON.stringify(args);
-
     if (success || fail) {
         cordova.callbacks[callbackId] = {success:success, fail:fail};
     }
@@ -953,6 +952,17 @@ function androidExec(success, fail, service, action, args) {
 }
 
 androidExec.init = function() {
+    //CB-11828
+    //This failsafe checks the version of Android and if it's Jellybean, it switches it to
+    //using the Online Event bridge for communicating from Native to JS
+    //
+    //It's ugly, but it's necessary.
+    var check = navigator.userAgent.toLowerCase().match(/android\s[0-9].[0-9]/);
+    var version_code = check[0].match(/4.[0-3].*/);
+    if (version_code != null && nativeToJsBridgeMode == nativeToJsModes.EVAL_BRIDGE) {
+      nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT;
+    }
+
     bridgeSecret = +prompt('', 'gap_init:' + nativeToJsBridgeMode);
     channel.onNativeReady.fire();
 };
@@ -2084,7 +2094,7 @@ utils.clone = function(obj) {
 
     retVal = {};
     for(i in obj){
-        if((!(i in retVal) || retVal[i] != obj[i]) && typeof obj[i] != 'undefined') {
+        if(!(i in retVal) || retVal[i] != obj[i]) {
             retVal[i] = utils.clone(obj[i]);
         }
     }
