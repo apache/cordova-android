@@ -18,7 +18,6 @@
 */
 
 var path = require('path');
-var fs = require('fs');
 
 var AndroidProject = require('./lib/AndroidProject');
 var AndroidStudio = require('./lib/AndroidStudio');
@@ -222,7 +221,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
-        .thenResolve(true)
+        .thenResolve(true);
 };
 
 /**
