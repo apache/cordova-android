@@ -64,6 +64,10 @@ describe('android project handler', function() {
                 android['lib-file'].install(valid_libs[0], dummyPluginInfo, dummyProject);
                 expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('libs', 'TestLib.jar'), false);
             });
+            it('should copy files for Android Studio projects', function () {
+                android['lib-file'].install(valid_libs[0], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('app', 'libs', 'TestLib.jar'), false);
+            });
         });
 
         describe('of <resource-file> elements', function() {
@@ -82,6 +86,12 @@ describe('android project handler', function() {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin.java', temp, path.join('src/com/phonegap/plugins/dummyplugin/DummyPlugin.java'), false);
+            });
+
+            it('should install source files to the right location for Android Studio projects', function() {
+                android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin.java', temp, path.join('app/src/main/java/com/phonegap/plugins/dummyplugin/DummyPlugin.java'), false);
             });
 
             it('should throw if source file cannot be found', function() {
@@ -240,6 +250,11 @@ describe('android project handler', function() {
                 android['lib-file'].uninstall(valid_libs[0], dummyPluginInfo, dummyProject);
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('libs/TestLib.jar'));
             });
+            it('should remove jar files for Android Studio projects', function () {
+                android['lib-file'].install(valid_libs[0], dummyPluginInfo, dummyProject, {android_studio:true});
+                android['lib-file'].uninstall(valid_libs[0], dummyPluginInfo, dummyProject, {android_studio:true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
+            });
         });
 
         describe('of <resource-file> elements', function(done) {
@@ -255,6 +270,11 @@ describe('android project handler', function() {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject);
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('src/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
+            });
+            it('should remove stuff by calling common.deleteJava for Android Studio projects', function() {
+                android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject, {android_studio:true});
+                android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject, {android_studio:true});
+                expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
             });
         });
 
