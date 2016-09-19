@@ -19,7 +19,7 @@
 
 var actions = require('./helpers/projectActions.js');
 
-var CREATE_TIMEOUT = 90000;
+var CREATE_TIMEOUT = 180000;
 
 function createAndBuild(projectname, projectid, done) {
     actions.createProject(projectname, projectid, function (error) {
@@ -27,7 +27,7 @@ function createAndBuild(projectname, projectid, done) {
         actions.buildProject(projectid, function (error) {
             expect(error).toBe(null);
             actions.removeProject(projectid);
-            done();   
+            done();
         });
     });
 }

@@ -112,7 +112,7 @@ androidExec.init = function() {
     //
     //It's ugly, but it's necessary.
     var check = navigator.userAgent.toLowerCase().match(/android\s[0-9].[0-9]/);
-    var version_code = check[0].match(/4.[0-3].*/);
+    var version_code = check && check[0].match(/4.[0-3].*/);
     if (version_code != null && nativeToJsBridgeMode == nativeToJsModes.EVAL_BRIDGE) {
       nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT;
     }

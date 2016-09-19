@@ -1,5 +1,5 @@
 // Platform: android
-// 2fd4bcb84048415922d13d80d35b8d1668e8e150
+// 0030f1d859d2a8360b621b0d48072f3f08eb6925
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -330,7 +330,7 @@ module.exports = cordova;
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/android/nativeapiprovider.js
+// file: F:/coho/cordova-android/cordova-js-src/android/nativeapiprovider.js
 define("cordova/android/nativeapiprovider", function(require, exports, module) {
 
 /**
@@ -353,7 +353,7 @@ module.exports = {
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/android/promptbasednativeapi.js
+// file: F:/coho/cordova-android/cordova-js-src/android/promptbasednativeapi.js
 define("cordova/android/promptbasednativeapi", function(require, exports, module) {
 
 /**
@@ -862,7 +862,7 @@ module.exports = channel;
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/exec.js
+// file: F:/coho/cordova-android/cordova-js-src/exec.js
 define("cordova/exec", function(require, exports, module) {
 
 /**
@@ -958,7 +958,7 @@ androidExec.init = function() {
     //
     //It's ugly, but it's necessary.
     var check = navigator.userAgent.toLowerCase().match(/android\s[0-9].[0-9]/);
-    var version_code = check[0].match(/4.[0-3].*/);
+    var version_code = check && check[0].match(/4.[0-3].*/);
     if (version_code != null && nativeToJsBridgeMode == nativeToJsModes.EVAL_BRIDGE) {
       nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT;
     }
@@ -1622,7 +1622,7 @@ exports.reset();
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/platform.js
+// file: F:/coho/cordova-android/cordova-js-src/platform.js
 define("cordova/platform", function(require, exports, module) {
 
 // The last resume event that was received that had the result of a plugin call.
@@ -1732,7 +1732,7 @@ function onMessageFromNative(msg) {
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/plugin/android/app.js
+// file: F:/coho/cordova-android/cordova-js-src/plugin/android/app.js
 define("cordova/plugin/android/app", function(require, exports, module) {
 
 var exec = require('cordova/exec');
@@ -2094,7 +2094,7 @@ utils.clone = function(obj) {
 
     retVal = {};
     for(i in obj){
-        if(!(i in retVal) || retVal[i] != obj[i]) {
+        if((!(i in retVal) || retVal[i] != obj[i]) && typeof obj[i] != 'undefined') {
             retVal[i] = utils.clone(obj[i]);
         }
     }
