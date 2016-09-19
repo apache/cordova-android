@@ -152,7 +152,9 @@ module.exports.check_java = function() {
             // javac writes version info to stderr instead of stdout
             return tryCommand('javac -version', msg, true)
                 .then(function (output) {
-                    var match = /javac ((?:\d+\.)+(?:\d+))/i.exec(output);
+                    console.log(output);
+                    //Let's check for at least Java 8, and keep it future proof so we can support Java 10
+                    var match = /javac ((?:1\.)(?:[8-9]\.)(?:\d+))|((?:1\.)(?:[1-9]\d+\.))(?:\d+)/i.exec(output);
                     return match && match[1];
                 });
         });
