@@ -78,6 +78,9 @@ function androidExec(success, fail, service, action, args) {
         androidExec.setJsToNativeBridgeMode(jsToNativeModes.JS_OBJECT);
     }
 
+    // If args is not provided, default to an empty array
+    args = args || [];
+
     // Process any ArrayBuffers in the args into a string.
     for (var i = 0; i < args.length; i++) {
         if (utils.typeName(args[i]) == 'ArrayBuffer') {
