@@ -114,7 +114,7 @@ module.exports.check_java = function() {
                     });
                 } else {
                     // See if we can derive it from javac's location.
-                    // fs.realpathSync is require on Ubuntu, which symplinks from /usr/bin -> JDK
+                    // fs.realpathSync is require on Ubuntu, which symlinks from /usr/bin -> JDK
                     var maybeJavaHome = path.dirname(path.dirname(javacPath));
                     if (fs.existsSync(path.join(maybeJavaHome, 'lib', 'tools.jar'))) {
                         process.env['JAVA_HOME'] = maybeJavaHome;
@@ -134,9 +134,7 @@ module.exports.check_java = function() {
                 if (firstJdkDir) {
                     // shelljs always uses / in paths.
                     firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
-                    if (!javacPath) {
-                        process.env['PATH'] += path.delimiter + path.join(firstJdkDir, 'bin');
-                    }
+                    process.env['PATH'] += path.delimiter + path.join(firstJdkDir, 'bin');
                     process.env['JAVA_HOME'] = firstJdkDir;
                 }
             }
@@ -152,7 +150,7 @@ module.exports.check_java = function() {
             // javac writes version info to stderr instead of stdout
             return tryCommand('javac -version', msg, true)
                 .then(function (output) {
-                    var match = /javac ((?:\d+\.)+(?:\d+))/i.exec(output);
+                    var match = /javac ((?:\d+\.)*(?:\d+))/i.exec(output);
                     return match && match[1];
                 });
         });
