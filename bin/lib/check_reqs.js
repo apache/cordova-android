@@ -152,7 +152,6 @@ module.exports.check_java = function() {
             // javac writes version info to stderr instead of stdout
             return tryCommand('javac -version', msg, true)
                 .then(function (output) {
-                    console.log(output);
                     //Let's check for at least Java 8, and keep it future proof so we can support Java 10
                     var match = /javac ((?:1\.)(?:[8-9]\.)(?:\d+))|((?:1\.)(?:[1-9]\d+\.)(?:\d+))/i.exec(output);
                     return match && match[1];
@@ -227,6 +226,7 @@ module.exports.check_android = function() {
             throw new CordovaError('\'ANDROID_HOME\' environment variable is set to non-existent path: ' + process.env['ANDROID_HOME'] +
                 '\nTry update it manually to point to valid SDK directory.');
         }
+        return hasAndroidHome;
     });
 };
 
@@ -269,12 +269,22 @@ module.exports.check_android_target = function(originalError) {
 
 // Returns a promise.
 module.exports.run = function() {
-    return Q.all([this.check_java(), this.check_android()])
-    .then(function() {
-        console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
-        console.log('JAVA_HOME=' + process.env['JAVA_HOME']);
-    });
+     return Q.all([this.check_java(), this.check_android()])
+     .then(function(values) {
+         console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
+         console.log('JAVA_HOME=' + process.env['JAVA_HOME']);
+
+         if (!values[0]) {
+            throw new CordovaError('Requirements check failed for JDK 1.8 or greater');
+         }
+
+
+         if (!values[1]) {
+            throw new CordovaError('Requirements check failed for Android SDK');
+         }
+     });
 };
+
 
 /**
  * Object thar represents one of requirements for current platform.
