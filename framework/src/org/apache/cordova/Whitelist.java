@@ -136,6 +136,14 @@ public class Whitelist {
                         } else {
                             whiteList.add(new URLPattern(scheme, host, port, path));
                         }
+
+                        if( subdomains ){
+                            // Support the `subdomains="true"` XML attribute in the whitelist
+                            if( scheme == null) scheme = "";
+                            String sub = scheme + "*." + host;
+                            addWhiteListEntry(sub, false);
+                        }
+
                     }
                 }
             } catch (Exception e) {
