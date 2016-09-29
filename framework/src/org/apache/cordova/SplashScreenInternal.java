@@ -19,6 +19,9 @@
 
 package org.apache.cordova;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -28,11 +31,10 @@ import android.os.Handler;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 
 // This file is a copy of SplashScreen.java from cordova-plugin-splashscreen, and is required only
 // for pre-4.0 Cordova as a transition path to it being extracted into the plugin.
@@ -41,6 +43,38 @@ public class SplashScreenInternal extends CordovaPlugin {
     private static Dialog splashDialog;
     private static ProgressDialog spinnerDialog;
     private static boolean firstShow = true;
+    
+    /**
+     * Set by "SplashMaintainAspectRatio" preference. If true,
+     * use an ImageView to display splash drawable maintaining aspect
+     * ratio. The result is equivalent to CSS "background-size:cover".
+     * This is useful for splash drawables that are not 9-patch and do
+     * not look good if scaled non-uniformly, for example images with text.
+     * This works best if splash images have large safe areas around edges.
+     * If this flag is false (default), the image is scaled as necessary
+     * to fit into the Splash Screen dialog.
+     */
+    private boolean maintainAspectRatio;
+    
+    /**
+     * Set by "SplashReloadOnOrientationChange" preference. If true,
+     * reload splash drawable whenever the Activity handles a configuration
+     * change that included change of orientation. Setting this to true makes
+     * sense only if the app has different splash resources for portrait
+     * and landscape orientations.
+     */
+    private boolean reloadOnOrientationChange;
+    
+    /**
+     * This ImageView is created and used only if {@link #maintainAspectRatio} is <code>true</code>.
+     */
+    private ImageView splashImageView;
+    
+    /**
+     * Content view for splash dialog. This view either shows splash as its
+     * background or hosts {@link #splashImageView}, depending on preferences.
+     */
+    private LinearLayout root;
 
     @Override
     protected void pluginInitialize() {
@@ -60,6 +94,9 @@ public class SplashScreenInternal extends CordovaPlugin {
                 preferences.set("SplashDrawableId", drawableId);
             }
         }
+        
+        maintainAspectRatio = preferences.getBoolean("SplashMaintainAspectRatio", false);
+        reloadOnOrientationChange = preferences.getBoolean("SplashReloadOnOrientationChange", false);
 
         firstShow = false;
         loadSpinner();
@@ -124,6 +161,24 @@ public class SplashScreenInternal extends CordovaPlugin {
             }
         } else if ("onReceivedError".equals(id)) {
             spinnerStop();
+        } else if ("orientationChanged".equals(id)) {
+        	// Reload splash screen drawable if the setting is enabled.
+        	if (reloadOnOrientationChange && (splashImageView != null || root != null)) {
+        		final int drawableId = preferences.getInteger("SplashDrawableId", 0);
+        		if (drawableId != 0) {
+        			cordova.getActivity().runOnUiThread(new Runnable() {
+        	            public void run() {
+        	            	if (splashImageView != null) {
+        	    				splashImageView.setImageDrawable(cordova.getActivity().getResources().getDrawable(drawableId));
+        	            	}
+        	            	else if (root != null) {
+        	            		// Using deprecated method for compatibility with older API levels.
+        	            		root.setBackgroundDrawable(cordova.getActivity().getResources().getDrawable(drawableId));
+        	            	}
+        	            }
+        			});
+        		}
+        	}
         }
         return null;
     }
@@ -134,6 +189,8 @@ public class SplashScreenInternal extends CordovaPlugin {
                 if (splashDialog != null && splashDialog.isShowing()) {
                     splashDialog.dismiss();
                     splashDialog = null;
+                    splashImageView = null;
+                    root = null;
                 }
             }
         });
@@ -162,7 +219,7 @@ public class SplashScreenInternal extends CordovaPlugin {
                 Context context = webView.getContext();
 
                 // Create the layout for the dialog
-                LinearLayout root = new LinearLayout(context);
+                root = new LinearLayout(context);
                 root.setMinimumHeight(display.getHeight());
                 root.setMinimumWidth(display.getWidth());
                 root.setOrientation(LinearLayout.VERTICAL);
@@ -172,7 +229,21 @@ public class SplashScreenInternal extends CordovaPlugin {
                 root.setBackgroundColor(preferences.getInteger("backgroundColor", Color.BLACK));
                 root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
-                root.setBackgroundResource(drawableId);
+                
+                if (maintainAspectRatio) {
+                    // Use an ImageView to scale the image uniformly.
+                    splashImageView = new ImageView(context);
+                    splashImageView.setImageResource(drawableId);
+                    LayoutParams layoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                    splashImageView.setLayoutParams(layoutParams);
+
+                    // CENTER_CROP scale mode is equivalent to CSS "background-size:cover"
+                    splashImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    root.addView(splashImageView);
+                }
+                else {
+                    root.setBackgroundResource(drawableId);
+                }
 
                 // Create and show the dialog
                 splashDialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
