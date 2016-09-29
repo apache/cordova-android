@@ -315,8 +315,10 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     @Override
     public void setPaused(boolean value) {
         if (value) {
+            webView.onPause();
             webView.pauseTimers();
         } else {
+            webView.onResume();
             webView.resumeTimers();
         }
     }
