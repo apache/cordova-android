@@ -212,6 +212,11 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
       installOptions.android_studio = true;
     }
 
+    //CB-11964: Do a clean when installing the plugin code to get around
+    //the Gradle bug introduced by the Android Gradle Plugin Version 2.2
+    //TODO: Delete when the next version of Android Gradle plugin comes out
+    
+    this.clean();
     return PluginManager.get(this.platform, this.locations, project)
         .addPlugin(plugin, installOptions)
         .then(function () {
