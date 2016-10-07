@@ -360,7 +360,6 @@ Api.prototype.run = function(runOptions) {
  */
 Api.prototype.clean = function(cleanOptions) {
     var self = this;
-    try {
     return require('./lib/check_reqs').run()
       .then(function () {
           return require('./lib/build').runClean.call(self, cleanOptions);
@@ -368,16 +367,6 @@ Api.prototype.clean = function(cleanOptions) {
       .then(function () {
           return require('./lib/prepare').clean.call(self, cleanOptions);
       });
-    }
-    catch (err) {
-      return require('../../lib/check_reqs').run()
-      .then(function () {
-          return require('./lib/build').runClean.call(self, cleanOptions);
-      })
-      .then(function () {
-          return require('./lib/prepare').clean.call(self, cleanOptions);
-      });
-    }
 };
 
 /**
