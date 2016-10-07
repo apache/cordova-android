@@ -23,6 +23,7 @@ var Q = require('q');
 var os = require('os');
 var path = require('path');
 var common = require('cordova-common');
+var rewire = require('rewire');
 
 var AndroidProject = require('../../bin/templates/cordova/lib/AndroidProject');
 var builders = require('../../bin/templates/cordova/lib/builders/builders');
@@ -33,7 +34,8 @@ var FIXTURES = path.join(__dirname, '../e2e/fixtures');
 var FAKE_PROJECT_DIR = path.join(os.tmpdir(), 'plugin-test-project');
 
 describe('addPlugin method', function () {
-    var api, fail, gradleBuilder;
+    var api, fail, gradleBuilder, oldClean;
+    var Api = rewire('../../bin/templates/cordova/Api');
 
     beforeEach(function() {
         var pluginManager = jasmine.createSpyObj('pluginManager', ['addPlugin']);
@@ -43,12 +45,17 @@ describe('addPlugin method', function () {
         var projectSpy = jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write']);
         spyOn(AndroidProject, 'getProjectFile').andReturn(projectSpy);
 
-        var Api = require('../../bin/templates/cordova/Api');
+        oldClean = Api.__get__('Api.prototype.clean');
+        Api.__set__('Api.prototype.clean', Q);
         api = new Api('android', FAKE_PROJECT_DIR);
 
         fail = jasmine.createSpy('fail');
         gradleBuilder = jasmine.createSpyObj('gradleBuilder', ['prepBuildFiles']);
         spyOn(builders, 'getBuilder').andReturn(gradleBuilder);
+    });
+
+    afterEach(function () {
+        Api.__set__('Api.prototype.clean', oldClean);
     });
 
     it('should call gradleBuilder.prepBuildFiles for every plugin with frameworks', function(done) {

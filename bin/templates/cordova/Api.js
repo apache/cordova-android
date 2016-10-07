@@ -18,6 +18,7 @@
 */
 
 var path = require('path');
+var Q = require('q');
 
 var AndroidProject = require('./lib/AndroidProject');
 var AndroidStudio = require('./lib/AndroidStudio');
@@ -200,6 +201,7 @@ Api.prototype.prepare = function (cordovaProject, prepareOptions) {
  */
 Api.prototype.addPlugin = function (plugin, installOptions) {
     var project = AndroidProject.getProjectFile(this.root);
+    var self = this;
 
     installOptions = installOptions || {};
     installOptions.variables = installOptions.variables || {};
@@ -207,18 +209,22 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
     if (!installOptions.variables.PACKAGE_NAME) {
         installOptions.variables.PACKAGE_NAME = project.getPackageName();
     }
-    
+
     if(this.android_studio === true) {
       installOptions.android_studio = true;
     }
 
-    //CB-11964: Do a clean when installing the plugin code to get around
-    //the Gradle bug introduced by the Android Gradle Plugin Version 2.2
-    //TODO: Delete when the next version of Android Gradle plugin comes out
-    
-    this.clean();
-    return PluginManager.get(this.platform, this.locations, project)
-        .addPlugin(plugin, installOptions)
+    return Q()
+        .then(function () {
+            //CB-11964: Do a clean when installing the plugin code to get around
+            //the Gradle bug introduced by the Android Gradle Plugin Version 2.2
+            //TODO: Delete when the next version of Android Gradle plugin comes out
+            return self.clean();
+        })
+        .then(function () {
+            return PluginManager.get(self.platform, self.locations, project)
+                .addPlugin(plugin, installOptions);
+        })
         .then(function () {
             if (plugin.getFrameworks(this.platform).length === 0) return;
 
