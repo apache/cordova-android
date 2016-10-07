@@ -18,6 +18,7 @@
 */
 
 var path = require('path');
+var nopt = require('nopt');
 var Q = require('q');
 
 var AndroidProject = require('./lib/AndroidProject');
@@ -28,6 +29,7 @@ var CordovaLogger = require('cordova-common').CordovaLogger;
 var selfEvents = require('cordova-common').events;
 
 var PLATFORM = 'android';
+
 
 function setupEvents(externalEventEmitter) {
     if (externalEventEmitter) {
@@ -215,23 +217,33 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
     }
 
     return Q()
-        .then(function () {
+       .then(function () {
             //CB-11964: Do a clean when installing the plugin code to get around
             //the Gradle bug introduced by the Android Gradle Plugin Version 2.2
             //TODO: Delete when the next version of Android Gradle plugin comes out
-            return self.clean();
+
+           // Since clean doesn't just clean the build, it also wipes out www, we need
+           // to pass additional options.
+
+           // Do some basic argument parsing
+            var opts = {};
+
+            // Skip cleaning prepared files when not invoking via cordova CLI.
+            opts.noPrepare = true;
+
+            return self.clean(opts);
         })
-        .then(function () {
+       .then(function () {
             return PluginManager.get(self.platform, self.locations, project)
                 .addPlugin(plugin, installOptions);
         })
-        .then(function () {
+      .then(function () {
             if (plugin.getFrameworks(this.platform).length === 0) return;
 
             selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
             require('./lib/builders/builders').getBuilder('gradle').prepBuildFiles();
         }.bind(this))
-        // CB-11022 Return truthy value to prevent running prepare after
+       // CB-11022 Return truthy value to prevent running prepare after
         .thenResolve(true);
 };
 
@@ -353,7 +365,8 @@ Api.prototype.run = function(runOptions) {
 };
 
 /**
- * Cleans out the build artifacts from platform's directory.
+ * Cleans out the build artifacts from platform's directory, and also
+ * cleans out the platform www directory if called without options specified.
  *
  * @return  {Promise}  Return a promise either fulfilled, or rejected with
  *   CordovaError.
