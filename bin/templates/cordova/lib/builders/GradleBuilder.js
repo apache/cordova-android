@@ -73,10 +73,16 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     var subProjects = propertiesObj.libs;
     for (var i = 0; i < subProjects.length; ++i) {
         if (subProjects[i] !== 'CordovaLib') {
-            shell.cp('-f', pluginBuildGradle, path.join(this.root, subProjects[i], 'build.gradle'));
+            var subProjectGradle = path.join(this.root, subProjects[i], 'build.gradle');
+            // Only copy the gradle if it doesn't exist for the library
+            fs.exists(subProjectGradle, function(exists) {
+              if (!exists)
+                {
+                  shell.cp('-f', pluginBuildGradle, path.join(this.root, subProjects[i], 'build.gradle'));
+                }
+            });
         }
     }
-
     var name = this.extractRealProjectNameFromManifest();
     //Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
     var settingsGradlePaths =  subProjects.map(function(p){
@@ -95,10 +101,20 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     // Update dependencies within build.gradle.
     var buildGradle = fs.readFileSync(path.join(this.root, 'build.gradle'), 'utf8');
     var depsList = '';
+    var insertExclude = function(libName) {
+        if(libName.indexOf("cordova-plugin") != -1) {
+          depsList += '{\n        exclude module:("CordovaLib")\n    }\n';
+        }
+        else {
+          depsList += "\n";
+        }
+    }
     subProjects.forEach(function(p) {
         var libName=p.replace(/[/\\]/g, ':').replace(name+'-','');
-        depsList += '    debugCompile project(path: "' + libName + '", configuration: "debug")\n';
-        depsList += '    releaseCompile project(path: "' + libName + '", configuration: "release")\n';
+        depsList += '    debugCompile(project(path: "' + libName + '", configuration: "debug"))';
+        insertExclude(libName);
+        depsList += '    releaseCompile(project(path: "' + libName + '", configuration: "release"))';
+        insertExclude(libName);
     });
     // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
     var SYSTEM_LIBRARY_MAPPINGS = [
