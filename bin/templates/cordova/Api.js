@@ -18,7 +18,6 @@
 */
 
 var path = require('path');
-var nopt = require('nopt');
 var Q = require('q');
 
 var AndroidProject = require('./lib/AndroidProject');
