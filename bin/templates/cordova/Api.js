@@ -109,13 +109,20 @@ function Api(platform, platformRootDir, events) {
  */
 Api.createPlatform = function (destination, config, options, events) {
     events = setupEvents(events);
-
-    return require('../../lib/create')
-    .create(destination, config, options, events)
-    .then(function (destination) {
-        var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
-        return new PlatformApi(PLATFORM, destination, events);
-    });
+    var result;
+    try {
+        result = require('../../lib/create')
+        .create(destination, config, options, events)
+        .then(function (destination) {
+            var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
+            return new PlatformApi(PLATFORM, destination, events);
+        });
+    }
+    catch (e) {
+        events.emit('error','createPlatform is not callable from the android project API.');
+        throw(e);
+    }
+    return result;
 };
 
 /**
@@ -136,13 +143,20 @@ Api.createPlatform = function (destination, config, options, events) {
  */
 Api.updatePlatform = function (destination, options, events) {
     events = setupEvents(events);
-
-    return require('../../lib/create')
-    .update(destination, options, events)
-    .then(function (destination) {
-        var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
-        return new PlatformApi('android', destination, events);
-    });
+    var result;
+    try {
+        result = require('../../lib/create')
+        .update(destination, options, events)
+        .then(function (destination) {
+            var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
+            return new PlatformApi('android', destination, events);
+        });
+    }
+    catch (e) {
+        events.emit('error','updatePlatform is not callable from the android project API, you will need to do this manually.');
+        throw(e);
+    }
+    return result;
 };
 
 /**
