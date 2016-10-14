@@ -129,4 +129,5 @@ node_modules/which/
 node_modules/window-size/
 node_modules/wordwrap/
 node_modules/yargs/
+node_modules/fs.realpath/
 /coverage
