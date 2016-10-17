@@ -280,6 +280,13 @@ Performs division and returns the remainder, disregarding the quotient. The sign
  
 [View benchmarks for this method](http://peterolson.github.io/BigInteger.js/benchmark/#Division)
 
+#### `modInv(mod)`
+
+Finds the [multiplicative inverse](https://en.wikipedia.org/wiki/Modular_multiplicative_inverse) of the number modulo `mod`.
+
+ - `bigInt(3).modInv(11)` => `4`
+ - `bigInt(42).modInv(2017)` => `1969`
+
 #### `modPow(exp, mod)`
 
 Takes the number to the power `exp` modulo `mod`.

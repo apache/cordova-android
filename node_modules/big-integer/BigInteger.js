@@ -301,7 +301,7 @@ var bigInt = (function (undefined) {
 
     function multiplyKaratsuba(x, y) {
         var n = Math.max(x.length, y.length);
-        
+
         if (n <= 30) return multiplyLong(x, y);
         n = Math.ceil(n / 2);
 
@@ -822,6 +822,24 @@ var bigInt = (function (undefined) {
     };
     SmallInteger.prototype.isProbablePrime = BigInteger.prototype.isProbablePrime;
 
+    BigInteger.prototype.modInv = function (n) {
+        var t = bigInt.zero, newT = bigInt.one, r = parseValue(n), newR = this.abs(), q, lastT, lastR;
+        while (!newR.equals(bigInt.zero)) {
+        	q = r.divide(newR);
+          lastT = t;
+          lastR = r;
+          t = newT;
+          r = newR;
+          newT = lastT.subtract(q.multiply(newT));
+          newR = lastR.subtract(q.multiply(newR));
+        }
+        if (t.compare(0) === -1) {
+        	t = t.add(n);
+        }
+        return t;
+    }
+    SmallInteger.prototype.modInv = BigInteger.prototype.modInv;
+
     BigInteger.prototype.next = function () {
         var value = this.value;
         if (this.sign) {
@@ -1114,7 +1132,7 @@ var bigInt = (function (undefined) {
         return this.value;
     };
     SmallInteger.prototype.toJSNumber = SmallInteger.prototype.valueOf;
-    
+
     function parseStringValue(v) {
             if (isPrecise(+v)) {
                 var x = +v;
@@ -1153,7 +1171,7 @@ var bigInt = (function (undefined) {
             trim(r);
             return new BigInteger(r, sign);
     }
-    
+
     function parseNumberValue(v) {
         if (isPrecise(v)) {
             if (v !== truncate(v)) throw new Error(v + " is not an integer.");

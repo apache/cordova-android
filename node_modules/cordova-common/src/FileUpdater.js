@@ -285,14 +285,14 @@ function mergeAndUpdateDir(sourceDirs, targetDir, options, log) {
     }
 
     // Scan the files in each of the source directories.
-    var sourceMaps = [];
-    for (var i in sourceDirs) {
-        var sourceFullPath = path.join(rootDir, sourceDirs[i]);
-        if (!fs.existsSync(sourceFullPath)) {
-            throw new Error("Source directory does not exist: " + sourceDirs[i]);
-        }
-        sourceMaps[i] = mapDirectory(rootDir, sourceDirs[i], include, exclude);
-    }
+    var sourceMaps = sourceDirs.map(function (sourceDir) {
+            return path.join(rootDir, sourceDir);
+        }).map(function (sourcePath) {
+            if (!fs.existsSync(sourcePath)) {
+                throw new Error("Source directory does not exist: " + sourcePath);
+            }
+            return mapDirectory(rootDir, path.relative(rootDir, sourcePath), include, exclude);
+        });
 
     // Scan the files in the target directory, if it exists.
     var targetMap = {};
@@ -331,46 +331,40 @@ function mapDirectory(rootDir, subDir, include, exclude) {
     function mapSubdirectory(rootDir, subDir, relativeDir, include, exclude, dirMap) {
         var itemMapped = false;
         var items = fs.readdirSync(path.join(rootDir, subDir, relativeDir));
-        for (var i in items) {
-            var relativePath = path.join(relativeDir, items[i]);
 
-            // Skip any files or directories (and everything under) that match an exclude glob.
-            if (matchGlobArray(relativePath, exclude)) {
-                continue;
-            }
+        items.forEach(function(item) {
+            var relativePath = path.join(relativeDir, item);
+            if(!matchGlobArray(relativePath, exclude)) {
+                // Stats obtained here (required at least to know where to recurse in directories)
+                // are saved for later, where the modified times may also be used. This minimizes
+                // the number of file I/O operations performed.
+                var fullPath = path.join(rootDir, subDir, relativePath);
+                var stats = fs.statSync(fullPath);
 
-            // Stats obtained here (required at least to know where to recurse in directories)
-            // are saved for later, where the modified times may also be used. This minimizes
-            // the number of file I/O operations performed.
-            var fullPath = path.join(rootDir, subDir, relativePath);
-            var stats = fs.statSync(fullPath);
-
-            if (stats.isDirectory()) {
-                // Directories are included if either something under them is included or they
-                // match an include glob.
-                if (mapSubdirectory(rootDir, subDir, relativePath, include, exclude, dirMap) ||
-                        matchGlobArray(relativePath, include)) {
-                    dirMap[relativePath] = { subDir: subDir, stats: stats };
-                    itemMapped = true;
-                }
-            } else if (stats.isFile()) {
-                // Files are included only if they match an include glob.
-                if (matchGlobArray(relativePath, include)) {
-                    dirMap[relativePath] = { subDir: subDir, stats: stats };
-                    itemMapped = true;
+                if (stats.isDirectory()) {
+                    // Directories are included if either something under them is included or they
+                    // match an include glob.
+                    if (mapSubdirectory(rootDir, subDir, relativePath, include, exclude, dirMap) ||
+                            matchGlobArray(relativePath, include)) {
+                        dirMap[relativePath] = { subDir: subDir, stats: stats };
+                        itemMapped = true;
+                    }
+                } else if (stats.isFile()) {
+                    // Files are included only if they match an include glob.
+                    if (matchGlobArray(relativePath, include)) {
+                        dirMap[relativePath] = { subDir: subDir, stats: stats };
+                        itemMapped = true;
+                    }
                 }
             }
-        }
+        });
         return itemMapped;
     }
 
     function matchGlobArray(path, globs) {
-        for (var i in globs) {
-            if (minimatch(path, globs[i])) {
-                return true;
-            }
-        }
-        return false;
+        return globs.some(function(elem) {
+            return minimatch(path, elem, {dot:true});
+        });
     }
 }
 
@@ -384,7 +378,7 @@ function mergePathMaps(sourceMaps, targetMap, targetDir) {
     // Target stats will be filled in below for targets that exist.
     var pathMap = {};
     sourceMaps.forEach(function (sourceMap) {
-        for (var sourceSubPath in sourceMap) {
+        Object.keys(sourceMap).forEach(function(sourceSubPath){
             var sourceEntry = sourceMap[sourceSubPath];
             pathMap[sourceSubPath] = {
                 targetPath: path.join(targetDir, sourceSubPath),
@@ -392,12 +386,12 @@ function mergePathMaps(sourceMaps, targetMap, targetDir) {
                 sourcePath: path.join(sourceEntry.subDir, sourceSubPath),
                 sourceStats: sourceEntry.stats
             };
-        }
+        });
     });
 
     // Fill in target stats for targets that exist, and create entries
     // for targets that don't have any corresponding sources.
-    for (var subPath in targetMap) {
+    Object.keys(targetMap).forEach(function(subPath){
         var entry = pathMap[subPath];
         if (entry) {
             entry.targetStats = targetMap[subPath].stats;
@@ -409,7 +403,7 @@ function mergePathMaps(sourceMaps, targetMap, targetDir) {
                 sourceStats: null
             };
         }
-    }
+    });
 
     return pathMap;
 }

@@ -448,10 +448,19 @@ ConfigParser.prototype = {
         return accesses.map(function(access){
             var minimum_tls_version = access.attrib['minimum-tls-version']; /* String */
             var requires_forward_secrecy = access.attrib['requires-forward-secrecy']; /* Boolean */
+            var requires_certificate_transparency = access.attrib['requires-certificate-transparency']; /* Boolean */
+            var allows_arbitrary_loads_in_web_content = access.attrib['allows-arbitrary-loads-in-web-content']; /* Boolean */
+            var allows_arbitrary_loads_in_media = access.attrib['allows-arbitrary-loads-in-media']; /* Boolean */
+            var allows_local_networking = access.attrib['allows-local-networking']; /* Boolean */
+            
             return {
                 'origin': access.attrib.origin,
                 'minimum_tls_version': minimum_tls_version,
-                'requires_forward_secrecy' : requires_forward_secrecy
+                'requires_forward_secrecy' : requires_forward_secrecy,
+                'requires_certificate_transparency' : requires_certificate_transparency,
+                'allows_arbitrary_loads_in_web_content' : allows_arbitrary_loads_in_web_content,
+                'allows_arbitrary_loads_in_media' : allows_arbitrary_loads_in_media,
+                'allows_local_networking' : allows_local_networking
             };
         });
     },
@@ -461,11 +470,42 @@ ConfigParser.prototype = {
         return allow_navigations.map(function(allow_navigation){
             var minimum_tls_version = allow_navigation.attrib['minimum-tls-version']; /* String */
             var requires_forward_secrecy = allow_navigation.attrib['requires-forward-secrecy']; /* Boolean */
+            var requires_certificate_transparency = allow_navigation.attrib['requires-certificate-transparency']; /* Boolean */
+
             return {
                 'href': allow_navigation.attrib.href,
                 'minimum_tls_version': minimum_tls_version,
-                'requires_forward_secrecy' : requires_forward_secrecy
+                'requires_forward_secrecy' : requires_forward_secrecy,
+                'requires_certificate_transparency' : requires_certificate_transparency
             };
+        });
+    },
+    /* Get all the allow-intent tags */
+    getAllowIntents: function() {
+        var allow_intents = this.doc.findall('./allow-intent');
+        return allow_intents.map(function(allow_intent){
+            return {
+                'href': allow_intent.attrib.href
+            };
+        });
+    },
+    /* Get all edit-config tags */
+    getEditConfigs: function(platform) {
+        var platform_tag = this.doc.find('./platform[@name="' + platform + '"]');
+        var platform_edit_configs = platform_tag ? platform_tag.findall('edit-config') : [];
+
+        var edit_configs = this.doc.findall('edit-config').concat(platform_edit_configs);
+
+        return edit_configs.map(function(tag) {
+            var editConfig =
+                {
+                    file : tag.attrib['file'],
+                    target : tag.attrib['target'],
+                    mode : tag.attrib['mode'],
+                    id : 'config.xml',
+                    xmls : tag.getchildren()
+                };
+            return editConfig;
         });
     },
     write:function() {

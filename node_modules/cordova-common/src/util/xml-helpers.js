@@ -160,6 +160,23 @@ module.exports = {
         return true;
     },
 
+    prunXMLRemove: function(doc, selector, nodes) {
+        var target = module.exports.resolveParent(doc, selector);
+        if (!target) return false;
+
+        nodes.forEach(function (node) {
+            var attributes = node.attrib;
+            for (var attribute in attributes) {
+                if (target.attrib[attribute]) {
+                    delete target.attrib[attribute];
+                }
+            }
+        });
+
+        return true;
+
+    },
+
 
     parseElementtreeSync: function (filename) {
         var contents = fs.readFileSync(filename, 'utf-8');

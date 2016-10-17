@@ -110,6 +110,9 @@ ConfigFile.prototype.graft_child = function ConfigFile_graft_child(selector, xml
             case 'overwrite':
                 result = modules.xml_helpers.graftXMLOverwrite(self.data, xml_to_graft, selector, xml_child);
                 break;
+            case 'remove':
+                result= true;
+                break;
             default:
                 result = modules.xml_helpers.graftXML(self.data, xml_to_graft, selector, xml_child.after);
         }
@@ -136,6 +139,9 @@ ConfigFile.prototype.prune_child = function ConfigFile_prune_child(selector, xml
             case 'merge':
             case 'overwrite':
                 result = modules.xml_helpers.pruneXMLRestore(self.data, selector, xml_child);
+                break;
+            case 'remove':
+                result = modules.xml_helpers.prunXMLRemove(self.data, selector, xml_to_graft);
                 break;
             default:
                 result = modules.xml_helpers.pruneXML(self.data, xml_to_graft, selector);
@@ -191,6 +197,12 @@ function resolveConfigFilePath(project_dir, platform, file) {
             if (matches.length) filepath = matches[0];
         }
         return filepath;
+    }
+
+    // XXX this checks for android studio projects
+    // only if none of the options above are satisfied does this get called
+    if(platform === 'android' && !fs.existsSync(filepath)) {
+      filepath = path.join(project_dir, 'app', 'src', 'main', 'res', 'xml', 'config.xml');
     }
 
     // None of the special cases matched, returning project_dir/file.
