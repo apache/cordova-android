@@ -35,7 +35,7 @@
     <preference name="useBrowserHistory" value="true" />
     <preference name="exit-on-suspend" value="false" />
     <preference name="showTitle" value="true" />
-    <preference name="BackgroundColor" value="" />
+    <preference name="BackgroundColor" value="#000000" />
     <feature name="Activity">
         <param name="android-package" value="org.apache.cordova.test.ActivityPlugin" />
     </feature>
