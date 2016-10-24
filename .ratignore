@@ -4,3 +4,4 @@ gen
 proguard-project.txt
 spec
 appveyor.yml
+framework/build
