@@ -46,8 +46,8 @@ module.exports.prepare = function (cordovaProject, options) {
         return updateProjectAccordingTo(self._config, self.locations);
     })
     .then(function () {
-        updateIcons(cordovaProject, self.locations.res);
-        updateSplashes(cordovaProject, self.locations.res);
+        updateIcons(cordovaProject, path.relative(cordovaProject.root, self.locations.res));
+        updateSplashes(cordovaProject, path.relative(cordovaProject.root, self.locations.res));
     })
     .then(function () {
         events.emit('verbose', 'Prepared android project successfully');
@@ -70,8 +70,8 @@ module.exports.clean = function (options) {
     var self = this;
     return Q().then(function () {
         cleanWww(projectRoot, self.locations);
-        cleanIcons(projectRoot, projectConfig, self.locations.res);
-        cleanSplashes(projectRoot, projectConfig, self.locations.res);
+        cleanIcons(projectRoot, projectConfig, path.relative(projectRoot, self.locations.res));
+        cleanSplashes(projectRoot, projectConfig, path.relative(projectRoot, self.locations.res));
     });
 };
 
