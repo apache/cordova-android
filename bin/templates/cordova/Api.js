@@ -244,7 +244,8 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
             // Skip cleaning prepared files when not invoking via cordova CLI.
             opts.noPrepare = true;
 
-            return self.clean(opts);
+            if(!(AndroidStudio.isAndroidStudioProject(self.root)))
+              return self.clean(opts);
         })
        .then(function () {
             return PluginManager.get(self.platform, self.locations, project)
