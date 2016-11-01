@@ -8,7 +8,7 @@ before_install:
 install:
     - npm install
     - npm install -g codecov
-    - echo y | android update sdk -u --filter android-22,android-23,android-24
+    - echo y | android update sdk -u --filter android-22,android-23,android-24,android-25
 android:
     components:
       - tools
