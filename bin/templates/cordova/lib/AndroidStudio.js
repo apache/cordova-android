@@ -4,26 +4,33 @@
  *  @param {String} root Root folder of the project
  */
 
-/*jshint esversion: 6 */
+/*jshint esnext: false */
 
 var path = require('path');
 var fs = require('fs');
 
-function isAndroidStudioProject(root) {
+module.exports.isAndroidStudioProject = function isAndroidStudioProject(root) {
     var eclipseFiles = ['AndroidManifest.xml', 'libs', 'res', 'project.properties', 'platform_www'];
     var androidStudioFiles = ['app', 'gradle', 'build', 'app/src/main/assets'];
-    var file;
-    for(file of eclipseFiles) {
-      if(fs.existsSync(path.join(root, file))) {
-        return false;
-      }
-    }
-    for(file of androidStudioFiles) {
-      if(!fs.existsSync(path.join(root, file))) {
-        return false;
-      }
-    }
-    return true;
-}
 
-module.exports.isAndroidStudioProject = isAndroidStudioProject;
+    // assume it is an AS project and not an Eclipse project
+    var isEclipse = false;
+    var isAS = true;
+
+    // if any of the following exists, then we are not an ASProj
+    eclipseFiles.forEach(function(file) {
+        if(fs.existsSync(path.join(root, file))) {
+            isEclipse = true;
+        }
+    });
+
+    // if it is NOT an eclipse project, check that all required files exist
+    if(!isEclipse) {
+        androidStudioFiles.forEach(function(file){
+            if(!fs.existsSync(path.join(root, file))) {
+                isAS = false;
+            }
+        });
+    }
+    return (!isEclipse && isAS);
+};
