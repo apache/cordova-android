@@ -8,14 +8,19 @@
 
 var path = require('path');
 var fs = require('fs');
+var CordovaError = require('cordova-common').CordovaError;
 
 module.exports.isAndroidStudioProject = function isAndroidStudioProject(root) {
     var eclipseFiles = ['AndroidManifest.xml', 'libs', 'res', 'project.properties', 'platform_www'];
-    var androidStudioFiles = ['app', 'gradle', 'build', 'app/src/main/assets'];
+    var androidStudioFiles = ['app', 'gradle', 'build', 'app/src/main/res'];
 
     // assume it is an AS project and not an Eclipse project
     var isEclipse = false;
     var isAS = true;
+
+    if(!fs.existsSync(root)) {
+        throw new CordovaError('AndroidStudio.js:inAndroidStudioProject root does not exist: ' + root);
+    }
 
     // if any of the following exists, then we are not an ASProj
     eclipseFiles.forEach(function(file) {
