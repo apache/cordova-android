@@ -20,7 +20,7 @@
 var path    = require('path'),
     actions = require('./helpers/projectActions.js');
 
-var PLUGIN_ADD_TIMEOUT = 60000;
+var PLUGIN_ADD_TIMEOUT = 90000;
 
 describe('plugin add', function() {
 
