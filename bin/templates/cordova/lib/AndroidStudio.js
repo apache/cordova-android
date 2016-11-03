@@ -12,7 +12,7 @@ var CordovaError = require('cordova-common').CordovaError;
 
 module.exports.isAndroidStudioProject = function isAndroidStudioProject(root) {
     var eclipseFiles = ['AndroidManifest.xml', 'libs', 'res', 'project.properties', 'platform_www'];
-    var androidStudioFiles = ['app', 'gradle', 'build', 'app/src/main/res'];
+    var androidStudioFiles = ['app', 'gradle', 'app/src/main/res'];
 
     // assume it is an AS project and not an Eclipse project
     var isEclipse = false;
@@ -33,6 +33,7 @@ module.exports.isAndroidStudioProject = function isAndroidStudioProject(root) {
     if(!isEclipse) {
         androidStudioFiles.forEach(function(file){
             if(!fs.existsSync(path.join(root, file))) {
+                console.log('missing file :: ' + file);
                 isAS = false;
             }
         });
