@@ -72,6 +72,7 @@ function Api(platform, platformRootDir, events) {
         defaultConfigXml: path.join(self.root, 'cordova/defaults.xml'),
         strings: path.join(self.root, 'res/values/strings.xml'),
         manifest: path.join(self.root, 'AndroidManifest.xml'),
+        build: path.join(self.root, 'build'),
         // NOTE: Due to platformApi spec we need to return relative paths here
         cordovaJs: 'bin/templates/project/assets/www/cordova.js',
         cordovaJsSrc: 'cordova-js-src'
@@ -241,11 +242,12 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
            // Do some basic argument parsing
             var opts = {};
 
-            // Skip cleaning prepared files when not invoking via cordova CLI.
+             // Skip cleaning prepared files when not invoking via cordova CLI.
             opts.noPrepare = true;
 
-            if(!(AndroidStudio.isAndroidStudioProject(self.root)))
+            if(!AndroidStudio.isAndroidStudioProject(self.root) && !project.isClean()) {
               return self.clean(opts);
+            }
         })
        .then(function () {
             return PluginManager.get(self.platform, self.locations, project)
@@ -395,6 +397,8 @@ Api.prototype.clean = function(cleanOptions) {
           return require('./lib/prepare').clean.call(self, cleanOptions);
       });
 };
+
+
 
 /**
  * Performs a requirements check for current platform. Each platform defines its

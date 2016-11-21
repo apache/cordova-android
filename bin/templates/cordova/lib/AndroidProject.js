@@ -197,5 +197,14 @@ AndroidProject.prototype.getUninstaller = function (type) {
     return pluginHandlers.getUninstaller(type);
 };
 
+/*
+ * This checks if an Android project is clean or has old build artifacts
+ */
+
+AndroidProject.prototype.isClean = function() {
+    var build_path = path.join(this.projectDir, "build");
+    //If the build directory doesn't exist, it's clean
+    return !(fs.existsSync(build_path));
+};
 
 module.exports = AndroidProject;
