@@ -202,7 +202,7 @@ AndroidProject.prototype.getUninstaller = function (type) {
  */
 
 AndroidProject.prototype.isClean = function() {
-    var build_path = path.join(this.projectDir, "build");
+    var build_path = path.join(this.projectDir, 'build');
     //If the build directory doesn't exist, it's clean
     return !(fs.existsSync(build_path));
 };
