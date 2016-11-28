@@ -42,7 +42,7 @@ describe('addPlugin method', function () {
         pluginManager.addPlugin.andReturn(Q());
         spyOn(common.PluginManager, 'get').andReturn(pluginManager);
 
-        var projectSpy = jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write']);
+        var projectSpy = jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write', 'isClean']);
         spyOn(AndroidProject, 'getProjectFile').andReturn(projectSpy);
 
         oldClean = Api.__get__('Api.prototype.clean');
