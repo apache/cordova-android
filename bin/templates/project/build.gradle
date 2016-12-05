@@ -264,7 +264,7 @@ def promptForReleaseKeyPassword() {
 
 gradle.taskGraph.whenReady { taskGraph ->
     taskGraph.getAllTasks().each() { task ->
-        if (task.name == 'validateReleaseSigning') {
+        if (task.name == 'validateReleaseSigning' || task.name == 'validateSigningRelease') {
             promptForReleaseKeyPassword()
         }
     }
