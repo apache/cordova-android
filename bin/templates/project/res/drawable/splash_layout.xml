@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle" >
+            <solid android:color="@color/splash_background_color" />
+        </shape>
+    </item>
+    <item android:top="24dip">
+        <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+            android:gravity="fill" android:src="@drawable/screen" />
+    </item>
+</layer-list>

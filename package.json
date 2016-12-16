@@ -29,7 +29,8 @@
     "nopt": "^3.0.1",
     "properties-parser": "^0.2.3",
     "q": "^1.4.1",
-    "shelljs": "^0.5.3"
+    "shelljs": "^0.5.3",
+    "semver": "^5.0.1"
   },
   "bundledDependencies": [
     "cordova-common",
@@ -37,7 +38,8 @@
     "nopt",
     "properties-parser",
     "q",
-    "shelljs"
+    "shelljs",
+    "semver"
   ],
   "devDependencies": {
     "istanbul": "^0.4.2",
