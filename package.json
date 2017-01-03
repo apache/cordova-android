@@ -16,10 +16,10 @@
     "apache"
   ],
   "scripts": {
-    "test": "npm run jshint && jasmine-node --color spec/unit",
-    "cover": "istanbul cover --root bin/templates/cordova --print detail node_modules/jasmine-node/bin/jasmine-node -- spec/unit",
-    "test-build": "jasmine-node --captureExceptions --color spec/e2e",
-    "jshint": "node node_modules/jshint/bin/jshint bin && node node_modules/jshint/bin/jshint spec"
+    "test": "npm run jshint && jasmine",
+    "cover": "istanbul cover --root bin/templates/cordova --print detail jasmine",
+    "test-build": "jasmine --captureExceptions --color spec/e2e/*.spec.js",
+    "jshint": "jshint bin && jshint spec"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
@@ -41,7 +41,7 @@
   ],
   "devDependencies": {
     "istanbul": "^0.4.2",
-    "jasmine-node": "^1.14.5",
+    "jasmine": "^2.5.2",
     "jshint": "^2.6.0",
     "promise-matchers": "~0",
     "rewire": "^2.1.3"

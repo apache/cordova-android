@@ -28,7 +28,7 @@ describe("run", function () {
     var emulatorOpts = { emulator: true };
     var emptyOpts = {};
 
-    it("should select correct target based on the run opts", function() {
+    it("Test#001 : should select correct target based on the run opts", function() {
         expect(getInstallTarget(targetOpts)).toBe("emu");
         expect(getInstallTarget(deviceOpts)).toBe("--device");
         expect(getInstallTarget(emulatorOpts)).toBe("--emulator");

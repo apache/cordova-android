@@ -39,11 +39,11 @@ describe('addPlugin method', function () {
 
     beforeEach(function() {
         var pluginManager = jasmine.createSpyObj('pluginManager', ['addPlugin']);
-        pluginManager.addPlugin.andReturn(Q());
-        spyOn(common.PluginManager, 'get').andReturn(pluginManager);
+        pluginManager.addPlugin.and.returnValue(Q());
+        spyOn(common.PluginManager, 'get').and.returnValue(pluginManager);
 
         var projectSpy = jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write', 'isClean']);
-        spyOn(AndroidProject, 'getProjectFile').andReturn(projectSpy);
+        spyOn(AndroidProject, 'getProjectFile').and.returnValue(projectSpy);
 
         oldClean = Api.__get__('Api.prototype.clean');
         Api.__set__('Api.prototype.clean', Q);
@@ -51,14 +51,14 @@ describe('addPlugin method', function () {
 
         fail = jasmine.createSpy('fail');
         gradleBuilder = jasmine.createSpyObj('gradleBuilder', ['prepBuildFiles']);
-        spyOn(builders, 'getBuilder').andReturn(gradleBuilder);
+        spyOn(builders, 'getBuilder').and.returnValue(gradleBuilder);
     });
 
     afterEach(function () {
         Api.__set__('Api.prototype.clean', oldClean);
     });
 
-    it('should call gradleBuilder.prepBuildFiles for every plugin with frameworks', function(done) {
+    it('Test#001 : should call gradleBuilder.prepBuildFiles for every plugin with frameworks', function(done) {
         api.addPlugin(new PluginInfo(path.join(FIXTURES, 'cordova-plugin-fake')))
         .catch(fail)
         .fin(function () {
@@ -68,7 +68,7 @@ describe('addPlugin method', function () {
         });
     });
 
-    it('shouldn\'t trigger gradleBuilder.prepBuildFiles for plugins without android frameworks', function(done) {
+    it('Test#002 : shouldn\'t trigger gradleBuilder.prepBuildFiles for plugins without android frameworks', function(done) {
         api.addPlugin(new PluginInfo(path.join(FIXTURES, 'cordova-plugin-fake-ios-frameworks')))
         .catch(fail)
         .fin(function () {
