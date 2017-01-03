@@ -24,7 +24,7 @@ var PLUGIN_ADD_TIMEOUT = 90000;
 
 describe('plugin add', function() {
 
-    it('create project and add a plugin with framework', function(done) {
+    it('Test#001 : create project and add a plugin with framework', function(done) {
         var projectname = 'testpluginframework';
         var projectid = 'com.test.plugin.framework';
         var fakePluginPath = path.join(__dirname, 'fixtures/cordova-plugin-fake');

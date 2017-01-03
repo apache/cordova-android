@@ -23,7 +23,7 @@ var android_project = path.join(__dirname, '../fixtures/android_project');
 
 describe('AndroidProject class', function() {
     describe('getPackageName method', function() {
-        it('should return an android project\'s proper package name', function() {
+        it('Test#001 : should return an android project\'s proper package name', function() {
             expect(AndroidProject.getProjectFile(android_project).getPackageName())
                 .toEqual('com.alunny.childapp');
         });

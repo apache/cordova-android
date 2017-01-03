@@ -35,42 +35,42 @@ function createAndBuild(projectname, projectid, done) {
 
 describe('create', function() {
 
-    it('create project with ascii name, no spaces', function(done) {
+    it('Test#001 : create project with ascii name, no spaces', function(done) {
         var projectname = 'testcreate';
         var projectid = 'com.test.create.app1';
 
         createAndBuild(projectname, projectid, done);
     }, CREATE_TIMEOUT);
 
-    it('create project with ascii name, and spaces', function(done) {
+    it('Test#002 : create project with ascii name, and spaces', function(done) {
         var projectname = 'test create';
         var projectid = 'com.test.create.app2';
 
         createAndBuild(projectname, projectid, done);
     }, CREATE_TIMEOUT);
 
-    it('create project with unicode name, no spaces', function(done) {
+    it('Test#003 : create project with unicode name, no spaces', function(done) {
         var projectname = '応応応応用用用用';
         var projectid = 'com.test.create.app3';
 
         createAndBuild(projectname, projectid, done);
     }, CREATE_TIMEOUT);
 
-    it('create project with unicode name, and spaces', function(done) {
+    it('Test#004 : create project with unicode name, and spaces', function(done) {
         var projectname = '応応応応 用用用用';
         var projectid = 'com.test.create.app4';
 
         createAndBuild(projectname, projectid, done);
     }, CREATE_TIMEOUT);
 
-    it('create project with ascii+unicode name, no spaces', function(done) {
+    it('Test#005 : create project with ascii+unicode name, no spaces', function(done) {
         var projectname = '応応応応hello用用用用';
         var projectid = 'com.test.create.app5';
 
         createAndBuild(projectname, projectid, done);
     }, CREATE_TIMEOUT);
 
-    it('create project with ascii+unicode name, and spaces', function(done) {
+    it('Test#006 : create project with ascii+unicode name, and spaces', function(done) {
         var projectname = '応応応応 hello 用用用用';
         var projectid = 'com.test.create.app6';
 

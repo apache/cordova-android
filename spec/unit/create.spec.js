@@ -18,8 +18,6 @@
 */
 /* jshint laxcomma:true */
 
-require("promise-matchers");
-
 var create = require("../../bin/lib/create");
 
 describe("create", function () {
@@ -48,14 +46,27 @@ describe("create", function () {
     ];
 
     valid.forEach(function(package_name) {
-      it("should accept " + package_name, function(done) {
-        expect(create.validatePackageName(package_name)).toHaveBeenResolved(done);
+      it("Test#001 : should accept " + package_name, function(done) {
+        return create.validatePackageName(package_name)
+        .then(function() {
+          //resolved
+          done();
+        }).fail(function(err) {
+          expect(err).toBeUndefined();
+        });
       });
     });
 
     invalid.forEach(function(package_name) {
-      it("should reject " + package_name, function(done) {
-        expect(create.validatePackageName(package_name)).toHaveBeenRejected(done);
+      it("Test#002 : should reject " + package_name, function(done) {
+        return create.validatePackageName(package_name)
+        .then(function() {
+          //shouldn't be here
+          expect(true).toBe(false);
+        }).fail(function(err) {
+          expect(err).toBeDefined();
+          done();
+        });
       });
     });
   });
@@ -73,15 +84,29 @@ describe("create", function () {
     ];
 
     valid.forEach(function(project_name) {
-      it("should accept " + project_name, function(done) {
-        expect(create.validateProjectName(project_name)).toHaveBeenResolved(done);
+      it("Test#003 : should accept " + project_name, function(done) {
+        return create.validateProjectName(project_name)
+        .then(function() {
+          //resolved
+          done();
+        }).fail(function(err) {
+          expect(err).toBeUndefined();
+        });
       });
     });
 
     invalid.forEach(function(project_name) {
-      it("should reject " + project_name, function(done) {
-        expect(create.validateProjectName(project_name)).toHaveBeenRejected(done);
+      it("Test#004 : should reject " + project_name, function(done) {
+        return create.validateProjectName(project_name)
+        .then(function() {
+          //shouldn't be here
+          expect(true).toBe(false);
+        }).fail(function(err) {
+          expect(err).toBeDefined();
+          done();
+        });
       });
     });
   });
 });
+

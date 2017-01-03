@@ -56,7 +56,7 @@ function testUpdate(projectname, projectid, createfrom, updatefrom, doBuild, don
 
 describe('preparing fixtures', function () {
 
-    it('cloning old platform', function (done) {
+    it('Test#001 : cloning old platform', function (done) {
         var command = util.format('git clone %s --depth=1 --branch %s %s',
             PLATFORM_GIT_URL, platformOld.version, platformOld.path);
         shell.rm('-rf', platformOld.path);
@@ -70,7 +70,7 @@ describe('preparing fixtures', function () {
 
 describe('update', function() {
 
-    it('should update major version and build the project', function(done) {
+    it('Test#002 : should update major version and build the project', function(done) {
         var projectname = 'testupdate';
         var projectid = 'com.test.update.app1';
 
@@ -78,7 +78,7 @@ describe('update', function() {
 
     }, UPDATE_TIMEOUT);
 
-    it('should downgrade major version and build the project', function(done) {
+    it('Test#003 : should downgrade major version and build the project', function(done) {
         var projectname = 'testupdate';
         var projectid = 'com.test.update.app2';
 
@@ -90,7 +90,7 @@ describe('update', function() {
 
 describe('cleanup', function () {
 
-    it('remove cloned old platform', function() {
+    it('Test#004 : remove cloned old platform', function() {
         shell.rm('-rf', platformOld.path);
     });
 
