@@ -20,6 +20,11 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 6.1.1 (Jan 03, 2017)
+* [CB-12159](https://issues.apache.org/jira/browse/CB-12159) **Android** Keystore password prompt won't show up
+* [CB-12169](https://issues.apache.org/jira/browse/CB-12169) Check for build directory before running a clean
+* Fixed `AndroidStudio` tests to actually run, removed `app/src/main/assets/` as a requirement and added `app/src/main/res` instead, added placeholder for `build/` folder, Removed dupe `gitignore`
+
 ### 6.1.0 (Nov 02, 2016)
 * [CB-12108](https://issues.apache.org/jira/browse/CB-12108) Updating gradle files to work with the latest version of Android Studio
 * [CB-12102](https://issues.apache.org/jira/browse/CB-12102) Bump travis to build to API 25
