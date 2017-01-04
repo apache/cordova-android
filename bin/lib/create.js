@@ -276,6 +276,7 @@ exports.create = function(project_path, config, options, events) {
             copyJsAndLibrary(project_path, options.link, safe_activity_name);
 
             //Set up ther Android Studio paths
+            var app_path = path.join(project_path, 'app', 'src', 'main');
             var java_path = path.join(app_path, 'java');
             var assets_path = path.join(app_path, 'assets');
             var resource_path = path.join(app_path, 'res');
@@ -285,8 +286,9 @@ exports.create = function(project_path, config, options, events) {
 
             // interpolate the activity name and package
             var packagePath = package_name.replace(/\./g, path.sep);
-            var activity_dir = path.join(project_path, 'src', packagePath);
+            var activity_dir = path.join(java_path, packagePath);
             var activity_path = path.join(activity_dir, safe_activity_name + '.java');
+
             shell.mkdir('-p', activity_dir);
             shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
             shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
@@ -298,7 +300,7 @@ exports.create = function(project_path, config, options, events) {
                 .setTargetSdkVersion(target_api.split('-')[1])
                 .getActivity().setName(safe_activity_name);
 
-            var manifest_path = path.join(project_path, 'AndroidManifest.xml');
+            var manifest_path = path.join(app_path, 'AndroidManifest.xml');
             manifest.write(manifest_path);
 
             copyScripts(project_path);
