@@ -42,7 +42,7 @@ Desktop.ini
 npm-debug.log
 node_modules/jshint
 node_modules/promise-matchers
-node_modules/jasmine-node
+node_modules/jasmine
 node_modules/rewire
 node_modules/istanbul
 node_modules/.bin/cake
@@ -53,7 +53,7 @@ node_modules/.bin/esparse
 node_modules/.bin/esvalidate
 node_modules/.bin/handlebars
 node_modules/.bin/istanbul
-node_modules/.bin/jasmine-node
+node_modules/.bin/jasmine
 node_modules/.bin/js-yaml
 node_modules/.bin/jshint
 node_modules/.bin/mkdirp
@@ -128,5 +128,6 @@ node_modules/which/
 node_modules/window-size/
 node_modules/wordwrap/
 node_modules/yargs/
+node_modules/jasmine-core/
 node_modules/fs.realpath/
 /coverage
