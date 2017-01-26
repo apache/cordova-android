@@ -20,6 +20,11 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 6.1.2 (Jan 26, 2017)
+* **Security** Change to `https` by default
+* [CB-12018](https://issues.apache.org/jira/browse/CB-12018): updated tests to work with jasmine (promise matcher tests commented out for now)
+* created directories and corresponding images for `xxhdpi` and `xxxhdpi`, both drawables and `mipmaps`
+
 ### 6.1.1 (Jan 03, 2017)
 * [CB-12159](https://issues.apache.org/jira/browse/CB-12159) **Android** Keystore password prompt won't show up
 * [CB-12169](https://issues.apache.org/jira/browse/CB-12169) Check for build directory before running a clean
