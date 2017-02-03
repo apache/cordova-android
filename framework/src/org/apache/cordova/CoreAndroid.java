@@ -201,7 +201,16 @@ public class CoreAndroid extends CordovaPlugin {
                 e.printStackTrace();
             }
         }
-        this.webView.showWebPage(url, openExternal, clearHistory, params);
+        // The showWebPage should run in UI thread so it can access the webView for operations like clearHistory and loadUrl
+        final String destUrl = url;
+        final boolean external = openExternal;
+        final boolean clearHis = clearHistory;
+        final HashMap<String, Object> destParams = params;
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                webView.showWebPage(destUrl, external, clearHis, destParams);
+            }
+        });
     }
 
     /**
