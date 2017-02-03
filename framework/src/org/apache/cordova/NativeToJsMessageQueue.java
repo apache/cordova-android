@@ -488,6 +488,34 @@ public class NativeToJsMessageQueue {
             encodeAsMessageHelper(sb, pluginResult);
         }
 
+        void encodeMessageAsJsMessage(StringBuilder sb) {
+            switch (pluginResult.getMessageType()) {
+                case PluginResult.MESSAGE_TYPE_MULTIPART:
+                    int size = pluginResult.getMultipartMessagesSize();
+                    for (int i=0; i<size; i++) {
+                        PluginResult subresult = pluginResult.getMultipartMessage(i);
+                        JsMessage submessage = new JsMessage(subresult, jsPayloadOrCallbackId);
+                        submessage.encodeMessageAsJsMessage(sb);
+                        if (i < (size-1)) {
+                            sb.append(",");
+                        }
+                    }
+                    break;
+                case PluginResult.MESSAGE_TYPE_BINARYSTRING:
+                    sb.append("atob('")
+                            .append(pluginResult.getMessage())
+                            .append("')");
+                    break;
+                case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
+                    sb.append("cordova.require('cordova/base64').toArrayBuffer('")
+                            .append(pluginResult.getMessage())
+                            .append("')");
+                    break;
+                default:
+                    sb.append(pluginResult.getMessage());
+            }
+        }
+
         void encodeAsJsMessage(StringBuilder sb) {
             if (pluginResult == null) {
                 sb.append(jsPayloadOrCallbackId);
@@ -495,29 +523,16 @@ public class NativeToJsMessageQueue {
                 int status = pluginResult.getStatus();
                 boolean success = (status == PluginResult.Status.OK.ordinal()) || (status == PluginResult.Status.NO_RESULT.ordinal());
                 sb.append("cordova.callbackFromNative('")
-                  .append(jsPayloadOrCallbackId)
-                  .append("',")
-                  .append(success)
-                  .append(",")
-                  .append(status)
-                  .append(",[");
-                switch (pluginResult.getMessageType()) {
-                    case PluginResult.MESSAGE_TYPE_BINARYSTRING:
-                        sb.append("atob('")
-                          .append(pluginResult.getMessage())
-                          .append("')");
-                        break;
-                    case PluginResult.MESSAGE_TYPE_ARRAYBUFFER:
-                        sb.append("cordova.require('cordova/base64').toArrayBuffer('")
-                          .append(pluginResult.getMessage())
-                          .append("')");
-                        break;
-                    default:
-                    sb.append(pluginResult.getMessage());
-                }
+                        .append(jsPayloadOrCallbackId)
+                        .append("',")
+                        .append(success)
+                        .append(",")
+                        .append(status)
+                        .append(",[");
+                encodeMessageAsJsMessage(sb);
                 sb.append("],")
-                  .append(pluginResult.getKeepCallback())
-                  .append(");");
+                        .append(pluginResult.getKeepCallback())
+                        .append(");");
             }
         }
     }
