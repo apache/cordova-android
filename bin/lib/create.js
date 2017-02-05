@@ -226,7 +226,7 @@ exports.create = function(project_path, config, options, events) {
         return Q.reject(new CordovaError('Project already exists! Delete and recreate'));
     }
 
-    var package_name = config.packageName() || 'my.cordova.project';
+    var package_name = config.android_packageName() || config.packageName() || 'my.cordova.project';
     var project_name = config.name() ?
         config.name().replace(/[^\w.]/g,'_') : 'CordovaExample';
 
