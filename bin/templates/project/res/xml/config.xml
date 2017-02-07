@@ -47,7 +47,7 @@
     <allow-intent href="geo:*" />
     <allow-intent href="market:*" />
 
-    <preference name="loglevel" value="DEBUG" />
+    <preference name="LogLevel" value="DEBUG" />
     <!--
       <preference name="splashscreen" value="splash" />
       <preference name="backgroundColor" value="0xFFF" />
