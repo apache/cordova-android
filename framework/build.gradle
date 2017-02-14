@@ -16,27 +16,30 @@
    under the License.
 */
 
-
-
 buildscript {
     repositories {
         mavenCentral()
-        jcenter();
+        jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.1'
+        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
     }
-
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
 
 ext {
     apply from: 'cordova.gradle'
     cdvCompileSdkVersion = privateHelpers.getProjectTarget()
     cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
 }
+
+group = 'org.apache.cordova'
+version = '6.1.0'
 
 android {
     compileSdkVersion cdvCompileSdkVersion
@@ -57,6 +60,73 @@ android {
             renderscript.srcDirs = ['src']
             res.srcDirs = ['res']
             assets.srcDirs = ['assets']
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                name 'Cordova'
+                url 'https://cordova.apache.org'
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'shazron'
+                        name 'Shazron Abdullah'
+                    }
+                }
+                scm {
+                    connection 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git'
+                    developerConnection 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git'
+                    url 'https://git-wip-us.apache.org/repos/asf?p=cordova-android'
+
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    configurations = ['archives']
+    pkg {
+        name = 'cordova'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git'
+        websiteUrl = 'https://cordova.apache.org'
+        issueTrackerUrl = 'https://issues.apache.org/jira/browse/CB'
+        publicDownloadNumbers = true
+        licenses = ['Apache-2.0']
+        labels = ['android', 'cordova', 'phonegap']
+        version {
+            name = '6.1.0'
+            released  = new Date()
+            vcsTag = '6.1.0'
         }
     }
 }
