@@ -14,7 +14,7 @@ import org.apache.cordova.engine.SystemWebView;
 import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONException;
 
-public class MainActivity extends AppCompatActivity {
+public class EmbeddedWebViewActivity extends AppCompatActivity {
 
     public CordovaWebView webInterface;
     private CordovaInterfaceImpl cordovaInterface = new CordovaInterfaceImpl(this);
