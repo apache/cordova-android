@@ -16,6 +16,12 @@
    under the License.
 */
 
+ext {
+    apply from: 'cordova.gradle'
+    cdvCompileSdkVersion = privateHelpers.getProjectTarget()
+    cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+}
+
 buildscript {
     repositories {
         mavenCentral()
@@ -31,12 +37,6 @@ buildscript {
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
-
-ext {
-    apply from: 'cordova.gradle'
-    cdvCompileSdkVersion = privateHelpers.getProjectTarget()
-    cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
-}
 
 group = 'org.apache.cordova'
 version = '6.1.0'
@@ -86,8 +86,8 @@ install {
                 }
                 developers {
                     developer {
-                        id 'shazron'
-                        name 'Shazron Abdullah'
+                        id 'stevengill'
+                        name 'Steve Gill'
                     }
                 }
                 scm {
@@ -115,7 +115,9 @@ bintray {
     key = System.getenv('BINTRAY_KEY')
     configurations = ['archives']
     pkg {
-        name = 'cordova'
+        repo = 'maven'
+        name = 'cordova-android'
+        userOrg = 'cordova'
         licenses = ['Apache-2.0']
         vcsUrl = 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git'
         websiteUrl = 'https://cordova.apache.org'
