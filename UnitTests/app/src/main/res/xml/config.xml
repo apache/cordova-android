@@ -31,9 +31,14 @@
     <access origin="https://*.googleapis.com/*" />
     <access origin="https://*.gstatic.com/*" />
     <content src="index.html" />
+    <preference name="errorUrl" value="error.html" />
     <preference name="loglevel" value="DEBUG" />
     <preference name="useBrowserHistory" value="true" />
     <preference name="exit-on-suspend" value="false" />
     <preference name="showTitle" value="true" />
     <preference name="BackgroundColor" value="#000000" />
+    <feature name="LifeCycle">
+        <param name="android-package" value="org.apache.cordova.unittests.LifeCyclePlugin" />
+        <param name="onload" value="true" />
+    </feature>
 </widget>
