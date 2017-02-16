@@ -488,14 +488,14 @@ public class NativeToJsMessageQueue {
             encodeAsMessageHelper(sb, pluginResult);
         }
 
-        void encodeMessageAsJsMessage(StringBuilder sb) {
+        void buildJsMessage(StringBuilder sb) {
             switch (pluginResult.getMessageType()) {
                 case PluginResult.MESSAGE_TYPE_MULTIPART:
                     int size = pluginResult.getMultipartMessagesSize();
                     for (int i=0; i<size; i++) {
                         PluginResult subresult = pluginResult.getMultipartMessage(i);
                         JsMessage submessage = new JsMessage(subresult, jsPayloadOrCallbackId);
-                        submessage.encodeMessageAsJsMessage(sb);
+                        submessage.buildJsMessage(sb);
                         if (i < (size-1)) {
                             sb.append(",");
                         }
@@ -529,7 +529,7 @@ public class NativeToJsMessageQueue {
                         .append(",")
                         .append(status)
                         .append(",[");
-                encodeMessageAsJsMessage(sb);
+                buildJsMessage(sb);
                 sb.append("],")
                         .append(pluginResult.getKeepCallback())
                         .append(");");
