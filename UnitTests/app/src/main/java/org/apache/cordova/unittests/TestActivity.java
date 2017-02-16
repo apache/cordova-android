@@ -25,6 +25,7 @@ import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaWebView;
 
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RunnableFuture;
 
 /**
  * The purpose of this activity is to allow the test framework to manipulate the start url, which
@@ -60,7 +61,7 @@ public class TestActivity extends CordovaActivity {
         }
         return super.onMessage(id, data);
     }
-    public CordovaWebView getWebInterface() { return this.appView; }
 
+    public CordovaWebView getWebInterface() { return this.appView; }
 
 }
