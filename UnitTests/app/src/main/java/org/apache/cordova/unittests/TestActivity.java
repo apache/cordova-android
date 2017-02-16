@@ -24,13 +24,18 @@ import android.os.Bundle;
 import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaWebView;
 
+import java.util.concurrent.ArrayBlockingQueue;
+
 /**
  * The purpose of this activity is to allow the test framework to manipulate the start url, which
  * is normally locked down by CordovaActivity to standard users who aren't editing their Java code.
  */
 
 public class TestActivity extends CordovaActivity {
-    
+
+    public final ArrayBlockingQueue<String> onPageFinishedUrl = new ArrayBlockingQueue<String>(500);
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,10 +53,13 @@ public class TestActivity extends CordovaActivity {
         loadUrl(launchUrl);
     }
 
-    public String getUrl() {
-        return appView.getUrl();
+    @Override
+    public Object onMessage(String id, Object data) {
+        if ("onPageFinished".equals(id)) {
+            onPageFinishedUrl.add((String) data);
+        }
+        return super.onMessage(id, data);
     }
-
     public CordovaWebView getWebInterface() { return this.appView; }
 
 
