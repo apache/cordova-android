@@ -22,6 +22,12 @@ package org.apache.cordova.unittests;
 import android.os.Bundle;
 
 import org.apache.cordova.CordovaActivity;
+import org.apache.cordova.CordovaWebView;
+
+/**
+ * The purpose of this activity is to allow the test framework to manipulate the start url, which
+ * is normally locked down by CordovaActivity to standard users who aren't editing their Java code.
+ */
 
 public class TestActivity extends CordovaActivity {
     
@@ -45,6 +51,8 @@ public class TestActivity extends CordovaActivity {
     public String getUrl() {
         return appView.getUrl();
     }
+
+    public CordovaWebView getWebInterface() { return this.appView; }
 
 
 }
