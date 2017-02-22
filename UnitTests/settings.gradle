@@ -1,3 +1,0 @@
-include ':app'
-include ":CordovaLib"
-project(':CordovaLib').projectDir = new File('../framework')
