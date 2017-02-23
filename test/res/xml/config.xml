@@ -30,6 +30,7 @@
     <access origin="https://*.google.com/*" />
     <access origin="https://*.googleapis.com/*" />
     <access origin="https://*.gstatic.com/*" />
+    <access origin="market://details?id=com.google.android.apps.maps" launch-external="yes"/>
     <content src="index.html" />
     <preference name="loglevel" value="DEBUG" />
     <preference name="useBrowserHistory" value="true" />
