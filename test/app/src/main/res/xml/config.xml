@@ -31,7 +31,7 @@
     <access origin="https://*.googleapis.com/*" />
     <access origin="https://*.gstatic.com/*" />
     <content src="index.html" />
-    <preference name="errorUrl" value="error.html" />
+    <preference name="errorUrl" value="file:///android_asset/www/htmlnotfound/error.html" />
     <preference name="loglevel" value="DEBUG" />
     <preference name="useBrowserHistory" value="true" />
     <preference name="exit-on-suspend" value="false" />
