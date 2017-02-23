@@ -40,7 +40,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'org.apache.cordova'
-version = '6.1.0'
+version = '6.2.0'
 
 android {
     compileSdkVersion cdvCompileSdkVersion
@@ -127,9 +127,9 @@ bintray {
         licenses = ['Apache-2.0']
         labels = ['android', 'cordova', 'phonegap']
         version {
-            name = '6.1.0'
+            name = '6.2.0'
             released  = new Date()
-            vcsTag = '6.1.0'
+            vcsTag = '6.2.0'
         }
     }
 }
