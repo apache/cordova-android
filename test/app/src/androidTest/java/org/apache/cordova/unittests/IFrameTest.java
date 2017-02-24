@@ -49,6 +49,7 @@ public class IFrameTest {
     private static final String START_URL = "file:///android_asset/www/iframe/index.html";
     //I have no idea why we picked 100, but we did.
     private static final int WEBVIEW_ID = 100;
+    private int WEBVIEW_LOAD_DELAY = 500;
 
     private TestActivity testActivity;
 
@@ -68,6 +69,7 @@ public class IFrameTest {
     public void iFrameHistory() throws Throwable {
         final CordovaWebView cordovaWebView = (CordovaWebView) testActivity.getWebInterface();
         onWebView().withElement(findElement(Locator.ID, "google_maps")).perform(webClick());
+        sleep(WEBVIEW_LOAD_DELAY);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run()
             {
@@ -75,6 +77,7 @@ public class IFrameTest {
                 assertTrue(url.endsWith("index.html"));
             }
         });
+        sleep(WEBVIEW_LOAD_DELAY);
         onWebView().withElement(findElement(Locator.ID, "javascript_load")).perform(webClick());
         mActivityRule.runOnUiThread(new Runnable() {
             public void run()
@@ -83,6 +86,7 @@ public class IFrameTest {
                 assertTrue(url.endsWith("index.html"));
             }
         });
+        sleep(WEBVIEW_LOAD_DELAY);
         //Espresso will kill the application and not trigger the backHistory method, which correctly
         //navigates the iFrame history.  backHistory is tied to the back button.
         mActivityRule.runOnUiThread(new Runnable() {
@@ -94,8 +98,17 @@ public class IFrameTest {
                 assertFalse(cordovaWebView.backHistory());
             }
         });
+
     }
 
 
+    //BRUTE FORCE THE CRAP OUT OF CONCURRENCY ERRORS
+    private void sleep(int timeout) {
+        try {
+            Thread.sleep(timeout);
+        } catch (InterruptedException e) {
+            fail("Unexpected Timeout");
+        }
+    }
 
 }
