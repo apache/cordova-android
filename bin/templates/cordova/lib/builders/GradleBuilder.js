@@ -154,22 +154,16 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     });
     buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
     fs.writeFileSync(path.join(this.root, 'build.gradle'), buildGradle);
+    //Q sucks!!
+    return Q.when();
 };
 
 GradleBuilder.prototype.prepEnv = function(opts) {
     var self = this;
-    return check_reqs.check_gradle()
-    .then(function() {
-        return self.prepBuildFiles();
-    }).then(function() {
-        // Copy the gradle wrapper on each build so that:
-        // A) we don't require the Android SDK at project creation time, and
-        // B) we always use the SDK's latest version of it.
-        // check_reqs ensures that this is set.
-        /*jshint -W069 */
-        var sdkDir = process.env['ANDROID_HOME'];
-        /*jshint +W069 */
-        var wrapperDir = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper');
+    return self.prepBuildFiles().then(function() {
+        // We now copy the gradle out of the framework
+        // This is a dirty patch to get the build working
+        var wrapperDir = path.join(self.root, 'CordovaLib');
         if (process.platform == 'win32') {
             shell.rm('-f', path.join(self.root, 'gradlew.bat'));
             shell.cp(path.join(wrapperDir, 'gradlew.bat'), self.root);
