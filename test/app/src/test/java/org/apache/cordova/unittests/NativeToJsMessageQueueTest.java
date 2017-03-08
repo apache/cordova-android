@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 import static org.junit.Assert.*;
@@ -121,6 +122,24 @@ public class NativeToJsMessageQueueTest {
         assertFalse(queue.isEmpty());
         String resultString = queue.popAndEncodeAsJs();
         assertTrue(resultString.startsWith("cordova.callbackFromNative"));
+    }
+
+    //This test is for the evalBridge, which directly calls cordova.callbackFromNative, skipping
+    //platform specific NativeToJs code
+    @Test
+    public void testMultipartPopAndEncodeAsJs()
+    {
+        ArrayList<PluginResult> multiparts = new ArrayList<PluginResult>();
+        for (int i=0; i<5; i++) {
+            multiparts.add(new PluginResult(PluginResult.Status.OK, i));
+        }
+        PluginResult multipartresult = new PluginResult(PluginResult.Status.OK, multiparts);
+        NativeToJsMessageQueue queue = new NativeToJsMessageQueue();
+        queue.addBridgeMode(new NativeToJsMessageQueue.NoOpBridgeMode());
+        queue.setBridgeMode(0);
+        queue.addPluginResult(multipartresult, "37");
+        String result = queue.popAndEncodeAsJs();
+        assertEquals(result, "cordova.callbackFromNative('37',true,1,[0,1,2,3,4],false);");
     }
 
 }
