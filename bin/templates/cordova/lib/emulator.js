@@ -22,6 +22,7 @@
 /* jshint sub:true */
 
 var retry      = require('./retry');
+var android_sdk = require('./android_sdk_version');
 var build      = require('./build');
 var path = require('path');
 var Adb = require('./Adb');
@@ -76,10 +77,22 @@ function list_images_using_avdmanager() {
                     if (response[i + 1].match(/ABI:\s/)) {
                         img_obj['abi'] = response[i + 1].split('ABI: ')[1].replace('\r', '');
                     }
+                    // This next conditional just aims to match the old output of `android list avd`
+                    // We do so so that we don't have to change the logic when parsing for the
+                    // best emulator target to spawn (see below in `best_image`)
+                    // This allows us to transitionally support both `android` and `avdmanager` binaries,
+                    // depending on what SDK version the user has
                     if (response[i + 1].match(/Based\son:\s/)) {
                         img_obj['target'] = response[i + 1].split('Based on:')[1];
                         if (img_obj['target'].match(/Tag\/ABI:\s/)) {
-                            img_obj['target'] = img_obj['target'].split('Tag/ABI:')[0].replace('\r', '');
+                            img_obj['target'] = img_obj['target'].split('Tag/ABI:')[0].replace('\r', '').trim();
+                            if (img_obj['target'].indexOf('(') > -1) {
+                                img_obj['target'] = img_obj['target'].substr(0, img_obj['target'].indexOf('(') - 1).trim();
+                            }
+                        }
+                        var version_string = img_obj['target'].replace(/Android\s+/, '');
+                        if (android_sdk.version_string_to_api_level[version_string]) {
+                            img_obj['target'] += ' (API level ' + android_sdk.version_string_to_api_level[version_string] + ')';
                         }
                     }
                 }
@@ -270,10 +283,13 @@ module.exports.start = function(emulator_ID, boot_timeout) {
     }).then(function(emulatorId) {
         return self.get_available_port()
         .then(function (port) {
+            // Figure out the directory the emulator binary runs in, and set the cwd to that directory.
+            // Workaround for https://code.google.com/p/android/issues/detail?id=235461
+            var emulator_dir = path.dirname(shelljs.which('emulator'));
             var args = ['-avd', emulatorId, '-port', port];
             // Don't wait for it to finish, since the emulator will probably keep running for a long time.
             child_process
-                .spawn('emulator', args, { stdio: 'inherit', detached: true })
+                .spawn('emulator', args, { stdio: 'inherit', detached: true, cwd: emulator_dir })
                 .unref();
 
             // wait for emulator to start
