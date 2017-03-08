@@ -29,9 +29,11 @@ var AndroidManifest = require('./AndroidManifest');
 var events = require('cordova-common').events;
 var spawn = require('cordova-common').superspawn.spawn;
 var CordovaError = require('cordova-common').CordovaError;
+var shelljs = require('shelljs');
 
 var Q             = require('q');
 var os            = require('os');
+var fs            = require('fs');
 var child_process = require('child_process');
 
 // constants
@@ -42,18 +44,16 @@ var NUM_INSTALL_RETRIES     = 3;
 var CHECK_BOOTED_INTERVAL   = 3 * ONE_SECOND; // in milliseconds
 var EXEC_KILL_SIGNAL        = 'SIGKILL';
 
-/**
- * Returns a Promise for a list of emulator images in the form of objects
- * {
-       name   : <emulator_name>,
-       path   : <path_to_emulator_image>,
-       target : <api_target>,
-       abi    : <cpu>,
-       skin   : <skin>
-   }
- */
-module.exports.list_images = function() {
-    return spawn('android', ['list', 'avds'])
+function forgivingWhichSync(cmd) {
+    try {
+        return fs.realpathSync(shelljs.which(cmd));
+    } catch (e) {
+        return '';
+    }
+}
+
+function list_images_using_avdmanager() {
+    return spawn('avdmanager', ['list', 'avd'])
     .then(function(output) {
         var response = output.split('\n');
         var emulator_list = [];
@@ -70,14 +70,18 @@ module.exports.list_images = function() {
                     i++;
                     img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
                 }
-                if (response[i + 1].match(/\(API\slevel\s/) || (response[i + 2] && response[i + 2].match(/\(API\slevel\s/))) {
+                if (response[i + 1].match(/Target:\s/)) {
+                    var api = response[i + 1].split('Target: ')[1];
                     i++;
-                    var secondLine = response[i + 1].match(/\(API\slevel\s/) ? response[i + 1] : '';
-                    img_obj['target'] = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
-                }
-                if (response[i + 1].match(/ABI:\s/)) {
-                    i++;
-                    img_obj['abi'] = response[i].split('ABI: ')[1].replace('\r', '');
+                    if (response[i + 1].match(/ABI:\s/)) {
+                        img_obj['abi'] = response[i + 1].split('ABI: ')[1].replace('\r', '');
+                    }
+                    if (response[i + 1].match(/Based\son:\s/)) {
+                        img_obj['target'] = response[i + 1].split('Based on:')[1];
+                        if (img_obj['target'].match(/Tag\/ABI:\s/)) {
+                            img_obj['target'] = img_obj['target'].split('Tag/ABI:')[0].replace('\r', '');
+                        }
+                    }
                 }
                 if (response[i + 1].match(/Skin:\s/)) {
                     i++;
@@ -94,6 +98,73 @@ module.exports.list_images = function() {
         }
         return emulator_list;
     });
+}
+
+/**
+ * Returns a Promise for a list of emulator images in the form of objects
+ * {
+       name   : <emulator_name>,
+       path   : <path_to_emulator_image>,
+       target : <api_target>,
+       abi    : <cpu>,
+       skin   : <skin>
+   }
+ */
+module.exports.list_images = function() {
+    if (forgivingWhichSync('android')) {
+        return spawn('android', ['list', 'avds'])
+        .then(function(output) {
+            var response = output.split('\n');
+            var emulator_list = [];
+            for (var i = 1; i < response.length; i++) {
+                // To return more detailed information use img_obj
+                var img_obj = {};
+                if (response[i].match(/Name:\s/)) {
+                    img_obj['name'] = response[i].split('Name: ')[1].replace('\r', '');
+                    if (response[i + 1].match(/Device:\s/)) {
+                        i++;
+                        img_obj['device'] = response[i].split('Device: ')[1].replace('\r', '');
+                    }
+                    if (response[i + 1].match(/Path:\s/)) {
+                        i++;
+                        img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
+                    }
+                    if (response[i + 1].match(/\(API\slevel\s/) || (response[i + 2] && response[i + 2].match(/\(API\slevel\s/))) {
+                        i++;
+                        var secondLine = response[i + 1].match(/\(API\slevel\s/) ? response[i + 1] : '';
+                        img_obj['target'] = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
+                    }
+                    if (response[i + 1].match(/ABI:\s/)) {
+                        i++;
+                        img_obj['abi'] = response[i].split('ABI: ')[1].replace('\r', '');
+                    }
+                    if (response[i + 1].match(/Skin:\s/)) {
+                        i++;
+                        img_obj['skin'] = response[i].split('Skin: ')[1].replace('\r', '');
+                    }
+
+                    emulator_list.push(img_obj);
+                }
+                /* To just return a list of names use this
+                if (response[i].match(/Name:\s/)) {
+                    emulator_list.push(response[i].split('Name: ')[1].replace('\r', '');
+                }*/
+
+            }
+            return emulator_list;
+        }).catch(function(stderr) {
+            // try to use `avdmanager` in case `android` has problems
+            // this likely means the target machine is using a newer version of
+            // the android sdk, and possibly `avdmanager` is available.
+            return list_images_using_avdmanager();
+        });
+    } else if (forgivingWhichSync('avdmanager')) {
+        return list_images_using_avdmanager();
+    } else {
+        return Q().then(function() {
+            throw new CordovaError('Could not find either `android` or `avdmanager` on your $PATH! Are you sure the Android SDK is installed and available?');
+        });
+    }
 };
 
 /**
