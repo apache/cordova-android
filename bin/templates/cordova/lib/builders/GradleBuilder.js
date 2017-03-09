@@ -65,6 +65,16 @@ GradleBuilder.prototype.getArgs = function(cmd, opts) {
     return args;
 };
 
+/*
+ * This returns a promise
+ */
+
+GradleBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
+  if(!fs.existsSync(this.root, 'gradle'))
+    return spawn(gradle_cmd, ["wrapper"], {stdio: 'inherit'});
+}
+
+
 // Makes the project buildable, minus the gradle wrapper.
 GradleBuilder.prototype.prepBuildFiles = function() {
     // Update the version of build.gradle in each dependent library.
@@ -154,15 +164,19 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     });
     buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
     fs.writeFileSync(path.join(this.root, 'build.gradle'), buildGradle);
-    //Q sucks!!
-    return Q.when();
 };
 
 GradleBuilder.prototype.prepEnv = function(opts) {
     var self = this;
-    return self.prepBuildFiles().then(function() {
+    return check_reqs.check_gradle()
+      .then(function(gradlePath) {
+        return self.runGradleWrapper(gradlePath);
+      }).then(function() {
+          return self.prepBuildFiles();
+      }).then(function() {
         // We now copy the gradle out of the framework
         // This is a dirty patch to get the build working
+        /*
         var wrapperDir = path.join(self.root, 'CordovaLib');
         if (process.platform == 'win32') {
             shell.rm('-f', path.join(self.root, 'gradlew.bat'));
@@ -174,7 +188,7 @@ GradleBuilder.prototype.prepEnv = function(opts) {
         shell.rm('-rf', path.join(self.root, 'gradle', 'wrapper'));
         shell.mkdir('-p', path.join(self.root, 'gradle'));
         shell.cp('-r', path.join(wrapperDir, 'gradle', 'wrapper'), path.join(self.root, 'gradle'));
-
+*/
         // If the gradle distribution URL is set, make sure it points to version we want.
         // If it's not set, do nothing, assuming that we're using a future version of gradle that we don't want to mess with.
         // For some reason, using ^ and $ don't work.  This does the job, though.
