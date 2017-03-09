@@ -81,17 +81,17 @@ module.exports.check_ant = function() {
 
 module.exports.get_gradle_wrapper = function() {
     var androidStudioPath;
-    if(os.platform() == "darwin") {
+    if(os.platform() == 'darwin') {
       androidStudioPath = path.join('/Applications', 'Android Studio.app', 'Contents', 'gradle');
+    } else if (os.platform() == 'win32') {
+      androidStudioPath = path.join(process.env['ProgramFiles'],'Android', 'Android Studio', 'gradle');
     }
 
-    if(androidStudioPath != null && fs.existsSync(androidStudioPath)) {
+    if(androidStudioPath !== null && fs.existsSync(androidStudioPath)) {
       var dirs = fs.readdirSync(androidStudioPath);
-      if(dirs[0].split('-')[0] == "gradle")
+      if(dirs[0].split('-')[0] == 'gradle')
       {
-        //Sweet, we found the path, let's return it.
-        var gradle_cmd = os.platform() == "win32" ? "gradle.bat" : "gradle";
-        return path.join(androidStudioPath, dirs[0], "bin", gradle_cmd);
+        return path.join(androidStudioPath, dirs[0], 'bin', 'gradle');
       }
     } else {
       //OK, let's try to check for Gradle!
@@ -107,10 +107,9 @@ module.exports.check_gradle = function() {
         return Q.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.\n' +
             'Might need to install Android SDK or set up \'ANDROID_HOME\' env variable.'));
 
-    var path = this.get_gradle_wrapper();
-    console.log(path);
-    if(path != '')
-      d.resolve(path);
+    var gradlePath = this.get_gradle_wrapper();
+    if(gradlePath.length !== 0)
+      d.resolve(gradlePath);
     else
       d.reject(new CordovaError('Could not find an installed version of Gradle either in Android Studio,\n' +
                                 'or on your system to install the gradle wrapper. Please include gradle \n' +
