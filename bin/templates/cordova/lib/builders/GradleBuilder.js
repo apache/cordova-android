@@ -70,9 +70,13 @@ GradleBuilder.prototype.getArgs = function(cmd, opts) {
  */
 
 GradleBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
-  if(!fs.existsSync(this.root, 'gradle'))
-    return spawn(gradle_cmd, ["wrapper"], {stdio: 'inherit'});
-}
+    var gradlePath = path.join(this.root, 'gradlew');
+    if(fs.existsSync(gradlePath)) {
+      //Literally do nothing, for some reason this works, while !fs.existsSync didn't on Windows
+    } else {
+      return spawn(gradle_cmd, ['wrapper'], {stdio: 'inherit'});
+    }
+};
 
 
 // Makes the project buildable, minus the gradle wrapper.
