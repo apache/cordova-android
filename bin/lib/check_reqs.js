@@ -26,6 +26,7 @@ var shelljs = require('shelljs'),
     Q     = require('q'),
     path  = require('path'),
     fs    = require('fs'),
+    os    = require('os'),
     ROOT  = path.join(__dirname, '..', '..');
 var CordovaError = require('cordova-common').CordovaError;
 
@@ -78,20 +79,45 @@ module.exports.check_ant = function() {
     });
 };
 
+module.exports.get_gradle_wrapper = function() {
+    var androidStudioPath;
+    if(os.platform() == "darwin") {
+      androidStudioPath = path.join('/Applications', 'Android Studio.app', 'Contents', 'gradle');
+    }
+
+    if(androidStudioPath != null && fs.existsSync(androidStudioPath)) {
+      var dirs = fs.readdirSync(androidStudioPath);
+      if(dirs[0].split('-')[0] == "gradle")
+      {
+        //Sweet, we found the path, let's return it.
+        var gradle_cmd = os.platform() == "win32" ? "gradle.bat" : "gradle";
+        return path.join(androidStudioPath, dirs[0], "bin", gradle_cmd);
+      }
+    } else {
+      //OK, let's try to check for Gradle!
+      return forgivingWhichSync('gradle');
+    }
+};
+
 // Returns a promise. Called only by build and clean commands.
 module.exports.check_gradle = function() {
     var sdkDir = process.env['ANDROID_HOME'];
+    var d = Q.defer();
     if (!sdkDir)
         return Q.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.\n' +
             'Might need to install Android SDK or set up \'ANDROID_HOME\' env variable.'));
 
-    var wrapperDir = path.join(sdkDir, 'tools', 'templates', 'gradle', 'wrapper');
-    if (!fs.existsSync(wrapperDir)) {
-        return Q.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Might need to update your Android SDK.\n' +
-            'Looked here: ' + wrapperDir));
-    }
-    return Q.when();
+    var path = this.get_gradle_wrapper();
+    console.log(path);
+    if(path != '')
+      d.resolve(path);
+    else
+      d.reject(new CordovaError('Could not find an installed version of Gradle either in Android Studio,\n' +
+                                'or on your system to install the gradle wrapper. Please include gradle \n' +
+                                'in your path, or install Android Studio'));
+    return d.promise;
 };
+
 
 // Returns a promise.
 module.exports.check_java = function() {
