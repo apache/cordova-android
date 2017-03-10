@@ -74,7 +74,7 @@ GradleBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
     if(fs.existsSync(gradlePath)) {
       //Literally do nothing, for some reason this works, while !fs.existsSync didn't on Windows
     } else {
-      return spawn(gradle_cmd, ['wrapper'], {stdio: 'inherit'});
+      return spawn(gradle_cmd, ['-p', this.root, 'wrapper'], {stdio: 'inherit'});
     }
 };
 
