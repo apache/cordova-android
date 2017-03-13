@@ -87,9 +87,6 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
         shell.cp('-f', path.join(ROOT, 'framework', 'build.gradle'), nestedCordovaLibPath);
         shell.cp('-f', path.join(ROOT, 'framework', 'cordova.gradle'), nestedCordovaLibPath);
         shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
-        shell.cp('-f', path.join(ROOT, 'framework', 'gradlew'), nestedCordovaLibPath);
-        shell.cp('-r', path.join(ROOT, 'framework', 'gradle'), nestedCordovaLibPath);
-
     }
 }
 
@@ -137,6 +134,7 @@ function copyBuildRules(projectPath) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
     shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
+    shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
 }
 
 function copyScripts(projectPath) {
