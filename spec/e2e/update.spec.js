@@ -83,7 +83,7 @@ describe('update', function() {
 describe('cleanup', function () {
 
     it('Test#004 : remove cloned old platform', function() {
-        //shell.rm('-rf', platformOld.path);
+        shell.rm('-rf', platformOld.path);
     });
 
 });
