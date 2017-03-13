@@ -71,10 +71,11 @@ GradleBuilder.prototype.getArgs = function(cmd, opts) {
 
 GradleBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
     var gradlePath = path.join(this.root, 'gradlew');
+    var wrapperGradle = path.join(this.root, 'wrapper.gradle');
     if(fs.existsSync(gradlePath)) {
       //Literally do nothing, for some reason this works, while !fs.existsSync didn't on Windows
     } else {
-      return spawn(gradle_cmd, ['-p', this.root, 'wrapper'], {stdio: 'inherit'});
+      return spawn(gradle_cmd, ['-p', this.root, 'wrapper', '-b', wrapperGradle], {stdio: 'inherit'});
     }
 };
 

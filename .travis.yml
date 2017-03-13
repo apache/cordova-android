@@ -5,6 +5,7 @@ jdk:
 before_install:
     - nvm install 6
     - node --version
+    - gradle --version
 install:
     - npm install
     - npm install -g codecov
