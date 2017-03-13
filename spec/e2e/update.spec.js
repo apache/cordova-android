@@ -78,20 +78,12 @@ describe('update', function() {
 
     }, UPDATE_TIMEOUT);
 
-    it('Test#003 : should downgrade major version and build the project', function(done) {
-        var projectname = 'testupdate';
-        var projectid = 'com.test.update.app2';
-
-        testUpdate(projectname, projectid, platformEdge, platformOld, true, done);
-    }, UPDATE_TIMEOUT);
-
-    // TODO: After next Android release, add tests for minor/patch version update
 });
 
 describe('cleanup', function () {
 
     it('Test#004 : remove cloned old platform', function() {
-        shell.rm('-rf', platformOld.path);
+        //shell.rm('-rf', platformOld.path);
     });
 
 });
