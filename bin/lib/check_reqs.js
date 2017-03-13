@@ -272,10 +272,11 @@ module.exports.check_android_target = function(originalError) {
     //   Google Inc.:Google APIs:20
     //   Google Inc.:Glass Development Kit Preview:20
     var valid_target = module.exports.get_target();
+    var msg = 'Android SDK not found. Make sure that it is installed. If it is not at the default location, set the ANDROID_HOME environment variable.';
     //   Changing "targets" to "target" is stupid and makes more code.  Thanks Google!
-    var cmd = "android list targets --compact";
+    var cmd = 'android list targets --compact';
     if(forgivingWhichSync('avdmanager').length > 0)
-      cmd = "avdmanager list target --compact";
+      cmd = 'avdmanager list target --compact';
     return tryCommand(cmd, msg)
     .then(function(output) {
         var targets = output.split('\n');
