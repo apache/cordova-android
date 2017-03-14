@@ -27,7 +27,8 @@ var shelljs = require('shelljs'),
     path  = require('path'),
     fs    = require('fs'),
     os    = require('os'),
-    ROOT  = path.join(__dirname, '..', '..', '..', '..');
+    REPO_ROOT  = path.join(__dirname, '..', '..', '..', '..'),
+    PROJECT_ROOT = path.join(__dirname, '..', '..');
 var CordovaError = require('cordova-common').CordovaError;
 
 
@@ -51,11 +52,11 @@ function tryCommand(cmd, errMsg, catchStderr) {
 }
 
 module.exports.isWindows = function() {
-    return (process.platform == 'win32');
+    return (os.platform() == 'win32');
 };
 
 module.exports.isDarwin = function() {
-    return (process.platform == 'darwin');
+    return (os.platform() == 'darwin');
 };
 
 // Get valid target from framework/project.properties if run from this repo
@@ -68,14 +69,16 @@ module.exports.get_target = function() {
         }
         return target.split('=')[1].trim();
     }
-    if (fs.existsSync(path.join(ROOT, 'framework', 'project.properties'))) {
-        return extractFromFile(path.join(ROOT, 'framework', 'project.properties'));
+    var repo_file = path.join(REPO_ROOT, 'framework', 'project.properties');
+    if (fs.existsSync(repo_file)) {
+        return extractFromFile(repo_file);
     }
-    if (fs.existsSync(path.join(ROOT, 'project.properties'))) {
-        // if no target found, we're probably in a project and project.properties is in ROOT.
-        return extractFromFile(path.join(ROOT, 'project.properties'));
+    var project_file = path.join(PROJECT_ROOT, 'project.properties');
+    if (fs.existsSync(project_file)) {
+        // if no target found, we're probably in a project and project.properties is in PROJECT_ROOT.
+        return extractFromFile(project_file);
     }
-    throw new Error('Could not find android target. File missing: ' + path.join(ROOT, 'project.properties'));
+    throw new Error('Could not find android target in either ' + repo_file + ' nor ' + project_file);
 };
 
 // Returns a promise. Called only by build and clean commands.
@@ -89,10 +92,10 @@ module.exports.check_ant = function() {
 
 module.exports.get_gradle_wrapper = function() {
     var androidStudioPath;
-    if(os.platform() == 'darwin') {
-      androidStudioPath = path.join('/Applications', 'Android Studio.app', 'Contents', 'gradle');
-    } else if (os.platform() == 'win32') {
-      androidStudioPath = path.join(process.env['ProgramFiles'],'Android', 'Android Studio', 'gradle');
+    if (module.exports.isDarwin()) {
+        androidStudioPath = path.join('/Applications', 'Android Studio.app', 'Contents', 'gradle');
+    } else if (module.exports.isWindows()) {
+        androidStudioPath = path.join(process.env['ProgramFiles'],'Android', 'Android Studio', 'gradle');
     }
 
     if(androidStudioPath !== null && fs.existsSync(androidStudioPath)) {
@@ -312,6 +315,8 @@ module.exports.check_android_target = function(originalError) {
     var msg = 'Android SDK not found. Make sure that it is installed. If it is not at the default location, set the ANDROID_HOME environment variable.';
     //   Changing "targets" to "target" is stupid and makes more code.  Thanks Google!
     var cmd = 'android list targets --compact';
+    // TODO: the following conditional needs fixing, probably should leverage `sdkmanager`
+    // oh and tests
     if(forgivingWhichSync('avdmanager').length > 0)
       cmd = 'avdmanager list target --compact';
     return tryCommand(cmd, msg)
