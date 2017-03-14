@@ -1,0 +1,22 @@
+Available Android Virtual Devices:
+    Name: nexus5-5.1
+  Device: Nexus 5 (Google)
+    Path: /Users/maj/.android/avd/nexus5-5.1.avd
+  Target: Google APIs
+          Based on: Android 5.1 (Lollipop) Tag/ABI: google_apis/x86_64
+    Skin: 1080x1920
+  Sdcard: 128M
+---------
+    Name: Pixel_API_25
+  Device: pixel (Google)
+    Path: /Users/maj/.android/avd/Pixel_API_25.avd
+  Target: Google APIs
+          Based on: Android 7.1.1 (Nougat) Tag/ABI: google_apis/x86_64
+    Skin: pixel
+  Sdcard: 100M
+---------
+    Name: stock51
+    Path: /Users/maj/.android/avd/stock51.avd
+  Target: Default
+          Based on: Android 5.1 (Lollipop) Tag/ABI: default/x86_64
+  Sdcard: 128M

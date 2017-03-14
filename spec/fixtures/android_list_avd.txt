@@ -1,0 +1,7 @@
+Available Android Virtual Devices:
+    Name: QWR
+  Device: Nexus 5 (Google)
+    Path: /Users/shazron/.android/avd/QWR.avd
+  Target: Android 7.1.1 (API level 25)
+ Tag/ABI: google_apis/x86_64
+    Skin: 1080x1920

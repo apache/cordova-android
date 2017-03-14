@@ -167,6 +167,12 @@ exports.spawn = function(cmd, args, opts) {
                 errMsg += ' Error output:\n' + capturedErr.trim();
             }
             var err = new Error(errMsg);
+            if (capturedErr) {
+                err.stderr = capturedErr;
+            }
+            if (capturedOut) {
+                err.stdout = capturedOut;
+            }
             err.code = code;
             d.reject(err);
         }

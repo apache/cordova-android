@@ -833,6 +833,7 @@ var bigInt = (function (undefined) {
           newT = lastT.subtract(q.multiply(newT));
           newR = lastR.subtract(q.multiply(newR));
         }
+        if (!r.equals(1)) throw new Error(this.toString() + " and " + n.toString() + " are not co-prime");
         if (t.compare(0) === -1) {
         	t = t.add(n);
         }

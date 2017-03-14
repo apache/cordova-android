@@ -257,6 +257,30 @@ ConfigParser.prototype = {
     },
 
     /**
+     * Returns all resource-files for a specific platform.
+     * @param  {string} platform Platform name
+     * @return {Resource[]}      Array of resource file objects.
+     */
+    getFileResources: function(platform) {
+        var fileResources = [];
+
+        if (platform) { // platform specific resources
+            fileResources = this.doc.findall('platform[@name=\'' + platform + '\']/resource-file').map(function(tag) {
+                return {
+                    platform: platform,
+                    src: tag.attrib.src,
+                    target: tag.attrib.target,
+                    versions: tag.attrib.versions,
+                    deviceTarget: tag.attrib['device-target'],
+                    arch: tag.attrib.arch
+                };
+            });
+        }
+
+        return fileResources;
+    },
+
+    /**
      * Returns all hook scripts for the hook type specified.
      * @param  {String} hook     The hook type.
      * @param {Array}  platforms Platforms to look for scripts into (root scripts will be included as well).

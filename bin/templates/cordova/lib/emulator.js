@@ -27,7 +27,7 @@ var path = require('path');
 var Adb = require('./Adb');
 var AndroidManifest = require('./AndroidManifest');
 var events = require('cordova-common').events;
-var spawn = require('cordova-common').superspawn.spawn;
+var superspawn = require('cordova-common').superspawn;
 var CordovaError = require('cordova-common').CordovaError;
 var shelljs = require('shelljs');
 var android_sdk = require('./android_sdk');
@@ -54,7 +54,7 @@ function forgivingWhichSync(cmd) {
 }
 
 module.exports.list_images_using_avdmanager = function () {
-    return spawn('avdmanager', ['list', 'avd'])
+    return superspawn.spawn('avdmanager', ['list', 'avd'])
     .then(function(output) {
         var response = output.split('\n');
         var emulator_list = [];
@@ -114,10 +114,55 @@ module.exports.list_images_using_avdmanager = function () {
     });
 };
 
+module.exports.list_images_using_android = function() {
+    return superspawn.spawn('android', ['list', 'avds'])
+    .then(function(output) {
+        var response = output.split('\n');
+        var emulator_list = [];
+        for (var i = 1; i < response.length; i++) {
+            // To return more detailed information use img_obj
+            var img_obj = {};
+            if (response[i].match(/Name:\s/)) {
+                img_obj['name'] = response[i].split('Name: ')[1].replace('\r', '');
+                if (response[i + 1].match(/Device:\s/)) {
+                    i++;
+                    img_obj['device'] = response[i].split('Device: ')[1].replace('\r', '');
+                }
+                if (response[i + 1].match(/Path:\s/)) {
+                    i++;
+                    img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
+                }
+                if (response[i + 1].match(/\(API\slevel\s/) || (response[i + 2] && response[i + 2].match(/\(API\slevel\s/))) {
+                    i++;
+                    var secondLine = response[i + 1].match(/\(API\slevel\s/) ? response[i + 1] : '';
+                    img_obj['target'] = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
+                }
+                if (response[i + 1].match(/ABI:\s/)) {
+                    i++;
+                    img_obj['abi'] = response[i].split('ABI: ')[1].replace('\r', '');
+                }
+                if (response[i + 1].match(/Skin:\s/)) {
+                    i++;
+                    img_obj['skin'] = response[i].split('Skin: ')[1].replace('\r', '');
+                }
+
+                emulator_list.push(img_obj);
+            }
+            /* To just return a list of names use this
+            if (response[i].match(/Name:\s/)) {
+                emulator_list.push(response[i].split('Name: ')[1].replace('\r', '');
+            }*/
+
+        }
+        return emulator_list;
+    });
+};
+
 /**
  * Returns a Promise for a list of emulator images in the form of objects
  * {
        name   : <emulator_name>,
+       device : <device>,
        path   : <path_to_emulator_image>,
        target : <api_target>,
        abi    : <cpu>,
@@ -126,47 +171,8 @@ module.exports.list_images_using_avdmanager = function () {
  */
 module.exports.list_images = function() {
     if (forgivingWhichSync('android')) {
-        return spawn('android', ['list', 'avds'])
-        .then(function(output) {
-            var response = output.split('\n');
-            var emulator_list = [];
-            for (var i = 1; i < response.length; i++) {
-                // To return more detailed information use img_obj
-                var img_obj = {};
-                if (response[i].match(/Name:\s/)) {
-                    img_obj['name'] = response[i].split('Name: ')[1].replace('\r', '');
-                    if (response[i + 1].match(/Device:\s/)) {
-                        i++;
-                        img_obj['device'] = response[i].split('Device: ')[1].replace('\r', '');
-                    }
-                    if (response[i + 1].match(/Path:\s/)) {
-                        i++;
-                        img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
-                    }
-                    if (response[i + 1].match(/\(API\slevel\s/) || (response[i + 2] && response[i + 2].match(/\(API\slevel\s/))) {
-                        i++;
-                        var secondLine = response[i + 1].match(/\(API\slevel\s/) ? response[i + 1] : '';
-                        img_obj['target'] = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
-                    }
-                    if (response[i + 1].match(/ABI:\s/)) {
-                        i++;
-                        img_obj['abi'] = response[i].split('ABI: ')[1].replace('\r', '');
-                    }
-                    if (response[i + 1].match(/Skin:\s/)) {
-                        i++;
-                        img_obj['skin'] = response[i].split('Skin: ')[1].replace('\r', '');
-                    }
-
-                    emulator_list.push(img_obj);
-                }
-                /* To just return a list of names use this
-                if (response[i].match(/Name:\s/)) {
-                    emulator_list.push(response[i].split('Name: ')[1].replace('\r', '');
-                }*/
-
-            }
-            return emulator_list;
-        }).catch(function(err) {
+        return module.exports.list_images_using_android()
+        .catch(function(err) {
             // try to use `avdmanager` in case `android` has problems
             // this likely means the target machine is using a newer version of
             // the android sdk, and possibly `avdmanager` is available.
@@ -219,7 +225,7 @@ module.exports.list_started = function() {
 
 // Returns a promise.
 module.exports.list_targets = function() {
-    return spawn('android', ['list', 'targets'], {cwd: os.tmpdir()})
+    return superspawn.spawn('android', ['list', 'targets'], {cwd: os.tmpdir()})
     .then(function(output) {
         var target_out = output.split('\n');
         var targets = [];
@@ -382,7 +388,7 @@ module.exports.wait_for_boot = function(emulator_id, time_remaining) {
 module.exports.create_image = function(name, target) {
     console.log('Creating new avd named ' + name);
     if (target) {
-        return spawn('android', ['create', 'avd', '--name', name, '--target', target])
+        return superspawn.spawn('android', ['create', 'avd', '--name', name, '--target', target])
         .then(null, function(error) {
             console.error('ERROR : Failed to create emulator image : ');
             console.error(' Do you have the latest android targets including ' + target + '?');
@@ -390,7 +396,7 @@ module.exports.create_image = function(name, target) {
         });
     } else {
         console.log('WARNING : Project target not found, creating avd with a different target but the project may fail to install.');
-        return spawn('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]])
+        return superspawn.spawn('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]])
         .then(function() {
             // TODO: This seems like another error case, even though it always happens.
             console.error('ERROR : Unable to create an avd emulator, no targets found.');

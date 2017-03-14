@@ -225,7 +225,8 @@ function PluginInfo(dirname) {
                 target: tag.attrib.target,
                 versions: tag.attrib.versions,
                 deviceTarget: tag.attrib['device-target'],
-                arch: tag.attrib.arch
+                arch: tag.attrib.arch,
+                reference: tag.attrib.reference
             };
         });
         return resourceFiles;
@@ -323,7 +324,8 @@ function PluginInfo(dirname) {
                 versions: el.attrib.versions,
                 targetDir: el.attrib['target-dir'],
                 deviceTarget: el.attrib['device-target'] || el.attrib.target,
-                arch: el.attrib.arch
+                arch: el.attrib.arch,
+                implementation: el.attrib.implementation
             };
             return ret;
         });
