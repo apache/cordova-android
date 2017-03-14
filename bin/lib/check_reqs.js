@@ -30,7 +30,6 @@ var shelljs = require('shelljs'),
     ROOT  = path.join(__dirname, '..', '..');
 var CordovaError = require('cordova-common').CordovaError;
 
-var isWindows = process.platform == 'win32';
 
 function forgivingWhichSync(cmd) {
     try {
@@ -50,6 +49,14 @@ function tryCommand(cmd, errMsg, catchStderr) {
     });
     return d.promise;
 }
+
+module.exports.isWindows = function() {
+    return (process.platform == 'win32');
+};
+
+module.exports.isDarwin = function() {
+    return (process.platform == 'darwin');
+};
 
 // Get valid target from framework/project.properties
 module.exports.get_target = function() {
@@ -147,7 +154,7 @@ module.exports.check_java = function() {
                         throw new CordovaError(msg);
                     }
                 }
-            } else if (isWindows) {
+            } else if (module.exports.isWindows()) {
                 // Try to auto-detect java in the default install paths.
                 var oldSilent = shelljs.config.silent;
                 shelljs.config.silent = true;
@@ -188,7 +195,8 @@ module.exports.check_java = function() {
 module.exports.check_android = function() {
     return Q().then(function() {
         var androidCmdPath = forgivingWhichSync('android');
-        var adbInPath = !!forgivingWhichSync('adb');
+        var adbInPath = forgivingWhichSync('adb');
+        var avdmanagerInPath = forgivingWhichSync('avdmanager');
         var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
         function maybeSetAndroidHome(value) {
             if (!hasAndroidHome && fs.existsSync(value)) {
@@ -196,8 +204,10 @@ module.exports.check_android = function() {
                 process.env['ANDROID_HOME'] = value;
             }
         }
-        if (!hasAndroidHome && !androidCmdPath) {
-            if (isWindows) {
+        // First ensure ANDROID_HOME is set
+        // If we have no hints (nothing in PATH), try a few default locations
+        if (!hasAndroidHome && !androidCmdPath && !adbInPath && !avdmanagerInPath) {
+            if (module.exports.isWindows()) {
                 // Android Studio 1.0 installer
                 maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'sdk'));
                 maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'sdk'));
@@ -207,7 +217,7 @@ module.exports.check_android = function() {
                 // Stand-alone installer
                 maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'android-sdk'));
                 maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'android-sdk'));
-            } else if (process.platform == 'darwin') {
+            } else if (module.exports.isDarwin()) {
                 // Android Studio 1.0 installer
                 maybeSetAndroidHome(path.join(process.env['HOME'], 'Library', 'Android', 'sdk'));
                 // Android Studio pre-1.0 installer
@@ -222,26 +232,42 @@ module.exports.check_android = function() {
                 maybeSetAndroidHome(path.join(process.env['HOME'], 'android-sdk'));
             }
         }
-        if (hasAndroidHome && !androidCmdPath) {
-            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools');
-        }
-        if (androidCmdPath && !hasAndroidHome) {
-            var parentDir = path.dirname(androidCmdPath);
-            var grandParentDir = path.dirname(parentDir);
-            if (path.basename(parentDir) == 'tools') {
-                process.env['ANDROID_HOME'] = path.dirname(parentDir);
-                hasAndroidHome = true;
-            } else if (fs.existsSync(path.join(grandParentDir, 'tools', 'android'))) {
-                process.env['ANDROID_HOME'] = grandParentDir;
-                hasAndroidHome = true;
-            } else {
-                throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
-                    'Detected \'android\' command at ' + parentDir + ' but no \'tools\' directory found near.\n' +
-                    'Try reinstall Android SDK or update your PATH to include path to valid SDK directory.');
+        if (!hasAndroidHome) {
+            // If we dont have ANDROID_HOME, but we do have some tools on the PATH, try to infer from the tooling PATH.
+            var parentDir, grandParentDir;
+            if (androidCmdPath) {
+                parentDir = path.dirname(androidCmdPath);
+                grandParentDir = path.dirname(parentDir);
+                if (path.basename(parentDir) == 'tools' || fs.existsSync(path.join(grandParentDir, 'tools', 'android'))) {
+                    maybeSetAndroidHome(grandParentDir);
+                } else {
+                    throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
+                        'Detected \'android\' command at ' + parentDir + ' but no \'tools\' directory found near.\n' +
+                        'Try reinstall Android SDK or update your PATH to include valid path to SDK' + path.sep + 'tools directory.');
+                }
             }
-        }
-        if (hasAndroidHome && !adbInPath) {
-            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'platform-tools');
+            if (adbInPath) {
+                parentDir = path.dirname(adbInPath);
+                grandParentDir = path.dirname(parentDir);
+                if (path.basename(parentDir) == 'platform-tools') {
+                    maybeSetAndroidHome(grandParentDir);
+                } else {
+                    throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
+                        'Detected \'adb\' command at ' + parentDir + ' but no \'platform-tools\' directory found near.\n' +
+                        'Try reinstall Android SDK or update your PATH to include valid path to SDK' + path.sep + 'platform-tools directory.');
+                }
+            }
+            if (avdmanagerInPath) {
+                parentDir = path.dirname(avdmanagerInPath);
+                grandParentDir = path.dirname(parentDir);
+                if (path.basename(parentDir) == 'bin' && path.basename(grandParentDir) == 'tools') {
+                    maybeSetAndroidHome(path.dirname(grandParentDir));
+                } else {
+                    throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
+                        'Detected \'avdmanager\' command at ' + parentDir + ' but no \'tools' + path.sep + 'bin\' directory found near.\n' +
+                        'Try reinstall Android SDK or update your PATH to include valid path to SDK' + path.sep + 'tools' + path.sep + 'bin directory.');
+                }
+            }
         }
         if (!process.env['ANDROID_HOME']) {
             throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting setting it manually.\n' +
@@ -250,6 +276,16 @@ module.exports.check_android = function() {
         if (!fs.existsSync(process.env['ANDROID_HOME'])) {
             throw new CordovaError('\'ANDROID_HOME\' environment variable is set to non-existent path: ' + process.env['ANDROID_HOME'] +
                 '\nTry update it manually to point to valid SDK directory.');
+        }
+        // Next let's make sure relevant parts of the SDK tooling is in our PATH
+        if (hasAndroidHome && !androidCmdPath) {
+            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools');
+        }
+        if (hasAndroidHome && !adbInPath) {
+            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'platform-tools');
+        }
+        if (hasAndroidHome && !avdmanagerInPath) {
+            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools', 'bin');
         }
         return hasAndroidHome;
     });

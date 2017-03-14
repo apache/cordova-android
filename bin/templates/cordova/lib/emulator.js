@@ -30,6 +30,7 @@ var events = require('cordova-common').events;
 var spawn = require('cordova-common').superspawn.spawn;
 var CordovaError = require('cordova-common').CordovaError;
 var shelljs = require('shelljs');
+var android_sdk = require('./android_sdk');
 
 var Q             = require('q');
 var os            = require('os');
@@ -52,7 +53,7 @@ function forgivingWhichSync(cmd) {
     }
 }
 
-function list_images_using_avdmanager() {
+module.exports.list_images_using_avdmanager = function () {
     return spawn('avdmanager', ['list', 'avd'])
     .then(function(output) {
         var response = output.split('\n');
@@ -90,7 +91,6 @@ function list_images_using_avdmanager() {
                         }
                         var version_string = img_obj['target'].replace(/Android\s+/, '');
 
-                        var android_sdk = require('./android_sdk');
                         var api_level = android_sdk.version_string_to_api_level[version_string];
                         if (api_level) {
                             img_obj['target'] += ' (API level ' + api_level + ')';
@@ -112,7 +112,7 @@ function list_images_using_avdmanager() {
         }
         return emulator_list;
     });
-}
+};
 
 /**
  * Returns a Promise for a list of emulator images in the form of objects
@@ -166,14 +166,14 @@ module.exports.list_images = function() {
 
             }
             return emulator_list;
-        }).catch(function(stderr) {
+        }).catch(function(err) {
             // try to use `avdmanager` in case `android` has problems
             // this likely means the target machine is using a newer version of
             // the android sdk, and possibly `avdmanager` is available.
-            return list_images_using_avdmanager();
+            return module.exports.list_images_using_avdmanager();
         });
     } else if (forgivingWhichSync('avdmanager')) {
-        return list_images_using_avdmanager();
+        return module.exports.list_images_using_avdmanager();
     } else {
         return Q().then(function() {
             throw new CordovaError('Could not find either `android` or `avdmanager` on your $PATH! Are you sure the Android SDK is installed and available?');
