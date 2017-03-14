@@ -31,7 +31,7 @@ var shelljs = require('shelljs'),
     PROJECT_ROOT = path.join(__dirname, '..', '..');
 var CordovaError = require('cordova-common').CordovaError;
 var superspawn = require('cordova-common').superspawn;
-
+var android_sdk = require('./android_sdk');
 
 function forgivingWhichSync(cmd) {
     try {
@@ -89,7 +89,7 @@ module.exports.check_ant = function() {
         // Parse Ant version from command output
         return /version ((?:\d+\.)+(?:\d+))/i.exec(output)[1];
     }).catch(function(err) {
-        throw new CordovaError("Failed to run `ant -version`. Make sure you have `ant` on your $PATH.");
+        throw new CordovaError('Failed to run `ant -version`. Make sure you have `ant` on your $PATH.');
     });
 };
 
@@ -299,11 +299,11 @@ module.exports.check_android = function() {
     });
 };
 
+// TODO: is this actually needed?
 module.exports.getAbsoluteAndroidCmd = function () {
     var cmd = forgivingWhichSync('android');
-    // TODO: this probably needs to be `sdkmanager`, no?
     if (cmd.length === 0) {
-        cmd = forgivingWhichSync('avdmanager');
+        cmd = forgivingWhichSync('sdkmanager');
     }
     if (module.exports.isWindows()) {
         return '"' + cmd + '"';
@@ -317,37 +317,24 @@ module.exports.check_android_target = function(originalError) {
     //   android-L
     //   Google Inc.:Google APIs:20
     //   Google Inc.:Glass Development Kit Preview:20
-    var valid_target = module.exports.get_target();
-    var msg = 'Android SDK not found. Make sure that it is installed. If it is not at the default location, set the ANDROID_HOME environment variable.';
+    var desired_api_level = parseInt(module.exports.get_target().replace(/android-/, ''));
     //   Changing "targets" to "target" is stupid and makes more code.  Thanks Google!
-    var cmd = 'android';
-    // TODO: the following conditional needs fixing, probably should leverage `sdkmanager`
-    // oh and tests
-    if (forgivingWhichSync('avdmanager').length > 0)
-        cmd = 'avdmanager';
-    return superspawn.spawn(cmd, ['list', 'targets', '--compact'])
-    .then(function(stdout) {
-        var targets = output.split('\n');
-        if (targets.indexOf(valid_target) >= 0) {
+    return android_sdk.list_targets()
+    .then(function(targets) {
+        if (targets.indexOf(desired_api_level) >= 0) {
             return targets;
         }
-
         var androidCmd = module.exports.getAbsoluteAndroidCmd();
-        var msg = 'Please install Android target: "' + valid_target + '".\n\n' +
+        var msg = 'Please install Android target / API level: "' + desired_api_level  + '".\n\n' +
             'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
             'You will require:\n' +
-            '1. "SDK Platform" for ' + valid_target + '\n' +
+            '1. "SDK Platform" for API level ' + desired_api_level + '\n' +
             '2. "Android SDK Platform-tools (latest)\n' +
             '3. "Android SDK Build-tools" (latest)';
         if (originalError) {
             msg = originalError + '\n' + msg;
         }
         throw new CordovaError(msg);
-    }).catch(function(err) {
-        throw new CordovaError(msg);
-    });
-    return tryCommand(cmd, msg)
-    .then(function(output) {
     });
 };
 
@@ -361,7 +348,6 @@ module.exports.run = function() {
          if (!values[0]) {
             throw new CordovaError('Requirements check failed for JDK 1.8 or greater');
          }
-
 
          if (!values[1]) {
             throw new CordovaError('Requirements check failed for Android SDK');

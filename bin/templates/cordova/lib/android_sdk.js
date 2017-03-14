@@ -60,10 +60,10 @@ module.exports.list_targets = function() {
         // lets see if `sdkmanager` is available and we can figure it out
         var avail_regex = /android command is no longer available/;
         if (err.code && (err.stdout.match(avail_regex) || err.stderr.match(avail_regex))) {
-            return superspawn.spawn('sdkmanager', ['--list'], {capture: ['stdout', 'stderr']})
-            .then(function(result) {
+            return superspawn.spawn('sdkmanager', ['--list'])
+            .then(function(stdout) {
                 var parsing_installed_packages = false;
-                var lines = result.stdout.split('\n');
+                var lines = stdout.split('\n');
                 var targets = [];
                 for (var i = 0, l = lines.length; i < l; i++) {
                     var line = lines[i];
