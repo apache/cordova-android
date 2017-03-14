@@ -19,10 +19,10 @@
        under the License.
 */
 
-var android_sdk_version = require('./templates/cordova/lib/android_sdk');
+var android_sdk = require('./templates/cordova/lib/android_sdk');
 
-android_sdk_version.run().done(null, function(err) {
-    console.log(err);
+android_sdk.print_newest_available_sdk_target.done(null, function(err) {
+    console.error(err);
     process.exit(2);
 });
 
