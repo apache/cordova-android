@@ -27,7 +27,7 @@ var shelljs = require('shelljs'),
     path  = require('path'),
     fs    = require('fs'),
     os    = require('os'),
-    ROOT  = path.join(__dirname, '..', '..');
+    ROOT  = path.join(__dirname, '..', '..', '..', '..');
 var CordovaError = require('cordova-common').CordovaError;
 
 
@@ -58,7 +58,8 @@ module.exports.isDarwin = function() {
     return (process.platform == 'darwin');
 };
 
-// Get valid target from framework/project.properties
+// Get valid target from framework/project.properties if run from this repo
+// Otherwise get target from project.properties file within a generated cordova-android project
 module.exports.get_target = function() {
     function extractFromFile(filePath) {
         var target = shelljs.grep(/\btarget=/, filePath);

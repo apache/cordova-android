@@ -18,7 +18,7 @@
 */
 /* jshint laxcomma:true */
 
-var check_reqs = require("../../bin/lib/check_reqs");
+var check_reqs = require("../../bin/templates/cordova/lib/check_reqs");
 var shelljs = require("shelljs");
 var fs = require("fs");
 var path = require("path");
@@ -209,6 +209,13 @@ describe("check_reqs", function () {
                     console.log(err);
                 });
             });
+        });
+    });
+    describe("get_target", function() {
+        it("should retrieve target from framework project.properties file", function() {
+            var target = check_reqs.get_target();
+            expect(target).toBeDefined();
+            expect(target).toContain("android-");
         });
     });
 });

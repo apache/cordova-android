@@ -22,7 +22,7 @@
 var emulators = require('./emulator');
 
 // Usage support for when args are given
-require('../lib/check_reqs').check_android().then(function() {
+require('./check_reqs').check_android().then(function() {
     emulators.list_started().done(function(emulator_list) {
         emulator_list && emulator_list.forEach(function(emu) {
             console.log(emu);

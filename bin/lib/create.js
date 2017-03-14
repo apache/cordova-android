@@ -23,7 +23,7 @@ var shell = require('shelljs'),
     Q     = require('q'),
     path  = require('path'),
     fs    = require('fs'),
-    check_reqs = require('./check_reqs'),
+    check_reqs = require('./../templates/cordova/lib/check_reqs'),
     ROOT    = path.join(__dirname, '..', '..');
 
 var MIN_SDK_VERSION = 16;
@@ -146,9 +146,7 @@ function copyScripts(projectPath) {
     shell.cp('-r', srcScriptsDir, projectPath);
     shell.cp('-r', path.join(ROOT, 'node_modules'), destScriptsDir);
     shell.cp(path.join(ROOT, 'bin', 'check_reqs*'), destScriptsDir);
-    shell.cp(path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), path.join(projectPath, 'cordova', 'lib', 'check_reqs.js'));
     shell.cp(path.join(ROOT, 'bin', 'android_sdk_version*'), destScriptsDir);
-    shell.cp(path.join(ROOT, 'bin', 'lib', 'android_sdk.js'), path.join(projectPath, 'cordova', 'lib', 'android_sdk.js'));
 }
 
 /**

@@ -19,7 +19,7 @@
        under the License.
 */
 
-var check_reqs = require('./lib/check_reqs');
+var check_reqs = require('./templates/cordova/lib/check_reqs');
 
 check_reqs.run().done(
     function success() {

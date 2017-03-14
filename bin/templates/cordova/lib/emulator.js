@@ -31,6 +31,7 @@ var superspawn = require('cordova-common').superspawn;
 var CordovaError = require('cordova-common').CordovaError;
 var shelljs = require('shelljs');
 var android_sdk = require('./android_sdk');
+var check_reqs = require('./check_reqs');
 
 var Q             = require('q');
 var os            = require('os');
@@ -200,8 +201,7 @@ module.exports.best_image = function() {
 
         var closest = 9999;
         var best = images[0];
-        // Loading check_reqs at run-time to avoid test-time vs run-time directory structure difference issue
-        var project_target = require('./check_reqs').get_target().replace('android-', '');
+        var project_target = check_reqs.get_target().replace('android-', '');
         for (var i in images) {
             var target = images[i].target;
             if(target) {
@@ -280,8 +280,7 @@ module.exports.start = function(emulator_ID, boot_timeout) {
                 return best.name;
             }
 
-            // Loading check_reqs at run-time to avoid test-time vs run-time directory structure difference issue
-            var androidCmd = require('./check_reqs').getAbsoluteAndroidCmd();
+            var androidCmd = check_reqs.getAbsoluteAndroidCmd();
             return Q.reject(new CordovaError('No emulator images (avds) found.\n' +
                 '1. Download desired System Image by running: ' + androidCmd + ' sdk\n' +
                 '2. Create an AVD by running: ' + androidCmd + ' avd\n' +
