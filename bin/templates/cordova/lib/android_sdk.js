@@ -22,9 +22,33 @@
 var Q = require('q'),
     superspawn = require('cordova-common').superspawn;
 
+var suffix_number_regex = /(\d+)$/;
+// Used for sorting Android targets, example strings to sort:
+//   android-19
+//   android-L
+//   Google Inc.:Google APIs:20
+//   Google Inc.:Glass Development Kit Preview:20
+// The idea is to sort based on largest "suffix" number - meaning the bigger
+// the number at the end, the more recent the target, the closer to the
+// start of the array.
+function sort_by_largest_numerical_suffix(a, b) {
+    var suffix_a = a.match(suffix_number_regex);
+    var suffix_b = b.match(suffix_number_regex);
+    if (suffix_a && suffix_b) {
+        // If the two targets being compared have suffixes, return less than
+        // zero, or greater than zero, based on which suffix is larger.
+        return (parseInt(suffix_a[1]) > parseInt(suffix_b[1]) ? -1 : 1);
+    } else {
+        // If no suffix numbers were detected, leave the order as-is between
+        // elements a and b.
+        return 0;
+    }
+}
+
 module.exports.print_newest_available_sdk_target = function() {
     return module.exports.list_targets()
     .then(function(targets) {
+        targets.sort(sort_by_largest_numerical_suffix);
         console.log(targets[0]);
     });
 };
