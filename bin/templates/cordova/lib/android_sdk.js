@@ -123,7 +123,7 @@ module.exports.list_targets = function() {
         // there's a chance `android` no longer works.
         // lets see if `sdkmanager` is available and we can figure it out
         var avail_regex = /android command is no longer available/;
-        if (err.code && (err.stdout.match(avail_regex) || err.stderr.match(avail_regex))) {
+        if (err.code && ((err.stdout && err.stdout.match(avail_regex)) || (err.stderr && err.stderr.match(avail_regex)))) {
             return module.exports.list_targets_with_sdkmanager();
         } else throw err;
     }).then(function(targets) {

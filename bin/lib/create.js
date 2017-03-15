@@ -138,15 +138,25 @@ function copyBuildRules(projectPath) {
 }
 
 function copyScripts(projectPath) {
-    var srcScriptsDir = path.join(ROOT, 'bin', 'templates', 'cordova');
+    var bin = path.join(ROOT, 'bin');
+    var srcScriptsDir = path.join(bin, 'templates', 'cordova');
     var destScriptsDir = path.join(projectPath, 'cordova');
     // Delete old scripts directory if this is an update.
     shell.rm('-rf', destScriptsDir);
     // Copy in the new ones.
     shell.cp('-r', srcScriptsDir, projectPath);
     shell.cp('-r', path.join(ROOT, 'node_modules'), destScriptsDir);
-    shell.cp(path.join(ROOT, 'bin', 'check_reqs*'), destScriptsDir);
-    shell.cp(path.join(ROOT, 'bin', 'android_sdk_version*'), destScriptsDir);
+    shell.cp(path.join(bin, 'check_reqs*'), destScriptsDir);
+    shell.cp(path.join(bin, 'android_sdk_version*'), destScriptsDir);
+    var check_reqs = path.join(destScriptsDir, 'check_reqs');
+    var android_sdk_version = path.join(destScriptsDir, 'android_sdk_version');
+    // TODO: the two files being edited on-the-fly here are shared between
+    // platform and project-level commands. the below `sed` is updating the
+    // `require` path for the two libraries. if there's a better way to share
+    // modules across both the repo and generated projects, we should make sure
+    // to remove/update this.
+    shell.sed('-i', /templates\/cordova\//, '', android_sdk_version);
+    shell.sed('-i', /templates\/cordova\//, '', check_reqs);
 }
 
 /**
