@@ -317,8 +317,7 @@ module.exports.check_android_target = function(originalError) {
     //   android-L
     //   Google Inc.:Google APIs:20
     //   Google Inc.:Glass Development Kit Preview:20
-    var desired_api_level = parseInt(module.exports.get_target().replace(/android-/, ''));
-    //   Changing "targets" to "target" is stupid and makes more code.  Thanks Google!
+    var desired_api_level = module.exports.get_target();
     return android_sdk.list_targets()
     .then(function(targets) {
         if (targets.indexOf(desired_api_level) >= 0) {

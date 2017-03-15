@@ -19,9 +19,11 @@
 /* jshint laxcomma:true */
 
 var check_reqs = require("../../bin/templates/cordova/lib/check_reqs");
+var android_sdk = require("../../bin/templates/cordova/lib/android_sdk");
 var shelljs = require("shelljs");
 var fs = require("fs");
 var path = require("path");
+var Q = require("q");
 
 describe("check_reqs", function () {
     var original_env;
@@ -216,6 +218,34 @@ describe("check_reqs", function () {
             var target = check_reqs.get_target();
             expect(target).toBeDefined();
             expect(target).toContain("android-");
+        });
+    });
+    describe("check_android_target", function() {
+        it("should should return full list of supported targets if there is a match to ideal api level", function(done) {
+            var deferred = Q.defer();
+            spyOn(android_sdk, "list_targets").and.returnValue(deferred.promise);
+            var fake_targets = ["you are my fire", "my one desire"];
+            deferred.resolve(fake_targets);
+            spyOn(check_reqs, "get_target").and.returnValue("you are my fire");
+            return check_reqs.check_android_target()
+            .then(function(targets) {
+                expect(targets).toBeDefined();
+                expect(targets).toEqual(fake_targets);
+                done();
+            });
+        });
+        it("should error out if there is no match between ideal api level and installed targets", function(done) {
+            var deferred = Q.defer();
+            spyOn(android_sdk, "list_targets").and.returnValue(deferred.promise);
+            var fake_targets = ["you are my fire", "my one desire"];
+            deferred.resolve(fake_targets);
+            spyOn(check_reqs, "get_target").and.returnValue("and i knowwwwwwwwwwww");
+            return check_reqs.check_android_target()
+            .catch(function(err) {
+                expect(err).toBeDefined();
+                expect(err.message).toContain("Please install Android target");
+                done();
+            });
         });
     });
 });
