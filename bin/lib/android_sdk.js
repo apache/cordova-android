@@ -62,3 +62,17 @@ module.exports.run = function() {
     return Q.all([get_sdks()]);
 };
 
+module.exports.version_string_to_api_level = {
+    '4.0': 14,
+    '4.0.3': 15,
+    '4.1': 16,
+    '4.2': 17,
+    '4.3': 18,
+    '4.4': 19,
+    '4.4W': 20,
+    '5.0': 21,
+    '5.1': 22,
+    '6.0': 23,
+    '7.0': 24,
+    '7.1.1': 25
+};
