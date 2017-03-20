@@ -107,7 +107,7 @@ module.exports.check_gradle = function() {
         return Q.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.\n' +
             'Might need to install Android SDK or set up \'ANDROID_HOME\' env variable.'));
 
-    var gradlePath = this.get_gradle_wrapper();
+    var gradlePath = module.exports.get_gradle_wrapper();
     if(gradlePath.length !== 0)
       d.resolve(gradlePath);
     else
