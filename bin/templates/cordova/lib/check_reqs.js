@@ -95,10 +95,31 @@ module.exports.check_ant = function() {
 
 module.exports.get_gradle_wrapper = function() {
     var androidStudioPath;
+    var i = 0;
+    var foundStudio = false;
+    var program_dir;
     if (module.exports.isDarwin()) {
-        androidStudioPath = path.join('/Applications', 'Android Studio.app', 'Contents', 'gradle');
+        program_dir = fs.readdirSync('/Applications');
+        while(i < program_dir.length && !foundStudio) {
+          if(program_dir[i].startsWith('Android Studio')) {
+            //TODO: Check for a specific Android Studio version, make sure it's not Canary
+            androidStudioPath = path.join('/Applications', program_dir[i], 'Contents', 'gradle');
+            foundStudio = true;
+          } else { ++i; }
+        }
     } else if (module.exports.isWindows()) {
-        androidStudioPath = path.join(process.env['ProgramFiles'],'Android', 'Android Studio', 'gradle');
+    var androidPath = path.join(process.env['ProgramFiles'], 'Android');
+        program_dir = fs.readdirSync(androidPath + '/');
+    console.log(path.join(process.env['ProgramFiles'], 'Android'));
+        while(i < program_dir.length && !foundStudio) {
+      console.log(program_dir[i]);
+          if(program_dir[i].startsWith('Android Studio')) {
+            foundStudio = true;
+            androidStudioPath = path.join(process.env['ProgramFiles'],'Android', program_dir[i], 'gradle');
+        console.log(androidStudioPath);
+          }
+          else { ++i; }
+        }
     }
 
     if (androidStudioPath !== null && fs.existsSync(androidStudioPath)) {
