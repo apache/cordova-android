@@ -110,13 +110,10 @@ module.exports.get_gradle_wrapper = function() {
     } else if (module.exports.isWindows()) {
     var androidPath = path.join(process.env['ProgramFiles'], 'Android');
         program_dir = fs.readdirSync(androidPath + '/');
-    console.log(path.join(process.env['ProgramFiles'], 'Android'));
         while(i < program_dir.length && !foundStudio) {
-      console.log(program_dir[i]);
           if(program_dir[i].startsWith('Android Studio')) {
             foundStudio = true;
             androidStudioPath = path.join(process.env['ProgramFiles'],'Android', program_dir[i], 'gradle');
-        console.log(androidStudioPath);
           }
           else { ++i; }
         }
