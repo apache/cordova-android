@@ -20,6 +20,15 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 6.2.0 (Mar 28, 2017)
+* [CB-12614](https://issues.apache.org/jira/browse/CB-12614) Adding headers to tests
+* [CB-8978](https://issues.apache.org/jira/browse/CB-8978) Prepare copy `resource-files` from `config.xml`
+* [CB-12605](https://issues.apache.org/jira/browse/CB-12605) Fix a requirements check failure on **Windows**
+* [CB-12595](https://issues.apache.org/jira/browse/CB-12595) This should find an **Android Studio** installation and use the sweet gradle center found inside
+* [CB-12546](https://issues.apache.org/jira/browse/CB-12546) leverage `avdmanager` if `android` warns it is no longer useful, which happens in **Android SDK Tools 25.3.1**. Explicitly set the `CWD` of the spawned emulator process to workaround a recent google android sdk bug. Rename `android_sdk_version.js` to `android_sdk.js`, to better reflect its contents. Have `create.js` copy over the `android_sdk_version` batch file.
+* [CB-12524](https://issues.apache.org/jira/browse/CB-12524) Fix for missing gradle template error. This now fetches the template from inside of the **Android Studio** directory, and falls back to a locally installed Gradle instance
+* [CB-12465](https://issues.apache.org/jira/browse/CB-12465) Writing new JUnit Test Instrumentation to replace tests and retire problmatic tests
+
 ### 6.1.2 (Jan 26, 2017)
 * **Security** Change to `https` by default
 * [CB-12018](https://issues.apache.org/jira/browse/CB-12018): updated tests to work with jasmine (promise matcher tests commented out for now)
