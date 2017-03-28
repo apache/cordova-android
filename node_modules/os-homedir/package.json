@@ -16,7 +16,6 @@
   "_from": "os-homedir@>=1.0.0 <2.0.0",
   "_id": "os-homedir@1.0.2",
   "_inCache": true,
-  "_installable": true,
   "_location": "/os-homedir",
   "_nodeVersion": "6.6.0",
   "_npmOperationalInternal": {

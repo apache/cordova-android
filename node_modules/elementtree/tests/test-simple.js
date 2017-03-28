@@ -337,3 +337,12 @@ exports['test_cdata_write'] = function(test, assert) {
 
   test.finish();
 };
+
+exports['test_read_bom'] = function(test, assert) {
+  var file = readFile('bom-xml.xml');
+  var etree = et.parse(file);
+
+  // If parse finished, test was successful
+
+  test.finish();
+};

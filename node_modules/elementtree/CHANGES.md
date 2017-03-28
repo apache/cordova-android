@@ -1,4 +1,4 @@
-elementtree v0.1.6 (in development)
+elementtree v0.1.6 - 2014-02-06
 
 * Add support for CData elements. (#14)
   [hermannpencole]
