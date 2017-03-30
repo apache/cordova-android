@@ -125,9 +125,10 @@ function writeProjectProperties(projectPath, target_api) {
     fs.writeFileSync(dstPath, data);
 }
 
+// This makes no sense, what if you're building with a different build system?
 function prepBuildFiles(projectPath) {
     var buildModule = require(path.resolve(projectPath, 'cordova/lib/builders/builders'));
-    buildModule.getBuilder('gradle').prepBuildFiles();
+    buildModule.getBuilder('studio').prepBuildFiles();
 }
 
 function copyBuildRules(projectPath) {

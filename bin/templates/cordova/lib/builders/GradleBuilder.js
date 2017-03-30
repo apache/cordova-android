@@ -79,6 +79,37 @@ GradleBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
     }
 };
 
+GradleBuilder.prototype.readProjectProperties = function () {
+    function findAllUniq(data, r) {
+        var s = {};
+        var m;
+        while ((m = r.exec(data))) {
+            s[m[1]] = 1;
+        }
+        return Object.keys(s);
+    }
+
+    var data = fs.readFileSync(path.join(this.root, 'project.properties'), 'utf8');
+    return {
+        libs: findAllUniq(data, /^\s*android\.library\.reference\.\d+=(.*)(?:\s|$)/mg),
+        gradleIncludes: findAllUniq(data, /^\s*cordova\.gradle\.include\.\d+=(.*)(?:\s|$)/mg),
+        systemLibs: findAllUniq(data, /^\s*cordova\.system\.library\.\d+=(.*)(?:\s|$)/mg)
+    };
+};
+
+GradleBuilder.prototype.extractRealProjectNameFromManifest = function () {
+    var manifestPath = path.join(this.root, 'AndroidManifest.xml');
+    var manifestData = fs.readFileSync(manifestPath, 'utf8');
+    var m = /<manifest[\s\S]*?package\s*=\s*"(.*?)"/i.exec(manifestData);
+    if (!m) {
+        throw new CordovaError('Could not find package name in ' + manifestPath);
+    }
+
+    var packageName=m[1];
+    var lastDotIndex = packageName.lastIndexOf('.');
+    return packageName.substring(lastDotIndex + 1);
+};
+
 
 // Makes the project buildable, minus the gradle wrapper.
 GradleBuilder.prototype.prepBuildFiles = function() {
