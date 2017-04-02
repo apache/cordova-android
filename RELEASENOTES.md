@@ -20,6 +20,9 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 6.2.1 (Apr 02, 2017)
+* [CB-12621](https://issues.apache.org/jira/browse/CB-12621) reverted elementtree dep to 0.1.6
+
 ### 6.2.0 (Mar 28, 2017)
 * [CB-12614](https://issues.apache.org/jira/browse/CB-12614) Adding headers to tests
 * [CB-8978](https://issues.apache.org/jira/browse/CB-8978) Prepare copy `resource-files` from `config.xml`
