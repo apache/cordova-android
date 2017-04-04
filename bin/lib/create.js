@@ -26,7 +26,7 @@ var shell = require('shelljs'),
     check_reqs = require('./../templates/cordova/lib/check_reqs'),
     ROOT    = path.join(__dirname, '..', '..');
 
-var MIN_SDK_VERSION = 16;
+var MIN_SDK_VERSION = 19;
 
 var CordovaError = require('cordova-common').CordovaError;
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
@@ -45,7 +45,7 @@ function getFrameworkDir(projectPath, shared) {
 function copyJsAndLibrary(projectPath, shared, projectName) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
-    shell.cp('-f', srcCordovaJsPath, path.join(projectPath, 'assets', 'www', 'cordova.js'));
+    shell.cp('-f', srcCordovaJsPath, path.join(projectPath, 'app', 'src', 'main', 'assets', 'www', 'cordova.js'));
 
     // Copy the cordova.js file to platforms/<platform>/platform_www/
     // The www dir is nuked on each prepare so we keep cordova.js in platform_www
@@ -135,6 +135,7 @@ function copyBuildRules(projectPath) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
     shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
+    shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), projectPath);
     shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
 }
 
@@ -260,9 +261,12 @@ exports.create = function(project_path, config, options, events) {
 
         setShellFatal(true, function() {
             var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
+            var app_path = path.join(project_path, 'app', 'src', 'main');
+
             // copy project template
-            shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
-            shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
+            shell.mkdir('-p', app_path);
+            shell.cp('-r', path.join(project_template_dir, 'assets'), app_path);
+            shell.cp('-r', path.join(project_template_dir, 'res'), app_path);
             shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
 
             // Manually create directories that would be empty within the template (since git doesn't track directories).
@@ -271,6 +275,14 @@ exports.create = function(project_path, config, options, events) {
             // copy cordova.js, cordova.jar
             copyJsAndLibrary(project_path, options.link, safe_activity_name);
 
+            //Set up ther Android Studio paths
+            var java_path = path.join(app_path, 'java');
+            var assets_path = path.join(app_path, 'assets');
+            var resource_path = path.join(app_path, 'res');
+            shell.mkdir('-p', java_path);
+            shell.mkdir('-p', assets_path);
+            shell.mkdir('-p', resource_path);
+
             // interpolate the activity name and package
             var packagePath = package_name.replace(/\./g, path.sep);
             var activity_dir = path.join(project_path, 'src', packagePath);
@@ -278,7 +290,7 @@ exports.create = function(project_path, config, options, events) {
             shell.mkdir('-p', activity_dir);
             shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
             shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
-            shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
+            shell.sed('-i', /__NAME__/, project_name, path.join(app_path, 'res', 'values', 'strings.xml'));
             shell.sed('-i', /__ID__/, package_name, activity_path);
 
             var manifest = new AndroidManifest(path.join(project_template_dir, 'AndroidManifest.xml'));
