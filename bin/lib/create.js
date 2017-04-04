@@ -135,7 +135,7 @@ function copyBuildRules(projectPath) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
     shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
-    shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), projectPath);
+    shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app'));
     shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
 }
 
