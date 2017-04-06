@@ -1,5 +1,3 @@
-
-
 /*
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
@@ -95,7 +93,7 @@ module.exports.list_targets = function() {
         // If there's an error, like avdmanager could not be found, we can try
         // as a last resort, to run `android`, in case this is a super old
         // SDK installation.
-        if (err && err.code == 'ENOENT') {
+        if (err && (err.code == 'ENOENT' || (err.stderr && err.stderr.match(/not recognized/)))) {
             return module.exports.list_targets_with_android();
         } else throw err;
     })
