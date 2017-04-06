@@ -98,9 +98,26 @@ describe("android_sdk", function () {
                 done();
             });
         });
+        it("should parse Android SDK installed target information with `android` command if list_targets_with_avdmanager fails with not-recognized error (Windows)", function(done) {
+            var deferred = Q.defer();
+            spyOn(android_sdk, "list_targets_with_avdmanager").and.returnValue(deferred.promise);
+            deferred.reject({
+                code: 1,
+                stderr: "'avdmanager' is not recognized as an internal or external commmand,\r\noperable program or batch file.\r\n"
+            });
+            var twoferred = Q.defer();
+            twoferred.resolve(["target1"]);
+            var avdmanager_spy = spyOn(android_sdk, "list_targets_with_android").and.returnValue(twoferred.promise);
+            return android_sdk.list_targets()
+            .then(function(targets) {
+                expect(avdmanager_spy).toHaveBeenCalled();
+                expect(targets[0]).toEqual("target1");
+                done();
+            });
+        });
         it("should throw an error if no Android targets were found.", function(done) {
             var deferred = Q.defer();
-            spyOn(android_sdk, "list_targets_with_android").and.returnValue(deferred.promise);
+            spyOn(android_sdk, "list_targets_with_avdmanager").and.returnValue(deferred.promise);
             deferred.resolve([]);
             return android_sdk.list_targets()
             .then(function(targets) {

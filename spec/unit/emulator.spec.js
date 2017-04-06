@@ -88,23 +88,14 @@ describe("emulator", function () {
             emu.list_images();
             expect(avdmanager_spy).toHaveBeenCalled();
         });
-        it("should catch if `avdmanager` exits with non-zero code, and delegate to `android` if it can find it", function() {
+        it("should delegate to `android` if `avdmanager` cant be found and `android` can", function() {
             spyOn(shelljs, "which").and.callFake(function(cmd) {
                 if (cmd == "avdmanager") {
-                    return true;
-                } else {
                     return false;
+                } else {
+                    return true;
                 }
             });
-            spyOn(emu, "list_images_using_avdmanager").and.returnValue({
-                catch:function(cb) {
-                    cb({
-                        code: "ENOENT"
-                    });
-                }
-            });
-
-            // Fake out the old promise to feign a failed `android` command
             var android_spy = spyOn(emu, "list_images_using_android");
             emu.list_images();
             expect(android_spy).toHaveBeenCalled();

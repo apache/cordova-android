@@ -172,17 +172,7 @@ module.exports.list_images_using_android = function() {
  */
 module.exports.list_images = function() {
     if (forgivingWhichSync('avdmanager')) {
-        return module.exports.list_images_using_avdmanager()
-        .catch(function(err) {
-            // try to use `avdmanager` in case `android` reports it is no longer available.
-            // this likely means the target machine is using a newer version of
-            // the android sdk, and possibly `avdmanager` is available.
-            if (err && err.code == 'ENOENT') {
-                return module.exports.list_images_using_android();
-            } else {
-                throw err;
-            }
-        });
+        return module.exports.list_images_using_avdmanager();
     } else if (forgivingWhichSync('android')) {
         return module.exports.list_images_using_android();
     } else {
