@@ -28,7 +28,7 @@ describe("emulator", function () {
         it("should properly parse details of SDK Tools 25.3.1 `avdmanager` output", function(done) {
             var deferred = Q.defer();
             spyOn(cc.superspawn, "spawn").and.returnValue(deferred.promise);
-            deferred.resolve(fs.readFileSync(path.join("spec", "fixtures", "avdmanager_list_avd.txt"), "utf-8"));
+            deferred.resolve(fs.readFileSync(path.join("spec", "fixtures", "sdk25.3-avdmanager_list_avd.txt"), "utf-8"));
             return emu.list_images_using_avdmanager()
             .then(function(list) {
                 expect(list).toBeDefined();
@@ -47,7 +47,7 @@ describe("emulator", function () {
         it("should properly parse details of SDK Tools pre-25.3.1 `android list avd` output", function(done) {
             var deferred = Q.defer();
             spyOn(cc.superspawn, "spawn").and.returnValue(deferred.promise);
-            deferred.resolve(fs.readFileSync(path.join("spec", "fixtures", "android_list_avd.txt"), "utf-8"));
+            deferred.resolve(fs.readFileSync(path.join("spec", "fixtures", "sdk25.2-android_list_avd.txt"), "utf-8"));
             return emu.list_images_using_android()
             .then(function(list) {
                 expect(list).toBeDefined();
