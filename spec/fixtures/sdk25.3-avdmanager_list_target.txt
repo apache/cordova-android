@@ -1,0 +1,7 @@
+Available Android targets:
+----------
+id: 1 or "android-25"
+     Name: Android API 25
+     Type: Platform
+     API level: 25
+     Revision: 3
