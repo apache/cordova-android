@@ -16,8 +16,8 @@
     specific language governing permissions and limitations
     under the License.
 */
-var cc = require("cordova-common");
 var emu = require("../../bin/templates/cordova/lib/emulator");
+var superspawn = require("cordova-common").superspawn;
 var Q = require("q");
 var fs = require("fs");
 var path = require("path");
@@ -27,7 +27,7 @@ describe("emulator", function () {
     describe("list_images_using_avdmanager", function() {
         it("should properly parse details of SDK Tools 25.3.1 `avdmanager` output", function(done) {
             var deferred = Q.defer();
-            spyOn(cc.superspawn, "spawn").and.returnValue(deferred.promise);
+            spyOn(superspawn, "spawn").and.returnValue(deferred.promise);
             deferred.resolve(fs.readFileSync(path.join("spec", "fixtures", "sdk25.3-avdmanager_list_avd.txt"), "utf-8"));
             return emu.list_images_using_avdmanager()
             .then(function(list) {
@@ -44,9 +44,15 @@ describe("emulator", function () {
         });
     });
     describe("list_images_using_android", function() {
+        it("should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions", function() {
+            var deferred = Q.defer();
+            spyOn(superspawn, "spawn").and.returnValue(deferred.promise);
+            emu.list_images_using_android();
+            expect(superspawn.spawn).toHaveBeenCalledWith("android", ["list", "avd"]);
+        });
         it("should properly parse details of SDK Tools pre-25.3.1 `android list avd` output", function(done) {
             var deferred = Q.defer();
-            spyOn(cc.superspawn, "spawn").and.returnValue(deferred.promise);
+            spyOn(superspawn, "spawn").and.returnValue(deferred.promise);
             deferred.resolve(fs.readFileSync(path.join("spec", "fixtures", "sdk25.2-android_list_avd.txt"), "utf-8"));
             return emu.list_images_using_android()
             .then(function(list) {
@@ -70,40 +76,38 @@ describe("emulator", function () {
                 return cmd;
             });
         });
-        it("should try to parse AVD information using `android`", function() {
+        it("should try to parse AVD information using `avdmanager` first", function() {
             spyOn(shelljs, "which").and.callFake(function(cmd) {
-                if (cmd == "android") {
+                if (cmd == "avdmanager") {
                     return true;
                 } else {
                     return false;
                 }
             });
-            var android_spy = spyOn(emu, "list_images_using_android").and.returnValue({catch:function(){}});
+            var avdmanager_spy = spyOn(emu, "list_images_using_avdmanager").and.returnValue({catch:function(){}});
             emu.list_images();
-            expect(android_spy).toHaveBeenCalled();
+            expect(avdmanager_spy).toHaveBeenCalled();
         });
-        it("should catch if `android` exits with non-zero code and specific stdout, and delegate to `avdmanager` if it can find it", function() {
+        it("should catch if `avdmanager` exits with non-zero code, and delegate to `android` if it can find it", function() {
             spyOn(shelljs, "which").and.callFake(function(cmd) {
-                if (cmd == "android") {
+                if (cmd == "avdmanager") {
                     return true;
                 } else {
                     return false;
                 }
             });
-            var avdmanager_spy = spyOn(emu, "list_images_using_avdmanager");
-            // Fake out the old promise to feign a failed `android` command
-            spyOn(emu, "list_images_using_android").and.returnValue({
+            spyOn(emu, "list_images_using_avdmanager").and.returnValue({
                 catch:function(cb) {
                     cb({
-                        code: 1,
-                        stdout: ["The android command is no longer available.",
-                                "For manual SDK and AVD management, please use Android Studio.",
-                                "For command-line tools, use tools/bin/sdkmanager and tools/bin/avdmanager"].join("\n")
+                        code: "ENOENT"
                     });
                 }
             });
+
+            // Fake out the old promise to feign a failed `android` command
+            var android_spy = spyOn(emu, "list_images_using_android");
             emu.list_images();
-            expect(avdmanager_spy).toHaveBeenCalled();
+            expect(android_spy).toHaveBeenCalled();
         });
         it("should throw an error if neither `avdmanager` nor `android` are able to be found", function(done) {
             spyOn(shelljs, "which").and.returnValue(false);

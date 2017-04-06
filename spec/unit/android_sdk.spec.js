@@ -26,6 +26,12 @@ var Q = require("q");
 
 describe("android_sdk", function () {
     describe("list_targets_with_android", function() {
+        it("should invoke `android` with the `list target` command and _not_ the `list targets` command, as the plural form is not supported in some Android SDK Tools versions", function() {
+            var deferred = Q.defer();
+            spyOn(superspawn, "spawn").and.returnValue(deferred.promise);
+            android_sdk.list_targets_with_android();
+            expect(superspawn.spawn).toHaveBeenCalledWith("android", ["list", "target"]);
+        });
         it("should parse and return results from `android list targets` command", function(done) {
             var deferred = Q.defer();
             spyOn(superspawn, "spawn").and.returnValue(deferred.promise);
