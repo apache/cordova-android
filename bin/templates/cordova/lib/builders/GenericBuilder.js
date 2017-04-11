@@ -27,6 +27,7 @@ var CordovaError = require('cordova-common').CordovaError;
 function GenericBuilder (projectDir) {
     this.root = projectDir || path.resolve(__dirname, '../../..');
     this.binDirs = {
+        studio: path.join(this.root, 'app', 'build', 'outputs', 'apk'),
         gradle: path.join(this.root, 'build', 'outputs', 'apk')
     };
 }
@@ -52,6 +53,7 @@ GenericBuilder.prototype.findOutputApks = function(build_type, arch) {
     var self = this;
     return Object.keys(this.binDirs)
     .reduce(function (result, builderName) {
+        console.log('builderName:'+ builderName);
         var binDir = self.binDirs[builderName];
         return result.concat(findOutputApksHelper(binDir, build_type, builderName === 'ant' ? null : arch));
     }, [])

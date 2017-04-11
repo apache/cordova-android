@@ -37,7 +37,7 @@ var TEMPLATE =
 function StudioBuilder (projectRoot) {
     GenericBuilder.call(this, projectRoot);
 
-    this.binDirs = {gradle: this.binDirs.gradle};
+    this.binDirs = {gradle: this.binDirs.studio};
 }
 
 util.inherits(StudioBuilder, GenericBuilder);
@@ -81,6 +81,9 @@ StudioBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
 
 
 StudioBuilder.prototype.readProjectProperties = function () {
+
+    console.log("Do we even have to do this?");
+
     function findAllUniq(data, r) {
         var s = {};
         var m;
@@ -145,10 +148,15 @@ StudioBuilder.prototype.prepBuildFiles = function() {
         return str;
     });
 
+
+    // We really shouldn't do this.
     // Write the settings.gradle file.
-    fs.writeFileSync(path.join(this.root, 'settings.gradle'),
+    /* 
+        fs.writeFileSync(path.join(this.root, 'settings.gradle'),
         '// GENERATED FILE - DO NOT EDIT\n' +
         'include ":"\n' + settingsGradlePaths.join(''));
+        */
+
     // Update dependencies within build.gradle.
     var buildGradle = fs.readFileSync(path.join(this.root, 'build.gradle'), 'utf8');
     var depsList = '';
@@ -212,21 +220,6 @@ StudioBuilder.prototype.prepEnv = function(opts) {
       }).then(function() {
           return self.prepBuildFiles();
       }).then(function() {
-        // We now copy the gradle out of the framework
-        // This is a dirty patch to get the build working
-        /*
-        var wrapperDir = path.join(self.root, 'CordovaLib');
-        if (process.platform == 'win32') {
-            shell.rm('-f', path.join(self.root, 'gradlew.bat'));
-            shell.cp(path.join(wrapperDir, 'gradlew.bat'), self.root);
-        } else {
-            shell.rm('-f', path.join(self.root, 'gradlew'));
-            shell.cp(path.join(wrapperDir, 'gradlew'), self.root);
-        }
-        shell.rm('-rf', path.join(self.root, 'gradle', 'wrapper'));
-        shell.mkdir('-p', path.join(self.root, 'gradle'));
-        shell.cp('-r', path.join(wrapperDir, 'gradle', 'wrapper'), path.join(self.root, 'gradle'));
-*/
         // If the gradle distribution URL is set, make sure it points to version we want.
         // If it's not set, do nothing, assuming that we're using a future version of gradle that we don't want to mess with.
         // For some reason, using ^ and $ don't work.  This does the job, though.

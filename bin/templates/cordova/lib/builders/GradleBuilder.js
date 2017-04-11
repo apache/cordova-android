@@ -79,6 +79,10 @@ GradleBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
     }
 };
 
+/*
+ * We need to kill this in a fire.
+ */
+
 GradleBuilder.prototype.readProjectProperties = function () {
     function findAllUniq(data, r) {
         var s = {};
@@ -117,6 +121,9 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     var pluginBuildGradle = path.join(this.root, 'cordova', 'lib', 'plugin-build.gradle');
     var propertiesObj = this.readProjectProperties();
     var subProjects = propertiesObj.libs;
+
+    // Check and copy the gradle file into the subproject.
+    // Called by the loop below this function def.
     var checkAndCopy = function(subProject, root) {
       var subProjectGradle = path.join(root, subProject, 'build.gradle');
       // This is the future-proof way of checking if a file exists
@@ -127,11 +134,16 @@ GradleBuilder.prototype.prepBuildFiles = function() {
           shell.cp('-f', pluginBuildGradle, subProjectGradle);
       }
     };
+
+    // Some dependencies on Android don't use gradle, or don't have default
+    // gradle files.  This copies a dummy gradle file into them
     for (var i = 0; i < subProjects.length; ++i) {
-        if (subProjects[i] !== 'CordovaLib') {
+        if (subProjects[i] !== 'CordovaLib' && subProjects[i] !== 'app') {
           checkAndCopy(subProjects[i], this.root);
         }
     }
+
+
     var name = this.extractRealProjectNameFromManifest();
     //Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
     var settingsGradlePaths =  subProjects.map(function(p){
@@ -151,6 +163,11 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     var buildGradle = fs.readFileSync(path.join(this.root, 'build.gradle'), 'utf8');
     var depsList = '';
     var root = this.root;
+
+
+    // Cordova Plugins can be written as library modules that would use Cordova as a
+    // dependency.  Because we need to make sure that Cordova is compiled only once for
+    // dexing, we make sure to exclude CordovaLib from these modules
     var insertExclude = function(p) {
           var gradlePath = path.join(root, p, 'build.gradle');
           var projectGradleFile = fs.readFileSync(gradlePath, 'utf-8');
@@ -161,6 +178,7 @@ GradleBuilder.prototype.prepBuildFiles = function() {
             depsList +='\n';
           }
     };
+
     subProjects.forEach(function(p) {
         console.log('Subproject Path: ' + p);
         var libName=p.replace(/[/\\]/g, ':').replace(name+'-','');
@@ -169,11 +187,14 @@ GradleBuilder.prototype.prepBuildFiles = function() {
         depsList += '    releaseCompile(project(path: "' + libName + '", configuration: "release"))';
         insertExclude(p);
     });
+
+
     // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
     var SYSTEM_LIBRARY_MAPPINGS = [
         [/^\/?extras\/android\/support\/(.*)$/, 'com.android.support:support-$1:+'],
         [/^\/?google\/google_play_services\/libproject\/google-play-services_lib\/?$/, 'com.google.android.gms:play-services:+']
     ];
+
     propertiesObj.systemLibs.forEach(function(p) {
         var mavenRef;
         // It's already in gradle form if it has two ':'s
@@ -193,6 +214,9 @@ GradleBuilder.prototype.prepBuildFiles = function() {
         }
         depsList += '    compile "' + mavenRef + '"\n';
     });
+
+    //This code is dangerous and actually writes gradle declarations directly into the build.gradle
+    //Try not to mess with this if possible
     buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
     var includeList = '';
     propertiesObj.gradleIncludes.forEach(function(includePath) {

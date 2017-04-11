@@ -35,7 +35,7 @@ function parseOpts(options, resolvedTarget, projectRoot) {
     options = options || {};
     options.argv = nopt({
         gradle: Boolean,
-        ant: Boolean,
+        studio: Boolean,
         prepenv: Boolean,
         versionCode: String,
         minSdkVersion: String,
@@ -55,8 +55,8 @@ function parseOpts(options, resolvedTarget, projectRoot) {
         extraArgs: []
     };
 
-    if (options.argv.ant || options.argv.gradle)
-        ret.buildMethod = options.argv.ant ? 'ant' : 'gradle';
+    if (options.argv.gradle || options.argv.studio)
+        ret.buildMethod = options.argv.studio ? 'studio' : 'gradle';
 
     if (options.nobuild) ret.buildMethod = 'none';
 
