@@ -56,6 +56,8 @@ public interface CordovaWebView {
     boolean backHistory();
 
     void handlePause(boolean keepRunning);
+     
+    void handleRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
 
     void onNewIntent(Intent intent);
 

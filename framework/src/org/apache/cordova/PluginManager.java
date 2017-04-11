@@ -214,6 +214,17 @@ public class PluginManager {
     }
 
     /**
+     * Called when the system has refresh the permissions
+     */
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            if (plugin != null) {
+                plugin.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
+        }
+    }
+
+    /**
      * Called when the system received an HTTP authentication request. Plugins can use
      * the supplied HttpAuthHandler to process this auth challenge.
      *
