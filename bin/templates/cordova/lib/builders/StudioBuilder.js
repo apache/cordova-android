@@ -149,13 +149,9 @@ StudioBuilder.prototype.prepBuildFiles = function() {
     });
 
 
-    // We really shouldn't do this.
-    // Write the settings.gradle file.
-    /* 
-        fs.writeFileSync(path.join(this.root, 'settings.gradle'),
+    fs.writeFileSync(path.join(this.root, 'settings.gradle'),
         '// GENERATED FILE - DO NOT EDIT\n' +
         'include ":"\n' + settingsGradlePaths.join(''));
-        */
 
     // Update dependencies within build.gradle.
     var buildGradle = fs.readFileSync(path.join(this.root, 'build.gradle'), 'utf8');
