@@ -276,7 +276,6 @@ exports.create = function(project_path, config, options, events) {
             copyJsAndLibrary(project_path, options.link, safe_activity_name);
 
             //Set up ther Android Studio paths
-            var app_path = path.join(project_path, 'app', 'src', 'main');
             var java_path = path.join(app_path, 'java');
             var assets_path = path.join(app_path, 'assets');
             var resource_path = path.join(app_path, 'res');

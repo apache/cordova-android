@@ -22,7 +22,6 @@ var fs = require('fs');
 var path = require('path');
 var shell = require('shelljs');
 var events = require('cordova-common').events;
-var CordovaError = require('cordova-common').CordovaError;
 
 function GenericBuilder (projectDir) {
     this.root = projectDir || path.resolve(__dirname, '../../..');
@@ -30,10 +29,6 @@ function GenericBuilder (projectDir) {
         studio: path.join(this.root, 'app', 'build', 'outputs', 'apk'),
         gradle: path.join(this.root, 'build', 'outputs', 'apk')
     };
-}
-
-function hasCustomRules(projectRoot) {
-    return fs.existsSync(path.join(projectRoot, 'custom_rules.xml'));
 }
 
 GenericBuilder.prototype.prepEnv = function() {

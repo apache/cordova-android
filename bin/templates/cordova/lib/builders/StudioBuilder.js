@@ -82,8 +82,6 @@ StudioBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
 
 StudioBuilder.prototype.readProjectProperties = function () {
 
-    console.log("Do we even have to do this?");
-
     function findAllUniq(data, r) {
         var s = {};
         var m;
