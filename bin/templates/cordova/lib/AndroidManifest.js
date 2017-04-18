@@ -103,29 +103,13 @@ AndroidManifest.prototype.getActivity = function() {
 };
 
 ['minSdkVersion', 'maxSdkVersion', 'targetSdkVersion']
-.forEach(function(sdkPrefName) {
-    // Copy variable reference to avoid closure issues
-    var prefName = sdkPrefName;
+.forEach(function(sdkPrefName){
+    createPrefAccessors(sdkPrefName, 'uses-sdk');
+});
 
-    AndroidManifest.prototype['get' + capitalize(prefName)] = function() {
-        var usesSdk = this.doc.getroot().find('./uses-sdk');
-        return usesSdk && usesSdk.attrib['android:' + prefName];
-    };
-
-    AndroidManifest.prototype['set' + capitalize(prefName)] = function(prefValue) {
-        var usesSdk = this.doc.getroot().find('./uses-sdk');
-
-        if (!usesSdk && prefValue) { // if there is no required uses-sdk element, we should create it first
-            usesSdk = new et.Element('uses-sdk');
-            this.doc.getroot().append(usesSdk);
-        }
-
-        if (prefValue) {
-            usesSdk.attrib['android:' + prefName] = prefValue;
-        }
-
-        return this;
-    };
+['largeScreens', 'normalScreens', 'smallScreens', 'xlargeScreens', 'resizeable', 'anyDensity']
+.forEach(function(supportsScreensPrefName){
+    createPrefAccessors(supportsScreensPrefName, 'supports-screens');
 });
 
 AndroidManifest.prototype.getDebuggable = function() {
@@ -158,4 +142,29 @@ module.exports = AndroidManifest;
 
 function capitalize (str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function createPrefAccessors(elementPrefName, elementName) {
+    // Copy variable reference to avoid closure issues
+    var prefName = elementPrefName;
+
+    AndroidManifest.prototype['get' + capitalize(prefName)] = function() {
+        var element = this.doc.getroot().find('./' + elementName);
+        return element && element.attrib['android:' + prefName];
+    };
+
+    AndroidManifest.prototype['set' + capitalize(prefName)] = function(prefValue) {
+        var element = this.doc.getroot().find('./' + elementName);
+
+        if (!element && prefValue) { // if there is no required element, we should create it first
+            element = new et.Element(elementName);
+            this.doc.getroot().append(element);
+        }
+
+        if (prefValue) {
+            element.attrib['android:' + prefName] = prefValue;
+        }
+
+        return this;
+    };
 }

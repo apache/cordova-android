@@ -191,6 +191,12 @@ function updateProjectAccordingTo(platformConfig, locations) {
         .setMinSdkVersion(platformConfig.getPreference('android-minSdkVersion', 'android'))
         .setMaxSdkVersion(platformConfig.getPreference('android-maxSdkVersion', 'android'))
         .setTargetSdkVersion(platformConfig.getPreference('android-targetSdkVersion', 'android'))
+        .setLargeScreens(platformConfig.getPreference('android-largeScreens', 'android'))
+        .setNormalScreens(platformConfig.getPreference('android-normalScreens', 'android'))
+        .setSmallScreens(platformConfig.getPreference('android-smallScreens', 'android'))
+        .setXlargeScreens(platformConfig.getPreference('android-xlargeScreens', 'android'))
+        .setResizeable(platformConfig.getPreference('android-resizeable', 'android'))
+        .setAnyDensity(platformConfig.getPreference('android-anyDensity', 'android'))
         .write();
 
     var javaPattern = path.join(locations.root, 'src', orig_pkg.replace(/\./g, '/'), '*.java');
