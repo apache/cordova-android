@@ -58,6 +58,10 @@ function parseOpts(options, resolvedTarget, projectRoot) {
     if (options.argv.gradle || options.argv.studio)
         ret.buildMethod = options.argv.studio ? 'studio' : 'gradle';
 
+    //This comes from cordova/run
+    if (options.studio) ret.buildMethod = 'studio';
+    if (options.gradle) ret.buildMethod = 'gradle';
+
     if (options.nobuild) ret.buildMethod = 'none';
 
     if (options.argv.versionCode)
@@ -148,6 +152,7 @@ module.exports.runClean = function(options) {
  */
 module.exports.run = function(options, optResolvedTarget) {
     var opts = parseOpts(options, optResolvedTarget, this.root);
+    console.log(opts.buildMethod);
     var builder = builders.getBuilder(opts.buildMethod);
     return builder.prepEnv(opts)
     .then(function() {
