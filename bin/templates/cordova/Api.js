@@ -343,6 +343,8 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
  */
 Api.prototype.build = function (buildOptions) {
     var self = this;
+    if(this.android_studio)
+      buildOptions.studio = true;
     return require('./lib/check_reqs').run()
     .then(function () {
         return require('./lib/build').run.call(self, buildOptions);

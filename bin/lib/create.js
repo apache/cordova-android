@@ -45,7 +45,9 @@ function getFrameworkDir(projectPath, shared) {
 function copyJsAndLibrary(projectPath, shared, projectName) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
-    shell.cp('-f', srcCordovaJsPath, path.join(projectPath, 'app', 'src', 'main', 'assets', 'www', 'cordova.js'));
+    var app_path = path.join(projectPath, 'app', 'src', 'main');
+
+    shell.cp('-f', srcCordovaJsPath, path.join(app_path, 'assets', 'www', 'cordova.js'));
 
     // Copy the cordova.js file to platforms/<platform>/platform_www/
     // The www dir is nuked on each prepare so we keep cordova.js in platform_www
@@ -56,9 +58,9 @@ function copyJsAndLibrary(projectPath, shared, projectName) {
     // We need these files to build cordova.js if using browserify method.
     shell.cp('-rf', path.join(ROOT, 'cordova-js-src'), path.join(projectPath, 'platform_www'));
 
-    // Don't fail if there are no old jars.
+    // Don't fail if there are no old jars, because there hasn't been cordova JARs for years!
     setShellFatal(false, function() {
-        shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function(oldJar) {
+        shell.ls(path.join(app_path, 'libs', 'cordova-*.jar')).forEach(function(oldJar) {
             console.log('Deleting ' + oldJar);
             shell.rm('-f', oldJar);
         });
@@ -270,7 +272,7 @@ exports.create = function(project_path, config, options, events) {
             shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
 
             // Manually create directories that would be empty within the template (since git doesn't track directories).
-            shell.mkdir(path.join(project_path, 'libs'));
+            shell.mkdir(path.join(app_path, 'libs'));
 
             // copy cordova.js, cordova.jar
             copyJsAndLibrary(project_path, options.link, safe_activity_name);
