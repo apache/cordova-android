@@ -426,7 +426,7 @@ function updateFileResources(cordovaProject, platformDir) {
 
 
 function cleanFileResources(projectRoot, projectConfig, platformDir) {
-    var files = projectConfig.getFileResources('android');
+    var files = projectConfig.getFileResources('android', true);
     if (files.length > 0) {
         events.emit('verbose', 'Cleaning resource files at ' + platformDir);
 
