@@ -210,6 +210,11 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         settings.setAppCachePath(databasePath);
         settings.setAppCacheEnabled(true);
 
+        // Enable scaling
+        // Fix for CB-12015
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+
         // Fix for CB-1405
         // Google issue 4641
         String defaultUserAgent = settings.getUserAgentString();
