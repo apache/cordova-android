@@ -105,6 +105,23 @@ describe("android_sdk", function () {
                 done();
             });
         });
+        it("should parse Android SDK installed target information with `avdmanager` command if list_targets_with_android fails due to `android` command being deprecated", function(done) {
+            var deferred = Q.defer();
+            spyOn(android_sdk, "list_targets_with_android").and.returnValue(deferred.promise);
+            deferred.reject({
+                code: 1,
+                stdout: "The \"android\" command is deprecated."
+            });
+            var twoferred = Q.defer();
+            twoferred.resolve(["target1"]);
+            var sdkmanager_spy = spyOn(android_sdk, "list_targets_with_sdkmanager").and.returnValue(twoferred.promise);
+            return android_sdk.list_targets()
+            .then(function(targets) {
+                expect(sdkmanager_spy).toHaveBeenCalled();
+                expect(targets[0]).toEqual("target1");
+                done();
+            });
+        });
         it("should throw an error if no Android targets were found.", function(done) {
             var deferred = Q.defer();
             spyOn(android_sdk, "list_targets_with_android").and.returnValue(deferred.promise);

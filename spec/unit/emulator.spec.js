@@ -105,6 +105,29 @@ describe("emulator", function () {
             emu.list_images();
             expect(avdmanager_spy).toHaveBeenCalled();
         });
+        it("should catch if `android` exits with non-zero code and specific deprecated stdout, and delegate to `avdmanager` if it can find it", function() {
+            spyOn(shelljs, "which").and.callFake(function(cmd) {
+                if (cmd == "android") {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+            var avdmanager_spy = spyOn(emu, "list_images_using_avdmanager");
+            // Fake out the old promise to feign a failed `android` command
+            spyOn(emu, "list_images_using_android").and.returnValue({
+                catch:function(cb) {
+                    cb({
+                        code: 1,
+                        stdout: ["The \"android\" command is deprecated",
+                                "For manual SDK and AVD management, please use Android Studio.",
+                                "For command-line tools, use tools/bin/sdkmanager and tools/bin/avdmanager"].join("\n")
+                    });
+                }
+            });
+            emu.list_images();
+            expect(avdmanager_spy).toHaveBeenCalled();
+        });
         it("should throw an error if neither `avdmanager` nor `android` are able to be found", function(done) {
             spyOn(shelljs, "which").and.returnValue(false);
             return emu.list_images()

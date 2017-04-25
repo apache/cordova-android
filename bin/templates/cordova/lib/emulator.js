@@ -177,7 +177,8 @@ module.exports.list_images = function() {
             // try to use `avdmanager` in case `android` reports it is no longer available.
             // this likely means the target machine is using a newer version of
             // the android sdk, and possibly `avdmanager` is available.
-            if (err.code == 1 && err.stdout.indexOf('android command is no longer available')) {
+            var avail_regex = /"?android"? command is ((no longer available)|(deprecated))?/;
+            if (err.code == 1 && err.stdout.match(avail_regex)) {
                 return module.exports.list_images_using_avdmanager();
             } else {
                 throw err;
