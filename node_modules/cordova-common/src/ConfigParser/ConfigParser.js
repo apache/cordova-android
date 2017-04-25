@@ -116,6 +116,16 @@ ConfigParser.prototype = {
         var el = findOrCreate(this.doc, 'name');
         el.text = name;
     },
+    shortName: function() {
+        return this.doc.find('name').attrib['short'] || this.name();
+    },
+    setShortName: function(shortname) {
+        var el = findOrCreate(this.doc, 'name');
+        if (!el.text) {
+            el.text = shortname;
+        }
+        el.attrib['short'] = shortname;
+    },
     description: function() {
         return getNodeTextSafe(this.doc.find('description'));
     },

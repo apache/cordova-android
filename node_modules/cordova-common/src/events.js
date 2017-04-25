@@ -20,6 +20,7 @@
 var EventEmitter = require('events').EventEmitter;
 
 var INSTANCE = new EventEmitter();
+INSTANCE.setMaxListeners(20);
 var EVENTS_RECEIVER;
 
 module.exports = INSTANCE;

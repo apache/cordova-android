@@ -20,6 +20,13 @@
 -->
 # Cordova-common Release Notes
 
+### 2.0.2 (Apr 14, 2017)
+* [CB-11233](https://issues.apache.org/jira/browse/CB-11233) - Support installing frameworks into 'Embedded Binaries' section of the Xcode project
+* [CB-10438](https://issues.apache.org/jira/browse/CB-10438) - Install correct dependency version. Removed shell.remove, added pkg.json to dependency tests 1-3, and updated install.js (.replace) to fix tests in uninstall.spec.js and update to workw with jasmine 2.0
+* [CB-11120](https://issues.apache.org/jira/browse/CB-11120) - Allow short/display name in config.xml
+* [CB-11346](https://issues.apache.org/jira/browse/CB-11346) - Remove known platforms check
+* [CB-11977](https://issues.apache.org/jira/browse/CB-11977) - updated engines and enginescript for common, fetch, and serve
+
 ### 2.0.1 (Mar 09, 2017)
 * [CB-12557](https://issues.apache.org/jira/browse/CB-12557) add both stdout and stderr properties to the error object passed to superspawn reject handler.
 
