@@ -184,7 +184,7 @@ android {
             armv7 {
                 versionCode defaultConfig.versionCode*10 + 2
                 ndk {
-                    abiFilters "armeabi-v7a", ""
+                    abiFilters "armeabi-v7a", "armeabi"
                 }
             }
             x86 {
