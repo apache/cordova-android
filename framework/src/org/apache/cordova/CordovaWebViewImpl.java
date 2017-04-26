@@ -500,6 +500,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
             boundKeyCodes.clear();
             pluginManager.onReset();
             pluginManager.postMessage("onPageStarted", newUrl);
+			appPlugin = null;
         }
 
         @Override
