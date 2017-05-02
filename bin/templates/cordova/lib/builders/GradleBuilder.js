@@ -22,7 +22,7 @@ var fs = require('fs');
 var util = require('util');
 var path = require('path');
 var shell = require('shelljs');
-var spawn = require('cordova-common').superspawn.spawn;
+var superspawn = require('cordova-common').superspawn;
 var CordovaError = require('cordova-common').CordovaError;
 var check_reqs = require('../check_reqs');
 
@@ -75,7 +75,7 @@ GradleBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
     if(fs.existsSync(gradlePath)) {
       //Literally do nothing, for some reason this works, while !fs.existsSync didn't on Windows
     } else {
-      return spawn(gradle_cmd, ['-p', this.root, 'wrapper', '-b', wrapperGradle], {stdio: 'inherit'});
+      return superspawn.spawn(gradle_cmd, ['-p', this.root, 'wrapper', '-b', wrapperGradle], {stdio: 'inherit'});
     }
 };
 
@@ -223,7 +223,7 @@ GradleBuilder.prototype.build = function(opts) {
     var wrapper = path.join(this.root, 'gradlew');
     var args = this.getArgs(opts.buildType == 'debug' ? 'debug' : 'release', opts);
 
-    return spawn(wrapper, args, {stdio: 'pipe'})
+    return superspawn.spawn(wrapper, args, {stdio: 'pipe'})
     .progress(function (stdio){
         if (stdio.stderr) {
             /*
@@ -258,7 +258,7 @@ GradleBuilder.prototype.clean = function(opts) {
     var wrapper = path.join(this.root, 'gradlew');
     var args = builder.getArgs('clean', opts);
     return Q().then(function() {
-        return spawn(wrapper, args, {stdio: 'inherit'});
+        return superspawn.spawn(wrapper, args, {stdio: 'inherit'});
     })
     .then(function () {
         shell.rm('-rf', path.join(builder.root, 'out'));
