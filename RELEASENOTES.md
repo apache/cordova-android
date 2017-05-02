@@ -20,6 +20,14 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 6.2.3 (May 2, 2017)
+* [CB-12640](https://issues.apache.org/jira/browse/CB-12640) better handling of unrecognized Android SDK commands on **Windows**.
+* [CB-12640](https://issues.apache.org/jira/browse/CB-12640) flipped avd parsing logic so that it always tries to use avdmanager to retrieve avds first, then falls back to android command if avdmanager cannot be found (and errors with ENOENT). updated tests - and added explicit tests to ensure to shell out to singular forms of sub-commands when executing `android`
+* [CB-12640](https://issues.apache.org/jira/browse/CB-12640) support for android sdk tools 26.0.1.
+
+### 6.2.2 (Apr 24, 2017)
+* [CB-12697](https://issues.apache.org/jira/browse/CB-12697) Updated checked-in `node_modules`
+
 ### 6.2.1 (Apr 02, 2017)
 * [CB-12621](https://issues.apache.org/jira/browse/CB-12621) reverted elementtree dep to 0.1.6
 
