@@ -433,8 +433,17 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // If app doesn't want to run in background
         if (!keepRunning) {
-            // Pause JavaScript timers. This affects all webviews within the app!
-            engine.setPaused(true);
+            // Delay setPaused while javascript processes pause event 
+            Thread t = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(250);
+                        // Pause JavaScript timers. This affects all webviews within the app!
+                        engine.setPaused(true);
+                    } catch (InterruptedException e) {
+                    }
+                }
+            });
         }
     }
     @Override
