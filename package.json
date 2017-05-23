@@ -10,6 +10,9 @@
     "type": "git",
     "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
   },
+  "bugs": {
+    "url": "https://issues.apache.org/jira/browse/CB"
+  },
   "keywords": [
     "android",
     "cordova",
