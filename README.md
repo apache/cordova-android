@@ -62,3 +62,9 @@ These commands live in a generated Cordova Android project. Any interactions wit
 
 1. Create a project
 2. Import it via "Non-Android Studio Project"
+
+## Running the Native Tests
+
+The `test/` directory in this project contains an Android test project that can
+be used to run different kinds of native tests. Check out the
+[README contained therein](test/README.md) for more details!
