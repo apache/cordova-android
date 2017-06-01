@@ -8,7 +8,7 @@
   "main": "bin/templates/cordova/Api.js",
   "repository": {
     "type": "git",
-    "url": "https://git-wip-us.apache.org/repos/asf/cordova-android.git"
+    "url": "https://github.com/apache/cordova-android"
   },
   "bugs": {
     "url": "https://issues.apache.org/jira/browse/CB"
