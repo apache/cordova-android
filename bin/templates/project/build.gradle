@@ -70,6 +70,10 @@ ext {
     if (!project.hasProperty('cdvBuildMultipleApks')) {
         cdvBuildMultipleApks = null
     }
+    // Whether to append a 0 "abi digit" to versionCode when only a single APK is build 
+    if (!project.hasProperty('cdvVersionCodeForceAbiDigit')) {
+        cdvVersionCodeForceAbiDigit = null
+    }
     // .properties files to use for release signing.
     if (!project.hasProperty('cdvReleaseSigningPropertiesFile')) {
         cdvReleaseSigningPropertiesFile = null
@@ -111,6 +115,7 @@ if (ext.cdvReleaseSigningPropertiesFile == null && file('release-signing.propert
 
 // Cast to appropriate types.
 ext.cdvBuildMultipleApks = cdvBuildMultipleApks == null ? false : cdvBuildMultipleApks.toBoolean();
+ext.cdvVersionCodeForceAbiDigit = cdvVersionCodeForceAbiDigit == null ? false : cdvVersionCodeForceAbiDigit.toBoolean();
 ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? null : Integer.parseInt('' + cdvMinSdkVersion)
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
 
@@ -138,6 +143,7 @@ task cdvPrintProps << {
     println('cdvCompileSdkVersion=' + cdvCompileSdkVersion)
     println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
     println('cdvVersionCode=' + cdvVersionCode)
+    println('cdvVersionCodeForceAbiDigit=' + cdvVersionCodeForceAbiDigit)
     println('cdvMinSdkVersion=' + cdvMinSdkVersion)
     println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
     println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
@@ -198,6 +204,11 @@ android {
                     abiFilters "all", ""
                 }
             }
+        }
+    } else if (Boolean.valueOf(cdvVersionCodeForceAbiDigit)) {
+        // This provides compatibility to the default logic for versionCode before cordova-android 5.2.0
+        defaultConfig {
+            versionCode defaultConfig.versionCode*10
         }
     }
     /*
