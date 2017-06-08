@@ -30,6 +30,10 @@ var FileUpdater = require('cordova-common').FileUpdater;
 var PlatformJson = require('cordova-common').PlatformJson;
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
+var semver = require('semver');
+
+var SPLASH_SCREEN_PLUGIN_ID = 'cordova-plugin-splashscreen';
+var SPLASH_SCREEN_BG_COLOR_PLUGIN_MIN_VERSION = '4.1.0';
 
 module.exports.prepare = function (cordovaProject, options) {
     var self = this;
@@ -172,6 +176,33 @@ function updateProjectAccordingTo(platformConfig, locations) {
     var name = platformConfig.name();
     var strings = xmlHelpers.parseElementtreeSync(locations.strings);
     strings.find('string[@name="app_name"]').text = name.replace(/\'/g, '\\\'');
+
+    // Update SplashScreenBackgroundColor:
+    var splashBgColor = platformConfig.getPreference('SplashScreenBackgroundColor', 'android');
+    // Fallback to BackgroundColor, then to BLACK for backwards compatibility:
+    splashBgColor = splashBgColor || (platformConfig.getPreference('BackgroundColor', 'android') || '#ff000000');
+    splashBgColor = splashBgColor.replace('0x', '#').replace('0X', '#');
+    strings.find('color[@name="splash_background_color"]').text = splashBgColor;
+
+    // Handle project upgrade case when we have new platform and older plugin version:
+    var plugins = (new PluginInfoProvider()).getAllWithinSearchPath(path.join(locations.root, '../../plugins'));
+    var splashScreenPluginInfo = plugins.filter(function(pluginInfo) {
+        return pluginInfo.id === SPLASH_SCREEN_PLUGIN_ID;
+    })[0];
+
+    if (splashScreenPluginInfo) {
+        if (platformConfig.getPreference('SplashScreenBackgroundColor', 'android') &&
+            semver.lt(splashScreenPluginInfo.version && splashScreenPluginInfo.version.replace('-dev', ''), SPLASH_SCREEN_BG_COLOR_PLUGIN_MIN_VERSION)) {
+            events.emit('warn', 'Install cordova-plugin-splashscreen@' + SPLASH_SCREEN_BG_COLOR_PLUGIN_MIN_VERSION +
+                ' or later supporting new \'SplashScreenBackgroundColor\'\n' +
+                'preference to avoid color change on app startup.\n' +
+                'Current Splash Screen plugin version is ' + splashScreenPluginInfo.version + '\n' +
+                'Alternatively you can set \'BackgroundColor\' to the value set in \'SplashScreenBackgroundColor\'.');
+        }
+    } else {
+        events.emit('warn', 'Install cordova-plugin-splashscreen to avoid flicker issues on app startup.');
+    }
+
     fs.writeFileSync(locations.strings, strings.write({indent: 4}), 'utf-8');
     events.emit('verbose', 'Wrote out android application name "' + name + '" to ' + locations.strings);
 
