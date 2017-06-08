@@ -316,6 +316,16 @@ public class CordovaActivity extends Activity {
         }
     }
 
+    @Override
+    public void onRestart() {
+        LOG.d(TAG, "CordovaActivity.onRestart()");
+        super.onRestart();
+
+        if (this.appView != null) {
+            appView.handleRestart();
+        }
+    }
+
     /**
      * Called when view focus is changed
      */

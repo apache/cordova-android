@@ -176,6 +176,13 @@ public class CordovaPlugin {
     }
 
     /**
+     * Called after onStop() when the current activity is being re-displayed to the user 
+     * (the user has navigated back to it). It will be followed by onStart() and then onResume(). 
+     */
+    public void onRestart() {
+    }
+
+    /**
      * Called when the Activity is being destroyed (e.g. if a plugin calls out to an external
      * Activity and the OS kills the CordovaActivity in the background). The plugin should save its
      * state in this method only if it is awaiting the result of an external Activity and needs

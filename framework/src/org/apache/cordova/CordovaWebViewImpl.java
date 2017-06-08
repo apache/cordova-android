@@ -462,6 +462,13 @@ public class CordovaWebViewImpl implements CordovaWebView {
         pluginManager.onStart();
     }
     @Override
+    public void handleRestart() {
+        if (!isInitialized()) {
+            return;
+        }
+        pluginManager.onRestart();
+    }
+    @Override
     public void handleStop() {
         if (!isInitialized()) {
             return;

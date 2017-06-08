@@ -67,6 +67,8 @@ public interface CordovaWebView {
 
     void handleDestroy();
 
+    void handleRestart();
+
     /**
      * Send JavaScript statement back to JavaScript.
      *

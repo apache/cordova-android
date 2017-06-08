@@ -300,6 +300,18 @@ public class PluginManager {
     }
 
     /**
+     * Called after onStop() when the current activity is being re-displayed to the user 
+     * (the user has navigated back to it). It will be followed by onStart() and then onResume(). 
+     */
+    public void onRestart() {
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            if (plugin != null) {
+                plugin.onRestart();
+            }
+        }
+    }
+
+    /**
      * Send a message to all plugins.
      *
      * @param id                The message id
