@@ -19,10 +19,10 @@
     "apache"
   ],
   "scripts": {
-    "test": "npm run jshint && jasmine",
+    "test": "npm run eslint && jasmine",
     "cover": "istanbul cover --root bin/templates/cordova --print detail jasmine",
     "test-build": "jasmine --captureExceptions --color spec/e2e/*.spec.js",
-    "jshint": "jshint bin && jshint spec"
+    "eslint": "eslint bin && eslint spec"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
@@ -43,9 +43,15 @@
     "shelljs"
   ],
   "devDependencies": {
+    "eslint": "^4.0.0",
+    "eslint-config-semistandard": "^11.0.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.3.0",
+    "eslint-plugin-node": "^5.0.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
     "istanbul": "^0.4.2",
     "jasmine": "^2.5.2",
-    "jshint": "^2.6.0",
     "promise-matchers": "~0",
     "rewire": "^2.1.3"
   },
