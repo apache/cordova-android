@@ -29,6 +29,7 @@ var shell = require('shelljs'),
 var MIN_SDK_VERSION = 19;
 
 var CordovaError = require('cordova-common').CordovaError;
+var AndroidStudio = require('../templates/cordova/lib/AndroidStudio');
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
 
 function setShellFatal(value, func) {
@@ -42,10 +43,13 @@ function getFrameworkDir(projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-function copyJsAndLibrary(projectPath, shared, projectName) {
+function copyJsAndLibrary(projectPath, shared, projectName, isLegacy) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
     var app_path = path.join(projectPath, 'app', 'src', 'main');
+
+    if(isLegacy)
+      app_path = projectPath;
 
     shell.cp('-f', srcCordovaJsPath, path.join(app_path, 'assets', 'www', 'cordova.js'));
 
@@ -128,17 +132,23 @@ function writeProjectProperties(projectPath, target_api) {
 }
 
 // This makes no sense, what if you're building with a different build system?
-function prepBuildFiles(projectPath) {
+function prepBuildFiles(projectPath, builder) {
     var buildModule = require(path.resolve(projectPath, 'cordova/lib/builders/builders'));
-    buildModule.getBuilder('studio').prepBuildFiles();
+    buildModule.getBuilder(builder).prepBuildFiles();
 }
 
-function copyBuildRules(projectPath) {
+function copyBuildRules(projectPath, isLegacy) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
-    shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
-    shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app'));
-    shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+    if(isLegacy) {
+      //The project's build.gradle is identical to the earlier build.gradle, so it should still work
+      shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), projectPath);
+      shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+    } else {
+      shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
+      shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app'));
+      shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+    }
 }
 
 function copyScripts(projectPath) {
@@ -309,7 +319,7 @@ exports.create = function(project_path, config, options, events) {
         });
         // Link it to local android install.
         writeProjectProperties(project_path, target_api);
-        prepBuildFiles(project_path);
+        prepBuildFiles(project_path, 'studio');
         events.emit('log', generateDoneMessage('create', options.link));
     }).thenResolve(project_path);
 };
@@ -330,7 +340,18 @@ exports.update = function(projectPath, options, events) {
     return Q()
     .then(function() {
 
-        var manifest = new AndroidManifest(path.join(projectPath, 'AndroidManifest.xml'));
+        var isAndroidStudio = AndroidStudio.isAndroidStudioProject(projectPath);
+        var isLegacy = !isAndroidStudio;
+        var manifest = null;
+        var builder = 'gradle';
+
+        if(isAndroidStudio) {
+          manifest = new AndroidManifest(path.join(projectPath, 'app', 'main', 'AndroidManifest.xml'));
+          builder = 'studio';
+        } else {
+          manifest = new AndroidManifest(path.join(projectPath, 'AndroidManifest.xml'));
+          builder = 'gradle';
+        }
 
         if (Number(manifest.getMinSdkVersion()) < MIN_SDK_VERSION) {
             events.emit('verbose', 'Updating minSdkVersion to ' + MIN_SDK_VERSION + ' in AndroidManifest.xml');
@@ -342,11 +363,11 @@ exports.update = function(projectPath, options, events) {
         var projectName = manifest.getActivity().getName();
         var target_api = check_reqs.get_target();
 
-        copyJsAndLibrary(projectPath, options.link, projectName);
+        copyJsAndLibrary(projectPath, options.link, projectName, isLegacy);
         copyScripts(projectPath);
-        copyBuildRules(projectPath);
+        copyBuildRules(projectPath, isLegacy);
         writeProjectProperties(projectPath, target_api);
-        prepBuildFiles(projectPath);
+        prepBuildFiles(projectPath, builder);
         events.emit('log', generateDoneMessage('update', options.link));
     }).thenResolve(projectPath);
 };
