@@ -42,10 +42,10 @@ function GradleBuilder (projectRoot) {
 
 util.inherits(GradleBuilder, GenericBuilder);
 
-GradleBuilder.prototype.getArgs = function(cmd, opts) {
-    if (cmd == 'release') {
+GradleBuilder.prototype.getArgs = function (cmd, opts) {
+    if (cmd === 'release') {
         cmd = 'cdvBuildRelease';
-    } else if (cmd == 'debug') {
+    } else if (cmd === 'debug') {
         cmd = 'cdvBuildDebug';
     }
     var args = [cmd, '-b', path.join(this.root, 'build.gradle')];
@@ -69,46 +69,44 @@ GradleBuilder.prototype.getArgs = function(cmd, opts) {
  * This returns a promise
  */
 
-GradleBuilder.prototype.runGradleWrapper = function(gradle_cmd) {
+GradleBuilder.prototype.runGradleWrapper = function (gradle_cmd) {
     var gradlePath = path.join(this.root, 'gradlew');
     var wrapperGradle = path.join(this.root, 'wrapper.gradle');
-    if(fs.existsSync(gradlePath)) {
-      //Literally do nothing, for some reason this works, while !fs.existsSync didn't on Windows
+    if (fs.existsSync(gradlePath)) {
+    // Literally do nothing, for some reason this works, while !fs.existsSync didn't on Windows
     } else {
-      return superspawn.spawn(gradle_cmd, ['-p', this.root, 'wrapper', '-b', wrapperGradle], {stdio: 'inherit'});
+        return superspawn.spawn(gradle_cmd, ['-p', this.root, 'wrapper', '-b', wrapperGradle], {stdio: 'inherit'});
     }
 };
 
-
 // Makes the project buildable, minus the gradle wrapper.
-GradleBuilder.prototype.prepBuildFiles = function() {
+GradleBuilder.prototype.prepBuildFiles = function () {
     // Update the version of build.gradle in each dependent library.
     var pluginBuildGradle = path.join(this.root, 'cordova', 'lib', 'plugin-build.gradle');
     var propertiesObj = this.readProjectProperties();
     var subProjects = propertiesObj.libs;
-    var checkAndCopy = function(subProject, root) {
-      var subProjectGradle = path.join(root, subProject, 'build.gradle');
-      // This is the future-proof way of checking if a file exists
-      // This must be synchronous to satisfy a Travis test
-      try {
-          fs.accessSync(subProjectGradle, fs.F_OK);
-      } catch (e) {
-          shell.cp('-f', pluginBuildGradle, subProjectGradle);
-      }
+    var checkAndCopy = function (subProject, root) {
+        var subProjectGradle = path.join(root, subProject, 'build.gradle');
+        // This is the future-proof way of checking if a file exists
+        // This must be synchronous to satisfy a Travis test
+        try {
+            fs.accessSync(subProjectGradle, fs.F_OK);
+        } catch (e) {
+            shell.cp('-f', pluginBuildGradle, subProjectGradle);
+        }
     };
     for (var i = 0; i < subProjects.length; ++i) {
         if (subProjects[i] !== 'CordovaLib') {
-          checkAndCopy(subProjects[i], this.root);
+            checkAndCopy(subProjects[i], this.root);
         }
     }
     var name = this.extractRealProjectNameFromManifest();
-    //Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
-    var settingsGradlePaths =  subProjects.map(function(p){
-        var realDir=p.replace(/[/\\]/g, ':');
-        var libName=realDir.replace(name+'-','');
-        var str='include ":'+libName+'"\n';
-        if(realDir.indexOf(name+'-')!==-1)
-            str+='project(":'+libName+'").projectDir = new File("'+p+'")\n';
+    // Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
+    var settingsGradlePaths = subProjects.map(function (p) {
+        var realDir = p.replace(/[/\\]/g, ':');
+        var libName = realDir.replace(name + '-', '');
+        var str = 'include ":' + libName + '"\n';
+        if (realDir.indexOf(name + '-') !== -1) { str += 'project(":' + libName + '").projectDir = new File("' + p + '")\n'; }
         return str;
     });
 
@@ -120,19 +118,18 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     var buildGradle = fs.readFileSync(path.join(this.root, 'build.gradle'), 'utf8');
     var depsList = '';
     var root = this.root;
-    var insertExclude = function(p) {
-          var gradlePath = path.join(root, p, 'build.gradle');
-          var projectGradleFile = fs.readFileSync(gradlePath, 'utf-8');
-          if(projectGradleFile.indexOf('CordovaLib') != -1) {
+    var insertExclude = function (p) {
+        var gradlePath = path.join(root, p, 'build.gradle');
+        var projectGradleFile = fs.readFileSync(gradlePath, 'utf-8');
+        if (projectGradleFile.indexOf('CordovaLib') !== -1) {
             depsList += '{\n        exclude module:("CordovaLib")\n    }\n';
-          }
-          else {
-            depsList +='\n';
-          }
+        } else {
+            depsList += '\n';
+        }
     };
-    subProjects.forEach(function(p) {
+    subProjects.forEach(function (p) {
         console.log('Subproject Path: ' + p);
-        var libName=p.replace(/[/\\]/g, ':').replace(name+'-','');
+        var libName = p.replace(/[/\\]/g, ':').replace(name + '-', '');
         depsList += '    debugCompile(project(path: "' + libName + '", configuration: "debug"))';
         insertExclude(p);
         depsList += '    releaseCompile(project(path: "' + libName + '", configuration: "release"))';
@@ -143,7 +140,7 @@ GradleBuilder.prototype.prepBuildFiles = function() {
         [/^\/?extras\/android\/support\/(.*)$/, 'com.android.support:support-$1:+'],
         [/^\/?google\/google_play_services\/libproject\/google-play-services_lib\/?$/, 'com.google.android.gms:play-services:+']
     ];
-    propertiesObj.systemLibs.forEach(function(p) {
+    propertiesObj.systemLibs.forEach(function (p) {
         var mavenRef;
         // It's already in gradle form if it has two ':'s
         if (/:.*:/.exec(p)) {
@@ -164,21 +161,20 @@ GradleBuilder.prototype.prepBuildFiles = function() {
     });
     buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
     var includeList = '';
-    propertiesObj.gradleIncludes.forEach(function(includePath) {
+    propertiesObj.gradleIncludes.forEach(function (includePath) {
         includeList += 'apply from: "' + includePath + '"\n';
     });
     buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
     fs.writeFileSync(path.join(this.root, 'build.gradle'), buildGradle);
 };
 
-GradleBuilder.prototype.prepEnv = function(opts) {
+GradleBuilder.prototype.prepEnv = function (opts) {
     var self = this;
-    return check_reqs.check_gradle()
-      .then(function(gradlePath) {
+    return check_reqs.check_gradle().then(function (gradlePath) {
         return self.runGradleWrapper(gradlePath);
-      }).then(function() {
-          return self.prepBuildFiles();
-      }).then(function() {
+    }).then(function () {
+        return self.prepBuildFiles();
+    }).then(function () {
         // We now copy the gradle out of the framework
         // This is a dirty patch to get the build working
         /*
@@ -198,12 +194,12 @@ GradleBuilder.prototype.prepEnv = function(opts) {
         // If it's not set, do nothing, assuming that we're using a future version of gradle that we don't want to mess with.
         // For some reason, using ^ and $ don't work.  This does the job, though.
         var distributionUrlRegex = /distributionUrl.*zip/;
-        /*jshint -W069 */
+        /* jshint -W069 */
         var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'https\\://services.gradle.org/distributions/gradle-3.3-all.zip';
-        /*jshint +W069 */
+        /* jshint +W069 */
         var gradleWrapperPropertiesPath = path.join(self.root, 'gradle', 'wrapper', 'gradle-wrapper.properties');
         shell.chmod('u+w', gradleWrapperPropertiesPath);
-        shell.sed('-i', distributionUrlRegex, 'distributionUrl='+distributionUrl, gradleWrapperPropertiesPath);
+        shell.sed('-i', distributionUrlRegex, 'distributionUrl=' + distributionUrl, gradleWrapperPropertiesPath);
 
         var propertiesFile = opts.buildType + SIGNING_PROPERTIES;
         var propertiesFilePath = path.join(self.root, propertiesFile);
@@ -219,12 +215,11 @@ GradleBuilder.prototype.prepEnv = function(opts) {
  * Builds the project with gradle.
  * Returns a promise.
  */
-GradleBuilder.prototype.build = function(opts) {
+GradleBuilder.prototype.build = function (opts) {
     var wrapper = path.join(this.root, 'gradlew');
-    var args = this.getArgs(opts.buildType == 'debug' ? 'debug' : 'release', opts);
+    var args = this.getArgs(opts.buildType === 'debug' ? 'debug' : 'release', opts);
 
-    return superspawn.spawn(wrapper, args, {stdio: 'pipe'})
-    .progress(function (stdio){
+    return superspawn.spawn(wrapper, args, {stdio: 'pipe'}).progress(function (stdio) {
         if (stdio.stderr) {
             /*
              * Workaround for the issue with Java printing some unwanted information to
@@ -243,7 +238,7 @@ GradleBuilder.prototype.build = function(opts) {
         }
     }).catch(function (error) {
         if (error.toString().indexOf('failed to find target with hash string') >= 0) {
-            return check_reqs.check_android_target(error).then(function() {
+            return check_reqs.check_android_target(error).then(function () {
                 // If due to some odd reason - check_android_target succeeds
                 // we should still fail here.
                 return Q.reject(error);
@@ -253,19 +248,18 @@ GradleBuilder.prototype.build = function(opts) {
     });
 };
 
-GradleBuilder.prototype.clean = function(opts) {
+GradleBuilder.prototype.clean = function (opts) {
     var builder = this;
     var wrapper = path.join(this.root, 'gradlew');
     var args = builder.getArgs('clean', opts);
-    return Q().then(function() {
+    return Q().then(function () {
         return superspawn.spawn(wrapper, args, {stdio: 'inherit'});
-    })
-    .then(function () {
+    }).then(function () {
         shell.rm('-rf', path.join(builder.root, 'out'));
 
-        ['debug', 'release'].forEach(function(config) {
+        ['debug', 'release'].forEach(function (config) {
             var propertiesFilePath = path.join(builder.root, config + SIGNING_PROPERTIES);
-            if(isAutoGenerated(propertiesFilePath)){
+            if (isAutoGenerated(propertiesFilePath)) {
                 shell.rm('-f', propertiesFilePath);
             }
         });
@@ -274,6 +268,6 @@ GradleBuilder.prototype.clean = function(opts) {
 
 module.exports = GradleBuilder;
 
-function isAutoGenerated(file) {
+function isAutoGenerated (file) {
     return fs.existsSync(file) && fs.readFileSync(file, 'utf8').indexOf(MARKER) > 0;
 }

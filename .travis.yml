@@ -15,7 +15,7 @@ android:
       - tools
       - tools
 script:
-    - npm run jshint
+    - npm run eslint
     - npm run cover
     - npm run test-build
 after_script:

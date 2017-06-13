@@ -16,14 +16,15 @@
     specific language governing permissions and limitations
     under the License.
 */
+/* eslint-env jasmine */
 
 var path = require('path');
 var AndroidProject = require('../../bin/templates/cordova/lib/AndroidProject');
 var android_project = path.join(__dirname, '../fixtures/android_project');
 
-describe('AndroidProject class', function() {
-    describe('getPackageName method', function() {
-        it('Test#001 : should return an android project\'s proper package name', function() {
+describe('AndroidProject class', function () {
+    describe('getPackageName method', function () {
+        it('Test#001 : should return an android project\'s proper package name', function () {
             expect(AndroidProject.getProjectFile(android_project).getPackageName())
                 .toEqual('com.alunny.childapp');
         });

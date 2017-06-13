@@ -16,96 +16,95 @@
     specific language governing permissions and limitations
     under the License.
 */
-var emu = require("../../bin/templates/cordova/lib/emulator");
-var superspawn = require("cordova-common").superspawn;
-var Q = require("q");
-var fs = require("fs");
-var path = require("path");
-var shelljs = require("shelljs");
+/* eslint-env jasmine */
 
-describe("emulator", function () {
-    describe("list_images_using_avdmanager", function() {
-        it("should properly parse details of SDK Tools 25.3.1 `avdmanager` output", function(done) {
+var emu = require('../../bin/templates/cordova/lib/emulator');
+var superspawn = require('cordova-common').superspawn;
+var Q = require('q');
+var fs = require('fs');
+var path = require('path');
+var shelljs = require('shelljs');
+
+describe('emulator', function () {
+    describe('list_images_using_avdmanager', function () {
+        it('should properly parse details of SDK Tools 25.3.1 `avdmanager` output', function (done) {
             var deferred = Q.defer();
-            spyOn(superspawn, "spawn").and.returnValue(deferred.promise);
-            deferred.resolve(fs.readFileSync(path.join("spec", "fixtures", "sdk25.3-avdmanager_list_avd.txt"), "utf-8"));
-            return emu.list_images_using_avdmanager()
-            .then(function(list) {
+            spyOn(superspawn, 'spawn').and.returnValue(deferred.promise);
+            deferred.resolve(fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.3-avdmanager_list_avd.txt'), 'utf-8'));
+            return emu.list_images_using_avdmanager().then(function (list) {
                 expect(list).toBeDefined();
-                expect(list[0].name).toEqual("nexus5-5.1");
-                expect(list[0].target).toEqual("Android 5.1 (API level 22)");
-                expect(list[1].device).toEqual("pixel (Google)");
-                expect(list[2].abi).toEqual("default/x86_64");
-            }).fail(function(err) {
+                expect(list[0].name).toEqual('nexus5-5.1');
+                expect(list[0].target).toEqual('Android 5.1 (API level 22)');
+                expect(list[1].device).toEqual('pixel (Google)');
+                expect(list[2].abi).toEqual('default/x86_64');
+            }).fail(function (err) {
                 expect(err).toBeUndefined();
-            }).fin(function() {
+            }).fin(function () {
                 done();
             });
         });
     });
-    describe("list_images_using_android", function() {
-        it("should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions", function() {
+    describe('list_images_using_android', function () {
+        it('should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions', function () {
             var deferred = Q.defer();
-            spyOn(superspawn, "spawn").and.returnValue(deferred.promise);
+            spyOn(superspawn, 'spawn').and.returnValue(deferred.promise);
             emu.list_images_using_android();
-            expect(superspawn.spawn).toHaveBeenCalledWith("android", ["list", "avd"]);
+            expect(superspawn.spawn).toHaveBeenCalledWith('android', ['list', 'avd']);
         });
-        it("should properly parse details of SDK Tools pre-25.3.1 `android list avd` output", function(done) {
+        it('should properly parse details of SDK Tools pre-25.3.1 `android list avd` output', function (done) {
             var deferred = Q.defer();
-            spyOn(superspawn, "spawn").and.returnValue(deferred.promise);
-            deferred.resolve(fs.readFileSync(path.join("spec", "fixtures", "sdk25.2-android_list_avd.txt"), "utf-8"));
-            return emu.list_images_using_android()
-            .then(function(list) {
+            spyOn(superspawn, 'spawn').and.returnValue(deferred.promise);
+            deferred.resolve(fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.2-android_list_avd.txt'), 'utf-8'));
+            return emu.list_images_using_android().then(function (list) {
                 expect(list).toBeDefined();
-                expect(list[0].name).toEqual("QWR");
-                expect(list[0].device).toEqual("Nexus 5 (Google)");
-                expect(list[0].path).toEqual("/Users/shazron/.android/avd/QWR.avd");
-                expect(list[0].target).toEqual("Android 7.1.1 (API level 25)");
-                expect(list[0].abi).toEqual("google_apis/x86_64");
-                expect(list[0].skin).toEqual("1080x1920");
-            }).fail(function(err) {
+                expect(list[0].name).toEqual('QWR');
+                expect(list[0].device).toEqual('Nexus 5 (Google)');
+                expect(list[0].path).toEqual('/Users/shazron/.android/avd/QWR.avd');
+                expect(list[0].target).toEqual('Android 7.1.1 (API level 25)');
+                expect(list[0].abi).toEqual('google_apis/x86_64');
+                expect(list[0].skin).toEqual('1080x1920');
+            }).fail(function (err) {
                 expect(err).toBeUndefined();
-            }).fin(function() {
+            }).fin(function () {
                 done();
             });
         });
     });
-    describe("list_images", function() {
-        beforeEach(function() {
-            spyOn(fs, "realpathSync").and.callFake(function(cmd) {
+    describe('list_images', function () {
+        beforeEach(function () {
+            spyOn(fs, 'realpathSync').and.callFake(function (cmd) {
                 return cmd;
             });
         });
-        it("should try to parse AVD information using `avdmanager` first", function() {
-            spyOn(shelljs, "which").and.callFake(function(cmd) {
-                if (cmd == "avdmanager") {
+        it('should try to parse AVD information using `avdmanager` first', function () {
+            spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                if (cmd === 'avdmanager') {
                     return true;
                 } else {
                     return false;
                 }
             });
-            var avdmanager_spy = spyOn(emu, "list_images_using_avdmanager").and.returnValue({catch:function(){}});
+            var avdmanager_spy = spyOn(emu, 'list_images_using_avdmanager').and.returnValue({catch: function () {}});
             emu.list_images();
             expect(avdmanager_spy).toHaveBeenCalled();
         });
-        it("should delegate to `android` if `avdmanager` cant be found and `android` can", function() {
-            spyOn(shelljs, "which").and.callFake(function(cmd) {
-                if (cmd == "avdmanager") {
+        it('should delegate to `android` if `avdmanager` cant be found and `android` can', function () {
+            spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                if (cmd === 'avdmanager') {
                     return false;
                 } else {
                     return true;
                 }
             });
-            var android_spy = spyOn(emu, "list_images_using_android");
+            var android_spy = spyOn(emu, 'list_images_using_android');
             emu.list_images();
             expect(android_spy).toHaveBeenCalled();
         });
-        it("should throw an error if neither `avdmanager` nor `android` are able to be found", function(done) {
-            spyOn(shelljs, "which").and.returnValue(false);
-            return emu.list_images()
-            .catch(function(err) {
+        it('should throw an error if neither `avdmanager` nor `android` are able to be found', function (done) {
+            spyOn(shelljs, 'which').and.returnValue(false);
+            return emu.list_images().catch(function (err) {
                 expect(err).toBeDefined();
-                expect(err.message).toContain("Could not find either `android` or `avdmanager`");
+                expect(err.message).toContain('Could not find either `android` or `avdmanager`');
                 done();
             });
         });

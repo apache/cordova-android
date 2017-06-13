@@ -16,23 +16,24 @@
  specific language governing permissions and limitations
  under the License.
  */
+/* eslint-env jasmine */
 
-var actions      = require('./helpers/projectActions.js'),
-    shell        = require('shelljs'),
-    fs           = require('fs'),
-    util         = require('util'),
-    platformOld  = { version: '4.0.0', path: 'cordova-android-old' },
-    platformEdge = { version: getCurrentVersion(), path: '.' };
+var actions = require('./helpers/projectActions.js');
+var shell = require('shelljs');
+var fs = require('fs');
+var util = require('util');
+var platformOld = { version: '4.0.0', path: 'cordova-android-old' };
+var platformEdge = { version: getCurrentVersion(), path: '.' };
 
-var DOWNLOAD_TIMEOUT = 2 * 60 * 1000,
-    UPDATE_TIMEOUT   = 90 * 1000,
-    PLATFORM_GIT_URL = 'https://github.com/apache/cordova-android';
+var DOWNLOAD_TIMEOUT = 2 * 60 * 1000;
+var UPDATE_TIMEOUT = 90 * 1000;
+var PLATFORM_GIT_URL = 'https://github.com/apache/cordova-android';
 
-function getCurrentVersion() {
+function getCurrentVersion () {
     return fs.readFileSync('VERSION').toString().trim();
 }
 
-function testUpdate(projectname, projectid, createfrom, updatefrom, doBuild, done) {
+function testUpdate (projectname, projectid, createfrom, updatefrom, doBuild, done) {
     actions.createProject(projectname, projectid, createfrom.path, function (error) {
         expect(error).toBe(null);
         actions.updateProject(projectid, updatefrom.path, function (error) {
@@ -68,9 +69,9 @@ describe('preparing fixtures', function () {
 
 });
 
-describe('update', function() {
+describe('update', function () {
 
-    it('Test#002 : should update major version and build the project', function(done) {
+    it('Test#002 : should update major version and build the project', function (done) {
         var projectname = 'testupdate';
         var projectid = 'com.test.update.app1';
 
@@ -82,7 +83,7 @@ describe('update', function() {
 
 describe('cleanup', function () {
 
-    it('Test#004 : remove cloned old platform', function() {
+    it('Test#004 : remove cloned old platform', function () {
         shell.rm('-rf', platformOld.path);
     });
 

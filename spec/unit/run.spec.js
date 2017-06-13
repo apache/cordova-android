@@ -16,23 +16,24 @@
     specific language governing permissions and limitations
     under the License.
 */
+/* eslint-env jasmine */
 
-var rewire = require("rewire");
-var run = rewire("../../bin/templates/cordova/lib/run");
-var getInstallTarget = run.__get__("getInstallTarget");
+var rewire = require('rewire');
+var run = rewire('../../bin/templates/cordova/lib/run');
+var getInstallTarget = run.__get__('getInstallTarget');
 
-describe("run", function () {
-  describe("getInstallTarget", function() {
-    var targetOpts = { target: "emu" };
-    var deviceOpts = { device: true };
-    var emulatorOpts = { emulator: true };
-    var emptyOpts = {};
+describe('run', function () {
+    describe('getInstallTarget', function () {
+        var targetOpts = { target: 'emu' };
+        var deviceOpts = { device: true };
+        var emulatorOpts = { emulator: true };
+        var emptyOpts = {};
 
-    it("Test#001 : should select correct target based on the run opts", function() {
-        expect(getInstallTarget(targetOpts)).toBe("emu");
-        expect(getInstallTarget(deviceOpts)).toBe("--device");
-        expect(getInstallTarget(emulatorOpts)).toBe("--emulator");
-        expect(getInstallTarget(emptyOpts)).toBeUndefined();
+        it('Test#001 : should select correct target based on the run opts', function () {
+            expect(getInstallTarget(targetOpts)).toBe('emu');
+            expect(getInstallTarget(deviceOpts)).toBe('--device');
+            expect(getInstallTarget(emulatorOpts)).toBe('--emulator');
+            expect(getInstallTarget(emptyOpts)).toBeUndefined();
+        });
     });
-  });
 });

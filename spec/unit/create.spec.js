@@ -17,96 +17,92 @@
     under the License.
 */
 /* jshint laxcomma:true */
+/* eslint-env jasmine */
 
-var create = require("../../bin/lib/create");
+var create = require('../../bin/lib/create');
 
-describe("create", function () {
-  describe("validatePackageName", function() {
-    var valid = [
-        "org.apache.mobilespec"
-      , "com.example"
-      , "com.floors42.package"
-      , "ball8.ball8.ball8ball"
-    ];
-    var invalid = [
-        ""
-      , "com.class.is.bad"
-      , "0com.example.mobilespec"
-      , "c-m.e@a!p%e.mobilespec"
-      , "notenoughdots"
-      , ".starts.with.a.dot"
-      , "ends.with.a.dot."
-      , "_underscore.anything"
-      , "underscore._something"
-      , "_underscore._all._the._things"
-      , "8.ball"
-      , "8ball.ball"
-      , "ball8.8ball"
-      , "ball8.com.8ball"
-    ];
+describe('create', function () {
+    describe('validatePackageName', function () {
+        var valid = [
+            'org.apache.mobilespec',
+            'com.example',
+            'com.floors42.package',
+            'ball8.ball8.ball8ball'
+        ];
+        var invalid = [
+            '',
+            'com.class.is.bad',
+            '0com.example.mobilespec',
+            'c-m.e@a!p%e.mobilespec',
+            'notenoughdots',
+            '.starts.with.a.dot',
+            'ends.with.a.dot.',
+            '_underscore.anything',
+            'underscore._something',
+            '_underscore._all._the._things',
+            '8.ball',
+            '8ball.ball',
+            'ball8.8ball',
+            'ball8.com.8ball'
+        ];
 
-    valid.forEach(function(package_name) {
-      it("Test#001 : should accept " + package_name, function(done) {
-        return create.validatePackageName(package_name)
-        .then(function() {
-          //resolved
-          done();
-        }).fail(function(err) {
-          expect(err).toBeUndefined();
+        valid.forEach(function (package_name) {
+            it('Test#001 : should accept ' + package_name, function (done) {
+                return create.validatePackageName(package_name).then(function () {
+                // resolved
+                    done();
+                }).fail(function (err) {
+                    expect(err).toBeUndefined();
+                });
+            });
         });
-      });
-    });
 
-    invalid.forEach(function(package_name) {
-      it("Test#002 : should reject " + package_name, function(done) {
-        return create.validatePackageName(package_name)
-        .then(function() {
-          //shouldn't be here
-          expect(true).toBe(false);
-        }).fail(function(err) {
-          expect(err).toBeDefined();
-          done();
+        invalid.forEach(function (package_name) {
+            it('Test#002 : should reject ' + package_name, function (done) {
+                return create.validatePackageName(package_name).then(function () {
+                    // shouldn't be here
+                    expect(true).toBe(false);
+                }).fail(function (err) {
+                    expect(err).toBeDefined();
+                    done();
+                });
+            });
         });
-      });
     });
-  });
-  describe("validateProjectName", function() {
-    var valid = [
-        "mobilespec"
-      , "package_name"
-      , "PackageName"
-      , "CordovaLib"
-    ];
-    var invalid = [
-        ""
-      , "0startswithdigit"
-      , "CordovaActivity"
-    ];
+    describe('validateProjectName', function () {
+        var valid = [
+            'mobilespec',
+            'package_name',
+            'PackageName',
+            'CordovaLib'
+        ];
+        var invalid = [
+            '',
+            '0startswithdigit',
+            'CordovaActivity'
+        ];
 
-    valid.forEach(function(project_name) {
-      it("Test#003 : should accept " + project_name, function(done) {
-        return create.validateProjectName(project_name)
-        .then(function() {
-          //resolved
-          done();
-        }).fail(function(err) {
-          expect(err).toBeUndefined();
+        valid.forEach(function (project_name) {
+            it('Test#003 : should accept ' + project_name, function (done) {
+                return create.validateProjectName(project_name).then(function () {
+                    // resolved
+                    done();
+                }).fail(function (err) {
+                    expect(err).toBeUndefined();
+                });
+            });
         });
-      });
-    });
 
-    invalid.forEach(function(project_name) {
-      it("Test#004 : should reject " + project_name, function(done) {
-        return create.validateProjectName(project_name)
-        .then(function() {
-          //shouldn't be here
-          expect(true).toBe(false);
-        }).fail(function(err) {
-          expect(err).toBeDefined();
-          done();
+        invalid.forEach(function (project_name) {
+            it('Test#004 : should reject ' + project_name, function (done) {
+                return create.validateProjectName(project_name).then(function () {
+                    // shouldn't be here
+                    expect(true).toBe(false);
+                }).fail(function (err) {
+                    expect(err).toBeDefined();
+                    done();
+                });
+            });
         });
-      });
     });
-  });
 });
-
