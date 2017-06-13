@@ -98,10 +98,12 @@ if (hasBuildExtras) {
 
 // Set property defaults after extension .gradle files.
 if (ext.cdvCompileSdkVersion == null) {
-    ext.cdvCompileSdkVersion = project.ext.defaultCompileSdkVersion
+    ext.cdvCompileSdkVersion = privateHelpers.getProjectTarget()
+    //ext.cdvCompileSdkVersion = project.ext.defaultCompileSdkVersion
 }
 if (ext.cdvBuildToolsVersion == null) {
-    ext.cdvBuildToolsVersion = project.ext.defaultBuildToolsVersion
+    ext.cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+    //ext.cdvBuildToolsVersion = project.ext.defaultBuildToolsVersion
 }
 if (ext.cdvDebugSigningPropertiesFile == null && file('debug-signing.properties').exists()) {
     ext.cdvDebugSigningPropertiesFile = 'debug-signing.properties'
