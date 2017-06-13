@@ -142,7 +142,7 @@ function copyBuildRules(projectPath, isLegacy) {
 
     if(isLegacy) {
       //The project's build.gradle is identical to the earlier build.gradle, so it should still work
-      shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), projectPath);
+      shell.cp('-f', path.join(srcDir, 'legacy', 'build.gradle'), projectPath);
       shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
     } else {
       shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
