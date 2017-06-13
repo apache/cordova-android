@@ -45,7 +45,12 @@ task wrapper(type: Wrapper) {
 // Configuration properties. Set these via environment variables, build-extras.gradle, or gradle.properties.
 // Refer to: http://www.gradle.org/docs/current/userguide/tutorial_this_and_that.html
 ext {
-    apply from: '../CordovaLib/cordova.gradle'
+    //This is a dirty hack to support legacy projects
+    if (file('../CordovaLib/cordova.gradle').exists()) {
+      apply from: '../CordovaLib/cordova.gradle'
+    } else {
+      apply from: 'CordovaLib/cordova.gradle'
+    }
     // The value for android.compileSdkVersion.
     if (!project.hasProperty('cdvCompileSdkVersion')) {
         cdvCompileSdkVersion = null;
