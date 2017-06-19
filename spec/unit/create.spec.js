@@ -16,8 +16,6 @@
     specific language governing permissions and limitations
     under the License.
 */
-/* jshint laxcomma:true */
-/* eslint-env jasmine */
 
 var create = require('../../bin/lib/create');
 

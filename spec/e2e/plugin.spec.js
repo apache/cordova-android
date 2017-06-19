@@ -16,7 +16,6 @@
  specific language governing permissions and limitations
  under the License.
  */
-/* eslint-env jasmine */
 
 var path = require('path');
 var actions = require('./helpers/projectActions.js');

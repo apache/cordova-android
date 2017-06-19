@@ -16,7 +16,6 @@
     specific language governing permissions and limitations
     under the License.
 */
-/* eslint-env jasmine */
 
 var emu = require('../../bin/templates/cordova/lib/emulator');
 var superspawn = require('cordova-common').superspawn;

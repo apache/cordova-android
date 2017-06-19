@@ -17,9 +17,6 @@
     under the License.
 */
 
-/* jshint node:true */
-/* eslint-env jasmine */
-
 var Q = require('q');
 var os = require('os');
 var path = require('path');

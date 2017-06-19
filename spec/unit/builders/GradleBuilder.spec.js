@@ -1,4 +1,4 @@
-/* eslint-env jasmine */
+
 var Gradle_builder = require('../../../bin/templates/cordova/lib/builders/GradleBuilder.js');
 var fs = require('fs');
 var superspawn = require('cordova-common').superspawn;

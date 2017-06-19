@@ -16,8 +16,6 @@
     specific language governing permissions and limitations
     under the License.
 */
-/* jshint laxcomma:true */
-/* eslint-env jasmine */
 
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
 var superspawn = require('cordova-common').superspawn;

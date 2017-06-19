@@ -1,5 +1,4 @@
 
-/* eslint-env jasmine */
 var path = require('path');
 var AndroidStudio = require('../../bin/templates/cordova/lib/AndroidStudio');
 

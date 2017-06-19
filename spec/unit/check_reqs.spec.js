@@ -16,8 +16,6 @@
     specific language governing permissions and limitations
     under the License.
 */
-/* jshint laxcomma:true */
-/* eslint-env jasmine */
 
 var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
