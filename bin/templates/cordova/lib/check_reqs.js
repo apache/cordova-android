@@ -108,15 +108,28 @@ module.exports.get_gradle_wrapper = function() {
             } else { ++i; }
         }
     } else if (module.exports.isWindows()) {
-        var androidPath = path.join(process.env['ProgramFiles'], 'Android') + '/';
-        if (fs.existsSync(androidPath)) {
-            program_dir = fs.readdirSync(androidPath);
-            while (i < program_dir.length && !foundStudio) {
-                if (program_dir[i].startsWith('Android Studio')) {
-                    foundStudio = true;
-                    androidStudioPath = path.join(process.env['ProgramFiles'], 'Android', program_dir[i], 'gradle');
-                } else { ++i; }
+    
+        var result = child_process.spawnSync(path.join(__dirname,'getASPath.bat'));
+        //console.log('result.stdout =' + result.stdout.toString());
+        //console.log('result.stderr =' + result.stderr.toString());
+
+        if(result.stderr.toString().length > 0) {
+            var androidPath = path.join(process.env['ProgramFiles'], 'Android') + '/';
+            if (fs.existsSync(androidPath)) {
+                program_dir = fs.readdirSync(androidPath);
+                while (i < program_dir.length && !foundStudio) {
+                    if (program_dir[i].startsWith('Android Studio')) {
+                        foundStudio = true;
+                        androidStudioPath = path.join(process.env['ProgramFiles'], 'Android', program_dir[i], 'gradle');
+                    } else { ++i; }
+                }
             }
+        }
+        else {
+            // console.log('got android studio path from registry');
+            // remove the (os independent) new line char at the end of stdout
+            // add gradle to match the above.
+            androidStudioPath = path.join(result.stdout.toString().split('\r\n')[0],'gradle');
         }
     }
 
