@@ -22,18 +22,13 @@ var fs = require('fs');
 var path = require('path');
 var shell = require('shelljs');
 var events = require('cordova-common').events;
-var CordovaError = require('cordova-common').CordovaError;
 
 function GenericBuilder (projectDir) {
     this.root = projectDir || path.resolve(__dirname, '../../..');
     this.binDirs = {
-        ant: path.join(this.root, hasCustomRules(this.root) ? 'ant-build' : 'bin'),
+        studio: path.join(this.root, 'app', 'build', 'outputs', 'apk'),
         gradle: path.join(this.root, 'build', 'outputs', 'apk')
     };
-}
-
-function hasCustomRules(projectRoot) {
-    return fs.existsSync(path.join(projectRoot, 'custom_rules.xml'));
 }
 
 GenericBuilder.prototype.prepEnv = function() {
@@ -53,41 +48,11 @@ GenericBuilder.prototype.findOutputApks = function(build_type, arch) {
     var self = this;
     return Object.keys(this.binDirs)
     .reduce(function (result, builderName) {
+        console.log('builderName:'+ builderName);
         var binDir = self.binDirs[builderName];
         return result.concat(findOutputApksHelper(binDir, build_type, builderName === 'ant' ? null : arch));
     }, [])
     .sort(apkSorter);
-};
-
-GenericBuilder.prototype.readProjectProperties = function () {
-    function findAllUniq(data, r) {
-        var s = {};
-        var m;
-        while ((m = r.exec(data))) {
-            s[m[1]] = 1;
-        }
-        return Object.keys(s);
-    }
-
-    var data = fs.readFileSync(path.join(this.root, 'project.properties'), 'utf8');
-    return {
-        libs: findAllUniq(data, /^\s*android\.library\.reference\.\d+=(.*)(?:\s|$)/mg),
-        gradleIncludes: findAllUniq(data, /^\s*cordova\.gradle\.include\.\d+=(.*)(?:\s|$)/mg),
-        systemLibs: findAllUniq(data, /^\s*cordova\.system\.library\.\d+=(.*)(?:\s|$)/mg)
-    };
-};
-
-GenericBuilder.prototype.extractRealProjectNameFromManifest = function () {
-    var manifestPath = path.join(this.root, 'AndroidManifest.xml');
-    var manifestData = fs.readFileSync(manifestPath, 'utf8');
-    var m = /<manifest[\s\S]*?package\s*=\s*"(.*?)"/i.exec(manifestData);
-    if (!m) {
-        throw new CordovaError('Could not find package name in ' + manifestPath);
-    }
-
-    var packageName=m[1];
-    var lastDotIndex = packageName.lastIndexOf('.');
-    return packageName.substring(lastDotIndex + 1);
 };
 
 module.exports = GenericBuilder;

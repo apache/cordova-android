@@ -193,7 +193,9 @@ function updateProjectAccordingTo(platformConfig, locations) {
         .setTargetSdkVersion(platformConfig.getPreference('android-targetSdkVersion', 'android'))
         .write();
 
-    var javaPattern = path.join(locations.root, 'src', orig_pkg.replace(/\./g, '/'), '*.java');
+    //Java file paths shouldn't be hard coded
+    var javaPattern = path.join(locations.javaSrc, orig_pkg.replace(/\./g, '/'), '*.java');
+
     var java_files = shell.ls(javaPattern).filter(function(f) {
         return shell.grep(/extends\s+CordovaActivity/g, f);
     });
