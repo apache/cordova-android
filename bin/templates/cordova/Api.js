@@ -74,6 +74,7 @@ function Api(platform, platformRootDir, events) {
         strings: path.join(self.root, 'res/values/strings.xml'),
         manifest: path.join(self.root, 'AndroidManifest.xml'),
         build: path.join(self.root, 'build'),
+        javaSrc: path.join(self.root, 'src'),
         // NOTE: Due to platformApi spec we need to return relative paths here
         cordovaJs: 'bin/templates/project/assets/www/cordova.js',
         cordovaJsSrc: 'cordova-js-src'
@@ -87,6 +88,8 @@ function Api(platform, platformRootDir, events) {
       this.locations.configXml = path.join(self.root, 'app/src/main/res/xml/config.xml');
       this.locations.strings = path.join(self.root, 'app/src/main/res/values/strings.xml');
       this.locations.manifest = path.join(self.root, 'app/src/main/AndroidManifest.xml');
+      //We could have Java Source, we could have other languages
+      this.locations.javaSrc = path.join(self.root, 'app/src/main/java/');
       this.locations.www = path.join(self.root, 'app/src/main/assets/www');
       this.locations.res = path.join(self.root, 'app/src/main/res');
     }
