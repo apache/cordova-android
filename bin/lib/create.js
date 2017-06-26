@@ -19,12 +19,12 @@
        under the License.
 */
 
-var shell = require('shelljs'),
-    Q     = require('q'),
-    path  = require('path'),
-    fs    = require('fs'),
-    check_reqs = require('./../templates/cordova/lib/check_reqs'),
-    ROOT    = path.join(__dirname, '..', '..');
+var shell = require('shelljs');
+var Q = require('q');
+var path = require('path');
+var fs = require('fs');
+var check_reqs = require('./../templates/cordova/lib/check_reqs');
+var ROOT = path.join(__dirname, '..', '..');
 
 var MIN_SDK_VERSION = 19;
 
@@ -32,14 +32,14 @@ var CordovaError = require('cordova-common').CordovaError;
 var AndroidStudio = require('../templates/cordova/lib/AndroidStudio');
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
 
-function setShellFatal(value, func) {
+function setShellFatal (value, func) {
     var oldVal = shell.config.fatal;
     shell.config.fatal = value;
     func();
     shell.config.fatal = oldVal;
 }
 
-function getFrameworkDir(projectPath, shared) {
+function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
@@ -62,9 +62,9 @@ function copyJsAndLibrary(projectPath, shared, projectName, isLegacy) {
     // We need these files to build cordova.js if using browserify method.
     shell.cp('-rf', path.join(ROOT, 'cordova-js-src'), path.join(projectPath, 'platform_www'));
 
-    // Don't fail if there are no old jars, because there hasn't been cordova JARs for years!
-    setShellFatal(false, function() {
-        shell.ls(path.join(app_path, 'libs', 'cordova-*.jar')).forEach(function(oldJar) {
+    // Don't fail if there are no old jars.
+    setShellFatal(false, function () {
+        shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function (oldJar) {
             console.log('Deleting ' + oldJar);
             shell.rm('-f', oldJar);
         });
@@ -96,7 +96,7 @@ function copyJsAndLibrary(projectPath, shared, projectName, isLegacy) {
     }
 }
 
-function extractSubProjectPaths(data) {
+function extractSubProjectPaths (data) {
     var ret = {};
     var r = /^\s*android\.library\.reference\.\d+=(.*)(?:\s|$)/mg;
     var m;
@@ -106,7 +106,7 @@ function extractSubProjectPaths(data) {
     return Object.keys(ret);
 }
 
-function writeProjectProperties(projectPath, target_api) {
+function writeProjectProperties (projectPath, target_api) {
     var dstPath = path.join(projectPath, 'project.properties');
     var templatePath = path.join(ROOT, 'bin', 'templates', 'project', 'project.properties');
     var srcPath = fs.existsSync(dstPath) ? dstPath : templatePath;
@@ -114,11 +114,10 @@ function writeProjectProperties(projectPath, target_api) {
     var data = fs.readFileSync(srcPath, 'utf8');
     data = data.replace(/^target=.*/m, 'target=' + target_api);
     var subProjects = extractSubProjectPaths(data);
-    subProjects = subProjects.filter(function(p) {
+    subProjects = subProjects.filter(function (p) {
         return !(/^CordovaLib$/m.exec(p) ||
-                 /[\\\/]cordova-android[\\\/]framework$/m.exec(p) ||
-                 /^(\.\.[\\\/])+framework$/m.exec(p)
-                 );
+                 /[\\/]cordova-android[\\/]framework$/m.exec(p) ||
+                 /^(\.\.[\\/])+framework$/m.exec(p));
     });
     subProjects.unshift('CordovaLib');
     data = data.replace(/^\s*android\.library\.reference\.\d+=.*\n/mg, '');
@@ -126,7 +125,7 @@ function writeProjectProperties(projectPath, target_api) {
         data += '\n';
     }
     for (var i = 0; i < subProjects.length; ++i) {
-        data += 'android.library.reference.' + (i+1) + '=' + subProjects[i] + '\n';
+        data += 'android.library.reference.' + (i + 1) + '=' + subProjects[i] + '\n';
     }
     fs.writeFileSync(dstPath, data);
 }
@@ -151,7 +150,7 @@ function copyBuildRules(projectPath, isLegacy) {
     }
 }
 
-function copyScripts(projectPath) {
+function copyScripts (projectPath) {
     var bin = path.join(ROOT, 'bin');
     var srcScriptsDir = path.join(bin, 'templates', 'cordova');
     var destScriptsDir = path.join(projectPath, 'cordova');
@@ -178,17 +177,17 @@ function copyScripts(projectPath) {
  * Returns a promise, fulfilled if the package name is acceptable; rejected
  * otherwise.
  */
-function validatePackageName(package_name) {
-    //Make the package conform to Java package types
-    //http://developer.android.com/guide/topics/manifest/manifest-element.html#package
-    //Enforce underscore limitation
+function validatePackageName (package_name) {
+    // Make the package conform to Java package types
+    // http://developer.android.com/guide/topics/manifest/manifest-element.html#package
+    // Enforce underscore limitation
     var msg = 'Error validating package name. ';
     if (!/^[a-zA-Z][a-zA-Z0-9_]+(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(package_name)) {
         return Q.reject(new CordovaError(msg + 'Package name must look like: com.company.Name'));
     }
 
-    //Class is a reserved word
-    if(/\b[Cc]lass\b/.test(package_name)) {
+    // Class is a reserved word
+    if (/\b[Cc]lass\b/.test(package_name)) {
         return Q.reject(new CordovaError(msg + '"class" is a reserved word'));
     }
 
@@ -200,19 +199,19 @@ function validatePackageName(package_name) {
  * Returns a promise, fulfilled if the project name is acceptable; rejected
  * otherwise.
  */
-function validateProjectName(project_name) {
+function validateProjectName (project_name) {
     var msg = 'Error validating project name. ';
-    //Make sure there's something there
+    // Make sure there's something there
     if (project_name === '') {
         return Q.reject(new CordovaError(msg + 'Project name cannot be empty'));
     }
 
-    //Enforce stupid name error
+    // Enforce stupid name error
     if (project_name === 'CordovaActivity') {
         return Q.reject(new CordovaError(msg + 'Project name cannot be CordovaActivity'));
     }
 
-    //Classes in Java don't begin with numbers
+    // Classes in Java don't begin with numbers
     if (/^[0-9]/.test(project_name)) {
         return Q.reject(new CordovaError(msg + 'Project name must not begin with a number'));
     }
@@ -238,29 +237,29 @@ function validateProjectName(project_name) {
  *
  * @return  {Promise<String>}  Directory where application has been created
  */
-exports.create = function(project_path, config, options, events) {
+exports.create = function (project_path, config, options, events) {
 
     options = options || {};
 
     // Set default values for path, package and name
     project_path = path.relative(process.cwd(), (project_path || 'CordovaExample'));
     // Check if project already exists
-    if(fs.existsSync(project_path)) {
+    if (fs.existsSync(project_path)) {
         return Q.reject(new CordovaError('Project already exists! Delete and recreate'));
     }
 
     var package_name = config.packageName() || 'my.cordova.project';
     var project_name = config.name() ?
-        config.name().replace(/[^\w.]/g,'_') : 'CordovaExample';
+        config.name().replace(/[^\w.]/g, '_') : 'CordovaExample';
 
     var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
-    var target_api      = check_reqs.get_target();
+    var target_api = check_reqs.get_target();
 
-    //Make the package conform to Java package types
+    // Make the package conform to Java package types
     return validatePackageName(package_name)
-    .then(function() {
-        validateProjectName(project_name);
-    }).then(function() {
+        .then(function () {
+            validateProjectName(project_name);
+        }).then(function () {
         // Log the given values for the project
         events.emit('log', 'Creating Cordova project for the Android platform:');
         events.emit('log', '\tPath: ' + project_path);
@@ -324,9 +323,9 @@ exports.create = function(project_path, config, options, events) {
     }).thenResolve(project_path);
 };
 
-function generateDoneMessage(type, link) {
+function generateDoneMessage (type, link) {
     var pkg = require('../../package');
-    var msg = 'Android project ' + (type == 'update' ? 'updated ' : 'created ') + 'with ' + pkg.name + '@' + pkg.version;
+    var msg = 'Android project ' + (type === 'update' ? 'updated ' : 'created ') + 'with ' + pkg.name + '@' + pkg.version;
     if (link) {
         msg += ' and has a linked CordovaLib';
     }
@@ -334,11 +333,11 @@ function generateDoneMessage(type, link) {
 }
 
 // Returns a promise.
-exports.update = function(projectPath, options, events) {
+exports.update = function (projectPath, options, events) {
     options = options || {};
 
     return Q()
-    .then(function() {
+        .then(function () {
 
         var isAndroidStudio = AndroidStudio.isAndroidStudioProject(projectPath);
         var isLegacy = !isAndroidStudio;
@@ -353,15 +352,15 @@ exports.update = function(projectPath, options, events) {
           builder = 'gradle';
         }
 
-        if (Number(manifest.getMinSdkVersion()) < MIN_SDK_VERSION) {
-            events.emit('verbose', 'Updating minSdkVersion to ' + MIN_SDK_VERSION + ' in AndroidManifest.xml');
-            manifest.setMinSdkVersion(MIN_SDK_VERSION);
-        }
+            if (Number(manifest.getMinSdkVersion()) < MIN_SDK_VERSION) {
+                events.emit('verbose', 'Updating minSdkVersion to ' + MIN_SDK_VERSION + ' in AndroidManifest.xml');
+                manifest.setMinSdkVersion(MIN_SDK_VERSION);
+            }
 
-        manifest.setDebuggable(false).write();
+            manifest.setDebuggable(false).write();
 
-        var projectName = manifest.getActivity().getName();
-        var target_api = check_reqs.get_target();
+            var projectName = manifest.getActivity().getName();
+            var target_api = check_reqs.get_target();
 
         copyJsAndLibrary(projectPath, options.link, projectName, isLegacy);
         copyScripts(projectPath);
@@ -371,7 +370,6 @@ exports.update = function(projectPath, options, events) {
         events.emit('log', generateDoneMessage('update', options.link));
     }).thenResolve(projectPath);
 };
-
 
 // For testing
 exports.validatePackageName = validatePackageName;

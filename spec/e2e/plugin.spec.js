@@ -17,14 +17,14 @@
  under the License.
  */
 
-var path    = require('path'),
-    actions = require('./helpers/projectActions.js');
+var path = require('path');
+var actions = require('./helpers/projectActions.js');
 
 var PLUGIN_ADD_TIMEOUT = 90000;
 
-describe('plugin add', function() {
+describe('plugin add', function () {
 
-    it('Test#001 : create project and add a plugin with framework', function(done) {
+    it('Test#001 : create project and add a plugin with framework', function (done) {
         var projectname = 'testpluginframework';
         var projectid = 'com.test.plugin.framework';
         var fakePluginPath = path.join(__dirname, 'fixtures/cordova-plugin-fake');

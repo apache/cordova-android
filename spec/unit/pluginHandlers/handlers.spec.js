@@ -18,13 +18,13 @@
 */
 
 var rewire = require('rewire');
-var common  = rewire('../../../bin/templates/cordova/lib/pluginHandlers');
+var common = rewire('../../../bin/templates/cordova/lib/pluginHandlers');
 var android = common.__get__('handlers');
-var path    = require('path');
-var fs      = require('fs');
-var shell   = require('shelljs');
-var os      = require('os');
-var temp    = path.join(os.tmpdir(), 'plugman');
+var path = require('path');
+var fs = require('fs');
+var shell = require('shelljs');
+var os = require('os');
+var temp = path.join(os.tmpdir(), 'plugman');
 var plugins_dir = path.join(temp, 'cordova/plugins');
 var dummyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.dummyplugin');
 var faultyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.faultyplugin');
@@ -34,32 +34,32 @@ var PluginInfo = require('cordova-common').PluginInfo;
 var AndroidProject = require('../../../bin/templates/cordova/lib/AndroidProject');
 
 var dummyPluginInfo = new PluginInfo(dummyplugin);
-var valid_source = dummyPluginInfo.getSourceFiles('android'),
-    valid_resources = dummyPluginInfo.getResourceFiles('android'),
-    valid_libs = dummyPluginInfo.getLibFiles('android');
+var valid_source = dummyPluginInfo.getSourceFiles('android');
+var valid_resources = dummyPluginInfo.getResourceFiles('android');
+var valid_libs = dummyPluginInfo.getLibFiles('android');
 
 var faultyPluginInfo = new PluginInfo(faultyplugin);
 var invalid_source = faultyPluginInfo.getSourceFiles('android');
 
-describe('android project handler', function() {
-    describe('installation', function() {
+describe('android project handler', function () {
+    describe('installation', function () {
         var copyFileOrig = common.__get__('copyFile');
         var copyFileSpy = jasmine.createSpy('copyFile');
         var dummyProject;
 
-        beforeEach(function() {
+        beforeEach(function () {
             shell.mkdir('-p', temp);
             dummyProject = AndroidProject.getProjectFile(temp);
             copyFileSpy.calls.reset();
             common.__set__('copyFile', copyFileSpy);
         });
 
-        afterEach(function() {
+        afterEach(function () {
             shell.rm('-rf', temp);
             common.__set__('copyFile', copyFileOrig);
         });
 
-        describe('of <lib-file> elements', function() {
+        describe('of <lib-file> elements', function () {
             it('Test#001 : should copy files', function () {
                 android['lib-file'].install(valid_libs[0], dummyPluginInfo, dummyProject);
                 expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('libs', 'TestLib.jar'), false);
@@ -70,58 +70,58 @@ describe('android project handler', function() {
             });
         });
 
-        describe('of <resource-file> elements', function() {
+        describe('of <resource-file> elements', function () {
             it('Test#003 : should copy files', function () {
                 android['resource-file'].install(valid_resources[0], dummyPluginInfo, dummyProject);
                 expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin, 'android-resource.xml', temp, path.join('res', 'xml', 'dummy.xml'), false);
             });
         });
 
-        describe('of <source-file> elements', function() {
-            beforeEach(function() {
+        describe('of <source-file> elements', function () {
+            beforeEach(function () {
                 shell.cp('-rf', android_project, temp);
             });
 
-            it('Test#004 : should copy stuff from one location to another by calling common.copyFile', function() {
+            it('Test#004 : should copy stuff from one location to another by calling common.copyFile', function () {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin.java', temp, path.join('src/com/phonegap/plugins/dummyplugin/DummyPlugin.java'), false);
             });
 
-            it('Test#005 : should install source files to the right location for Android Studio projects', function() {
+            it('Test#005 : should install source files to the right location for Android Studio projects', function () {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin.java', temp, path.join('app/src/main/java/com/phonegap/plugins/dummyplugin/DummyPlugin.java'), false);
             });
 
-            it('Test#006 : should throw if source file cannot be found', function() {
+            it('Test#006 : should throw if source file cannot be found', function () {
                 common.__set__('copyFile', copyFileOrig);
-                expect(function() {
+                expect(function () {
                     android['source-file'].install(invalid_source[0], faultyPluginInfo, dummyProject);
                 }).toThrow(new Error('"' + path.resolve(faultyplugin, 'src/android/NotHere.java') + '" not found!'));
             });
 
-            it('Test#007 : should throw if target file already exists', function() {
+            it('Test#007 : should throw if target file already exists', function () {
                 // write out a file
                 var target = path.resolve(temp, 'src/com/phonegap/plugins/dummyplugin');
                 shell.mkdir('-p', target);
                 target = path.join(target, 'DummyPlugin.java');
                 fs.writeFileSync(target, 'some bs', 'utf-8');
 
-                expect(function() {
+                expect(function () {
                     android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
-                }).toThrow(new Error ('"' + target + '" already exists!'));
+                }).toThrow(new Error('"' + target + '" already exists!'));
             });
         });
 
-        describe('of <framework> elements', function() {
+        describe('of <framework> elements', function () {
 
             var someString = jasmine.any(String);
 
             var copyNewFileOrig = common.__get__('copyNewFile');
             var copyNewFileSpy = jasmine.createSpy('copyNewFile');
 
-            beforeEach(function() {
+            beforeEach(function () {
                 shell.cp('-rf', android_project, temp);
 
                 spyOn(dummyProject, 'addSystemLibrary');
@@ -130,27 +130,27 @@ describe('android project handler', function() {
                 common.__set__('copyNewFile', copyNewFileSpy);
             });
 
-            afterEach(function() {
+            afterEach(function () {
                 common.__set__('copyNewFile', copyNewFileOrig);
             });
 
-            it('Test#008 : should throw if framework doesn\'t have "src" attribute', function() {
-                expect(function() { android.framework.install({}, dummyPluginInfo, dummyProject); }).toThrow();
+            it('Test#008 : should throw if framework doesn\'t have "src" attribute', function () {
+                expect(function () { android.framework.install({}, dummyPluginInfo, dummyProject); }).toThrow();
             });
 
-            it('Test#009 : should install framework without "parent" attribute into project root', function() {
+            it('Test#009 : should install framework without "parent" attribute into project root', function () {
                 var framework = {src: 'plugin-lib'};
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
-            it('Test#010 : should install framework with "parent" attribute into parent framework dir', function() {
+            it('Test#010 : should install framework with "parent" attribute into parent framework dir', function () {
                 var childFramework = {src: 'plugin-lib2', parent: 'plugin-lib'};
                 android.framework.install(childFramework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(path.resolve(dummyProject.projectDir, childFramework.parent), someString);
             });
 
-            it('Test#011 : should not copy anything if "custom" attribute is not set', function() {
+            it('Test#011 : should not copy anything if "custom" attribute is not set', function () {
                 var framework = {src: 'plugin-lib'};
                 var cpSpy = spyOn(shell, 'cp');
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
@@ -158,14 +158,14 @@ describe('android project handler', function() {
                 expect(cpSpy).not.toHaveBeenCalled();
             });
 
-            it('Test#012 : should copy framework sources if "custom" attribute is set', function() {
+            it('Test#012 : should copy framework sources if "custom" attribute is set', function () {
                 var framework = {src: 'plugin-lib', custom: true};
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSubProject).toHaveBeenCalledWith(dummyProject.projectDir, someString);
                 expect(copyNewFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, framework.src, dummyProject.projectDir, someString, false);
             });
 
-            it('Test#013 : should install gradleReference using project.addGradleReference', function() {
+            it('Test#013 : should install gradleReference using project.addGradleReference', function () {
                 var framework = {src: 'plugin-lib', custom: true, type: 'gradleReference'};
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(copyNewFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, framework.src, dummyProject.projectDir, someString, false);
@@ -173,7 +173,7 @@ describe('android project handler', function() {
             });
         });
 
-        describe('of <js-module> elements', function() {
+        describe('of <js-module> elements', function () {
             var jsModule = {src: 'www/dummyplugin.js'};
             var wwwDest, platformWwwDest;
 
@@ -196,9 +196,10 @@ describe('android project handler', function() {
             });
         });
 
-        describe('of <asset> elements', function() {
+        describe('of <asset> elements', function () {
             var asset = {src: 'www/dummyPlugin.js', target: 'foo/dummy.js'};
-            var wwwDest, platformWwwDest;
+            var wwwDest; /* eslint no-unused-vars: "off" */
+            var platformWwwDest; /* eslint no-unused-vars: "off" */
 
             beforeEach(function () {
                 wwwDest = path.resolve(dummyProject.www, asset.target);
@@ -219,7 +220,7 @@ describe('android project handler', function() {
         });
     });
 
-    describe('uninstallation', function() {
+    describe('uninstallation', function () {
 
         var removeFileOrig = common.__get__('removeFile');
         var deleteJavaOrig = common.__get__('deleteJava');
@@ -228,7 +229,7 @@ describe('android project handler', function() {
         var deleteJavaSpy = jasmine.createSpy('deleteJava');
         var dummyProject;
 
-        beforeEach(function() {
+        beforeEach(function () {
             shell.mkdir('-p', temp);
             shell.mkdir('-p', plugins_dir);
             shell.cp('-rf', android_project, temp);
@@ -238,26 +239,26 @@ describe('android project handler', function() {
             common.__set__('deleteJava', deleteJavaSpy);
         });
 
-        afterEach(function() {
+        afterEach(function () {
             shell.rm('-rf', temp);
             common.__set__('removeFile', removeFileOrig);
             common.__set__('deleteJava', deleteJavaOrig);
         });
 
-        describe('of <lib-file> elements', function() {
+        describe('of <lib-file> elements', function () {
             it('Test#018 : should remove jar files', function () {
                 android['lib-file'].install(valid_libs[0], dummyPluginInfo, dummyProject);
                 android['lib-file'].uninstall(valid_libs[0], dummyPluginInfo, dummyProject);
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('libs/TestLib.jar'));
             });
             it('Test#019 : should remove jar files for Android Studio projects', function () {
-                android['lib-file'].install(valid_libs[0], dummyPluginInfo, dummyProject, {android_studio:true});
-                android['lib-file'].uninstall(valid_libs[0], dummyPluginInfo, dummyProject, {android_studio:true});
+                android['lib-file'].install(valid_libs[0], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['lib-file'].uninstall(valid_libs[0], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
             });
         });
 
-        describe('of <resource-file> elements', function() {
+        describe('of <resource-file> elements', function () {
             it('Test#020 : should remove files', function () {
                 android['resource-file'].install(valid_resources[0], dummyPluginInfo, dummyProject);
                 android['resource-file'].uninstall(valid_resources[0], dummyPluginInfo, dummyProject);
@@ -265,24 +266,24 @@ describe('android project handler', function() {
             });
         });
 
-        describe('of <source-file> elements', function() {
-            it('Test#021 : should remove stuff by calling common.deleteJava', function() {
+        describe('of <source-file> elements', function () {
+            it('Test#021 : should remove stuff by calling common.deleteJava', function () {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject);
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('src/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
             });
-            it('Test#022 : should remove stuff by calling common.deleteJava for Android Studio projects', function() {
-                android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject, {android_studio:true});
-                android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject, {android_studio:true});
+            it('Test#022 : should remove stuff by calling common.deleteJava for Android Studio projects', function () {
+                android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
             });
         });
 
-        describe('of <framework> elements', function() {
+        describe('of <framework> elements', function () {
 
             var someString = jasmine.any(String);
 
-            beforeEach(function() {
+            beforeEach(function () {
                 shell.mkdir(path.join(dummyProject.projectDir, dummyPluginInfo.id));
 
                 spyOn(dummyProject, 'removeSystemLibrary');
@@ -290,30 +291,30 @@ describe('android project handler', function() {
                 spyOn(dummyProject, 'removeGradleReference');
             });
 
-            it('Test#023 : should throw if framework doesn\'t have "src" attribute', function() {
-                expect(function() { android.framework.uninstall({}, dummyPluginInfo, dummyProject); }).toThrow();
+            it('Test#023 : should throw if framework doesn\'t have "src" attribute', function () {
+                expect(function () { android.framework.uninstall({}, dummyPluginInfo, dummyProject); }).toThrow();
             });
 
-            it('Test#024 : should uninstall framework without "parent" attribute into project root', function() {
+            it('Test#024 : should uninstall framework without "parent" attribute into project root', function () {
                 var framework = {src: 'plugin-lib'};
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSystemLibrary).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
-            it('Test#025 : should uninstall framework with "parent" attribute into parent framework dir', function() {
+            it('Test#025 : should uninstall framework with "parent" attribute into parent framework dir', function () {
                 var childFramework = {src: 'plugin-lib2', parent: 'plugin-lib'};
                 android.framework.uninstall(childFramework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSystemLibrary).toHaveBeenCalledWith(path.resolve(dummyProject.projectDir, childFramework.parent), someString);
             });
 
-            it('Test#026 : should remove framework sources if "custom" attribute is set', function() {
+            it('Test#026 : should remove framework sources if "custom" attribute is set', function () {
                 var framework = {src: 'plugin-lib', custom: true};
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSubProject).toHaveBeenCalledWith(dummyProject.projectDir, someString);
                 expect(removeFileSpy).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
-            it('Test#27 : should install gradleReference using project.removeGradleReference', function() {
+            it('Test#27 : should install gradleReference using project.removeGradleReference', function () {
                 var framework = {src: 'plugin-lib', custom: true, type: 'gradleReference'};
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(removeFileSpy).toHaveBeenCalledWith(dummyProject.projectDir, someString);
@@ -321,10 +322,10 @@ describe('android project handler', function() {
             });
         });
 
-
-        describe('of <js-module> elements', function() {
+        describe('of <js-module> elements', function () {
             var jsModule = {src: 'www/dummyPlugin.js'};
-            var wwwDest, platformWwwDest;
+            var wwwDest;
+            var platformWwwDest;
 
             beforeEach(function () {
                 wwwDest = path.resolve(dummyProject.www, 'plugins', dummyPluginInfo.id, jsModule.src);
@@ -334,7 +335,7 @@ describe('android project handler', function() {
 
                 var existsSyncOrig = fs.existsSync;
                 spyOn(fs, 'existsSync').and.callFake(function (file) {
-                    if ([wwwDest, platformWwwDest].indexOf(file) >= 0 ) return true;
+                    if ([wwwDest, platformWwwDest].indexOf(file) >= 0) return true;
                     return existsSyncOrig.call(fs, file);
                 });
             });
@@ -352,7 +353,7 @@ describe('android project handler', function() {
             });
         });
 
-        describe('of <asset> elements', function() {
+        describe('of <asset> elements', function () {
             var asset = {src: 'www/dummyPlugin.js', target: 'foo/dummy.js'};
             var wwwDest, platformWwwDest;
 
@@ -364,7 +365,7 @@ describe('android project handler', function() {
 
                 var existsSyncOrig = fs.existsSync;
                 spyOn(fs, 'existsSync').and.callFake(function (file) {
-                    if ([wwwDest, platformWwwDest].indexOf(file) >= 0 ) return true;
+                    if ([wwwDest, platformWwwDest].indexOf(file) >= 0) return true;
                     return existsSyncOrig.call(fs, file);
                 });
             });

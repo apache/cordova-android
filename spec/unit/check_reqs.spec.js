@@ -16,234 +16,222 @@
     specific language governing permissions and limitations
     under the License.
 */
-/* jshint laxcomma:true */
 
-var check_reqs = require("../../bin/templates/cordova/lib/check_reqs");
-var android_sdk = require("../../bin/templates/cordova/lib/android_sdk");
-var shelljs = require("shelljs");
-var fs = require("fs");
-var path = require("path");
-var Q = require("q");
+var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
+var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
+var shelljs = require('shelljs');
+var fs = require('fs');
+var path = require('path');
+var Q = require('q');
 
-describe("check_reqs", function () {
+describe('check_reqs', function () {
     var original_env;
-    beforeAll(function() {
+    beforeAll(function () {
         original_env = Object.create(process.env);
     });
-    afterEach(function() {
-        Object.keys(original_env).forEach(function(k) {
+    afterEach(function () {
+        Object.keys(original_env).forEach(function (k) {
             process.env[k] = original_env[k];
         });
     });
-    describe("check_android", function() {
-        describe("set ANDROID_HOME if not set", function() {
-            beforeEach(function() {
+    describe('check_android', function () {
+        describe('set ANDROID_HOME if not set', function () {
+            beforeEach(function () {
                 delete process.env.ANDROID_HOME;
             });
-            describe("even if no Android binaries are on the PATH", function() {
-                beforeEach(function() {
-                    spyOn(shelljs, "which").and.returnValue(null);
-                    spyOn(fs, "existsSync").and.returnValue(true);
+            describe('even if no Android binaries are on the PATH', function () {
+                beforeEach(function () {
+                    spyOn(shelljs, 'which').and.returnValue(null);
+                    spyOn(fs, 'existsSync').and.returnValue(true);
                 });
-                it("it should set ANDROID_HOME on Windows", function(done) {
-                    spyOn(check_reqs, "isWindows").and.returnValue(true);
-                    process.env.LOCALAPPDATA = "windows-local-app-data";
-                    process.env.ProgramFiles = "windows-program-files";
-                    return check_reqs.check_android()
-                    .then(function() {
-                        expect(process.env.ANDROID_HOME).toContain("windows-local-app-data");
-                    }).fail(function(err) {
+                it('it should set ANDROID_HOME on Windows', function (done) {
+                    spyOn(check_reqs, 'isWindows').and.returnValue(true);
+                    process.env.LOCALAPPDATA = 'windows-local-app-data';
+                    process.env.ProgramFiles = 'windows-program-files';
+                    return check_reqs.check_android().then(function () {
+                        expect(process.env.ANDROID_HOME).toContain('windows-local-app-data');
+                    }).fail(function (err) {
                         expect(err).toBeUndefined();
                         console.log(err);
-                    }).fin(function() {
+                    }).fin(function () {
                         delete process.env.LOCALAPPDATA;
                         delete process.env.ProgramFiles;
                         done();
                     });
                 });
-                it("it should set ANDROID_HOME on Darwin", function(done) {
-                    spyOn(check_reqs, "isWindows").and.returnValue(false);
-                    spyOn(check_reqs, "isDarwin").and.returnValue(true);
-                    process.env.HOME = "home is where the heart is";
-                    return check_reqs.check_android()
-                    .then(function() {
-                        expect(process.env.ANDROID_HOME).toContain("home is where the heart is");
-                    }).fail(function(err) {
+                it('it should set ANDROID_HOME on Darwin', function (done) {
+                    spyOn(check_reqs, 'isWindows').and.returnValue(false);
+                    spyOn(check_reqs, 'isDarwin').and.returnValue(true);
+                    process.env.HOME = 'home is where the heart is';
+                    return check_reqs.check_android().then(function () {
+                        expect(process.env.ANDROID_HOME).toContain('home is where the heart is');
+                    }).fail(function (err) {
                         expect(err).toBeUndefined();
                         console.log(err);
-                    }).fin(function() {
+                    }).fin(function () {
                         delete process.env.HOME;
                         done();
                     });
                 });
             });
-            describe("if some Android tooling exists on the PATH", function() {
-                beforeEach(function() {
-                    spyOn(fs, "realpathSync").and.callFake(function(path) {
+            describe('if some Android tooling exists on the PATH', function () {
+                beforeEach(function () {
+                    spyOn(fs, 'realpathSync').and.callFake(function (path) {
                         return path;
                     });
                 });
-                it("should set ANDROID_HOME based on `android` command if command exists in a SDK-like directory structure", function(done) {
-                    spyOn(fs, "existsSync").and.returnValue(true);
-                    spyOn(shelljs, "which").and.callFake(function(cmd) {
-                        if (cmd == "android") {
-                            return "/android/sdk/tools/android";
+                it('should set ANDROID_HOME based on `android` command if command exists in a SDK-like directory structure', function (done) {
+                    spyOn(fs, 'existsSync').and.returnValue(true);
+                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                        if (cmd === 'android') {
+                            return '/android/sdk/tools/android';
                         } else {
                             return null;
                         }
                     });
-                    return check_reqs.check_android()
-                    .then(function() {
-                        expect(process.env.ANDROID_HOME).toEqual("/android/sdk");
+                    return check_reqs.check_android().then(function () {
+                        expect(process.env.ANDROID_HOME).toEqual('/android/sdk');
                         done();
-                    }).fail(function(err) {
+                    }).fail(function (err) {
                         expect(err).toBeUndefined();
                         console.log(err);
                     });
                 });
-                it("should error out if `android` command exists in a non-SDK-like directory structure", function(done) {
-                    spyOn(shelljs, "which").and.callFake(function(cmd) {
-                        if (cmd == "android") {
-                            return "/just/some/random/path/android";
+                it('should error out if `android` command exists in a non-SDK-like directory structure', function (done) {
+                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                        if (cmd === 'android') {
+                            return '/just/some/random/path/android';
                         } else {
                             return null;
                         }
                     });
-                    return check_reqs.check_android()
-                    .then(function() {
+                    return check_reqs.check_android().then(function () {
                         done.fail();
-                    }).fail(function(err) {
+                    }).fail(function (err) {
                         expect(err).toBeDefined();
-                        expect(err.message).toContain("update your PATH to include valid path");
+                        expect(err.message).toContain('update your PATH to include valid path');
                         done();
                     });
                 });
-                it("should set ANDROID_HOME based on `adb` command if command exists in a SDK-like directory structure", function(done) {
-                    spyOn(fs, "existsSync").and.returnValue(true);
-                    spyOn(shelljs, "which").and.callFake(function(cmd) {
-                        if (cmd == "adb") {
-                            return "/android/sdk/platform-tools/adb";
+                it('should set ANDROID_HOME based on `adb` command if command exists in a SDK-like directory structure', function (done) {
+                    spyOn(fs, 'existsSync').and.returnValue(true);
+                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                        if (cmd === 'adb') {
+                            return '/android/sdk/platform-tools/adb';
                         } else {
                             return null;
                         }
                     });
-                    return check_reqs.check_android()
-                    .then(function() {
-                        expect(process.env.ANDROID_HOME).toEqual("/android/sdk");
+                    return check_reqs.check_android().then(function () {
+                        expect(process.env.ANDROID_HOME).toEqual('/android/sdk');
                         done();
-                    }).fail(function(err) {
+                    }).fail(function (err) {
                         expect(err).toBeUndefined();
                         console.log(err);
                     });
                 });
-                it("should error out if `adb` command exists in a non-SDK-like directory structure", function(done) {
-                    spyOn(shelljs, "which").and.callFake(function(cmd) {
-                        if (cmd == "adb") {
-                            return "/just/some/random/path/adb";
+                it('should error out if `adb` command exists in a non-SDK-like directory structure', function (done) {
+                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                        if (cmd === 'adb') {
+                            return '/just/some/random/path/adb';
                         } else {
                             return null;
                         }
                     });
-                    return check_reqs.check_android()
-                    .then(function() {
+                    return check_reqs.check_android().then(function () {
                         done.fail();
-                    }).fail(function(err) {
+                    }).fail(function (err) {
                         expect(err).toBeDefined();
-                        expect(err.message).toContain("update your PATH to include valid path");
+                        expect(err.message).toContain('update your PATH to include valid path');
                         done();
                     });
                 });
-                it("should set ANDROID_HOME based on `avdmanager` command if command exists in a SDK-like directory structure", function(done) {
-                    spyOn(fs, "existsSync").and.returnValue(true);
-                    spyOn(shelljs, "which").and.callFake(function(cmd) {
-                        if (cmd == "avdmanager") {
-                            return "/android/sdk/tools/bin/avdmanager";
+                it('should set ANDROID_HOME based on `avdmanager` command if command exists in a SDK-like directory structure', function (done) {
+                    spyOn(fs, 'existsSync').and.returnValue(true);
+                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                        if (cmd === 'avdmanager') {
+                            return '/android/sdk/tools/bin/avdmanager';
                         } else {
                             return null;
                         }
                     });
-                    return check_reqs.check_android()
-                    .then(function() {
-                        expect(process.env.ANDROID_HOME).toEqual("/android/sdk");
+                    return check_reqs.check_android().then(function () {
+                        expect(process.env.ANDROID_HOME).toEqual('/android/sdk');
                         done();
-                    }).fail(function(err) {
+                    }).fail(function (err) {
                         expect(err).toBeUndefined();
                         console.log(err);
                     });
                 });
-                it("should error out if `avdmanager` command exists in a non-SDK-like directory structure", function(done) {
-                    spyOn(shelljs, "which").and.callFake(function(cmd) {
-                        if (cmd == "avdmanager") {
-                            return "/just/some/random/path/avdmanager";
+                it('should error out if `avdmanager` command exists in a non-SDK-like directory structure', function (done) {
+                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                        if (cmd === 'avdmanager') {
+                            return '/just/some/random/path/avdmanager';
                         } else {
                             return null;
                         }
                     });
-                    return check_reqs.check_android()
-                    .then(function() {
+                    return check_reqs.check_android().then(function () {
                         done.fail();
-                    }).fail(function(err) {
+                    }).fail(function (err) {
                         expect(err).toBeDefined();
-                        expect(err.message).toContain("update your PATH to include valid path");
+                        expect(err.message).toContain('update your PATH to include valid path');
                         done();
                     });
                 });
             });
         });
-        describe("set PATH for various Android binaries if not available", function() {
-            beforeEach(function() {
-                spyOn(shelljs, "which").and.returnValue(null);
-                process.env.ANDROID_HOME = "let the children play";
-                spyOn(fs, "existsSync").and.returnValue(true);
+        describe('set PATH for various Android binaries if not available', function () {
+            beforeEach(function () {
+                spyOn(shelljs, 'which').and.returnValue(null);
+                process.env.ANDROID_HOME = 'let the children play';
+                spyOn(fs, 'existsSync').and.returnValue(true);
             });
-            afterEach(function() {
+            afterEach(function () {
                 delete process.env.ANDROID_HOME;
             });
-            it("should add tools/bin,tools,platform-tools to PATH if `avdmanager`,`android`,`adb` is not found", function(done) {
-                return check_reqs.check_android()
-                .then(function() {
-                    expect(process.env.PATH).toContain("let the children play" + path.sep + "tools");
-                    expect(process.env.PATH).toContain("let the children play" + path.sep + "platform-tools");
-                    expect(process.env.PATH).toContain("let the children play" + path.sep + "tools" + path.sep + "bin");
+            it('should add tools/bin,tools,platform-tools to PATH if `avdmanager`,`android`,`adb` is not found', function (done) {
+                return check_reqs.check_android().then(function () {
+                    expect(process.env.PATH).toContain('let the children play' + path.sep + 'tools');
+                    expect(process.env.PATH).toContain('let the children play' + path.sep + 'platform-tools');
+                    expect(process.env.PATH).toContain('let the children play' + path.sep + 'tools' + path.sep + 'bin');
                     done();
-                }).fail(function(err) {
+                }).fail(function (err) {
                     expect(err).toBeUndefined();
                     console.log(err);
                 });
             });
         });
     });
-    describe("get_target", function() {
-        it("should retrieve target from framework project.properties file", function() {
+    describe('get_target', function () {
+        it('should retrieve target from framework project.properties file', function () {
             var target = check_reqs.get_target();
             expect(target).toBeDefined();
-            expect(target).toContain("android-");
+            expect(target).toContain('android-');
         });
     });
-    describe("check_android_target", function() {
-        it("should should return full list of supported targets if there is a match to ideal api level", function(done) {
+    describe('check_android_target', function () {
+        it('should should return full list of supported targets if there is a match to ideal api level', function (done) {
             var deferred = Q.defer();
-            spyOn(android_sdk, "list_targets").and.returnValue(deferred.promise);
-            var fake_targets = ["you are my fire", "my one desire"];
+            spyOn(android_sdk, 'list_targets').and.returnValue(deferred.promise);
+            var fake_targets = ['you are my fire', 'my one desire'];
             deferred.resolve(fake_targets);
-            spyOn(check_reqs, "get_target").and.returnValue("you are my fire");
-            return check_reqs.check_android_target()
-            .then(function(targets) {
+            spyOn(check_reqs, 'get_target').and.returnValue('you are my fire');
+            return check_reqs.check_android_target().then(function (targets) {
                 expect(targets).toBeDefined();
                 expect(targets).toEqual(fake_targets);
                 done();
             });
         });
-        it("should error out if there is no match between ideal api level and installed targets", function(done) {
+        it('should error out if there is no match between ideal api level and installed targets', function (done) {
             var deferred = Q.defer();
-            spyOn(android_sdk, "list_targets").and.returnValue(deferred.promise);
-            var fake_targets = ["you are my fire", "my one desire"];
+            spyOn(android_sdk, 'list_targets').and.returnValue(deferred.promise);
+            var fake_targets = ['you are my fire', 'my one desire'];
             deferred.resolve(fake_targets);
-            spyOn(check_reqs, "get_target").and.returnValue("and i knowwwwwwwwwwww");
-            return check_reqs.check_android_target()
-            .catch(function(err) {
+            spyOn(check_reqs, 'get_target').and.returnValue('and i knowwwwwwwwwwww');
+            return check_reqs.check_android_target().catch(function (err) {
                 expect(err).toBeDefined();
-                expect(err.message).toContain("Please install Android target");
+                expect(err.message).toContain('Please install Android target');
                 done();
             });
         });

@@ -16,6 +16,8 @@
        specific language governing permissions and limitations
        under the License.
 */
+/* eslint no-self-assign: 0 */
+/* eslint no-unused-vars: 0 */
 
 var Q = require('q');
 var fs = require('fs');
@@ -35,29 +37,27 @@ GenericBuilder.prototype.prepEnv = function() {
     return Q();
 };
 
-GenericBuilder.prototype.build = function() {
+GenericBuilder.prototype.build = function () {
     events.emit('log', 'Skipping build...');
     return Q(null);
 };
 
-GenericBuilder.prototype.clean = function() {
+GenericBuilder.prototype.clean = function () {
     return Q();
 };
 
-GenericBuilder.prototype.findOutputApks = function(build_type, arch) {
+GenericBuilder.prototype.findOutputApks = function (build_type, arch) {
     var self = this;
-    return Object.keys(this.binDirs)
-    .reduce(function (result, builderName) {
+    return Object.keys(this.binDirs) .reduce(function (result, builderName) {
         console.log('builderName:'+ builderName);
         var binDir = self.binDirs[builderName];
         return result.concat(findOutputApksHelper(binDir, build_type, builderName === 'ant' ? null : arch));
-    }, [])
-    .sort(apkSorter);
+    }, []).sort(apkSorter);
 };
 
 module.exports = GenericBuilder;
 
-function apkSorter(fileA, fileB) {
+function apkSorter (fileA, fileB) {
     // De-prioritize unsigned builds
     var unsignedRE = /-unsigned/;
     if (unsignedRE.exec(fileA)) {
@@ -70,12 +70,11 @@ function apkSorter(fileA, fileB) {
     return timeDiff === 0 ? fileA.length - fileB.length : timeDiff;
 }
 
-function findOutputApksHelper(dir, build_type, arch) {
+function findOutputApksHelper (dir, build_type, arch) {
     var shellSilent = shell.config.silent;
     shell.config.silent = true;
 
-    var ret = shell.ls(path.join(dir, '*.apk'))
-    .filter(function(candidate) {
+    var ret = shell.ls(path.join(dir, '*.apk')).filter(function (candidate) {
         var apkName = path.basename(candidate);
         // Need to choose between release and debug .apk.
         if (build_type === 'debug') {
@@ -85,8 +84,7 @@ function findOutputApksHelper(dir, build_type, arch) {
             return /-release/.exec(apkName) && !/-unaligned/.exec(apkName);
         }
         return true;
-    })
-    .sort(apkSorter);
+    }).sort(apkSorter);
 
     shellSilent = shellSilent;
 
@@ -96,15 +94,15 @@ function findOutputApksHelper(dir, build_type, arch) {
     // Assume arch-specific build if newest apk has -x86 or -arm.
     var archSpecific = !!/-x86|-arm/.exec(path.basename(ret[0]));
     // And show only arch-specific ones (or non-arch-specific)
-    ret = ret.filter(function(p) {
-        /*jshint -W018 */
-        return !!/-x86|-arm/.exec(path.basename(p)) == archSpecific;
-        /*jshint +W018 */
+    ret = ret.filter(function (p) {
+        /* jshint -W018 */
+        return !!/-x86|-arm/.exec(path.basename(p)) === archSpecific;
+        /* jshint +W018 */
     });
 
     if (archSpecific && ret.length > 1 && arch) {
-        ret = ret.filter(function(p) {
-            return path.basename(p).indexOf('-' + arch) != -1;
+        ret = ret.filter(function (p) {
+            return path.basename(p).indexOf('-' + arch) !== -1;
         });
     }
 

@@ -35,25 +35,25 @@ var copyFile = common.__get__('copyFile');
 var deleteJava = common.__get__('deleteJava');
 var copyNewFile = common.__get__('copyNewFile');
 
-describe('common platform handler', function() {
+describe('common platform handler', function () {
 
-    describe('copyFile', function() {
-        it('Test#001 : should throw if source path not found', function(){
+    describe('copyFile', function () {
+        it('Test#001 : should throw if source path not found', function () {
             shell.rm('-rf', src);
-            expect(function(){copyFile(test_dir, src, project_dir, dest);})
+            expect(function () { copyFile(test_dir, src, project_dir, dest); })
                 .toThrow(new Error('"' + src + '" not found!'));
         });
 
-        it('Test#002 : should throw if src not in plugin directory', function(){
+        it('Test#002 : should throw if src not in plugin directory', function () {
             shell.mkdir('-p', project_dir);
             fs.writeFileSync(non_plugin_file, 'contents', 'utf-8');
             var outside_file = '../non_plugin_file';
-            expect(function(){copyFile(test_dir, outside_file, project_dir, dest);}).
-                toThrow(new Error('File "' + path.resolve(test_dir, outside_file) + '" is located outside the plugin directory "' + test_dir + '"'));
+            expect(function () { copyFile(test_dir, outside_file, project_dir, dest); })
+                .toThrow(new Error('File "' + path.resolve(test_dir, outside_file) + '" is located outside the plugin directory "' + test_dir + '"'));
             shell.rm('-rf', test_dir);
         });
 
-        it('Test#003 : should allow symlink src, if inside plugin', function(){
+        it('Test#003 : should allow symlink src, if inside plugin', function () {
             shell.mkdir('-p', java_dir);
             fs.writeFileSync(java_file, 'contents', 'utf-8');
 
@@ -66,7 +66,7 @@ describe('common platform handler', function() {
             shell.rm('-rf', project_dir);
         });
 
-        it('Test#004 : should throw if symlink is linked to a file outside the plugin', function(){
+        it('Test#004 : should throw if symlink is linked to a file outside the plugin', function () {
             shell.mkdir('-p', java_dir);
             fs.writeFileSync(non_plugin_file, 'contents', 'utf-8');
 
@@ -75,20 +75,20 @@ describe('common platform handler', function() {
                 return;
             }
 
-            expect(function(){copyFile(test_dir, symlink_file, project_dir, dest);}).
-                toThrow(new Error('File "' + path.resolve(test_dir, symlink_file) + '" is located outside the plugin directory "' + test_dir + '"'));
+            expect(function () { copyFile(test_dir, symlink_file, project_dir, dest); })
+                .toThrow(new Error('File "' + path.resolve(test_dir, symlink_file) + '" is located outside the plugin directory "' + test_dir + '"'));
             shell.rm('-rf', project_dir);
         });
 
-        it('Test#005 : should throw if dest is outside the project directory', function(){
+        it('Test#005 : should throw if dest is outside the project directory', function () {
             shell.mkdir('-p', java_dir);
             fs.writeFileSync(java_file, 'contents', 'utf-8');
-            expect(function(){copyFile(test_dir, java_file, project_dir, non_plugin_file);}).
-                toThrow(new Error('Destination "' + path.resolve(project_dir, non_plugin_file) + '" for source file "' + path.resolve(test_dir, java_file) + '" is located outside the project'));
+            expect(function () { copyFile(test_dir, java_file, project_dir, non_plugin_file); })
+                .toThrow(new Error('Destination "' + path.resolve(project_dir, non_plugin_file) + '" for source file "' + path.resolve(test_dir, java_file) + '" is located outside the project'));
             shell.rm('-rf', project_dir);
         });
 
-        it('Test#006 : should call mkdir -p on target path', function(){
+        it('Test#006 : should call mkdir -p on target path', function () {
             shell.mkdir('-p', java_dir);
             fs.writeFileSync(java_file, 'contents', 'utf-8');
 
@@ -102,7 +102,7 @@ describe('common platform handler', function() {
             shell.rm('-rf', project_dir);
         });
 
-        it('Test#007 : should call cp source/dest paths', function(){
+        it('Test#007 : should call cp source/dest paths', function () {
             shell.mkdir('-p', java_dir);
             fs.writeFileSync(java_file, 'contents', 'utf-8');
 
@@ -119,46 +119,46 @@ describe('common platform handler', function() {
     });
 
     describe('copyNewFile', function () {
-        it('Test#008 : should throw if target path exists', function(){
+        it('Test#008 : should throw if target path exists', function () {
             shell.mkdir('-p', dest);
-            expect(function(){copyNewFile(test_dir, src, project_dir, dest);}).
-                toThrow(new Error('"' + dest + '" already exists!'));
+            expect(function () { copyNewFile(test_dir, src, project_dir, dest); })
+                .toThrow(new Error('"' + dest + '" already exists!'));
             shell.rm('-rf', dest);
         });
     });
 
-    describe('deleteJava', function() {
-        beforeEach(function() {
+    describe('deleteJava', function () {
+        beforeEach(function () {
             shell.mkdir('-p', java_dir);
             fs.writeFileSync(java_file, 'contents', 'utf-8');
         });
 
-        afterEach(function() {
+        afterEach(function () {
             shell.rm('-rf', java_dir);
         });
 
-        it('Test#009 : should call fs.unlinkSync on the provided paths', function(){
+        it('Test#009 : should call fs.unlinkSync on the provided paths', function () {
             var s = spyOn(fs, 'unlinkSync').and.callThrough();
             deleteJava(project_dir, java_file);
             expect(s).toHaveBeenCalled();
             expect(s).toHaveBeenCalledWith(path.resolve(project_dir, java_file));
         });
 
-        it('Test#010 : should delete empty directories after removing source code in a java src path hierarchy', function(){
+        it('Test#010 : should delete empty directories after removing source code in a java src path hierarchy', function () {
             deleteJava(project_dir, java_file);
             expect(fs.existsSync(java_file)).not.toBe(true);
             expect(fs.existsSync(java_dir)).not.toBe(true);
-            expect(fs.existsSync(path.join(src,'one'))).not.toBe(true);
+            expect(fs.existsSync(path.join(src, 'one'))).not.toBe(true);
         });
 
-        it('Test#011 : should never delete the top-level src directory, even if all plugins added were removed', function(){
+        it('Test#011 : should never delete the top-level src directory, even if all plugins added were removed', function () {
             deleteJava(project_dir, java_file);
             expect(fs.existsSync(src)).toBe(true);
         });
     });
 });
 
-function ignoreEPERMonWin32(symlink_src, symlink_dest) {
+function ignoreEPERMonWin32 (symlink_src, symlink_dest) {
     try {
         fs.symlinkSync(symlink_src, symlink_dest);
     } catch (e) {

@@ -4,7 +4,7 @@
  *  @param {String} root Root folder of the project
  */
 
-/*jshint esnext: false */
+/* jshint esnext: false */
 
 var path = require('path');
 var fs = require('fs');
@@ -18,21 +18,21 @@ module.exports.isAndroidStudioProject = function isAndroidStudioProject(root) {
     var isEclipse = false;
     var isAS = true;
 
-    if(!fs.existsSync(root)) {
+    if (!fs.existsSync(root)) {
         throw new CordovaError('AndroidStudio.js:inAndroidStudioProject root does not exist: ' + root);
     }
 
     // if any of the following exists, then we are not an ASProj
-    eclipseFiles.forEach(function(file) {
-        if(fs.existsSync(path.join(root, file))) {
+    eclipseFiles.forEach(function (file) {
+        if (fs.existsSync(path.join(root, file))) {
             isEclipse = true;
         }
     });
 
     // if it is NOT an eclipse project, check that all required files exist
-    if(!isEclipse) {
-        androidStudioFiles.forEach(function(file){
-            if(!fs.existsSync(path.join(root, file))) {
+    if (!isEclipse) {
+        androidStudioFiles.forEach(function (file) {
+            if (!fs.existsSync(path.join(root, file))) {
                 console.log('missing file :: ' + file);
                 isAS = false;
             }
