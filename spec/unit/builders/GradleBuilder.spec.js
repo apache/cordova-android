@@ -1,6 +1,7 @@
 
 var Gradle_builder = require('../../../bin/templates/cordova/lib/builders/GradleBuilder.js');
 var fs = require('fs');
+var Q = require('q');
 var superspawn = require('cordova-common').superspawn;
 var builder;
 
@@ -8,7 +9,8 @@ describe('Gradle Builder', function () {
     beforeEach(function () {
         spyOn(fs, 'existsSync').and.returnValue(true);
         builder = new Gradle_builder('/root');
-        spyOn(superspawn, 'spawn');
+        var deferred = Q.defer();
+        spyOn(superspawn, 'spawn').and.returnValue(deferred.promise);
     });
 
     describe('runGradleWrapper method', function () {
