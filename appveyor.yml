@@ -32,4 +32,5 @@ build: off
 test_script:
   - node --version
   - npm --version
+  - cd test && gradlew.bat test && cd ..
   - npm test

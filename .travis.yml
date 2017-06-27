@@ -14,6 +14,7 @@ android:
     components:
       - tools
 script:
+    - pushd test && ./gradlew test && popd
     - npm test
     - npm run cover
 after_script:
