@@ -19,9 +19,10 @@
     "apache"
   ],
   "scripts": {
-    "test": "npm run eslint && jasmine",
-    "cover": "istanbul cover --root bin/templates/cordova --print detail jasmine",
-    "test-build": "jasmine --captureExceptions --color spec/e2e/*.spec.js",
+    "test": "npm run eslint && npm run unit-tests && npm run e2e-tests",
+    "unit-tests": "jasmine --config=spec/unit/jasmine.json",
+    "cover": "istanbul cover --root bin/templates/cordova --print detail jasmine -- --config=spec/unit/jasmine.json",
+    "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "eslint": "eslint bin && eslint spec"
   },
   "author": "Apache Software Foundation",
@@ -51,7 +52,7 @@
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "istanbul": "^0.4.2",
-    "jasmine": "^2.5.2",
+    "jasmine": "~2.6.0",
     "promise-matchers": "~0",
     "rewire": "^2.1.3"
   },
