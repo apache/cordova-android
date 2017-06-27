@@ -55,10 +55,11 @@ function parseOpts (options, resolvedTarget, projectRoot) {
         extraArgs: []
     };
 
-    if (options.argv.gradle || options.argv.studio)
+    if (options.argv.gradle || options.argv.studio) {
         ret.buildMethod = options.argv.studio ? 'studio' : 'gradle';
+    }
 
-    //This comes from cordova/run
+    // This comes from cordova/run
     if (options.studio) ret.buildMethod = 'studio';
     if (options.gradle) ret.buildMethod = 'gradle';
 

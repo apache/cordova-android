@@ -10,7 +10,7 @@ var path = require('path');
 var fs = require('fs');
 var CordovaError = require('cordova-common').CordovaError;
 
-module.exports.isAndroidStudioProject = function isAndroidStudioProject(root) {
+module.exports.isAndroidStudioProject = function isAndroidStudioProject (root) {
     var eclipseFiles = ['AndroidManifest.xml', 'libs', 'res'];
     var androidStudioFiles = ['app', 'app/src/main'];
 

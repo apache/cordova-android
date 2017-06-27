@@ -84,7 +84,7 @@ GradleBuilder.prototype.runGradleWrapper = function (gradle_cmd) {
  */
 
 GradleBuilder.prototype.readProjectProperties = function () {
-    function findAllUniq(data, r) {
+    function findAllUniq (data, r) {
         var s = {};
         var m;
         while ((m = r.exec(data))) {
@@ -109,11 +109,10 @@ GradleBuilder.prototype.extractRealProjectNameFromManifest = function () {
         throw new CordovaError('Could not find package name in ' + manifestPath);
     }
 
-    var packageName=m[1];
+    var packageName = m[1];
     var lastDotIndex = packageName.lastIndexOf('.');
     return packageName.substring(lastDotIndex + 1);
 };
-
 
 // Makes the project buildable, minus the gradle wrapper.
 GradleBuilder.prototype.prepBuildFiles = function () {
@@ -124,7 +123,7 @@ GradleBuilder.prototype.prepBuildFiles = function () {
 
     // Check and copy the gradle file into the subproject.
     // Called by the loop below this function def.
-    var checkAndCopy = function(subProject, root) {
+    var checkAndCopy = function (subProject, root) {
         var subProjectGradle = path.join(root, subProject, 'build.gradle');
         // This is the future-proof way of checking if a file exists
         // This must be synchronous to satisfy a Travis test
@@ -142,7 +141,6 @@ GradleBuilder.prototype.prepBuildFiles = function () {
             checkAndCopy(subProjects[i], this.root);
         }
     }
-
 
     var name = this.extractRealProjectNameFromManifest();
     // Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
@@ -163,14 +161,13 @@ GradleBuilder.prototype.prepBuildFiles = function () {
     var depsList = '';
     var root = this.root;
 
-
     // Cordova Plugins can be written as library modules that would use Cordova as a
     // dependency.  Because we need to make sure that Cordova is compiled only once for
     // dexing, we make sure to exclude CordovaLib from these modules
-    var insertExclude = function(p) {
+    var insertExclude = function (p) {
         var gradlePath = path.join(root, p, 'build.gradle');
         var projectGradleFile = fs.readFileSync(gradlePath, 'utf-8');
-        if(projectGradleFile.indexOf('CordovaLib') != -1) {
+        if (projectGradleFile.indexOf('CordovaLib') !== -1) {
             depsList += '{\n        exclude module:("CordovaLib")\n    }\n';
         } else {
             depsList += '\n';
@@ -185,7 +182,6 @@ GradleBuilder.prototype.prepBuildFiles = function () {
         depsList += '    releaseCompile(project(path: "' + libName + '", configuration: "release"))';
         insertExclude(p);
     });
-
 
     // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
     var SYSTEM_LIBRARY_MAPPINGS = [
@@ -212,8 +208,8 @@ GradleBuilder.prototype.prepBuildFiles = function () {
         depsList += '    compile "' + mavenRef + '"\n';
     });
 
-    //This code is dangerous and actually writes gradle declarations directly into the build.gradle
-    //Try not to mess with this if possible
+    // This code is dangerous and actually writes gradle declarations directly into the build.gradle
+    // Try not to mess with this if possible
     buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
     var includeList = '';
     propertiesObj.gradleIncludes.forEach(function (includePath) {

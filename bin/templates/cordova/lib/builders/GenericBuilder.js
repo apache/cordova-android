@@ -33,7 +33,7 @@ function GenericBuilder (projectDir) {
     };
 }
 
-GenericBuilder.prototype.prepEnv = function() {
+GenericBuilder.prototype.prepEnv = function () {
     return Q();
 };
 
@@ -48,8 +48,7 @@ GenericBuilder.prototype.clean = function () {
 
 GenericBuilder.prototype.findOutputApks = function (build_type, arch) {
     var self = this;
-    return Object.keys(this.binDirs) .reduce(function (result, builderName) {
-        console.log('builderName:'+ builderName);
+    return Object.keys(this.binDirs).reduce(function (result, builderName) {
         var binDir = self.binDirs[builderName];
         return result.concat(findOutputApksHelper(binDir, build_type, builderName === 'ant' ? null : arch));
     }, []).sort(apkSorter);

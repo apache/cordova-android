@@ -79,14 +79,14 @@ function Api (platform, platformRootDir, events) {
     };
 
     // XXX Override some locations for Android Studio projects
-    if(AndroidStudio.isAndroidStudioProject(self.root) === true) {
+    if (AndroidStudio.isAndroidStudioProject(self.root) === true) {
         selfEvents.emit('log', 'Android Studio project detected');
-        this.builder='studio';
+        this.builder = 'studio';
         this.android_studio = true;
         this.locations.configXml = path.join(self.root, 'app/src/main/res/xml/config.xml');
         this.locations.strings = path.join(self.root, 'app/src/main/res/values/strings.xml');
         this.locations.manifest = path.join(self.root, 'app/src/main/AndroidManifest.xml');
-        //We could have Java Source, we could have other languages
+        // We could have Java Source, we could have other languages
         this.locations.javaSrc = path.join(self.root, 'app/src/main/java/');
         this.locations.www = path.join(self.root, 'app/src/main/assets/www');
         this.locations.res = path.join(self.root, 'app/src/main/res');
@@ -248,7 +248,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
     }).then(function () {
         if (plugin.getFrameworks(this.platform).length === 0) return;
         selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
-          //This should pick the correct builder, not just get gradle
+          // This should pick the correct builder, not just get gradle
         require('./lib/builders/builders').getBuilder(this.builder).prepBuildFiles();
     }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
@@ -335,9 +335,10 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
  */
 Api.prototype.build = function (buildOptions) {
     var self = this;
-    if(this.android_studio)
-      buildOptions.studio = true;
-    return require('./lib/check_reqs').run() .then(function () {
+    if (this.android_studio) {
+        buildOptions.studio = true;
+    }
+    return require('./lib/check_reqs').run().then(function () {
         return require('./lib/build').run.call(self, buildOptions);
     }).then(function (buildResults) {
         // Cast build result to array of build artifacts

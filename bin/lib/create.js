@@ -43,13 +43,14 @@ function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-function copyJsAndLibrary(projectPath, shared, projectName, isLegacy) {
+function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
     var app_path = path.join(projectPath, 'app', 'src', 'main');
 
-    if(isLegacy)
-      app_path = projectPath;
+    if (isLegacy) {
+        app_path = projectPath;
+    }
 
     shell.cp('-f', srcCordovaJsPath, path.join(app_path, 'assets', 'www', 'cordova.js'));
 
@@ -131,22 +132,22 @@ function writeProjectProperties (projectPath, target_api) {
 }
 
 // This makes no sense, what if you're building with a different build system?
-function prepBuildFiles(projectPath, builder) {
+function prepBuildFiles (projectPath, builder) {
     var buildModule = require(path.resolve(projectPath, 'cordova/lib/builders/builders'));
     buildModule.getBuilder(builder).prepBuildFiles();
 }
 
-function copyBuildRules(projectPath, isLegacy) {
+function copyBuildRules (projectPath, isLegacy) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
-    if(isLegacy) {
-      //The project's build.gradle is identical to the earlier build.gradle, so it should still work
-      shell.cp('-f', path.join(srcDir, 'legacy', 'build.gradle'), projectPath);
-      shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+    if (isLegacy) {
+        // The project's build.gradle is identical to the earlier build.gradle, so it should still work
+        shell.cp('-f', path.join(srcDir, 'legacy', 'build.gradle'), projectPath);
+        shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
     } else {
-      shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
-      shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app'));
-      shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+        shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
+        shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app'));
+        shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
     }
 }
 
@@ -261,66 +262,66 @@ exports.create = function (project_path, config, options, events) {
             validateProjectName(project_name);
         }).then(function () {
         // Log the given values for the project
-        events.emit('log', 'Creating Cordova project for the Android platform:');
-        events.emit('log', '\tPath: ' + project_path);
-        events.emit('log', '\tPackage: ' + package_name);
-        events.emit('log', '\tName: ' + project_name);
-        events.emit('log', '\tActivity: ' + safe_activity_name);
-        events.emit('log', '\tAndroid target: ' + target_api);
+            events.emit('log', 'Creating Cordova project for the Android platform:');
+            events.emit('log', '\tPath: ' + project_path);
+            events.emit('log', '\tPackage: ' + package_name);
+            events.emit('log', '\tName: ' + project_name);
+            events.emit('log', '\tActivity: ' + safe_activity_name);
+            events.emit('log', '\tAndroid target: ' + target_api);
 
-        events.emit('verbose', 'Copying android template project to ' + project_path);
+            events.emit('verbose', 'Copying android template project to ' + project_path);
 
-        setShellFatal(true, function() {
-            var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
-            var app_path = path.join(project_path, 'app', 'src', 'main');
+            setShellFatal(true, function () {
+                var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
+                var app_path = path.join(project_path, 'app', 'src', 'main');
 
-            // copy project template
-            shell.mkdir('-p', app_path);
-            shell.cp('-r', path.join(project_template_dir, 'assets'), app_path);
-            shell.cp('-r', path.join(project_template_dir, 'res'), app_path);
-            shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
+                // copy project template
+                shell.mkdir('-p', app_path);
+                shell.cp('-r', path.join(project_template_dir, 'assets'), app_path);
+                shell.cp('-r', path.join(project_template_dir, 'res'), app_path);
+                shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
 
-            // Manually create directories that would be empty within the template (since git doesn't track directories).
-            shell.mkdir(path.join(app_path, 'libs'));
+                // Manually create directories that would be empty within the template (since git doesn't track directories).
+                shell.mkdir(path.join(app_path, 'libs'));
 
-            // copy cordova.js, cordova.jar
-            copyJsAndLibrary(project_path, options.link, safe_activity_name);
+                // copy cordova.js, cordova.jar
+                copyJsAndLibrary(project_path, options.link, safe_activity_name);
 
-            //Set up ther Android Studio paths
-            var java_path = path.join(app_path, 'java');
-            var assets_path = path.join(app_path, 'assets');
-            var resource_path = path.join(app_path, 'res');
-            shell.mkdir('-p', java_path);
-            shell.mkdir('-p', assets_path);
-            shell.mkdir('-p', resource_path);
+                // Set up ther Android Studio paths
+                var java_path = path.join(app_path, 'java');
+                var assets_path = path.join(app_path, 'assets');
+                var resource_path = path.join(app_path, 'res');
+                shell.mkdir('-p', java_path);
+                shell.mkdir('-p', assets_path);
+                shell.mkdir('-p', resource_path);
 
-            // interpolate the activity name and package
-            var packagePath = package_name.replace(/\./g, path.sep);
-            var activity_dir = path.join(java_path, packagePath);
-            var activity_path = path.join(activity_dir, safe_activity_name + '.java');
+                // interpolate the activity name and package
+                var packagePath = package_name.replace(/\./g, path.sep);
+                var activity_dir = path.join(java_path, packagePath);
+                var activity_path = path.join(activity_dir, safe_activity_name + '.java');
 
-            shell.mkdir('-p', activity_dir);
-            shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
-            shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
-            shell.sed('-i', /__NAME__/, project_name, path.join(app_path, 'res', 'values', 'strings.xml'));
-            shell.sed('-i', /__ID__/, package_name, activity_path);
+                shell.mkdir('-p', activity_dir);
+                shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
+                shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
+                shell.sed('-i', /__NAME__/, project_name, path.join(app_path, 'res', 'values', 'strings.xml'));
+                shell.sed('-i', /__ID__/, package_name, activity_path);
 
-            var manifest = new AndroidManifest(path.join(project_template_dir, 'AndroidManifest.xml'));
-            manifest.setPackageId(package_name)
-                .setTargetSdkVersion(target_api.split('-')[1])
-                .getActivity().setName(safe_activity_name);
+                var manifest = new AndroidManifest(path.join(project_template_dir, 'AndroidManifest.xml'));
+                manifest.setPackageId(package_name)
+                    .setTargetSdkVersion(target_api.split('-')[1])
+                    .getActivity().setName(safe_activity_name);
 
-            var manifest_path = path.join(app_path, 'AndroidManifest.xml');
-            manifest.write(manifest_path);
+                var manifest_path = path.join(app_path, 'AndroidManifest.xml');
+                manifest.write(manifest_path);
 
-            copyScripts(project_path);
-            copyBuildRules(project_path);
-        });
-        // Link it to local android install.
-        writeProjectProperties(project_path, target_api);
-        prepBuildFiles(project_path, 'studio');
-        events.emit('log', generateDoneMessage('create', options.link));
-    }).thenResolve(project_path);
+                copyScripts(project_path);
+                copyBuildRules(project_path);
+            });
+            // Link it to local android install.
+            writeProjectProperties(project_path, target_api);
+            prepBuildFiles(project_path, 'studio');
+            events.emit('log', generateDoneMessage('create', options.link));
+        }).thenResolve(project_path);
 };
 
 function generateDoneMessage (type, link) {
@@ -339,18 +340,18 @@ exports.update = function (projectPath, options, events) {
     return Q()
         .then(function () {
 
-        var isAndroidStudio = AndroidStudio.isAndroidStudioProject(projectPath);
-        var isLegacy = !isAndroidStudio;
-        var manifest = null;
-        var builder = 'gradle';
+            var isAndroidStudio = AndroidStudio.isAndroidStudioProject(projectPath);
+            var isLegacy = !isAndroidStudio;
+            var manifest = null;
+            var builder = 'gradle';
 
-        if(isAndroidStudio) {
-          manifest = new AndroidManifest(path.join(projectPath, 'app', 'main', 'AndroidManifest.xml'));
-          builder = 'studio';
-        } else {
-          manifest = new AndroidManifest(path.join(projectPath, 'AndroidManifest.xml'));
-          builder = 'gradle';
-        }
+            if (isAndroidStudio) {
+                manifest = new AndroidManifest(path.join(projectPath, 'app', 'main', 'AndroidManifest.xml'));
+                builder = 'studio';
+            } else {
+                manifest = new AndroidManifest(path.join(projectPath, 'AndroidManifest.xml'));
+                builder = 'gradle';
+            }
 
             if (Number(manifest.getMinSdkVersion()) < MIN_SDK_VERSION) {
                 events.emit('verbose', 'Updating minSdkVersion to ' + MIN_SDK_VERSION + ' in AndroidManifest.xml');
@@ -362,13 +363,13 @@ exports.update = function (projectPath, options, events) {
             var projectName = manifest.getActivity().getName();
             var target_api = check_reqs.get_target();
 
-        copyJsAndLibrary(projectPath, options.link, projectName, isLegacy);
-        copyScripts(projectPath);
-        copyBuildRules(projectPath, isLegacy);
-        writeProjectProperties(projectPath, target_api);
-        prepBuildFiles(projectPath, builder);
-        events.emit('log', generateDoneMessage('update', options.link));
-    }).thenResolve(projectPath);
+            copyJsAndLibrary(projectPath, options.link, projectName, isLegacy);
+            copyScripts(projectPath);
+            copyBuildRules(projectPath, isLegacy);
+            writeProjectProperties(projectPath, target_api);
+            prepBuildFiles(projectPath, builder);
+            events.emit('log', generateDoneMessage('update', options.link));
+        }).thenResolve(projectPath);
 };
 
 // For testing
