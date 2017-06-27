@@ -5,15 +5,32 @@ jdk:
 before_install:
     - nvm install 6
     - node --version
+    # ensure at least gradle 3.3 is in place.
+    - wget http://services.gradle.org/distributions/gradle-3.3-bin.zip
+    - unzip gradle-3.3-bin.zip
+    - export GRADLE_HOME=$PWD/gradle-2.10
+    - export PATH=$GRADLE_HOME/bin:$PATH
     - gradle --version
 install:
     - pushd test && gradle :wrapper -b build.gradle && popd
     - npm install
     - npm install -g codecov
-    - echo y | android --silent update sdk --no-ui --all --filter platform-tools,tools,build-tools-26.0.0,android-26,android-25,extra-google-m2repository,extra-android-m2repository
 android:
     components:
+      # the two entries for 'tools' here are important: this is a weird dance we need
+      # to do to upgrade to v25 or newer of the tools.
       - tools
+      - platform-tools
+      # DONT DELETE THE NEXT LINE! see above comment
+      - tools
+      # The BuildTools version used by your project
+      - build-tools-26.0.0
+      # The Android SDK version or API levels
+      - android-26
+      - android-25
+      # Extras
+      - extra-google-m2repository
+      - extra-android-m2repository
 script:
     - pushd test && ./gradlew test && popd
     - npm test
