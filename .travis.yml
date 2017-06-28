@@ -53,9 +53,9 @@ install:
   - npm install
   - npm install -g codecov
   # create emulator
-  - echo no | avdmanager create avd --name emoo --package "${EMULATOR}" --force --abi "${EMULATOR_ABI}" --tag "${EMULATOR_TAG}"
+  - echo no | android create avd --force -n emoo -t android-$EMULATOR_API_LEVEL --abi $EMULATOR_ABI
   # start emulator
-  - emulator -avd emoo -engine classic -no-window -camera-back none -camera-front none -verbose -qemu -m 512 &
+  - emulator -avd emoo -memory 1024 -no-audio -no-window &
   - android-wait-for-emulator
   # just in case, lets make sure adb can print out the device serial number.
   - adb wait-for-device get-serialno
