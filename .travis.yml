@@ -12,20 +12,25 @@ env:
     - EMULATOR="system-images;android-${EMULATOR_API_LEVEL};${EMULATOR_TAG};${EMULATOR_ABI}"
 android:
   components:
+    # TODO: can we use the env vars above in the component lists below?
     # the two entries for 'tools' here are important: this is a weird dance we need
     # to do to upgrade to v25 or newer of the tools.
     - tools
     - platform-tools
     # DONT DELETE THE NEXT LINE! see above comment
     - tools
-    # The BuildTools version used by your project. Here we just specify the absolute latest at all times.
-    - build-tools
+    # The BuildTools version used by your project. Unfortunately, you need to explicitly specify the version.
+    - build-tools-26
     # The Android SDK version or API levels we will be testing against. We should be doing this against recent versions.
     - android-26
     - android-25
+    # Emulator image + google apis
+    - addon-google_apis-google-25
+    - sys-img-armeabi-v7a-25
     # Extras
     - extra-google-m2repository
     - extra-android-m2repository
+    - android-sdk-license-.+
 before_install:
   # environment setup
   - nvm install 6
@@ -34,21 +39,12 @@ before_install:
   - unzip gradle-3.3-bin.zip
   - export GRADLE_HOME=$PWD/gradle-3.3
   - export PATH=${GRADLE_HOME}/bin:${ANDROID_HOME}:${ANDROID_HOME}/emulator:${ANDROID_TOOLS}:${ANDROID_TOOLS}/bin:${ANDROID_HOME}/platform-tools:$PATH
-  # moar android SDK stuff - default travis only works with the (now-deprecated + soon-to-be-removed) "android" command
-  # here we leverage the new SDK tools like "sdkmanager" and "avdmanager"
-  # TODO: does updating tools in this way get us to v26?
-  - echo yes | sdkmanager "tools"
-  # TODO: do the following invocations actually update anything?
-  - echo yes | sdkmanager "platforms;android-26"
-  - echo yes | sdkmanager "platforms;android-25"
-  - echo yes | sdkmanager "extras;android;m2repository"
-  - echo yes | sdkmanager "extras;google;m2repository"
-  # TODO: does this install the right emulator image?
-  - echo yes | sdkmanager "${EMULATOR}"
+  # TODO: what does this do in practice? run sdkmanager update, just in case.
+  - sdkmanager --update
   # print out versions, just so we know what's what
   - gradle --version
   - node --version
-  - sdkmanager --list || true
+  - sdkmanager --list --verbose || true
 install:
   # cordova-android-specific and emulator setup
   - pushd test && gradle :wrapper -b build.gradle && popd
