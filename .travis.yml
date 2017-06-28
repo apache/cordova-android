@@ -21,6 +21,7 @@ android:
     - tools
     # The BuildTools version used by your project. Unfortunately, you need to explicitly specify the version.
     - build-tools-26.0.0
+    - build-tools-25.0.2
     # The Android SDK version or API levels we will be testing against. We should be doing this against recent versions.
     - android-${EMULATOR_API_LEVEL}
     # Extras
@@ -45,7 +46,7 @@ before_install:
   # print out versions, just so we know what's what
   - gradle --version
   - node --version
-  - android list sdk --no-ui --all --extended 
+  - android list sdk --no-ui 
 install:
   # cordova-android-specific and emulator setup
   - pushd test && gradle :wrapper -b build.gradle && popd
