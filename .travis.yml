@@ -6,9 +6,12 @@ env:
   global:
     - ADB_INSTALL_TIMEOUT=5 # minutes
     - ANDROID_TOOLS=${ANDROID_HOME}/tools
+    # the android API level we will be compiling against
+    - ANDROID_COMPILE_TARGET=25
     # details about the emulator to use for native instrumented cordova-android tests
-    - EMULATOR_API_LEVEL=25
-    - EMULATOR_TAG=google_apis
+    # note that the combo of api 22, armv7a and stock android image comes preinstaleld on travis VMs. saves us a LOT of time downloading big emu sysimgs.
+    - EMULATOR_API_LEVEL=22
+    - EMULATOR_TAG=android
     - EMULATOR_ABI=armeabi-v7a
     - EMULATOR="system-images;android-${EMULATOR_API_LEVEL};${EMULATOR_TAG};${EMULATOR_ABI}"
 android:
@@ -19,17 +22,19 @@ android:
     - platform-tools
     # DONT DELETE THE NEXT LINE! see above comment
     - tools
-    # The BuildTools version used by your project. Unfortunately, you need to explicitly specify the version.
-    - build-tools-26.0.0
+    # The BuildTools version used by your project. TODO: 26 is available, but cordovalib uses 25.0.2 regardless. why?
     - build-tools-25.0.2
-    # The Android SDK version or API levels we will be testing against. We should be doing this against recent versions.
+    # The Android SDK version or API levels we will be compiling against.
+    - android-${ANDROID_COMPILE_TARGET}
+    # Also need the api level the emulater will be running.
     - android-${EMULATOR_API_LEVEL}
     # Extras
     - extra-android-m2repository
     - extra-google-m2repository
-    - extra-google-google_play_services
-    # Emulator image + google apis
+    # Ensure we have the desired emulator sysimg installed
     - sys-img-${EMULATOR_ABI}-${EMULATOR_TAG}-${EMULATOR_API_LEVEL}
+  # This should not be needed as travis by default accepts all licenses, but
+  # ive seen flaky behaviour with some SDK components not having its license accepted.
   licenses:
     - android-sdk-license-.+
     - android-sdk-preview-license-.+
@@ -46,14 +51,15 @@ before_install:
   # print out versions, just so we know what's what
   - gradle --version
   - node --version
-  - android list sdk --no-ui 
+  - android list sdk --no-ui --all 
 install:
   # cordova-android-specific and emulator setup
   - pushd test && gradle :wrapper -b build.gradle && popd
   - npm install
   - npm install -g codecov
-  # create emulator
-  - echo no | android create avd --force -n emoo -t android-$EMULATOR_API_LEVEL --abi $EMULATOR_ABI
+before_script:
+  # wrangle the emulator
+  - echo no | android create avd --force -n emoo -t "android-${EMULATOR_API_LEVEL}"
   # start emulator
   - emulator -avd emoo -memory 1024 -no-audio -no-window &
   - android-wait-for-emulator
