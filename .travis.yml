@@ -20,17 +20,17 @@ android:
     # DONT DELETE THE NEXT LINE! see above comment
     - tools
     # The BuildTools version used by your project. Unfortunately, you need to explicitly specify the version.
-    - build-tools-26
+    - build-tools-26.0.0
     # The Android SDK version or API levels we will be testing against. We should be doing this against recent versions.
     - android-26
     - android-25
-    # Emulator image + google apis
-    - addon-google_apis-google-25
-    - sys-img-armeabi-v7a-25
     # Extras
     - extra-google-m2repository
     - extra-android-m2repository
-    - android-sdk-license-.+
+    - extra-google-google_play_services
+    # Emulator image + google apis
+    - addon-google_apis-google-25
+    - sys-img-armeabi-v7a-google_apis-25
 before_install:
   # environment setup
   - nvm install 6
@@ -45,6 +45,7 @@ before_install:
   - gradle --version
   - node --version
   - sdkmanager --list --verbose || true
+  - android list sdk --no-ui --all --extended 
 install:
   # cordova-android-specific and emulator setup
   - pushd test && gradle :wrapper -b build.gradle && popd
