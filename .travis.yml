@@ -29,7 +29,7 @@ android:
     - extra-android-m2repository
     - extra-google-google_play_services
     # Emulator image + google apis
-    - addon-google_apis-google-25
+    # - addon-google_apis-google-25 TODO: this doesnt work. what should it be?
     - sys-img-armeabi-v7a-google_apis-25
 before_install:
   # environment setup
@@ -40,7 +40,7 @@ before_install:
   - export GRADLE_HOME=$PWD/gradle-3.3
   - export PATH=${GRADLE_HOME}/bin:${ANDROID_HOME}:${ANDROID_HOME}/emulator:${ANDROID_TOOLS}:${ANDROID_TOOLS}/bin:${ANDROID_HOME}/platform-tools:$PATH
   # TODO: what does this do in practice? run sdkmanager update, just in case.
-  - sdkmanager --update
+  - echo y | sdkmanager --update
   # print out versions, just so we know what's what
   - gradle --version
   - node --version
