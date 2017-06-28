@@ -1,54 +1,53 @@
 language: android
 sudo: false
 jdk:
-    - oraclejdk8
+  - oraclejdk8
+env:
+  global:
+    - ANDROID_TEST=$(which `which android`)
 android:
-    components:
-        # the two entries for 'tools' here are important: this is a weird dance we need
-        # to do to upgrade to v25 or newer of the tools.
-        - tools
-        - platform-tools
-        # DONT DELETE THE NEXT LINE! see above comment
-        - tools
-        # The BuildTools version used by your project
-        - build-tools-26.0.0
-        # TODO: in the future, we may want or need to have v26 of the sdk-tools
-        # i think how travis works is each time 'tools' is in this list, travis
-        # will run the android --update command. three invocations from the base v24
-        # of the sdk you get with travis gets you to v26.
-        # seriously maybe triple-tools is the only way to get sdk-tools-26?
-        - tools
-        # The Android SDK version or API levels
-        - android-26
-        - android-25
-        # Extras
-        - extra-google-m2repository
-        - extra-android-m2repository
-        # TODO: Emulators
+  components:
+    # the two entries for 'tools' here are important: this is a weird dance we need
+    # to do to upgrade to v25 or newer of the tools.
+    - tools
+    - platform-tools
+    # DONT DELETE THE NEXT LINE! see above comment
+    - tools
+    # The BuildTools version used by your project. Here we just specify the absolute latest at all times.
+    - build-tools
+    # The Android SDK version or API levels we will be testing against. We should be doing this against recent versions.
+    - android-26
+    - android-25
+    # Extras
+    - extra-google-m2repository
+    - extra-android-m2repository
+    # TODO: Emulators
 before_install:
-    # environment setup
-    - nvm install 6
-    # ensure at least gradle 3.3 is in place.
-    - wget http://services.gradle.org/distributions/gradle-3.3-bin.zip
-    - unzip gradle-3.3-bin.zip
-    - export GRADLE_HOME=$PWD/gradle-3.3
-    - export PATH=$GRADLE_HOME/bin:$PATH
-    - gradle --version
-    - node --version
-    - sdkmanager --list || true
+  # environment setup
+  - nvm install 6
+  # ensure at least gradle 3.3 is in place.
+  - wget http://services.gradle.org/distributions/gradle-3.3-bin.zip
+  - unzip gradle-3.3-bin.zip
+  - export GRADLE_HOME=$PWD/gradle-3.3
+  - export PATH=$GRADLE_HOME/bin:$PATH
+  - gradle --version
+  - node --version
+  - echo $ANDROID_HOME
+  - echo $(which `which android`)
+  - echo $ANDROID_TEST
 install:
-    # cordova-android-specific and emulator setup
-    - pushd test && gradle :wrapper -b build.gradle && popd
-    - npm install
-    - npm install -g codecov
-    #- echo no | android create avd --force -n test -t android-25 --abi armeabi-v7a
-    #- emulator -avd test -no-audio -no-window &
-    #- android-wait-for-emulator
-    #- adb shell input keyevent 82 &
+  # cordova-android-specific and emulator setup
+  - pushd test && gradle :wrapper -b build.gradle && popd
+  - npm install
+  - npm install -g codecov
+  #- echo no | android create avd --force -n test -t android-25 --abi armeabi-v7a
+  #- emulator -avd test -no-audio -no-window &
+  #- android-wait-for-emulator
+  #- adb shell input keyevent 82 &
 script:
-    # test commands
-    - pushd test && ./gradlew test && popd
-    - npm test
-    - npm run cover
+  # test commands
+  - pushd test && ./gradlew test && popd
+  - npm test
+  - npm run cover
 after_script:
-    - codecov
+  - codecov
