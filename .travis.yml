@@ -4,7 +4,12 @@ jdk:
   - oraclejdk8
 env:
   global:
-    - ANDROID_TEST=$(which `which android`)
+    - ANDROID_TOOLS=${ANDROID_HOME}/tools
+    # details about the emulator to use for native instrumented cordova-android tests
+    - EMULATOR_API_LEVEL=25
+    - EMULATOR_TAG=google_apis
+    - EMULATOR_ABI=armeabi-v7a
+    - EMULATOR="system-images;android-${EMULATOR_API_LEVEL};${EMULATOR_TAG};${EMULATOR_ABI}"
 android:
   components:
     # the two entries for 'tools' here are important: this is a weird dance we need
@@ -21,7 +26,6 @@ android:
     # Extras
     - extra-google-m2repository
     - extra-android-m2repository
-    # TODO: Emulators
 before_install:
   # environment setup
   - nvm install 6
@@ -29,21 +33,36 @@ before_install:
   - wget http://services.gradle.org/distributions/gradle-3.3-bin.zip
   - unzip gradle-3.3-bin.zip
   - export GRADLE_HOME=$PWD/gradle-3.3
-  - export PATH=$GRADLE_HOME/bin:$PATH
+  - export PATH=${GRADLE_HOME}/bin:${ANDROID_HOME}:${ANDROID_HOME}/emulator:${ANDROID_TOOLS}:${ANDROID_TOOLS}/bin:${ANDROID_HOME}/platform-tools:$PATH
+  # moar android SDK stuff - default travis only works with the (now-deprecated + soon-to-be-removed) "android" command
+  # here we leverage the new SDK tools like "sdkmanager" and "avdmanager"
+  # TODO: does updating tools in this way get us to v26?
+  - echo yes | sdkmanager "tools"
+  # TODO: do the following invocations actually update anything?
+  - echo yes | sdkmanager "platforms;android-26"
+  - echo yes | sdkmanager "platforms;android-25"
+  - echo yes | sdkmanager "extras;android;m2repository"
+  - echo yes | sdkmanager "extras;google;m2repository"
+  # TODO: does this install the right emulator image?
+  - echo yes | sdkmanager "${EMULATOR}"
+  # print out versions, just so we know what's what
   - gradle --version
   - node --version
-  - echo $ANDROID_HOME
-  - echo $(which `which android`)
-  - echo $ANDROID_TEST
+  - sdkmanager --list || true
 install:
   # cordova-android-specific and emulator setup
   - pushd test && gradle :wrapper -b build.gradle && popd
   - npm install
   - npm install -g codecov
-  #- echo no | android create avd --force -n test -t android-25 --abi armeabi-v7a
-  #- emulator -avd test -no-audio -no-window &
-  #- android-wait-for-emulator
-  #- adb shell input keyevent 82 &
+  # create emulator
+  - echo no | avdmanager create avd --name emoo --package "${EMULATOR}" --force --abi "${EMULATOR_ABI}" --tag "${EMULATOR_TAG}"
+  # start emulator
+  - emulator -avd emoo -engine classic -no-window -camera-back none -camera-front none -verbose -qemu -m 512 &
+  - android-wait-for-emulator
+  # just in case, lets make sure adb can print out the device serial number.
+  - adb wait-for-device get-serialno
+  # unlock emulator TODO: may not be necessary? dependent on api level of emu?
+  - adb shell input keyevent 82 &
 script:
   # test commands
   - pushd test && ./gradlew test && popd
