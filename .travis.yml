@@ -39,8 +39,6 @@ before_install:
   - unzip gradle-3.3-bin.zip
   - export GRADLE_HOME=$PWD/gradle-3.3
   - export PATH=${GRADLE_HOME}/bin:${ANDROID_HOME}:${ANDROID_HOME}/emulator:${ANDROID_TOOLS}:${ANDROID_TOOLS}/bin:${ANDROID_HOME}/platform-tools:$PATH
-  # TODO: what does this do in practice? run sdkmanager update, just in case.
-  - echo y | sdkmanager --update
   # print out versions, just so we know what's what
   - gradle --version
   - node --version
