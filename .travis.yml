@@ -69,7 +69,7 @@ before_script:
   - adb shell input keyevent 82 &
 script:
   # test commands
-  - pushd test && ./gradlew test  && ./gradlew connectedAndroidTest && popd
+  - pushd test && ./gradlew test --console plain  && ./gradlew connectedAndroidTest --console plain && popd
   - npm test
   - npm run cover
 after_script:
