@@ -60,8 +60,8 @@ install:
 before_script:
   # wrangle the emulator
   - echo no | android create avd --force -n emoo -t "android-${EMULATOR_API_LEVEL}"
-  # start emulator
-  - emulator -avd emoo -memory 1024 -no-audio -no-window &
+  # start emulator, disable cameras and boot animation to try to speed it up. show verbose + kernel output to help in debugging.
+  - emulator -avd emoo -camera-front none -camera-back none -no-boot-anim -verbose -show-kernel -memory 1024 -no-audio -no-window &
   - android-wait-for-emulator
   # just in case, lets make sure adb can print out the device serial number.
   - adb wait-for-device get-serialno
