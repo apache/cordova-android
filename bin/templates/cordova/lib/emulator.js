@@ -196,7 +196,7 @@ module.exports.best_image = function () {
         for (var i in images) {
             var target = images[i].target;
             if (target) {
-                var num = target.split('(API level ')[1].replace(')', '');
+                var num = target.match(/\d+/)[0];
                 if (num === project_target) {
                     return images[i];
                 } else if (project_target - num < closest && project_target > num) {
