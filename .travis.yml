@@ -54,22 +54,36 @@ before_install:
   - android list sdk --no-ui --all 
 install:
   # cordova-android-specific and emulator setup
-  - pushd test && gradle :wrapper -b build.gradle && popd
+  - pushd test
+  - gradle :wrapper -b build.gradle
+  - popd
   - npm install
   - npm install -g codecov
 before_script:
   # wrangle the emulator
   - echo no | android create avd --force -n emoo -t "android-${EMULATOR_API_LEVEL}"
   # start emulator, disable cameras and boot animation to try to speed it up. show verbose + kernel output to help in debugging.
+  # TODO: how to save emulator PID so we can kill later?
   - emulator -avd emoo -camera-front none -camera-back none -no-boot-anim -verbose -show-kernel -memory 1024 -no-audio -no-window &
-  - android-wait-for-emulator
-  # just in case, lets make sure adb can print out the device serial number.
+  # wait for emulator to bootup completely completely. double completely because emulators on travis are brittle!
   - adb wait-for-device get-serialno
+  # wait for up to 20 minutes for the emulator to come up.
+  - travis_wait 20 android-wait-for-emulator
+  # ensure animations are disabled to try to speed the thing up
+  - adb shell settings put global window_animation_scale 0 &
+  - adb shell settings put global transition_animation_scale 0 &
+  - adb shell settings put global animator_duration_scale 0 &
+  - sleep 30
+  - adb devices
   # unlock emulator TODO: may not be necessary? dependent on api level of emu?
   - adb shell input keyevent 82 &
 script:
   # test commands
-  - pushd test && ./gradlew test --console plain  && ./gradlew connectedAndroidTest --console plain && popd
+  - pushd test
+  - ./gradlew test --console plain
+  - ./gradlew connectedAndroidTest --console plain
+  - popd
+  # TODO: we should try to kill the emulator at this point
   - npm test
   - npm run cover
 after_script:
