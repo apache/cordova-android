@@ -28,6 +28,7 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
@@ -110,7 +111,9 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.OnlineEventsBridgeMode(new NativeToJsMessageQueue.OnlineEventsBridgeMode.OnlineEventsBridgeModeDelegate() {
             @Override
             public void setNetworkAvailable(boolean value) {
-                webView.setNetworkAvailable(value);
+                if (webView != null) {
+                    webView.setNetworkAvailable(value);
+                }
             }
             @Override
             public void runOnUiThread(Runnable r) {
@@ -331,6 +334,12 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     @Override
     public void destroy() {
         webView.chromeClient.destroyLastDialog();
+        nativeToJsMessageQueue.reset();
+        ViewGroup vgParent = (ViewGroup) webView.getParent();
+        if (vgParent != null) {
+            vgParent.removeView(webView);
+        }
+        webView.removeAllViews();
         webView.destroy();
         // unregister the receiver
         if (receiver != null) {
