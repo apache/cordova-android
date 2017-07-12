@@ -14,6 +14,8 @@ env:
     - EMULATOR_TAG=android
     - EMULATOR_ABI=armeabi-v7a
     - EMULATOR="system-images;android-${EMULATOR_API_LEVEL};${EMULATOR_TAG};${EMULATOR_ABI}"
+    # we will store the emu PID in here later, and use it to kill the emulator.
+    - EMULATOR_PID=0
 android:
   components:
     # the two entries for 'tools' here are important: this is a weird dance we need
@@ -63,8 +65,10 @@ before_script:
   # wrangle the emulator
   - echo no | android create avd --force -n emoo -t "android-${EMULATOR_API_LEVEL}"
   # start emulator, disable cameras and boot animation to try to speed it up. show verbose + kernel output to help in debugging.
-  # TODO: how to save emulator PID so we can kill later?
-  - emulator -avd emoo -camera-front none -camera-back none -no-boot-anim -verbose -show-kernel -memory 2048 -no-audio -no-window &
+  - |
+    emulator -avd emoo -camera-front none -camera-back none -no-boot-anim -verbose -show-kernel -memory 2048 -no-audio -no-window &
+    EMULATOR_PID=$!
+  - echo $EMULATOR_PID
   # wait for emulator to bootup completely completely. double completely because emulators on travis are brittle!
   - adb wait-for-device get-serialno
   # wait for up to 20 minutes for the emulator to come up.
@@ -81,9 +85,9 @@ script:
   # test commands
   - pushd test
   - ./gradlew connectedAndroidTest --console plain
+  - kill $EMULATOR_PID
   - ./gradlew test --console plain
   - popd
-  # TODO: we should try to kill the emulator at this point
   - npm test
   - npm run cover
 after_script:
