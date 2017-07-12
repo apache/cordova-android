@@ -4,7 +4,7 @@ jdk:
   - oraclejdk8
 env:
   global:
-    - ADB_INSTALL_TIMEOUT=5 # minutes
+    - ADB_INSTALL_TIMEOUT=8 # minutes
     - ANDROID_TOOLS=${ANDROID_HOME}/tools
     # the android API level we will be compiling against
     - ANDROID_COMPILE_TARGET=25
@@ -53,7 +53,7 @@ before_install:
   # print out versions, just so we know what's what
   - gradle --version
   - node --version
-  - android list sdk --no-ui --all 
+  - android list sdk --no-ui --all
 install:
   # cordova-android-specific and emulator setup
   - pushd test
@@ -66,9 +66,8 @@ before_script:
   - echo no | android create avd --force -n emoo -t "android-${EMULATOR_API_LEVEL}"
   # start emulator, disable cameras and boot animation to try to speed it up. show verbose + kernel output to help in debugging.
   - |
-    emulator -avd emoo -camera-front none -camera-back none -no-boot-anim -verbose -show-kernel -memory 2048 -no-audio -no-window &
+    emulator -avd emoo -camera-front none -camera-back none -gpu off -no-skin -memory 2048 -no-audio -no-window &
     EMULATOR_PID=$!
-  - echo $EMULATOR_PID
   # wait for emulator to bootup completely completely. double completely because emulators on travis are brittle!
   - adb wait-for-device get-serialno
   # wait for up to 20 minutes for the emulator to come up.
@@ -85,6 +84,7 @@ script:
   # test commands
   - pushd test
   - ./gradlew connectedAndroidTest --console plain
+  # can kill the emulator at this point as only the connectedAndroidTest needs it. save resources/maybe speed up the rest of the tests this way.
   - kill $EMULATOR_PID
   - ./gradlew test --console plain
   - popd
