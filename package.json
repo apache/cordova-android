@@ -21,7 +21,7 @@
   "scripts": {
     "test": "npm run eslint && npm run unit-tests && npm run e2e-tests",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
-    "cover": "istanbul cover --root bin/templates/cordova --print detail jasmine -- --config=spec/unit/jasmine.json",
+    "cover": "istanbul cover --root bin --print detail jasmine -- --config=spec/unit/jasmine.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "eslint": "eslint bin && eslint spec"
   },

@@ -32,6 +32,18 @@ var CordovaError = require('cordova-common').CordovaError;
 var AndroidStudio = require('../templates/cordova/lib/AndroidStudio');
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
 
+// Export all helper functions, and make sure internally within this module, we
+// reference these methods via the `exports` object - this helps with testing
+// (since we can then mock and control behaviour of all of these functions)
+exports.validatePackageName = validatePackageName;
+exports.validateProjectName = validateProjectName;
+exports.setShellFatal = setShellFatal;
+exports.copyJsAndLibrary = copyJsAndLibrary;
+exports.copyScripts = copyScripts;
+exports.copyBuildRules = copyBuildRules;
+exports.writeProjectProperties = writeProjectProperties;
+exports.prepBuildFiles = prepBuildFiles;
+
 function setShellFatal (value, func) {
     var oldVal = shell.config.fatal;
     shell.config.fatal = value;
@@ -64,7 +76,7 @@ function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
     shell.cp('-rf', path.join(ROOT, 'cordova-js-src'), path.join(projectPath, 'platform_www'));
 
     // Don't fail if there are no old jars.
-    setShellFatal(false, function () {
+    exports.setShellFatal(false, function () {
         shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function (oldJar) {
             console.log('Deleting ' + oldJar);
             shell.rm('-f', oldJar);
@@ -183,6 +195,7 @@ function validatePackageName (package_name) {
     // http://developer.android.com/guide/topics/manifest/manifest-element.html#package
     // Enforce underscore limitation
     var msg = 'Error validating package name. ';
+
     if (!/^[a-zA-Z][a-zA-Z0-9_]+(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(package_name)) {
         return Q.reject(new CordovaError(msg + 'Package name must look like: com.company.Name'));
     }
@@ -257,9 +270,9 @@ exports.create = function (project_path, config, options, events) {
     var target_api = check_reqs.get_target();
 
     // Make the package conform to Java package types
-    return validatePackageName(package_name)
+    return exports.validatePackageName(package_name)
         .then(function () {
-            validateProjectName(project_name);
+            exports.validateProjectName(project_name);
         }).then(function () {
         // Log the given values for the project
             events.emit('log', 'Creating Cordova project for the Android platform:');
@@ -271,7 +284,7 @@ exports.create = function (project_path, config, options, events) {
 
             events.emit('verbose', 'Copying android template project to ' + project_path);
 
-            setShellFatal(true, function () {
+            exports.setShellFatal(true, function () {
                 var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
                 var app_path = path.join(project_path, 'app', 'src', 'main');
 
@@ -285,7 +298,7 @@ exports.create = function (project_path, config, options, events) {
                 shell.mkdir(path.join(app_path, 'libs'));
 
                 // copy cordova.js, cordova.jar
-                copyJsAndLibrary(project_path, options.link, safe_activity_name);
+                exports.copyJsAndLibrary(project_path, options.link, safe_activity_name);
 
                 // Set up ther Android Studio paths
                 var java_path = path.join(app_path, 'java');
@@ -314,12 +327,12 @@ exports.create = function (project_path, config, options, events) {
                 var manifest_path = path.join(app_path, 'AndroidManifest.xml');
                 manifest.write(manifest_path);
 
-                copyScripts(project_path);
-                copyBuildRules(project_path);
+                exports.copyScripts(project_path);
+                exports.copyBuildRules(project_path);
             });
             // Link it to local android install.
-            writeProjectProperties(project_path, target_api);
-            prepBuildFiles(project_path, 'studio');
+            exports.writeProjectProperties(project_path, target_api);
+            exports.prepBuildFiles(project_path, 'studio');
             events.emit('log', generateDoneMessage('create', options.link));
         }).thenResolve(project_path);
 };
@@ -363,15 +376,11 @@ exports.update = function (projectPath, options, events) {
             var projectName = manifest.getActivity().getName();
             var target_api = check_reqs.get_target();
 
-            copyJsAndLibrary(projectPath, options.link, projectName, isLegacy);
-            copyScripts(projectPath);
-            copyBuildRules(projectPath, isLegacy);
-            writeProjectProperties(projectPath, target_api);
-            prepBuildFiles(projectPath, builder);
+            exports.copyJsAndLibrary(projectPath, options.link, projectName, isLegacy);
+            exports.copyScripts(projectPath);
+            exports.copyBuildRules(projectPath, isLegacy);
+            exports.writeProjectProperties(projectPath, target_api);
+            exports.prepBuildFiles(projectPath, builder);
             events.emit('log', generateDoneMessage('update', options.link));
         }).thenResolve(projectPath);
 };
-
-// For testing
-exports.validatePackageName = validatePackageName;
-exports.validateProjectName = validateProjectName;
