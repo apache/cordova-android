@@ -64,7 +64,7 @@ before_script:
   - echo no | android create avd --force -n emoo -t "android-${EMULATOR_API_LEVEL}"
   # start emulator, disable cameras and boot animation to try to speed it up. show verbose + kernel output to help in debugging.
   # TODO: how to save emulator PID so we can kill later?
-  - emulator -avd emoo -camera-front none -camera-back none -no-boot-anim -verbose -show-kernel -memory 1024 -no-audio -no-window &
+  - emulator -avd emoo -camera-front none -camera-back none -no-boot-anim -verbose -show-kernel -memory 2048 -no-audio -no-window &
   # wait for emulator to bootup completely completely. double completely because emulators on travis are brittle!
   - adb wait-for-device get-serialno
   # wait for up to 20 minutes for the emulator to come up.
@@ -80,8 +80,8 @@ before_script:
 script:
   # test commands
   - pushd test
-  - ./gradlew test --console plain
   - ./gradlew connectedAndroidTest --console plain
+  - ./gradlew test --console plain
   - popd
   # TODO: we should try to kill the emulator at this point
   - npm test
