@@ -19,8 +19,7 @@ install:
   # also, the sdkmanager in all its glory leaks a bit of output to stderr, and powershell
   # and appveyor interpret that as errors, and blows up. so, when piping in our "Y ENTER"
   # responses, we invoke cmd so we can redirect stderr to stdout, and tell it to --update itself.
-  - ps: |
-  for($i=0;$i -lt 30;$i++) { $response += "y`n"}; $response | cmd /c '"%UPDATE_SDK%"'
+  - ps: for($i=0;$i -lt 30;$i++) { $response += "y`n"}; $response | cmd /c '"%UPDATE_SDK%"'
   - '%SDKMANAGER% --list'
   - cd test && gradle :wrapper -b build.gradle && cd ..
   - ps: Install-Product node $env:nodejs_version
