@@ -77,7 +77,7 @@ function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
 
     // Don't fail if there are no old jars.
     exports.setShellFatal(false, function () {
-        shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function (oldJar) {
+        shell.ls(path.join(app_path, 'libs', 'cordova-*.jar')).forEach(function (oldJar) {
             console.log('Deleting ' + oldJar);
             shell.rm('-f', oldJar);
         });
