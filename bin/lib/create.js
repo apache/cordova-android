@@ -145,6 +145,9 @@ function writeProjectProperties (projectPath, target_api) {
 
 // This makes no sense, what if you're building with a different build system?
 function prepBuildFiles (projectPath, builder) {
+    if (builder === null) {
+        builder = 'studio';
+    }
     var buildModule = require(path.resolve(projectPath, 'cordova/lib/builders/builders'));
     buildModule.getBuilder(builder).prepBuildFiles();
 }
@@ -332,7 +335,7 @@ exports.create = function (project_path, config, options, events) {
             });
             // Link it to local android install.
             exports.writeProjectProperties(project_path, target_api);
-            exports.prepBuildFiles(project_path, 'studio');
+            exports.prepBuildFiles(project_path);
             events.emit('log', generateDoneMessage('create', options.link));
         }).thenResolve(project_path);
 };
