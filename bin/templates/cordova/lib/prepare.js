@@ -173,7 +173,7 @@ function updateProjectAccordingTo (platformConfig, locations) {
     strings.find('string[@name="app_name"]').text = name.replace(/\'/g, '\\\'');
 
     var shortName = platformConfig.shortName && platformConfig.shortName();
-    if (shortName && shortName != name) {
+    if (shortName && shortName !== name) {
         strings.find('string[@name="launcher_name"]').text = shortName.replace(/\'/g, '\\\'');
     }
 
