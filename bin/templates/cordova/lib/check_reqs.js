@@ -99,7 +99,12 @@ module.exports.get_gradle_wrapper = function () {
     var i = 0;
     var foundStudio = false;
     var program_dir;
-    if (module.exports.isDarwin()) {
+    // CB-12677: check if Android Studio path was explicitly set via environment variable
+    if (process.env['ANDROID_STUDIO_HOME']) {
+
+        androidStudioPath = path.join(process.env['ANDROID_STUDIO_HOME'], 'gradle');
+
+    } else if (module.exports.isDarwin()) {
         program_dir = fs.readdirSync('/Applications');
         while (i < program_dir.length && !foundStudio) {
             if (program_dir[i].startsWith('Android Studio')) {
@@ -157,7 +162,8 @@ module.exports.check_gradle = function () {
     if (gradlePath.length !== 0) { d.resolve(gradlePath); } else {
         d.reject(new CordovaError('Could not find an installed version of Gradle either in Android Studio,\n' +
                                 'or on your system to install the gradle wrapper. Please include gradle \n' +
-                                'in your path, or install Android Studio'));
+                                'in your path, or install Android Studio, or set up \'ANDROID_STUDIO_HOME\'\n' +
+                                'env variable.'));
     }
     return d.promise;
 };
