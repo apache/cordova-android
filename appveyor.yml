@@ -1,17 +1,16 @@
+image: Visual Studio 2017
 environment:
-  ANDROID_HOME: "C:\\android"
+  ANDROID_HOME: 'C:\Program Files (x86)\Android\android-sdk'
+  SDKMANAGER: '%ANDROID_HOME%\tools\bin\sdkmanager.bat'
+  UPDATE_SDK: '%SDKMANAGER% 2>&1 --update'
   matrix:
   - nodejs_version: "4"
   - nodejs_version: "6"
 
-init:
-  - mkdir "%ANDROID_HOME%
-  - cd "%ANDROID_HOME%"
-  - appveyor DownloadFile "https://dl.google.com/android/repository/tools_r25.2.3-windows.zip"
-  - 7z x "tools_r25.2.3-windows.zip" > nul
-  - cd "C:\projects\cordova-android"
-
 install:
+  - echo %ANDROID_HOME%
+  - echo %SDKMANAGER%
+  - echo %UPDATE_SDK%
   - choco install gradle -version 3.4.1
   - gradle -version
   - echo y | "%ANDROID_HOME%\tools\android.bat" --silent update sdk --no-ui --all --filter platform-tools,tools,build-tools-26.0.0,android-26,android-25,extra-google-m2repository,extra-android-m2repository
@@ -20,10 +19,9 @@ install:
   # also, the sdkmanager in all its glory leaks a bit of output to stderr, and powershell
   # and appveyor interpret that as errors, and blows up. so, when piping in our "Y ENTER"
   # responses, we invoke cmd so we can redirect stderr to stdout, and tell it to --update itself.
-  - ps: for($i=0;$i -lt 30;$i++) { $response += "y`n"}; $response | cmd /c 'C:\android\tools\bin\sdkmanager.bat 2>&1' --update
-  - cd test
-  - gradle :wrapper -b build.gradle
-  - cd ..
+  - ps: for($i=0;$i -lt 30;$i++) { $response += "y`n"}; $response | cmd /c '"%UPDATE_SDK%"'
+  - '%SDKMANAGER% --list'
+  - cd test && gradle :wrapper -b build.gradle && cd ..
   - ps: Install-Product node $env:nodejs_version
   - npm install
 
@@ -32,4 +30,5 @@ build: off
 test_script:
   - node --version
   - npm --version
+  - cd test && gradlew.bat test --console plain && cd ..
   - npm test

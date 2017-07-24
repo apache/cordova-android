@@ -1,20 +1,94 @@
 language: android
 sudo: false
 jdk:
-    - oraclejdk8
-before_install:
-    - nvm install 6
-    - node --version
-    - gradle --version
-install:
-    - npm install
-    - npm install -g codecov
-    - echo y | android --silent update sdk --no-ui --all --filter platform-tools,tools,build-tools-26.0.0,android-26,android-25,extra-google-m2repository,extra-android-m2repository
+  - oraclejdk8
+env:
+  global:
+    - ADB_INSTALL_TIMEOUT=8 # minutes
+    - ANDROID_TOOLS=${ANDROID_HOME}/tools
+    # the android API level we will be compiling against
+    - ANDROID_COMPILE_TARGET=25
+    # details about the emulator to use for native instrumented cordova-android tests
+    # note that the combo of api 22, armv7a and stock android image comes preinstaleld on travis VMs. saves us a LOT of time downloading big emu sysimgs.
+    - EMULATOR_API_LEVEL=22
+    - EMULATOR_TAG=android
+    - EMULATOR_ABI=armeabi-v7a
+    - EMULATOR="system-images;android-${EMULATOR_API_LEVEL};${EMULATOR_TAG};${EMULATOR_ABI}"
+    # we will store the emu PID in here later, and use it to kill the emulator.
+    - EMULATOR_PID=0
 android:
-    components:
-      - tools
+  components:
+    # the two entries for 'tools' here are important: this is a weird dance we need
+    # to do to upgrade to v25 or newer of the tools.
+    - tools
+    - platform-tools
+    # DONT DELETE THE NEXT LINE! see above comment
+    - tools
+    # The BuildTools version used by your project. TODO: 26 is available, but cordovalib uses 25.0.2 regardless. why?
+    - build-tools-25.0.2
+    # The Android SDK version or API levels we will be compiling against.
+    - android-${ANDROID_COMPILE_TARGET}
+    # Also need the api level the emulater will be running.
+    - android-${EMULATOR_API_LEVEL}
+    # Extras
+    - extra-android-m2repository
+    - extra-google-m2repository
+    # Ensure we have the desired emulator sysimg installed
+    - sys-img-${EMULATOR_ABI}-${EMULATOR_TAG}-${EMULATOR_API_LEVEL}
+  # This should not be needed as travis by default accepts all licenses, but
+  # ive seen flaky behaviour with some SDK components not having its license accepted.
+  licenses:
+    - android-sdk-license-.+
+    - android-sdk-preview-license-.+
+    - google-gdk-license-.+
+    - '.+'
+before_install:
+  # environment setup
+  - nvm install 6
+  # ensure at least gradle 3.3 is in place.
+  - wget http://services.gradle.org/distributions/gradle-3.3-bin.zip
+  - unzip gradle-3.3-bin.zip
+  - export GRADLE_HOME=$PWD/gradle-3.3
+  - export PATH=${GRADLE_HOME}/bin:${ANDROID_HOME}:${ANDROID_HOME}/emulator:${ANDROID_TOOLS}:${ANDROID_TOOLS}/bin:${ANDROID_HOME}/platform-tools:$PATH
+  # print out versions, just so we know what's what
+  - gradle --version
+  - node --version
+  - android list sdk --no-ui --all
+install:
+  # cordova-android-specific and emulator setup
+  - pushd test
+  - gradle :wrapper -b build.gradle
+  - popd
+  - npm install
+  - npm install -g codecov
+before_script:
+  # wrangle the emulator
+  - echo no | android create avd --force -n emoo -t "android-${EMULATOR_API_LEVEL}"
+  # start emulator, disable cameras and boot animation to try to speed it up. show verbose + kernel output to help in debugging.
+  - |
+    emulator -avd emoo -camera-front none -camera-back none -gpu off -no-skin -memory 2048 -no-audio -no-window &
+    EMULATOR_PID=$!
+  # wait for emulator to bootup completely completely. double completely because emulators on travis are brittle!
+  - adb wait-for-device get-serialno
+  # wait for up to 20 minutes for the emulator to come up.
+  - travis_wait 20 android-wait-for-emulator
+  # ensure animations are disabled to try to speed the thing up
+  - adb shell settings put global window_animation_scale 0 &
+  - adb shell settings put global transition_animation_scale 0 &
+  - adb shell settings put global animator_duration_scale 0 &
+  - sleep 30
+  - adb devices
+  # unlock emulator TODO: may not be necessary? dependent on api level of emu?
+  - adb shell input keyevent 82 &
 script:
-    - npm test
-    - npm run cover
+  # test commands
+  - pushd test
+  - ./gradlew connectedAndroidTest --console plain
+  # can kill the emulator at this point as only the connectedAndroidTest needs it. save resources/maybe speed up the rest of the tests this way.
+  - kill $EMULATOR_PID
+  - ./gradlew test --console plain
+  - popd
+  - npm test
+  - npm run cover
 after_script:
-    - codecov
+  - codecov
