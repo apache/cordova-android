@@ -45,7 +45,7 @@ module.exports.createProject = function (projectname, projectid, platformpath, c
     module.exports.removeProject(projectid);
 
     // create the project
-    var command = util.format('%s %s %s "%s"', createScriptPath, projectDirName, projectid, projectname);
+    var command = util.format('"%s" %s %s "%s"', createScriptPath, projectDirName, projectid, projectname);
     cp.exec(command, function (error, stdout, stderr) {
         if (error) {
             console.log(stdout);
@@ -69,8 +69,7 @@ module.exports.updateProject = function (projectid, platformpath, callback) {
     }
     var projectDirName = getDirName(projectid);
     var updateScriptPath = platformpath ? path.join(platformpath, 'bin/update') : path.join(cordova_bin, 'update');
-    var command = util.format('%s %s', updateScriptPath, projectDirName);
-
+    var command = util.format('"%s" %s', updateScriptPath, projectDirName);
     cp.exec(command, function (error, stdout, stderr) {
         if (error) {
             console.log(stdout);
