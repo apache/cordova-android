@@ -1,3 +1,6 @@
+image:
+  - Previous Visual Studio 2015
+
 environment:
   ANDROID_HOME: "C:\\android"
   matrix:

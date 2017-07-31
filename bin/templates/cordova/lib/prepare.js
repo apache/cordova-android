@@ -24,6 +24,7 @@ var path = require('path');
 var shell = require('shelljs');
 var events = require('cordova-common').events;
 var AndroidManifest = require('./AndroidManifest');
+var checkReqs = require('./check_reqs');
 var xmlHelpers = require('cordova-common').xmlHelpers;
 var CordovaError = require('cordova-common').CordovaError;
 var ConfigParser = require('cordova-common').ConfigParser;
@@ -181,10 +182,10 @@ function updateProjectAccordingTo (platformConfig, locations) {
     events.emit('verbose', 'Wrote out android application name "' + name + '" to ' + locations.strings);
 
     // Java packages cannot support dashes
-    var pkg = (platformConfig.android_packageName() || platformConfig.packageName()).replace(/-/g, '_');
+    var androidPkgName = (platformConfig.android_packageName() || platformConfig.packageName()).replace(/-/g, '_');
 
     var manifest = new AndroidManifest(locations.manifest);
-    var orig_pkg = manifest.getPackageId();
+    var manifestId = manifest.getPackageId();
 
     manifest.getActivity()
         .setOrientation(platformConfig.getPreference('orientation'))
@@ -192,7 +193,7 @@ function updateProjectAccordingTo (platformConfig, locations) {
 
     manifest.setVersionName(platformConfig.version())
         .setVersionCode(platformConfig.android_versionCode() || default_versionCode(platformConfig.version()))
-        .setPackageId(pkg)
+        .setPackageId(androidPkgName)
         .setMinSdkVersion(platformConfig.getPreference('android-minSdkVersion', 'android'))
         .setMaxSdkVersion(platformConfig.getPreference('android-maxSdkVersion', 'android'))
         .setTargetSdkVersion(platformConfig.getPreference('android-targetSdkVersion', 'android'))
@@ -200,7 +201,6 @@ function updateProjectAccordingTo (platformConfig, locations) {
 
     // Java file paths shouldn't be hard coded
     var javaPattern = path.join(locations.javaSrc, orig_pkg.replace(/\./g, '/'), '*.java');
-
     var java_files = shell.ls(javaPattern).filter(function (f) {
         return shell.grep(/extends\s+CordovaActivity/g, f);
     });
@@ -211,12 +211,16 @@ function updateProjectAccordingTo (platformConfig, locations) {
         events.emit('log', 'Multiple candidate Java files that extend CordovaActivity found. Guessing at the first one, ' + java_files[0]);
     }
 
-    var destFile = path.join(locations.root, 'src', pkg.replace(/\./g, '/'), path.basename(java_files[0]));
+    var destFile = path.join(locations.root, 'src', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
     shell.mkdir('-p', path.dirname(destFile));
-    shell.sed(/package [\w\.]*;/, 'package ' + pkg + ';', java_files[0]).to(destFile);
-    events.emit('verbose', 'Wrote out Android package name "' + pkg + '" to ' + destFile);
+    shell.sed(/package [\w\.]*;/, 'package ' + androidPkgName + ';', java_files[0]).to(destFile);
+    events.emit('verbose', 'Wrote out Android package name "' + androidPkgName + '" to ' + destFile);
 
-    if (orig_pkg !== pkg) {
+    var removeOrigPkg = checkReqs.isWindows() || checkReqs.isDarwin() ?
+        manifestId.toUpperCase() !== androidPkgName.toUpperCase() :
+        manifestId !== androidPkgName;
+
+    if (removeOrigPkg) {
         // If package was name changed we need to remove old java with main activity
         shell.rm('-Rf', java_files[0]);
         // remove any empty directories

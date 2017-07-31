@@ -149,7 +149,7 @@ describe('create', function () {
             spyOn(shell, 'cp');
             spyOn(shell, 'mkdir');
             spyOn(shell, 'sed');
-            config_mock = jasmine.createSpyObj('ConfigParser mock instance', ['packageName', 'name', 'android_activityName']);
+            config_mock = jasmine.createSpyObj('ConfigParser mock instance', ['packageName', 'android_packageName', 'name', 'android_activityName']);
             events_mock = jasmine.createSpyObj('EventEmitter mock instance', ['emit']);
             spyOn(check_reqs, 'get_target').and.returnValue(fake_android_target);
         });
