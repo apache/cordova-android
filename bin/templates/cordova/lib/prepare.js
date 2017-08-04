@@ -211,7 +211,7 @@ function updateProjectAccordingTo (platformConfig, locations) {
         events.emit('log', 'Multiple candidate Java files that extend CordovaActivity found. Guessing at the first one, ' + java_files[0]);
     }
 
-    var destFile = path.join(locations.root, 'src', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
+    var destFile = path.join(locations.root, 'app', 'src', 'main', 'java', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
     shell.mkdir('-p', path.dirname(destFile));
     shell.sed(/package [\w\.]*;/, 'package ' + androidPkgName + ';', java_files[0]).to(destFile);
     events.emit('verbose', 'Wrote out Android package name "' + androidPkgName + '" to ' + destFile);
