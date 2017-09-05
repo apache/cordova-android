@@ -24,7 +24,6 @@
     "bower_components",
     "test",
     "coverage",
-    "spec",
     "tests"
   ]
 }

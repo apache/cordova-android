@@ -17,7 +17,7 @@
     under the License.
 */
 
-/* jshint proto:true */
+/* eslint no-proto: 0 */
 
 var EOL = require('os').EOL;
 
@@ -30,7 +30,7 @@ var EOL = require('os').EOL;
  * @param {CordovaExternalToolErrorContext} [context] External tool error context object
  * @constructor
  */
-function CordovaError(message, code, context) {
+function CordovaError (message, code, context) {
     Error.captureStackTrace(this, this.constructor);
     this.name = this.constructor.name;
     this.message = message;
@@ -47,10 +47,10 @@ CordovaError.EXTERNAL_TOOL_ERROR = 1;
  * Translates instance's error code number into error code name, e.g. 0 -> UNKNOWN_ERROR
  * @returns {string} Error code string name
  */
-CordovaError.prototype.getErrorCodeName = function() {
-    for(var key in CordovaError) {
-        if(CordovaError.hasOwnProperty(key)) {
-            if(CordovaError[key] === this.code) {
+CordovaError.prototype.getErrorCodeName = function () {
+    for (var key in CordovaError) {
+        if (CordovaError.hasOwnProperty(key)) {
+            if (CordovaError[key] === this.code) {
                 return key;
             }
         }
@@ -63,16 +63,17 @@ CordovaError.prototype.getErrorCodeName = function() {
  *   details including information about error code name and context
  * @return  {String}              Stringified error representation
  */
-CordovaError.prototype.toString = function(isVerbose) {
-    var message = '', codePrefix = '';
+CordovaError.prototype.toString = function (isVerbose) {
+    var message = '';
+    var codePrefix = '';
 
-    if(this.code !== CordovaError.UNKNOWN_ERROR) {
+    if (this.code !== CordovaError.UNKNOWN_ERROR) {
         codePrefix = 'code: ' + this.code + (isVerbose ? (' (' + this.getErrorCodeName() + ')') : '') + ' ';
     }
 
-    if(this.code === CordovaError.EXTERNAL_TOOL_ERROR) {
-        if(typeof this.context !== 'undefined') {
-            if(isVerbose) {
+    if (this.code === CordovaError.EXTERNAL_TOOL_ERROR) {
+        if (typeof this.context !== 'undefined') {
+            if (isVerbose) {
                 message = codePrefix + EOL + this.context.toString(isVerbose) + '\n failed with an error: ' +
                     this.message + EOL + 'Stack trace: ' + this.stack;
             } else {

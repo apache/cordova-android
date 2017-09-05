@@ -27,7 +27,7 @@ var path = require('path');
  * @param {String} [cwd] Command working directory
  * @constructor
  */
-function CordovaExternalToolErrorContext(cmd, args, cwd) {
+function CordovaExternalToolErrorContext (cmd, args, cwd) {
     this.cmd = cmd;
     // Helper field for readability
     this.cmdShortName = path.basename(cmd);
@@ -35,8 +35,8 @@ function CordovaExternalToolErrorContext(cmd, args, cwd) {
     this.cwd = cwd;
 }
 
-CordovaExternalToolErrorContext.prototype.toString = function(isVerbose) {
-    if(isVerbose) {
+CordovaExternalToolErrorContext.prototype.toString = function (isVerbose) {
+    if (isVerbose) {
         return 'External tool \'' + this.cmdShortName + '\'' +
             '\nCommand full path: ' + this.cmd + '\nCommand args: ' + this.args +
             (typeof this.cwd !== 'undefined' ? '\nCommand cwd: ' + this.cwd : '');

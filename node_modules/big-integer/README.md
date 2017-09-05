@@ -211,7 +211,7 @@ Returns `true` if the number is prime, `false` otherwise.
 
 #### `isProbablePrime([iterations])`
 
-Returns `true` if the number is very likely to be positive, `false` otherwise.
+Returns `true` if the number is very likely to be prime, `false` otherwise.
 Argument is optional and determines the amount of iterations of the test (default: `5`). The more iterations, the lower chance of getting a false positive.
 This uses the [Fermat primality test](https://en.wikipedia.org/wiki/Fermat_primality_test).
 
