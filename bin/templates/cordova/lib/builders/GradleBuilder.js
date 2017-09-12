@@ -69,13 +69,13 @@ GradleBuilder.prototype.getArgs = function (cmd, opts) {
  * This returns a promise
  */
 
-GradleBuilder.prototype.runGradleWrapper = function (gradle_cmd) {
+GradleBuilder.prototype.runGradleWrapper = function (gradle_cmd, gradle_file) {
     var gradlePath = path.join(this.root, 'gradlew');
-    var wrapperGradle = path.join(this.root, 'wrapper.gradle');
+    gradle_file = path.join(this.root, (gradle_file || 'wrapper.gradle'));
     if (fs.existsSync(gradlePath)) {
         // Literally do nothing, for some reason this works, while !fs.existsSync didn't on Windows
     } else {
-        return superspawn.spawn(gradle_cmd, ['-p', this.root, 'wrapper', '-b', wrapperGradle], { stdio: 'pipe' })
+        return superspawn.spawn(gradle_cmd, ['-p', this.root, 'wrapper', '-b', gradle_file], { stdio: 'pipe' })
             .progress(function (stdio) {
                 suppressJavaOptionsInfo(stdio);
             });
