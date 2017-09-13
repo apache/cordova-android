@@ -29,6 +29,7 @@
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "dependencies": {
+    "android-versions": "^1.2.0",
     "cordova-common": "^2.1.0",
     "elementtree": "0.1.6",
     "nopt": "^3.0.1",

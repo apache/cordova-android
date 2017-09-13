@@ -75,7 +75,7 @@ describe('emulator', function () {
                 return cmd;
             });
         });
-        it('should try to parse AVD information using `avdmanager` first', function () {
+        it('should try to parse AVD information using `avdmanager` first', function (done) {
             spyOn(shelljs, 'which').and.callFake(function (cmd) {
                 if (cmd === 'avdmanager') {
                     return true;
@@ -83,11 +83,18 @@ describe('emulator', function () {
                     return false;
                 }
             });
-            var avdmanager_spy = spyOn(emu, 'list_images_using_avdmanager').and.returnValue({catch: function () {}});
-            emu.list_images();
-            expect(avdmanager_spy).toHaveBeenCalled();
+            var deferred = Q.defer();
+            var avdmanager_spy = spyOn(emu, 'list_images_using_avdmanager').and.returnValue(deferred.promise);
+            deferred.resolve([]);
+            emu.list_images().then(function () {
+                expect(avdmanager_spy).toHaveBeenCalled();
+            }).fail(function (err) {
+                expect(err).toBeUndefined();
+            }).fin(function () {
+                done();
+            });
         });
-        it('should delegate to `android` if `avdmanager` cant be found and `android` can', function () {
+        it('should delegate to `android` if `avdmanager` cant be found and `android` can', function (done) {
             spyOn(shelljs, 'which').and.callFake(function (cmd) {
                 if (cmd === 'avdmanager') {
                     return false;
@@ -95,9 +102,50 @@ describe('emulator', function () {
                     return true;
                 }
             });
-            var android_spy = spyOn(emu, 'list_images_using_android');
-            emu.list_images();
-            expect(android_spy).toHaveBeenCalled();
+            var deferred = Q.defer();
+            var android_spy = spyOn(emu, 'list_images_using_android').and.returnValue(deferred.promise);
+            deferred.resolve([]);
+            emu.list_images().then(function () {
+                expect(android_spy).toHaveBeenCalled();
+            }).fail(function (err) {
+                expect(err).toBeUndefined();
+            }).fin(function () {
+                done();
+            });
+        });
+        it('should correct api level information and fill in the blanks about api level if exists', function (done) {
+            spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                if (cmd === 'avdmanager') {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+            var deferred = Q.defer();
+            spyOn(emu, 'list_images_using_avdmanager').and.returnValue(deferred.promise);
+            deferred.resolve([
+                {
+                    name: 'Pixel_7.0',
+                    device: 'pixel (Google)',
+                    path: '/Users/maj/.android/avd/Pixel_7.0.avd',
+                    abi: 'google_apis/x86_64',
+                    target: 'Android 7.0 (API level 24)'
+                }, {
+                    name: 'Pixel_8.0',
+                    device: 'pixel (Google)',
+                    path: '/Users/maj/.android/avd/Pixel_8.0.avd',
+                    abi: 'google_apis/x86',
+                    target: 'Android API 26'
+                }
+            ]);
+            emu.list_images().then(function (avds) {
+                expect(avds[1].target).toContain('Android 8');
+                expect(avds[1].target).toContain('API level 26');
+            }).fail(function (err) {
+                expect(err).toBeUndefined();
+            }).fin(function () {
+                done();
+            });
         });
         it('should throw an error if neither `avdmanager` nor `android` are able to be found', function (done) {
             spyOn(shelljs, 'which').and.returnValue(false);
