@@ -24,12 +24,12 @@ var path = require('path');
 var PluginInfo = require('./PluginInfo');
 var events = require('../events');
 
-function PluginInfoProvider() {
+function PluginInfoProvider () {
     this._cache = {};
     this._getAllCache = {};
 }
 
-PluginInfoProvider.prototype.get = function(dirName) {
+PluginInfoProvider.prototype.get = function (dirName) {
     var absPath = path.resolve(dirName);
     if (!this._cache[absPath]) {
         this._cache[absPath] = new PluginInfo(dirName);
@@ -39,7 +39,7 @@ PluginInfoProvider.prototype.get = function(dirName) {
 
 // Normally you don't need to put() entries, but it's used
 // when copying plugins, and in unit tests.
-PluginInfoProvider.prototype.put = function(pluginInfo) {
+PluginInfoProvider.prototype.put = function (pluginInfo) {
     var absPath = path.resolve(pluginInfo.dir);
     this._cache[absPath] = pluginInfo;
 };
@@ -48,7 +48,7 @@ PluginInfoProvider.prototype.put = function(pluginInfo) {
 // Given a dir containing multiple plugins, create a PluginInfo object for
 // each of them and return as array.
 // Should load them all in parallel and return a promise, but not yet.
-PluginInfoProvider.prototype.getAllWithinSearchPath = function(dirName) {
+PluginInfoProvider.prototype.getAllWithinSearchPath = function (dirName) {
     var absPath = path.resolve(dirName);
     if (!this._getAllCache[absPath]) {
         this._getAllCache[absPath] = getAllHelper(absPath, this);
@@ -56,8 +56,8 @@ PluginInfoProvider.prototype.getAllWithinSearchPath = function(dirName) {
     return this._getAllCache[absPath];
 };
 
-function getAllHelper(absPath, provider) {
-    if (!fs.existsSync(absPath)){
+function getAllHelper (absPath, provider) {
+    if (!fs.existsSync(absPath)) {
         return [];
     }
     // If dir itself is a plugin, return it in an array with one element.
@@ -66,7 +66,7 @@ function getAllHelper(absPath, provider) {
     }
     var subdirs = fs.readdirSync(absPath);
     var plugins = [];
-    subdirs.forEach(function(subdir) {
+    subdirs.forEach(function (subdir) {
         var d = path.join(absPath, subdir);
         if (fs.existsSync(path.join(d, 'plugin.xml'))) {
             try {

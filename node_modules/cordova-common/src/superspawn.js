@@ -24,12 +24,12 @@ var _ = require('underscore');
 var Q = require('q');
 var shell = require('shelljs');
 var events = require('./events');
-var iswin32 = process.platform == 'win32';
+var iswin32 = process.platform === 'win32';
 
 // On Windows, spawn() for batch files requires absolute path & having the extension.
-function resolveWindowsExe(cmd) {
+function resolveWindowsExe (cmd) {
     var winExtensions = ['.exe', '.bat', '.cmd', '.js', '.vbs'];
-    function isValidExe(c) {
+    function isValidExe (c) {
         return winExtensions.indexOf(path.extname(c)) !== -1 && fs.existsSync(c);
     }
     if (isValidExe(cmd)) {
@@ -37,7 +37,7 @@ function resolveWindowsExe(cmd) {
     }
     cmd = shell.which(cmd) || cmd;
     if (!isValidExe(cmd)) {
-        winExtensions.some(function(ext) {
+        winExtensions.some(function (ext) {
             if (fs.existsSync(cmd + ext)) {
                 cmd = cmd + ext;
                 return true;
@@ -47,7 +47,7 @@ function resolveWindowsExe(cmd) {
     return cmd;
 }
 
-function maybeQuote(a) {
+function maybeQuote (a) {
     if (/^[^"].*[ &].*[^"]/.test(a)) return '"' + a + '"';
     return a;
 }
@@ -85,7 +85,7 @@ function maybeQuote(a) {
  *       'stderr': ...
  *   }
  */
-exports.spawn = function(cmd, args, opts) {
+exports.spawn = function (cmd, args, opts) {
     args = args || [];
     opts = opts || {};
     var spawnOpts = {};
@@ -95,7 +95,7 @@ exports.spawn = function(cmd, args, opts) {
         cmd = resolveWindowsExe(cmd);
         // If we couldn't find the file, likely we'll end up failing,
         // but for things like "del", cmd will do the trick.
-        if (path.extname(cmd) != '.exe') {
+        if (path.extname(cmd) !== '.exe') {
             var cmdArgs = '"' + [cmd].concat(args).map(maybeQuote).join(' ') + '"';
             // We need to use /s to ensure that spaces are parsed properly with cmd spawned content
             args = [['/s', '/c', cmdArgs].join(' ')];
@@ -137,7 +137,7 @@ exports.spawn = function(cmd, args, opts) {
 
     if (child.stdout) {
         child.stdout.setEncoding('utf8');
-        child.stdout.on('data', function(data) {
+        child.stdout.on('data', function (data) {
             capturedOut += data;
             d.notify({'stdout': data});
         });
@@ -145,7 +145,7 @@ exports.spawn = function(cmd, args, opts) {
 
     if (child.stderr) {
         child.stderr.setEncoding('utf8');
-        child.stderr.on('data', function(data) {
+        child.stderr.on('data', function (data) {
             capturedErr += data;
             d.notify({'stderr': data});
         });
@@ -153,10 +153,10 @@ exports.spawn = function(cmd, args, opts) {
 
     child.on('close', whenDone);
     child.on('error', whenDone);
-    function whenDone(arg) {
+    function whenDone (arg) {
         child.removeListener('close', whenDone);
         child.removeListener('error', whenDone);
-        var code = typeof arg == 'number' ? arg : arg && arg.code;
+        var code = typeof arg === 'number' ? arg : arg && arg.code;
 
         events.emit('verbose', 'Command finished with error code ' + code + ': ' + cmd + ' ' + args);
         if (code === 0) {
@@ -181,10 +181,9 @@ exports.spawn = function(cmd, args, opts) {
     return d.promise;
 };
 
-exports.maybeSpawn = function(cmd, args, opts) {
+exports.maybeSpawn = function (cmd, args, opts) {
     if (fs.existsSync(cmd)) {
         return exports.spawn(cmd, args, opts);
     }
     return Q(null);
 };
-

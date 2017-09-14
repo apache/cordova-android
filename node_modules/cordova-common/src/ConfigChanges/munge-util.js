@@ -19,14 +19,14 @@ var _ = require('underscore');
 
 // add the count of [key1][key2]...[keyN] to obj
 // return true if it didn't exist before
-exports.deep_add = function deep_add(obj, keys /* or key1, key2 .... */ ) {
-    if ( !Array.isArray(keys) ) {
+exports.deep_add = function deep_add (obj, keys /* or key1, key2 .... */) {
+    if (!Array.isArray(keys)) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    return exports.process_munge(obj, true/*createParents*/, function (parentArray, k) {
-        var found = _.find(parentArray, function(element) {
-            return element.xml == k.xml;
+    return exports.process_munge(obj, true/* createParents */, function (parentArray, k) {
+        var found = _.find(parentArray, function (element) {
+            return element.xml === k.xml;
         });
         if (found) {
             found.after = found.after || k.after;
@@ -40,16 +40,16 @@ exports.deep_add = function deep_add(obj, keys /* or key1, key2 .... */ ) {
 
 // decrement the count of [key1][key2]...[keyN] from obj and remove if it reaches 0
 // return true if it was removed or not found
-exports.deep_remove = function deep_remove(obj, keys /* or key1, key2 .... */ ) {
-    if ( !Array.isArray(keys) ) {
+exports.deep_remove = function deep_remove (obj, keys /* or key1, key2 .... */) {
+    if (!Array.isArray(keys)) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    var result = exports.process_munge(obj, false/*createParents*/, function (parentArray, k) {
+    var result = exports.process_munge(obj, false/* createParents */, function (parentArray, k) {
         var index = -1;
         var found = _.find(parentArray, function (element) {
             index++;
-            return element.xml == k.xml;
+            return element.xml === k.xml;
         });
         if (found) {
             if (parentArray[index].oldAttrib) {
@@ -58,8 +58,7 @@ exports.deep_remove = function deep_remove(obj, keys /* or key1, key2 .... */ ) 
             found.count -= k.count;
             if (found.count > 0) {
                 return false;
-            }
-            else {
+            } else {
                 parentArray.splice(index, 1);
             }
         }
@@ -71,14 +70,14 @@ exports.deep_remove = function deep_remove(obj, keys /* or key1, key2 .... */ ) 
 
 // search for [key1][key2]...[keyN]
 // return the object or undefined if not found
-exports.deep_find = function deep_find(obj, keys /* or key1, key2 .... */ ) {
-    if ( !Array.isArray(keys) ) {
+exports.deep_find = function deep_find (obj, keys /* or key1, key2 .... */) {
+    if (!Array.isArray(keys)) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
 
-    return exports.process_munge(obj, false/*createParents?*/, function (parentArray, k) {
+    return exports.process_munge(obj, false/* createParents? */, function (parentArray, k) {
         return _.find(parentArray, function (element) {
-            return element.xml == (k.xml || k);
+            return element.xml === (k.xml || k);
         });
     }, keys);
 };
@@ -87,20 +86,20 @@ exports.deep_find = function deep_find(obj, keys /* or key1, key2 .... */ ) {
 // When createParents is true, add the file and parent items  they are missing
 // When createParents is false, stop and return undefined if the file and/or parent items are missing
 
-exports.process_munge = function process_munge(obj, createParents, func, keys /* or key1, key2 .... */ ) {
-    if ( !Array.isArray(keys) ) {
+exports.process_munge = function process_munge (obj, createParents, func, keys /* or key1, key2 .... */) {
+    if (!Array.isArray(keys)) {
         keys = Array.prototype.slice.call(arguments, 1);
     }
     var k = keys[0];
-    if (keys.length == 1) {
+    if (keys.length === 1) {
         return func(obj, k);
-    } else if (keys.length == 2) {
+    } else if (keys.length === 2) {
         if (!obj.parents[k] && !createParents) {
             return undefined;
         }
         obj.parents[k] = obj.parents[k] || [];
         return exports.process_munge(obj.parents[k], createParents, func, keys.slice(1));
-    } else if (keys.length == 3){
+    } else if (keys.length === 3) {
         if (!obj.files[k] && !createParents) {
             return undefined;
         }
@@ -115,7 +114,7 @@ exports.process_munge = function process_munge(obj, createParents, func, keys /*
 // base[file][selector][child] += munge[file][selector][child]
 // Returns a munge object containing values that exist in munge
 // but not in base.
-exports.increment_munge = function increment_munge(base, munge) {
+exports.increment_munge = function increment_munge (base, munge) {
     var diff = { files: {} };
 
     for (var file in munge.files) {
@@ -138,7 +137,7 @@ exports.increment_munge = function increment_munge(base, munge) {
 // base[file][selector][child] -= munge[file][selector][child]
 // nodes that reached zero value are removed from base and added to the returned munge
 // object.
-exports.decrement_munge = function decrement_munge(base, munge) {
+exports.decrement_munge = function decrement_munge (base, munge) {
     var zeroed = { files: {} };
 
     for (var file in munge.files) {
@@ -158,6 +157,6 @@ exports.decrement_munge = function decrement_munge(base, munge) {
 };
 
 // For better readability where used
-exports.clone_munge = function clone_munge(munge) {
+exports.clone_munge = function clone_munge (munge) {
     return exports.increment_munge({}, munge);
 };

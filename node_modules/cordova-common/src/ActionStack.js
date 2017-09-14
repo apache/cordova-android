@@ -19,32 +19,32 @@
 
 /* jshint quotmark:false */
 
-var events = require('./events'),
-    Q = require('q');
+var events = require('./events');
+var Q = require('q');
 
-function ActionStack() {
+function ActionStack () {
     this.stack = [];
     this.completed = [];
 }
 
 ActionStack.prototype = {
-    createAction:function(handler, action_params, reverter, revert_params) {
+    createAction: function (handler, action_params, reverter, revert_params) {
         return {
-            handler:{
-                run:handler,
-                params:action_params
+            handler: {
+                run: handler,
+                params: action_params
             },
-            reverter:{
-                run:reverter,
-                params:revert_params
+            reverter: {
+                run: reverter,
+                params: revert_params
             }
         };
     },
-    push:function(tx) {
+    push: function (tx) {
         this.stack.push(tx);
     },
     // Returns a promise.
-    process:function(platform) {
+    process: function (platform) {
         events.emit('verbose', 'Beginning processing of action stack for ' + platform + ' project...');
 
         while (this.stack.length) {
@@ -54,19 +54,19 @@ ActionStack.prototype = {
 
             try {
                 handler.apply(null, action_params);
-            } catch(e) {
+            } catch (e) {
                 events.emit('warn', 'Error during processing of action! Attempting to revert...');
                 this.stack.unshift(action);
                 var issue = 'Uh oh!\n';
                 // revert completed tasks
-                while(this.completed.length) {
+                while (this.completed.length) {
                     var undo = this.completed.shift();
                     var revert = undo.reverter.run;
                     var revert_params = undo.reverter.params;
 
                     try {
                         revert.apply(null, revert_params);
-                    } catch(err) {
+                    } catch (err) {
                         events.emit('warn', 'Error during reversion of action! We probably really messed up your project now, sorry! D:');
                         issue += 'A reversion action failed: ' + err.message + '\n';
                     }

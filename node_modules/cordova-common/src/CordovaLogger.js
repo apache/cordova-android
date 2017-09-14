@@ -41,11 +41,11 @@ function CordovaLogger () {
     this.stderrCursor = ansi(this.stderr);
 
     this.addLevel('verbose', 1000, 'grey');
-    this.addLevel('normal' , 2000);
-    this.addLevel('warn'   , 2000, 'yellow');
-    this.addLevel('info'   , 3000, 'blue');
-    this.addLevel('error'  , 5000, 'red');
-    this.addLevel('results' , 10000);
+    this.addLevel('normal', 2000);
+    this.addLevel('warn', 2000, 'yellow');
+    this.addLevel('info', 3000, 'blue');
+    this.addLevel('error', 5000, 'red');
+    this.addLevel('results', 10000);
 
     this.setLevel('normal');
 }
@@ -82,9 +82,10 @@ CordovaLogger.RESULTS = 'results';
 CordovaLogger.prototype.log = function (logLevel, message) {
     // if there is no such logLevel defined, or provided level has
     // less severity than active level, then just ignore this call and return
-    if (!this.levels[logLevel] || this.levels[logLevel] < this.levels[this.logLevel])
+    if (!this.levels[logLevel] || this.levels[logLevel] < this.levels[this.logLevel]) {
         // return instance to allow to chain calls
         return this;
+    }
 
     var isVerbose = this.logLevel === 'verbose';
     var cursor = this.stdoutCursor;
@@ -179,8 +180,7 @@ CordovaLogger.prototype.adjustLevel = function (opts) {
  */
 CordovaLogger.prototype.subscribe = function (eventEmitter) {
 
-    if (!(eventEmitter instanceof EventEmitter))
-        throw new Error('Subscribe method only accepts an EventEmitter instance as argument');
+    if (!(eventEmitter instanceof EventEmitter)) { throw new Error('Subscribe method only accepts an EventEmitter instance as argument'); }
 
     eventEmitter.on('verbose', this.verbose)
         .on('log', this.normal)
@@ -193,7 +193,7 @@ CordovaLogger.prototype.subscribe = function (eventEmitter) {
     return this;
 };
 
-function formatError(error, isVerbose) {
+function formatError (error, isVerbose) {
     var message = '';
 
     if (error instanceof CordovaError) {

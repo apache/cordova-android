@@ -17,10 +17,10 @@
     under the License.
 */
 
-var fs = require('fs'),
-    path = require('path');
+var fs = require('fs');
+var path = require('path');
 
-function isRootDir(dir) {
+function isRootDir (dir) {
     if (fs.existsSync(path.join(dir, 'www'))) {
         if (fs.existsSync(path.join(dir, 'config.xml'))) {
             // For sure is.
@@ -41,12 +41,12 @@ function isRootDir(dir) {
 // Runs up the directory chain looking for a .cordova directory.
 // IF it is found we are in a Cordova project.
 // Omit argument to use CWD.
-function isCordova(dir) {
+function isCordova (dir) {
     if (!dir) {
         // Prefer PWD over cwd so that symlinked dirs within your PWD work correctly (CB-5687).
         var pwd = process.env.PWD;
         var cwd = process.cwd();
-        if (pwd && pwd != cwd && pwd != 'undefined') {
+        if (pwd && pwd !== cwd && pwd !== 'undefined') {
             return isCordova(pwd) || isCordova(cwd);
         }
         return isCordova(cwd);
@@ -62,7 +62,7 @@ function isCordova(dir) {
         }
         var parentDir = path.normalize(path.join(dir, '..'));
         // Detect fs root.
-        if (parentDir == dir) {
+        if (parentDir === dir) {
             return bestReturnValueSoFar;
         }
         dir = parentDir;
@@ -72,5 +72,5 @@ function isCordova(dir) {
 }
 
 module.exports = {
-    findProjectRoot : isCordova
+    findProjectRoot: isCordova
 };
