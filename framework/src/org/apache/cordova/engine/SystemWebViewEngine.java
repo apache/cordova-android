@@ -110,7 +110,11 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.OnlineEventsBridgeMode(new NativeToJsMessageQueue.OnlineEventsBridgeMode.OnlineEventsBridgeModeDelegate() {
             @Override
             public void setNetworkAvailable(boolean value) {
-                webView.setNetworkAvailable(value);
+                //sometimes this can be called after calling webview.destroy() on destroy()
+                //thus resulting in a NullPointerException
+                if(webView!=null) {
+                   webView.setNetworkAvailable(value); 
+                }
             }
             @Override
             public void runOnUiThread(Runnable r) {
