@@ -1143,11 +1143,13 @@ var bigInt = (function (undefined) {
         var sign = this.sign ? "-" : "";
         return sign + str;
     };
+
     SmallInteger.prototype.toString = function (radix) {
         if (radix === undefined) radix = 10;
         if (radix != 10) return toBase(this, radix);
         return String(this.value);
     };
+    BigInteger.prototype.toJSON = SmallInteger.prototype.toJSON = function() { return this.toString(); }
 
     BigInteger.prototype.valueOf = function () {
         return +this.toString();
