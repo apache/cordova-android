@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Platform: android
 // 74a4adc2d0fddb1e0cfb9be1961494ef0afc9893
 /*
