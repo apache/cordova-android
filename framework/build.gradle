@@ -42,7 +42,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'org.apache.cordova'
-version = '6.3.0-dev'
+version = '6.3.0'
 
 android {
     compileSdkVersion cdvCompileSdkVersion
