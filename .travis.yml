@@ -2,17 +2,25 @@ language: android
 sudo: false
 jdk:
     - oraclejdk8
+env:
+    global:
+      - ANDROID_TOOLS=${ANDROID_HOME}/tools
 before_install:
     - nvm install 6
+    # ensure at least gradle 3.3 is in place.
+    - wget http://services.gradle.org/distributions/gradle-3.3-bin.zip
+    - unzip gradle-3.3-bin.zip
+    - export GRADLE_HOME=$PWD/gradle-3.3
+    - export PATH=${GRADLE_HOME}/bin:${ANDROID_HOME}:${ANDROID_HOME}/emulator:${ANDROID_TOOLS}:${ANDROID_TOOLS}/bin:${ANDROID_HOME}/platform-tools:$PATH
     - node --version
     - gradle --version
-install:
-    - npm install
-    - npm install -g codecov
     - echo y | android --silent update sdk --no-ui --all --filter platform-tools,tools,build-tools-26.0.0,android-26,android-25,extra-google-m2repository,extra-android-m2repository
 android:
     components:
       - tools
+install:
+    - npm install
+    - npm install -g codecov
 script:
     - npm test
     - npm run cover

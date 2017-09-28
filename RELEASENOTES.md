@@ -20,6 +20,23 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 6.3.0 (Sep 25, 2017)
+* [CB-6936](https://issues.apache.org/jira/browse/CB-6936) fix crash when calling methods on a destroyed webview
+* [CB-12981](https://issues.apache.org/jira/browse/CB-12981) handle SDK 26.0.2 slightly different AVD list output for **Android** 8+ AVDs. Would cause "cannot read property replace of undefined" errors when trying to deploy an **Android** 8 emulator.
+* Updated maven repo to include most recent lib versions
+* [CB-13177](https://issues.apache.org/jira/browse/CB-13177) Updating to API Level 26
+* Revert [CB-12015](https://issues.apache.org/jira/browse/CB-12015) initial-scale values less than 1.0 are ignored on **Android**
+* [CB-12730](https://issues.apache.org/jira/browse/CB-12730) The Cordova Compatibility Plugin is now integrated into cordova-android
+* [CB-12453](https://issues.apache.org/jira/browse/CB-12453) Remove unnecessary double quotes from .bat files which are the causes of crash if project path contains spaces
+* [CB-13031](https://issues.apache.org/jira/browse/CB-13031) Fix bug with case-sensitivity of **Android**-packageName
+* [CB-10916](https://issues.apache.org/jira/browse/CB-10916) Support display name for **Android**
+* [CB-12423](https://issues.apache.org/jira/browse/CB-12423) make explicit JDK 1.8 or greater is needed in the `README`, we require 1.8 for compilation, but do not have 1.8 Java features yet
+* [CB-13006](https://issues.apache.org/jira/browse/CB-13006) removed create and update end-to-end tests, and instead added more unit test coverage. tweaked code coverage invocation so that we get coverage details on the create.js module. slight changes to the create.js module so that it is slightly easier to test.
+* [CB-12950](https://issues.apache.org/jira/browse/CB-12950) lots of tweaks for end-to-end test runs, especially on CI: - rename npm tasks to reflect what they do (npm run unit-tests, npm run e2e-tests). main `npm test` runs linter, unit tests and e2e tests now. - locked jasmine down to ~2.6.0. - consolidate gitignores. - updated travis to run `npm test`. add **Android** sdk installation to appveyor ci run.align **Android** dpendencies across travis and appveyor. have appveyor install gradle. force gradle to version 3.4.1 in appveyor, as that seems to be the only version choco has. explicitly invoke sdkmanager to move license accepting process along.
+* [CB-12605](https://issues.apache.org/jira/browse/CB-12605) In **Windows** get **Android** studio path from the registry
+* [CB-12762](https://issues.apache.org/jira/browse/CB-12762) : pointed `package.json` repo items to github mirrors instead of apache repos site
+* [CB-12617](https://issues.apache.org/jira/browse/CB-12617) : removed node0.x support for platforms and added engineStrict
+
 ### 6.2.3 (May 2, 2017)
 * [CB-12640](https://issues.apache.org/jira/browse/CB-12640) better handling of unrecognized Android SDK commands on **Windows**.
 * [CB-12640](https://issues.apache.org/jira/browse/CB-12640) flipped avd parsing logic so that it always tries to use avdmanager to retrieve avds first, then falls back to android command if avdmanager cannot be found (and errors with ENOENT). updated tests - and added explicit tests to ensure to shell out to singular forms of sub-commands when executing `android`

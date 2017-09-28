@@ -21,6 +21,7 @@
 
 /* jshint sub:true */
 
+var android_versions = require('android-versions');
 var retry = require('./retry');
 var build = require('./build');
 var path = require('path');
@@ -169,15 +170,29 @@ module.exports.list_images_using_android = function () {
    }
  */
 module.exports.list_images = function () {
-    if (forgivingWhichSync('avdmanager')) {
-        return module.exports.list_images_using_avdmanager();
-    } else if (forgivingWhichSync('android')) {
-        return module.exports.list_images_using_android();
-    } else {
-        return Q().then(function () {
-            throw new CordovaError('Could not find either `android` or `avdmanager` on your $PATH! Are you sure the Android SDK is installed and available?');
+    return Q.fcall(function () {
+        if (forgivingWhichSync('avdmanager')) {
+            return module.exports.list_images_using_avdmanager();
+        } else if (forgivingWhichSync('android')) {
+            return module.exports.list_images_using_android();
+        } else {
+            return Q().then(function () {
+                throw new CordovaError('Could not find either `android` or `avdmanager` on your $PATH! Are you sure the Android SDK is installed and available?');
+            });
+        }
+    }).then(function (avds) {
+        // In case we're missing the Android OS version string from the target description, add it.
+        return avds.map(function (avd) {
+            if (avd.target && avd.target.indexOf('Android API') > -1 && avd.target.indexOf('API level') < 0) {
+                var api_level = avd.target.match(/\d+/);
+                if (api_level) {
+                    var level = android_versions.get(api_level);
+                    avd.target = 'Android ' + level.semver + ' (API level ' + api_level + ')';
+                }
+            }
+            return avd;
         });
-    }
+    });
 };
 
 /**

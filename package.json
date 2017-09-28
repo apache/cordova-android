@@ -1,6 +1,6 @@
 {
   "name": "cordova-android",
-  "version": "6.3.0-dev",
+  "version": "6.4.0-dev",
   "description": "cordova-android release",
   "bin": {
     "create": "bin/create"
@@ -19,15 +19,17 @@
     "apache"
   ],
   "scripts": {
-    "test": "npm run eslint && npm run unit-tests && npm run e2e-tests",
+    "test": "npm run eslint && npm run unit-tests && npm run java-unit-tests && npm run e2e-tests",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
     "cover": "istanbul cover --root bin --print detail jasmine -- --config=spec/unit/jasmine.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
+    "java-unit-tests": "cd test && node run_java_unit_tests.js && cd ..",
     "eslint": "eslint bin && eslint spec"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "dependencies": {
+    "android-versions": "^1.2.0",
     "cordova-common": "^2.1.0",
     "elementtree": "0.1.6",
     "nopt": "^3.0.1",
