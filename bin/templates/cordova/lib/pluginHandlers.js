@@ -1,7 +1,4 @@
 /*
- *
- * Copyright 2013 Anis Kadri
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -71,10 +68,12 @@ var handlers = {
     },
     'resource-file': {
         install: function (obj, plugin, project, options) {
-            copyFile(plugin.dir, obj.src, project.projectDir, path.normalize(obj.target), !!(options && options.link));
+            var dest = path.join('app/src/main', path.normalize(obj.target));
+            copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
         },
         uninstall: function (obj, plugin, project, options) {
-            removeFile(project.projectDir, path.normalize(obj.target));
+            var dest = path.join('app/src/main', path.normalize(obj.target));
+            removeFile(dest, path.normalize(obj.target));
         }
     },
     'framework': {
