@@ -70,14 +70,14 @@ var handlers = {
         install: function (obj, plugin, project, options) {
             var dest = path.normalize(obj.target);
             if (options && options.android_studio === true) {
-              dest = path.join('app/src/main', dest);
+                dest = path.join('app/src/main', dest);
             }
             copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
         },
         uninstall: function (obj, plugin, project, options) {
             var dest = path.normalize(obj.target);
             if (options && options.android_studio === true) {
-              dest = path.join('app/src/main', dest);
+                dest = path.join('app/src/main', dest);
             }
             removeFile(project.projectDir, dest);
         }
