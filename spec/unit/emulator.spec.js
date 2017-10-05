@@ -18,6 +18,7 @@
 */
 
 var emu = require('../../bin/templates/cordova/lib/emulator');
+var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
 var superspawn = require('cordova-common').superspawn;
 var Q = require('q');
 var fs = require('fs');
@@ -154,6 +155,70 @@ describe('emulator', function () {
                 expect(err.message).toContain('Could not find either `android` or `avdmanager`');
                 done();
             });
+        });
+    });
+    describe('best_image', function () {
+        var avds_promise;
+        var target_mock;
+        beforeEach(function () {
+            avds_promise = Q.defer();
+            spyOn(emu, 'list_images').and.returnValue(avds_promise.promise);
+            target_mock = spyOn(check_reqs, 'get_target').and.returnValue('android-26');
+        });
+        it('should return undefined if there are no defined AVDs', function (done) {
+            avds_promise.resolve([]);
+            emu.best_image().then(function (best_avd) {
+                expect(best_avd).toBeUndefined();
+            }).fail(function (err) {
+                expect(err).toBeUndefined();
+            }).fin(done);
+        });
+        it('should return the first available image if there is no available target information for existing AVDs', function (done) {
+            var fake_avd = { name: 'MyFakeAVD' };
+            var second_fake_avd = { name: 'AnotherAVD' };
+            avds_promise.resolve([fake_avd, second_fake_avd]);
+            emu.best_image().then(function (best_avd) {
+                expect(best_avd).toBe(fake_avd);
+            }).fail(function (err) {
+                expect(err).toBeUndefined();
+            }).fin(done);
+        });
+        it('should return the first AVD for the API level that matches the project target', function (done) {
+            target_mock.and.returnValue('android-25');
+            var fake_avd = { name: 'MyFakeAVD', target: 'Android 7.0 (API level 24)' };
+            var second_fake_avd = { name: 'AnotherAVD', target: 'Android 7.1 (API level 25)' };
+            var third_fake_avd = { name: 'AVDThree', target: 'Android 8.0 (API level 26)' };
+            avds_promise.resolve([fake_avd, second_fake_avd, third_fake_avd]);
+            emu.best_image().then(function (best_avd) {
+                expect(best_avd).toBe(second_fake_avd);
+            }).fail(function (err) {
+                expect(err).toBeUndefined();
+            }).fin(done);
+        });
+        it('should return the AVD with API level that is closest to the project target API level, without going over', function (done) {
+            target_mock.and.returnValue('android-26');
+            var fake_avd = { name: 'MyFakeAVD', target: 'Android 7.0 (API level 24)' };
+            var second_fake_avd = { name: 'AnotherAVD', target: 'Android 7.1 (API level 25)' };
+            var third_fake_avd = { name: 'AVDThree', target: 'Android 99.0 (API level 134)' };
+            avds_promise.resolve([fake_avd, second_fake_avd, third_fake_avd]);
+            emu.best_image().then(function (best_avd) {
+                expect(best_avd).toBe(second_fake_avd);
+            }).fail(function (err) {
+                expect(err).toBeUndefined();
+            }).fin(done);
+        });
+        it('should not try to compare API levels when an AVD definition is missing API level info', function (done) {
+            avds_promise.resolve([ { name: 'Samsung_S8_API_26',
+                device: 'Samsung S8+ (User)',
+                path: '/Users/daviesd/.android/avd/Samsung_S8_API_26.avd',
+                abi: 'google_apis/x86',
+                target: 'Android 8.0'
+            }]);
+            emu.best_image().then(function (best_avd) {
+                expect(best_avd).toBeDefined();
+            }).fail(function (err) {
+                expect(err).toBeUndefined();
+            }).fin(done);
         });
     });
 });
