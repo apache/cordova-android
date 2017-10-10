@@ -41,13 +41,13 @@ function forgivingWhichSync (cmd) {
     }
 }
 
-function tryCommand (cmd, errMsg, catchStderr) {
+function tryCommand (cmd, errMsg) {
     var d = Q.defer();
     child_process.exec(cmd, function (err, stdout, stderr) {
         if (err) d.reject(new CordovaError(errMsg));
         // Sometimes it is necessary to return an stderr instead of stdout in case of success, since
         // some commands prints theirs output to stderr instead of stdout. 'javac' is the example
-        else d.resolve((catchStderr ? stderr : stdout).trim());
+        else d.resolve((stderr ? stderr : stdout).trim());
     });
     return d.promise;
 }
@@ -221,11 +221,9 @@ module.exports.check_java = function () {
         if (process.env['JAVA_HOME']) {
             msg += 'Your JAVA_HOME is invalid: ' + process.env['JAVA_HOME'] + '\n';
         }
-        // We use tryCommand with catchStderr = true, because
-        // javac writes version info to stderr instead of stdout
-        return tryCommand('javac -version', msg, true).then(function (output) {
+        return tryCommand('javac -version', msg).then(function (output) {
             // Let's check for at least Java 8, and keep it future proof so we can support Java 10
-            var match = /javac ((?:1\.)(?:[8-9]\.)(?:\d+))|((?:1\.)(?:[1-9]\d+\.)(?:\d+))/i.exec(output);
+            var match = /javac ((?:1\.)(?:[8-9]\.)(?:\d+)|((?:9|1\d+)))/i.exec(output);
             return match && match[1];
         });
     });
