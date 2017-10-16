@@ -207,11 +207,11 @@ module.exports.best_image = function () {
 
         var closest = 9999;
         var best = images[0];
-        var project_target = check_reqs.get_target().replace('android-', '');
+        var project_target = parseInt(check_reqs.get_target().replace('android-', ''));
         for (var i in images) {
             var target = images[i].target;
-            if (target) {
-                var num = target.split('(API level ')[1].replace(')', '');
+            if (target && target.indexOf('API level') > -1) {
+                var num = parseInt(target.split('(API level ')[1].replace(')', ''));
                 if (num === project_target) {
                     return images[i];
                 } else if (project_target - num < closest && project_target > num) {
