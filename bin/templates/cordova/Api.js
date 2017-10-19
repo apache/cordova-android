@@ -381,6 +381,14 @@ Api.prototype.run = function (runOptions) {
  */
 Api.prototype.clean = function (cleanOptions) {
     var self = this;
+    if (this.android_studio) {
+        // This will lint, checking for null won't 
+        if (typeof cleanOptions === 'undefined') {
+          cleanOptions = {};
+        }
+        cleanOptions.studio = true;
+    }
+
     return require('./lib/check_reqs').run().then(function () {
         return require('./lib/build').runClean.call(self, cleanOptions);
     }).then(function () {
