@@ -99,16 +99,8 @@ module.exports.get_gradle_wrapper = function () {
     var i = 0;
     var foundStudio = false;
     var program_dir;
-    if (module.exports.isDarwin()) {
-        program_dir = fs.readdirSync('/Applications');
-        while (i < program_dir.length && !foundStudio) {
-            if (program_dir[i].startsWith('Android Studio')) {
-                // TODO: Check for a specific Android Studio version, make sure it's not Canary
-                androidStudioPath = path.join('/Applications', program_dir[i], 'Contents', 'gradle');
-                foundStudio = true;
-            } else { ++i; }
-        }
-    } else if (module.exports.isWindows()) {
+    //OK, This hack only works on Windows, not on Mac OS or Linux.  We will be deleting this eventually!
+    if (module.exports.isWindows()) {
 
         var result = child_process.spawnSync(path.join(__dirname, 'getASPath.bat'));
         // console.log('result.stdout =' + result.stdout.toString());
