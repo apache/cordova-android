@@ -99,7 +99,7 @@ module.exports.get_gradle_wrapper = function () {
     var i = 0;
     var foundStudio = false;
     var program_dir;
-    //OK, This hack only works on Windows, not on Mac OS or Linux.  We will be deleting this eventually!
+    // OK, This hack only works on Windows, not on Mac OS or Linux.  We will be deleting this eventually!
     if (module.exports.isWindows()) {
 
         var result = child_process.spawnSync(path.join(__dirname, 'getASPath.bat'));
