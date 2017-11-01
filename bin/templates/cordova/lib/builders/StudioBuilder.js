@@ -117,6 +117,10 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     var pluginBuildGradle = path.join(this.root, 'cordova', 'lib', 'plugin-build.gradle');
     var propertiesObj = this.readProjectProperties();
     var subProjects = propertiesObj.libs;
+    
+    // Check and copy the gradle file into the subproject
+    // Called by the loop before this function def
+    
     var checkAndCopy = function (subProject, root) {
         var subProjectGradle = path.join(root, subProject, 'build.gradle');
         // This is the future-proof way of checking if a file exists
@@ -127,6 +131,7 @@ StudioBuilder.prototype.prepBuildFiles = function () {
             shell.cp('-f', pluginBuildGradle, subProjectGradle);
         }
     };
+
     for (var i = 0; i < subProjects.length; ++i) {
         if (subProjects[i] !== 'CordovaLib') {
             checkAndCopy(subProjects[i], this.root);
@@ -154,6 +159,7 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     var root = this.root;
     var insertExclude = function (p) {
         var gradlePath = path.join(root, p, 'build.gradle');
+        console.log("Gradle path for writing:" + gradlePath);
         var projectGradleFile = fs.readFileSync(gradlePath, 'utf-8');
         if (projectGradleFile.indexOf('CordovaLib') !== -1) {
             depsList += '{\n        exclude module:("CordovaLib")\n    }\n';
@@ -174,6 +180,7 @@ StudioBuilder.prototype.prepBuildFiles = function () {
         [/^\/?extras\/android\/support\/(.*)$/, 'com.android.support:support-$1:+'],
         [/^\/?google\/google_play_services\/libproject\/google-play-services_lib\/?$/, 'com.google.android.gms:play-services:+']
     ];
+
     propertiesObj.systemLibs.forEach(function (p) {
         var mavenRef;
         // It's already in gradle form if it has two ':'s
@@ -193,13 +200,20 @@ StudioBuilder.prototype.prepBuildFiles = function () {
         }
         depsList += '    compile "' + mavenRef + '"\n';
     });
+
+
+    console.log("Dependency list");
+    console.log(depsList);
     buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
     var includeList = '';
+
+
     propertiesObj.gradleIncludes.forEach(function (includePath) {
         includeList += 'apply from: "' + includePath + '"\n';
     });
     buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
-    fs.writeFileSync(path.join(this.root, 'build.gradle'), buildGradle);
+    //This needs to be stored in the app gradle, not the root grade
+    fs.writeFileSync(path.join(this.root, 'app', 'build.gradle'), buildGradle);
 };
 
 StudioBuilder.prototype.prepEnv = function (opts) {
