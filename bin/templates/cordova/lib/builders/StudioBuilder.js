@@ -170,9 +170,7 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     subProjects.forEach(function (p) {
         console.log('Subproject Path: ' + p);
         var libName = p.replace(/[/\\]/g, ':').replace(name + '-', '');
-        depsList += '    debugCompile(project(path: "' + libName + '", configuration: "debug"))';
-        insertExclude(p);
-        depsList += '    releaseCompile(project(path: "' + libName + '", configuration: "release"))';
+        depsList += '    implementation(project(path: "' + libName + '", configuration: "release"))';
         insertExclude(p);
     });
     // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
@@ -201,9 +199,6 @@ StudioBuilder.prototype.prepBuildFiles = function () {
         depsList += '    compile "' + mavenRef + '"\n';
     });
 
-
-    console.log("Dependency list");
-    console.log(depsList);
     buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
     var includeList = '';
 

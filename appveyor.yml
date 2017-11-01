@@ -6,6 +6,7 @@ environment:
   matrix:
   - nodejs_version: "4"
   - nodejs_version: "6"
+  - nodejs_version: "8"
 
 init:
   - mkdir "%ANDROID_HOME%
@@ -17,7 +18,7 @@ init:
 install:
   - choco install gradle -version 3.4.1
   - gradle -version
-  - echo y | "%ANDROID_HOME%\tools\android.bat" --silent update sdk --no-ui --all --filter platform-tools,tools,build-tools-26.0.0,android-26,android-25,extra-google-m2repository,extra-android-m2repository
+  - echo y | "%ANDROID_HOME%\tools\android.bat" --silent update sdk --no-ui --all --filter platform-tools,tools,build-tools-26.0.2,android-26,android-25,extra-google-m2repository,extra-android-m2repository
   # on windows we need to accept sublicenses for the new tooling, wee. 30 is an arbitrary number,
   # but should be the maximum number of licenses we explicitly need to type "Y ENTER" for.
   # also, the sdkmanager in all its glory leaks a bit of output to stderr, and powershell
