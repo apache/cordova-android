@@ -106,10 +106,6 @@ function apkSorter (fileA, fileB) {
 }
 
 function findOutputApksHelper (dir, build_type, arch) {
-    console.log("Directory: " + dir);
-    console.log("Build Type: " + build_type);
-    console.log("Arch: " + arch);
-
     var shellSilent = shell.config.silent;
     shell.config.silent = true;
 
