@@ -117,10 +117,10 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     var pluginBuildGradle = path.join(this.root, 'cordova', 'lib', 'plugin-build.gradle');
     var propertiesObj = this.readProjectProperties();
     var subProjects = propertiesObj.libs;
-    
+
     // Check and copy the gradle file into the subproject
     // Called by the loop before this function def
-    
+
     var checkAndCopy = function (subProject, root) {
         var subProjectGradle = path.join(root, subProject, 'build.gradle');
         // This is the future-proof way of checking if a file exists
@@ -159,7 +159,6 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     var root = this.root;
     var insertExclude = function (p) {
         var gradlePath = path.join(root, p, 'build.gradle');
-        console.log("Gradle path for writing:" + gradlePath);
         var projectGradleFile = fs.readFileSync(gradlePath, 'utf-8');
         if (projectGradleFile.indexOf('CordovaLib') !== -1) {
             depsList += '{\n        exclude module:("CordovaLib")\n    }\n';
@@ -170,9 +169,9 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     subProjects.forEach(function (p) {
         console.log('Subproject Path: ' + p);
         var libName = p.replace(/[/\\]/g, ':').replace(name + '-', '');
-        if(libName !== 'app') {
-          depsList += '    implementation(project(path: ":' + libName + '"))';
-          insertExclude(p);
+        if (libName !== 'app') {
+            depsList += '    implementation(project(path: ":' + libName + '"))';
+            insertExclude(p);
         }
     });
     // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
@@ -204,12 +203,11 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
     var includeList = '';
 
-
     propertiesObj.gradleIncludes.forEach(function (includePath) {
         includeList += 'apply from: "' + includePath + '"\n';
     });
     buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
-    //This needs to be stored in the app gradle, not the root grade
+    // This needs to be stored in the app gradle, not the root grade
     fs.writeFileSync(path.join(this.root, 'app', 'build.gradle'), buildGradle);
 };
 
