@@ -23,10 +23,13 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url "https://maven.google.com"
+        }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:3.0.0'
     }
 }
 
@@ -39,7 +42,7 @@ allprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.3.0'
+    gradleVersion = '4.1.0'
 }
 
 // Configuration properties. Set these via environment variables, build-extras.gradle, or gradle.properties.
@@ -227,7 +230,7 @@ android {
 
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'libs', include: '*.jar')
     // SUB-PROJECT DEPENDENCIES START
     debugCompile(project(path: ":CordovaLib", configuration: "debug"))
     releaseCompile(project(path: ":CordovaLib", configuration: "release"))

@@ -154,7 +154,7 @@ StudioBuilder.prototype.prepBuildFiles = function () {
         'include ":"\n' + settingsGradlePaths.join(''));
 
     // Update dependencies within build.gradle.
-    var buildGradle = fs.readFileSync(path.join(this.root, 'build.gradle'), 'utf8');
+    var buildGradle = fs.readFileSync(path.join(this.root, 'app', 'build.gradle'), 'utf8');
     var depsList = '';
     var root = this.root;
     var insertExclude = function (p) {
@@ -170,8 +170,10 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     subProjects.forEach(function (p) {
         console.log('Subproject Path: ' + p);
         var libName = p.replace(/[/\\]/g, ':').replace(name + '-', '');
-        depsList += '    implementation(project(path: "' + libName + '", configuration: "release"))';
-        insertExclude(p);
+        if(libName !== 'app') {
+          depsList += '    implementation(project(path: ":' + libName + '"))';
+          insertExclude(p);
+        }
     });
     // For why we do this mapping: https://issues.apache.org/jira/browse/CB-8390
     var SYSTEM_LIBRARY_MAPPINGS = [
@@ -223,7 +225,7 @@ StudioBuilder.prototype.prepEnv = function (opts) {
           // If it's not set, do nothing, assuming that we're using a future version of gradle that we don't want to mess with.
           // For some reason, using ^ and $ don't work.  This does the job, though.
           var distributionUrlRegex = /distributionUrl.*zip/;
-          var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'https\\://services.gradle.org/distributions/gradle-3.3-all.zip';
+          var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'https\\://services.gradle.org/distributions/gradle-4.1-all.zip';
           var gradleWrapperPropertiesPath = path.join(self.root, 'gradle', 'wrapper', 'gradle-wrapper.properties');
           shell.chmod('u+w', gradleWrapperPropertiesPath);
           shell.sed('-i', distributionUrlRegex, 'distributionUrl=' + distributionUrl, gradleWrapperPropertiesPath);
