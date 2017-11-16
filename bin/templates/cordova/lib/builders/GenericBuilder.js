@@ -107,7 +107,7 @@ function apkSorter (fileA, fileB) {
         return 1;
     } else if (unsignedRE.exec(fileB)) {
         return -1;
-    } 
+    }
 
     var timeDiff = fs.statSync(fileB).mtime - fs.statSync(fileA).mtime;
     return timeDiff === 0 ? fileA.length - fileB.length : timeDiff;
@@ -117,8 +117,8 @@ function findOutputApksHelper (dir, build_type, arch) {
     var shellSilent = shell.config.silent;
     shell.config.silent = true;
 
-    // list directory recursively 
-    var ret = shell.ls('-R', dir).map(function(file) {
+    // list directory recursively
+    var ret = shell.ls('-R', dir).map(function (file) {
         // ls does not include base directory
         return path.join(dir, file);
     }).filter(function (file) {
