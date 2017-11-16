@@ -184,6 +184,8 @@ android {
     buildToolsVersion cdvBuildToolsVersion
 
     if (Boolean.valueOf(cdvBuildMultipleApks)) {
+        flavorDimensions "default"
+
         productFlavors {
             armv7 {
                 versionCode defaultConfig.versionCode*10 + 2
