@@ -57,6 +57,14 @@ GenericBuilder.prototype.findOutputApks = function (build_type, arch) {
 module.exports = GenericBuilder;
 
 function apkSorter (fileA, fileB) {
+    // De-prioritize arch specific builds
+    var archSpecificRE = /-x86|-arm/;
+    if (archSpecificRE.exec(fileA)) {
+        return 1;
+    } else if (archSpecificRE.exec(fileB)) {
+        return -1;
+    }
+
     // De-prioritize unsigned builds
     var unsignedRE = /-unsigned/;
     if (unsignedRE.exec(fileA)) {
@@ -65,7 +73,7 @@ function apkSorter (fileA, fileB) {
         return -1;
     }
 
-    var timeDiff = fs.statSync(fileA).mtime - fs.statSync(fileB).mtime;
+    var timeDiff = fs.statSync(fileB).mtime - fs.statSync(fileA).mtime;
     return timeDiff === 0 ? fileA.length - fileB.length : timeDiff;
 }
 
@@ -73,7 +81,14 @@ function findOutputApksHelper (dir, build_type, arch) {
     var shellSilent = shell.config.silent;
     shell.config.silent = true;
 
-    var ret = shell.ls(path.join(dir, build_type, '*.apk')).filter(function (candidate) {
+    // list directory recursively
+    var ret = shell.ls('-R', dir).map(function (file) {
+        // ls does not include base directory
+        return path.join(dir, file);
+    }).filter(function (file) {
+        // find all APKs
+        return file.match(/\.apk?$/i);
+    }).filter(function (candidate) {
         var apkName = path.basename(candidate);
         // Need to choose between release and debug .apk.
         if (build_type === 'debug') {
