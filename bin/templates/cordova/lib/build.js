@@ -47,9 +47,11 @@ function parseOpts (options, resolvedTarget, projectRoot) {
         keystoreType: String
     }, {}, options.argv, 0);
 
+
+    // Android Studio Build method is the default
     var ret = {
         buildType: options.release ? 'release' : 'debug',
-        buildMethod: process.env.ANDROID_BUILD || 'gradle',
+        buildMethod: process.env.ANDROID_BUILD || 'studio',
         prepEnv: options.argv.prepenv,
         arch: resolvedTarget && resolvedTarget.arch,
         extraArgs: []
