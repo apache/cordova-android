@@ -204,7 +204,7 @@ StudioBuilder.prototype.prepBuildFiles = function () {
     var includeList = '';
 
     propertiesObj.gradleIncludes.forEach(function (includePath) {
-        includeList += 'apply from: "' + includePath + '"\n';
+        includeList += 'apply from: "../' + includePath + '"\n';
     });
     buildGradle = buildGradle.replace(/(PLUGIN GRADLE EXTENSIONS START)[\s\S]*(\/\/ PLUGIN GRADLE EXTENSIONS END)/, '$1\n' + includeList + '$2');
     // This needs to be stored in the app gradle, not the root grade
