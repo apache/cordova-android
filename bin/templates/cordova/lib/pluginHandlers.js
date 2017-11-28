@@ -30,17 +30,17 @@ var handlers = {
 
             var dest = path.join(obj.targetDir, path.basename(obj.src));
 
-            // TODO: This code needs to be replaced, since the core plugins need to be re-mapped to a different location in 
+            // TODO: This code needs to be replaced, since the core plugins need to be re-mapped to a different location in
             // a later plugins release.  This is for legacy plugins to work with Cordova.
 
             if (options && options.android_studio === true) {
                 // If a Java file is using the new directory structure, don't penalize it
                 if (!obj.targetDir.includes('app/src/main')) {
                     if (obj.src.endsWith('.java')) {
-                      dest = path.join('app/src/main/java', obj.targetDir.substring(4), path.basename(obj.src));
+                        dest = path.join('app/src/main/java', obj.targetDir.substring(4), path.basename(obj.src));
                     } else if (obj.src.endsWith('.xml')) {
-                      // We are making a huge assumption here that XML files will be going to res/xml or values/xml
-                      dest = path.join('app/src/main', obj.targetDir, path.basename(obj.src));
+                        // We are making a huge assumption here that XML files will be going to res/xml or values/xml
+                        dest = path.join('app/src/main', obj.targetDir, path.basename(obj.src));
                     }
                 }
             }
