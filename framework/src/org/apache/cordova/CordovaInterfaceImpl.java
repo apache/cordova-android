@@ -21,6 +21,7 @@ package org.apache.cordova;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -82,6 +83,11 @@ public class CordovaInterfaceImpl implements CordovaInterface {
 
     @Override
     public Activity getActivity() {
+        return activity;
+    }
+
+    @Override
+    public Context getContext() {
         return activity;
     }
 
