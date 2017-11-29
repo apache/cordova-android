@@ -346,6 +346,11 @@ declare namespace bigInt {
          * Converts a bigInt to a string.
          */
         toString(radix?: number): string;
+		
+		/**
+         * Converts a bigInt to a string. This method is called behind the scenes in JSON.stringify.
+         */
+        toJSON(): string;
 
         /**
          * Converts a bigInt to a native Javascript number. This override allows you to use native

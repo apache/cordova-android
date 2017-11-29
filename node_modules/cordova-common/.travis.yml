@@ -5,6 +5,7 @@ git:
 node_js:
   - "4"
   - "6"
+  - "8"
 install:
   - npm install
   - npm install -g codecov
