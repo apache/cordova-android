@@ -19,6 +19,7 @@
 
 package org.apache.cordova;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -227,6 +228,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
         requestPermissions(plugin, requestCode, permissions);
     }
 
+        @SuppressLint("NewApi")
     public void requestPermissions(CordovaPlugin plugin, int requestCode, String [] permissions) {
         int mappedRequestCode = permissionResultCallbacks.registerCallback(plugin, requestCode);
         getActivity().requestPermissions(permissions, mappedRequestCode);

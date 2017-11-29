@@ -71,7 +71,7 @@ describe('android project handler', function () {
         });
 
         describe('of <resource-file> elements', function () {
-            it('Test#003 : should copy files', function () {
+            it('Test#003 : should copy files to the correct location on a non-Android Studio project', function () {
                 android['resource-file'].install(valid_resources[0], dummyPluginInfo, dummyProject);
                 expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin, 'android-resource.xml', temp, path.join('res', 'xml', 'dummy.xml'), false);
             });
@@ -264,15 +264,20 @@ describe('android project handler', function () {
                 android['resource-file'].uninstall(valid_resources[0], dummyPluginInfo, dummyProject);
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('res/xml/dummy.xml'));
             });
+            it('Test#021 : should remove files for Android Studio projects', function () {
+                android['resource-file'].install(valid_resources[0], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['resource-file'].uninstall(valid_resources[0], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/xml/dummy.xml'));
+            });
         });
 
         describe('of <source-file> elements', function () {
-            it('Test#021 : should remove stuff by calling common.deleteJava', function () {
+            it('Test#022 : should remove stuff by calling common.deleteJava', function () {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject);
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('src/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
             });
-            it('Test#022 : should remove stuff by calling common.deleteJava for Android Studio projects', function () {
+            it('Test#023 : should remove stuff by calling common.deleteJava for Android Studio projects', function () {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject, {android_studio: true});
                 android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
@@ -291,30 +296,30 @@ describe('android project handler', function () {
                 spyOn(dummyProject, 'removeGradleReference');
             });
 
-            it('Test#023 : should throw if framework doesn\'t have "src" attribute', function () {
+            it('Test#024 : should throw if framework doesn\'t have "src" attribute', function () {
                 expect(function () { android.framework.uninstall({}, dummyPluginInfo, dummyProject); }).toThrow();
             });
 
-            it('Test#024 : should uninstall framework without "parent" attribute into project root', function () {
+            it('Test#025 : should uninstall framework without "parent" attribute into project root', function () {
                 var framework = {src: 'plugin-lib'};
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSystemLibrary).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
-            it('Test#025 : should uninstall framework with "parent" attribute into parent framework dir', function () {
+            it('Test#026 : should uninstall framework with "parent" attribute into parent framework dir', function () {
                 var childFramework = {src: 'plugin-lib2', parent: 'plugin-lib'};
                 android.framework.uninstall(childFramework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSystemLibrary).toHaveBeenCalledWith(path.resolve(dummyProject.projectDir, childFramework.parent), someString);
             });
 
-            it('Test#026 : should remove framework sources if "custom" attribute is set', function () {
+            it('Test#027 : should remove framework sources if "custom" attribute is set', function () {
                 var framework = {src: 'plugin-lib', custom: true};
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSubProject).toHaveBeenCalledWith(dummyProject.projectDir, someString);
                 expect(removeFileSpy).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
-            it('Test#27 : should install gradleReference using project.removeGradleReference', function () {
+            it('Test#28 : should install gradleReference using project.removeGradleReference', function () {
                 var framework = {src: 'plugin-lib', custom: true, type: 'gradleReference'};
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(removeFileSpy).toHaveBeenCalledWith(dummyProject.projectDir, someString);
@@ -340,13 +345,13 @@ describe('android project handler', function () {
                 });
             });
 
-            it('Test#028 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
+            it('Test#029 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
                 android['js-module'].uninstall(jsModule, dummyPluginInfo, dummyProject, {usePlatformWww: true});
                 expect(shell.rm).toHaveBeenCalledWith('-Rf', wwwDest);
                 expect(shell.rm).toHaveBeenCalledWith('-Rf', platformWwwDest);
             });
 
-            it('Test#29 : should put module to www only when options.usePlatformWww flag is not specified', function () {
+            it('Test#030 : should put module to www only when options.usePlatformWww flag is not specified', function () {
                 android['js-module'].uninstall(jsModule, dummyPluginInfo, dummyProject);
                 expect(shell.rm).toHaveBeenCalledWith('-Rf', wwwDest);
                 expect(shell.rm).not.toHaveBeenCalledWith('-Rf', platformWwwDest);
@@ -370,13 +375,13 @@ describe('android project handler', function () {
                 });
             });
 
-            it('Test#030 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
+            it('Test#031 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
                 android.asset.uninstall(asset, dummyPluginInfo, dummyProject, {usePlatformWww: true});
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), wwwDest);
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), platformWwwDest);
             });
 
-            it('Test#31 : should put module to www only when options.usePlatformWww flag is not specified', function () {
+            it('Test#032 : should put module to www only when options.usePlatformWww flag is not specified', function () {
                 android.asset.uninstall(asset, dummyPluginInfo, dummyProject);
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), wwwDest);
                 expect(shell.rm).not.toHaveBeenCalledWith(jasmine.any(String), platformWwwDest);

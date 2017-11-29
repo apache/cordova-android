@@ -26,9 +26,10 @@ var fs = require('fs');
 var check_reqs = require('./../templates/cordova/lib/check_reqs');
 var ROOT = path.join(__dirname, '..', '..');
 
-var MIN_SDK_VERSION = 16;
+var MIN_SDK_VERSION = 19;
 
 var CordovaError = require('cordova-common').CordovaError;
+var AndroidStudio = require('../templates/cordova/lib/AndroidStudio');
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
 
 // Export all helper functions, and make sure internally within this module, we
@@ -54,10 +55,16 @@ function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-function copyJsAndLibrary (projectPath, shared, projectName) {
+function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
-    shell.cp('-f', srcCordovaJsPath, path.join(projectPath, 'assets', 'www', 'cordova.js'));
+    var app_path = path.join(projectPath, 'app', 'src', 'main');
+
+    if (isLegacy) {
+        app_path = projectPath;
+    }
+
+    shell.cp('-f', srcCordovaJsPath, path.join(app_path, 'assets', 'www', 'cordova.js'));
 
     // Copy the cordova.js file to platforms/<platform>/platform_www/
     // The www dir is nuked on each prepare so we keep cordova.js in platform_www
@@ -70,7 +77,7 @@ function copyJsAndLibrary (projectPath, shared, projectName) {
 
     // Don't fail if there are no old jars.
     exports.setShellFatal(false, function () {
-        shell.ls(path.join(projectPath, 'libs', 'cordova-*.jar')).forEach(function (oldJar) {
+        shell.ls(path.join(app_path, 'libs', 'cordova-*.jar')).forEach(function (oldJar) {
             console.log('Deleting ' + oldJar);
             shell.rm('-f', oldJar);
         });
@@ -136,16 +143,24 @@ function writeProjectProperties (projectPath, target_api) {
     fs.writeFileSync(dstPath, data);
 }
 
-function prepBuildFiles (projectPath) {
+// This makes no sense, what if you're building with a different build system?
+function prepBuildFiles (projectPath, builder) {
     var buildModule = require(path.resolve(projectPath, 'cordova/lib/builders/builders'));
-    buildModule.getBuilder('gradle').prepBuildFiles();
+    buildModule.getBuilder(builder).prepBuildFiles();
 }
 
-function copyBuildRules (projectPath) {
+function copyBuildRules (projectPath, isLegacy) {
     var srcDir = path.join(ROOT, 'bin', 'templates', 'project');
 
-    shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
-    shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+    if (isLegacy) {
+        // The project's build.gradle is identical to the earlier build.gradle, so it should still work
+        shell.cp('-f', path.join(srcDir, 'legacy', 'build.gradle'), projectPath);
+        shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+    } else {
+        shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
+        shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app'));
+        shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+    }
 }
 
 function copyScripts (projectPath) {
@@ -271,25 +286,37 @@ exports.create = function (project_path, config, options, events) {
 
             exports.setShellFatal(true, function () {
                 var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
+                var app_path = path.join(project_path, 'app', 'src', 'main');
+
                 // copy project template
-                shell.cp('-r', path.join(project_template_dir, 'assets'), project_path);
-                shell.cp('-r', path.join(project_template_dir, 'res'), project_path);
+                shell.mkdir('-p', app_path);
+                shell.cp('-r', path.join(project_template_dir, 'assets'), app_path);
+                shell.cp('-r', path.join(project_template_dir, 'res'), app_path);
                 shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
 
                 // Manually create directories that would be empty within the template (since git doesn't track directories).
-                shell.mkdir(path.join(project_path, 'libs'));
+                shell.mkdir(path.join(app_path, 'libs'));
 
                 // copy cordova.js, cordova.jar
                 exports.copyJsAndLibrary(project_path, options.link, safe_activity_name);
 
+                // Set up ther Android Studio paths
+                var java_path = path.join(app_path, 'java');
+                var assets_path = path.join(app_path, 'assets');
+                var resource_path = path.join(app_path, 'res');
+                shell.mkdir('-p', java_path);
+                shell.mkdir('-p', assets_path);
+                shell.mkdir('-p', resource_path);
+
                 // interpolate the activity name and package
                 var packagePath = package_name.replace(/\./g, path.sep);
-                var activity_dir = path.join(project_path, 'src', packagePath);
+                var activity_dir = path.join(java_path, packagePath);
                 var activity_path = path.join(activity_dir, safe_activity_name + '.java');
+
                 shell.mkdir('-p', activity_dir);
                 shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
                 shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
-                shell.sed('-i', /__NAME__/, project_name, path.join(project_path, 'res', 'values', 'strings.xml'));
+                shell.sed('-i', /__NAME__/, project_name, path.join(app_path, 'res', 'values', 'strings.xml'));
                 shell.sed('-i', /__ID__/, package_name, activity_path);
 
                 var manifest = new AndroidManifest(path.join(project_template_dir, 'AndroidManifest.xml'));
@@ -297,7 +324,7 @@ exports.create = function (project_path, config, options, events) {
                     .setTargetSdkVersion(target_api.split('-')[1])
                     .getActivity().setName(safe_activity_name);
 
-                var manifest_path = path.join(project_path, 'AndroidManifest.xml');
+                var manifest_path = path.join(app_path, 'AndroidManifest.xml');
                 manifest.write(manifest_path);
 
                 exports.copyScripts(project_path);
@@ -305,7 +332,7 @@ exports.create = function (project_path, config, options, events) {
             });
             // Link it to local android install.
             exports.writeProjectProperties(project_path, target_api);
-            exports.prepBuildFiles(project_path);
+            exports.prepBuildFiles(project_path, 'studio');
             events.emit('log', generateDoneMessage('create', options.link));
         }).thenResolve(project_path);
 };
@@ -326,7 +353,18 @@ exports.update = function (projectPath, options, events) {
     return Q()
         .then(function () {
 
-            var manifest = new AndroidManifest(path.join(projectPath, 'AndroidManifest.xml'));
+            var isAndroidStudio = AndroidStudio.isAndroidStudioProject(projectPath);
+            var isLegacy = !isAndroidStudio;
+            var manifest = null;
+            var builder = 'gradle';
+
+            if (isAndroidStudio) {
+                manifest = new AndroidManifest(path.join(projectPath, 'app', 'main', 'AndroidManifest.xml'));
+                builder = 'studio';
+            } else {
+                manifest = new AndroidManifest(path.join(projectPath, 'AndroidManifest.xml'));
+                builder = 'gradle';
+            }
 
             if (Number(manifest.getMinSdkVersion()) < MIN_SDK_VERSION) {
                 events.emit('verbose', 'Updating minSdkVersion to ' + MIN_SDK_VERSION + ' in AndroidManifest.xml');
@@ -338,11 +376,11 @@ exports.update = function (projectPath, options, events) {
             var projectName = manifest.getActivity().getName();
             var target_api = check_reqs.get_target();
 
-            exports.copyJsAndLibrary(projectPath, options.link, projectName);
+            exports.copyJsAndLibrary(projectPath, options.link, projectName, isLegacy);
             exports.copyScripts(projectPath);
-            exports.copyBuildRules(projectPath);
+            exports.copyBuildRules(projectPath, isLegacy);
             exports.writeProjectProperties(projectPath, target_api);
-            exports.prepBuildFiles(projectPath);
+            exports.prepBuildFiles(projectPath, builder);
             events.emit('log', generateDoneMessage('update', options.link));
         }).thenResolve(projectPath);
 };

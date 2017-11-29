@@ -127,6 +127,7 @@ describe('create', function () {
         var Manifest_mock = function () {};
         var revert_manifest_mock;
         var project_path = path.join('some', 'path');
+        var app_path = path.join(project_path, 'app', 'src', 'main');
         var default_templates = path.join(__dirname, '..', '..', 'bin', 'templates', 'project');
         var fake_android_target = 'android-1337';
         beforeEach(function () {
@@ -217,15 +218,15 @@ describe('create', function () {
         describe('happy path', function () {
             it('should copy project templates from a specified custom template', function (done) {
                 create.create(project_path, config_mock, {customTemplate: '/template/path'}, events_mock).then(function () {
-                    expect(shell.cp).toHaveBeenCalledWith('-r', path.join('/template/path', 'assets'), project_path);
-                    expect(shell.cp).toHaveBeenCalledWith('-r', path.join('/template/path', 'res'), project_path);
+                    expect(shell.cp).toHaveBeenCalledWith('-r', path.join('/template/path', 'assets'), app_path);
+                    expect(shell.cp).toHaveBeenCalledWith('-r', path.join('/template/path', 'res'), app_path);
                     expect(shell.cp).toHaveBeenCalledWith(path.join('/template/path', 'gitignore'), path.join(project_path, '.gitignore'));
                 }).fail(fail).done(done);
             });
             it('should copy project templates from the default templates location if no custom template is provided', function (done) {
                 create.create(project_path, config_mock, {}, events_mock).then(function () {
-                    expect(shell.cp).toHaveBeenCalledWith('-r', path.join(default_templates, 'assets'), project_path);
-                    expect(shell.cp).toHaveBeenCalledWith('-r', path.join(default_templates, 'res'), project_path);
+                    expect(shell.cp).toHaveBeenCalledWith('-r', path.join(default_templates, 'assets'), app_path);
+                    expect(shell.cp).toHaveBeenCalledWith('-r', path.join(default_templates, 'res'), app_path);
                     expect(shell.cp).toHaveBeenCalledWith(path.join(default_templates, 'gitignore'), path.join(project_path, '.gitignore'));
                 }).fail(fail).done(done);
             });
@@ -237,13 +238,13 @@ describe('create', function () {
             it('should create a java src directory based on the provided project package name', function (done) {
                 config_mock.packageName.and.returnValue('org.apache.cordova');
                 create.create(project_path, config_mock, {}, events_mock).then(function () {
-                    expect(shell.mkdir).toHaveBeenCalledWith('-p', path.join(project_path, 'src', 'org', 'apache', 'cordova'));
+                    expect(shell.mkdir).toHaveBeenCalledWith('-p', path.join(app_path, 'java', 'org', 'apache', 'cordova'));
                 }).fail(fail).done(done);
             });
             it('should copy, rename and interpolate the template Activity java class with the project-specific activity name and package name', function (done) {
                 config_mock.packageName.and.returnValue('org.apache.cordova');
                 config_mock.android_activityName.and.returnValue('CEEDEEVEE');
-                var activity_path = path.join(project_path, 'src', 'org', 'apache', 'cordova', 'CEEDEEVEE.java');
+                var activity_path = path.join(app_path, 'java', 'org', 'apache', 'cordova', 'CEEDEEVEE.java');
                 create.create(project_path, config_mock, {}, events_mock).then(function () {
                     expect(shell.cp).toHaveBeenCalledWith('-f', path.join(default_templates, 'Activity.java'), activity_path);
                     expect(shell.sed).toHaveBeenCalledWith('-i', /__ACTIVITY__/, 'CEEDEEVEE', activity_path);
@@ -253,7 +254,7 @@ describe('create', function () {
             it('should interpolate the project name into strings.xml', function (done) {
                 config_mock.name.and.returnValue('IncredibleApp');
                 create.create(project_path, config_mock, {}, events_mock).then(function () {
-                    expect(shell.sed).toHaveBeenCalledWith('-i', /__NAME__/, 'IncredibleApp', path.join(project_path, 'res', 'values', 'strings.xml'));
+                    expect(shell.sed).toHaveBeenCalledWith('-i', /__NAME__/, 'IncredibleApp', path.join(app_path, 'res', 'values', 'strings.xml'));
                 }).fail(fail).done(done);
             });
             it('should copy template scripts into generated project', function (done) {
@@ -273,7 +274,7 @@ describe('create', function () {
             });
             it('should prepare build files', function (done) {
                 create.create(project_path, config_mock, {}, events_mock).then(function () {
-                    expect(create.prepBuildFiles).toHaveBeenCalledWith(project_path);
+                    expect(create.prepBuildFiles).toHaveBeenCalledWith(project_path, 'studio');
                 }).fail(fail).done(done);
             });
         });

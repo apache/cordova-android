@@ -81,7 +81,7 @@ module.exports.install = function (target, buildResults) {
         return module.exports.resolveTarget(target);
     }).then(function (resolvedTarget) {
         var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
-        var manifest = new AndroidManifest(path.join(__dirname, '../../AndroidManifest.xml'));
+        var manifest = new AndroidManifest(path.join(__dirname, '../../app/src/main/AndroidManifest.xml'));
         var pkgName = manifest.getPackageId();
         var launchName = pkgName + '/.' + manifest.getActivity().getName();
         events.emit('log', 'Using apk: ' + apk_path);
