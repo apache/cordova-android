@@ -129,9 +129,9 @@ bintray {
         licenses = ['Apache-2.0']
         labels = ['android', 'cordova', 'phonegap']
         version {
-            name = '6.5.0-dev'
+            name = '7.0.0'
             released  = new Date()
-            vcsTag = '6.5.0-dev'
+            vcsTag = '7.0.0'
         }
     }
 }
