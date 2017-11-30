@@ -26,10 +26,7 @@ var fs = require('fs');
 var check_reqs = require('./../templates/cordova/lib/check_reqs');
 var ROOT = path.join(__dirname, '..', '..');
 
-var MIN_SDK_VERSION = 19;
-
 var CordovaError = require('cordova-common').CordovaError;
-var AndroidStudio = require('../templates/cordova/lib/AndroidStudio');
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
 
 // Export all helper functions, and make sure internally within this module, we
@@ -349,15 +346,15 @@ function generateDoneMessage (type, link) {
 // Returns a promise.
 exports.update = function (projectPath, options, events) {
 
-  var errorString =
-    'An in-place platform update is not supported. \n' +
-    'The `platforms` folder is always treated as a build artifact in the CLI workflow.\n' +
-    'To update your platform, you have to remove, then add your android platform again.\n' +
-    'Make sure you save your plugins beforehand using `cordova plugin save`, and save \n' + 'a copy of the platform first if you had manual changes in it.\n' +
-    '\tcordova plugin save\n' +
-    '\tcordova platform rm android\n' +
-    '\tcordova platform add android\n'
-    ;
+    var errorString =
+        'An in-place platform update is not supported. \n' +
+        'The `platforms` folder is always treated as a build artifact in the CLI workflow.\n' +
+        'To update your platform, you have to remove, then add your android platform again.\n' +
+        'Make sure you save your plugins beforehand using `cordova plugin save`, and save \n' + 'a copy of the platform first if you had manual changes in it.\n' +
+        '\tcordova plugin save\n' +
+        '\tcordova platform rm android\n' +
+        '\tcordova platform add android\n'
+        ;
 
     return Q.reject(errorString);
 };
