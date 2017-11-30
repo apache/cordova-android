@@ -348,39 +348,16 @@ function generateDoneMessage (type, link) {
 
 // Returns a promise.
 exports.update = function (projectPath, options, events) {
-    options = options || {};
 
-    return Q()
-        .then(function () {
+  var errorString =
+    'An in-place platform update is not supported. \n' +
+    'The `platforms` folder is always treated as a build artifact in the CLI workflow.\n' +
+    'To update your platform, you have to remove, then add your android platform again.\n' +
+    'Make sure you save your plugins beforehand using `cordova plugin save`, and save \n' + 'a copy of the platform first if you had manual changes in it.\n' +
+    '\tcordova plugin save\n' +
+    '\tcordova platform rm android\n' +
+    '\tcordova platform add android\n'
+    ;
 
-            var isAndroidStudio = AndroidStudio.isAndroidStudioProject(projectPath);
-            var isLegacy = !isAndroidStudio;
-            var manifest = null;
-            var builder = 'gradle';
-
-            if (isAndroidStudio) {
-                manifest = new AndroidManifest(path.join(projectPath, 'app', 'main', 'AndroidManifest.xml'));
-                builder = 'studio';
-            } else {
-                manifest = new AndroidManifest(path.join(projectPath, 'AndroidManifest.xml'));
-                builder = 'gradle';
-            }
-
-            if (Number(manifest.getMinSdkVersion()) < MIN_SDK_VERSION) {
-                events.emit('verbose', 'Updating minSdkVersion to ' + MIN_SDK_VERSION + ' in AndroidManifest.xml');
-                manifest.setMinSdkVersion(MIN_SDK_VERSION);
-            }
-
-            manifest.setDebuggable(false).write();
-
-            var projectName = manifest.getActivity().getName();
-            var target_api = check_reqs.get_target();
-
-            exports.copyJsAndLibrary(projectPath, options.link, projectName, isLegacy);
-            exports.copyScripts(projectPath);
-            exports.copyBuildRules(projectPath, isLegacy);
-            exports.writeProjectProperties(projectPath, target_api);
-            exports.prepBuildFiles(projectPath, builder);
-            events.emit('log', generateDoneMessage('update', options.link));
-        }).thenResolve(projectPath);
+    return Q.reject(errorString);
 };
