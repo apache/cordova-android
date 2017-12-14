@@ -23,7 +23,7 @@ android {
     buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "org.apache.cordova.unittests"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
