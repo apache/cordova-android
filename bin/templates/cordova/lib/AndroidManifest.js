@@ -65,9 +65,12 @@ AndroidManifest.prototype.setPackageId = function (pkgId) {
 
 AndroidManifest.prototype.getActivity = function () {
     var activity = this.doc.getroot().find('./application/activity');
+    var originalActivityName = activity.attrib['android:name'];
+    var activityName = originalActivityName.charAt(0) === '.' ? originalActivityName.slice(1) : originalActivityName;
+
     return {
         getName: function () {
-            return activity.attrib['android:name'];
+            return activityName;
         },
         setName: function (name) {
             if (!name) {
@@ -102,30 +105,31 @@ AndroidManifest.prototype.getActivity = function () {
     };
 };
 
-['minSdkVersion', 'maxSdkVersion', 'targetSdkVersion'].forEach(function (sdkPrefName) {
-    // Copy variable reference to avoid closure issues
-    var prefName = sdkPrefName;
+['minSdkVersion', 'maxSdkVersion', 'targetSdkVersion']
+    .forEach(function (sdkPrefName) {
+        // Copy variable reference to avoid closure issues
+        var prefName = sdkPrefName;
 
-    AndroidManifest.prototype['get' + capitalize(prefName)] = function () {
-        var usesSdk = this.doc.getroot().find('./uses-sdk');
-        return usesSdk && usesSdk.attrib['android:' + prefName];
-    };
+        AndroidManifest.prototype['get' + capitalize(prefName)] = function () {
+            var usesSdk = this.doc.getroot().find('./uses-sdk');
+            return usesSdk && usesSdk.attrib['android:' + prefName];
+        };
 
-    AndroidManifest.prototype['set' + capitalize(prefName)] = function (prefValue) {
-        var usesSdk = this.doc.getroot().find('./uses-sdk');
+        AndroidManifest.prototype['set' + capitalize(prefName)] = function (prefValue) {
+            var usesSdk = this.doc.getroot().find('./uses-sdk');
 
-        if (!usesSdk && prefValue) { // if there is no required uses-sdk element, we should create it first
-            usesSdk = new et.Element('uses-sdk');
-            this.doc.getroot().append(usesSdk);
-        }
+            if (!usesSdk && prefValue) { // if there is no required uses-sdk element, we should create it first
+                usesSdk = new et.Element('uses-sdk');
+                this.doc.getroot().append(usesSdk);
+            }
 
-        if (prefValue) {
-            usesSdk.attrib['android:' + prefName] = prefValue;
-        }
+            if (prefValue) {
+                usesSdk.attrib['android:' + prefName] = prefValue;
+            }
 
-        return this;
-    };
-});
+            return this;
+        };
+    });
 
 AndroidManifest.prototype.getDebuggable = function () {
     return this.doc.getroot().find('./application').attrib['android:debuggable'] === 'true';
@@ -150,7 +154,7 @@ AndroidManifest.prototype.setDebuggable = function (value) {
  *   manifest will be written to file it has been read from.
  */
 AndroidManifest.prototype.write = function (destPath) {
-    fs.writeFileSync(destPath || this.path, this.doc.write({indent: 4}), 'utf-8');
+    fs.writeFileSync(destPath || this.path, this.doc.write({ indent: 4 }), 'utf-8');
 };
 
 module.exports = AndroidManifest;
