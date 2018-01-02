@@ -161,4 +161,17 @@ public class NativeToJsMessageQueueTest {
         assertEquals(result, "cordova.callbackFromNative('37',true,1,[0,1,2,3,4],false);");
     }
 
+    @Test
+    public void testNullPopAndEncodeAsJs()
+    {
+        NativeToJsMessageQueue queue = new NativeToJsMessageQueue();
+        queue.addBridgeMode(new NativeToJsMessageQueue.NoOpBridgeMode());
+        queue.setBridgeMode(0);
+
+        PluginResult result = new PluginResult(PluginResult.Status.OK, (String)null);
+        queue.addPluginResult(result, TEST_CALLBACK_ID);
+        assertFalse(queue.isEmpty());
+        String resultString = queue.popAndEncodeAsJs();
+        assertEquals(resultString, "cordova.callbackFromNative('" + TEST_CALLBACK_ID + "',true,1,[null],false);");
+    }
 }
