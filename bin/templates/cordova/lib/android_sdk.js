@@ -62,7 +62,8 @@ module.exports.version_string_to_api_level = {
     '5.1': 22,
     '6.0': 23,
     '7.0': 24,
-    '7.1.1': 25
+    '7.1.1': 25,
+    '8.0': 26
 };
 
 function parse_targets (output) {
