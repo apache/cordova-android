@@ -20,6 +20,9 @@
 -->
 # Cordova-common Release Notes
 
+### 2.2.1 (Dec 14, 2017)
+* [CB-13674](https://issues.apache.org/jira/browse/CB-13674): updated dependencies
+
 ### 2.2.0 (Nov 22, 2017)
 * [CB-13471](https://issues.apache.org/jira/browse/CB-13471) File Provider fix belongs in cordova-common 
 * [CB-11244](https://issues.apache.org/jira/browse/CB-11244) Spot fix for upcoming `cordova-android@7` changes. https://github.com/apache/cordova-android/pull/389

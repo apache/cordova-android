@@ -31,7 +31,7 @@ function ConfigParser (path) {
         this.cdvNamespacePrefix = getCordovaNamespacePrefix(this.doc);
         et.register_namespace(this.cdvNamespacePrefix, 'http://cordova.apache.org/ns/1.0');
     } catch (e) {
-        console.error('Parsing ' + path + ' failed');
+        events.emit('error', 'Parsing ' + path + ' failed');
         throw e;
     }
     var r = this.doc.getroot();

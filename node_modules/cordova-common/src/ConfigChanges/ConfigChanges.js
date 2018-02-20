@@ -32,7 +32,7 @@
 var path = require('path');
 var et = require('elementtree');
 var ConfigKeeper = require('./ConfigKeeper');
-var CordovaLogger = require('../CordovaLogger');
+var events = require('../events');
 
 var mungeutil = require('./munge-util');
 var xml_helpers = require('../util/xml-helpers');
@@ -134,7 +134,7 @@ function add_plugin_changes (pluginInfo, plugin_vars, is_top_level, should_incre
                 ' cannot be added. <edit-config> changes in this plugin conflicts with <edit-config> changes in config.xml. Conflicts must be resolved before plugin can be added.');
         }
         if (plugin_force) {
-            CordovaLogger.get().log(CordovaLogger.WARN, '--force is used. edit-config will overwrite conflicts if any. Conflicting plugins may not work as expected.');
+            events.emit('warn', '--force is used. edit-config will overwrite conflicts if any. Conflicting plugins may not work as expected.');
 
             // remove conflicting munges
             var conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
@@ -198,7 +198,7 @@ function add_config_changes (config, should_increment) {
                 }
             }
             if (Object.keys(isConflictingInfo.conflictingMunge.files).length !== 0) {
-                CordovaLogger.get().log(CordovaLogger.WARN, 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
+                events.emit('warn', 'Conflict found, edit-config changes from config.xml will overwrite plugin.xml changes');
 
                 // remove conflicting plugin.xml munges
                 conflict_munge = mungeutil.decrement_munge(platform_config.config_munge, isConflictingInfo.conflictingMunge);
