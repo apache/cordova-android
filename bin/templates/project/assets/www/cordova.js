@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '7.1.0-dev';
+var PLATFORM_VERSION_BUILD_LABEL = '7.2.0-dev';
 // file: src/scripts/require.js
 
 /* jshint -W079 */
@@ -326,7 +326,7 @@ module.exports = cordova;
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/android/nativeapiprovider.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/android/nativeapiprovider.js
 define("cordova/android/nativeapiprovider", function(require, exports, module) {
 
 /**
@@ -349,7 +349,7 @@ module.exports = {
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/android/promptbasednativeapi.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/android/promptbasednativeapi.js
 define("cordova/android/promptbasednativeapi", function(require, exports, module) {
 
 /**
@@ -881,7 +881,7 @@ module.exports = channel;
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/exec.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/exec.js
 define("cordova/exec", function(require, exports, module) {
 
 /**
@@ -1639,7 +1639,7 @@ exports.reset();
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/platform.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/platform.js
 define("cordova/platform", function(require, exports, module) {
 
 // The last resume event that was received that had the result of a plugin call.
@@ -1749,7 +1749,7 @@ function onMessageFromNative(msg) {
 
 });
 
-// file: /Users/jbowser/cordova/cordova-android/cordova-js-src/plugin/android/app.js
+// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/plugin/android/app.js
 define("cordova/plugin/android/app", function(require, exports, module) {
 
 var exec = require('cordova/exec');
