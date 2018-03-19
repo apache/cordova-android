@@ -248,7 +248,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
     }).then(function () {
         if (plugin.getFrameworks(this.platform).length === 0) return;
         selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
-          // This should pick the correct builder, not just get gradle
+        // This should pick the correct builder, not just get gradle
         require('./lib/builders/builders').getBuilder(this.builder).prepBuildFiles();
     }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
