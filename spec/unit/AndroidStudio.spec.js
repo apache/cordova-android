@@ -8,9 +8,4 @@ describe('AndroidStudio module', function () {
         var isAndStud = AndroidStudio.isAndroidStudioProject(root);
         expect(isAndStud).toBe(true);
     });
-    it('should return false non Android Studio project', function () {
-        var root = path.join(__dirname, '../fixtures/android_project/');
-        var isAndStud = AndroidStudio.isAndroidStudioProject(root);
-        expect(isAndStud).toBe(false);
-    });
 });
