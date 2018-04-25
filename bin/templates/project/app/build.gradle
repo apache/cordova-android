@@ -28,6 +28,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.3.0'
+        classpath 'com.google.gms:google-services:3.2.1'
     }
 }
 
@@ -355,4 +356,8 @@ for (def func : cdvPluginPostBuildExtras) {
 //     ext.postBuildExtras = { ... code here ... }
 if (hasProperty('postBuildExtras')) {
     postBuildExtras()
+}
+
+if (cdvHelpers.getConfigPreference('EnableGoogleServicesPlugin', 'false').toBoolean()) {
+    apply plugin: 'com.google.gms.google-services'
 }
