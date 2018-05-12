@@ -19,6 +19,7 @@
 package org.apache.cordova;
 
 import org.apache.cordova.CordovaArgs;
+import org.apache.cordova.CordovaMethod;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CallbackContext;
@@ -34,6 +35,9 @@ import android.os.Bundle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Plugins must extend this class and override one of the execute methods.
@@ -43,6 +47,7 @@ public class CordovaPlugin {
     public CordovaInterface cordova;
     protected CordovaPreferences preferences;
     private String serviceName;
+    private Map<String, Method> methodsMap;
 
     /**
      * Call this after constructing to initialize the plugin.
@@ -132,6 +137,35 @@ public class CordovaPlugin {
      * @return                Whether the action was valid.
      */
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+        if (methodsMap == null) {
+            methodsMap = new HashMap<String, Method>();
+            for (Method method : this.getClass().getDeclaredMethods()) {
+                CordovaMethod cordovaMethod = method.getAnnotation(CordovaMethod.class);
+                if (cordovaMethod != null) {
+                    try {
+                        method.setAccessible(true);
+                        if (cordovaMethod.action().isEmpty()) {
+                            methodsMap.put(method.getName(), method);
+                        } else {
+                            methodsMap.put(cordovaMethod.action(), method);
+                        }
+                    } catch (SecurityException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        Method method = methodsMap.get(action);
+        if (method != null) {
+            try {
+                method.invoke(this, args, callbackContext);
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+
         return false;
     }
 
