@@ -18,8 +18,10 @@
 */
 
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 buildscript {
+    ext.kotlin_version = '1.2.41'
     repositories {
         mavenCentral()
         google()
@@ -30,6 +32,7 @@ buildscript {
         apply from: '../CordovaLib/cordova.gradle'
 
         classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         if(cdvHelpers.getConfigPreference('GradlePluginGoogleServicesEnabled', 'false').toBoolean()) {
             String defaultGradlePluginGoogleServicesVersion = '4.2.0'
@@ -71,11 +74,11 @@ ext {
 
     // The value for android.compileSdkVersion.
     if (!project.hasProperty('cdvCompileSdkVersion')) {
-        cdvCompileSdkVersion = null;
+        cdvCompileSdkVersion = null
     }
     // The value for android.buildToolsVersion.
     if (!project.hasProperty('cdvBuildToolsVersion')) {
-        cdvBuildToolsVersion = null;
+        cdvBuildToolsVersion = null
     }
     // Sets the versionCode to the given value.
     if (!project.hasProperty('cdvVersionCode')) {
@@ -312,6 +315,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     // SUB-PROJECT DEPENDENCIES START
     debugCompile(project(path: ":CordovaLib", configuration: "debug"))
     releaseCompile(project(path: ":CordovaLib", configuration: "release"))
