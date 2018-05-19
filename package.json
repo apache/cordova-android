@@ -24,7 +24,7 @@
     "cover": "istanbul cover --root bin --print detail jasmine -- --config=spec/unit/jasmine.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "java-unit-tests": "cd test && node run_java_unit_tests.js && cd ..",
-    "eslint": "eslint bin && eslint spec"
+    "eslint": "eslint bin spec test"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
