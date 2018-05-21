@@ -19,8 +19,6 @@
     under the License.
 */
 
-/* jshint node: true */
-
 'use strict';
 
 var events = require('cordova-common').events;

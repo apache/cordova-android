@@ -19,8 +19,6 @@
        under the License.
 */
 
-/* jshint sub:true */
-
 var android_versions = require('android-versions');
 var retry = require('./retry');
 var build = require('./build');

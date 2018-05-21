@@ -14,8 +14,6 @@
  *
 */
 
-/* jshint unused: vars */
-
 var fs = require('fs');
 var path = require('path');
 var shell = require('shelljs');

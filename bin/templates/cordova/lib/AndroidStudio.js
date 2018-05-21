@@ -4,8 +4,6 @@
  *  @param {String} root Root folder of the project
  */
 
-/* jshint esnext: false */
-
 module.exports.isAndroidStudioProject = function isAndroidStudioProject (root) {
     return true;
 };

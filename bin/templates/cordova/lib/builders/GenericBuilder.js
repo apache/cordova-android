@@ -109,9 +109,7 @@ function findOutputApksHelper (dir, build_type, arch) {
     var archSpecific = !!/-x86|-arm/.exec(path.basename(ret[0]));
     // And show only arch-specific ones (or non-arch-specific)
     ret = ret.filter(function (p) {
-        /* jshint -W018 */
         return !!/-x86|-arm/.exec(path.basename(p)) === archSpecific;
-        /* jshint +W018 */
     });
 
     if (archSpecific && ret.length > 1 && arch) {
