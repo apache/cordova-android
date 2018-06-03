@@ -356,7 +356,7 @@ module.exports.run = function () {
         console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
         console.log('JAVA_HOME=' + process.env['JAVA_HOME']);
 
-        if (String(values[0]).startsWith('1.8.')) {
+        if (!String(values[0]).startsWith('1.8.')) {
             throw new CordovaError('Requirements check failed for JDK 1.8');
         }
 
