@@ -322,8 +322,8 @@ function studioPathRemap (obj) {
     if (!obj.targetDir.includes('app/src/main')) {
         if (obj.src.endsWith('.java')) {
             return path.join('app/src/main/java', obj.targetDir.substring(4), path.basename(obj.src));
-        } else if (obj.src.endsWith('.xml')) {
-            // We are making a huge assumption here that XML files will be going to res/xml or values/xml
+        } else {
+            // For all other files, add 'app/src/main' to the targetDir if it didn't have it already
             return path.join('app/src/main', obj.targetDir, path.basename(obj.src));
         }
     }
