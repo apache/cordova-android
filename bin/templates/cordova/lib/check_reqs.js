@@ -41,17 +41,6 @@ function forgivingWhichSync (cmd) {
     }
 }
 
-function tryCommand (cmd, errMsg, catchStderr) {
-    var d = Q.defer();
-    child_process.exec(cmd, function (err, stdout, stderr) {
-        if (err) d.reject(new CordovaError(errMsg));
-        // Sometimes it is necessary to return an stderr instead of stdout in case of success, since
-        // some commands prints theirs output to stderr instead of stdout. 'javac' is the example
-        else d.resolve((catchStderr ? stderr : stdout).trim());
-    });
-    return d.promise;
-}
-
 module.exports.isWindows = function () {
     return (os.platform() === 'win32');
 };
@@ -207,19 +196,22 @@ module.exports.check_java = function () {
             }
         }
     }).then(function () {
-        var msg =
-            'Failed to run "javac -version", make sure that you have a JDK installed.\n' +
-            'You can get it from: http://www.oracle.com/technetwork/java/javase/downloads.\n';
-        if (process.env['JAVA_HOME']) {
-            msg += 'Your JAVA_HOME is invalid: ' + process.env['JAVA_HOME'] + '\n';
-        }
-        // We use tryCommand with catchStderr = true, because
-        // javac writes version info to stderr instead of stdout
-        return tryCommand('javac -version', msg, true).then(function (output) {
-            // Let's check for at least Java 8, and keep it future proof so we can support Java 10
-            var match = /javac ((?:1\.)(?:[8-9]\.)(?:\d+))|((?:1\.)(?:[1-9]\d+\.)(?:\d+))/i.exec(output);
-            return match && match[1];
-        });
+        return Q.denodeify(child_process.exec)('javac -version')
+            .then(outputs => {
+                // outputs contains two entries: stdout and stderr
+                // Java <= 8 writes version info to stderr, Java >= 9 to stdout
+                const output = outputs.join('').trim();
+                const match = /javac\s+([\d.]+)/i.exec(output);
+                return match && match[1];
+            }, () => {
+                var msg =
+                'Failed to run "javac -version", make sure that you have a JDK installed.\n' +
+                'You can get it from: http://www.oracle.com/technetwork/java/javase/downloads.\n';
+                if (process.env['JAVA_HOME']) {
+                    msg += 'Your JAVA_HOME is invalid: ' + process.env['JAVA_HOME'] + '\n';
+                }
+                throw new CordovaError(msg);
+            });
     });
 };
 
@@ -366,8 +358,8 @@ module.exports.run = function () {
         console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
         console.log('JAVA_HOME=' + process.env['JAVA_HOME']);
 
-        if (!values[0]) {
-            throw new CordovaError('Requirements check failed for JDK 1.8 or greater');
+        if (!String(values[0]).startsWith('1.8.')) {
+            throw new CordovaError('Requirements check failed for JDK 1.8');
         }
 
         if (!values[1]) {
