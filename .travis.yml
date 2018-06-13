@@ -15,6 +15,7 @@ before_install:
     - node --version
     - gradle --version
     - echo y | android --silent update sdk --no-ui --all --filter platform-tools,tools,build-tools-26.0.2,android-26,android-25,extra-google-m2repository,extra-android-m2repository
+    - yes | sdkmanager --update
 android:
     components:
       - tools
