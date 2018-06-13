@@ -26,7 +26,7 @@ var superspawn = require('cordova-common').superspawn;
 // First we make sure the gradlew helper file is built and ready.
 var GradleBuilder = require('../bin/templates/cordova/lib/builders/GradleBuilder');
 var builder = new GradleBuilder(__dirname);
-var needs_gradlew_built = builder.runGradleWrapper('gradle', 'build.gradle');
+var needs_gradlew_built = builder.runGradleWrapper('gradle');
 
 if (!needs_gradlew_built) {
     // Due to interface of gradle builder, if the gradlew file already exists, `runGradleWrapper` returns undefined.
