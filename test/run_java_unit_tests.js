@@ -37,11 +37,15 @@ if (!needs_gradlew_built) {
 }
 
 needs_gradlew_built.then(function () {
+    console.log('Gradle wrapper is ready. Running tests now.');
     return superspawn.spawn(path.join(__dirname, 'gradlew'), ['test'], {stdio: 'inherit'});
-}, function (err) {
-    console.error('There was an error building the gradlew file:', err);
 }).then(function () {
     console.log('Tests completed successfully.');
-}).fail(function (err) {
-    console.error('Tests failed!', err);
+});
+
+process.on('unhandledRejection', err => {
+    // If err has a stderr property, we have seen the message already
+    if (!('stderr' in err)) console.error(err.message);
+    console.error('JAVA UNIT TESTS FAILED!');
+    process.exitCode = err.code || 1;
 });
