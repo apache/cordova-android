@@ -22,26 +22,16 @@
 var Q = require('q');
 var path = require('path');
 var superspawn = require('cordova-common').superspawn;
-
-// First we make sure the gradlew helper file is built and ready.
 var GradleBuilder = require('../bin/templates/cordova/lib/builders/GradleBuilder');
-var builder = new GradleBuilder(__dirname);
-var needs_gradlew_built = builder.runGradleWrapper('gradle');
 
-if (!needs_gradlew_built) {
-    // Due to interface of gradle builder, if the gradlew file already exists, `runGradleWrapper` returns undefined.
-    // In this case, we will fill the gap and create a resolved promise here now, this way the next bit of code
-    // will jump straight to running the tests
-    // TODO: maybe this should be done in GradleBuilder `runGradleWrapper` method instead?
-    needs_gradlew_built = Q.fcall(function () { return true; });
-}
+Q.resolve()
+    .then(_ => console.log('Preparing Gradle wrapper for Java unit tests.'))
+    .then(_ => new GradleBuilder(__dirname).runGradleWrapper('gradle'))
+    .then(_ => gradlew('--version'))
 
-needs_gradlew_built.then(function () {
-    console.log('Gradle wrapper is ready. Running tests now.');
-    return superspawn.spawn(path.join(__dirname, 'gradlew'), ['test'], {stdio: 'inherit'});
-}).then(function () {
-    console.log('Tests completed successfully.');
-});
+    .then(_ => console.log('Gradle wrapper is ready. Running tests now.'))
+    .then(_ => gradlew('test'))
+    .then(_ => console.log('Java unit tests completed successfully.'));
 
 process.on('unhandledRejection', err => {
     // If err has a stderr property, we have seen the message already
@@ -49,3 +39,11 @@ process.on('unhandledRejection', err => {
     console.error('JAVA UNIT TESTS FAILED!');
     process.exitCode = err.code || 1;
 });
+
+function gradlew () {
+    const wrapperPath = path.join(__dirname, 'gradlew');
+    return superspawn.spawn(wrapperPath, Array.from(arguments), {
+        stdio: 'inherit',
+        cwd: __dirname
+    });
+}

@@ -23,7 +23,7 @@
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
     "cover": "istanbul cover --root bin --print detail jasmine -- --config=spec/unit/jasmine.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
-    "java-unit-tests": "cd test && node run_java_unit_tests.js && cd ..",
+    "java-unit-tests": "node test/run_java_unit_tests.js",
     "eslint": "eslint bin spec test"
   },
   "author": "Apache Software Foundation",
