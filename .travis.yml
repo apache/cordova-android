@@ -2,28 +2,32 @@ language: android
 sudo: false
 jdk:
     - oraclejdk8
-env:
-    global:
-      - ANDROID_TOOLS=${ANDROID_HOME}/tools
-before_install:
-    - nvm install 6
-    # ensure at least gradle 3.3 is in place.
-    - wget http://services.gradle.org/distributions/gradle-3.3-bin.zip
-    - unzip gradle-3.3-bin.zip
-    - export GRADLE_HOME=$PWD/gradle-3.3
-    - export PATH=${GRADLE_HOME}/bin:${ANDROID_HOME}:${ANDROID_HOME}/emulator:${ANDROID_TOOLS}:${ANDROID_TOOLS}/bin:${ANDROID_HOME}/platform-tools:$PATH
-    - node --version
-    - gradle --version
-    - echo y | android --silent update sdk --no-ui --all --filter platform-tools,tools,build-tools-26.0.2,android-26,android-25,extra-google-m2repository,extra-android-m2repository
-    - yes | sdkmanager --update
+
 android:
     components:
-      - tools
+        - build-tools-26.0.2
+env:
+    global:
+        # Keep gradle from crapping all over the log
+        - TERM=dumb
+
 install:
+    # Install a sdkmanager version that supports the --licenses switch and
+    # accept any Android SDK licenses. The output redirection prevents us from
+    # hitting the travis log size limit of 4MB which would fail the build.
+    - yes | sdkmanager tools > /dev/null
+    - yes | sdkmanager --licenses > /dev/null
+
+    - nvm install 6
     - npm install
     - npm install -g codecov
+
 script:
+    - gradle --version
+    - node --version
+    - npm --version
     - npm test
     - npm run cover
+
 after_script:
     - codecov
