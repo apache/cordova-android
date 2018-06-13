@@ -8,9 +8,9 @@ environment:
     SDK_TOOLS_URL: https://dl.google.com/android/repository/sdk-tools-windows-3859397.zip
 
     matrix:
-        - nodejs_version: 4
         - nodejs_version: 6
         - nodejs_version: 8
+        - nodejs_version: 10
 
 install:
     # Install Android SDK Tools

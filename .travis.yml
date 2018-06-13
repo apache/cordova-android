@@ -10,6 +10,10 @@ env:
     global:
         # Keep gradle from crapping all over the log
         - TERM=dumb
+    matrix:
+        - nodejs_version=6
+        - nodejs_version=8
+        - nodejs_version=10
 
 install:
     # Install a sdkmanager version that supports the --licenses switch and
@@ -18,7 +22,7 @@ install:
     - yes | sdkmanager tools > /dev/null
     - yes | sdkmanager --licenses > /dev/null
 
-    - nvm install 6
+    - nvm install $nodejs_version
     - npm install
     - npm install -g codecov
 
