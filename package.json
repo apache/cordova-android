@@ -19,7 +19,7 @@
     "apache"
   ],
   "scripts": {
-    "test": "npm run eslint && npm run unit-tests && npm run java-unit-tests && npm run e2e-tests",
+    "test": "run-s eslint unit-tests java-unit-tests e2e-tests",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
     "cover": "istanbul cover --root bin --print detail jasmine -- --config=spec/unit/jasmine.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
