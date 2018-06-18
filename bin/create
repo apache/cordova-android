@@ -23,12 +23,12 @@ var ConfigParser = require('cordova-common').ConfigParser;
 var Api = require('./templates/cordova/Api');
 
 var argv = require('nopt')({
-    'help' : Boolean,
-    'cli' : Boolean,
-    'shared' : Boolean,
-    'link' : Boolean,
-    'activity-name' : [String, undefined]
-}, { 'd' : '--verbose' });
+    'help': Boolean,
+    'cli': Boolean,
+    'shared': Boolean,
+    'link': Boolean,
+    'activity-name': [String, undefined]
+}, { 'd': '--verbose' });
 
 if (argv.help || argv.argv.remain.length === 0) {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'create')) + ' <path_to_new_project> <package_name> <project_name> [<template_path>] [--activity-name <activity_name>] [--link]');
