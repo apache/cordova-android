@@ -32,10 +32,11 @@ var FIXTURES = path.join(__dirname, '../e2e/fixtures');
 var FAKE_PROJECT_DIR = path.join(os.tmpdir(), 'plugin-test-project');
 
 describe('addPlugin method', function () {
-    var api, fail, gradleBuilder, oldClean;
-    var Api = rewire('../../bin/templates/cordova/Api');
+    var api, Api, fail, gradleBuilder;
 
     beforeEach(function () {
+        Api = rewire('../../bin/templates/cordova/Api');
+
         var pluginManager = jasmine.createSpyObj('pluginManager', ['addPlugin']);
         pluginManager.addPlugin.and.returnValue(Q());
         spyOn(common.PluginManager, 'get').and.returnValue(pluginManager);
@@ -43,17 +44,16 @@ describe('addPlugin method', function () {
         var projectSpy = jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write', 'isClean']);
         spyOn(AndroidProject, 'getProjectFile').and.returnValue(projectSpy);
 
-        oldClean = Api.__get__('Api.prototype.clean');
         Api.__set__('Api.prototype.clean', Q);
+
+        // Prevent logging to avoid polluting the test reports
+        Api.__set__('selfEvents.emit', jasmine.createSpy());
+
         api = new Api('android', FAKE_PROJECT_DIR);
 
         fail = jasmine.createSpy('fail');
         gradleBuilder = jasmine.createSpyObj('gradleBuilder', ['prepBuildFiles']);
         spyOn(builders, 'getBuilder').and.returnValue(gradleBuilder);
-    });
-
-    afterEach(function () {
-        Api.__set__('Api.prototype.clean', oldClean);
     });
 
     it('Test#001 : should call gradleBuilder.prepBuildFiles for every plugin with frameworks', function (done) {
