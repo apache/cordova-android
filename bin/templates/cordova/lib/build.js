@@ -53,6 +53,7 @@ function parseOpts (options, resolvedTarget, projectRoot) {
         buildMethod: process.env.ANDROID_BUILD || 'studio',
         prepEnv: options.argv.prepenv,
         arch: resolvedTarget && resolvedTarget.arch,
+        jvmargs: (options.argv.jvmargs || '-Xmx2048m'),
         extraArgs: []
     };
 
