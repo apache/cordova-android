@@ -21,7 +21,6 @@ var path = require('path');
 var Q = require('q');
 
 var AndroidProject = require('./lib/AndroidProject');
-var AndroidStudio = require('./lib/AndroidStudio');
 var PluginManager = require('cordova-common').PluginManager;
 
 var CordovaLogger = require('cordova-common').CordovaLogger;
@@ -214,22 +213,6 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
     }
 
     return Q().then(function () {
-        // CB-11964: Do a clean when installing the plugin code to get around
-        // the Gradle bug introduced by the Android Gradle Plugin Version 2.2
-        // TODO: Delete when the next version of Android Gradle plugin comes out
-        // Since clean doesn't just clean the build, it also wipes out www, we need
-        // to pass additional options.
-
-        // Do some basic argument parsing
-        var opts = {};
-
-        // Skip cleaning prepared files when not invoking via cordova CLI.
-        opts.noPrepare = true;
-
-        if (!AndroidStudio.isAndroidStudioProject(self.root) && !project.isClean()) {
-            return self.clean(opts);
-        }
-    }).then(function () {
         return PluginManager.get(self.platform, self.locations, project).addPlugin(plugin, installOptions);
     }).then(function () {
         if (plugin.getFrameworks(this.platform).length === 0) return;
