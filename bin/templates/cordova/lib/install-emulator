@@ -32,7 +32,7 @@ if (args.length > 2) {
     }
 }
 
-emulator.install(install_target).done(null, function (err) {
+emulator.install(install_target).catch(function (err) {
     console.error('ERROR: ' + err);
     process.exit(2);
 });
