@@ -57,7 +57,7 @@ GradleBuilder.prototype.getArgs = function (cmd, opts) {
     // 10 seconds -> 6 seconds
     args.push('-Dorg.gradle.daemon=true');
     // to allow dex in process
-    args.push('-Dorg.gradle.jvmargs=-Xmx2048m');
+    args.push('-Dorg.gradle.jvmargs=' + opts.jvmargs);
     // allow NDK to be used - required by Gradle 1.5 plugin
     args.push('-Pandroid.useDeprecatedNdk=true');
     args.push.apply(args, opts.extraArgs);
