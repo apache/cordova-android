@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "lib": [
+            "es6"
+        ],
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strictNullChecks": false,
+        "baseUrl": "./",
+        "moduleResolution": "node",
+        "allowJs": true,
+        "typeRoots": [
+            "./"
+        ],
+        "types": [
+            "node"
+        ],
+        "forceConsistentCasingInFileNames": true
+    },
+    "files": [
+        "BigInteger.d.ts",
+        "spec/tsDefinitions.ts"
+    ]
+}
