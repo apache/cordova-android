@@ -1,0 +1,17 @@
+language: node_js
+sudo: false
+git:
+  depth: 10
+node_js:
+  - "4"
+  - "6"
+  - "8"
+  - "10"
+install:
+  - npm install
+  - npm install -g codecov
+script:
+  - npm test
+  - npm run cover
+after_script:
+  - codecov
