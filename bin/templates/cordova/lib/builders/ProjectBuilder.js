@@ -46,20 +46,15 @@ class ProjectBuilder {
         } else if (cmd === 'debug') {
             cmd = 'cdvBuildDebug';
         }
-        var args = [cmd, '-b', path.join(this.root, 'build.gradle')];
+
+        let args = [cmd, '-b', path.join(this.root, 'build.gradle')];
+
         if (opts.arch) {
             args.push('-PcdvBuildArch=' + opts.arch);
         }
 
-        // 10 seconds -> 6 seconds
-        args.push('-Dorg.gradle.daemon=true');
-        // to allow dex in process
-        args.push('-Dorg.gradle.jvmargs=-Xmx2048m');
-        // allow NDK to be used - required by Gradle 1.5 plugin
-        // args.push('-Pandroid.useDeprecatedNdk=true');
         args.push.apply(args, opts.extraArgs);
-        // Shaves another 100ms, but produces a "try at own risk" warning. Not worth it (yet):
-        // args.push('-Dorg.gradle.parallel=true');
+
         return args;
     }
 
