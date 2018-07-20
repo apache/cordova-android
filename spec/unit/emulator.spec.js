@@ -17,45 +17,50 @@
     under the License.
 */
 
-var emu = require('../../bin/templates/cordova/lib/emulator');
-var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
-var superspawn = require('cordova-common').superspawn;
-var Q = require('q');
-var fs = require('fs');
-var path = require('path');
-var shelljs = require('shelljs');
+const fs = require('fs');
+const path = require('path');
+const rewire = require('rewire');
+const shelljs = require('shelljs');
 
-describe('emulator', function () {
-    describe('list_images_using_avdmanager', function () {
-        it('should properly parse details of SDK Tools 25.3.1 `avdmanager` output', function (done) {
-            var deferred = Q.defer();
-            spyOn(superspawn, 'spawn').and.returnValue(deferred.promise);
-            deferred.resolve(fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.3-avdmanager_list_avd.txt'), 'utf-8'));
-            return emu.list_images_using_avdmanager().then(function (list) {
+const CordovaError = require('cordova-common').CordovaError;
+const check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
+const superspawn = require('cordova-common').superspawn;
+
+describe('emulator', () => {
+    const EMULATOR_LIST = ['emulator-5555', 'emulator-5556', 'emulator-5557'];
+    let emu;
+
+    beforeEach(() => {
+        emu = rewire('../../bin/templates/cordova/lib/emulator');
+    });
+
+    describe('list_images_using_avdmanager', () => {
+        it('should properly parse details of SDK Tools 25.3.1 `avdmanager` output', () => {
+            const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.3-avdmanager_list_avd.txt'), 'utf-8');
+            spyOn(superspawn, 'spawn').and.returnValue(Promise.resolve(avdList));
+
+            return emu.list_images_using_avdmanager().then(list => {
                 expect(list).toBeDefined();
                 expect(list[0].name).toEqual('nexus5-5.1');
                 expect(list[0].target).toEqual('Android 5.1 (API level 22)');
                 expect(list[1].device).toEqual('pixel (Google)');
                 expect(list[2].abi).toEqual('default/x86_64');
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(function () {
-                done();
             });
         });
     });
-    describe('list_images_using_android', function () {
-        it('should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions', function () {
-            var deferred = Q.defer();
-            spyOn(superspawn, 'spawn').and.returnValue(deferred.promise);
+
+    describe('list_images_using_android', () => {
+        it('should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions', () => {
+            spyOn(superspawn, 'spawn').and.returnValue(new Promise(() => {}, () => {}));
             emu.list_images_using_android();
             expect(superspawn.spawn).toHaveBeenCalledWith('android', ['list', 'avd']);
         });
-        it('should properly parse details of SDK Tools pre-25.3.1 `android list avd` output', function (done) {
-            var deferred = Q.defer();
-            spyOn(superspawn, 'spawn').and.returnValue(deferred.promise);
-            deferred.resolve(fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.2-android_list_avd.txt'), 'utf-8'));
-            return emu.list_images_using_android().then(function (list) {
+
+        it('should properly parse details of SDK Tools pre-25.3.1 `android list avd` output', () => {
+            const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.2-android_list_avd.txt'), 'utf-8');
+            spyOn(superspawn, 'spawn').and.returnValue(Promise.resolve(avdList));
+
+            return emu.list_images_using_android().then(list => {
                 expect(list).toBeDefined();
                 expect(list[0].name).toEqual('QWR');
                 expect(list[0].device).toEqual('Nexus 5 (Google)');
@@ -63,68 +68,38 @@ describe('emulator', function () {
                 expect(list[0].target).toEqual('Android 7.1.1 (API level 25)');
                 expect(list[0].abi).toEqual('google_apis/x86_64');
                 expect(list[0].skin).toEqual('1080x1920');
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(function () {
-                done();
             });
         });
     });
-    describe('list_images', function () {
-        beforeEach(function () {
-            spyOn(fs, 'realpathSync').and.callFake(function (cmd) {
-                return cmd;
-            });
+
+    describe('list_images', () => {
+        beforeEach(() => {
+            spyOn(fs, 'realpathSync').and.callFake(cmd => cmd);
         });
-        it('should try to parse AVD information using `avdmanager` first', function (done) {
-            spyOn(shelljs, 'which').and.callFake(function (cmd) {
-                if (cmd === 'avdmanager') {
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-            var deferred = Q.defer();
-            var avdmanager_spy = spyOn(emu, 'list_images_using_avdmanager').and.returnValue(deferred.promise);
-            deferred.resolve([]);
-            emu.list_images().then(function () {
+
+        it('should try to parse AVD information using `avdmanager` first', () => {
+            spyOn(shelljs, 'which').and.callFake(cmd => cmd === 'avdmanager');
+
+            const avdmanager_spy = spyOn(emu, 'list_images_using_avdmanager').and.returnValue(Promise.resolve([]));
+
+            return emu.list_images().then(() => {
                 expect(avdmanager_spy).toHaveBeenCalled();
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(function () {
-                done();
             });
         });
-        it('should delegate to `android` if `avdmanager` cant be found and `android` can', function (done) {
-            spyOn(shelljs, 'which').and.callFake(function (cmd) {
-                if (cmd === 'avdmanager') {
-                    return false;
-                } else {
-                    return true;
-                }
-            });
-            var deferred = Q.defer();
-            var android_spy = spyOn(emu, 'list_images_using_android').and.returnValue(deferred.promise);
-            deferred.resolve([]);
-            emu.list_images().then(function () {
+
+        it('should delegate to `android` if `avdmanager` cant be found and `android` can', () => {
+            spyOn(shelljs, 'which').and.callFake(cmd => cmd !== 'avdmanager');
+
+            const android_spy = spyOn(emu, 'list_images_using_android').and.returnValue(Promise.resolve([]));
+
+            return emu.list_images().then(() => {
                 expect(android_spy).toHaveBeenCalled();
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(function () {
-                done();
             });
         });
-        it('should correct api level information and fill in the blanks about api level if exists', function (done) {
-            spyOn(shelljs, 'which').and.callFake(function (cmd) {
-                if (cmd === 'avdmanager') {
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-            var deferred = Q.defer();
-            spyOn(emu, 'list_images_using_avdmanager').and.returnValue(deferred.promise);
-            deferred.resolve([
+
+        it('should correct api level information and fill in the blanks about api level if exists', () => {
+            spyOn(shelljs, 'which').and.callFake(cmd => cmd === 'avdmanager');
+            spyOn(emu, 'list_images_using_avdmanager').and.returnValue(Promise.resolve([
                 {
                     name: 'Pixel_7.0',
                     device: 'pixel (Google)',
@@ -138,87 +113,576 @@ describe('emulator', function () {
                     abi: 'google_apis/x86',
                     target: 'Android API 26'
                 }
-            ]);
-            emu.list_images().then(function (avds) {
+            ]));
+
+            return emu.list_images().then(avds => {
                 expect(avds[1].target).toContain('Android 8');
                 expect(avds[1].target).toContain('API level 26');
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(function () {
-                done();
             });
         });
-        it('should throw an error if neither `avdmanager` nor `android` are able to be found', function (done) {
+
+        it('should throw an error if neither `avdmanager` nor `android` are able to be found', () => {
             spyOn(shelljs, 'which').and.returnValue(false);
-            return emu.list_images().catch(function (err) {
-                expect(err).toBeDefined();
-                expect(err.message).toContain('Could not find either `android` or `avdmanager`');
-                done();
-            });
+
+            return emu.list_images().then(
+                () => fail('Unexpectedly resolved'),
+                err => {
+                    expect(err).toBeDefined();
+                    expect(err.message).toContain('Could not find either `android` or `avdmanager`');
+                }
+            );
         });
     });
-    describe('best_image', function () {
-        var avds_promise;
-        var target_mock;
-        beforeEach(function () {
-            avds_promise = Q.defer();
-            spyOn(emu, 'list_images').and.returnValue(avds_promise.promise);
+
+    describe('best_image', () => {
+        let target_mock;
+
+        beforeEach(() => {
+            spyOn(emu, 'list_images');
             target_mock = spyOn(check_reqs, 'get_target').and.returnValue('android-26');
         });
-        it('should return undefined if there are no defined AVDs', function (done) {
-            avds_promise.resolve([]);
-            emu.best_image().then(function (best_avd) {
+
+        it('should return undefined if there are no defined AVDs', () => {
+            emu.list_images.and.returnValue(Promise.resolve([]));
+
+            return emu.best_image().then(best_avd => {
                 expect(best_avd).toBeUndefined();
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(done);
+            });
         });
-        it('should return the first available image if there is no available target information for existing AVDs', function (done) {
-            var fake_avd = { name: 'MyFakeAVD' };
-            var second_fake_avd = { name: 'AnotherAVD' };
-            avds_promise.resolve([fake_avd, second_fake_avd]);
-            emu.best_image().then(function (best_avd) {
+
+        it('should return the first available image if there is no available target information for existing AVDs', () => {
+            const fake_avd = { name: 'MyFakeAVD' };
+            const second_fake_avd = { name: 'AnotherAVD' };
+            emu.list_images.and.returnValue(Promise.resolve([fake_avd, second_fake_avd]));
+
+            return emu.best_image().then(best_avd => {
                 expect(best_avd).toBe(fake_avd);
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(done);
+            });
         });
-        it('should return the first AVD for the API level that matches the project target', function (done) {
+
+        it('should return the first AVD for the API level that matches the project target', () => {
             target_mock.and.returnValue('android-25');
-            var fake_avd = { name: 'MyFakeAVD', target: 'Android 7.0 (API level 24)' };
-            var second_fake_avd = { name: 'AnotherAVD', target: 'Android 7.1 (API level 25)' };
-            var third_fake_avd = { name: 'AVDThree', target: 'Android 8.0 (API level 26)' };
-            avds_promise.resolve([fake_avd, second_fake_avd, third_fake_avd]);
-            emu.best_image().then(function (best_avd) {
+            const fake_avd = { name: 'MyFakeAVD', target: 'Android 7.0 (API level 24)' };
+            const second_fake_avd = { name: 'AnotherAVD', target: 'Android 7.1 (API level 25)' };
+            const third_fake_avd = { name: 'AVDThree', target: 'Android 8.0 (API level 26)' };
+            emu.list_images.and.returnValue(Promise.resolve([fake_avd, second_fake_avd, third_fake_avd]));
+
+            return emu.best_image().then(best_avd => {
                 expect(best_avd).toBe(second_fake_avd);
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(done);
+            });
         });
-        it('should return the AVD with API level that is closest to the project target API level, without going over', function (done) {
+
+        it('should return the AVD with API level that is closest to the project target API level, without going over', () => {
             target_mock.and.returnValue('android-26');
-            var fake_avd = { name: 'MyFakeAVD', target: 'Android 7.0 (API level 24)' };
-            var second_fake_avd = { name: 'AnotherAVD', target: 'Android 7.1 (API level 25)' };
-            var third_fake_avd = { name: 'AVDThree', target: 'Android 99.0 (API level 134)' };
-            avds_promise.resolve([fake_avd, second_fake_avd, third_fake_avd]);
-            emu.best_image().then(function (best_avd) {
+            const fake_avd = { name: 'MyFakeAVD', target: 'Android 7.0 (API level 24)' };
+            const second_fake_avd = { name: 'AnotherAVD', target: 'Android 7.1 (API level 25)' };
+            const third_fake_avd = { name: 'AVDThree', target: 'Android 99.0 (API level 134)' };
+            emu.list_images.and.returnValue(Promise.resolve([fake_avd, second_fake_avd, third_fake_avd]));
+
+            return emu.best_image().then(best_avd => {
                 expect(best_avd).toBe(second_fake_avd);
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(done);
+            });
         });
-        it('should not try to compare API levels when an AVD definition is missing API level info', function (done) {
-            avds_promise.resolve([ { name: 'Samsung_S8_API_26',
+
+        it('should not try to compare API levels when an AVD definition is missing API level info', () => {
+            emu.list_images.and.returnValue(Promise.resolve([{
+                name: 'Samsung_S8_API_26',
                 device: 'Samsung S8+ (User)',
                 path: '/Users/daviesd/.android/avd/Samsung_S8_API_26.avd',
                 abi: 'google_apis/x86',
                 target: 'Android 8.0'
-            }]);
-            emu.best_image().then(function (best_avd) {
+            }]));
+
+            return emu.best_image().then(best_avd => {
                 expect(best_avd).toBeDefined();
-            }).fail(function (err) {
-                expect(err).toBeUndefined();
-            }).fin(done);
+            });
+        });
+    });
+
+    describe('list_started', () => {
+        it('should call adb devices with the emulators flag', () => {
+            const AdbSpy = jasmine.createSpyObj('Adb', ['devices']);
+            AdbSpy.devices.and.returnValue(Promise.resolve());
+            emu.__set__('Adb', AdbSpy);
+
+            return emu.list_started().then(() => {
+                expect(AdbSpy.devices).toHaveBeenCalledWith({emulators: true});
+            });
+        });
+    });
+
+    describe('get_available_port', () => {
+        let emus;
+
+        beforeEach(() => {
+            emus = [];
+            spyOn(emu, 'list_started').and.returnValue(Promise.resolve(emus));
+        });
+
+        it('should find the closest available port below 5584 for the emulator', () => {
+            const lowestUsedPort = 5565;
+            for (let i = 5584; i >= lowestUsedPort; i--) {
+                emus.push(`emulator-${i}`);
+            }
+
+            return emu.get_available_port().then(port => {
+                expect(port).toBe(lowestUsedPort - 1);
+            });
+        });
+
+        it('should throw an error if no port is available between 5554 and 5584', () => {
+            for (let i = 5584; i >= 5554; i--) {
+                emus.push(`emulator-${i}`);
+            }
+
+            return emu.get_available_port().then(
+                () => fail('Unexpectedly resolved'),
+                err => {
+                    expect(err).toEqual(jasmine.any(CordovaError));
+                }
+            );
+        });
+    });
+
+    describe('start', () => {
+        const port = 5555;
+        let emulator;
+        let AdbSpy;
+        let checkReqsSpy;
+        let childProcessSpy;
+        let shellJsSpy;
+
+        beforeEach(() => {
+            emulator = {
+                name: 'Samsung_S8_API_26',
+                device: 'Samsung S8+ (User)',
+                path: '/Users/daviesd/.android/avd/Samsung_S8_API_26.avd',
+                abi: 'google_apis/x86',
+                target: 'Android 8.0'
+            };
+
+            AdbSpy = jasmine.createSpyObj('Adb', ['shell']);
+            AdbSpy.shell.and.returnValue(Promise.resolve());
+            emu.__set__('Adb', AdbSpy);
+
+            checkReqsSpy = jasmine.createSpyObj('create_reqs', ['getAbsoluteAndroidCmd']);
+            emu.__set__('check_reqs', checkReqsSpy);
+
+            childProcessSpy = jasmine.createSpyObj('child_process', ['spawn']);
+            childProcessSpy.spawn.and.returnValue(jasmine.createSpyObj('spawnFns', ['unref']));
+            emu.__set__('child_process', childProcessSpy);
+
+            spyOn(emu, 'get_available_port').and.returnValue(Promise.resolve(port));
+            spyOn(emu, 'wait_for_emulator').and.returnValue(Promise.resolve('randomname'));
+            spyOn(emu, 'wait_for_boot').and.returnValue(Promise.resolve());
+
+            // Prevent pollution of the test logs
+            const proc = emu.__get__('process');
+            spyOn(proc.stdout, 'write').and.stub();
+
+            shellJsSpy = jasmine.createSpyObj('shelljs', ['which']);
+            shellJsSpy.which.and.returnValue('/dev/android-sdk/tools');
+            emu.__set__('shelljs', shellJsSpy);
+        });
+
+        it('should find an emulator if an id is not specified', () => {
+            spyOn(emu, 'best_image').and.returnValue(Promise.resolve(emulator));
+
+            return emu.start().then(() => {
+                // This is the earliest part in the code where we can hook in and check
+                // the emulator that has been selected.
+                const spawnArgs = childProcessSpy.spawn.calls.argsFor(0);
+                expect(spawnArgs[1]).toContain(emulator.name);
+            });
+        });
+
+        it('should use the specified emulator', () => {
+            spyOn(emu, 'best_image');
+
+            return emu.start(emulator.name).then(() => {
+                expect(emu.best_image).not.toHaveBeenCalled();
+
+                const spawnArgs = childProcessSpy.spawn.calls.argsFor(0);
+                expect(spawnArgs[1]).toContain(emulator.name);
+            });
+        });
+
+        it('should throw an error if no emulator is specified and no default is found', () => {
+            spyOn(emu, 'best_image').and.returnValue(Promise.resolve());
+
+            return emu.start().then(
+                () => fail('Unexpectedly resolved'),
+                err => {
+                    expect(err).toEqual(jasmine.any(CordovaError));
+                }
+            );
+        });
+
+        it('should unlock the screen after the emulator has booted', () => {
+            emu.wait_for_emulator.and.returnValue(Promise.resolve(emulator.name));
+            emu.wait_for_boot.and.returnValue(Promise.resolve(true));
+
+            return emu.start(emulator.name).then(() => {
+                expect(emu.wait_for_emulator).toHaveBeenCalledBefore(AdbSpy.shell);
+                expect(emu.wait_for_boot).toHaveBeenCalledBefore(AdbSpy.shell);
+                expect(AdbSpy.shell).toHaveBeenCalledWith(emulator.name, 'input keyevent 82');
+            });
+        });
+
+        it('should resolve with the emulator id after the emulator has started', () => {
+            emu.wait_for_emulator.and.returnValue(Promise.resolve(emulator.name));
+            emu.wait_for_boot.and.returnValue(Promise.resolve(true));
+
+            return emu.start(emulator.name).then(emulatorId => {
+                expect(emulatorId).toBe(emulator.name);
+            });
+        });
+
+        it('should resolve with null if starting the emulator times out', () => {
+            emu.wait_for_emulator.and.returnValue(Promise.resolve(emulator.name));
+            emu.wait_for_boot.and.returnValue(Promise.resolve(false));
+
+            return emu.start(emulator.name).then(emulatorId => {
+                expect(emulatorId).toBe(null);
+            });
+        });
+    });
+
+    describe('wait_for_emulator', () => {
+        const port = 5656;
+        const expectedEmulatorId = `emulator-${port}`;
+        let AdbSpy;
+
+        beforeEach(() => {
+            AdbSpy = jasmine.createSpyObj('Adb', ['shell']);
+            AdbSpy.shell.and.returnValue(Promise.resolve());
+            emu.__set__('Adb', AdbSpy);
+
+            spyOn(emu, 'wait_for_emulator').and.callThrough();
+        });
+
+        it('should resolve with the emulator id if the emulator has completed boot', () => {
+            AdbSpy.shell.and.callFake((emulatorId, shellArgs) => {
+                expect(emulatorId).toBe(expectedEmulatorId);
+                expect(shellArgs).toContain('getprop dev.bootcomplete');
+
+                return Promise.resolve('1'); // 1 means boot is complete
+            });
+
+            return emu.wait_for_emulator(port).then(emulatorId => {
+                expect(emulatorId).toBe(expectedEmulatorId);
+            });
+        });
+
+        it('should call itself again if the emulator is not ready', () => {
+            AdbSpy.shell.and.returnValues(
+                Promise.resolve('0'),
+                Promise.resolve('0'),
+                Promise.resolve('1')
+            );
+
+            return emu.wait_for_emulator(port).then(() => {
+                expect(emu.wait_for_emulator).toHaveBeenCalledTimes(3);
+            });
+        });
+
+        it('should call itself again if shell fails for a known reason', () => {
+            AdbSpy.shell.and.returnValues(
+                Promise.reject({message: 'device not found'}),
+                Promise.reject({message: 'device offline'}),
+                Promise.reject({message: 'device still connecting'}),
+                Promise.resolve('1')
+            );
+
+            return emu.wait_for_emulator(port).then(() => {
+                expect(emu.wait_for_emulator).toHaveBeenCalledTimes(4);
+            });
+        });
+
+        it('should throw an error if shell fails for an unknown reason', () => {
+            const errorMessage = { message: 'Some unknown error' };
+            AdbSpy.shell.and.returnValue(Promise.reject(errorMessage));
+
+            return emu.wait_for_emulator(port).then(
+                () => fail('Unexpectedly resolved'),
+                err => {
+                    expect(err).toBe(errorMessage);
+                }
+            );
+        });
+    });
+
+    describe('wait_for_boot', () => {
+        const port = 5656;
+        const emulatorId = `emulator-${port}`;
+        const psOutput = `
+            root      1     0     8504   1512  SyS_epoll_ 00000000 S /init
+            u0_a1     2044  1350  1423452 47256 SyS_epoll_ 00000000 S android.process.acore
+            u0_a51    2963  1350  1417724 37492 SyS_epoll_ 00000000 S com.google.process.gapps
+        `;
+
+        let AdbSpy;
+
+        beforeEach(() => {
+            // If we use Jasmine's fake clock, we need to re-require the target module,
+            // or else it will not work.
+            jasmine.clock().install();
+            emu = rewire('../../bin/templates/cordova/lib/emulator');
+
+            AdbSpy = jasmine.createSpyObj('Adb', ['shell']);
+            emu.__set__('Adb', AdbSpy);
+
+            spyOn(emu, 'wait_for_boot').and.callThrough();
+
+            // Stop the logs from being polluted
+            const proc = emu.__get__('process');
+            spyOn(proc.stdout, 'write').and.stub();
+        });
+
+        afterEach(() => {
+            jasmine.clock().uninstall();
+        });
+
+        it('should resolve with true if the system has booted', () => {
+            AdbSpy.shell.and.callFake((emuId, shellArgs) => {
+                expect(emuId).toBe(emulatorId);
+                expect(shellArgs).toContain('ps');
+
+                return Promise.resolve(psOutput);
+            });
+
+            return emu.wait_for_boot(emulatorId).then(isReady => {
+                expect(isReady).toBe(true);
+            });
+        });
+
+        it('should should check boot status at regular intervals until ready', () => {
+            const retryInterval = emu.__get__('CHECK_BOOTED_INTERVAL');
+            const RETRIES = 10;
+
+            let shellPromise = Promise.resolve('');
+            AdbSpy.shell.and.returnValue(shellPromise);
+
+            const waitPromise = emu.wait_for_boot(emulatorId);
+
+            let attempts = 0;
+            function tickTimer () {
+                shellPromise.then(() => {
+                    if (attempts + 1 === RETRIES) {
+                        AdbSpy.shell.and.returnValue(Promise.resolve(psOutput));
+                        jasmine.clock().tick(retryInterval);
+                    } else {
+                        attempts++;
+                        shellPromise = Promise.resolve('');
+                        AdbSpy.shell.and.returnValue(shellPromise);
+                        jasmine.clock().tick(retryInterval);
+                        tickTimer();
+                    }
+                });
+            }
+
+            tickTimer();
+
+            // After all the retries and eventual success, this is called
+            return waitPromise.then(isReady => {
+                expect(isReady).toBe(true);
+                expect(emu.wait_for_boot).toHaveBeenCalledTimes(RETRIES + 1);
+            });
+        });
+
+        it('should should check boot status at regular intervals until timeout', () => {
+            const retryInterval = emu.__get__('CHECK_BOOTED_INTERVAL');
+            const TIMEOUT = 9000;
+            const expectedRetries = Math.floor(TIMEOUT / retryInterval);
+
+            let shellPromise = Promise.resolve('');
+            AdbSpy.shell.and.returnValue(shellPromise);
+
+            const waitPromise = emu.wait_for_boot(emulatorId, TIMEOUT);
+
+            let attempts = 0;
+            function tickTimer () {
+                shellPromise.then(() => {
+                    attempts++;
+                    shellPromise = Promise.resolve('');
+                    AdbSpy.shell.and.returnValue(shellPromise);
+                    jasmine.clock().tick(retryInterval);
+
+                    if (attempts < expectedRetries) {
+                        tickTimer();
+                    }
+                });
+            }
+
+            tickTimer();
+
+            // After all the retries and eventual success, this is called
+            return waitPromise.then(isReady => {
+                expect(isReady).toBe(false);
+                expect(emu.wait_for_boot).toHaveBeenCalledTimes(expectedRetries + 1);
+            });
+        });
+    });
+
+    describe('resolveTarget', () => {
+        const arch = 'arm7-test';
+
+        beforeEach(() => {
+            const buildSpy = jasmine.createSpyObj('build', ['detectArchitecture']);
+            buildSpy.detectArchitecture.and.returnValue(Promise.resolve(arch));
+            emu.__set__('build', buildSpy);
+
+            spyOn(emu, 'list_started').and.returnValue(Promise.resolve(EMULATOR_LIST));
+        });
+
+        it('should throw an error if there are no running emulators', () => {
+            emu.list_started.and.returnValue(Promise.resolve([]));
+
+            return emu.resolveTarget().then(
+                () => fail('Unexpectedly resolved'),
+                err => {
+                    expect(err).toEqual(jasmine.any(CordovaError));
+                }
+            );
+        });
+
+        it('should throw an error if the requested emulator is not running', () => {
+            const targetEmulator = 'unstarted-emu';
+
+            return emu.resolveTarget(targetEmulator).then(
+                () => fail('Unexpectedly resolved'),
+                err => {
+                    expect(err.message).toContain(targetEmulator);
+                }
+            );
+        });
+
+        it('should return info on the first running emulator if none is specified', () => {
+            return emu.resolveTarget().then(emulatorInfo => {
+                expect(emulatorInfo.target).toBe(EMULATOR_LIST[0]);
+            });
+        });
+
+        it('should return the emulator info', () => {
+            return emu.resolveTarget(EMULATOR_LIST[1]).then(emulatorInfo => {
+                expect(emulatorInfo).toEqual({ target: EMULATOR_LIST[1], arch, isEmulator: true });
+            });
+        });
+    });
+
+    describe('install', () => {
+        let AndroidManifestSpy;
+        let AndroidManifestFns;
+        let AndroidManifestGetActivitySpy;
+        let AdbSpy;
+        let buildSpy;
+        let childProcessSpy;
+        let target;
+
+        beforeEach(() => {
+            target = { target: EMULATOR_LIST[1], arch: 'arm7', isEmulator: true };
+
+            buildSpy = jasmine.createSpyObj('build', ['findBestApkForArchitecture']);
+            emu.__set__('build', buildSpy);
+
+            AndroidManifestFns = jasmine.createSpyObj('AndroidManifestFns', ['getPackageId', 'getActivity']);
+            AndroidManifestGetActivitySpy = jasmine.createSpyObj('getActivity', ['getName']);
+            AndroidManifestFns.getActivity.and.returnValue(AndroidManifestGetActivitySpy);
+            AndroidManifestSpy = jasmine.createSpy('AndroidManifest').and.returnValue(AndroidManifestFns);
+            emu.__set__('AndroidManifest', AndroidManifestSpy);
+
+            AdbSpy = jasmine.createSpyObj('Adb', ['shell', 'start', 'uninstall']);
+            AdbSpy.shell.and.returnValue(Promise.resolve());
+            AdbSpy.start.and.returnValue(Promise.resolve());
+            AdbSpy.uninstall.and.returnValue(Promise.resolve());
+            emu.__set__('Adb', AdbSpy);
+
+            childProcessSpy = jasmine.createSpyObj('child_process', ['exec']);
+            childProcessSpy.exec.and.callFake((cmd, opts, callback) => callback());
+            emu.__set__('child_process', childProcessSpy);
+        });
+
+        it('should get the full target object if only id is specified', () => {
+            const targetId = target.target;
+            spyOn(emu, 'resolveTarget').and.returnValue(Promise.resolve(target));
+
+            return emu.install(targetId, {}).then(() => {
+                expect(emu.resolveTarget).toHaveBeenCalledWith(targetId);
+            });
+        });
+
+        it('should install to the passed target', () => {
+            return emu.install(target, {}).then(() => {
+                const execCmd = childProcessSpy.exec.calls.argsFor(0)[0];
+                expect(execCmd).toContain(`-s ${target.target} install`);
+            });
+        });
+
+        it('should install the correct apk based on the architecture and build results', () => {
+            const buildResults = {
+                apkPaths: 'path/to/apks',
+                buildType: 'debug',
+                buildMethod: 'foo'
+            };
+
+            const apkPath = 'my/apk/path/app.apk';
+            buildSpy.findBestApkForArchitecture.and.returnValue(apkPath);
+
+            return emu.install(target, buildResults).then(() => {
+                expect(buildSpy.findBestApkForArchitecture).toHaveBeenCalledWith(buildResults, target.arch);
+
+                const execCmd = childProcessSpy.exec.calls.argsFor(0)[0];
+                expect(execCmd).toMatch(new RegExp(`install.*${apkPath}`));
+            });
+        });
+
+        it('should uninstall and reinstall app if failure is due to different certificates', () => {
+            let execAlreadyCalled;
+            childProcessSpy.exec.and.callFake((cmd, opts, callback) => {
+                if (!execAlreadyCalled) {
+                    execAlreadyCalled = true;
+                    callback(null, 'Failure: INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES');
+                } else {
+                    callback();
+                }
+            });
+
+            return emu.install(target, {}).then(() => {
+                expect(childProcessSpy.exec).toHaveBeenCalledTimes(2);
+                expect(AdbSpy.uninstall).toHaveBeenCalled();
+            });
+        });
+
+        it('should throw any error not caused by different certificates', () => {
+            const errorMsg = 'Failure: Failed to install';
+            childProcessSpy.exec.and.callFake((cmd, opts, callback) => {
+                callback(null, errorMsg);
+            });
+
+            return emu.install(target, {}).then(
+                () => fail('Unexpectedly resolved'),
+                err => {
+                    expect(err).toEqual(jasmine.any(CordovaError));
+                    expect(err.message).toContain(errorMsg);
+                }
+            );
+        });
+
+        it('should unlock the screen on device', () => {
+            return emu.install(target, {}).then(() => {
+                expect(AdbSpy.shell).toHaveBeenCalledWith(target.target, 'input keyevent 82');
+            });
+        });
+
+        it('should start the newly installed app on the device', () => {
+            const packageId = 'unittestapp';
+            const activityName = 'TestActivity';
+            AndroidManifestFns.getPackageId.and.returnValue(packageId);
+            AndroidManifestGetActivitySpy.getName.and.returnValue(activityName);
+
+            return emu.install(target, {}).then(() => {
+                expect(AdbSpy.start).toHaveBeenCalledWith(target.target, `${packageId}/.${activityName}`);
+            });
         });
     });
 });

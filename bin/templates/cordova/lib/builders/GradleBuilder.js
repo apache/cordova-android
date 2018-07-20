@@ -24,6 +24,7 @@ var path = require('path');
 var shell = require('shelljs');
 var superspawn = require('cordova-common').superspawn;
 var CordovaError = require('cordova-common').CordovaError;
+var events = require('cordova-common').events;
 var check_reqs = require('../check_reqs');
 
 var GenericBuilder = require('./GenericBuilder');
@@ -178,7 +179,7 @@ GradleBuilder.prototype.prepBuildFiles = function () {
     };
 
     subProjects.forEach(function (p) {
-        console.log('Subproject Path: ' + p);
+        events.emit('log', 'Subproject Path: ' + p);
         var libName = p.replace(/[/\\]/g, ':').replace(name + '-', '');
         depsList += '    implementation(project(path: "' + libName + '"))';
         insertExclude(p);
@@ -246,9 +247,7 @@ GradleBuilder.prototype.prepEnv = function (opts) {
         // If it's not set, do nothing, assuming that we're using a future version of gradle that we don't want to mess with.
         // For some reason, using ^ and $ don't work.  This does the job, though.
         var distributionUrlRegex = /distributionUrl.*zip/;
-        /* jshint -W069 */
         var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'https\\://services.gradle.org/distributions/gradle-4.4-all.zip';
-        /* jshint +W069 */
         var gradleWrapperPropertiesPath = path.join(self.root, 'gradle', 'wrapper', 'gradle-wrapper.properties');
         shell.chmod('u+w', gradleWrapperPropertiesPath);
         shell.sed('-i', distributionUrlRegex, 'distributionUrl=' + distributionUrl, gradleWrapperPropertiesPath);

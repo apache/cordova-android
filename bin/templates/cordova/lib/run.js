@@ -19,8 +19,6 @@
        under the License.
 */
 
-/* jshint loopfunc:true */
-
 var path = require('path');
 var build = require('./build');
 var emulator = require('./emulator');
@@ -108,7 +106,7 @@ module.exports.run = function (runOptions) {
         // format than emulator.install expects.
         // TODO: Update emulator/device.install to handle this change
         return build.run.call(self, runOptions, resolvedTarget).then(function (buildResults) {
-            if (resolvedTarget.isEmulator) {
+            if (resolvedTarget && resolvedTarget.isEmulator) {
                 return emulator.wait_for_boot(resolvedTarget.target).then(function () {
                     return emulator.install(resolvedTarget, buildResults);
                 });
