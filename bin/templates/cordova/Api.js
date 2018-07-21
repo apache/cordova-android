@@ -21,7 +21,6 @@ var path = require('path');
 var Q = require('q');
 
 var AndroidProject = require('./lib/AndroidProject');
-var AndroidStudio = require('./lib/AndroidStudio');
 var PluginManager = require('cordova-common').PluginManager;
 
 var CordovaLogger = require('cordova-common').CordovaLogger;
@@ -56,7 +55,7 @@ function setupEvents (externalEventEmitter) {
 function Api (platform, platformRootDir, events) {
     this.platform = PLATFORM;
     this.root = path.resolve(__dirname, '..');
-    this.builder = 'gradle';
+    this.builder = 'studio';
 
     setupEvents(events);
 
@@ -64,33 +63,19 @@ function Api (platform, platformRootDir, events) {
 
     this.locations = {
         root: self.root,
-        www: path.join(self.root, 'assets/www'),
-        res: path.join(self.root, 'res'),
+        www: path.join(self.root, 'app/src/main/assets/www'),
+        res: path.join(self.root, 'app/src/main/res'),
         platformWww: path.join(self.root, 'platform_www'),
-        configXml: path.join(self.root, 'res/xml/config.xml'),
+        configXml: path.join(self.root, 'app/src/main/res/xml/config.xml'),
         defaultConfigXml: path.join(self.root, 'cordova/defaults.xml'),
-        strings: path.join(self.root, 'res/values/strings.xml'),
-        manifest: path.join(self.root, 'AndroidManifest.xml'),
+        strings: path.join(self.root, 'app/src/main/res/values/strings.xml'),
+        manifest: path.join(self.root, 'app/src/main/AndroidManifest.xml'),
         build: path.join(self.root, 'build'),
-        javaSrc: path.join(self.root, 'src'),
+        javaSrc: path.join(self.root, 'app/src/main/java/'),
         // NOTE: Due to platformApi spec we need to return relative paths here
         cordovaJs: 'bin/templates/project/assets/www/cordova.js',
         cordovaJsSrc: 'cordova-js-src'
     };
-
-    // XXX Override some locations for Android Studio projects
-    if (AndroidStudio.isAndroidStudioProject(self.root) === true) {
-        selfEvents.emit('log', 'Android Studio project detected');
-        this.builder = 'studio';
-        this.android_studio = true;
-        this.locations.configXml = path.join(self.root, 'app/src/main/res/xml/config.xml');
-        this.locations.strings = path.join(self.root, 'app/src/main/res/values/strings.xml');
-        this.locations.manifest = path.join(self.root, 'app/src/main/AndroidManifest.xml');
-        // We could have Java Source, we could have other languages
-        this.locations.javaSrc = path.join(self.root, 'app/src/main/java/');
-        this.locations.www = path.join(self.root, 'app/src/main/assets/www');
-        this.locations.res = path.join(self.root, 'app/src/main/res');
-    }
 }
 
 /**
@@ -228,22 +213,6 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
     }
 
     return Q().then(function () {
-        // CB-11964: Do a clean when installing the plugin code to get around
-        // the Gradle bug introduced by the Android Gradle Plugin Version 2.2
-        // TODO: Delete when the next version of Android Gradle plugin comes out
-        // Since clean doesn't just clean the build, it also wipes out www, we need
-        // to pass additional options.
-
-        // Do some basic argument parsing
-        var opts = {};
-
-        // Skip cleaning prepared files when not invoking via cordova CLI.
-        opts.noPrepare = true;
-
-        if (!AndroidStudio.isAndroidStudioProject(self.root) && !project.isClean()) {
-            return self.clean(opts);
-        }
-    }).then(function () {
         return PluginManager.get(self.platform, self.locations, project).addPlugin(plugin, installOptions);
     }).then(function () {
         if (plugin.getFrameworks(this.platform).length === 0) return;
