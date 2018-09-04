@@ -38,16 +38,7 @@ describe('AndroidProject', () => {
             expect(project.projectDir).toBe(PROJECT_DIR);
         });
 
-        it('should set www folder correctly if not Android Studio project', () => {
-            AndroidStudioSpy.isAndroidStudioProject.and.returnValue(false);
-
-            const project = new AndroidProject(PROJECT_DIR);
-            expect(project.www).toBe(path.join(PROJECT_DIR, 'assets/www'));
-        });
-
         it('should set www folder correctly if it is an Android Studio project', () => {
-            AndroidStudioSpy.isAndroidStudioProject.and.returnValue(true);
-
             const project = new AndroidProject(PROJECT_DIR);
             expect(project.www).toBe(path.join(PROJECT_DIR, 'app/src/main/assets/www'));
         });
@@ -108,19 +99,8 @@ describe('AndroidProject', () => {
             androidProject = new AndroidProject(PROJECT_DIR);
         });
 
-        it('should get the package name from the project root manifest', () => {
-            AndroidStudioSpy.isAndroidStudioProject.and.returnValue(false);
-
+        it('should get the package name AndroidManifest', () => {
             androidProject.getPackageName();
-
-            expect(AndroidManifestSpy).toHaveBeenCalledWith(path.join(PROJECT_DIR, 'AndroidManifest.xml'));
-        });
-
-        it('should get the package name from the Android Studio manifest', () => {
-            AndroidStudioSpy.isAndroidStudioProject.and.returnValue(true);
-
-            androidProject.getPackageName();
-
             expect(AndroidManifestSpy).toHaveBeenCalledWith(path.join(PROJECT_DIR, 'app/src/main/AndroidManifest.xml'));
         });
 

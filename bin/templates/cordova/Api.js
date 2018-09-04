@@ -55,23 +55,23 @@ function setupEvents (externalEventEmitter) {
 function Api (platform, platformRootDir, events) {
     this.platform = PLATFORM;
     this.root = path.resolve(__dirname, '..');
-    this.builder = 'studio';
 
     setupEvents(events);
 
-    var self = this;
+    const appMain = path.join(this.root, 'app', 'src', 'main');
+    const appRes = path.join(appMain, 'res');
 
     this.locations = {
-        root: self.root,
-        www: path.join(self.root, 'app/src/main/assets/www'),
-        res: path.join(self.root, 'app/src/main/res'),
-        platformWww: path.join(self.root, 'platform_www'),
-        configXml: path.join(self.root, 'app/src/main/res/xml/config.xml'),
-        defaultConfigXml: path.join(self.root, 'cordova/defaults.xml'),
-        strings: path.join(self.root, 'app/src/main/res/values/strings.xml'),
-        manifest: path.join(self.root, 'app/src/main/AndroidManifest.xml'),
-        build: path.join(self.root, 'build'),
-        javaSrc: path.join(self.root, 'app/src/main/java/'),
+        root: this.root,
+        www: path.join(appMain, 'assets', 'www'),
+        res: appRes,
+        platformWww: path.join(this.root, 'platform_www'),
+        configXml: path.join(appRes, 'xml', 'config.xml'),
+        defaultConfigXml: path.join(this.root, 'cordova', 'defaults.xml'),
+        strings: path.join(appRes, 'values', 'strings.xml'),
+        manifest: path.join(appMain, 'AndroidManifest.xml'),
+        build: path.join(this.root, 'build'),
+        javaSrc: path.join(appMain, 'java'),
         // NOTE: Due to platformApi spec we need to return relative paths here
         cordovaJs: 'bin/templates/project/assets/www/cordova.js',
         cordovaJsSrc: 'cordova-js-src'
@@ -208,17 +208,13 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
         installOptions.variables.PACKAGE_NAME = project.getPackageName();
     }
 
-    if (this.android_studio === true) {
-        installOptions.android_studio = true;
-    }
-
     return Q().then(function () {
         return PluginManager.get(self.platform, self.locations, project).addPlugin(plugin, installOptions);
     }).then(function () {
         if (plugin.getFrameworks(this.platform).length === 0) return;
         selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
         // This should pick the correct builder, not just get gradle
-        require('./lib/builders/builders').getBuilder(this.builder).prepBuildFiles();
+        require('./lib/builders/builders').getBuilder().prepBuildFiles();
     }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
         .thenResolve(true);
@@ -240,9 +236,8 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
 Api.prototype.removePlugin = function (plugin, uninstallOptions) {
     var project = AndroidProject.getProjectFile(this.root);
 
-    if (uninstallOptions && uninstallOptions.usePlatformWww === true && this.android_studio === true) {
+    if (uninstallOptions && uninstallOptions.usePlatformWww === true) {
         uninstallOptions.usePlatformWww = false;
-        uninstallOptions.android_studio = true;
     }
 
     return PluginManager.get(this.platform, this.locations, project)
@@ -251,7 +246,7 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
             if (plugin.getFrameworks(this.platform).length === 0) return;
 
             selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
-            require('./lib/builders/builders').getBuilder(this.builder).prepBuildFiles();
+            require('./lib/builders/builders').getBuilder().prepBuildFiles();
         }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
         .thenResolve(true);
@@ -304,9 +299,7 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
  */
 Api.prototype.build = function (buildOptions) {
     var self = this;
-    if (this.android_studio) {
-        buildOptions.studio = true;
-    }
+
     return require('./lib/check_reqs').run().then(function () {
         return require('./lib/build').run.call(self, buildOptions);
     }).then(function (buildResults) {
@@ -350,12 +343,9 @@ Api.prototype.run = function (runOptions) {
  */
 Api.prototype.clean = function (cleanOptions) {
     var self = this;
-    if (this.android_studio) {
-        // This will lint, checking for null won't
-        if (typeof cleanOptions === 'undefined') {
-            cleanOptions = {};
-        }
-        cleanOptions.studio = true;
+    // This will lint, checking for null won't
+    if (typeof cleanOptions === 'undefined') {
+        cleanOptions = {};
     }
 
     return require('./lib/check_reqs').run().then(function () {

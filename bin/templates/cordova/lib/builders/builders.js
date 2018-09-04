@@ -17,29 +17,18 @@
     under the License.
 */
 
-var CordovaError = require('cordova-common').CordovaError;
-
-var knownBuilders = {
-    gradle: 'ProjectBuilder',
-    studio: 'ProjectBuilder'
-};
+const CordovaError = require('cordova-common').CordovaError;
 
 /**
- * Helper method that instantiates and returns a builder for specified build
- *   type.
+ * Helper method that instantiates and returns a builder for specified build type.
  *
- * @param   {String}  builderType   Builder name to construct and return. Must
- *   be one of gradle' or 'studio'
- *
- * @return  {Builder}               A builder instance for specified build type.
+ * @return {Builder} A builder instance for specified build type.
  */
-module.exports.getBuilder = function (builderType, projectRoot) {
-    if (!knownBuilders[builderType]) { throw new CordovaError('Builder ' + builderType + ' is not supported.'); }
-
+module.exports.getBuilder = function () {
     try {
-        var Builder = require('./' + knownBuilders[builderType]);
-        return new Builder(projectRoot);
+        const Builder = require('./ProjectBuilder');
+        return new Builder();
     } catch (err) {
-        throw new CordovaError('Failed to instantiate ' + knownBuilders[builderType] + ' builder: ' + err);
+        throw new CordovaError('Failed to instantiate ProjectBuilder builder: ' + err);
     }
 };

@@ -434,12 +434,9 @@ module.exports.install = function (givenTarget, buildResults) {
 
     var target;
     // We need to find the proper path to the Android Manifest
-    var manifestPath = path.join(__dirname, '..', '..', 'app', 'src', 'main', 'AndroidManifest.xml');
-    if (buildResults.buildMethod === 'gradle') {
-        manifestPath = path.join(__dirname, '../../AndroidManifest.xml');
-    }
-    var manifest = new AndroidManifest(manifestPath);
-    var pkgName = manifest.getPackageId();
+    const manifestPath = path.join(__dirname, '..', '..', 'app', 'src', 'main', 'AndroidManifest.xml');
+    const manifest = new AndroidManifest(manifestPath);
+    const pkgName = manifest.getPackageId();
 
     // resolve the target emulator
     return Promise.resolve().then(function () {
