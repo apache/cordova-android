@@ -35,12 +35,9 @@ const TEMPLATE =
     '# Do not modify this file -- ' + MARKER + '\n';
 
 class ProjectBuilder {
-    constructor (projectRoot) {
-        this.root = projectRoot || path.resolve(__dirname, '../../..');
-        this.binDirs = {
-            studio: path.join(this.root, 'app', 'build', 'outputs', 'apk'),
-            gradle: path.join(this.root, 'app', 'build', 'outputs', 'apk')
-        };
+    constructor (rootDirectory) {
+        this.root = rootDirectory || path.resolve(__dirname, '../../..');
+        this.binDir = path.join(this.root, 'app', 'build', 'outputs', 'apk');
     }
 
     getArgs (cmd, opts) {
@@ -295,11 +292,14 @@ class ProjectBuilder {
     }
 
     findOutputApks (build_type, arch) {
-        var self = this;
-        return Object.keys(this.binDirs).reduce(function (result, builderName) {
-            var binDir = self.binDirs[builderName];
-            return result.concat(findOutputApksHelper(binDir, build_type, builderName === 'ant' ? null : arch));
-        }, []).sort(apkSorter);
+        return findOutputApksHelper(this.binDir, build_type, arch).sort(apkSorter);
+    }
+
+    fetchBuildResults (build_type, arch) {
+        return {
+            apkPaths: this.findOutputApks(build_type, arch),
+            buildType: build_type
+        };
     }
 }
 

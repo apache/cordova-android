@@ -31,24 +31,15 @@ describe('builders', () => {
 
     describe('getBuilder', () => {
         it('should return an instance of ProjectBuilder when gradle is requested', () => {
-            const newBuilder = builders.getBuilder('gradle');
+            const newBuilder = builders.getBuilder();
             expect(newBuilder).toEqual(jasmine.any(ProjectBuilder));
-        });
-
-        it('should return an instance of ProjectBuilder when studio is requested', () => {
-            const newBuilder = builders.getBuilder('studio');
-            expect(newBuilder).toEqual(jasmine.any(ProjectBuilder));
-        });
-
-        it('should throw an error if the selected builder does not exist', () => {
-            expect(() => builders.getBuilder('NonExistentBuilder')).toThrow(jasmine.any(CordovaError));
         });
 
         it('should throw an error if a builder cannot be instantiated', () => {
             const requireSpy = jasmine.createSpy('require').and.throwError();
             builders.__set__('require', requireSpy);
 
-            expect(() => builders.getBuilder('gradle')).toThrow(jasmine.any(CordovaError));
+            expect(() => builders.getBuilder()).toThrow(jasmine.any(CordovaError));
         });
     });
 });
