@@ -26,14 +26,7 @@ var handlers = {
             if (!obj.src) throw new CordovaError(generateAttributeError('src', 'source-file', plugin.id));
             if (!obj.targetDir) throw new CordovaError(generateAttributeError('target-dir', 'source-file', plugin.id));
 
-            var dest = path.join(obj.targetDir, path.basename(obj.src));
-
-            // TODO: This code needs to be replaced, since the core plugins need to be re-mapped to a different location in
-            // a later plugins release.  This is for legacy plugins to work with Cordova.
-
-            if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
-            }
+            var dest = studioPathRemap(obj);
 
             if (options && options.force) {
                 copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
@@ -42,11 +35,7 @@ var handlers = {
             }
         },
         uninstall: function (obj, plugin, project, options) {
-            var dest = path.join(obj.targetDir, path.basename(obj.src));
-
-            if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
-            }
+            var dest = studioPathRemap(obj);
 
             // TODO: Add Koltin extension to uninstall, since they are handled like Java files
             if (obj.src.endsWith('java')) {
@@ -59,33 +48,21 @@ var handlers = {
     },
     'lib-file': {
         install: function (obj, plugin, project, options) {
-            var dest = path.join('libs', path.basename(obj.src));
-            if (options && options.android_studio === true) {
-                dest = path.join('app/libs', path.basename(obj.src));
-            }
+            var dest = path.join('app/libs', path.basename(obj.src));
             copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
         },
         uninstall: function (obj, plugin, project, options) {
-            var dest = path.join('libs', path.basename(obj.src));
-            if (options && options.android_studio === true) {
-                dest = path.join('app/libs', path.basename(obj.src));
-            }
+            var dest = path.join('app/libs', path.basename(obj.src));
             removeFile(project.projectDir, dest);
         }
     },
     'resource-file': {
         install: function (obj, plugin, project, options) {
-            var dest = path.normalize(obj.target);
-            if (options && options.android_studio === true) {
-                dest = path.join('app/src/main', dest);
-            }
+            var dest = path.join('app', 'src', 'main', obj.target);
             copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
         },
         uninstall: function (obj, plugin, project, options) {
-            var dest = path.normalize(obj.target);
-            if (options && options.android_studio === true) {
-                dest = path.join('app/src/main', dest);
-            }
+            var dest = path.join('app', 'src', 'main', obj.target);
             removeFile(project.projectDir, dest);
         }
     },

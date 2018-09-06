@@ -42,23 +42,18 @@ describe('run', () => {
     });
 
     describe('run method', () => {
-        let buildSpyObj;
         let deviceSpyObj;
         let emulatorSpyObj;
         let eventsSpyObj;
         let getInstallTargetSpy;
 
         beforeEach(() => {
-            buildSpyObj = jasmine.createSpyObj('buildSpy', ['run']);
             deviceSpyObj = jasmine.createSpyObj('deviceSpy', ['install', 'list', 'resolveTarget']);
             emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['install', 'list_images', 'list_started', 'resolveTarget', 'start', 'wait_for_boot']);
             eventsSpyObj = jasmine.createSpyObj('eventsSpy', ['emit']);
             getInstallTargetSpy = jasmine.createSpy('getInstallTargetSpy');
 
-            buildSpyObj.run.and.returnValue(Promise.resolve());
-
             run.__set__({
-                build: buildSpyObj,
                 device: deviceSpyObj,
                 emulator: emulatorSpyObj,
                 events: eventsSpyObj,
@@ -180,22 +175,13 @@ describe('run', () => {
             );
         });
 
-        it('should build the app if a target has been found', () => {
-            getInstallTargetSpy.and.returnValue('--device');
-            deviceSpyObj.resolveTarget.and.returnValue({ target: 'device1', isEmulator: false });
-
-            return run.run().then(() => {
-                expect(buildSpyObj.run).toHaveBeenCalled();
-            });
-        });
-
         it('should install on device after build', () => {
             const deviceTarget = { target: 'device1', isEmulator: false };
             getInstallTargetSpy.and.returnValue('--device');
             deviceSpyObj.resolveTarget.and.returnValue(deviceTarget);
 
             return run.run().then(() => {
-                expect(deviceSpyObj.install).toHaveBeenCalledWith(deviceTarget, undefined);
+                expect(deviceSpyObj.install).toHaveBeenCalledWith(deviceTarget, {apkPaths: [], buildType: 'debug'});
             });
         });
 
@@ -207,7 +193,7 @@ describe('run', () => {
             emulatorSpyObj.wait_for_boot.and.returnValue(Promise.resolve());
 
             return run.run().then(() => {
-                expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, undefined);
+                expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, {apkPaths: [], buildType: 'debug'});
             });
         });
     });

@@ -22,11 +22,11 @@
 var Q = require('q');
 var path = require('path');
 var superspawn = require('cordova-common').superspawn;
-var GradleBuilder = require('../bin/templates/cordova/lib/builders/GradleBuilder');
+var ProjectBuilder = require('../bin/templates/cordova/lib/builders/ProjectBuilder');
 
 Q.resolve()
     .then(_ => console.log('Preparing Gradle wrapper for Java unit tests.'))
-    .then(_ => new GradleBuilder(__dirname).runGradleWrapper('gradle'))
+    .then(_ => new ProjectBuilder(__dirname).runGradleWrapper('gradle'))
     .then(_ => gradlew('--version'))
 
     .then(_ => console.log('Gradle wrapper is ready. Running tests now.'))
