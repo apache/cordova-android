@@ -18,10 +18,12 @@
 */
 
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
+if (cdvHelpers.getConfigPreference('EnableKotlin', 'false').toBoolean()) {
+    apply plugin: 'kotlin-android'
+}
 
 buildscript {
-    ext.kotlin_version = '1.2.41'
+    ext.kotlin_version = '1.2.61'
     repositories {
         mavenCentral()
         maven {
@@ -32,7 +34,9 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        if (cdvHelpers.getConfigPreference('EnableKotlin', 'false').toBoolean()) {
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        }
     }
 }
 
@@ -260,7 +264,11 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    if (cdvHelpers.getConfigPreference('EnableKotlin', 'false').toBoolean()) {
+        compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    }
+
     // SUB-PROJECT DEPENDENCIES START
     debugCompile(project(path: ":CordovaLib", configuration: "debug"))
     releaseCompile(project(path: ":CordovaLib", configuration: "release"))
