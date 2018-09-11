@@ -39,15 +39,6 @@
     "q": "^1.4.1",
     "shelljs": "^0.5.3"
   },
-  "bundledDependencies": [
-    "android-versions",
-    "cordova-common",
-    "elementtree",
-    "nopt",
-    "properties-parser",
-    "q",
-    "shelljs"
-  ],
   "devDependencies": {
     "eslint": "^3.19.0",
     "eslint-config-semistandard": "^11.0.0",
