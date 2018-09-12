@@ -63,7 +63,7 @@ ext {
     }
     // Sets the minSdkVersion to the given value.
     if (!project.hasProperty('cdvMinSdkVersion')) {
-        cdvMinSdkVersion = null
+        cdvMinSdkVersion = defaultMinSdkVersion
     }
     // Whether to build architecture-specific APKs.
     if (!project.hasProperty('cdvBuildMultipleApks')) {
@@ -117,7 +117,7 @@ if (ext.cdvReleaseSigningPropertiesFile == null && file('../release-signing.prop
 // Cast to appropriate types.
 ext.cdvBuildMultipleApks = cdvBuildMultipleApks == null ? false : cdvBuildMultipleApks.toBoolean();
 ext.cdvVersionCodeForceAbiDigit = cdvVersionCodeForceAbiDigit == null ? false : cdvVersionCodeForceAbiDigit.toBoolean();
-ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? defaultMinSdkVersion : cdvMinSdkVersion
+ext.cdvMinSdkVersion = cdvMinSdkVersion
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
 
 def computeBuildTargetName(debugBuild) {
@@ -162,9 +162,7 @@ android {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
         applicationId privateHelpers.extractStringFromManifest("package")
 
-        if (cdvMinSdkVersion != null) {
-            minSdkVersion cdvMinSdkVersion
-        }
+        minSdkVersion cdvMinSdkVersion
     }
 
     lintOptions {
