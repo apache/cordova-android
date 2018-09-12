@@ -174,10 +174,11 @@ android {
     compileSdkVersion cdvCompileSdkVersion
     buildToolsVersion cdvBuildToolsVersion
 
-    //This code exists for Crosswalk and other Native APIs.
-    //By default, we multiply the existing version code in the Android Manifest by 10 and
-    //add a number for each architecture.  If you are not using Crosswalk or SQLite, you can
-    //ignore this chunk of code, and your version codes will be respected.
+    // This code exists for Crosswalk and other Native APIs.
+    // By default, we multiply the existing version code in the
+    // Android Manifest by 10 and add a number for each architecture.
+    // If you are not using Crosswalk or SQLite, you can
+    // ignore this chunk of code, and your version codes will be respected.
 
     if (Boolean.valueOf(cdvBuildMultipleApks)) {
         flavorDimensions "default"
