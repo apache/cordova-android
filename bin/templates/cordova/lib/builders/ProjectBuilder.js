@@ -193,7 +193,7 @@ class ProjectBuilder {
                     throw new CordovaError('Unsupported system library (does not work with gradle): ' + p);
                 }
             }
-            depsList += '    compile "' + mavenRef + '"\n';
+            depsList += '    implementation "' + mavenRef + '"\n';
         });
 
         buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
