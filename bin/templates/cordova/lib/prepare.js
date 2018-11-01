@@ -33,6 +33,8 @@ var PlatformJson = require('cordova-common').PlatformJson;
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
+const GradlePropertiesParser = require('./config/GradlePropertiesParser');
+
 module.exports.prepare = function (cordovaProject, options) {
     var self = this;
 
@@ -40,6 +42,9 @@ module.exports.prepare = function (cordovaProject, options) {
     var munger = new PlatformMunger(this.platform, this.locations.root, platformJson, new PluginInfoProvider());
 
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
+
+    let gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);
+    gradlePropertiesParser.configure();
 
     // Update own www dir with project's www assets and plugins' assets and js-files
     return Q.when(updateWww(cordovaProject, this.locations)).then(function () {
