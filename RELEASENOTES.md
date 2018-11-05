@@ -312,6 +312,13 @@
 * [CB-13830](https://issues.apache.org/jira/browse/CB-13830) Add handlers for plugins that use non-Java source files, such as Camera
 * [CB-13923](https://issues.apache.org/jira/browse/CB-13923) Fix -1 length for compressed files
 
+### 7.1.2 (Nov 08, 2018)
+* [CB-14127](https://issues.apache.org/jira/browse/CB-14127): Always put the Google repo above jcenter
+* [CB-14165](https://issues.apache.org/jira/browse/CB-14165): Emulator: handle "device still connecting" error (#457)
+* [CB-14125](https://issues.apache.org/jira/browse/CB-14125): Increase old plugin compatibility
+* [CB-13830](https://issues.apache.org/jira/browse/CB-13830): Add handlers for plugins that use non-Java source files, such as Camera
+* [CB-14038](https://issues.apache.org/jira/browse/CB-14038): fix false positive detecting project type
+
 ### 7.1.1 (Jul 11, 2018)
 * Fix unsafe property access in run.js (#445)
 * Emit log event instead of logging directly (#452)
