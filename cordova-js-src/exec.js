@@ -114,7 +114,7 @@ androidExec.init = function() {
     //using the Online Event bridge for communicating from Native to JS
     //
     //It's ugly, but it's necessary.
-    var check = navigator.userAgent.toLowerCase().match(/android\s[0-9].[0-9]/);
+    var check = navigator.userAgent.toLowerCase().match(/android\s[0-9]+(\.[0-9]?)?/);
     var version_code = check && check[0].match(/4.[0-3].*/);
     if (version_code != null && nativeToJsBridgeMode == nativeToJsModes.EVAL_BRIDGE) {
       nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT;
