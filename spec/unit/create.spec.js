@@ -259,7 +259,7 @@ describe('create', function () {
             });
             it('should copy template scripts into generated project', function (done) {
                 create.create(project_path, config_mock, {}, events_mock).then(function () {
-                    expect(create.copyScripts).toHaveBeenCalledWith(project_path);
+                    expect(create.copyScripts).toHaveBeenCalledWith(project_path, {});
                 }).fail(fail).done(done);
             });
             it('should copy build rules / gradle files into generated project', function (done) {

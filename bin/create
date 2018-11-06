@@ -50,7 +50,8 @@ if (argv['activity-name']) config.setName(argv['activity-name']);
 var options = {
     link: argv.link || argv.shared,
     customTemplate: argv.argv.remain[3],
-    activityName: argv['activity-name']
+    activityName: argv['activity-name'],
+    copyPlatformNodeModules: true
 };
 
 require('./templates/cordova/loggingHelper').adjustLoggerLevel(argv);
