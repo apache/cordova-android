@@ -108,6 +108,12 @@ describe('android project handler', function () {
                     android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 }).toThrow(new Error('"' + target + '" already exists!'));
             });
+
+            it('Test#007 : should allow installing sources using proper path', function () {
+                android['source-file'].install(valid_source[1], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
