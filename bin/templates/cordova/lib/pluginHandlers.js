@@ -34,7 +34,7 @@ var handlers = {
             // a later plugins release.  This is for legacy plugins to work with Cordova.
 
             if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
+                dest = studioPathRemap(obj) || dest;
             }
 
             if (options && options.force) {
