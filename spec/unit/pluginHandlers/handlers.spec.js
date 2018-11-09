@@ -114,6 +114,19 @@ describe('android project handler', function () {
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'), false);
             });
+
+            // TODO: renumber these tests and other tests below
+            it('Test#007a : should allow installing lib file from sources using proper path', function () {
+                android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('app/libs/TestLib.jar'), false);
+            });
+
+            it('Test#007b : should allow installing aar file from sources using proper path', function () {
+                android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/TestAar.aar', temp, path.join('app/libs/TestAar.aar'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
