@@ -114,6 +114,12 @@ describe('android project handler', function () {
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'), false);
             });
+
+            it('Test#008 : should allow installing lib file from sources using proper path', function () {
+                android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('app/libs/TestLib.jar'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
