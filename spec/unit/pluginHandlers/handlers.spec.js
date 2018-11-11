@@ -296,6 +296,22 @@ describe('android project handler', function () {
             });
         });
 
+        describe('of <source-file> element, with JAR in specific app target-dir', function () {
+            it('Test#019b : should remove stuff by calling common.deleteJava for Android Studio projects, with JAR into specific app target-dir', function () {
+                android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
+            });
+        });
+
+        describe('of <source-file> element, with AAR in specific app target-dir', function () {
+            it('Test#019c : should remove stuff by calling common.deleteJava for Android Studio projects, with JAR into specific app target-dir', function () {
+                android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestAar.aar'));
+            });
+        });
+
         describe('of <framework> elements', function () {
 
             var someString = jasmine.any(String);
