@@ -28,14 +28,7 @@ var handlers = {
             if (!obj.src) throw new CordovaError(generateAttributeError('src', 'source-file', plugin.id));
             if (!obj.targetDir) throw new CordovaError(generateAttributeError('target-dir', 'source-file', plugin.id));
 
-            var dest = path.join(obj.targetDir, path.basename(obj.src));
-
-            // TODO: This code needs to be replaced, since the core plugins need to be re-mapped to a different location in
-            // a later plugins release.  This is for legacy plugins to work with Cordova.
-
-            if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
-            }
+            var dest = getInstallDestination(obj);
 
             if (options && options.force) {
                 copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
@@ -44,11 +37,8 @@ var handlers = {
             }
         },
         uninstall: function (obj, plugin, project, options) {
-            var dest = path.join(obj.targetDir, path.basename(obj.src));
 
-            if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
-            }
+            var dest = getInstallDestination(obj);
 
             // TODO: Add Koltin extension to uninstall, since they are handled like Java files
             if (obj.src.endsWith('java')) {
@@ -315,6 +305,11 @@ function removeFileAndParents (baseDir, destFile, stopper) {
 
 function generateAttributeError (attribute, element, id) {
     return 'Required attribute "' + attribute + '" not specified in <' + element + '> element from plugin: ' + id;
+}
+
+function getInstallDestination (obj) {
+    return studioPathRemap(obj) ||
+        path.join(obj.targetDir, path.basename(obj.src));
 }
 
 function studioPathRemap (obj) {
