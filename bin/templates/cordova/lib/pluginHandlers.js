@@ -323,8 +323,9 @@ function getInstallDestination (obj) {
 }
 
 function studioPathRemap (obj) {
-    // If a Java file is using the new directory structure, don't penalize it
-    if (!obj.targetDir.includes('app/src/main')) {
+    // If any source file is using the app new directory structure,
+    // don't penalize it
+    if (!obj.targetDir.includes('app')) {
         if (obj.src.endsWith('.java')) {
             return path.join('app/src/main/java', obj.targetDir.substring(4), path.basename(obj.src));
         } else {
