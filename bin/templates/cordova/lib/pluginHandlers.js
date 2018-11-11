@@ -34,7 +34,7 @@ var handlers = {
             // a later plugins release.  This is for legacy plugins to work with Cordova.
 
             if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
+                dest = getInstallDestination(obj);
             }
 
             if (options && options.force) {
@@ -47,7 +47,7 @@ var handlers = {
             var dest = path.join(obj.targetDir, path.basename(obj.src));
 
             if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
+                dest = getInstallDestination(obj);
             }
 
             // TODO: Add Koltin extension to uninstall, since they are handled like Java files
@@ -315,6 +315,11 @@ function removeFileAndParents (baseDir, destFile, stopper) {
 
 function generateAttributeError (attribute, element, id) {
     return 'Required attribute "' + attribute + '" not specified in <' + element + '> element from plugin: ' + id;
+}
+
+function getInstallDestination (obj) {
+    return studioPathRemap(obj) ||
+        path.join(obj.targetDir, path.basename(obj.src));
 }
 
 function studioPathRemap (obj) {
