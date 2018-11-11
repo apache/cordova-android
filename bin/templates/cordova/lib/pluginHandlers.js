@@ -26,7 +26,7 @@ var handlers = {
             if (!obj.src) throw new CordovaError(generateAttributeError('src', 'source-file', plugin.id));
             if (!obj.targetDir) throw new CordovaError(generateAttributeError('target-dir', 'source-file', plugin.id));
 
-            var dest = studioPathRemap(obj);
+            var dest = getInstallDestination(obj);
 
             if (options && options.force) {
                 copyFile(plugin.dir, obj.src, project.projectDir, dest, !!(options && options.link));
@@ -35,7 +35,7 @@ var handlers = {
             }
         },
         uninstall: function (obj, plugin, project, options) {
-            var dest = studioPathRemap(obj);
+            var dest = getInstallDestination(obj);
 
             // TODO: Add Koltin extension to uninstall, since they are handled like Java files
             if (obj.src.endsWith('java')) {
@@ -290,6 +290,11 @@ function removeFileAndParents (baseDir, destFile, stopper) {
 
 function generateAttributeError (attribute, element, id) {
     return 'Required attribute "' + attribute + '" not specified in <' + element + '> element from plugin: ' + id;
+}
+
+function getInstallDestination (obj) {
+    return studioPathRemap(obj) ||
+        path.join(obj.targetDir, path.basename(obj.src));
 }
 
 function studioPathRemap (obj) {
