@@ -102,6 +102,25 @@ describe('android project handler', function () {
                     android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 }).toThrow(new Error('"' + target + '" already exists!'));
             });
+
+            it('Test#007 : should allow installing sources using proper path', function () {
+                android['source-file'].install(valid_source[1], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'), false);
+            });
+
+            // TODO: renumber these tests and other tests below
+            it('Test#007a : should allow installing lib file from sources using proper path', function () {
+                android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('app/libs/TestLib.jar'), false);
+            });
+
+            it('Test#007b : should allow installing aar file from sources using proper path', function () {
+                android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/TestAar.aar', temp, path.join('app/libs/TestAar.aar'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
@@ -251,11 +270,39 @@ describe('android project handler', function () {
             });
         });
 
+        // TODO:
+        // - merge tests of <source-file> elements into single describe block
+        //   (with proper beforeEach/afterEach)
+        // - renumber the tests after Test#019
         describe('of <source-file> elements', function () {
             it('Test#019 : should remove stuff by calling common.deleteJava for Android Studio projects', function () {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject);
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
+            });
+        });
+
+        describe('of <source-file> element, with specific app target-dir', function () {
+            it('Test#019a : should remove stuff by calling common.deleteJava for Android Studio projects, with specific app target-dir', function () {
+                android['source-file'].install(valid_source[1], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[1], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'));
+            });
+        });
+
+        describe('of <source-file> element, with JAR in specific app target-dir', function () {
+            it('Test#019b : should remove stuff by calling common.deleteJava for Android Studio projects, with JAR into specific app target-dir', function () {
+                android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
+            });
+        });
+
+        describe('of <source-file> element, with AAR in specific app target-dir', function () {
+            it('Test#019c : should remove stuff by calling common.deleteJava for Android Studio projects, with JAR into specific app target-dir', function () {
+                android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestAar.aar'));
             });
         });
 
