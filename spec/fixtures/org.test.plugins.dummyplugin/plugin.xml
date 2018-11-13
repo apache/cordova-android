@@ -77,6 +77,7 @@
         <source-file src="src/android/TestAar.aar"
                 target-dir="app/libs" />
         <source-file src="src/android/mysettings.xml" target-dir="res/xml" />
+        <source-file src="src/android/other.extension" target-dir="res/values" />
         <lib-file src="src/android/TestLib.jar" />
     </platform>
 </plugin>
