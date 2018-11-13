@@ -121,6 +121,13 @@ describe('android project handler', function () {
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/TestAar.aar', temp, path.join('app/libs/TestAar.aar'), false);
             });
+
+            it('Test#006d : should allow installing xml file from sources with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[4], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/mysettings.xml', temp,
+                    path.join('app/src/main/res/xml/mysettings.xml'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
@@ -293,6 +300,12 @@ describe('android project handler', function () {
                 android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
                 android['source-file'].uninstall(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestAar.aar'));
+            });
+
+            it('Test#019d : should remove stuff by calling common.removeFile for Android Studio projects, of xml with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[4], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[4], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/xml/mysettings.xml'));
             });
         });
 
