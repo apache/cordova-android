@@ -134,6 +134,13 @@ describe('android project handler', function () {
                     'src/android/mysettings.xml', temp,
                     path.join('app/src/main/res/xml/mysettings.xml'), false);
             });
+
+            it('Test#006e : should allow installing file with other extension from sources with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[5], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/other.extension', temp,
+                    path.join('app/src/main/res/values/other.extension'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
@@ -312,6 +319,12 @@ describe('android project handler', function () {
                 android['source-file'].install(valid_source[4], dummyPluginInfo, dummyProject, {android_studio: true});
                 android['source-file'].uninstall(valid_source[4], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/xml/mysettings.xml'));
+            });
+
+            it('Test#019e : should remove stuff by calling common.removeFile for Android Studio projects, of file with other extension with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[5], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[5], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/values/other.extension'));
             });
         });
 
