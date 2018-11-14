@@ -93,9 +93,9 @@ ext {
 // PLUGIN GRADLE EXTENSIONS START
 // PLUGIN GRADLE EXTENSIONS END
 
-def hasBuildExtras = file('build-extras.gradle').exists()
+def hasBuildExtras = file('../build-extras.gradle').exists()
 if (hasBuildExtras) {
-    apply from: 'build-extras.gradle'
+    apply from: '../build-extras.gradle'
 }
 
 // Set property defaults after extension .gradle files.
