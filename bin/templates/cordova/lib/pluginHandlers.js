@@ -326,6 +326,16 @@ function getInstallDestination (obj) {
         return path.join(obj.targetDir, path.basename(obj.src));
     } else if (obj.src.endsWith('.java')) {
         return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.substring(4), path.basename(obj.src));
+    } else if (obj.src.endsWith('.aidl')) {
+        return path.join(APP_MAIN_PREFIX, 'aidl', obj.targetDir.substring(4), path.basename(obj.src));
+    } else if (obj.targetDir.includes('libs')) {
+        if (obj.src.endsWith('.so')) {
+            return path.join(APP_MAIN_PREFIX, 'jniLibs', obj.targetDir.substring(5), path.basename(obj.src));
+        } else {
+            return path.join('app', obj.targetDir, path.basename(obj.src));
+        }
+    } else if (obj.targetDir.includes('src/main')) {
+        return path.join('app', obj.targetDir, path.basename(obj.src));
     } else {
         // For all other source files not using the new app directory structure,
         // add 'app/src/main' to the targetDir
