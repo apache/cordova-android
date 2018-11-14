@@ -318,20 +318,17 @@ function generateAttributeError (attribute, element, id) {
 }
 
 function getInstallDestination (obj) {
-    return studioPathRemap(obj) ||
-        path.join(obj.targetDir, path.basename(obj.src));
-}
+    var APP_MAIN_PREFIX = 'app/src/main';
 
-function studioPathRemap (obj) {
-    // If any source file is using the app new directory structure,
-    // don't penalize it
-    if (!obj.targetDir.includes('app')) {
-        if (obj.src.endsWith('.java')) {
-            return path.join('app/src/main/java', obj.targetDir.substring(4), path.basename(obj.src));
-        } else {
-            // For all other files, add 'app/src/main' to the targetDir if it didn't have it already
-            return path.join('app/src/main', obj.targetDir, path.basename(obj.src));
-        }
+    if (obj.targetDir.includes('app')) {
+        // If any source file is using the app new directory structure,
+        // don't penalize it
+        return path.join(obj.targetDir, path.basename(obj.src));
+    } else if (obj.src.endsWith('.java')) {
+        return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.substring(4), path.basename(obj.src));
+    } else {
+        // For all other files, add 'app/src/main' to the targetDir if it didn't have it already
+        return path.join(APP_MAIN_PREFIX, obj.targetDir, path.basename(obj.src));
     }
 
 }
