@@ -20,7 +20,7 @@
 */
 
 // Coho updates this line:
-var VERSION = '7.2.0-dev';
+var VERSION = "8.0.0-dev";
 
 module.exports.version = VERSION;
 
