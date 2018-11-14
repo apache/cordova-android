@@ -1,5 +1,5 @@
 // Platform: android
-// 61a51908ef1d6e96a92e9e65e3c7166a39192f29
+// e040d9e9343d5f27dd4f67616660b33b92a82ff7
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -307,6 +307,7 @@ var cordova = {
         } catch (err) {
             var msg = 'Error in ' + (isSuccess ? 'Success' : 'Error') + ' callbackId: ' + callbackId + ' : ' + err;
             console && console.log && console.log(msg);
+            console && console.log && err.stack && console.log(err.stack);
             cordova.fireWindowEvent('cordovacallbackerror', { 'message': msg });
             throw err;
         }
