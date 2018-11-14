@@ -26,7 +26,7 @@
     "java-unit-tests": "node test/run_java_unit_tests.js",
     "eslint": "run-s -c eslint:*",
     "eslint:scripts": "eslint bin spec test",
-    "eslint:bins": "eslint 'bin/**/*' --ignore-pattern '**/*.*' --ignore-pattern '**/gitignore'"
+    "eslint:bins": "eslint 'bin/**/*' --ignore-pattern '**/*.*' --ignore-pattern '**/gitignore' --ignore-pattern 'bin/templates/cordova/version'"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
