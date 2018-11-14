@@ -296,13 +296,14 @@ function getInstallDestination (obj) {
     var APP_MAIN_PREFIX = 'app/src/main';
 
     if (obj.targetDir.includes('app')) {
-        // If any source file is using the app new directory structure,
+        // If any source file is using the new app directory structure,
         // don't penalize it
         return path.join(obj.targetDir, path.basename(obj.src));
     } else if (obj.src.endsWith('.java')) {
         return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.substring(4), path.basename(obj.src));
     } else {
-        // For all other files, add 'app/src/main' to the targetDir if it didn't have it already
+        // For all other source files not using the new app directory structure,
+        // add 'app/src/main' to the targetDir
         return path.join(APP_MAIN_PREFIX, obj.targetDir, path.basename(obj.src));
     }
 
