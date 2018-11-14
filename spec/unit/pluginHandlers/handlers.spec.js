@@ -103,23 +103,65 @@ describe('android project handler', function () {
                 }).toThrow(new Error('"' + target + '" already exists!'));
             });
 
-            it('Test#007 : should allow installing sources using proper path', function () {
+            // TODO: renumber these tests and other tests below
+            it('Test#00a6 : should allow installing sources with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[1], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'), false);
             });
 
-            // TODO: renumber these tests and other tests below
-            it('Test#007a : should allow installing lib file from sources using proper path', function () {
+            it('Test#006b : should allow installing jar lib file from sources with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('app/libs/TestLib.jar'), false);
             });
 
-            it('Test#007b : should allow installing aar file from sources using proper path', function () {
+            it('Test#006c : should allow installing aar lib file from sources with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/TestAar.aar', temp, path.join('app/libs/TestAar.aar'), false);
+            });
+
+            it('Test#006d : should allow installing xml file from sources with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[4], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/mysettings.xml', temp,
+                    path.join('app/src/main/res/xml/mysettings.xml'), false);
+            });
+
+            it('Test#006e : should allow installing file with other extension from sources with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[5], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/other.extension', temp,
+                    path.join('app/src/main/res/values/other.extension'), false);
+            });
+
+            it('Test#006f : should allow installing aidl file from sources with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[6], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/myapi.aidl', temp,
+                    path.join('app/src/main/aidl/com/mytest/myapi.aidl'), false);
+            });
+
+            it('Test#006g : should allow installing aar lib file from sources with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[7], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/testaar2.aar', temp,
+                    path.join('app/libs/testaar2.aar'), false);
+            });
+
+            it('Test#006h : should allow installing jar lib file from sources with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[8], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/testjar2.jar', temp,
+                    path.join('app/libs/testjar2.jar'), false);
+            });
+
+            it('Test#006i : should allow installing .so lib file from sources with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[9], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/jniLibs/x86/libnative.so', temp,
+                    path.join('app/src/main/jniLibs/x86/libnative.so'), false);
             });
         });
 
@@ -270,39 +312,65 @@ describe('android project handler', function () {
             });
         });
 
-        // TODO:
-        // - merge tests of <source-file> elements into single describe block
-        //   (with proper beforeEach/afterEach)
-        // - renumber the tests after Test#019
         describe('of <source-file> elements', function () {
             it('Test#019 : should remove stuff by calling common.deleteJava for Android Studio projects', function () {
                 android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject);
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
             });
-        });
 
-        describe('of <source-file> element, with specific app target-dir', function () {
             it('Test#019a : should remove stuff by calling common.deleteJava for Android Studio projects, with specific app target-dir', function () {
                 android['source-file'].install(valid_source[1], dummyPluginInfo, dummyProject, {android_studio: true});
                 android['source-file'].uninstall(valid_source[1], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'));
             });
-        });
 
-        describe('of <source-file> element, with JAR in specific app target-dir', function () {
-            it('Test#019b : should remove stuff by calling common.deleteJava for Android Studio projects, with JAR into specific app target-dir', function () {
+            it('Test#019b : should remove stuff by calling common.removeFile for Android Studio projects, of jar with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
                 android['source-file'].uninstall(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
             });
-        });
 
-        describe('of <source-file> element, with AAR in specific app target-dir', function () {
-            it('Test#019c : should remove stuff by calling common.deleteJava for Android Studio projects, with JAR into specific app target-dir', function () {
+            it('Test#019c : should remove stuff by calling common.removeFile for Android Studio projects, of aar with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
                 android['source-file'].uninstall(valid_source[3], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestAar.aar'));
+            });
+
+            it('Test#019d : should remove stuff by calling common.removeFile for Android Studio projects, of xml with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[4], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[4], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/xml/mysettings.xml'));
+            });
+
+            it('Test#019e : should remove stuff by calling common.removeFile for Android Studio projects, of file with other extension with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[5], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[5], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/values/other.extension'));
+            });
+
+            it('Test#019f : should remove stuff by calling common.removeFile for Android Studio projects, of aidl with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[6], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[6], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/aidl/com/mytest/myapi.aidl'));
+            });
+
+            it('Test#019g : should remove stuff by calling common.removeFile for Android Studio projects, of aar with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[7], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[7], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/testaar2.aar'));
+            });
+
+            it('Test#019h : should remove stuff by calling common.removeFile for Android Studio projects, of jar with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[8], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[8], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/testjar2.jar'));
+            });
+
+            it('Test#019i : should remove stuff by calling common.removeFile for Android Studio projects, of .so lib file with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[9], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[9], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/jniLibs/x86/libnative.so'));
             });
         });
 
