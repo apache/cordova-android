@@ -301,8 +301,6 @@ function getInstallDestination (obj) {
         return path.join(obj.targetDir, path.basename(obj.src));
     } else if (obj.src.endsWith('.java')) {
         return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.substring(4), path.basename(obj.src));
-    } else if (obj.src.endsWith('.aidl')) {
-        return path.join(APP_MAIN_PREFIX, 'aidl', obj.targetDir.substring(4), path.basename(obj.src));
     } else if (obj.targetDir.includes('libs')) {
         if (obj.src.endsWith('.so')) {
             return path.join(APP_MAIN_PREFIX, 'jniLibs', obj.targetDir.substring(5), path.basename(obj.src));
