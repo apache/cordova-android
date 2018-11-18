@@ -70,6 +70,18 @@
 
         <source-file src="src/android/DummyPlugin.java"
                 target-dir="src/com/phonegap/plugins/dummyplugin" />
+        <source-file src="src/android/DummyPlugin2.java"
+                target-dir="app/src/main/src/com/phonegap/plugins/dummyplugin" />
+        <source-file src="src/android/TestLib.jar"
+                target-dir="app/libs" />
+        <source-file src="src/android/TestAar.aar"
+                target-dir="app/libs" />
+        <source-file src="src/android/mysettings.xml" target-dir="res/xml" />
+        <source-file src="src/android/other.extension" target-dir="res/values" />
+	<source-file src="src/android/myapi.aidl" target-dir="src/com/mytest" />
+	<source-file src="src/android/testaar2.aar" target-dir="libs" />
+	<source-file src="src/android/testjar2.jar" target-dir="libs" />
+	<source-file src="src/android/jniLibs/x86/libnative.so" target-dir="libs/x86" />
         <lib-file src="src/android/TestLib.jar" />
     </platform>
 </plugin>

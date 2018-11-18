@@ -34,7 +34,7 @@ var handlers = {
             // a later plugins release.  This is for legacy plugins to work with Cordova.
 
             if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
+                dest = getInstallDestination(obj);
             }
 
             if (options && options.force) {
@@ -47,7 +47,7 @@ var handlers = {
             var dest = path.join(obj.targetDir, path.basename(obj.src));
 
             if (options && options.android_studio === true) {
-                dest = studioPathRemap(obj);
+                dest = getInstallDestination(obj);
             }
 
             // TODO: Add Koltin extension to uninstall, since they are handled like Java files
@@ -317,15 +317,29 @@ function generateAttributeError (attribute, element, id) {
     return 'Required attribute "' + attribute + '" not specified in <' + element + '> element from plugin: ' + id;
 }
 
-function studioPathRemap (obj) {
-    // If a Java file is using the new directory structure, don't penalize it
-    if (!obj.targetDir.includes('app/src/main')) {
-        if (obj.src.endsWith('.java')) {
-            return path.join('app/src/main/java', obj.targetDir.substring(4), path.basename(obj.src));
+function getInstallDestination (obj) {
+    var APP_MAIN_PREFIX = 'app/src/main';
+
+    if (obj.targetDir.includes('app')) {
+        // If any source file is using the new app directory structure,
+        // don't penalize it
+        return path.join(obj.targetDir, path.basename(obj.src));
+    } else if (obj.src.endsWith('.java')) {
+        return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.substring(4), path.basename(obj.src));
+    } else if (obj.src.endsWith('.aidl')) {
+        return path.join(APP_MAIN_PREFIX, 'aidl', obj.targetDir.substring(4), path.basename(obj.src));
+    } else if (obj.targetDir.includes('libs')) {
+        if (obj.src.endsWith('.so')) {
+            return path.join(APP_MAIN_PREFIX, 'jniLibs', obj.targetDir.substring(5), path.basename(obj.src));
         } else {
-            // For all other files, add 'app/src/main' to the targetDir if it didn't have it already
-            return path.join('app/src/main', obj.targetDir, path.basename(obj.src));
+            return path.join('app', obj.targetDir, path.basename(obj.src));
         }
+    } else if (obj.targetDir.includes('src/main')) {
+        return path.join('app', obj.targetDir, path.basename(obj.src));
+    } else {
+        // For all other source files not using the new app directory structure,
+        // add 'app/src/main' to the targetDir
+        return path.join(APP_MAIN_PREFIX, obj.targetDir, path.basename(obj.src));
     }
 
 }
