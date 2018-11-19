@@ -312,6 +312,16 @@
 * [CB-13830](https://issues.apache.org/jira/browse/CB-13830) Add handlers for plugins that use non-Java source files, such as Camera
 * [CB-13923](https://issues.apache.org/jira/browse/CB-13923) Fix -1 length for compressed files
 
+### 7.1.3 (Nov 19, 2018)
+
+* [GH-495](https://github.com/apache/cordova-android/pull/495) Incorrect default sdk version issue fix
+* [GH-496](https://github.com/apache/cordova-android/pull/496) update comments in `build.gradle`
+* [GH-539](https://github.com/apache/cordova-android/pull/539) Fix dest overwrite, in case of of plugin `source-file` element with `target-dir` that does not need remapping
+* [GH-540](https://github.com/apache/cordova-android/issues/540) support plugin `source-file` element with any app `target-dir` value
+* [GH-547](https://github.com/apache/cordova-android/issues/547) Compatibility of old plugins with non-Java `source-file` entries (individual files)
+* [GH-551](https://github.com/apache/cordova-android/pull/551) add missing cast for cdvMinSdkVersion to `build.gradle`
+* [GH-552](https://github.com/apache/cordova-android/issues/552) check for `build-extras.gradle` in the parent app directory
+
 ### 7.1.2 (Nov 08, 2018)
 * [CB-14127](https://issues.apache.org/jira/browse/CB-14127): Always put the Google repo above jcenter
 * [CB-14165](https://issues.apache.org/jira/browse/CB-14165): Emulator: handle "device still connecting" error (#457)
