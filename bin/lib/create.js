@@ -194,7 +194,7 @@ function validatePackageName (package_name) {
     var msg = 'Error validating package name. ';
 
     if (!/^[a-zA-Z][a-zA-Z0-9_]+(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(package_name)) {
-        return Q.reject(new CordovaError(msg + 'Must look like: `com.company.Name`. Currently is: `' + package_name + '`' ));
+        return Q.reject(new CordovaError(msg + 'Must look like: `com.company.Name`. Currently is: `' + package_name + '`'));
     }
 
     // Class is a reserved word
