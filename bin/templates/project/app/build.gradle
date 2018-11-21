@@ -90,9 +90,6 @@ ext {
     cdvPluginPostBuildExtras = []
 }
 
-// PLUGIN GRADLE EXTENSIONS START
-// PLUGIN GRADLE EXTENSIONS END
-
 def hasBuildExtras1 = file('build-extras.gradle').exists()
 if (hasBuildExtras1) {
     apply from: 'build-extras.gradle'
@@ -124,6 +121,9 @@ ext.cdvBuildMultipleApks = cdvBuildMultipleApks == null ? false : cdvBuildMultip
 ext.cdvVersionCodeForceAbiDigit = cdvVersionCodeForceAbiDigit == null ? false : cdvVersionCodeForceAbiDigit.toBoolean();
 ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? defaultMinSdkVersion : Integer.parseInt('' + cdvMinSdkVersion)
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
+
+// PLUGIN GRADLE EXTENSIONS START
+// PLUGIN GRADLE EXTENSIONS END
 
 def computeBuildTargetName(debugBuild) {
     def ret = 'assemble'
