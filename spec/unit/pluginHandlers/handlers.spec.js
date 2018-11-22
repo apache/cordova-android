@@ -163,6 +163,12 @@ describe('android project handler', function () {
                     'src/android/jniLibs/x86/libnative.so', temp,
                     path.join('app/src/main/jniLibs/x86/libnative.so'), false);
             });
+
+            it('Test#006j : should allow installing sources with target-dir that includes "appco"', function () {
+                android['source-file'].install(valid_source[10], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/java/com/appco/DummyPlugin2.java'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
@@ -371,6 +377,12 @@ describe('android project handler', function () {
                 android['source-file'].install(valid_source[9], dummyPluginInfo, dummyProject, {android_studio: true});
                 android['source-file'].uninstall(valid_source[9], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/jniLibs/x86/libnative.so'));
+            });
+
+            it('Test#019j : should remove stuff by calling common.deleteJava for Android Studio projects, with target-dir that includes "appco"', function () {
+                android['source-file'].install(valid_source[10], dummyPluginInfo, dummyProject, {android_studio: true});
+                android['source-file'].uninstall(valid_source[10], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/appco/DummyPlugin2.java'));
             });
         });
 

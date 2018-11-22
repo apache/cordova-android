@@ -82,6 +82,8 @@
 	<source-file src="src/android/testaar2.aar" target-dir="libs" />
 	<source-file src="src/android/testjar2.jar" target-dir="libs" />
 	<source-file src="src/android/jniLibs/x86/libnative.so" target-dir="libs/x86" />
+        <source-file src="src/android/DummyPlugin2.java"
+                target-dir="src/com/appco" />
         <lib-file src="src/android/TestLib.jar" />
     </platform>
 </plugin>
