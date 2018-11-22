@@ -30,34 +30,41 @@
  */
 
 var VERSIONS = {
-  BASE:                   { api: 1,     ndk: 0, semver: "1.0",               name: "(no code name)",     versionCode: "BASE" },
-  BASE_1_1:               { api: 2,     ndk: 0, semver: "1.1",               name: "(no code name)",     versionCode: "BASE_1_1" },
-  CUPCAKE:                { api: 3,     ndk: 1, semver: "1.5",               name: "Cupcake",            versionCode: "CUPCAKE" },
-  DONUT:                  { api: 4,     ndk: 2, semver: "1.6",               name: "Donut",              versionCode: "DONUT" },
-  ECLAIR:                 { api: 5,     ndk: 2, semver: "2.0",               name: "Eclair",             versionCode: "ECLAIR" },
-  ECLAIR_0_1:             { api: 6,     ndk: 2, semver: "2.0.1",             name: "Eclair",             versionCode: "ECLAIR_0_1" },
-  ECLAIR_MR1:             { api: 7,     ndk: 3, semver: "2.1",               name: "Eclair",             versionCode: "ECLAIR_MR1" },
-  FROYO:                  { api: 8,     ndk: 4, semver: "2.2.x",             name: "Froyo",              versionCode: "FROYO" },
-  GINGERBREAD:            { api: 9,     ndk: 5, semver: "2.3.0 - 2.3.2",     name: "Gingerbread",        versionCode: "GINGERBREAD" },
-  GINGERBREAD_MR1:        { api: 10,    ndk: 5, semver: "2.3.3 - 2.3.7",     name: "Gingerbread",        versionCode: "GINGERBREAD_MR1" },
-  HONEYCOMB:              { api: 11,    ndk: 5, semver: "3.0",               name: "Honeycomb",          versionCode: "HONEYCOMB" },
-  HONEYCOMB_MR1:          { api: 12,    ndk: 6, semver: "3.1",               name: "Honeycomb",          versionCode: "HONEYCOMB_MR1" },
-  HONEYCOMB_MR2:          { api: 13,    ndk: 6, semver: "3.2.x",             name: "Honeycomb",          versionCode: "HONEYCOMB_MR2" },
-  ICE_CREAM_SANDWICH:     { api: 14,    ndk: 7, semver: "4.0.1 - 4.0.2",     name: "Ice Cream Sandwich", versionCode: "ICE_CREAM_SANDWICH" },
-  ICE_CREAM_SANDWICH_MR1: { api: 15,    ndk: 8, semver: "4.0.3 - 4.0.4",     name: "Ice Cream Sandwich", versionCode: "ICE_CREAM_SANDWICH_MR1" },
-  JELLY_BEAN:             { api: 16,    ndk: 8, semver: "4.1.x",             name: "Jellybean",          versionCode: "JELLY_BEAN" },
-  JELLY_BEAN_MR1:         { api: 17,    ndk: 8, semver: "4.2.x",             name: "Jellybean",          versionCode: "JELLY_BEAN_MR1" },
-  JELLY_BEAN_MR2:         { api: 18,    ndk: 8, semver: "4.3.x",             name: "Jellybean",          versionCode: "JELLY_BEAN_MR2" },
-  KITKAT:                 { api: 19,    ndk: 8, semver: "4.4.0 - 4.4.4",     name: "KitKat",             versionCode: "KITKAT" },
-  KITKAT_WATCH:           { api: 20,    ndk: 8, semver: "4.4",               name: "KitKat Watch",       versionCode: "KITKAT_WATCH" },
-  LOLLIPOP:               { api: 21,    ndk: 8, semver: "5.0",               name: "Lollipop",           versionCode: "LOLLIPOP" },
-  LOLLIPOP_MR1:           { api: 22,    ndk: 8, semver: "5.1",               name: "Lollipop",           versionCode: "LOLLIPOP_MR1" },
-  M:                      { api: 23,    ndk: 8, semver: "6.0",               name: "Marshmallow",        versionCode: "M" },
-  N:                      { api: 24,    ndk: 8, semver: "7.0",               name: "Nougat",             versionCode: "N" },
-  N_MR1:                  { api: 25,    ndk: 8, semver: "7.1",               name: "Nougat",             versionCode: "N_MR1" },
-  O:                      { api: 26,    ndk: 8, semver: "8.0.0",             name: "Oreo",               versionCode: "O" },
-  O_MR1:                  { api: 27,    ndk: 8, semver: "8.1.0",             name: "Oreo",               versionCode: "O_MR1" }
+  BASE:                   { api: 1,     ndk: 0, semver: "1.0",               name: "(no code name)",     },
+  BASE_1_1:               { api: 2,     ndk: 0, semver: "1.1",               name: "(no code name)",     },
+  CUPCAKE:                { api: 3,     ndk: 1, semver: "1.5",               name: "Cupcake",            },
+  DONUT:                  { api: 4,     ndk: 2, semver: "1.6",               name: "Donut",              },
+  ECLAIR:                 { api: 5,     ndk: 2, semver: "2.0",               name: "Eclair",             },
+  ECLAIR_0_1:             { api: 6,     ndk: 2, semver: "2.0.1",             name: "Eclair",             },
+  ECLAIR_MR1:             { api: 7,     ndk: 3, semver: "2.1",               name: "Eclair",             },
+  FROYO:                  { api: 8,     ndk: 4, semver: "2.2.x",             name: "Froyo",              },
+  GINGERBREAD:            { api: 9,     ndk: 5, semver: "2.3.0 - 2.3.2",     name: "Gingerbread",        },
+  GINGERBREAD_MR1:        { api: 10,    ndk: 5, semver: "2.3.3 - 2.3.7",     name: "Gingerbread",        },
+  HONEYCOMB:              { api: 11,    ndk: 5, semver: "3.0",               name: "Honeycomb",          },
+  HONEYCOMB_MR1:          { api: 12,    ndk: 6, semver: "3.1",               name: "Honeycomb",          },
+  HONEYCOMB_MR2:          { api: 13,    ndk: 6, semver: "3.2.x",             name: "Honeycomb",          },
+  ICE_CREAM_SANDWICH:     { api: 14,    ndk: 7, semver: "4.0.1 - 4.0.2",     name: "Ice Cream Sandwich", },
+  ICE_CREAM_SANDWICH_MR1: { api: 15,    ndk: 8, semver: "4.0.3 - 4.0.4",     name: "Ice Cream Sandwich", },
+  JELLY_BEAN:             { api: 16,    ndk: 8, semver: "4.1.x",             name: "Jellybean",          },
+  JELLY_BEAN_MR1:         { api: 17,    ndk: 8, semver: "4.2.x",             name: "Jellybean",          },
+  JELLY_BEAN_MR2:         { api: 18,    ndk: 8, semver: "4.3.x",             name: "Jellybean",          },
+  KITKAT:                 { api: 19,    ndk: 8, semver: "4.4.0 - 4.4.4",     name: "KitKat",             },
+  KITKAT_WATCH:           { api: 20,    ndk: 8, semver: "4.4",               name: "KitKat Watch",       },
+  LOLLIPOP:               { api: 21,    ndk: 8, semver: "5.0",               name: "Lollipop",           },
+  LOLLIPOP_MR1:           { api: 22,    ndk: 8, semver: "5.1",               name: "Lollipop",           },
+  M:                      { api: 23,    ndk: 8, semver: "6.0",               name: "Marshmallow",        },
+  N:                      { api: 24,    ndk: 8, semver: "7.0",               name: "Nougat",             },
+  N_MR1:                  { api: 25,    ndk: 8, semver: "7.1",               name: "Nougat",             },
+  O:                      { api: 26,    ndk: 8, semver: "8.0.0",             name: "Oreo",               },
+  O_MR1:                  { api: 27,    ndk: 8, semver: "8.1.0",             name: "Oreo",               },
+  P:                      { api: 28,    ndk: 8, semver: "9",                 name: "Pie",                }
 }
+
+// Add a key to each version of Android for the "versionCode".
+// This is the same key we use in the VERSIONS map above.
+Object.keys(VERSIONS).forEach(function(version) {
+  VERSIONS[version].versionCode = version
+})
 
 var semver = require('semver');
 
@@ -82,8 +89,8 @@ function getFromDefaultPredicate(arg) {
       return true
     }
 
-    let argSemver = formatSemver(arg);
-    let versionSemver = formatSemver(version.semver);
+    var argSemver = formatSemver(arg)
+    var versionSemver = formatSemver(version.semver)
 
     if (semver.valid(argSemver) && semver.satisfies(argSemver, versionSemver)) {
       return true

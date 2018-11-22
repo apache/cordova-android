@@ -1,4 +1,5 @@
 {
+  "esversion": 6,
   "indent":   2,
   "forin":    true,
   "noarg":    true,

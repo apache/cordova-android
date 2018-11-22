@@ -29,7 +29,7 @@
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "dependencies": {
-    "android-versions": "1.3.0",
+    "android-versions": "1.4.0",
     "base64-js": "1.2.0",
     "big-integer": "1.6.32",
     "cordova-common": "2.2.5",
