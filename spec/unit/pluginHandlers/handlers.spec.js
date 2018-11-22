@@ -164,7 +164,7 @@ describe('android project handler', function () {
                     path.join('app/src/main/jniLibs/x86/libnative.so'), false);
             });
 
-            it('Test#006j : should allow installing sources with target-dir that includes "appco"', function () {
+            it('Test#006j : should allow installing sources with target-dir that includes "app"', function () {
                 android['source-file'].install(valid_source[10], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/java/com/appco/DummyPlugin2.java'), false);
