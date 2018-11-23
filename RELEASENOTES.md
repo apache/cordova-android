@@ -20,6 +20,12 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 7.1.4 (Nov 22, 2018)
+
+* Update android-versions to `1.4.0`, with added support for Android Pie ([#573](https://github.com/apache/cordova-android/pull/573))
+* Output current package name if package name can't be validated ([#567](https://github.com/apache/cordova-android/pull/567))
+* Resolve issue with plugin `target-dir="*app*"` subdirs ([#572](https://github.com/apache/cordova-android/pull/572))
+
 ### 7.1.3 (Nov 19, 2018)
 
 * [GH-495](https://github.com/apache/cordova-android/pull/495) Incorrect default sdk version issue fix
