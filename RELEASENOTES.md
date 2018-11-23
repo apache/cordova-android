@@ -312,6 +312,12 @@
 * [CB-13830](https://issues.apache.org/jira/browse/CB-13830) Add handlers for plugins that use non-Java source files, such as Camera
 * [CB-13923](https://issues.apache.org/jira/browse/CB-13923) Fix -1 length for compressed files
 
+### 7.1.4 (Nov 22, 2018)
+
+* Update android-versions to `1.4.0`, with added support for Android Pie ([#573](https://github.com/apache/cordova-android/pull/573))
+* Output current package name if package name can't be validated ([#567](https://github.com/apache/cordova-android/pull/567))
+* Resolve issue with plugin `target-dir="*app*"` subdirs ([#572](https://github.com/apache/cordova-android/pull/572))
+
 ### 7.1.3 (Nov 19, 2018)
 
 * [GH-495](https://github.com/apache/cordova-android/pull/495) Incorrect default sdk version issue fix
