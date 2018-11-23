@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '7.1.4';
+var PLATFORM_VERSION_BUILD_LABEL = '7.1.5-dev';
 // file: src/scripts/require.js
 
 /* jshint -W079 */

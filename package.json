@@ -1,6 +1,6 @@
 {
   "name": "cordova-android",
-  "version": "7.1.4",
+  "version": "7.1.5-dev",
   "description": "cordova-android release",
   "bin": {
     "create": "bin/create"
