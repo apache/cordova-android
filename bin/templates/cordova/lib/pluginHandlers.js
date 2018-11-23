@@ -295,7 +295,7 @@ function generateAttributeError (attribute, element, id) {
 function getInstallDestination (obj) {
     var APP_MAIN_PREFIX = 'app/src/main';
 
-    if (obj.targetDir.startsWith('app')) {
+    if (obj.targetDir.startsWith('app/')) {
         // If any source file is using the new app directory structure,
         // don't penalize it
         return path.join(obj.targetDir, path.basename(obj.src));
