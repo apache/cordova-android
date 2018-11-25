@@ -84,6 +84,10 @@
 	<source-file src="src/android/jniLibs/x86/libnative.so" target-dir="libs/x86" />
         <source-file src="src/android/DummyPlugin2.java"
                 target-dir="src/com/appco" />
+        <source-file src="src/android/mysettings.xml"
+		target-dir="res/xml/appsrc/mainstreet" />
+        <source-file src="src/android/mysettings.xml"
+		target-dir="res/xml/glibsoft" />
         <lib-file src="src/android/TestLib.jar" />
     </platform>
 </plugin>

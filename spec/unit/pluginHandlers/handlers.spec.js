@@ -169,6 +169,18 @@ describe('android project handler', function () {
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/java/com/appco/DummyPlugin2.java'), false);
             });
+
+            it('Test#006k : should properly install non-Java sources with target-dir="src/mainstreetapps" (includes "src/main")', function () {
+                android['source-file'].install(valid_source[11], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/mysettings.xml', temp, path.join('app/src/main/res/xml/appsrc/mainstreet/mysettings.xml'), false);
+            });
+
+            it('Test#006l : should properly install non-Java sources with target-dir="src/com/glibsoft" (includes "libs")', function () {
+                android['source-file'].install(valid_source[12], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/mysettings.xml', temp, path.join('app/src/main/res/xml/glibsoft/mysettings.xml'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
