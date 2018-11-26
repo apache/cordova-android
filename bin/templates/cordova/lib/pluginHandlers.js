@@ -341,7 +341,7 @@ function getInstallDestination (obj) {
             } else {
                 return path.join('app', obj.targetDir, path.basename(obj.src));
             }
-        } else if (obj.targetDir.startsWith('src/main/')) {
+        } else if (targetDirArray[0] === 'src' && targetDirArray[1] === 'main') {
             return path.join('app', obj.targetDir, path.basename(obj.src));
         }
 
