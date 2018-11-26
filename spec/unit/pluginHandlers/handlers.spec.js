@@ -113,7 +113,7 @@ describe('android project handler', function () {
             it('Test#006b : should allow installing jar lib file from sources with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
                 expect(copyFileSpy)
-                    .toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('app/libs/TestLib.jar'), false);
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/test1.jar', temp, path.join('app/libs/test1.jar'), false);
             });
 
             it('Test#006c : should allow installing aar lib file from sources with new app target-dir scheme', function () {
@@ -346,7 +346,7 @@ describe('android project handler', function () {
             it('Test#019b : should remove stuff by calling common.removeFile for Android Studio projects, of jar with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
                 android['source-file'].uninstall(valid_source[2], dummyPluginInfo, dummyProject, {android_studio: true});
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/test1.jar'));
             });
 
             it('Test#019c : should remove stuff by calling common.removeFile for Android Studio projects, of aar with new app target-dir scheme', function () {
