@@ -306,7 +306,7 @@ function getInstallDestination (obj) {
         // don't penalize it
         return path.join(obj.targetDir, path.basename(obj.src));
     } else {
-        // plugin ignores the new app directory structure (DEPRECATED)
+        // Plugin using deprecated target directory structure (GH-580)
         if (obj.src.endsWith('.java')) {
             return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.replace(srcReg, ''),
                 path.basename(obj.src));
