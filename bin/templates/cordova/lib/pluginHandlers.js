@@ -293,30 +293,34 @@ function generateAttributeError (attribute, element, id) {
 }
 
 function getInstallDestination (obj) {
-    var APP_MAIN_PREFIX = 'app/src/main';
+    const APP_MAIN_PREFIX = 'app/src/main';
+    const PATH_SEPARATOR = '/';
 
-    var targetDirArray = obj.targetDir.split('/');
+    const appReg = new RegExp(`^app\\${PATH_SEPARATOR}?`);
+    const libsReg = new RegExp(`^libs\\${PATH_SEPARATOR}?`);
+    const srcReg = new RegExp(`^src\\${PATH_SEPARATOR}?`);
+    const srcMainReg = new RegExp(`^src\\${PATH_SEPARATOR}main\\${PATH_SEPARATOR}?`);
 
-    if (targetDirArray[0] === 'app') {
+    if (appReg.test(obj.targetDir)) {
         // If any source file is using the new app directory structure,
         // don't penalize it
         return path.join(obj.targetDir, path.basename(obj.src));
     } else {
         // plugin ignores the new app directory structure (DEPRECATED)
         if (obj.src.endsWith('.java')) {
-            return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.replace(/^src\/?/, ''),
+            return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.replace(srcReg, ''),
                 path.basename(obj.src));
         } else if (obj.src.endsWith('.aidl')) {
-            return path.join(APP_MAIN_PREFIX, 'aidl', obj.targetDir.replace(/^src\/?/, ''),
+            return path.join(APP_MAIN_PREFIX, 'aidl', obj.targetDir.replace(srcReg, ''),
                 path.basename(obj.src));
-        } else if (targetDirArray[0] === 'libs') {
+        } else if (libsReg.test(obj.targetDir)) {
             if (obj.src.endsWith('.so')) {
-                return path.join(APP_MAIN_PREFIX, 'jniLibs', obj.targetDir.replace(/^libs\/?/, ''),
+                return path.join(APP_MAIN_PREFIX, 'jniLibs', obj.targetDir.replace(libsReg, ''),
                     path.basename(obj.src));
             } else {
                 return path.join('app', obj.targetDir, path.basename(obj.src));
             }
-        } else if (targetDirArray[0] === 'src' && targetDirArray[1] === 'main') {
+        } else if (srcMainReg.test(obj.targetDir)) {
             return path.join('app', obj.targetDir, path.basename(obj.src));
         }
 
