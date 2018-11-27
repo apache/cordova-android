@@ -169,6 +169,12 @@ describe('android project handler', function () {
                 expect(copyFileSpy)
                     .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/java/com/appco/DummyPlugin2.java'), false);
             });
+
+            it('Test#006k : should allow installing sources with target-dir that includes "app" in its first directory', function () {
+                android['source-file'].install(valid_source[11], dummyPluginInfo, dummyProject, {android_studio: true});
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/java/appco/src/DummyPlugin2.java'), false);
+            });
         });
 
         describe('of <framework> elements', function () {

@@ -296,10 +296,10 @@ function getInstallDestination (obj) {
     const APP_MAIN_PREFIX = 'app/src/main';
     const PATH_SEPARATOR = '/';
 
-    const appReg = new RegExp(`^app\\${PATH_SEPARATOR}?`);
-    const libsReg = new RegExp(`^libs\\${PATH_SEPARATOR}?`);
-    const srcReg = new RegExp(`^src\\${PATH_SEPARATOR}?`);
-    const srcMainReg = new RegExp(`^src\\${PATH_SEPARATOR}main\\${PATH_SEPARATOR}?`);
+    var appReg = new RegExp(`^app(\\${PATH_SEPARATOR}|$)`);
+    var libsReg = new RegExp(`^libs(\\${PATH_SEPARATOR}|$)`);
+    var srcReg = new RegExp(`^src(\\${PATH_SEPARATOR}|$)`);
+    var srcMainReg = new RegExp(`^src\\${PATH_SEPARATOR}main(\\${PATH_SEPARATOR}|$)`);
 
     if (appReg.test(obj.targetDir)) {
         // If any source file is using the new app directory structure,
