@@ -294,27 +294,41 @@ function generateAttributeError (attribute, element, id) {
 
 function getInstallDestination (obj) {
     var APP_MAIN_PREFIX = 'app/src/main';
+    var PATH_SEPARATOR = '/';
 
-    if (obj.targetDir.startsWith('app')) {
+    var PATH_SEP_MATCH = '\\' + PATH_SEPARATOR;
+    var PATH_SEP_OR_EOL_MATCH = '(\\' + PATH_SEPARATOR + '|$)';
+
+    var appReg = new RegExp('^app' + PATH_SEP_OR_EOL_MATCH);
+    var libsReg = new RegExp('^libs' + PATH_SEP_OR_EOL_MATCH);
+    var srcReg = new RegExp('^src' + PATH_SEP_OR_EOL_MATCH);
+    var srcMainReg = new RegExp('^src' + PATH_SEP_MATCH + 'main' + PATH_SEP_OR_EOL_MATCH);
+
+    if (appReg.test(obj.targetDir)) {
         // If any source file is using the new app directory structure,
         // don't penalize it
         return path.join(obj.targetDir, path.basename(obj.src));
-    } else if (obj.src.endsWith('.java')) {
-        return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.substring(4), path.basename(obj.src));
-    } else if (obj.src.endsWith('.aidl')) {
-        return path.join(APP_MAIN_PREFIX, 'aidl', obj.targetDir.substring(4), path.basename(obj.src));
-    } else if (obj.targetDir.includes('libs')) {
-        if (obj.src.endsWith('.so')) {
-            return path.join(APP_MAIN_PREFIX, 'jniLibs', obj.targetDir.substring(5), path.basename(obj.src));
-        } else {
+    } else {
+        // Plugin using deprecated target directory structure (GH-580)
+        if (obj.src.endsWith('.java')) {
+            return path.join(APP_MAIN_PREFIX, 'java', obj.targetDir.replace(srcReg, ''),
+                path.basename(obj.src));
+        } else if (obj.src.endsWith('.aidl')) {
+            return path.join(APP_MAIN_PREFIX, 'aidl', obj.targetDir.replace(srcReg, ''),
+                path.basename(obj.src));
+        } else if (libsReg.test(obj.targetDir)) {
+            if (obj.src.endsWith('.so')) {
+                return path.join(APP_MAIN_PREFIX, 'jniLibs', obj.targetDir.replace(libsReg, ''),
+                    path.basename(obj.src));
+            } else {
+                return path.join('app', obj.targetDir, path.basename(obj.src));
+            }
+        } else if (srcMainReg.test(obj.targetDir)) {
             return path.join('app', obj.targetDir, path.basename(obj.src));
         }
-    } else if (obj.targetDir.includes('src/main')) {
-        return path.join('app', obj.targetDir, path.basename(obj.src));
-    } else {
+
         // For all other source files not using the new app directory structure,
         // add 'app/src/main' to the targetDir
         return path.join(APP_MAIN_PREFIX, obj.targetDir, path.basename(obj.src));
     }
-
 }
