@@ -296,10 +296,13 @@ function getInstallDestination (obj) {
     var APP_MAIN_PREFIX = 'app/src/main';
     var PATH_SEPARATOR = '/';
 
-    var appReg = new RegExp('^app(\\' + PATH_SEPARATOR + '|$)');
-    var libsReg = new RegExp('^libs(\\' + PATH_SEPARATOR + '|$)');
-    var srcReg = new RegExp('^src(\\' + PATH_SEPARATOR + '|$)');
-    var srcMainReg = new RegExp('^src\\' + PATH_SEPARATOR + 'main(\\' + PATH_SEPARATOR + '|$)');
+    var PATH_SEP_MATCH = '\\' + PATH_SEPARATOR;
+    var PATH_SEP_OR_EOL_MATCH = '(\\' + PATH_SEPARATOR + '|$)';
+
+    var appReg = new RegExp('^app' + PATH_SEP_OR_EOL_MATCH);
+    var libsReg = new RegExp('^libs' + PATH_SEP_OR_EOL_MATCH);
+    var srcReg = new RegExp('^src' + PATH_SEP_OR_EOL_MATCH);
+    var srcMainReg = new RegExp('^src' + PATH_SEP_MATCH + 'main' + PATH_SEP_OR_EOL_MATCH);
 
     if (appReg.test(obj.targetDir)) {
         // If any source file is using the new app directory structure,
