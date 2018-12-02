@@ -317,7 +317,6 @@ module.exports.check_android = function () {
 module.exports.getAbsoluteAndroidCmd = function () {
     var cmd = forgivingWhichSync('android');
     if (cmd.length === 0) {
-    
         cmd = forgivingWhichSync('sdkmanager');
     }
     if (module.exports.isWindows()) {
@@ -340,7 +339,7 @@ module.exports.check_android_target = function (originalError) {
         var androidCmd = module.exports.getAbsoluteAndroidCmd();
         var msg = 'Please install Android target / API level: "' + desired_api_level + '".\n\n' +
             'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
-            'Note that Android\Sdk\tools\bin\sdkmanager should be used instead of android.bat.\n' +
+            'Note that Android\\Sdk\\tools\\bin\\sdkmanager should be used instead of android.bat.\n' +
             'You will require:\n' +
             '1. "SDK Platform" for API level ' + desired_api_level + '\n' +
             '2. "Android SDK Platform-tools (latest)\n' +
