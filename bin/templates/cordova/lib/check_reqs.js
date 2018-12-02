@@ -216,7 +216,7 @@ module.exports.check_java = function () {
 // Returns a promise.
 module.exports.check_android = function () {
     return Q().then(function () {
-        var androidCmdPath = forgivingWhichSync('android');
+        var androidCmdPath = forgivingWhichSync('sdkmanager');
         var adbInPath = forgivingWhichSync('adb');
         var avdmanagerInPath = forgivingWhichSync('avdmanager');
         var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
@@ -315,10 +315,8 @@ module.exports.check_android = function () {
 
 // TODO: is this actually needed?
 module.exports.getAbsoluteAndroidCmd = function () {
-    var cmd = forgivingWhichSync('android');
-    if (cmd.length === 0) {
-        cmd = forgivingWhichSync('sdkmanager');
-    }
+    var cmd = forgivingWhichSync('sdkmanager');
+    
     if (module.exports.isWindows()) {
         return '"' + cmd + '"';
     }
