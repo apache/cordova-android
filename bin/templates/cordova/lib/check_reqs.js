@@ -216,7 +216,7 @@ module.exports.check_java = function () {
 // Returns a promise.
 module.exports.check_android = function () {
     return Q().then(function () {
-        var androidCmdPath = forgivingWhichSync('sdkmanager');
+        var androidCmdPath = forgivingWhichSync('android');
         var adbInPath = forgivingWhichSync('adb');
         var avdmanagerInPath = forgivingWhichSync('avdmanager');
         var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
@@ -315,8 +315,11 @@ module.exports.check_android = function () {
 
 // TODO: is this actually needed?
 module.exports.getAbsoluteAndroidCmd = function () {
-    var cmd = forgivingWhichSync('sdkmanager');
+    var cmd = forgivingWhichSync('android');
+    if (cmd.length === 0) {
     
+        cmd = forgivingWhichSync('sdkmanager');
+    }
     if (module.exports.isWindows()) {
         return '"' + cmd + '"';
     }
@@ -337,6 +340,7 @@ module.exports.check_android_target = function (originalError) {
         var androidCmd = module.exports.getAbsoluteAndroidCmd();
         var msg = 'Please install Android target / API level: "' + desired_api_level + '".\n\n' +
             'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
+            'Note that Android\Sdk\tools\bin\sdkmanager should be used instead of android.bat.\n' +
             'You will require:\n' +
             '1. "SDK Platform" for API level ' + desired_api_level + '\n' +
             '2. "Android SDK Platform-tools (latest)\n' +
