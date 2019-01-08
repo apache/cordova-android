@@ -21,7 +21,7 @@
   "scripts": {
     "test": "run-s eslint unit-tests java-unit-tests e2e-tests",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
-    "cover": "istanbul cover --root bin --print detail jasmine -- --config=spec/unit/jasmine.json",
+    "cover": "nyc jasmine --config=spec/unit/jasmine.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "java-unit-tests": "node test/run_java_unit_tests.js",
     "eslint": "run-s -c eslint:*",
@@ -47,14 +47,24 @@
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "istanbul": "^0.4.2",
     "jasmine": "^3.3.1",
     "npm-run-all": "^4.1.5",
+    "nyc": "^13.1.0",
     "promise-matchers": "~0",
     "rewire": "^4.0.1"
   },
   "engines": {
     "node": ">=6.0.0"
   },
-  "engineStrict": true
+  "engineStrict": true,
+  "nyc": {
+    "include": [
+      "bin/lib/**",
+      "bin/templates/cordova/**"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ]
+  }
 }
