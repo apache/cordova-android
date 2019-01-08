@@ -45,7 +45,7 @@ buildOpts.argv = buildOpts.argv.original;
 require('./loggingHelper').adjustLoggerLevel(buildOpts);
 
 new Api().build(buildOpts)
-.catch(function (err) {
-    console.error(err.stack);
-    process.exit(2);
-});
+    .catch(function (err) {
+        console.error(err.stack);
+        process.exit(2);
+    });

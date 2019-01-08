@@ -86,7 +86,7 @@ module.exports.install = function (target, buildResults) {
         events.emit('log', 'Using apk: ' + apk_path);
         events.emit('log', 'Package name: ' + pkgName);
 
-        return Adb.install(resolvedTarget.target, apk_path, {replace: true}).catch(function (error) {
+        return Adb.install(resolvedTarget.target, apk_path, { replace: true }).catch(function (error) {
             // CB-9557 CB-10157 only uninstall and reinstall app if the one that
             // is already installed on device was signed w/different certificate
             if (!/INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES/.test(error.toString())) { throw error; }
@@ -97,7 +97,7 @@ module.exports.install = function (target, buildResults) {
             // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
             // or the app doesn't installed at all, so no error catching needed.
             return Adb.uninstall(resolvedTarget.target, pkgName).then(function () {
-                return Adb.install(resolvedTarget.target, apk_path, {replace: true});
+                return Adb.install(resolvedTarget.target, apk_path, { replace: true });
             });
         }).then(function () {
             // unlock screen

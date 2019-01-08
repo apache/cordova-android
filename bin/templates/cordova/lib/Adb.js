@@ -44,7 +44,7 @@ function isEmulator (line) {
  *   devices/emulators
  */
 Adb.devices = function (opts) {
-    return spawn('adb', ['devices'], {cwd: os.tmpdir()}).then(function (output) {
+    return spawn('adb', ['devices'], { cwd: os.tmpdir() }).then(function (output) {
         return output.split('\n').filter(function (line) {
             // Filter out either real devices or emulators, depending on options
             return (line && opts && opts.emulators) ? isEmulator(line) : isDevice(line);
@@ -58,7 +58,7 @@ Adb.install = function (target, packagePath, opts) {
     events.emit('verbose', 'Installing apk ' + packagePath + ' on target ' + target + '...');
     var args = ['-s', target, 'install'];
     if (opts && opts.replace) args.push('-r');
-    return spawn('adb', args.concat(packagePath), {cwd: os.tmpdir()}).then(function (output) {
+    return spawn('adb', args.concat(packagePath), { cwd: os.tmpdir() }).then(function (output) {
         // 'adb install' seems to always returns no error, even if installation fails
         // so we catching output to detect installation failure
         if (output.match(/Failure/)) {
@@ -77,14 +77,14 @@ Adb.install = function (target, packagePath, opts) {
 
 Adb.uninstall = function (target, packageId) {
     events.emit('verbose', 'Uninstalling package ' + packageId + ' from target ' + target + '...');
-    return spawn('adb', ['-s', target, 'uninstall', packageId], {cwd: os.tmpdir()});
+    return spawn('adb', ['-s', target, 'uninstall', packageId], { cwd: os.tmpdir() });
 };
 
 Adb.shell = function (target, shellCommand) {
     events.emit('verbose', 'Running adb shell command "' + shellCommand + '" on target ' + target + '...');
     var args = ['-s', target, 'shell'];
     shellCommand = shellCommand.split(/\s+/);
-    return spawn('adb', args.concat(shellCommand), {cwd: os.tmpdir()}).catch(function (output) {
+    return spawn('adb', args.concat(shellCommand), { cwd: os.tmpdir() }).catch(function (output) {
         return Q.reject(new CordovaError('Failed to execute shell command "' +
             shellCommand + '"" on device: ' + output));
     });

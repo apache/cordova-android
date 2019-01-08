@@ -183,7 +183,7 @@ function updateProjectAccordingTo (platformConfig, locations) {
         strings.find('string[@name="launcher_name"]').text = shortName.replace(/\'/g, '\\\'');
     }
 
-    fs.writeFileSync(locations.strings, strings.write({indent: 4}), 'utf-8');
+    fs.writeFileSync(locations.strings, strings.write({ indent: 4 }), 'utf-8');
     events.emit('verbose', 'Wrote out android application name "' + name + '" to ' + locations.strings);
 
     // Java packages cannot support dashes
@@ -661,7 +661,7 @@ function cleanFileResources (projectRoot, projectConfig, platformDir) {
 
         FileUpdater.updatePaths(
             resourceMap, {
-                rootDir: projectRoot, all: true}, logFileOp);
+                rootDir: projectRoot, all: true }, logFileOp);
     }
 }
 

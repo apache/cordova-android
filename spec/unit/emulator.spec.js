@@ -206,7 +206,7 @@ describe('emulator', () => {
             emu.__set__('Adb', AdbSpy);
 
             return emu.list_started().then(() => {
-                expect(AdbSpy.devices).toHaveBeenCalledWith({emulators: true});
+                expect(AdbSpy.devices).toHaveBeenCalledWith({ emulators: true });
             });
         });
     });
@@ -388,9 +388,9 @@ describe('emulator', () => {
 
         it('should call itself again if shell fails for a known reason', () => {
             AdbSpy.shell.and.returnValues(
-                Promise.reject({message: 'device not found'}),
-                Promise.reject({message: 'device offline'}),
-                Promise.reject({message: 'device still connecting'}),
+                Promise.reject({ message: 'device not found' }),
+                Promise.reject({ message: 'device offline' }),
+                Promise.reject({ message: 'device still connecting' }),
                 Promise.resolve('1')
             );
 
