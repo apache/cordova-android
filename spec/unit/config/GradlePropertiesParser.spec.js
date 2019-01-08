@@ -87,7 +87,7 @@ describe('Gradle Builder', () => {
 
             parser = new GradlePropertiesParser('/root');
 
-            parser._defaults = {'org.gradle.jvmargs': '-Xmx2048m'};
+            parser._defaults = { 'org.gradle.jvmargs': '-Xmx2048m' };
         });
 
         it('should detect missing default property and sets the property.', () => {

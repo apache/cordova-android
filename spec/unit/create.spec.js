@@ -195,7 +195,7 @@ describe('create', function () {
             });
             it('should use the activityName provided via options parameter, if exists', function (done) {
                 config_mock.android_activityName.and.returnValue(undefined);
-                create.create(project_path, config_mock, {activityName: 'AwesomeActivity'}, events_mock).then(function () {
+                create.create(project_path, config_mock, { activityName: 'AwesomeActivity' }, events_mock).then(function () {
                     expect(Manifest_mock.prototype.setName).toHaveBeenCalledWith('AwesomeActivity');
                 }).fail(fail).done(done);
             });
@@ -217,7 +217,7 @@ describe('create', function () {
         });
         describe('happy path', function () {
             it('should copy project templates from a specified custom template', function (done) {
-                create.create(project_path, config_mock, {customTemplate: '/template/path'}, events_mock).then(function () {
+                create.create(project_path, config_mock, { customTemplate: '/template/path' }, events_mock).then(function () {
                     expect(shell.cp).toHaveBeenCalledWith('-r', path.join('/template/path', 'assets'), app_path);
                     expect(shell.cp).toHaveBeenCalledWith('-r', path.join('/template/path', 'res'), app_path);
                     expect(shell.cp).toHaveBeenCalledWith(path.join('/template/path', 'gitignore'), path.join(project_path, '.gitignore'));

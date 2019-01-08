@@ -181,7 +181,7 @@ describe('run', () => {
             deviceSpyObj.resolveTarget.and.returnValue(deviceTarget);
 
             return run.run().then(() => {
-                expect(deviceSpyObj.install).toHaveBeenCalledWith(deviceTarget, {apkPaths: [], buildType: 'debug'});
+                expect(deviceSpyObj.install).toHaveBeenCalledWith(deviceTarget, { apkPaths: [], buildType: 'debug' });
             });
         });
 
@@ -193,7 +193,7 @@ describe('run', () => {
             emulatorSpyObj.wait_for_boot.and.returnValue(Promise.resolve());
 
             return run.run().then(() => {
-                expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, {apkPaths: [], buildType: 'debug'});
+                expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, { apkPaths: [], buildType: 'debug' });
             });
         });
     });

@@ -223,13 +223,13 @@ module.exports.best_image = function () {
 
 // Returns a promise.
 module.exports.list_started = function () {
-    return Adb.devices({emulators: true});
+    return Adb.devices({ emulators: true });
 };
 
 // Returns a promise.
 // TODO: we should remove this, there's a more robust method under android_sdk.js
 module.exports.list_targets = function () {
-    return superspawn.spawn('android', ['list', 'targets'], {cwd: os.tmpdir()}).then(function (output) {
+    return superspawn.spawn('android', ['list', 'targets'], { cwd: os.tmpdir() }).then(function (output) {
         var target_out = output.split('\n');
         var targets = [];
         for (var i = target_out.length; i >= 0; i--) {
@@ -419,7 +419,7 @@ module.exports.resolveTarget = function (target) {
         }
 
         return build.detectArchitecture(target).then(function (arch) {
-            return {target: target, arch: arch, isEmulator: true};
+            return { target: target, arch: arch, isEmulator: true };
         });
     });
 };

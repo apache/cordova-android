@@ -31,7 +31,7 @@ var ROOT = path.join(__dirname, '..', '..');
  */
 module.exports.run = function () {
     var d = Q.defer();
-    var adb = child_process.spawn('adb', ['logcat'], {cwd: os.tmpdir()});
+    var adb = child_process.spawn('adb', ['logcat'], { cwd: os.tmpdir() });
 
     adb.stdout.on('data', function (data) {
         var lines = data ? data.toString().split('\n') : [];

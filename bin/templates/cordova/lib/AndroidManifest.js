@@ -146,7 +146,7 @@ AndroidManifest.prototype.setDebuggable = function (value) {
  *   manifest will be written to file it has been read from.
  */
 AndroidManifest.prototype.write = function (destPath) {
-    fs.writeFileSync(destPath || this.path, this.doc.write({indent: 4}), 'utf-8');
+    fs.writeFileSync(destPath || this.path, this.doc.write({ indent: 4 }), 'utf-8');
 };
 
 module.exports = AndroidManifest;
