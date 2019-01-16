@@ -203,7 +203,7 @@ module.exports.check_java = function () {
                 return match && match[1];
             }, () => {
                 var msg =
-                'Failed to run "javac -version", make sure that you have a JDK installed.\n' +
+                'Failed to run "javac -version", make sure that you have a JDK version 8 installed.\n' +
                 'You can get it from: http://www.oracle.com/technetwork/java/javase/downloads.\n';
                 if (process.env['JAVA_HOME']) {
                     msg += 'Your JAVA_HOME is invalid: ' + process.env['JAVA_HOME'] + '\n';
