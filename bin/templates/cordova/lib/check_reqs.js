@@ -203,7 +203,7 @@ module.exports.check_java = function () {
                 return match && match[1];
             }, () => {
                 var msg =
-                'Failed to run "javac -version", make sure that you have a JDK installed.\n' +
+                'Failed to run "javac -version", make sure that you have a JDK version 8 installed.\n' +
                 'You can get it from the following location:\n' +
                 'https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html';
                 if (process.env['JAVA_HOME']) {
@@ -359,7 +359,7 @@ module.exports.run = function () {
         console.log('JAVA_HOME=' + process.env['JAVA_HOME']);
 
         if (!String(values[0]).startsWith('1.8.')) {
-            throw new CordovaError('Requirements check failed for JDK 1.8');
+            throw new CordovaError(`Requirements check failed for JDK 8 ('1.8.*')`);
         }
 
         if (!values[1]) {
