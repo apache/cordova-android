@@ -355,16 +355,16 @@ module.exports.check_android_target = function (originalError) {
 // Returns a promise.
 module.exports.run = function () {
     return Q.all([this.check_java(), this.check_android()]).then(function (values) {
-        console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
-        console.log('JAVA_HOME=' + process.env['JAVA_HOME']);
-        console.log('Detected Java version: ' + values[0]);
+        console.log('Checking Java JDK and Android SDK versions');
 
         if (!String(values[0]).startsWith('1.8.')) {
-            throw new CordovaError(`Requirements check failed for JDK 8 ('1.8.*')`);
+            throw new CordovaError(
+              `Requirements check failed for JDK 8 ('1.8.*')! Detected version: ${values[0]}\nCheck your JAVA_HOME / PATH environment variables.`
+            );
         }
 
         if (!values[1]) {
-            throw new CordovaError('Requirements check failed for Android SDK');
+            throw new CordovaError('Requirements check failed for Android SDK! Android SDK was not detected.');
         }
     });
 };
