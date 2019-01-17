@@ -204,9 +204,11 @@ module.exports.check_java = function () {
             }, () => {
                 var msg =
                 'Failed to run "javac -version", make sure that you have a JDK version 8 installed.\n' +
-                'You can get it from: http://www.oracle.com/technetwork/java/javase/downloads.\n';
+                'You can get it from the following location:\n' +
+                'https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html';
                 if (process.env['JAVA_HOME']) {
-                    msg += 'Your JAVA_HOME is invalid: ' + process.env['JAVA_HOME'] + '\n';
+                    msg += '\n\n';
+                    msg += 'Your JAVA_HOME is invalid: ' + process.env['JAVA_HOME'];
                 }
                 throw new CordovaError(msg);
             });
