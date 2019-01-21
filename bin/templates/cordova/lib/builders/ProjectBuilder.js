@@ -89,7 +89,7 @@ class ProjectBuilder {
         };
     }
 
-    extractRealProjectNameFromManifest () {
+    getAndroidManifestInfo () {
         var manifestPath = path.join(this.root, 'app', 'src', 'main', 'AndroidManifest.xml');
         var manifestData = fs.readFileSync(manifestPath, 'utf8');
         var m = /<manifest[\s\S]*?package\s*=\s*"(.*?)"/i.exec(manifestData);
@@ -97,9 +97,21 @@ class ProjectBuilder {
             throw new CordovaError('Could not find package name in ' + manifestPath);
         }
 
-        var packageName = m[1];
-        var lastDotIndex = packageName.lastIndexOf('.');
-        return packageName.substring(lastDotIndex + 1);
+        const m2 = /<uses-sdk[\s\S]*?android:minSdkVersion\s*=\s*"(.*?)"/i.exec(manifestData);
+        if (!m2) {
+            throw new CordovaError('Could not find android:minSdkVersion in ' + manifestPath);
+        }
+
+        const m3 = /<uses-sdk[\s\S]*?android:targetSdkVersion\s*=\s*"(.*?)"/i.exec(manifestData);
+        if (!m3) {
+            throw new CordovaError('Could not find android:targetSdkVersion in ' + manifestPath);
+        }
+
+        return {
+            packageName: m[1],
+            minSdkVersion: parseInt(m2[1], 10),
+            targetSdkVersion: parseInt(m3[1], 10)
+        };
     }
 
     // Makes the project buildable, minus the gradle wrapper.
@@ -128,7 +140,13 @@ class ProjectBuilder {
                 checkAndCopy(subProjects[i], this.root);
             }
         }
-        var name = this.extractRealProjectNameFromManifest();
+
+        const androidManifestInfo = this.getAndroidManifestInfo();
+
+        const packageName = androidManifestInfo.packageName;
+        const lastDotIndex = packageName.lastIndexOf('.');
+        const name = packageName.substring(lastDotIndex + 1);
+
         // Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
         var settingsGradlePaths = subProjects.map(function (p) {
             var realDir = p.replace(/[/\\]/g, ':');
@@ -144,7 +162,24 @@ class ProjectBuilder {
             '// GENERATED FILE - DO NOT EDIT\n' +
             'include ":"\n' + settingsGradlePaths.join(''));
 
-        // Update dependencies within build.gradle.
+        // Update SDK versions within root build.gradle - quick fix:
+        let rootGradle = fs.readFileSync(path.join(this.root, 'build.gradle'), 'utf8');
+        rootGradle = rootGradle.replace(
+            /(defaultMinSdkVersion)\s*=\s*\d+\s*\/\//,
+            '$1=' + androidManifestInfo.minSdkVersion + ' //');
+        // Note that we are using the configured targetSdkVersion
+        // to update both defaultCompileSdkVersion and
+        // defaultTargetSdkVersion in the root build.gradle
+        rootGradle = rootGradle.replace(
+            /(defaultTargetSdkVersion)\s*=\s*\d+\s*\/\//,
+            '$1=' + androidManifestInfo.targetSdkVersion + ' //');
+        rootGradle = rootGradle.replace(
+            /(defaultCompileSdkVersion)\s*=\s*\d+\s*\/\//,
+            '$1=' + androidManifestInfo.targetSdkVersion + ' //');
+        // and store it (in the root grade):
+        fs.writeFileSync(path.join(this.root, 'build.gradle'), rootGradle);
+
+        // Update dependencies within app/build.gradle.
         var buildGradle = fs.readFileSync(path.join(this.root, 'app', 'build.gradle'), 'utf8');
         var depsList = '';
         var root = this.root;

@@ -102,6 +102,9 @@ if (hasBuildExtras2) {
     apply from: '../build-extras.gradle'
 }
 
+// Needed for quick fix below:
+def customCompileSdkVersion = cdvCompileSdkVersion;
+
 // Set property defaults after extension .gradle files.
 if (ext.cdvCompileSdkVersion == null) {
     ext.cdvCompileSdkVersion = privateHelpers.getProjectTarget()
@@ -123,6 +126,10 @@ ext.cdvBuildMultipleApks = cdvBuildMultipleApks == null ? false : cdvBuildMultip
 ext.cdvVersionCodeForceAbiDigit = cdvVersionCodeForceAbiDigit == null ? false : cdvVersionCodeForceAbiDigit.toBoolean();
 ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? defaultMinSdkVersion : Integer.parseInt('' + cdvMinSdkVersion)
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
+
+// Quick fix:
+def appTargetSdkVersion =
+    (customCompileSdkVersion == null) ? defaultTargetSdkVersion : Integer.parseInt('' + cdvCompileSdkVersion)
 
 def computeBuildTargetName(debugBuild) {
     def ret = 'assemble'
@@ -170,6 +177,9 @@ android {
         if (cdvMinSdkVersion != null) {
             minSdkVersion cdvMinSdkVersion
         }
+
+        // Quick fix:
+        targetSdkVersion appTargetSdkVersion
     }
 
     lintOptions {

@@ -88,26 +88,74 @@ describe('ProjectBuilder', () => {
         });
     });
 
-    describe('extractRealProjectNameFromManifest', () => {
+    describe('getAndroidManifestInfo', () => {
         it('should get the project name from the Android Manifest', () => {
             const projectName = 'unittestproject';
             const projectId = `io.cordova.${projectName}`;
-            const manifest = `<?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="${projectId}"></manifest>`;
+            const manifest =
+                `<?xml version="1.0" encoding="utf-8"?>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${projectId}">
+                <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="28"/>
+                </manifest>`;
 
             spyOn(fs, 'readFileSync').and.returnValue(manifest);
 
-            expect(builder.extractRealProjectNameFromManifest()).toBe(projectName);
+            expect(builder.getAndroidManifestInfo().packageName).toBe(projectId);
+        });
+
+        it('should get the min & target SDK versions from the Android Manifest', () => {
+            const projectName = 'unittestproject';
+            const projectId = `io.cordova.${projectName}`;
+            const manifest =
+                `<?xml version="1.0" encoding="utf-8"?>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${projectId}">
+                <uses-sdk android:minSdkVersion="22" android:targetSdkVersion="25"/>
+                </manifest>`;
+
+            spyOn(fs, 'readFileSync').and.returnValue(manifest);
+
+            expect(builder.getAndroidManifestInfo().minSdkVersion).toBe(22);
+            expect(builder.getAndroidManifestInfo().targetSdkVersion).toBe(25);
         });
 
         it('should throw an error if there is no package in the Android manifest', () => {
-            const manifest = `<?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns:android="http://schemas.android.com/apk/res/android"></manifest>`;
+            const manifest =
+                `<?xml version="1.0" encoding="utf-8"?>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+                <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="28"/>
+                </manifest>`;
 
             spyOn(fs, 'readFileSync').and.returnValue(manifest);
 
-            expect(() => builder.extractRealProjectNameFromManifest()).toThrow(jasmine.any(CordovaError));
+            expect(() => builder.getAndroidManifestInfo()).toThrow(jasmine.any(CordovaError));
+        });
+
+        it('should throw an error if there is no android:minSdkVersion in the Android manifest', () => {
+            const projectName = 'unittestproject';
+            const projectId = `io.cordova.${projectName}`;
+            const manifest =
+                `<?xml version="1.0" encoding="utf-8"?>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${projectId}">
+                <uses-sdk android:targetSdkVersion="25"/>
+                </manifest>`;
+
+            spyOn(fs, 'readFileSync').and.returnValue(manifest);
+
+            expect(() => builder.getAndroidManifestInfo()).toThrow(jasmine.any(CordovaError));
+        });
+
+        it('should throw an error if there is no android:targetSdkVersion in the Android manifest', () => {
+            const projectName = 'unittestproject';
+            const projectId = `io.cordova.${projectName}`;
+            const manifest =
+                `<?xml version="1.0" encoding="utf-8"?>
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${projectId}">
+                <uses-sdk android:minSdkVersion="19"/>
+                </manifest>`;
+
+            spyOn(fs, 'readFileSync').and.returnValue(manifest);
+
+            expect(() => builder.getAndroidManifestInfo()).toThrow(jasmine.any(CordovaError));
         });
     });
 
