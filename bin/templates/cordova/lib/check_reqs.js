@@ -356,10 +356,12 @@ module.exports.check_android_target = function (originalError) {
 module.exports.run = function () {
     return Q.all([this.check_java(), this.check_android()]).then(function (values) {
         console.log('Checking Java JDK and Android SDK versions');
+        console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
 
         if (!String(values[0]).startsWith('1.8.')) {
             throw new CordovaError(
-              `Requirements check failed for JDK 8 ('1.8.*')! Detected version: ${values[0]}\nCheck your JAVA_HOME / PATH environment variables.`
+                'Requirements check failed for JDK 8 (\'1.8.*\')! Detected version: ' + values[0] + '\n' +
+                'Check your JAVA_HOME / ANDROID_HOME / PATH environment variables.'
             );
         }
 
