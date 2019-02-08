@@ -12,3 +12,5 @@ gen
 out
 # Gradle builds
 /build
+# Android Studio
+.idea
