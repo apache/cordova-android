@@ -46,11 +46,12 @@ class GradlePropertiesParser {
         this.gradleFilePath = path.join(platformDir, 'gradle.properties');
     }
 
-    configure () {
+    configure (userConfigs) {
         events.emit('verbose', '[Gradle Properties] Preparing Configuration');
 
         this._initializeEditor();
-        this._configureDefaults();
+        this._configure();
+        this._configure(userConfigs);
         this._save();
     }
 
@@ -71,16 +72,23 @@ class GradlePropertiesParser {
     /**
      * Validate that defaults are set and set the missing defaults.
      */
-    _configureDefaults () {
+    _configure (userConfigs) {
+        const configs = userConfigs || this._defaults;
+        const isDefaults = userConfigs || true;
         // Loop though Cordova default properties and set only if missing.
-        Object.keys(this._defaults).forEach(key => {
+        Object.keys(configs).forEach(key => {
             let value = this.gradleFile.get(key);
 
             if (!value) {
-                events.emit('verbose', `[Gradle Properties] Appended missing default: ${key}=${this._defaults[key]}`);
-                this.gradleFile.set(key, this._defaults[key]);
-            } else if (value !== this._defaults[key]) {
-                events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${value}", Cordova's recommended value is "${this._defaults[key]}"`);
+                if (isDefaults) {
+                    events.emit('verbose', `[Gradle Properties] Appended missing default: ${key}=${configs[key]}`);
+                } else {
+                    events.emit('verbose', `[Gradle Properties] Appended custom configurations: ${key}=${userConfigs[key]}`);
+                }
+
+                this.gradleFile.set(key, configs[key]);
+            } else if (value !== configs[key]) {
+                events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${value}", Cordova's recommended value is "${configs[key]}"`);
             }
         });
     }

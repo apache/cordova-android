@@ -74,7 +74,7 @@ describe('Gradle Builder', () => {
         });
     });
 
-    describe('_configureDefaults method', () => {
+    describe('_configure method', () => {
         let parser;
         let emitSpy;
 
@@ -99,7 +99,7 @@ describe('Gradle Builder', () => {
                 get: getSpy
             };
 
-            parser._configureDefaults();
+            parser._configure();
 
             expect(getSpy).toHaveBeenCalled();
             expect(setSpy).toHaveBeenCalled();
@@ -115,7 +115,7 @@ describe('Gradle Builder', () => {
                 get: getSpy
             };
 
-            parser._configureDefaults();
+            parser._configure();
 
             expect(getSpy).toHaveBeenCalled();
             expect(setSpy).not.toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe('Gradle Builder', () => {
                 get: getSpy
             };
 
-            parser._configureDefaults();
+            parser._configure();
 
             expect(getSpy).toHaveBeenCalled();
             expect(setSpy).not.toHaveBeenCalled();
