@@ -231,6 +231,14 @@ module.exports.check_android = function () {
         // First ensure ANDROID_HOME is set
         // If we have no hints (nothing in PATH), try a few default locations
         if (!hasAndroidHome && !androidCmdPath && !adbInPath && !avdmanagerInPath) {
+            if (process.env['ANDROID_SDK_ROOT']) {
+                // Quick fix to set ANDROID_HOME according to ANDROID_SDK_ROOT
+                // if ANDROID_HOME is **not** defined and
+                // ANDROID_SDK_ROOT **is** defined
+                // according to environment variables as documented in:
+                // https://developer.android.com/studio/command-line/variables
+                maybeSetAndroidHome(path.join(process.env['ANDROID_SDK_ROOT']));
+            }
             if (module.exports.isWindows()) {
                 // Android Studio 1.0 installer
                 maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'sdk'));
@@ -356,12 +364,13 @@ module.exports.check_android_target = function (originalError) {
 module.exports.run = function () {
     return Q.all([this.check_java(), this.check_android()]).then(function (values) {
         console.log('Checking Java JDK and Android SDK versions');
-        console.log('ANDROID_HOME=' + process.env['ANDROID_HOME']);
+        console.log('ANDROID_SDK_ROOT=' + process.env['ANDROID_SDK_ROOT'] + ' (recommended setting)');
+        console.log('ANDROID_HOME=' + process.env['ANDROID_HOME'] + '- DEPRECATED');
 
         if (!String(values[0]).startsWith('1.8.')) {
             throw new CordovaError(
                 'Requirements check failed for JDK 8 (\'1.8.*\')! Detected version: ' + values[0] + '\n' +
-                'Check your JAVA_HOME / ANDROID_HOME / PATH environment variables.'
+                'Check your ANDROID_SDK_ROOT / JAVA_HOME / PATH environment variables.'
             );
         }
 
