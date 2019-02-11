@@ -365,7 +365,7 @@ module.exports.run = function () {
     return Q.all([this.check_java(), this.check_android()]).then(function (values) {
         console.log('Checking Java JDK and Android SDK versions');
         console.log('ANDROID_SDK_ROOT=' + process.env['ANDROID_SDK_ROOT'] + ' (recommended setting)');
-        console.log('ANDROID_HOME=' + process.env['ANDROID_HOME'] + '- DEPRECATED');
+        console.log('ANDROID_HOME=' + process.env['ANDROID_HOME'] + ' (DEPRECATED)');
 
         if (!String(values[0]).startsWith('1.8.')) {
             throw new CordovaError(
