@@ -12,8 +12,10 @@ gen
 out
 # Gradle build artifacts
 .gradle
+.gradletasknamecache
 /build
 /CordovaLib/build
 /app/build
+gradle-app.setting
 # Android Studio
 .idea
