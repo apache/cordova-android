@@ -15,3 +15,5 @@ out
 /build
 /CordovaLib/build
 /app/build
+# Android Studio
+.idea
