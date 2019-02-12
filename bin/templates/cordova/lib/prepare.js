@@ -43,13 +43,11 @@ module.exports.prepare = function (cordovaProject, options) {
 
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
 
-    // Prepare the min and target SDK version
+    // Prepare the min SDK version
     const minSdkVersion = this._config.getPreference('android-minSdkVersion', 'android');
-    const targetSdkVersion = this._config.getPreference('android-targetSdkVersion', 'android');
 
     let gradlePropertiesUserConfig = {};
     if (minSdkVersion) gradlePropertiesUserConfig.minSdkVersion = minSdkVersion;
-    if (targetSdkVersion) gradlePropertiesUserConfig.targetSdkVersion = targetSdkVersion;
 
     let gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);
     gradlePropertiesParser.configure(gradlePropertiesUserConfig);
