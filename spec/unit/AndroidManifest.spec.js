@@ -190,6 +190,78 @@ describe('AndroidManifest', () => {
         });
     });
 
+    describe('minSdkVersion', () => {
+        it('should get minSdkVersion', () => {
+            expect(manifest.getMinSdkVersion()).toBe(MIN_SDK_VERSION);
+        });
+
+        it('should set minSdkVersion', () => {
+            const newMinSdkVersion = `${MIN_SDK_VERSION}111`;
+            manifest.setMinSdkVersion(newMinSdkVersion);
+            expect(manifest.getMinSdkVersion()).toBe(newMinSdkVersion);
+        });
+
+        it('should create the uses-sdk node if it does not exist when setting minSdkVersion', () => {
+            const root = manifest.doc.getroot();
+            root.remove(root.find('./uses-sdk'));
+
+            expect(root.find('./uses-sdk')).toBe(null);
+
+            manifest.setMinSdkVersion(1);
+
+            expect(root.find('./uses-sdk')).not.toBe(null);
+            expect(manifest.getMinSdkVersion()).toBe(1);
+        });
+    });
+
+    describe('maxSdkVersion', () => {
+        it('should get maxSdkVersion', () => {
+            expect(manifest.getMaxSdkVersion()).toBe(MAX_SDK_VERSION);
+        });
+
+        it('should set maxSdkVersion', () => {
+            const newMaxSdkVersion = `${MAX_SDK_VERSION}999`;
+            manifest.setMaxSdkVersion(newMaxSdkVersion);
+            expect(manifest.getMaxSdkVersion()).toBe(newMaxSdkVersion);
+        });
+
+        it('should create the uses-sdk node if it does not exist when setting maxSdkVersion', () => {
+            const root = manifest.doc.getroot();
+            root.remove(root.find('./uses-sdk'));
+
+            expect(root.find('./uses-sdk')).toBe(null);
+
+            manifest.setMaxSdkVersion(1);
+
+            expect(root.find('./uses-sdk')).not.toBe(null);
+            expect(manifest.getMaxSdkVersion()).toBe(1);
+        });
+    });
+
+    describe('targetSdkVersion', () => {
+        it('should get targetSdkVersion', () => {
+            expect(manifest.getTargetSdkVersion()).toBe(TARGET_SDK_VERSION);
+        });
+
+        it('should set targetSdkVersion', () => {
+            const newTargetSdkVersion = `${TARGET_SDK_VERSION}555`;
+            manifest.setTargetSdkVersion(newTargetSdkVersion);
+            expect(manifest.getTargetSdkVersion()).toBe(newTargetSdkVersion);
+        });
+
+        it('should create the uses-sdk node if it does not exist when setting targetSdkVersion', () => {
+            const root = manifest.doc.getroot();
+            root.remove(root.find('./uses-sdk'));
+
+            expect(root.find('./uses-sdk')).toBe(null);
+
+            manifest.setTargetSdkVersion(1);
+
+            expect(root.find('./uses-sdk')).not.toBe(null);
+            expect(manifest.getTargetSdkVersion()).toBe(1);
+        });
+    });
+
     describe('debuggable', () => {
         it('should get debuggable', () => {
             expect(manifest.getDebuggable()).toBe(true);

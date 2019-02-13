@@ -199,6 +199,9 @@ function updateProjectAccordingTo (platformConfig, locations) {
     manifest.setVersionName(platformConfig.version())
         .setVersionCode(platformConfig.android_versionCode() || default_versionCode(platformConfig.version()))
         .setPackageId(androidPkgName)
+        .setMinSdkVersion(platformConfig.getPreference('android-minSdkVersion', 'android'))
+        .setMaxSdkVersion(platformConfig.getPreference('android-maxSdkVersion', 'android'))
+        .setTargetSdkVersion(platformConfig.getPreference('android-targetSdkVersion', 'android'))
         .write();
 
     // Java file paths shouldn't be hard coded
