@@ -46,11 +46,17 @@ class GradlePropertiesParser {
         this.gradleFilePath = path.join(platformDir, 'gradle.properties');
     }
 
-    configure () {
+    configure (userConfigs) {
         events.emit('verbose', '[Gradle Properties] Preparing Configuration');
 
         this._initializeEditor();
-        this._configureDefaults();
+
+        events.emit('verbose', '[Gradle Properties] Appending default configuration properties');
+        this._configureProperties(this._defaults);
+
+        events.emit('verbose', '[Gradle Properties] Appending custom configuration properties');
+        this._configureProperties(userConfigs);
+
         this._save();
     }
 
@@ -69,18 +75,19 @@ class GradlePropertiesParser {
     }
 
     /**
-     * Validate that defaults are set and set the missing defaults.
+     * Validate that defaults or user configuration properties are set and
+     * set the missing items.
      */
-    _configureDefaults () {
-        // Loop though Cordova default properties and set only if missing.
-        Object.keys(this._defaults).forEach(key => {
+    _configureProperties (properties) {
+        // Iterate though the properties and set only if missing.
+        Object.keys(properties).forEach(key => {
             let value = this.gradleFile.get(key);
 
             if (!value) {
-                events.emit('verbose', `[Gradle Properties] Appended missing default: ${key}=${this._defaults[key]}`);
-                this.gradleFile.set(key, this._defaults[key]);
-            } else if (value !== this._defaults[key]) {
-                events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${value}", Cordova's recommended value is "${this._defaults[key]}"`);
+                events.emit('verbose', `[Gradle Properties] Appending configuration item: ${key}=${properties[key]}`);
+                this.gradleFile.set(key, properties[key]);
+            } else if (value !== properties[key]) {
+                events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${value}", Cordova's recommended value is "${properties[key]}"`);
             }
         });
     }

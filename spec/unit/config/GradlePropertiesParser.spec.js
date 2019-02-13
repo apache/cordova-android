@@ -74,7 +74,7 @@ describe('Gradle Builder', () => {
         });
     });
 
-    describe('_configureDefaults method', () => {
+    describe('_configureProperties method', () => {
         let parser;
         let emitSpy;
 
@@ -99,11 +99,11 @@ describe('Gradle Builder', () => {
                 get: getSpy
             };
 
-            parser._configureDefaults();
+            parser._configureProperties(parser._defaults);
 
             expect(getSpy).toHaveBeenCalled();
             expect(setSpy).toHaveBeenCalled();
-            expect(emitSpy.calls.argsFor(0)[1]).toContain('Appended missing default');
+            expect(emitSpy.calls.argsFor(0)[1]).toContain('Appending configuration item');
         });
 
         it('should not detect missing defaults and not call set.', () => {
@@ -115,7 +115,7 @@ describe('Gradle Builder', () => {
                 get: getSpy
             };
 
-            parser._configureDefaults();
+            parser._configureProperties(parser._defaults);
 
             expect(getSpy).toHaveBeenCalled();
             expect(setSpy).not.toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe('Gradle Builder', () => {
                 get: getSpy
             };
 
-            parser._configureDefaults();
+            parser._configureProperties(parser._defaults);
 
             expect(getSpy).toHaveBeenCalled();
             expect(setSpy).not.toHaveBeenCalled();

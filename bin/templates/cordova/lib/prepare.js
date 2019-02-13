@@ -43,8 +43,14 @@ module.exports.prepare = function (cordovaProject, options) {
 
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
 
+    // Get the min SDK version from config.xml
+    const minSdkVersion = this._config.getPreference('android-minSdkVersion', 'android');
+
+    let gradlePropertiesUserConfig = {};
+    if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
+
     let gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);
-    gradlePropertiesParser.configure();
+    gradlePropertiesParser.configure(gradlePropertiesUserConfig);
 
     // Update own www dir with project's www assets and plugins' assets and js-files
     return Q.when(updateWww(cordovaProject, this.locations)).then(function () {
