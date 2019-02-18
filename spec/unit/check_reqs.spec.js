@@ -35,9 +35,10 @@ describe('check_reqs', function () {
         });
     });
     describe('check_android', function () {
-        describe('set ANDROID_HOME if not set', function () {
+        describe('find and set ANDROID_HOME when ANDROID_HOME and ANDROID_SDK_ROOT is not set', function () {
             beforeEach(function () {
                 delete process.env.ANDROID_HOME;
+                delete process.env.ANDROID_SDK_ROOT;
             });
             describe('even if no Android binaries are on the PATH', function () {
                 beforeEach(function () {
