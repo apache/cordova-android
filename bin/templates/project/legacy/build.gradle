@@ -169,6 +169,8 @@ android {
 
         if (cdvMinSdkVersion != null) {
             minSdkVersion cdvMinSdkVersion
+        } else {
+            minSdkVersion 19
         }
     }
 
