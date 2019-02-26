@@ -151,11 +151,11 @@ function updateWww (cordovaProject, destinations) {
         sourceDirs.push(path.join('merges', 'android'));
     }
 
-    var excludes = "";
-    var excludePref = cordovaProject.projectConfig.getPreference("wwwExcludes");
+    var excludes = '';
+    var excludePref = cordovaProject.projectConfig.getPreference('wwwExcludes');
     if (excludePref) {
-        excludes = excludePref.split(",");
-        events.emit("verbose", "excludes: " + excludes.join());
+        excludes = excludePref.split(',');
+        events.emit('verbose', 'excludes: ' + excludes.join());
     }
 
     var targetDir = path.relative(cordovaProject.root, destinations.www);
