@@ -25,6 +25,7 @@ var PluginManager = require('cordova-common').PluginManager;
 
 var CordovaLogger = require('cordova-common').CordovaLogger;
 var selfEvents = require('cordova-common').events;
+var ConfigParser = require('cordova-common').ConfigParser;
 
 var PLATFORM = 'android';
 
@@ -71,10 +72,7 @@ function Api (platform, platformRootDir, events) {
         strings: path.join(appRes, 'values', 'strings.xml'),
         manifest: path.join(appMain, 'AndroidManifest.xml'),
         build: path.join(this.root, 'build'),
-        javaSrc: path.join(appMain, 'java'),
-        // NOTE: Due to platformApi spec we need to return relative paths here
-        cordovaJs: 'bin/templates/project/assets/www/cordova.js',
-        cordovaJsSrc: 'cordova-js-src'
+        javaSrc: path.join(appMain, 'java')
     };
 }
 
@@ -174,6 +172,8 @@ Api.prototype.getPlatformInfo = function () {
  *   CordovaError instance.
  */
 Api.prototype.prepare = function (cordovaProject, prepareOptions) {
+    cordovaProject.projectConfig = new ConfigParser(cordovaProject.locations.rootConfigXml || cordovaProject.projectConfig.path);
+
     return require('./lib/prepare').prepare.call(this, cordovaProject, prepareOptions);
 };
 
