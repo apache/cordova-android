@@ -72,10 +72,7 @@ function Api (platform, platformRootDir, events) {
         strings: path.join(appRes, 'values', 'strings.xml'),
         manifest: path.join(appMain, 'AndroidManifest.xml'),
         build: path.join(this.root, 'build'),
-        javaSrc: path.join(appMain, 'java'),
-        // NOTE: Due to platformApi spec we need to return relative paths here
-        cordovaJs: 'bin/templates/project/assets/www/cordova.js',
-        cordovaJsSrc: 'cordova-js-src'
+        javaSrc: path.join(appMain, 'java')
     };
 }
 
