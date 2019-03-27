@@ -38,6 +38,8 @@ function parseOpts (options, resolvedTarget, projectRoot) {
         prepenv: Boolean,
         versionCode: String,
         minSdkVersion: String,
+        maxSdkVersion: String,
+        targetSdkVersion: String,
         gradleArg: [String, Array],
         keystore: path,
         alias: String,
@@ -56,6 +58,8 @@ function parseOpts (options, resolvedTarget, projectRoot) {
 
     if (options.argv.versionCode) { ret.extraArgs.push('-PcdvVersionCode=' + options.argv.versionCode); }
     if (options.argv.minSdkVersion) { ret.extraArgs.push('-PcdvMinSdkVersion=' + options.argv.minSdkVersion); }
+    if (options.argv.maxSdkVersion) { ret.extraArgs.push('-PcdvMaxSdkVersion=' + options.argv.maxSdkVersion); }
+    if (options.argv.targetSdkVersion) { ret.extraArgs.push('-PcdvTargetSdkVersion=' + options.argv.targetSdkVersion); }
     if (options.argv.gradleArg) {
         ret.extraArgs = ret.extraArgs.concat(options.argv.gradleArg);
     }
@@ -266,6 +270,8 @@ module.exports.help = function () {
     console.log('    \'--prepenv\': don\'t build, but copy in build scripts where necessary');
     console.log('    \'--versionCode=#\': Override versionCode for this build. Useful for uploading multiple APKs.');
     console.log('    \'--minSdkVersion=#\': Override minSdkVersion for this build. Useful for uploading multiple APKs.');
+    console.log('    \'--maxSdkVersion=#\': Override maxSdkVersion for this build. Useful for uploading multiple APKs.');
+    console.log('    \'--targetSdkVersion=#\': Override targetSdkVersion for this build. Useful for uploading multiple APKs.');
     console.log('    \'--gradleArg=<gradle command line arg>\': Extra args to pass to the gradle command. Use one flag per arg. Ex. --gradleArg=-PcdvBuildMultipleApks=true');
     console.log('');
     console.log('Signed APK flags (overwrites debug/release-signing.proprties) :');

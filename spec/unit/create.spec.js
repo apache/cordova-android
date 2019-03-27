@@ -131,9 +131,8 @@ describe('create', function () {
         var default_templates = path.join(__dirname, '..', '..', 'bin', 'templates', 'project');
         var fake_android_target = 'android-1337';
         beforeEach(function () {
-            Manifest_mock.prototype = jasmine.createSpyObj('AndroidManifest instance mock', ['setPackageId', 'setTargetSdkVersion', 'getActivity', 'setName', 'write']);
+            Manifest_mock.prototype = jasmine.createSpyObj('AndroidManifest instance mock', ['setPackageId', 'getActivity', 'setName', 'write']);
             Manifest_mock.prototype.setPackageId.and.returnValue(new Manifest_mock());
-            Manifest_mock.prototype.setTargetSdkVersion.and.returnValue(new Manifest_mock());
             Manifest_mock.prototype.getActivity.and.returnValue(new Manifest_mock());
             Manifest_mock.prototype.setName.and.returnValue(new Manifest_mock());
             spyOn(create, 'validatePackageName').and.returnValue(Q());

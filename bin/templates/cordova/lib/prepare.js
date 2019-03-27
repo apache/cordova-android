@@ -45,9 +45,13 @@ module.exports.prepare = function (cordovaProject, options) {
 
     // Get the min SDK version from config.xml
     const minSdkVersion = this._config.getPreference('android-minSdkVersion', 'android');
+    const maxSdkVersion = this._config.getPreference('android-maxSdkVersion', 'android');
+    const targetSdkVersion = this._config.getPreference('android-targetSdkVersion', 'android');
 
     let gradlePropertiesUserConfig = {};
     if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
+    if (maxSdkVersion) gradlePropertiesUserConfig.cdvMaxSdkVersion = maxSdkVersion;
+    if (targetSdkVersion) gradlePropertiesUserConfig.cdvTargetSdkVersion = targetSdkVersion;
 
     let gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);
     gradlePropertiesParser.configure(gradlePropertiesUserConfig);
@@ -205,9 +209,6 @@ function updateProjectAccordingTo (platformConfig, locations) {
     manifest.setVersionName(platformConfig.version())
         .setVersionCode(platformConfig.android_versionCode() || default_versionCode(platformConfig.version()))
         .setPackageId(androidPkgName)
-        .setMinSdkVersion(platformConfig.getPreference('android-minSdkVersion', 'android'))
-        .setMaxSdkVersion(platformConfig.getPreference('android-maxSdkVersion', 'android'))
-        .setTargetSdkVersion(platformConfig.getPreference('android-targetSdkVersion', 'android'))
         .write();
 
     // Java file paths shouldn't be hard coded
