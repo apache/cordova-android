@@ -106,7 +106,7 @@ describe('Gradle Builder', () => {
             expect(emitSpy.calls.argsFor(0)[1]).toContain('Appending configuration item');
         });
 
-        it('should not detect missing defaults and not call set.', () => {
+        it('should not detect missing defaults and call set.', () => {
             let setSpy = jasmine.createSpy('set');
             let getSpy = jasmine.createSpy('get').and.returnValue(true);
 
@@ -118,10 +118,10 @@ describe('Gradle Builder', () => {
             parser._configureProperties(parser._defaults);
 
             expect(getSpy).toHaveBeenCalled();
-            expect(setSpy).not.toHaveBeenCalled();
+            expect(setSpy).toHaveBeenCalled();
         });
 
-        it('should detect default with changed value.', () => {
+        it('should detect default with changed value and set.', () => {
             let setSpy = jasmine.createSpy('set');
             let getSpy = jasmine.createSpy('get').and.returnValue('-Xmx512m');
 
@@ -133,7 +133,7 @@ describe('Gradle Builder', () => {
             parser._configureProperties(parser._defaults);
 
             expect(getSpy).toHaveBeenCalled();
-            expect(setSpy).not.toHaveBeenCalled();
+            expect(setSpy).toHaveBeenCalled();
             expect(emitSpy.calls.argsFor(0)[1]).toContain('Cordova\'s recommended value is');
         });
     });

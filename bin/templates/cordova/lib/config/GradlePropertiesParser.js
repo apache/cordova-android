@@ -86,8 +86,9 @@ class GradlePropertiesParser {
             if (!value) {
                 events.emit('verbose', `[Gradle Properties] Appending configuration item: ${key}=${properties[key]}`);
                 this.gradleFile.set(key, properties[key]);
-            } else if (value !== properties[key]) {
-                events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${value}", Cordova's recommended value is "${properties[key]}"`);
+            } else if (this._defaults[key] && value !== properties[key]) {
+                events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${value}", Cordova's recommended value is "${this._defaults[key]}"`);
+                this.gradleFile.set(key, properties[key]);
             }
         });
     }
