@@ -18,6 +18,8 @@
 */
 package org.apache.cordova.engine;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -33,6 +35,7 @@ import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions.Callback;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
+import android.webkit.MimeTypeMap;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
@@ -56,6 +59,7 @@ public class SystemWebChromeClient extends WebChromeClient {
 
     private static final int FILECHOOSER_RESULTCODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
+    private static final String DEFAULT_MIME_TYPE = "*/*";
     private long MAX_QUOTA = 100 * 1024 * 1024;
     protected final SystemWebViewEngine parentEngine;
 
@@ -247,10 +251,42 @@ public class SystemWebChromeClient extends WebChromeClient {
         }, intent, FILECHOOSER_RESULTCODE);
     }
 
+    // Validation utility for mime types
+    private List<String> extractValidMimeTypes(String[] mimeTypes) {
+        List<String> results = new ArrayList<String>();
+        List<String> mimes;
+        if (mimeTypes.length() == 1 && mimeTypes[0].contains(",")) {
+            mimes = Arrays.asList(mimeTypes[0].split(","));
+        } else {
+            mimes = Arrays.asList(mimeTypes);
+        }
+        MimeTypeMap mtm = MimeTypeMap.getSingleton();
+        for (String mime : mimes) {
+            if (mime != null && mime.trim().startsWith(".")) {
+                String extensionWithoutDot = mime.trim().substring(1, mime.trim().length());
+                String derivedMime = mtm.getMimeTypeFromExtension(extensionWithoutDot);
+                if (derivedMime != null && !results.contains(derivedMime)) {
+                    // adds valid mime type derived from the file extension
+                    results.add(derivedMime);
+                }
+            } else if (mtm.getExtensionFromMimeType(mime) != null && !results.contains(mime)) {
+                // adds valid mime type checked agains file extensions mappings
+                results.add(mime);
+            }
+        }
+        return results;
+    }
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final WebChromeClient.FileChooserParams fileChooserParams) {
         Intent intent = fileChooserParams.createIntent();
+        List<String> validMimeTypes = extractValidMimeTypes(fileChooserParams.getAcceptTypes());
+        if (validMimeTypes.isEmpty()) {
+            intent.setType(DEFAULT_MIME_TYPE);
+        } else {
+            intent.setType(String.join(" ", validMimeTypes));
+        }
         try {
             parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
                 @Override
