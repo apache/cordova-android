@@ -56,6 +56,7 @@ public class SystemWebChromeClient extends WebChromeClient {
 
     private static final int FILECHOOSER_RESULTCODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
+    private static final String DEFAULT_MIME_TYPE = "image/*";
     private long MAX_QUOTA = 100 * 1024 * 1024;
     protected final SystemWebViewEngine parentEngine;
 
@@ -251,6 +252,8 @@ public class SystemWebChromeClient extends WebChromeClient {
     @Override
     public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final WebChromeClient.FileChooserParams fileChooserParams) {
         Intent intent = fileChooserParams.createIntent();
+        intent.setType(DEFAULT_MIME_TYPE);
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, fileChooserParams.getAcceptTypes());
         try {
             parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
                 @Override
