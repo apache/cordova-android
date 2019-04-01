@@ -87,14 +87,17 @@ class GradlePropertiesParser {
                 // Handles the case of adding missing defaults or new properties that are missing.
                 events.emit('verbose', `[Gradle Properties] Appending configuration item: ${key}=${properties[key]}`);
                 this.gradleFile.set(key, properties[key]);
-            } else if (this._defaults[key] && value !== this._defaults[key]) {
-                // This case will notify that the value of the property does not match Cordova's recommended value but still being set.
-                events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${value}", Cordova's recommended value is "${this._defaults[key]}"`);
-                this.gradleFile.set(key, value);
             } else if (value !== properties[key]) {
-                // When the current value exists but does not match the new value, the new value it set.
-                events.emit('verbose', `[Gradle Properties] Updating Gradle property "${key}" with the value of "${value}"`);
-                this.gradleFile.set(key, value);
+                if (this._defaults[key] && this._defaults[key] !== properties[key]) {
+                    // Since the value does not match default, we will notify the discrepancy with Cordova's recommended value.
+                    events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${properties[key]}", Cordova's recommended value is "${this._defaults[key]}"`);
+                } else {
+                    // When the current value exists but does not match the new value or does matches the default key value, the new value it set.
+                    events.emit('verbose', `[Gradle Properties] Updating Gradle property "${key}" with the value of "${properties[key]}"`);
+                }
+
+                // We will set the new value in either case.
+                this.gradleFile.set(key, properties[key]);
             }
         });
     }
