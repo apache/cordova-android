@@ -270,7 +270,7 @@ module.exports.help = function () {
     console.log('    \'--prepenv\': don\'t build, but copy in build scripts where necessary');
     console.log('    \'--versionCode=#\': Override versionCode for this build. Useful for uploading multiple APKs.');
     console.log('    \'--minSdkVersion=#\': Override minSdkVersion for this build.');
-    console.log('    \'--maxSdkVersion=#\': Override maxSdkVersion for this build.');
+    console.log('    \'--maxSdkVersion=#\': Override maxSdkVersion for this build. (Not Recommended)');
     console.log('    \'--targetSdkVersion=#\': Override targetSdkVersion for this build.');
     console.log('    \'--gradleArg=<gradle command line arg>\': Extra args to pass to the gradle command. Use one flag per arg. Ex. --gradleArg=-PcdvBuildMultipleApks=true');
     console.log('');
