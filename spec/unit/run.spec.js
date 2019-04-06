@@ -201,8 +201,9 @@ describe('run', () => {
     describe('help', () => {
         it('should print out usage and help', () => {
             const logSpy = jasmine.createSpy();
+            const errorSpy = jasmine.createSpy();
             const procStub = { exit: _ => null, cwd: _ => '', argv: ['', ''] };
-            run.__set__({ console: { log: logSpy }, process: procStub });
+            run.__set__({ console: { log: logSpy, error: errorSpy }, process: procStub });
 
             run.help();
             expect(logSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));

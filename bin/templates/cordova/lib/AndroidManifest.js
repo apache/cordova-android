@@ -18,7 +18,6 @@
 */
 
 var fs = require('fs');
-var et = require('elementtree');
 var xml = require('cordova-common').xmlHelpers;
 
 var DEFAULT_ORIENTATION = 'default';
@@ -98,31 +97,6 @@ AndroidManifest.prototype.getActivity = function () {
     };
 };
 
-['minSdkVersion', 'maxSdkVersion', 'targetSdkVersion'].forEach(function (sdkPrefName) {
-    // Copy variable reference to avoid closure issues
-    var prefName = sdkPrefName;
-
-    AndroidManifest.prototype['get' + capitalize(prefName)] = function () {
-        var usesSdk = this.doc.getroot().find('./uses-sdk');
-        return usesSdk && usesSdk.attrib['android:' + prefName];
-    };
-
-    AndroidManifest.prototype['set' + capitalize(prefName)] = function (prefValue) {
-        var usesSdk = this.doc.getroot().find('./uses-sdk');
-
-        if (!usesSdk && prefValue) { // if there is no required uses-sdk element, we should create it first
-            usesSdk = new et.Element('uses-sdk');
-            this.doc.getroot().append(usesSdk);
-        }
-
-        if (prefValue) {
-            usesSdk.attrib['android:' + prefName] = prefValue;
-        }
-
-        return this;
-    };
-});
-
 AndroidManifest.prototype.getDebuggable = function () {
     return this.doc.getroot().find('./application').attrib['android:debuggable'] === 'true';
 };
@@ -150,7 +124,3 @@ AndroidManifest.prototype.write = function (destPath) {
 };
 
 module.exports = AndroidManifest;
-
-function capitalize (str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
