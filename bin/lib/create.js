@@ -142,8 +142,8 @@ function writeProjectProperties (projectPath, target_api) {
 
 // This makes no sense, what if you're building with a different build system?
 function prepBuildFiles (projectPath) {
-    var buildModule = require(path.resolve(projectPath, 'cordova/lib/builders/builders'));
-    buildModule.getBuilder().prepBuildFiles();
+    var buildModule = require('../templates/cordova/lib/builders/builders');
+    buildModule.getBuilder(projectPath).prepBuildFiles();
 }
 
 function copyBuildRules (projectPath, isLegacy) {
