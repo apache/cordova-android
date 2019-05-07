@@ -79,11 +79,11 @@ ext {
 
     // The value for android.compileSdkVersion.
     if (!project.hasProperty('cdvCompileSdkVersion')) {
-        cdvCompileSdkVersion = null
+        cdvCompileSdkVersion = null;
     }
     // The value for android.buildToolsVersion.
     if (!project.hasProperty('cdvBuildToolsVersion')) {
-        cdvBuildToolsVersion = null
+        cdvBuildToolsVersion = null;
     }
     // Sets the versionCode to the given value.
     if (!project.hasProperty('cdvVersionCode')) {
