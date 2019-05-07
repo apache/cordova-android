@@ -181,7 +181,7 @@ describe('run', () => {
             deviceSpyObj.resolveTarget.and.returnValue(deviceTarget);
 
             return run.run().then(() => {
-                expect(deviceSpyObj.install).toHaveBeenCalledWith(deviceTarget, {apkPaths: [], buildType: 'debug'});
+                expect(deviceSpyObj.install).toHaveBeenCalledWith(deviceTarget, { apkPaths: [], buildType: 'debug' });
             });
         });
 
@@ -193,7 +193,7 @@ describe('run', () => {
             emulatorSpyObj.wait_for_boot.and.returnValue(Promise.resolve());
 
             return run.run().then(() => {
-                expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, {apkPaths: [], buildType: 'debug'});
+                expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, { apkPaths: [], buildType: 'debug' });
             });
         });
     });
@@ -201,8 +201,9 @@ describe('run', () => {
     describe('help', () => {
         it('should print out usage and help', () => {
             const logSpy = jasmine.createSpy();
+            const errorSpy = jasmine.createSpy();
             const procStub = { exit: _ => null, cwd: _ => '', argv: ['', ''] };
-            run.__set__({ console: { log: logSpy }, process: procStub });
+            run.__set__({ console: { log: logSpy, error: errorSpy }, process: procStub });
 
             run.help();
             expect(logSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));

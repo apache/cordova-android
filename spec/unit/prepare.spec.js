@@ -216,7 +216,7 @@ describe('updateIcons method', function () {
 
         // mock data.
         cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({density: 'mdpi'})];
+            return [mockGetIconItem({ density: 'mdpi' })];
         };
 
         expect(function () {
@@ -231,7 +231,7 @@ describe('updateIcons method', function () {
 
         // mock data.
         cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({density: 'mdpi'})];
+            return [mockGetIconItem({ density: 'mdpi' })];
         };
 
         expect(function () {
@@ -246,7 +246,7 @@ describe('updateIcons method', function () {
 
         // mock data.
         cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({height: '192'})];
+            return [mockGetIconItem({ height: '192' })];
         };
 
         expect(function () {
@@ -261,7 +261,7 @@ describe('updateIcons method', function () {
 
         // mock data.
         cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({width: '192'})];
+            return [mockGetIconItem({ width: '192' })];
         };
 
         expect(function () {
@@ -525,7 +525,7 @@ describe('prepareIcons method', function () {
         let icons = [ldpi, mdpi];
         let actual = prepareIcons(icons);
         let expected = {
-            android_icons: {ldpi, mdpi},
+            android_icons: { ldpi, mdpi },
             default_icon: undefined
         };
 
@@ -548,7 +548,7 @@ describe('prepareIcons method', function () {
         let icons = [ldpi, mdpi];
         let actual = prepareIcons(icons);
         let expected = {
-            android_icons: {ldpi, mdpi},
+            android_icons: { ldpi, mdpi },
             default_icon: undefined
         };
 

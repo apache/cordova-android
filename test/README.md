@@ -22,7 +22,7 @@
 # Cordova Android Test Project
 
 The project in this directory is an Android Test project that enables those
-interested in further developing cordova-android to validate their changes.
+interested in further developing `cordova-android` to validate their changes.
 
 ## Requirements
 
@@ -33,7 +33,7 @@ writing) at least version 3.3 or newer.
 ## Getting Started
 
 You can run this test project from both the command line as well as from
-Android Studio.
+Android Studio:
 
 ### Command Line
 
@@ -50,8 +50,10 @@ end-to-end, or instrumented, tests. Unit tests do not require any particular
 environment to run in, but the instrumented tests, however, require a connected
 Android device or emulator to run in.
 
-To run the unit tests, run: `gradlew test`.
-To run the instrumented tests, run: `gradlew connectedAndroidTest`.
+- To run the unit tests, run: `gradlew test`.
+- To run the instrumented tests, run: `gradlew connectedAndroidTest`.
+
+To make sure all tests are run, add the `--rerun-tasks` parameter.
 
 ### Android Studio
 

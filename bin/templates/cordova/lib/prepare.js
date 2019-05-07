@@ -33,6 +33,8 @@ var PlatformJson = require('cordova-common').PlatformJson;
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 
+const GradlePropertiesParser = require('./config/GradlePropertiesParser');
+
 module.exports.prepare = function (cordovaProject, options) {
     var self = this;
 
@@ -40,6 +42,19 @@ module.exports.prepare = function (cordovaProject, options) {
     var munger = new PlatformMunger(this.platform, this.locations.root, platformJson, new PluginInfoProvider());
 
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
+
+    // Get the min SDK version from config.xml
+    const minSdkVersion = this._config.getPreference('android-minSdkVersion', 'android');
+    const maxSdkVersion = this._config.getPreference('android-maxSdkVersion', 'android');
+    const targetSdkVersion = this._config.getPreference('android-targetSdkVersion', 'android');
+
+    let gradlePropertiesUserConfig = {};
+    if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
+    if (maxSdkVersion) gradlePropertiesUserConfig.cdvMaxSdkVersion = maxSdkVersion;
+    if (targetSdkVersion) gradlePropertiesUserConfig.cdvTargetSdkVersion = targetSdkVersion;
+
+    let gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);
+    gradlePropertiesParser.configure(gradlePropertiesUserConfig);
 
     // Update own www dir with project's www assets and plugins' assets and js-files
     return Q.when(updateWww(cordovaProject, this.locations)).then(function () {
@@ -178,7 +193,7 @@ function updateProjectAccordingTo (platformConfig, locations) {
         strings.find('string[@name="launcher_name"]').text = shortName.replace(/\'/g, '\\\'');
     }
 
-    fs.writeFileSync(locations.strings, strings.write({indent: 4}), 'utf-8');
+    fs.writeFileSync(locations.strings, strings.write({ indent: 4 }), 'utf-8');
     events.emit('verbose', 'Wrote out android application name "' + name + '" to ' + locations.strings);
 
     // Java packages cannot support dashes
@@ -194,9 +209,6 @@ function updateProjectAccordingTo (platformConfig, locations) {
     manifest.setVersionName(platformConfig.version())
         .setVersionCode(platformConfig.android_versionCode() || default_versionCode(platformConfig.version()))
         .setPackageId(androidPkgName)
-        .setMinSdkVersion(platformConfig.getPreference('android-minSdkVersion', 'android'))
-        .setMaxSdkVersion(platformConfig.getPreference('android-maxSdkVersion', 'android'))
-        .setTargetSdkVersion(platformConfig.getPreference('android-targetSdkVersion', 'android'))
         .write();
 
     // Java file paths shouldn't be hard coded
@@ -656,7 +668,7 @@ function cleanFileResources (projectRoot, projectConfig, platformDir) {
 
         FileUpdater.updatePaths(
             resourceMap, {
-                rootDir: projectRoot, all: true}, logFileOp);
+                rootDir: projectRoot, all: true }, logFileOp);
     }
 }
 

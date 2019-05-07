@@ -46,20 +46,15 @@ class ProjectBuilder {
         } else if (cmd === 'debug') {
             cmd = 'cdvBuildDebug';
         }
-        var args = [cmd, '-b', path.join(this.root, 'build.gradle')];
+
+        let args = [cmd, '-b', path.join(this.root, 'build.gradle')];
+
         if (opts.arch) {
             args.push('-PcdvBuildArch=' + opts.arch);
         }
 
-        // 10 seconds -> 6 seconds
-        args.push('-Dorg.gradle.daemon=true');
-        // to allow dex in process
-        args.push('-Dorg.gradle.jvmargs=-Xmx2048m');
-        // allow NDK to be used - required by Gradle 1.5 plugin
-        // args.push('-Pandroid.useDeprecatedNdk=true');
         args.push.apply(args, opts.extraArgs);
-        // Shaves another 100ms, but produces a "try at own risk" warning. Not worth it (yet):
-        // args.push('-Dorg.gradle.parallel=true');
+
         return args;
     }
 
@@ -193,7 +188,7 @@ class ProjectBuilder {
                     throw new CordovaError('Unsupported system library (does not work with gradle): ' + p);
                 }
             }
-            depsList += '    compile "' + mavenRef + '"\n';
+            depsList += '    implementation "' + mavenRef + '"\n';
         });
 
         buildGradle = buildGradle.replace(/(SUB-PROJECT DEPENDENCIES START)[\s\S]*(\/\/ SUB-PROJECT DEPENDENCIES END)/, '$1\n' + depsList + '    $2');
@@ -219,7 +214,7 @@ class ProjectBuilder {
                 // If it's not set, do nothing, assuming that we're using a future version of gradle that we don't want to mess with.
                 // For some reason, using ^ and $ don't work.  This does the job, though.
                 var distributionUrlRegex = /distributionUrl.*zip/;
-                var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'https\\://services.gradle.org/distributions/gradle-4.4-all.zip';
+                var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'https\\://services.gradle.org/distributions/gradle-4.10.3-all.zip';
                 var gradleWrapperPropertiesPath = path.join(self.root, 'gradle', 'wrapper', 'gradle-wrapper.properties');
                 shell.chmod('u+w', gradleWrapperPropertiesPath);
                 shell.sed('-i', distributionUrlRegex, 'distributionUrl=' + distributionUrl, gradleWrapperPropertiesPath);

@@ -1,6 +1,6 @@
 {
   "name": "cordova-android",
-  "version": "7.2.0-dev",
+  "version": "8.1.0-dev",
   "description": "cordova-android release",
   "bin": {
     "create": "bin/create"
@@ -11,7 +11,7 @@
     "url": "https://github.com/apache/cordova-android"
   },
   "bugs": {
-    "url": "https://issues.apache.org/jira/browse/CB"
+    "url": "https://github.com/apache/cordova-android/issues"
   },
   "keywords": [
     "android",
@@ -19,51 +19,47 @@
     "apache"
   ],
   "scripts": {
-    "test": "run-s eslint unit-tests java-unit-tests e2e-tests",
+    "test": "npm run eslint && npm run cover && npm run java-unit-tests",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
-    "cover": "istanbul cover --root bin --print detail jasmine -- --config=spec/unit/jasmine.json",
+    "cover": "nyc jasmine --config=spec/coverage.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "java-unit-tests": "node test/run_java_unit_tests.js",
-    "eslint": "run-s -c eslint:*",
-    "eslint:scripts": "eslint bin spec test",
-    "eslint:bins": "eslint 'bin/**/*' --ignore-pattern '**/*.*' --ignore-pattern '**/gitignore'"
+    "eslint": "eslint bin spec test"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "dependencies": {
     "android-versions": "^1.3.0",
-    "cordova-common": "^2.2.0",
-    "elementtree": "0.1.6",
-    "nopt": "^3.0.1",
-    "properties-parser": "^0.2.3",
+    "cordova-common": "^3.1.0",
+    "nopt": "^4.0.1",
+    "properties-parser": "^0.3.1",
     "q": "^1.4.1",
     "shelljs": "^0.5.3"
   },
-  "bundledDependencies": [
-    "android-versions",
-    "cordova-common",
-    "elementtree",
-    "nopt",
-    "properties-parser",
-    "q",
-    "shelljs"
-  ],
   "devDependencies": {
-    "eslint": "^3.19.0",
-    "eslint-config-semistandard": "^11.0.0",
-    "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-import": "^2.3.0",
-    "eslint-plugin-node": "^5.0.0",
-    "eslint-plugin-promise": "^3.5.0",
-    "eslint-plugin-standard": "^3.0.1",
-    "istanbul": "^0.4.2",
-    "jasmine": "^3.1.0",
-    "npm-run-all": "^4.1.3",
-    "promise-matchers": "~0",
-    "rewire": "^2.1.3"
+    "eslint": "^5.12.0",
+    "eslint-config-semistandard": "^13.0.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "jasmine": "^3.3.1",
+    "nyc": "^13.1.0",
+    "rewire": "^4.0.1"
   },
   "engines": {
     "node": ">=6.0.0"
   },
-  "engineStrict": true
+  "engineStrict": true,
+  "nyc": {
+    "include": [
+      "bin/lib/**",
+      "bin/templates/cordova/**"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ]
+  }
 }

@@ -20,6 +20,59 @@
 -->
 ## Release Notes for Cordova (Android) ##
 
+### 8.0.0 (Feb 13, 2019)
+* [GH-669](https://github.com/apache/cordova-android/pull/669) Added Missing License Headers
+* [GH-655](https://github.com/apache/cordova-android/pull/655) Use custom Gradle properties to read minSdkVersion value from `config.xml`
+* [GH-656](https://github.com/apache/cordova-android/pull/656) Quick fix to support **Android**_SDK_ROOT
+* [GH-632](https://github.com/apache/cordova-android/pull/632) Ignore more Gradle build artifacts in **Android** project
+* [GH-642](https://github.com/apache/cordova-android/pull/642) **Android** tools 3.3 & **Gradle** 4.10.3 update
+* [GH-654](https://github.com/apache/cordova-android/pull/654) Quick updates to top-level `project.properties`
+* [GH-635](https://github.com/apache/cordova-android/pull/635) Ignore **Android** Studio `.idea` files in project
+* [GH-624](https://github.com/apache/cordova-android/pull/624) Add missing log to Java version check
+* [GH-630](https://github.com/apache/cordova-android/pull/630) Update `emulator.js` to fix issue [GH-608](https://github.com/apache/cordova-android/pull/608)
+* [GH-626](https://github.com/apache/cordova-android/pull/626) Added `package-lock.json` to `.gitignore`
+* [GH-620](https://github.com/apache/cordova-android/pull/620) Fix requirements error messages for JDK 8
+* [GH-619](https://github.com/apache/cordova-android/pull/619) javac error message fixes in requirements check
+* [GH-612](https://github.com/apache/cordova-android/pull/612) Android Platform Release Preparation (Cordova 9)
+* [GH-607](https://github.com/apache/cordova-android/pull/607) Copy `node_modules` if the directory exists
+* [GH-582](https://github.com/apache/cordova-android/pull/582) Improve Test `README`
+* [GH-589](https://github.com/apache/cordova-android/pull/589) Rewrite install dir resolution for legacy plugins
+* [GH-572](https://github.com/apache/cordova-android/pull/572) Resolve issue with plugin `target-dir="app*"` subdirs
+* [GH-567](https://github.com/apache/cordova-android/pull/567) Output current package name if package name can't be validated
+* [GH-507](https://github.com/apache/cordova-android/pull/507) Gradle Updates
+* [GH-559](https://github.com/apache/cordova-android/pull/559) Eslint ignore version file
+* [GH-550](https://github.com/apache/cordova-android/pull/550) Fix for old plugins with non-Java sources
+* [GH-558](https://github.com/apache/cordova-android/pull/558) Update `cordova.js` from `cordova-js@4.2.3`
+* [GH-553](https://github.com/apache/cordova-android/pull/553) Check for `build-extras.gradle` in the app-parent directory
+* [GH-551](https://github.com/apache/cordova-android/pull/551) Add missing cast for `cdvMinSdkVersion`
+* [GH-539](https://github.com/apache/cordova-android/pull/539) Fix destination path fallback
+* [GH-544](https://github.com/apache/cordova-android/pull/544) Remove obsolete check for JellyBean
+* [GH-465](https://github.com/apache/cordova-android/pull/465) Removes Gradle property in-line command arguments for `gradle.properties`
+* [GH-523](https://github.com/apache/cordova-android/pull/523) Always put the Google repo above jcenter
+* [GH-486](https://github.com/apache/cordova-android/pull/486) Change deprecated "compile" to "implementation"
+* [GH-495](https://github.com/apache/cordova-android/pull/495) Incorrect default sdk version issue fix
+* [GH-493](https://github.com/apache/cordova-android/pull/493) Remove bundled dependencies
+* [GH-490](https://github.com/apache/cordova-android/pull/490) Fixes build & run related bugs from builder refactor
+* [GH-464](https://github.com/apache/cordova-android/pull/464) Unit tests for **Android**_sdk and **Android**Project
+* [GH-448](https://github.com/apache/cordova-android/pull/448) [CB-13685](https://issues.apache.org/jira/browse/CB-13685) Adaptive Icon Support
+* [GH-487](https://github.com/apache/cordova-android/pull/487) Do not attempt an activity intent AND a url load into the webview, return from the internal webview load.
+* [GH-461](https://github.com/apache/cordova-android/pull/461) Remove old builders code
+* [GH-463](https://github.com/apache/cordova-android/pull/463) Emulator: Add unit tests and remove Q
+* [GH-462](https://github.com/apache/cordova-android/pull/462) Device: Add unit tests and remove Q
+* [GH-457](https://github.com/apache/cordova-android/pull/457) Emulator: handle "device still connecting" error
+* [GH-445](https://github.com/apache/cordova-android/pull/445) Run and retryPromise improvements and tests
+* [GH-453](https://github.com/apache/cordova-android/pull/453) Lint JS files w/out extension too
+* [GH-452](https://github.com/apache/cordova-android/pull/452) Emit log event instead of logging directly
+* [GH-449](https://github.com/apache/cordova-android/pull/449) Increase old plugin compatibility
+* [GH-442](https://github.com/apache/cordova-android/pull/442) Fixes and cleanup for Java tests and CI
+* [GH-446](https://github.com/apache/cordova-android/pull/446) [CB-14101](https://issues.apache.org/jira/browse/CB-14101) Fix Java version check for Java >= 9
+* [CB-14127](https://issues.apache.org/jira/browse/CB-14127) Move google maven repo ahead of jcenter
+* [CB-14038](https://issues.apache.org/jira/browse/CB-14038) Fix false positive detecting project type
+* [CB-14008](https://issues.apache.org/jira/browse/CB-14008) Updating Gradle Libraries to work with **Android** Studio 3.1.0
+* [CB-13975](https://issues.apache.org/jira/browse/CB-13975) Fix to fire pause event when cdvStartInBackground=true
+* [CB-13830](https://issues.apache.org/jira/browse/CB-13830) Add handlers for plugins that use non-Java source files, such as Camera
+* [CB-13923](https://issues.apache.org/jira/browse/CB-13923) Fix -1 length for compressed files
+
 ### 7.1.0 (Feb 20, 2018)
 * [CB-13879](https://issues.apache.org/jira/browse/CB-13879) updated gradle tools dependency to 3.0.1 for project template
 * [CB-13831](https://issues.apache.org/jira/browse/CB-13831) Update `android-versions` to 1.3.0 to support SDK 27.

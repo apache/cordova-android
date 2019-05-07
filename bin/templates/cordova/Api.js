@@ -25,6 +25,7 @@ var PluginManager = require('cordova-common').PluginManager;
 
 var CordovaLogger = require('cordova-common').CordovaLogger;
 var selfEvents = require('cordova-common').events;
+var ConfigParser = require('cordova-common').ConfigParser;
 
 var PLATFORM = 'android';
 
@@ -71,10 +72,7 @@ function Api (platform, platformRootDir, events) {
         strings: path.join(appRes, 'values', 'strings.xml'),
         manifest: path.join(appMain, 'AndroidManifest.xml'),
         build: path.join(this.root, 'build'),
-        javaSrc: path.join(appMain, 'java'),
-        // NOTE: Due to platformApi spec we need to return relative paths here
-        cordovaJs: 'bin/templates/project/assets/www/cordova.js',
-        cordovaJsSrc: 'cordova-js-src'
+        javaSrc: path.join(appMain, 'java')
     };
 }
 
@@ -101,8 +99,7 @@ Api.createPlatform = function (destination, config, options, events) {
     var result;
     try {
         result = require('../../lib/create').create(destination, config, options, events).then(function (destination) {
-            var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
-            return new PlatformApi(PLATFORM, destination, events);
+            return new Api(PLATFORM, destination, events);
         });
     } catch (e) {
         events.emit('error', 'createPlatform is not callable from the android project API.');
@@ -132,8 +129,7 @@ Api.updatePlatform = function (destination, options, events) {
     var result;
     try {
         result = require('../../lib/create').update(destination, options, events).then(function (destination) {
-            var PlatformApi = require(path.resolve(destination, 'cordova/Api'));
-            return new PlatformApi('android', destination, events);
+            return new Api(PLATFORM, destination, events);
         });
     } catch (e) {
         events.emit('error', 'updatePlatform is not callable from the android project API, you will need to do this manually.');
@@ -174,6 +170,8 @@ Api.prototype.getPlatformInfo = function () {
  *   CordovaError instance.
  */
 Api.prototype.prepare = function (cordovaProject, prepareOptions) {
+    cordovaProject.projectConfig = new ConfigParser(cordovaProject.locations.rootConfigXml || cordovaProject.projectConfig.path);
+
     return require('./lib/prepare').prepare.call(this, cordovaProject, prepareOptions);
 };
 

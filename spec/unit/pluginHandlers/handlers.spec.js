@@ -102,6 +102,79 @@ describe('android project handler', function () {
                     android['source-file'].install(valid_source[0], dummyPluginInfo, dummyProject);
                 }).toThrow(new Error('"' + target + '" already exists!'));
             });
+
+            // TODO: renumber these tests and other tests below
+            it('Test#00a6 : should allow installing sources with new app target-dir scheme', function () {
+                android['source-file'].install(valid_source[1], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'), false);
+            });
+
+            it('Test#006b : should allow installing jar lib file from sources with new app target-dir scheme', function () {
+                android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/TestLib.jar', temp, path.join('app/libs/TestLib.jar'), false);
+            });
+
+            it('Test#006c : should allow installing aar lib file from sources with new app target-dir scheme', function () {
+                android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/TestAar.aar', temp, path.join('app/libs/TestAar.aar'), false);
+            });
+
+            it('Test#006d : should allow installing xml file from sources with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[4], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/mysettings.xml', temp,
+                    path.join('app/src/main/res/xml/mysettings.xml'), false);
+            });
+
+            it('Test#006e : should allow installing file with other extension from sources with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[5], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/other.extension', temp,
+                    path.join('app/src/main/res/values/other.extension'), false);
+            });
+
+            it('Test#006f : should allow installing aidl file from sources with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[6], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/myapi.aidl', temp,
+                    path.join('app/src/main/aidl/com/mytest/myapi.aidl'), false);
+            });
+
+            it('Test#006g : should allow installing aar lib file from sources with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[7], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/testaar2.aar', temp,
+                    path.join('app/libs/testaar2.aar'), false);
+            });
+
+            it('Test#006h : should allow installing jar lib file from sources with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[8], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/testjar2.jar', temp,
+                    path.join('app/libs/testjar2.jar'), false);
+            });
+
+            it('Test#006i : should allow installing .so lib file from sources with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[9], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy).toHaveBeenCalledWith(dummyplugin,
+                    'src/android/jniLibs/x86/libnative.so', temp,
+                    path.join('app/src/main/jniLibs/x86/libnative.so'), false);
+            });
+
+            it('Test#006j : should allow installing sources with target-dir that includes "app"', function () {
+                android['source-file'].install(valid_source[10], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/java/com/appco/DummyPlugin2.java'), false);
+            });
+
+            it('Test#006k : should allow installing sources with target-dir that includes "app" in its first directory', function () {
+                android['source-file'].install(valid_source[11], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(copyFileSpy)
+                    .toHaveBeenCalledWith(dummyplugin, 'src/android/DummyPlugin2.java', temp, path.join('app/src/main/java/appco/src/DummyPlugin2.java'), false);
+            });
         });
 
         describe('of <framework> elements', function () {
@@ -129,19 +202,19 @@ describe('android project handler', function () {
             });
 
             it('Test#008 : should install framework without "parent" attribute into project root', function () {
-                var framework = {src: 'plugin-lib'};
+                var framework = { src: 'plugin-lib' };
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
             it('Test#009 : should install framework with "parent" attribute into parent framework dir', function () {
-                var childFramework = {src: 'plugin-lib2', parent: 'plugin-lib'};
+                var childFramework = { src: 'plugin-lib2', parent: 'plugin-lib' };
                 android.framework.install(childFramework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(path.resolve(dummyProject.projectDir, childFramework.parent), someString);
             });
 
             it('Test#010 : should not copy anything if "custom" attribute is not set', function () {
-                var framework = {src: 'plugin-lib'};
+                var framework = { src: 'plugin-lib' };
                 var cpSpy = spyOn(shell, 'cp');
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(someString, framework.src);
@@ -149,14 +222,14 @@ describe('android project handler', function () {
             });
 
             it('Test#011 : should copy framework sources if "custom" attribute is set', function () {
-                var framework = {src: 'plugin-lib', custom: true};
+                var framework = { src: 'plugin-lib', custom: true };
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSubProject).toHaveBeenCalledWith(dummyProject.projectDir, someString);
                 expect(copyNewFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, framework.src, dummyProject.projectDir, someString, false);
             });
 
             it('Test#012 : should install gradleReference using project.addGradleReference', function () {
-                var framework = {src: 'plugin-lib', custom: true, type: 'gradleReference'};
+                var framework = { src: 'plugin-lib', custom: true, type: 'gradleReference' };
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(copyNewFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, framework.src, dummyProject.projectDir, someString, false);
                 expect(dummyProject.addGradleReference).toHaveBeenCalledWith(dummyProject.projectDir, someString);
@@ -164,7 +237,7 @@ describe('android project handler', function () {
         });
 
         describe('of <js-module> elements', function () {
-            var jsModule = {src: 'www/dummyplugin.js'};
+            var jsModule = { src: 'www/dummyplugin.js' };
             var wwwDest, platformWwwDest;
 
             beforeEach(function () {
@@ -174,7 +247,7 @@ describe('android project handler', function () {
             });
 
             it('Test#013 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
-                android['js-module'].install(jsModule, dummyPluginInfo, dummyProject, {usePlatformWww: true});
+                android['js-module'].install(jsModule, dummyPluginInfo, dummyProject, { usePlatformWww: true });
                 expect(fs.writeFileSync).toHaveBeenCalledWith(wwwDest, jasmine.any(String), 'utf-8');
                 expect(fs.writeFileSync).toHaveBeenCalledWith(platformWwwDest, jasmine.any(String), 'utf-8');
             });
@@ -187,7 +260,7 @@ describe('android project handler', function () {
         });
 
         describe('of <asset> elements', function () {
-            var asset = {src: 'www/dummyPlugin.js', target: 'foo/dummy.js'};
+            var asset = { src: 'www/dummyPlugin.js', target: 'foo/dummy.js' };
             var wwwDest; /* eslint no-unused-vars: "off" */
             var platformWwwDest; /* eslint no-unused-vars: "off" */
 
@@ -197,7 +270,7 @@ describe('android project handler', function () {
             });
 
             it('Test#015 : should put asset to both www and platform_www when options.usePlatformWww flag is specified', function () {
-                android.asset.install(asset, dummyPluginInfo, dummyProject, {usePlatformWww: true});
+                android.asset.install(asset, dummyPluginInfo, dummyProject, { usePlatformWww: true });
                 expect(copyFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, asset.src, dummyProject.www, asset.target);
                 expect(copyFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, asset.src, dummyProject.platformWww, asset.target);
             });
@@ -257,6 +330,66 @@ describe('android project handler', function () {
                 android['source-file'].uninstall(valid_source[0], dummyPluginInfo, dummyProject);
                 expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/phonegap/plugins/dummyplugin/DummyPlugin.java'));
             });
+
+            it('Test#019a : should remove stuff by calling common.deleteJava for Android Studio projects, with specific app target-dir', function () {
+                android['source-file'].install(valid_source[1], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[1], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/src/com/phonegap/plugins/dummyplugin/DummyPlugin2.java'));
+            });
+
+            it('Test#019b : should remove stuff by calling common.removeFile for Android Studio projects, of jar with new app target-dir scheme', function () {
+                android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[2], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
+            });
+
+            it('Test#019c : should remove stuff by calling common.removeFile for Android Studio projects, of aar with new app target-dir scheme', function () {
+                android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[3], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestAar.aar'));
+            });
+
+            it('Test#019d : should remove stuff by calling common.removeFile for Android Studio projects, of xml with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[4], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[4], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/xml/mysettings.xml'));
+            });
+
+            it('Test#019e : should remove stuff by calling common.removeFile for Android Studio projects, of file with other extension with old target-dir scheme', function () {
+                android['source-file'].install(valid_source[5], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[5], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/values/other.extension'));
+            });
+
+            it('Test#019f : should remove stuff by calling common.removeFile for Android Studio projects, of aidl with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[6], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[6], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/aidl/com/mytest/myapi.aidl'));
+            });
+
+            it('Test#019g : should remove stuff by calling common.removeFile for Android Studio projects, of aar with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[7], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[7], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/testaar2.aar'));
+            });
+
+            it('Test#019h : should remove stuff by calling common.removeFile for Android Studio projects, of jar with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[8], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[8], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/testjar2.jar'));
+            });
+
+            it('Test#019i : should remove stuff by calling common.removeFile for Android Studio projects, of .so lib file with old target-dir scheme (GH-547)', function () {
+                android['source-file'].install(valid_source[9], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[9], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/jniLibs/x86/libnative.so'));
+            });
+
+            it('Test#019j : should remove stuff by calling common.deleteJava for Android Studio projects, with target-dir that includes "app"', function () {
+                android['source-file'].install(valid_source[10], dummyPluginInfo, dummyProject, { android_studio: true });
+                android['source-file'].uninstall(valid_source[10], dummyPluginInfo, dummyProject, { android_studio: true });
+                expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/appco/DummyPlugin2.java'));
+            });
         });
 
         describe('of <framework> elements', function () {
@@ -276,26 +409,26 @@ describe('android project handler', function () {
             });
 
             it('Test#021 : should uninstall framework without "parent" attribute into project root', function () {
-                var framework = {src: 'plugin-lib'};
+                var framework = { src: 'plugin-lib' };
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSystemLibrary).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
             it('Test#022 : should uninstall framework with "parent" attribute into parent framework dir', function () {
-                var childFramework = {src: 'plugin-lib2', parent: 'plugin-lib'};
+                var childFramework = { src: 'plugin-lib2', parent: 'plugin-lib' };
                 android.framework.uninstall(childFramework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSystemLibrary).toHaveBeenCalledWith(path.resolve(dummyProject.projectDir, childFramework.parent), someString);
             });
 
             it('Test#023 : should remove framework sources if "custom" attribute is set', function () {
-                var framework = {src: 'plugin-lib', custom: true};
+                var framework = { src: 'plugin-lib', custom: true };
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSubProject).toHaveBeenCalledWith(dummyProject.projectDir, someString);
                 expect(removeFileSpy).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
             it('Test#24 : should install gradleReference using project.removeGradleReference', function () {
-                var framework = {src: 'plugin-lib', custom: true, type: 'gradleReference'};
+                var framework = { src: 'plugin-lib', custom: true, type: 'gradleReference' };
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(removeFileSpy).toHaveBeenCalledWith(dummyProject.projectDir, someString);
                 expect(dummyProject.removeGradleReference).toHaveBeenCalledWith(dummyProject.projectDir, someString);
@@ -303,7 +436,7 @@ describe('android project handler', function () {
         });
 
         describe('of <js-module> elements', function () {
-            var jsModule = {src: 'www/dummyPlugin.js'};
+            var jsModule = { src: 'www/dummyPlugin.js' };
             var wwwDest;
             var platformWwwDest;
 
@@ -321,7 +454,7 @@ describe('android project handler', function () {
             });
 
             it('Test#025 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
-                android['js-module'].uninstall(jsModule, dummyPluginInfo, dummyProject, {usePlatformWww: true});
+                android['js-module'].uninstall(jsModule, dummyPluginInfo, dummyProject, { usePlatformWww: true });
                 expect(shell.rm).toHaveBeenCalledWith('-Rf', wwwDest);
                 expect(shell.rm).toHaveBeenCalledWith('-Rf', platformWwwDest);
             });
@@ -334,7 +467,7 @@ describe('android project handler', function () {
         });
 
         describe('of <asset> elements', function () {
-            var asset = {src: 'www/dummyPlugin.js', target: 'foo/dummy.js'};
+            var asset = { src: 'www/dummyPlugin.js', target: 'foo/dummy.js' };
             var wwwDest, platformWwwDest;
 
             beforeEach(function () {
@@ -351,7 +484,7 @@ describe('android project handler', function () {
             });
 
             it('Test#027 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
-                android.asset.uninstall(asset, dummyPluginInfo, dummyProject, {usePlatformWww: true});
+                android.asset.uninstall(asset, dummyPluginInfo, dummyProject, { usePlatformWww: true });
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), wwwDest);
                 expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), platformWwwDest);
             });

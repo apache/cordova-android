@@ -72,7 +72,7 @@ emulator-5554\tdevice
         });
 
         it('should return only emulators if opts.emulators is true', () => {
-            return Adb.devices({emulators: true}).then(devices => {
+            return Adb.devices({ emulators: true }).then(devices => {
                 expect(devices.length).toBe(1);
                 expect(devices[0]).toBe(emulatorId);
             });

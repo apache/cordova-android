@@ -26,14 +26,12 @@ buildscript {
     ext.kotlin_version = '1.2.61'
     repositories {
         mavenCentral()
-        maven {
-            url "https://maven.google.com"
-        }
+        google()
         jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0'
+        classpath 'com.android.tools.build:gradle:3.3.0'
         if (cdvHelpers.getConfigPreference('EnableKotlin', 'false').toBoolean()) {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         }
@@ -49,13 +47,14 @@ allprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.4.0'
+    gradleVersion = '4.10.3'
 }
 
 // Configuration properties. Set these via environment variables, build-extras.gradle, or gradle.properties.
 // Refer to: http://www.gradle.org/docs/current/userguide/tutorial_this_and_that.html
 ext {
     apply from: '../CordovaLib/cordova.gradle'
+
     // The value for android.compileSdkVersion.
     if (!project.hasProperty('cdvCompileSdkVersion')) {
         cdvCompileSdkVersion = null
@@ -72,11 +71,19 @@ ext {
     if (!project.hasProperty('cdvMinSdkVersion')) {
         cdvMinSdkVersion = null
     }
+    // Sets the maxSdkVersion to the given value.
+    if (!project.hasProperty('cdvMaxSdkVersion')) {
+        cdvMaxSdkVersion = null
+    }
+    // The value for android.targetSdkVersion.
+    if (!project.hasProperty('cdvTargetSdkVersion')) {
+        cdvTargetSdkVersion = null;
+    }
     // Whether to build architecture-specific APKs.
     if (!project.hasProperty('cdvBuildMultipleApks')) {
         cdvBuildMultipleApks = null
     }
-    // Whether to append a 0 "abi digit" to versionCode when only a single APK is build 
+    // Whether to append a 0 "abi digit" to versionCode when only a single APK is build
     if (!project.hasProperty('cdvVersionCodeForceAbiDigit')) {
         cdvVersionCodeForceAbiDigit = null
     }
@@ -100,16 +107,23 @@ ext {
 // PLUGIN GRADLE EXTENSIONS START
 // PLUGIN GRADLE EXTENSIONS END
 
-def hasBuildExtras = file('build-extras.gradle').exists()
-if (hasBuildExtras) {
+def hasBuildExtras1 = file('build-extras.gradle').exists()
+if (hasBuildExtras1) {
     apply from: 'build-extras.gradle'
 }
 
-// Set property defaults after extension .gradle files.
-if (ext.cdvCompileSdkVersion == null) {
-    ext.cdvCompileSdkVersion = privateHelpers.getProjectTarget()
-    //ext.cdvCompileSdkVersion = project.ext.defaultCompileSdkVersion
+def hasBuildExtras2 = file('../build-extras.gradle').exists()
+if (hasBuildExtras2) {
+    apply from: '../build-extras.gradle'
 }
+
+// Set property defaults after extension .gradle files.
+ext.cdvCompileSdkVersion = cdvCompileSdkVersion == null ? (
+    defaultCompileSdkVersion == null 
+        ? privateHelpers.getProjectTarget()
+        : defaultCompileSdkVersion 
+) : Integer.parseInt('' + cdvCompileSdkVersion);
+
 if (ext.cdvBuildToolsVersion == null) {
     ext.cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
     //ext.cdvBuildToolsVersion = project.ext.defaultBuildToolsVersion
@@ -124,7 +138,14 @@ if (ext.cdvReleaseSigningPropertiesFile == null && file('../release-signing.prop
 // Cast to appropriate types.
 ext.cdvBuildMultipleApks = cdvBuildMultipleApks == null ? false : cdvBuildMultipleApks.toBoolean();
 ext.cdvVersionCodeForceAbiDigit = cdvVersionCodeForceAbiDigit == null ? false : cdvVersionCodeForceAbiDigit.toBoolean();
-ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? null : defaultMinSdkVersion
+
+// minSdkVersion, maxSdkVersion and targetSdkVersion
+ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? defaultMinSdkVersion : Integer.parseInt('' + cdvMinSdkVersion)
+if (cdvMaxSdkVersion != null) {
+    ext.cdvMaxSdkVersion = Integer.parseInt('' + cdvMaxSdkVersion)
+}
+ext.cdvTargetSdkVersion = cdvTargetSdkVersion == null ? defaultTargetSdkVersion  : Integer.parseInt('' + cdvTargetSdkVersion)
+
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
 
 def computeBuildTargetName(debugBuild) {
@@ -147,30 +168,41 @@ cdvBuildRelease.dependsOn {
     return computeBuildTargetName(false)
 }
 
-task cdvPrintProps << {
-    println('cdvCompileSdkVersion=' + cdvCompileSdkVersion)
-    println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
-    println('cdvVersionCode=' + cdvVersionCode)
-    println('cdvVersionCodeForceAbiDigit=' + cdvVersionCodeForceAbiDigit)
-    println('cdvMinSdkVersion=' + cdvMinSdkVersion)
-    println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
-    println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
-    println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
-    println('cdvBuildArch=' + cdvBuildArch)
-    println('computedVersionCode=' + android.defaultConfig.versionCode)
-    android.productFlavors.each { flavor ->
-        println('computed' + flavor.name.capitalize() + 'VersionCode=' + flavor.versionCode)
+task cdvPrintProps {
+    doLast {
+        println('cdvCompileSdkVersion=' + cdvCompileSdkVersion)
+        println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
+        println('cdvVersionCode=' + cdvVersionCode)
+        println('cdvVersionCodeForceAbiDigit=' + cdvVersionCodeForceAbiDigit)
+        println('cdvMinSdkVersion=' + cdvMinSdkVersion)
+        println('cdvMaxSdkVersion=' + cdvMaxSdkVersion)
+        println('cdvTargetSdkVersion=' + cdvTargetSdkVersion)
+        println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
+        println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
+        println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
+        println('cdvBuildArch=' + cdvBuildArch)
+        println('computedVersionCode=' + android.defaultConfig.versionCode)
+        android.productFlavors.each { flavor ->
+            println('computed' + flavor.name.capitalize() + 'VersionCode=' + flavor.versionCode)
+        }
     }
 }
 
 android {
-
     defaultConfig {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
         applicationId privateHelpers.extractStringFromManifest("package")
 
         if (cdvMinSdkVersion != null) {
             minSdkVersion cdvMinSdkVersion
+        }
+
+        if (cdvMaxSdkVersion != null) {
+            maxSdkVersion cdvMaxSdkVersion
+        }
+
+        if(cdvTargetSdkVersion != null) {
+            targetSdkVersion cdvTargetSdkVersion
         }
     }
 
@@ -181,10 +213,11 @@ android {
     compileSdkVersion cdvCompileSdkVersion
     buildToolsVersion cdvBuildToolsVersion
 
-    //This code exists for Crosswalk and other Native APIs.
-    //By default, we multiply the existing version code in the Android Manifest by 10 and 
-    //add a number for each architecture.  If you are not using Crosswalk or SQLite, you can
-    //ignore this chunk of code, and your version codes will be respected.
+    // This code exists for Crosswalk and other Native APIs.
+    // By default, we multiply the existing version code in the
+    // Android Manifest by 10 and add a number for each architecture.
+    // If you are not using Crosswalk or SQLite, you can
+    // ignore this chunk of code, and your version codes will be respected.
 
     if (Boolean.valueOf(cdvBuildMultipleApks)) {
         flavorDimensions "default"
@@ -250,6 +283,7 @@ android {
         }
         addSigningProps(cdvReleaseSigningPropertiesFile, signingConfigs.release)
     }
+
     if (cdvDebugSigningPropertiesFile) {
         addSigningProps(cdvDebugSigningPropertiesFile, signingConfigs.debug)
     }

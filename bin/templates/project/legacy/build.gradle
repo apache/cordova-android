@@ -66,6 +66,14 @@ ext {
     if (!project.hasProperty('cdvMinSdkVersion')) {
         cdvMinSdkVersion = null
     }
+    // Sets the maxSdkVersion to the given value.
+    if (!project.hasProperty('cdvMaxSdkVersion')) {
+        cdvMaxSdkVersion = null
+    }
+    // The value for android.targetSdkVersion.
+    if (!project.hasProperty('cdvTargetSdkVersion')) {
+        cdvTargetSdkVersion = null;
+    }
     // Whether to build architecture-specific APKs.
     if (!project.hasProperty('cdvBuildMultipleApks')) {
         cdvBuildMultipleApks = null
@@ -112,6 +120,11 @@ if (ext.cdvReleaseSigningPropertiesFile == null && file('release-signing.propert
 // Cast to appropriate types.
 ext.cdvBuildMultipleApks = cdvBuildMultipleApks == null ? false : cdvBuildMultipleApks.toBoolean();
 ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? null : Integer.parseInt('' + cdvMinSdkVersion)
+
+if(cdvMaxSdkVersion != null) {
+    ext.cdvMaxSdkVersion = Integer.parseInt('' + cdvMaxSdkVersion)
+}
+
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
 
 def computeBuildTargetName(debugBuild) {
@@ -139,6 +152,8 @@ task cdvPrintProps << {
     println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
     println('cdvVersionCode=' + cdvVersionCode)
     println('cdvMinSdkVersion=' + cdvMinSdkVersion)
+    println('cdvMaxSdkVersion=' + cdvMaxSdkVersion)
+    println('cdvTargetSdkVersion=' + cdvTargetSdkVersion)
     println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
     println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
     println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
@@ -169,6 +184,14 @@ android {
 
         if (cdvMinSdkVersion != null) {
             minSdkVersion cdvMinSdkVersion
+        }
+
+        if (cdvMaxSdkVersion != null) {
+            maxSdkVersion cdvMaxSdkVersion
+        }
+        
+        if(cdvTargetSdkVersion != null) {
+            targetSdkVersion cdvTargetSdkVersion
         }
     }
 
@@ -245,7 +268,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    implementation fileTree(dir: 'libs', include: '*.jar')
     // SUB-PROJECT DEPENDENCIES START
     // SUB-PROJECT DEPENDENCIES END
 }

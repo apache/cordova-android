@@ -144,7 +144,7 @@ public class CoreAndroid extends CordovaPlugin {
     public void clearCache() {
         cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
-                webView.clearCache(true);
+                webView.clearCache();
             }
         });
     }
