@@ -31,6 +31,8 @@ buildscript {
     }
 
     dependencies {
+        apply from: '../../framework/cordova.gradle'
+ 
         classpath 'com.android.tools.build:gradle:3.3.0'
         if (cdvHelpers.getConfigPreference('EnableKotlin', 'false').toBoolean()) {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
