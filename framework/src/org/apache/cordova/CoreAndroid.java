@@ -389,7 +389,7 @@ public class CoreAndroid extends CordovaPlugin {
     {
         try
         {
-            Class<?> clazz = Class.forName(ctx.getPackageName() + ".BuildConfig");
+            Class<?> clazz = Class.forName(ctx.getClass().getPackage().getName() + ".BuildConfig");
             Field field = clazz.getField(key);
             return field.get(null);
         } catch (ClassNotFoundException e) {
@@ -399,6 +399,9 @@ public class CoreAndroid extends CordovaPlugin {
             LOG.d(TAG, key + " is not a valid field. Check your build.gradle");
         } catch (IllegalAccessException e) {
             LOG.d(TAG, "Illegal Access Exception: Let's print a stack trace.");
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            LOG.d(TAG, "Null Pointer Exception: Let's print a stack trace.");
             e.printStackTrace();
         }
 
