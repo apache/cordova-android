@@ -14,6 +14,7 @@ env:
         - nodejs_version=6
         - nodejs_version=8
         - nodejs_version=10
+        - nodejs_version=12
 
 install:
     # Install a sdkmanager version that supports the --licenses switch and
