@@ -5,7 +5,12 @@ env:
     - ANDROID_API_LEVEL=28
     - ANDROID_BUILD_TOOLS_VERSION=28.0.
     - TERM=dumb # Keep gradle from crapping all over the log
-
+  matrix:
+    - nodejs_version=6
+    - nodejs_version=8
+    - nodejs_version=10
+    - nodejs_version=12
+  
 language: android
 jdk:
   - oraclejdk8
@@ -19,19 +24,13 @@ android:
     - 'android-sdk-preview-license-.+'
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
-    
-matrix:
-  - nodejs_version=6
-  - nodejs_version=8
-  - nodejs_version=10
-  - nodejs_version=12
 
 before_install:
-  - nvm install $TRAVIS_NODE_VERSION  
+  - nvm install $nodejs_version 
   - node --version
   - npm --version
   - gradle --version
-    
+
 install:
   - npm install
   - npm install -g codecov
