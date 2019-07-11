@@ -66,6 +66,20 @@ describe('ProjectBuilder', () => {
             expect(args[0]).toBe('cdvBuildDebug');
         });
 
+        it('should set bundle release', () => {
+            const args = builder.getArgs('release', {
+                isBundle: true
+            });
+            expect(args[0]).withContext(args).toBe(':app:bundleRelease');
+        });
+
+        it('should set bundle debug', () => {
+            const args = builder.getArgs('debug', {
+                isBundle: true
+            });
+            expect(args[0]).toBe(':app:bundleDebug');
+        });
+
         it('should add architecture if it is passed', () => {
             const arch = 'unittest';
             const args = builder.getArgs('debug', { arch });

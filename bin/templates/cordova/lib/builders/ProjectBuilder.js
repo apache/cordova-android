@@ -37,23 +37,35 @@ const TEMPLATE =
 class ProjectBuilder {
     constructor (rootDirectory) {
         this.root = rootDirectory || path.resolve(__dirname, '../../..');
-        this.binDir = path.join(this.root, 'app', 'build', 'outputs', 'apk');
+        this.apkDir = path.join(this.root, 'app', 'build', 'outputs', 'apk');
+        this.aabDir = path.join(this.root, 'app', 'build', 'outputs', 'bundle');
     }
 
     getArgs (cmd, opts) {
-        if (cmd === 'release') {
-            cmd = 'cdvBuildRelease';
-        } else if (cmd === 'debug') {
-            cmd = 'cdvBuildDebug';
+        var args;
+        if (opts.isBundle) {
+            if (cmd === 'release') {
+                cmd = ':app:bundleRelease';
+            } else if (cmd === 'debug') {
+                cmd = ':app:bundleDebug';
+            }
+
+            args = [cmd, '-b', path.join(this.root, 'build.gradle')];
+        } else {
+            if (cmd === 'release') {
+                cmd = 'cdvBuildRelease';
+            } else if (cmd === 'debug') {
+                cmd = 'cdvBuildDebug';
+            }
+
+            args = [cmd, '-b', path.join(this.root, 'build.gradle')];
+
+            if (opts.arch) {
+                args.push('-PcdvBuildArch=' + opts.arch);
+            }
+
+            args.push.apply(args, opts.extraArgs);
         }
-
-        let args = [cmd, '-b', path.join(this.root, 'build.gradle')];
-
-        if (opts.arch) {
-            args.push('-PcdvBuildArch=' + opts.arch);
-        }
-
-        args.push.apply(args, opts.extraArgs);
 
         return args;
     }
@@ -287,7 +299,11 @@ class ProjectBuilder {
     }
 
     findOutputApks (build_type, arch) {
-        return findOutputApksHelper(this.binDir, build_type, arch).sort(apkSorter);
+        return findOutputApksHelper(this.apkDir, build_type, arch).sort(apkSorter);
+    }
+
+    findOutputBundles (build_type) {
+        return findOutputBundlesHelper(this.aabDir, build_type).sort(bundleSorter);
     }
 
     fetchBuildResults (build_type, arch) {
@@ -309,6 +325,19 @@ function apkSorter (fileA, fileB) {
         return -1;
     }
 
+    // De-prioritize unsigned builds
+    var unsignedRE = /-unsigned/;
+    if (unsignedRE.exec(fileA)) {
+        return 1;
+    } else if (unsignedRE.exec(fileB)) {
+        return -1;
+    }
+
+    var timeDiff = fs.statSync(fileB).mtime - fs.statSync(fileA).mtime;
+    return timeDiff === 0 ? fileA.length - fileB.length : timeDiff;
+}
+
+function bundleSorter (fileA, fileB) {
     // De-prioritize unsigned builds
     var unsignedRE = /-unsigned/;
     if (unsignedRE.exec(fileA)) {
@@ -361,6 +390,33 @@ function findOutputApksHelper (dir, build_type, arch) {
             return path.basename(p).indexOf('-' + arch) !== -1;
         });
     }
+
+    return ret;
+}
+
+function findOutputBundlesHelper (dir, build_type) {
+    var shellSilent = shell.config.silent;
+    shell.config.silent = true;
+
+    // list directory recursively
+    // console.log(dir, shell.ls('-R', dir));
+    var ret = shell.ls('-R', dir).map(function (file) {
+        // ls does not include base directory
+        return path.join(dir, file);
+    }).filter(function (file) {
+        // find all APKs
+        return file.match(/\.aab?$/i);
+    }).filter(function (candidate) {
+        var na = path.basename(candidate);
+        // Need to choose between release and debug .apk.
+        if (build_type === 'debug') {
+            return /debug/.exec(candidate);
+        }
+        if (build_type === 'release') {
+            return /release/.exec(candidate);
+        }
+        return true;
+    }).sort(apkSorter);
 
     return ret;
 }

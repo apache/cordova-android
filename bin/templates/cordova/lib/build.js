@@ -45,12 +45,14 @@ function parseOpts (options, resolvedTarget, projectRoot) {
         alias: String,
         storePassword: String,
         password: String,
-        keystoreType: String
+        keystoreType: String,
+        bundle: Boolean
     }, {}, options.argv, 0);
 
     // Android Studio Build method is the default
     var ret = {
         buildType: options.release ? 'release' : 'debug',
+        isBundle: options.bundle,
         prepEnv: options.argv.prepenv,
         arch: resolvedTarget && resolvedTarget.arch,
         extraArgs: []
@@ -148,10 +150,17 @@ module.exports.run = function (options, optResolvedTarget) {
             return;
         }
         return builder.build(opts).then(function () {
-            var apkPaths = builder.findOutputApks(opts.buildType, opts.arch);
-            events.emit('log', 'Built the following apk(s): \n\t' + apkPaths.join('\n\t'));
+            var paths;
+            if (opts.isBundle) {
+                paths = builder.findOutputBundles(opts.buildType);
+                events.emit('log', 'Built the following bundle(s): \n\t' + paths.join('\n\t'));
+            } else {
+                paths = builder.findOutputApks(opts.buildType, opts.arch);
+                events.emit('log', 'Built the following apk(s): \n\t' + paths.join('\n\t'));
+            }
+
             return {
-                apkPaths: apkPaths,
+                paths: paths,
                 buildType: opts.buildType
             };
         });
@@ -264,6 +273,7 @@ PackageInfo.prototype = {
 module.exports.help = function () {
     console.log('Usage: ' + path.relative(process.cwd(), path.join('../build')) + ' [flags] [Signed APK flags]');
     console.log('Flags:');
+    console.log('    \'--bundle\': will build a bundle (.aab) file instead of APK. Used for uploading to Google Play Store');
     console.log('    \'--debug\': will build project in debug mode (default)');
     console.log('    \'--release\': will build project for release');
     console.log('    \'--nobuild\': will skip build process (useful when using run command)');
