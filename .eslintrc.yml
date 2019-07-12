@@ -8,3 +8,5 @@ rules:
   padded-blocks: off
   operator-linebreak: off
   no-throw-literal: off
+  quote-props: off
+  prefer-const: off
