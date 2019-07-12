@@ -27,6 +27,7 @@ var spawn = require('cordova-common').superspawn.spawn;
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 var check_reqs = require('../check_reqs');
+var PackageType = require('../PackageType');
 
 const MARKER = 'YOUR CHANGES WILL BE ERASED!';
 const SIGNING_PROPERTIES = '-signing.properties';
@@ -43,7 +44,7 @@ class ProjectBuilder {
 
     getArgs (cmd, opts) {
         var args;
-        if (opts.isBundle) {
+        if (opts.packageType === PackageType.BUNDLE) {
             if (cmd === 'release') {
                 cmd = ':app:bundleRelease';
             } else if (cmd === 'debug') {
@@ -303,7 +304,7 @@ class ProjectBuilder {
     }
 
     findOutputBundles (build_type) {
-        return findOutputBundlesHelper(this.aabDir, build_type).sort(bundleSorter);
+        return findOutputBundlesHelper(this.aabDir, build_type);
     }
 
     fetchBuildResults (build_type, arch) {
@@ -325,19 +326,6 @@ function apkSorter (fileA, fileB) {
         return -1;
     }
 
-    // De-prioritize unsigned builds
-    var unsignedRE = /-unsigned/;
-    if (unsignedRE.exec(fileA)) {
-        return 1;
-    } else if (unsignedRE.exec(fileB)) {
-        return -1;
-    }
-
-    var timeDiff = fs.statSync(fileB).mtime - fs.statSync(fileA).mtime;
-    return timeDiff === 0 ? fileA.length - fileB.length : timeDiff;
-}
-
-function bundleSorter (fileA, fileB) {
     // De-prioritize unsigned builds
     var unsignedRE = /-unsigned/;
     if (unsignedRE.exec(fileA)) {
@@ -399,16 +387,14 @@ function findOutputBundlesHelper (dir, build_type) {
     shell.config.silent = true;
 
     // list directory recursively
-    // console.log(dir, shell.ls('-R', dir));
     var ret = shell.ls('-R', dir).map(function (file) {
         // ls does not include base directory
         return path.join(dir, file);
     }).filter(function (file) {
-        // find all APKs
+        // find all bundles
         return file.match(/\.aab?$/i);
     }).filter(function (candidate) {
-        var na = path.basename(candidate);
-        // Need to choose between release and debug .apk.
+        // Need to choose between release and debug bundle.
         if (build_type === 'debug') {
             return /debug/.exec(candidate);
         }
@@ -416,7 +402,7 @@ function findOutputBundlesHelper (dir, build_type) {
             return /release/.exec(candidate);
         }
         return true;
-    }).sort(apkSorter);
+    });
 
     return ret;
 }
