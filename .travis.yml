@@ -14,7 +14,8 @@ env:
     - nodejs_version=6
     - nodejs_version=8
     - nodejs_version=10
-  
+    - nodejs_version=12
+
 language: android
 jdk:
   - oraclejdk8
@@ -30,7 +31,7 @@ android:
     - 'google-gdk-license-.+'
 
 before_install:
-  - nvm install $nodejs_version 
+  - nvm install $nodejs_version
   - node --version
   - npm --version
   - gradle --version
