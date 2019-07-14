@@ -301,21 +301,22 @@ class ProjectBuilder {
 module.exports = ProjectBuilder;
 
 function apkSorter (fileA, fileB) {
-    // De-prioritize arch specific builds
-    var archSpecificRE = /-x86|-arm/;
-    if (archSpecificRE.exec(fileA)) {
-        return 1;
-    } else if (archSpecificRE.exec(fileB)) {
-        return -1;
-    }
+    const archSpecificRE = /-x86|-arm/;
 
-    // De-prioritize unsigned builds
-    var unsignedRE = /-unsigned/;
-    if (unsignedRE.exec(fileA)) {
-        return 1;
-    } else if (unsignedRE.exec(fileB)) {
-        return -1;
-    }
+    const unsignedRE = /-unsigned/;
+
+    // De-prioritize arch-specific builds & unsigned builds
+    const lower = (fileName) => {
+        return archSpecificRE.exec(fileName)
+            ? -2
+            : unsignedRE.exec(fileName)
+                ? -1
+                : 0;
+    };
+
+    const lowerDiff = lower(fileB) - lower(fileA);
+
+    if (lowerDiff !== 0) return lowerDiff;
 
     var timeDiff = fs.statSync(fileB).mtime - fs.statSync(fileA).mtime;
     return timeDiff === 0 ? fileA.length - fileB.length : timeDiff;
