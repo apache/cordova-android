@@ -1,6 +1,6 @@
 sudo: false
 
-dist: xenial
+dist: bionic
 
 env:
   global:
