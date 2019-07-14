@@ -1,38 +1,48 @@
-language: android
 sudo: false
+
+# NOTE: dist is added here to ensure that Travis CI works consistently
+# on Node.js 12. It is desired to remove it once this issue is resolved
+# or otherwise goes away.
+dist: trusty
+
+env:
+  global:
+    - ANDROID_API_LEVEL=28
+    - ANDROID_BUILD_TOOLS_VERSION=28.0.3
+    - TERM=dumb # Keep gradle from crapping all over the log
+  matrix:
+    - nodejs_version=6
+    - nodejs_version=8
+    - nodejs_version=10
+    - nodejs_version=12
+
+language: android
 jdk:
-    - oraclejdk8
+  - oraclejdk8
 
 android:
-    components:
-        - build-tools-28.0.3
-env:
-    global:
-        # Keep gradle from crapping all over the log
-        - TERM=dumb
-    matrix:
-        - nodejs_version=6
-        - nodejs_version=8
-        - nodejs_version=10
-        - nodejs_version=12
+  components:
+    - tools
+    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+    - android-$ANDROID_API_LEVEL
+  licenses:
+    - 'android-sdk-preview-license-.+'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
+
+before_install:
+  - nvm install $nodejs_version 
+  - node --version
+  - npm --version
+  - gradle --version
 
 install:
-    # Install a sdkmanager version that supports the --licenses switch and
-    # accept any Android SDK licenses. The output redirection prevents us from
-    # hitting the travis log size limit of 4MB which would fail the build.
-    - yes | sdkmanager tools > /dev/null
-    - yes | sdkmanager --licenses > /dev/null
-
-    - nvm install $nodejs_version
-    - npm install
-    - npm install -g codecov
+  - npm install
+  - npm install -g codecov
 
 script:
-    - gradle --version
-    - node --version
-    - npm --version
-    - npm test
-    - npm run cover
+  - npm test
+  - npm run cover
 
 after_script:
-    - codecov
+  - codecov
