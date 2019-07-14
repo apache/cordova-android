@@ -1,6 +1,6 @@
 sudo: false
 
-dist: bionic
+dist: trusty
 
 env:
   global:
