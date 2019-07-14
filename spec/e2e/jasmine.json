@@ -3,6 +3,9 @@
     "spec_files": [
         "e2e/**/*[sS]pec.js"
     ],
+    "helpers": [
+        "helper.js"
+    ],
     "stopSpecOnExpectationFailure": false,
     "random": false
 }
