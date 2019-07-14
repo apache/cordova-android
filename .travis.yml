@@ -1,5 +1,8 @@
 sudo: false
 
+# NOTE: dist is added here to ensure that Travis CI works consistently
+# on Node.js 12. It is desired to remove it once this issue is resolved
+# or otherwise goes away.
 dist: trusty
 
 env:
