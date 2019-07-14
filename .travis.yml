@@ -31,7 +31,7 @@ android:
     - 'google-gdk-license-.+'
 
 before_install:
-  - nvm install $nodejs_version 
+  - nvm install $nodejs_version
   - node --version
   - npm --version
   - gradle --version
