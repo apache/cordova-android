@@ -1,5 +1,7 @@
 sudo: false
 
+dist: trusty
+
 env:
   global:
     - ANDROID_API_LEVEL=28
