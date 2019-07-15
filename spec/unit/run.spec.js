@@ -202,8 +202,15 @@ describe('run', () => {
         it('should print out usage and help', () => {
             const logSpy = jasmine.createSpy();
             const errorSpy = jasmine.createSpy();
-            const procStub = { exit: _ => null, cwd: _ => '', argv: ['', ''] };
-            run.__set__({ console: { log: logSpy, error: errorSpy }, process: procStub });
+            run.__set__({ console: { log: logSpy, error: errorSpy } });
+
+            // Rewiring the process object in entirety does not work on NodeJS 12.
+            // Rewiring members of process however does work
+            // https://github.com/apache/cordova-android/issues/768
+            // https://github.com/jhnns/rewire/issues/167
+            run.__set__('process.exit', _ => null);
+            run.__set__('process.cwd', _ => '');
+            run.__set__('process.argv', ['', '']);
 
             run.help();
             expect(logSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));
