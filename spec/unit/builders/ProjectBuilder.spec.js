@@ -252,7 +252,7 @@ describe('ProjectBuilder', () => {
 
             const fsSpy = jasmine.createSpyObj('fs', ['statSync']);
             fsSpy.statSync.and.callFake(filename => {
-                return { mtime: APKs[filename].getTime() };
+                return { mtime: APKs[filename] };
             });
             ProjectBuilder.__set__('fs', fsSpy);
 

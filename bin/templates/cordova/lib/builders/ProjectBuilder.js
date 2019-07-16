@@ -27,6 +27,7 @@ var spawn = require('cordova-common').superspawn.spawn;
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 var check_reqs = require('../check_reqs');
+const compareFunc = require('compare-func');
 
 const MARKER = 'YOUR CHANGES WILL BE ERASED!';
 const SIGNING_PROPERTIES = '-signing.properties';
@@ -300,27 +301,19 @@ class ProjectBuilder {
 
 module.exports = ProjectBuilder;
 
-function apkSorter (fileA, fileB) {
-    const archSpecificRE = /-x86|-arm/;
+const apkSorter = compareFunc([
+    // Sort arch specific builds after generic ones
+    apkPath => /-x86|-arm/.test(apkPath),
 
-    const unsignedRE = /-unsigned/;
+    // Sort unsigned builds after signed ones
+    apkPath => /-unsigned/.test(apkPath),
 
-    // De-prioritize arch-specific builds & unsigned builds
-    const lower = (fileName) => {
-        return archSpecificRE.exec(fileName)
-            ? -2
-            : unsignedRE.exec(fileName)
-                ? -1
-                : 0;
-    };
+    // Sort by file modification time, latest first
+    apkPath => -fs.statSync(apkPath).mtime.getTime(),
 
-    const lowerDiff = lower(fileB) - lower(fileA);
-
-    if (lowerDiff !== 0) return lowerDiff;
-
-    var timeDiff = fs.statSync(fileB).mtime - fs.statSync(fileA).mtime;
-    return timeDiff === 0 ? fileA.length - fileB.length : timeDiff;
-}
+    // Sort by file name length, ascending
+    'length'
+]);
 
 function findOutputApksHelper (dir, build_type, arch) {
     var shellSilent = shell.config.silent;
