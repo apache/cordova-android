@@ -200,9 +200,7 @@ describe('run', () => {
 
     describe('help', () => {
         it('should print out usage and help', () => {
-            const logSpy = jasmine.createSpy();
-            const errorSpy = jasmine.createSpy();
-            run.__set__({ console: { log: logSpy, error: errorSpy } });
+            spyOn(console, 'log');
 
             // Rewiring the process object in entirety does not work on NodeJS 12.
             // Rewiring members of process however does work
@@ -213,7 +211,7 @@ describe('run', () => {
             run.__set__('process.argv', ['', '']);
 
             run.help();
-            expect(logSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));
+            expect(console.log).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));
         });
     });
 });

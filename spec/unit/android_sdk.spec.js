@@ -45,16 +45,14 @@ describe('android_sdk', () => {
     describe('print_newest_available_sdk_target', () => {
         it('should log the newest version', () => {
             const sortedIds = ['android-27', 'android-24', 'android-23', 'android-19'];
-            const logSpy = jasmine.createSpy('log');
 
             spyOn(android_sdk, 'list_targets').and.returnValue(Promise.resolve(sortedIds));
             spyOn(sortedIds, 'sort');
-
-            android_sdk.__set__({ console: { log: logSpy } });
+            spyOn(console, 'log');
 
             return android_sdk.print_newest_available_sdk_target().then(() => {
                 expect(sortedIds.sort).toHaveBeenCalledWith(android_sdk.__get__('sort_by_largest_numerical_suffix'));
-                expect(logSpy).toHaveBeenCalledWith(sortedIds[0]);
+                expect(console.log).toHaveBeenCalledWith(sortedIds[0]);
             });
         });
     });
