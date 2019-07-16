@@ -45,33 +45,25 @@ describe('check_reqs', function () {
                     spyOn(shelljs, 'which').and.returnValue(null);
                     spyOn(fs, 'existsSync').and.returnValue(true);
                 });
-                it('it should set ANDROID_HOME on Windows', function (done) {
+                it('it should set ANDROID_HOME on Windows', () => {
                     spyOn(check_reqs, 'isWindows').and.returnValue(true);
                     process.env.LOCALAPPDATA = 'windows-local-app-data';
                     process.env.ProgramFiles = 'windows-program-files';
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toContain('windows-local-app-data');
-                    }).fail(function (err) {
-                        expect(err).toBeUndefined();
-                        console.log(err);
                     }).fin(function () {
                         delete process.env.LOCALAPPDATA;
                         delete process.env.ProgramFiles;
-                        done();
                     });
                 });
-                it('it should set ANDROID_HOME on Darwin', function (done) {
+                it('it should set ANDROID_HOME on Darwin', () => {
                     spyOn(check_reqs, 'isWindows').and.returnValue(false);
                     spyOn(check_reqs, 'isDarwin').and.returnValue(true);
                     process.env.HOME = 'home is where the heart is';
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toContain('home is where the heart is');
-                    }).fail(function (err) {
-                        expect(err).toBeUndefined();
-                        console.log(err);
                     }).fin(function () {
                         delete process.env.HOME;
-                        done();
                     });
                 });
             });
@@ -81,7 +73,7 @@ describe('check_reqs', function () {
                         return path;
                     });
                 });
-                it('should set ANDROID_HOME based on `android` command if command exists in a SDK-like directory structure', function (done) {
+                it('should set ANDROID_HOME based on `android` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
                     spyOn(shelljs, 'which').and.callFake(function (cmd) {
                         if (cmd === 'android') {
@@ -92,13 +84,9 @@ describe('check_reqs', function () {
                     });
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toEqual('/android/sdk');
-                        done();
-                    }).fail(function (err) {
-                        expect(err).toBeUndefined();
-                        console.log(err);
                     });
                 });
-                it('should error out if `android` command exists in a non-SDK-like directory structure', function (done) {
+                it('should error out if `android` command exists in a non-SDK-like directory structure', () => {
                     spyOn(shelljs, 'which').and.callFake(function (cmd) {
                         if (cmd === 'android') {
                             return '/just/some/random/path/android';
@@ -106,15 +94,14 @@ describe('check_reqs', function () {
                             return null;
                         }
                     });
-                    return check_reqs.check_android().then(function () {
-                        done.fail();
-                    }).fail(function (err) {
-                        expect(err).toBeDefined();
+                    return check_reqs.check_android().then(() => {
+                        fail('Expected promise to be rejected');
+                    }, err => {
+                        expect(err).toEqual(jasmine.any(Error));
                         expect(err.message).toContain('update your PATH to include valid path');
-                        done();
                     });
                 });
-                it('should set ANDROID_HOME based on `adb` command if command exists in a SDK-like directory structure', function (done) {
+                it('should set ANDROID_HOME based on `adb` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
                     spyOn(shelljs, 'which').and.callFake(function (cmd) {
                         if (cmd === 'adb') {
@@ -125,13 +112,9 @@ describe('check_reqs', function () {
                     });
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toEqual('/android/sdk');
-                        done();
-                    }).fail(function (err) {
-                        expect(err).toBeUndefined();
-                        console.log(err);
                     });
                 });
-                it('should error out if `adb` command exists in a non-SDK-like directory structure', function (done) {
+                it('should error out if `adb` command exists in a non-SDK-like directory structure', () => {
                     spyOn(shelljs, 'which').and.callFake(function (cmd) {
                         if (cmd === 'adb') {
                             return '/just/some/random/path/adb';
@@ -139,15 +122,14 @@ describe('check_reqs', function () {
                             return null;
                         }
                     });
-                    return check_reqs.check_android().then(function () {
-                        done.fail();
-                    }).fail(function (err) {
-                        expect(err).toBeDefined();
+                    return check_reqs.check_android().then(() => {
+                        fail('Expected promise to be rejected');
+                    }, err => {
+                        expect(err).toEqual(jasmine.any(Error));
                         expect(err.message).toContain('update your PATH to include valid path');
-                        done();
                     });
                 });
-                it('should set ANDROID_HOME based on `avdmanager` command if command exists in a SDK-like directory structure', function (done) {
+                it('should set ANDROID_HOME based on `avdmanager` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
                     spyOn(shelljs, 'which').and.callFake(function (cmd) {
                         if (cmd === 'avdmanager') {
@@ -158,13 +140,9 @@ describe('check_reqs', function () {
                     });
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toEqual('/android/sdk');
-                        done();
-                    }).fail(function (err) {
-                        expect(err).toBeUndefined();
-                        console.log(err);
                     });
                 });
-                it('should error out if `avdmanager` command exists in a non-SDK-like directory structure', function (done) {
+                it('should error out if `avdmanager` command exists in a non-SDK-like directory structure', () => {
                     spyOn(shelljs, 'which').and.callFake(function (cmd) {
                         if (cmd === 'avdmanager') {
                             return '/just/some/random/path/avdmanager';
@@ -172,12 +150,11 @@ describe('check_reqs', function () {
                             return null;
                         }
                     });
-                    return check_reqs.check_android().then(function () {
-                        done.fail();
-                    }).fail(function (err) {
-                        expect(err).toBeDefined();
+                    return check_reqs.check_android().then(() => {
+                        fail('Expected promise to be rejected');
+                    }, err => {
+                        expect(err).toEqual(jasmine.any(Error));
                         expect(err.message).toContain('update your PATH to include valid path');
-                        done();
                     });
                 });
             });
@@ -191,15 +168,11 @@ describe('check_reqs', function () {
             afterEach(function () {
                 delete process.env.ANDROID_HOME;
             });
-            it('should add tools/bin,tools,platform-tools to PATH if `avdmanager`,`android`,`adb` is not found', function (done) {
+            it('should add tools/bin,tools,platform-tools to PATH if `avdmanager`,`android`,`adb` is not found', () => {
                 return check_reqs.check_android().then(function () {
                     expect(process.env.PATH).toContain('let the children play' + path.sep + 'tools');
                     expect(process.env.PATH).toContain('let the children play' + path.sep + 'platform-tools');
                     expect(process.env.PATH).toContain('let the children play' + path.sep + 'tools' + path.sep + 'bin');
-                    done();
-                }).fail(function (err) {
-                    expect(err).toBeUndefined();
-                    console.log(err);
                 });
             });
         });
@@ -212,7 +185,7 @@ describe('check_reqs', function () {
         });
     });
     describe('check_android_target', function () {
-        it('should should return full list of supported targets if there is a match to ideal api level', function (done) {
+        it('should should return full list of supported targets if there is a match to ideal api level', () => {
             var deferred = Q.defer();
             spyOn(android_sdk, 'list_targets').and.returnValue(deferred.promise);
             var fake_targets = ['you are my fire', 'my one desire'];
@@ -221,19 +194,19 @@ describe('check_reqs', function () {
             return check_reqs.check_android_target().then(function (targets) {
                 expect(targets).toBeDefined();
                 expect(targets).toEqual(fake_targets);
-                done();
             });
         });
-        it('should error out if there is no match between ideal api level and installed targets', function (done) {
+        it('should error out if there is no match between ideal api level and installed targets', () => {
             var deferred = Q.defer();
             spyOn(android_sdk, 'list_targets').and.returnValue(deferred.promise);
             var fake_targets = ['you are my fire', 'my one desire'];
             deferred.resolve(fake_targets);
             spyOn(check_reqs, 'get_target').and.returnValue('and i knowwwwwwwwwwww');
-            return check_reqs.check_android_target().catch(function (err) {
-                expect(err).toBeDefined();
+            return check_reqs.check_android_target().then(() => {
+                fail('Expected promise to be rejected');
+            }, err => {
+                expect(err).toEqual(jasmine.any(Error));
                 expect(err.message).toContain('Please install Android target');
-                done();
             });
         });
     });
