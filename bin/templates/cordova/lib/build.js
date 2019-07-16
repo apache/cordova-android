@@ -98,8 +98,6 @@ function parseOpts (options, resolvedTarget, projectRoot) {
             ['alias', 'storePassword', 'password', 'keystoreType', 'packageType'].forEach(function (key) {
                 packageArgs[key] = packageArgs[key] || androidInfo[key];
             });
-
-            ret.packageType = packageArgs.packageType;
         }
     }
 
@@ -114,11 +112,13 @@ function parseOpts (options, resolvedTarget, projectRoot) {
         }
     }
 
-    if (ret.packageType) {
+    if (packageArgs.packageType) {
         const VALID_PACKAGE_TYPES = [PackageType.APK, PackageType.BUNDLE];
-        if (VALID_PACKAGE_TYPES.indexOf(ret.packageType) === -1) {
-            events.emit('warn', '"' + ret.packageType + '" is an invalid packageType. Valid values are: ' + VALID_PACKAGE_TYPES.join(', ') + '\nDefaulting packageType to ' + PackageType.APK);
+        if (VALID_PACKAGE_TYPES.indexOf(packageArgs.packageType) === -1) {
+            events.emit('warn', '"' + packageArgs.packageType + '" is an invalid packageType. Valid values are: ' + VALID_PACKAGE_TYPES.join(', ') + '\nDefaulting packageType to ' + PackageType.APK);
             ret.packageType = PackageType.APK;
+        } else {
+            ret.packageType = packageArgs.packageType;
         }
     } else {
         ret.packageType = PackageType.APK;
