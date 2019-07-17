@@ -107,7 +107,20 @@ function parseOpts (options, resolvedTarget, projectRoot) {
     }
 
     if (!ret.packageInfo) {
-        if (Object.keys(packageArgs).length > 0) {
+        // The following loop is to decide whether to print a warning about generating a signed archive
+        // We only want to produce a warning if they are using a config property that is related to signing, but
+        // missing the required properties for signing. We don't want to produce a warning if they are simply
+        // using a build property that isn't related to singing, such as --packageType
+        let shouldWarn = false;
+        const signingKeys = ['keystore', 'alias', 'storePassword', 'password', 'keystoreType'];
+        for (let key in packageArgs) {
+            if (signingKeys.indexOf(key) > -1) {
+                shouldWarn = true;
+                break;
+            }
+        }
+
+        if (shouldWarn) {
             events.emit('warn', '\'keystore\' and \'alias\' need to be specified to generate a signed archive.');
         }
     }
