@@ -213,6 +213,17 @@ describe('create', function () {
                     expect(err.message).toContain('Project already exists!');
                 }).done(done);
             });
+            it('should fail if validateProjectName rejects', () => {
+                const fakeError = new Error();
+                create.validateProjectName.and.callFake(() => Promise.reject(fakeError));
+
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
+                    fail('Expected promise to be rejected');
+                }, err => {
+                    expect(err).toBe(fakeError);
+                });
+
+            });
         });
         describe('happy path', function () {
             it('should copy project templates from a specified custom template', function (done) {
