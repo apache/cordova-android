@@ -201,14 +201,7 @@ describe('run', () => {
     describe('help', () => {
         it('should print out usage and help', () => {
             spyOn(console, 'log');
-
-            // Rewiring the process object in entirety does not work on NodeJS 12.
-            // Rewiring members of process however does work
-            // https://github.com/apache/cordova-android/issues/768
-            // https://github.com/jhnns/rewire/issues/167
-            run.__set__('process.exit', _ => null);
-            run.__set__('process.cwd', _ => '');
-            run.__set__('process.argv', ['', '']);
+            spyOn(process, 'exit');
 
             run.help();
             expect(console.log).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));
