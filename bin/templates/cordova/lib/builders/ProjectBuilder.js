@@ -384,7 +384,14 @@ function findOutputApksHelper (dir, build_type, arch) {
     return ret;
 }
 
+// This method was a copy of findOutputApksHelper and modified to look for bundles
+// While replacing shell with fs-extra, it might be a good idea to see if we can
+// generalise these findOutput methods.
 function findOutputBundlesHelper (dir, build_type) {
+    // This is an unused variable that was copied from findOutputApksHelper
+    // we are pretty sure it was meant to reset shell.config.silent back to
+    // the original value. However shell is planned to be replaced,
+    // it was left as is to avoid unintended consequences.
     const shellSilent = shell.config.silent;
     shell.config.silent = true;
 
