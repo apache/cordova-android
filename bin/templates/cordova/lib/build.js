@@ -114,13 +114,13 @@ function parseOpts (options, resolvedTarget, projectRoot) {
         let shouldWarn = false;
         const signingKeys = ['keystore', 'alias', 'storePassword', 'password', 'keystoreType'];
 
-        Object.keys(packageArgs).forEach((key) => {
+        for (let key in packageArgs) {
             if (!shouldWarn && signingKeys.indexOf(key) > -1) {
                 // If we enter this condition, we have a key used for signing a build,
                 // but we are missing some required signing properties
                 shouldWarn = true;
             }
-        });
+        }
 
         if (shouldWarn) {
             events.emit('warn', '\'keystore\' and \'alias\' need to be specified to generate a signed archive.');
