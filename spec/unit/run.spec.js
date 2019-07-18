@@ -196,6 +196,18 @@ describe('run', () => {
                 expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, { apkPaths: [], buildType: 'debug' });
             });
         });
+
+        it('should fail with the error message if --packageType=bundle setting is used', () => {
+            const deviceList = ['testDevice1', 'testDevice2'];
+            getInstallTargetSpy.and.returnValue(null);
+
+            deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
+
+            return run.run({ argv: ['--packageType=bundle'] }).then(
+                () => fail('Expected error to be thrown'),
+                err => expect(err).toContain('???') // XXX TBD ???
+            );
+        });
     });
 
     describe('help', () => {
