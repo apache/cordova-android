@@ -43,23 +43,25 @@ class ProjectBuilder {
     }
 
     getArgs (cmd, opts) {
-        var args;
+        let args;
         if (opts.packageType === PackageType.BUNDLE) {
+            let buildCmd;
             if (cmd === 'release') {
-                cmd = ':app:bundleRelease';
+                buildCmd = ':app:bundleRelease';
             } else if (cmd === 'debug') {
-                cmd = ':app:bundleDebug';
+                buildCmd = ':app:bundleDebug';
             }
 
-            args = [cmd, '-b', path.join(this.root, 'build.gradle')];
+            args = [buildCmd, '-b', path.join(this.root, 'build.gradle')];
         } else {
+            let buildCmd;
             if (cmd === 'release') {
-                cmd = 'cdvBuildRelease';
+                buildCmd = 'cdvBuildRelease';
             } else if (cmd === 'debug') {
-                cmd = 'cdvBuildDebug';
+                buildCmd = 'cdvBuildDebug';
             }
 
-            args = [cmd, '-b', path.join(this.root, 'build.gradle')];
+            args = [buildCmd, '-b', path.join(this.root, 'build.gradle')];
 
             if (opts.arch) {
                 args.push('-PcdvBuildArch=' + opts.arch);
@@ -383,16 +385,14 @@ function findOutputApksHelper (dir, build_type, arch) {
 }
 
 function findOutputBundlesHelper (dir, build_type) {
-    var shellSilent = shell.config.silent;
+    const shellSilent = shell.config.silent;
     shell.config.silent = true;
 
     // list directory recursively
-    var ret = shell.ls('-R', dir).map(function (file) {
-        // ls does not include base directory
-        return path.join(dir, file);
+    const ret = shell.ls('-R', dir).map(function (file) {
+        return path.join(dir, file); // ls does not include base directory
     }).filter(function (file) {
-        // find all bundles
-        return file.match(/\.aab?$/i);
+        return file.match(/\.aab?$/i); // find all bundles
     }).filter(function (candidate) {
         // Need to choose between release and debug bundle.
         if (build_type === 'debug') {
