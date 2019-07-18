@@ -276,7 +276,7 @@ describe('ProjectBuilder', () => {
             };
 
             const expectedResult = ['app-release.apk', 'app-debug.apk', 'app-release-unsigned.apk',
-                'app-release-arm.apk', 'app-debug-arm.apk', 'app-release-x86.apk', 'app-debug-x86.apk'];
+                'app-release-arm.apk', 'app-release-x86.apk', 'app-debug-x86.apk', 'app-debug-arm.apk'];
 
             const fsSpy = jasmine.createSpyObj('fs', ['statSync']);
             fsSpy.statSync.and.callFake(filename => {

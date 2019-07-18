@@ -4,6 +4,9 @@
       "unit/**/*[sS]pec.js",
       "e2e/**/*[sS]pec.js"
   ],
+  "helpers": [
+      "helper.js"
+  ],
   "stopSpecOnExpectationFailure": false,
   "random": false
 }

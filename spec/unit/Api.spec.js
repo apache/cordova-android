@@ -32,7 +32,7 @@ var FIXTURES = path.join(__dirname, '../e2e/fixtures');
 var FAKE_PROJECT_DIR = path.join(os.tmpdir(), 'plugin-test-project');
 
 describe('addPlugin method', function () {
-    var api, Api, fail, gradleBuilder;
+    var api, Api, gradleBuilder;
 
     beforeEach(function () {
         Api = rewire('../../bin/templates/cordova/Api');
@@ -51,24 +51,21 @@ describe('addPlugin method', function () {
 
         api = new Api('android', FAKE_PROJECT_DIR);
 
-        fail = jasmine.createSpy('fail');
         gradleBuilder = jasmine.createSpyObj('gradleBuilder', ['prepBuildFiles']);
         spyOn(builders, 'getBuilder').and.returnValue(gradleBuilder);
     });
 
-    it('Test#001 : should call gradleBuilder.prepBuildFiles for every plugin with frameworks', function (done) {
-        api.addPlugin(new PluginInfo(path.join(FIXTURES, 'cordova-plugin-fake'))).catch(fail).fin(function () {
-            expect(fail).not.toHaveBeenCalled();
+    const getPluginFixture = name => new PluginInfo(path.join(FIXTURES, name));
+
+    it('Test#001 : should call gradleBuilder.prepBuildFiles for every plugin with frameworks', () => {
+        return api.addPlugin(getPluginFixture('cordova-plugin-fake')).then(() => {
             expect(gradleBuilder.prepBuildFiles).toHaveBeenCalled();
-            done();
         });
     });
 
-    it('Test#002 : shouldn\'t trigger gradleBuilder.prepBuildFiles for plugins without android frameworks', function (done) {
-        api.addPlugin(new PluginInfo(path.join(FIXTURES, 'cordova-plugin-fake-ios-frameworks'))).catch(fail).fin(function () {
-            expect(fail).not.toHaveBeenCalled();
+    it('Test#002 : shouldn\'t trigger gradleBuilder.prepBuildFiles for plugins without android frameworks', () => {
+        return api.addPlugin(getPluginFixture('cordova-plugin-fake-ios-frameworks')).then(() => {
             expect(gradleBuilder.prepBuildFiles).not.toHaveBeenCalled();
-            done();
         });
     });
 });
