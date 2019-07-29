@@ -205,7 +205,7 @@ describe('run', () => {
 
             return run.run({ argv: ['--packageType=bundle'] }).then(
                 () => fail('Expected error to be thrown'),
-                err => expect(err).toContain('???') // XXX TBD ???
+                err => expect(err).toContain('Package type "bundle" is not supported during cordova run.')
             );
         });
     });

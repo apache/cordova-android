@@ -108,8 +108,9 @@ module.exports.run = function (runOptions) {
 
             // Android app bundles cannot be deployed directly to the device
             if (buildOptions.packageType === PackageType.BUNDLE) {
-                events.emit('error', 'Package type "bundle" is not supported during cordova run.');
-                throw '---'; // XXX TBD ???
+                const packageTypeErrorMessage = 'Package type "bundle" is not supported during cordova run.';
+                events.emit('error', packageTypeErrorMessage);
+                throw packageTypeErrorMessage;
             }
 
             resolve(builder.fetchBuildResults(buildOptions.buildType, buildOptions.arch));
