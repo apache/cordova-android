@@ -27,6 +27,7 @@ var spawn = require('cordova-common').superspawn.spawn;
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 var check_reqs = require('../check_reqs');
+var PackageType = require('../PackageType');
 const compareFunc = require('compare-func');
 
 const MARKER = 'YOUR CHANGES WILL BE ERASED!';
@@ -38,23 +39,37 @@ const TEMPLATE =
 class ProjectBuilder {
     constructor (rootDirectory) {
         this.root = rootDirectory || path.resolve(__dirname, '../../..');
-        this.binDir = path.join(this.root, 'app', 'build', 'outputs', 'apk');
+        this.apkDir = path.join(this.root, 'app', 'build', 'outputs', 'apk');
+        this.aabDir = path.join(this.root, 'app', 'build', 'outputs', 'bundle');
     }
 
     getArgs (cmd, opts) {
-        if (cmd === 'release') {
-            cmd = 'cdvBuildRelease';
-        } else if (cmd === 'debug') {
-            cmd = 'cdvBuildDebug';
+        let args;
+        if (opts.packageType === PackageType.BUNDLE) {
+            let buildCmd;
+            if (cmd === 'release') {
+                buildCmd = ':app:bundleRelease';
+            } else if (cmd === 'debug') {
+                buildCmd = ':app:bundleDebug';
+            }
+
+            args = [buildCmd, '-b', path.join(this.root, 'build.gradle')];
+        } else {
+            let buildCmd;
+            if (cmd === 'release') {
+                buildCmd = 'cdvBuildRelease';
+            } else if (cmd === 'debug') {
+                buildCmd = 'cdvBuildDebug';
+            }
+
+            args = [buildCmd, '-b', path.join(this.root, 'build.gradle')];
+
+            if (opts.arch) {
+                args.push('-PcdvBuildArch=' + opts.arch);
+            }
+
+            args.push.apply(args, opts.extraArgs);
         }
-
-        let args = [cmd, '-b', path.join(this.root, 'build.gradle')];
-
-        if (opts.arch) {
-            args.push('-PcdvBuildArch=' + opts.arch);
-        }
-
-        args.push.apply(args, opts.extraArgs);
 
         return args;
     }
@@ -288,7 +303,11 @@ class ProjectBuilder {
     }
 
     findOutputApks (build_type, arch) {
-        return findOutputApksHelper(this.binDir, build_type, arch).sort(apkSorter);
+        return findOutputApksHelper(this.apkDir, build_type, arch).sort(apkSorter);
+    }
+
+    findOutputBundles (build_type) {
+        return findOutputBundlesHelper(this.aabDir, build_type);
     }
 
     fetchBuildResults (build_type, arch) {
@@ -355,6 +374,36 @@ function findOutputApksHelper (dir, build_type, arch) {
             return path.basename(p).indexOf('-' + arch) !== -1;
         });
     }
+
+    return ret;
+}
+
+// This method was a copy of findOutputApksHelper and modified to look for bundles
+// While replacing shell with fs-extra, it might be a good idea to see if we can
+// generalise these findOutput methods.
+function findOutputBundlesHelper (dir, build_type) {
+    // This is an unused variable that was copied from findOutputApksHelper
+    // we are pretty sure it was meant to reset shell.config.silent back to
+    // the original value. However shell is planned to be replaced,
+    // it was left as is to avoid unintended consequences.
+    const shellSilent = shell.config.silent;
+    shell.config.silent = true;
+
+    // list directory recursively
+    const ret = shell.ls('-R', dir).map(function (file) {
+        return path.join(dir, file); // ls does not include base directory
+    }).filter(function (file) {
+        return file.match(/\.aab?$/i); // find all bundles
+    }).filter(function (candidate) {
+        // Need to choose between release and debug bundle.
+        if (build_type === 'debug') {
+            return /debug/.exec(candidate);
+        }
+        if (build_type === 'release') {
+            return /release/.exec(candidate);
+        }
+        return true;
+    });
 
     return ret;
 }

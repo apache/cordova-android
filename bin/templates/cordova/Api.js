@@ -302,12 +302,12 @@ Api.prototype.build = function (buildOptions) {
         return require('./lib/build').run.call(self, buildOptions);
     }).then(function (buildResults) {
         // Cast build result to array of build artifacts
-        return buildResults.apkPaths.map(function (apkPath) {
+        return buildResults.paths.map(function (apkPath) {
             return {
                 buildType: buildResults.buildType,
                 buildMethod: buildResults.buildMethod,
                 path: apkPath,
-                type: 'apk'
+                type: path.extname(apkPath).replace(/\./g, '')
             };
         });
     });
