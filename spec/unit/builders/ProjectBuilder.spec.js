@@ -100,6 +100,20 @@ describe('ProjectBuilder', () => {
 
             expect(args).toContain(`-PcdvBuildArch=${arch}`);
         });
+
+        it('should clean apk', () => {
+            const args = builder.getArgs('clean', {
+                packageType: 'apk'
+            });
+            expect(args[0]).toBe('clean');
+        });
+
+        it('should clean bundle', () => {
+            const args = builder.getArgs('clean', {
+                packageType: 'bundle'
+            });
+            expect(args[0]).toBe('clean');
+        });
     });
 
     describe('runGradleWrapper', () => {
