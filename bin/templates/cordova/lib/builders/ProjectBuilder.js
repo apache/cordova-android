@@ -51,6 +51,8 @@ class ProjectBuilder {
                 buildCmd = ':app:bundleRelease';
             } else if (cmd === 'debug') {
                 buildCmd = ':app:bundleDebug';
+            } else {
+                buildCmd = cmd;
             }
 
             args = [buildCmd, '-b', path.join(this.root, 'build.gradle')];
@@ -60,6 +62,8 @@ class ProjectBuilder {
                 buildCmd = 'cdvBuildRelease';
             } else if (cmd === 'debug') {
                 buildCmd = 'cdvBuildDebug';
+            } else {
+                buildCmd = cmd;
             }
 
             args = [buildCmd, '-b', path.join(this.root, 'build.gradle')];
