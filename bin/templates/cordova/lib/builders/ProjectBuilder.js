@@ -45,8 +45,8 @@ class ProjectBuilder {
 
     getArgs (cmd, opts) {
         let args;
+        let buildCmd = cmd;
         if (opts.packageType === PackageType.BUNDLE) {
-            let buildCmd;
             if (cmd === 'release') {
                 buildCmd = ':app:bundleRelease';
             } else if (cmd === 'debug') {
@@ -55,7 +55,6 @@ class ProjectBuilder {
 
             args = [buildCmd, '-b', path.join(this.root, 'build.gradle')];
         } else {
-            let buildCmd;
             if (cmd === 'release') {
                 buildCmd = 'cdvBuildRelease';
             } else if (cmd === 'debug') {
