@@ -1,4 +1,3 @@
-
 /*
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
@@ -20,21 +19,10 @@
 
 const fs = require('fs');
 
-const cleanFiles = [
-    './test/gradlew',
-    './test/gradlew.bat'
-];
+if (fs.existsSync('./test/gradlew')) {
+    fs.unlinkSync('./test/gradlew');
+}
 
-exports.clean = () => {
-    for (let i = 0; i < cleanFiles.length; i++) {
-        try {
-            let file = cleanFiles[i];
-            if (fs.existsSync(file)) {
-                fs.unlinkSync(file);
-            }
-        } catch (ex) {
-            return Promise.reject(ex);
-        }
-    }
-    return Promise.resolve();
-};
+if (fs.existsSync('./test/gradlew.bat')) {
+    fs.unlinkSync('./test/gradlew.bat');
+}
