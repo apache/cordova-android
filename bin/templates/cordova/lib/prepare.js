@@ -17,9 +17,8 @@
     under the License.
 */
 
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
-var shell = require('shelljs');
 var events = require('cordova-common').events;
 var AndroidManifest = require('./AndroidManifest');
 var checkReqs = require('./check_reqs');
@@ -30,6 +29,7 @@ var FileUpdater = require('cordova-common').FileUpdater;
 var PlatformJson = require('cordova-common').PlatformJson;
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
+let utils = require('./utils');
 
 const GradlePropertiesParser = require('./config/GradlePropertiesParser');
 
@@ -120,7 +120,7 @@ function updateConfigFilesFrom (sourceConfig, configMunger, locations) {
 
     // First cleanup current config and merge project's one into own
     // Overwrite platform config.xml with defaults.xml.
-    shell.cp('-f', locations.defaultConfigXml, locations.configXml);
+    fs.copySync(locations.defaultConfigXml, locations.configXml);
 
     // Then apply config changes from global munge to all config files
     // in project (including project's config)
@@ -222,9 +222,10 @@ function updateProjectAccordingTo (platformConfig, locations) {
         .write();
 
     // Java file paths shouldn't be hard coded
-    var javaPattern = path.join(locations.javaSrc, manifestId.replace(/\./g, '/'), '*.java');
-    var java_files = shell.ls(javaPattern).filter(function (f) {
-        return shell.grep(/extends\s+CordovaActivity/g, f);
+    let javaDirectory = path.join(locations.javaSrc, manifestId.replace(/\./g, '/'));
+    let javaPattern = /\.java$/;
+    let java_files = utils.scanDirectory(javaDirectory, javaPattern, true).filter(function (f) {
+        return utils.grep(f, /extends\s+CordovaActivity/g) !== null;
     });
 
     if (java_files.length === 0) {
@@ -233,9 +234,15 @@ function updateProjectAccordingTo (platformConfig, locations) {
         events.emit('log', 'Multiple candidate Java files that extend CordovaActivity found. Guessing at the first one, ' + java_files[0]);
     }
 
-    var destFile = path.join(locations.root, 'app', 'src', 'main', 'java', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
-    shell.mkdir('-p', path.dirname(destFile));
-    shell.sed(/package [\w.]*;/, 'package ' + androidPkgName + ';', java_files[0]).to(destFile);
+    let destFile = java_files[0];
+
+    // var destFile = path.join(locations.root, 'app', 'src', 'main', 'java', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
+    // fs.ensureDirSync(path.dirname(destFile));
+    // events.emit('verbose', java_files[0]);
+    // events.emit('verbose', destFile);
+    // console.log(locations);
+    // fs.copySync(java_files[0], destFile);
+    utils.replaceFileContents(destFile, /package [\w\.]*;/, 'package ' + androidPkgName + ';');
     events.emit('verbose', 'Wrote out Android package name "' + androidPkgName + '" to ' + destFile);
 
     var removeOrigPkg = checkReqs.isWindows() || checkReqs.isDarwin() ?
@@ -244,7 +251,7 @@ function updateProjectAccordingTo (platformConfig, locations) {
 
     if (removeOrigPkg) {
         // If package was name changed we need to remove old java with main activity
-        shell.rm('-Rf', java_files[0]);
+        fs.removeSync(java_files[0]);
         // remove any empty directories
         var currentDir = path.dirname(java_files[0]);
         var sourcesRoot = path.resolve(locations.root, 'src');
@@ -637,9 +644,10 @@ function cleanIcons (projectRoot, projectConfig, platformResourcesDir) {
  * Gets a map containing resources of a specified name from all drawable folders in a directory.
  */
 function mapImageResources (rootDir, subDir, type, resourceName) {
-    var pathMap = {};
-    shell.ls(path.join(rootDir, subDir, type + '-*')).forEach(function (drawableFolder) {
-        var imagePath = path.join(subDir, path.basename(drawableFolder), resourceName);
+    let pathMap = {};
+    let pattern = new RegExp(type + '+-.+');
+    utils.scanDirectory(path.join(rootDir, subDir), pattern).forEach(function (drawableFolder) {
+        let imagePath = path.join(subDir, path.basename(drawableFolder), resourceName);
         pathMap[imagePath] = null;
     });
     return pathMap;

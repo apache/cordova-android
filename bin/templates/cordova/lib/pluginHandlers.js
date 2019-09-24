@@ -14,9 +14,8 @@
  *
 */
 
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
-var shell = require('shelljs');
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 
@@ -42,7 +41,7 @@ var handlers = {
                 deleteJava(project.projectDir, dest);
             } else {
                 // Just remove the file, not the whole parent directory
-                removeFile(project.projectDir, dest);
+                removeFile(path.resolve(project.projectDir, dest));
             }
         }
     },
@@ -53,7 +52,7 @@ var handlers = {
         },
         uninstall: function (obj, plugin, project, options) {
             var dest = path.join('app/libs', path.basename(obj.src));
-            removeFile(project.projectDir, dest);
+            removeFile(path.resolve(project.projectDir, dest));
         }
     },
     'resource-file': {
@@ -63,7 +62,7 @@ var handlers = {
         },
         uninstall: function (obj, plugin, project, options) {
             var dest = path.join('app', 'src', 'main', obj.target);
-            removeFile(project.projectDir, dest);
+            removeFile(path.resolve(project.projectDir, dest));
         }
     },
     'framework': {
@@ -102,7 +101,7 @@ var handlers = {
 
             if (obj.custom) {
                 var subRelativeDir = project.getCustomSubprojectRelativeDir(plugin.id, src);
-                removeFile(project.projectDir, subRelativeDir);
+                removeFile(path.resolve(project.projectDir, subRelativeDir));
                 subDir = path.resolve(project.projectDir, subRelativeDir);
                 // If it's the last framework in the plugin, remove the parent directory.
                 var parDir = path.dirname(subDir);
@@ -143,12 +142,12 @@ var handlers = {
 
             if (!target) throw new CordovaError(generateAttributeError('target', 'asset', plugin.id));
 
-            removeFileF(path.resolve(project.www, target));
-            removeFileF(path.resolve(project.www, 'plugins', plugin.id));
+            removeFile(path.resolve(project.www, target));
+            removeFile(path.resolve(project.www, 'plugins', plugin.id));
             if (options && options.usePlatformWww) {
                 // CB-11022 remove file from both directories if usePlatformWww is specified
-                removeFileF(path.resolve(project.platformWww, target));
-                removeFileF(path.resolve(project.platformWww, 'plugins', plugin.id));
+                removeFile(path.resolve(project.platformWww, target));
+                removeFile(path.resolve(project.platformWww, 'plugins', plugin.id));
             }
         }
     },
@@ -166,13 +165,13 @@ var handlers = {
             scriptContent = 'cordova.define("' + moduleName + '", function(require, exports, module) {\n' + scriptContent + '\n});\n';
 
             var wwwDest = path.resolve(project.www, 'plugins', plugin.id, obj.src);
-            shell.mkdir('-p', path.dirname(wwwDest));
+            fs.ensureDirSync(path.dirname(wwwDest));
             fs.writeFileSync(wwwDest, scriptContent, 'utf-8');
 
             if (options && options.usePlatformWww) {
                 // CB-11022 copy file to both directories if usePlatformWww is specified
                 var platformWwwDest = path.resolve(project.platformWww, 'plugins', plugin.id, obj.src);
-                shell.mkdir('-p', path.dirname(platformWwwDest));
+                fs.ensureDirSync(path.dirname(platformWwwDest));
                 fs.writeFileSync(platformWwwDest, scriptContent, 'utf-8');
             }
         },
@@ -217,14 +216,13 @@ function copyFile (plugin_dir, src, project_dir, dest, link) {
     // check that dest path is located in project directory
     if (dest.indexOf(project_dir) !== 0) { throw new CordovaError('Destination "' + dest + '" for source file "' + src + '" is located outside the project'); }
 
-    shell.mkdir('-p', path.dirname(dest));
+    fs.ensureDirSync(path.dirname(dest));
     if (link) {
         symlinkFileOrDirTree(src, dest);
-    } else if (fs.statSync(src).isDirectory()) {
-        // XXX shelljs decides to create a directory when -R|-r is used which sucks. http://goo.gl/nbsjq
-        shell.cp('-Rf', src + '/*', dest);
+    // } else if (fs.statSync(src).isDirectory()) {
+        // fs.copySync(src, dest);
     } else {
-        shell.cp('-f', src, dest);
+        fs.copySync(src, dest);
     }
 }
 
@@ -238,11 +236,11 @@ function copyNewFile (plugin_dir, src, project_dir, dest, link) {
 
 function symlinkFileOrDirTree (src, dest) {
     if (fs.existsSync(dest)) {
-        shell.rm('-Rf', dest);
+        fs.removeSync(dest);
     }
 
     if (fs.statSync(src).isDirectory()) {
-        shell.mkdir('-p', dest);
+        fs.ensureDirSync(path.dirname(dest));
         fs.readdirSync(src).forEach(function (entry) {
             symlinkFileOrDirTree(path.join(src, entry), path.join(dest, entry));
         });
@@ -251,15 +249,8 @@ function symlinkFileOrDirTree (src, dest) {
     }
 }
 
-// checks if file exists and then deletes. Error if doesn't exist
-function removeFile (project_dir, src) {
-    var file = path.resolve(project_dir, src);
-    shell.rm('-Rf', file);
-}
-
-// deletes file/directory without checking
-function removeFileF (file) {
-    shell.rm('-Rf', file);
+function removeFile (file) {
+    fs.removeSync(file);
 }
 
 // Sometimes we want to remove some java, and prune any unnecessary empty directories
@@ -272,7 +263,7 @@ function removeFileAndParents (baseDir, destFile, stopper) {
     var file = path.resolve(baseDir, destFile);
     if (!fs.existsSync(file)) return;
 
-    removeFileF(file);
+    removeFile(file);
 
     // check if directory is empty
     var curDir = path.dirname(file);
