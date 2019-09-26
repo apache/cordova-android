@@ -51,7 +51,7 @@ describe('check_reqs', function () {
                     process.env.ProgramFiles = 'windows-program-files';
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toContain('windows-local-app-data');
-                    }).fin(function () {
+                    }).finally(function () {
                         delete process.env.LOCALAPPDATA;
                         delete process.env.ProgramFiles;
                     });
@@ -62,7 +62,7 @@ describe('check_reqs', function () {
                     process.env.HOME = 'home is where the heart is';
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toContain('home is where the heart is');
-                    }).fin(function () {
+                    }).finally(function () {
                         delete process.env.HOME;
                     });
                 });

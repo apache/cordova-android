@@ -19,12 +19,11 @@
        under the License.
 */
 
-var Q = require('q');
 var path = require('path');
 var execa = require('execa');
 var ProjectBuilder = require('../bin/templates/cordova/lib/builders/ProjectBuilder');
 
-Q.resolve()
+Promise.resolve()
     .then(_ => console.log('Preparing Gradle wrapper for Java unit tests.'))
     .then(_ => new ProjectBuilder(__dirname).runGradleWrapper('gradle'))
     .then(_ => gradlew('--version'))

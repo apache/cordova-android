@@ -19,7 +19,6 @@
        under the License.
 */
 
-var Q = require('q');
 var path = require('path');
 var fs = require('fs');
 var nopt = require('nopt');
@@ -218,13 +217,13 @@ module.exports.detectArchitecture = function (target) {
                     events.emit('warn', 'adb timed out a second time while detecting device/emulator architecture. Killing adb and trying again.');
                     return execa('killall', ['adb']).then(function () {
                         return helper().then(null, function () {
-                            return Q.reject(new CordovaError('adb timed out a third time while detecting device/emulator architecture. Try unplugging & replugging the device.'));
+                            return Promise.reject(new CordovaError('adb timed out a third time while detecting device/emulator architecture. Try unplugging & replugging the device.'));
                         });
                     });
                 });
             }, function () {
                 // For non-killall OS's.
-                return Q.reject(err);
+                return Promise.reject(err);
             });
         }
         throw err;

@@ -21,7 +21,6 @@
 
 const execa = require('execa');
 var shelljs = require('shelljs');
-var Q = require('q');
 var path = require('path');
 var fs = require('fs');
 var os = require('os');
@@ -125,26 +124,25 @@ module.exports.get_gradle_wrapper = function () {
 // Returns a promise. Called only by build and clean commands.
 module.exports.check_gradle = function () {
     var sdkDir = process.env['ANDROID_HOME'];
-    var d = Q.defer();
     if (!sdkDir) {
-        return Q.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.\n' +
+        return Promise.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.\n' +
             'Might need to install Android SDK or set up \'ANDROID_HOME\' env variable.'));
     }
 
     var gradlePath = module.exports.get_gradle_wrapper();
-    if (gradlePath.length !== 0) { d.resolve(gradlePath); } else {
-        d.reject(new CordovaError('Could not find an installed version of Gradle either in Android Studio,\n' +
-                                'or on your system to install the gradle wrapper. Please include gradle \n' +
-                                'in your path, or install Android Studio'));
-    }
-    return d.promise;
+
+    if (gradlePath.length !== 0) return Promise.resolve(gradlePath);
+
+    return Promise.reject(new CordovaError('Could not find an installed version of Gradle either in Android Studio,\n' +
+                            'or on your system to install the gradle wrapper. Please include gradle \n' +
+                            'in your path, or install Android Studio'));
 };
 
 // Returns a promise.
 module.exports.check_java = function () {
     var javacPath = forgivingWhichSync('javac');
     var hasJavaHome = !!process.env['JAVA_HOME'];
-    return Q().then(function () {
+    return Promise.resolve().then(function () {
         if (hasJavaHome) {
             // Windows java installer doesn't add javac to PATH, nor set JAVA_HOME (ugh).
             if (!javacPath) {
@@ -214,7 +212,7 @@ module.exports.check_java = function () {
 
 // Returns a promise.
 module.exports.check_android = function () {
-    return Q().then(function () {
+    return Promise.resolve().then(function () {
         var androidCmdPath = forgivingWhichSync('android');
         var adbInPath = forgivingWhichSync('adb');
         var avdmanagerInPath = forgivingWhichSync('avdmanager');
@@ -359,7 +357,7 @@ module.exports.check_android_target = function (originalError) {
 
 // Returns a promise.
 module.exports.run = function () {
-    return Q.all([this.check_java(), this.check_android()]).then(function (values) {
+    return Promise.all([this.check_java(), this.check_android()]).then(function (values) {
         console.log('Checking Java JDK and Android SDK versions');
         console.log('ANDROID_SDK_ROOT=' + process.env['ANDROID_SDK_ROOT'] + ' (recommended setting)');
         console.log('ANDROID_HOME=' + process.env['ANDROID_HOME'] + ' (DEPRECATED)');
@@ -426,7 +424,7 @@ module.exports.check_all = function () {
         }, function (err) {
             requirement.metadata.reason = err instanceof Error ? err.message : err;
         });
-    }, Q()).then(function () {
+    }, Promise.resolve()).then(function () {
         // When chain is completed, return requirements array to upstream API
         return requirements;
     });

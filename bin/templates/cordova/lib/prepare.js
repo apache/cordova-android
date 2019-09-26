@@ -17,7 +17,6 @@
     under the License.
 */
 
-var Q = require('q');
 var fs = require('fs');
 var path = require('path');
 var shell = require('shelljs');
@@ -56,7 +55,9 @@ module.exports.prepare = function (cordovaProject, options) {
     gradlePropertiesParser.configure(gradlePropertiesUserConfig);
 
     // Update own www dir with project's www assets and plugins' assets and js-files
-    return Q.when(updateWww(cordovaProject, this.locations)).then(function () {
+    return new Promise(() => {
+        updateWww(cordovaProject, this.locations);
+    }).then(function () {
         // update project according to config.xml changes.
         return updateProjectAccordingTo(self._config, self.locations);
     }).then(function () {
@@ -76,13 +77,13 @@ module.exports.clean = function (options) {
     var projectRoot = path.resolve(this.root, '../..');
     if ((options && options.noPrepare) || !fs.existsSync(this.locations.configXml) ||
             !fs.existsSync(this.locations.configXml)) {
-        return Q();
+        return Promise.resolve();
     }
 
     var projectConfig = new ConfigParser(this.locations.configXml);
 
     var self = this;
-    return Q().then(function () {
+    return Promise.resolve().then(function () {
         cleanWww(projectRoot, self.locations);
         cleanIcons(projectRoot, projectConfig, path.relative(projectRoot, self.locations.res));
         cleanSplashes(projectRoot, projectConfig, path.relative(projectRoot, self.locations.res));

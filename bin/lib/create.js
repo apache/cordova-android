@@ -20,7 +20,6 @@
 */
 
 var shell = require('shelljs');
-var Q = require('q');
 var path = require('path');
 var fs = require('fs');
 var check_reqs = require('./../templates/cordova/lib/check_reqs');
@@ -197,15 +196,15 @@ function validatePackageName (package_name) {
     var msg = 'Error validating package name. ';
 
     if (!/^[a-zA-Z][a-zA-Z0-9_]+(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(package_name)) {
-        return Q.reject(new CordovaError(msg + 'Must look like: `com.company.Name`. Currently is: `' + package_name + '`'));
+        return Promise.reject(new CordovaError(msg + 'Must look like: `com.company.Name`. Currently is: `' + package_name + '`'));
     }
 
     // Class is a reserved word
     if (/\b[Cc]lass\b/.test(package_name)) {
-        return Q.reject(new CordovaError(msg + '"class" is a reserved word'));
+        return Promise.reject(new CordovaError(msg + '"class" is a reserved word'));
     }
 
-    return Q.resolve();
+    return Promise.resolve();
 }
 
 /**
@@ -217,20 +216,20 @@ function validateProjectName (project_name) {
     var msg = 'Error validating project name. ';
     // Make sure there's something there
     if (project_name === '') {
-        return Q.reject(new CordovaError(msg + 'Project name cannot be empty'));
+        return Promise.reject(new CordovaError(msg + 'Project name cannot be empty'));
     }
 
     // Enforce stupid name error
     if (project_name === 'CordovaActivity') {
-        return Q.reject(new CordovaError(msg + 'Project name cannot be CordovaActivity'));
+        return Promise.reject(new CordovaError(msg + 'Project name cannot be CordovaActivity'));
     }
 
     // Classes in Java don't begin with numbers
     if (/^[0-9]/.test(project_name)) {
-        return Q.reject(new CordovaError(msg + 'Project name must not begin with a number'));
+        return Promise.reject(new CordovaError(msg + 'Project name must not begin with a number'));
     }
 
-    return Q.resolve();
+    return Promise.resolve();
 }
 
 /**
@@ -259,7 +258,7 @@ exports.create = function (project_path, config, options, events) {
     project_path = path.relative(process.cwd(), (project_path || 'CordovaExample'));
     // Check if project already exists
     if (fs.existsSync(project_path)) {
-        return Q.reject(new CordovaError('Project already exists! Delete and recreate'));
+        return Promise.reject(new CordovaError('Project already exists! Delete and recreate'));
     }
 
     var package_name = config.android_packageName() || config.packageName() || 'my.cordova.project';
@@ -333,7 +332,7 @@ exports.create = function (project_path, config, options, events) {
             exports.writeProjectProperties(project_path, target_api);
             exports.prepBuildFiles(project_path);
             events.emit('log', generateDoneMessage('create', options.link));
-        }).thenResolve(project_path);
+        }).then(() => Promise.resolve(project_path));
 };
 
 function generateDoneMessage (type, link) {
@@ -358,5 +357,5 @@ exports.update = function (projectPath, options, events) {
         '\tcordova platform add android\n'
         ;
 
-    return Q.reject(errorString);
+    return Promise.reject(errorString);
 };
