@@ -19,6 +19,7 @@
        under the License.
 */
 
+const execa = require('execa');
 var shelljs = require('shelljs');
 var child_process = require('child_process');
 var Q = require('q');
@@ -28,7 +29,6 @@ var os = require('os');
 var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
 var PROJECT_ROOT = path.join(__dirname, '..', '..');
 var CordovaError = require('cordova-common').CordovaError;
-var superspawn = require('cordova-common').superspawn;
 var android_sdk = require('./android_sdk');
 
 function forgivingWhichSync (cmd) {
@@ -71,7 +71,7 @@ module.exports.get_target = function () {
 
 // Returns a promise. Called only by build and clean commands.
 module.exports.check_ant = function () {
-    return superspawn.spawn('ant', ['-version']).then(function (output) {
+    return execa('ant', ['-version']).then(({ stdout: output }) => {
         // Parse Ant version from command output
         return /version ((?:\d+\.)+(?:\d+))/i.exec(output)[1];
     }).catch(function (err) {
@@ -157,8 +157,8 @@ module.exports.check_java = function () {
                 var find_java = '/usr/libexec/java_home';
                 var default_java_error_msg = 'Failed to find \'JAVA_HOME\' environment variable. Try setting it manually.';
                 if (fs.existsSync(find_java)) {
-                    return superspawn.spawn(find_java).then(function (stdout) {
-                        process.env['JAVA_HOME'] = stdout.trim();
+                    return execa(find_java).then(({ stdout }) => {
+                        process.env['JAVA_HOME'] = stdout;
                     }).catch(function (err) {
                         if (err) {
                             throw new CordovaError(default_java_error_msg);
