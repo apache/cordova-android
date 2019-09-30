@@ -24,7 +24,6 @@ const shelljs = require('shelljs');
 
 const CordovaError = require('cordova-common').CordovaError;
 const check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
-const superspawn = require('cordova-common').superspawn;
 
 describe('emulator', () => {
     const EMULATOR_LIST = ['emulator-5555', 'emulator-5556', 'emulator-5557'];
@@ -37,7 +36,9 @@ describe('emulator', () => {
     describe('list_images_using_avdmanager', () => {
         it('should properly parse details of SDK Tools 25.3.1 `avdmanager` output', () => {
             const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.3-avdmanager_list_avd.txt'), 'utf-8');
-            spyOn(superspawn, 'spawn').and.returnValue(Promise.resolve(avdList));
+
+            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
+            emu.__set__('execa', execaSpy);
 
             return emu.list_images_using_avdmanager().then(list => {
                 expect(list).toBeDefined();
@@ -51,14 +52,18 @@ describe('emulator', () => {
 
     describe('list_images_using_android', () => {
         it('should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions', () => {
-            spyOn(superspawn, 'spawn').and.returnValue(new Promise(() => {}, () => {}));
+            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: '' }));
+            emu.__set__('execa', execaSpy);
+
             emu.list_images_using_android();
-            expect(superspawn.spawn).toHaveBeenCalledWith('android', ['list', 'avd']);
+            expect(execaSpy).toHaveBeenCalledWith('android', ['list', 'avd']);
         });
 
         it('should properly parse details of SDK Tools pre-25.3.1 `android list avd` output', () => {
             const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.2-android_list_avd.txt'), 'utf-8');
-            spyOn(superspawn, 'spawn').and.returnValue(Promise.resolve(avdList));
+
+            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
+            emu.__set__('execa', execaSpy);
 
             return emu.list_images_using_android().then(list => {
                 expect(list).toBeDefined();

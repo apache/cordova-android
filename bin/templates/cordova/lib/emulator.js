@@ -19,6 +19,7 @@
        under the License.
 */
 
+const execa = require('execa');
 var android_versions = require('android-versions');
 var retry = require('./retry');
 var build = require('./build');
@@ -26,7 +27,6 @@ var path = require('path');
 var Adb = require('./Adb');
 var AndroidManifest = require('./AndroidManifest');
 var events = require('cordova-common').events;
-var superspawn = require('cordova-common').superspawn;
 var CordovaError = require('cordova-common').CordovaError;
 var shelljs = require('shelljs');
 var android_sdk = require('./android_sdk');
@@ -53,7 +53,7 @@ function forgivingWhichSync (cmd) {
 }
 
 module.exports.list_images_using_avdmanager = function () {
-    return superspawn.spawn('avdmanager', ['list', 'avd']).then(function (output) {
+    return execa('avdmanager', ['list', 'avd']).then(({ stdout: output }) => {
         var response = output.split('\n');
         var emulator_list = [];
         for (var i = 1; i < response.length; i++) {
@@ -113,7 +113,7 @@ module.exports.list_images_using_avdmanager = function () {
 };
 
 module.exports.list_images_using_android = function () {
-    return superspawn.spawn('android', ['list', 'avd']).then(function (output) {
+    return execa('android', ['list', 'avd']).then(({ stdout: output }) => {
         var response = output.split('\n');
         var emulator_list = [];
         for (var i = 1; i < response.length; i++) {
@@ -229,7 +229,7 @@ module.exports.list_started = function () {
 // Returns a promise.
 // TODO: we should remove this, there's a more robust method under android_sdk.js
 module.exports.list_targets = function () {
-    return superspawn.spawn('android', ['list', 'targets'], { cwd: os.tmpdir() }).then(function (output) {
+    return execa('android', ['list', 'targets'], { cwd: os.tmpdir() }).then(({ stdout: output }) => {
         var target_out = output.split('\n');
         var targets = [];
         for (var i = target_out.length; i >= 0; i--) {
@@ -387,22 +387,22 @@ module.exports.wait_for_boot = function (emulator_id, time_remaining) {
 module.exports.create_image = function (name, target) {
     console.log('Creating new avd named ' + name);
     if (target) {
-        return superspawn.spawn('android', ['create', 'avd', '--name', name, '--target', target]).then(null, function (error) {
+        return execa('android', ['create', 'avd', '--name', name, '--target', target]).then(null, function (error) {
             console.error('ERROR : Failed to create emulator image : ');
             console.error(' Do you have the latest android targets including ' + target + '?');
-            console.error(error);
+            console.error(error.message);
         });
     } else {
         console.log('WARNING : Project target not found, creating avd with a different target but the project may fail to install.');
         // TODO: there's a more robust method for finding targets in android_sdk.js
-        return superspawn.spawn('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]]).then(function () {
+        return execa('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]]).then(function () {
             // TODO: This seems like another error case, even though it always happens.
             console.error('ERROR : Unable to create an avd emulator, no targets found.');
             console.error('Ensure you have targets available by running the "android" command');
             return Promise.reject(new CordovaError());
         }, function (error) {
             console.error('ERROR : Failed to create emulator image : ');
-            console.error(error);
+            console.error(error.message);
         });
     }
 };
