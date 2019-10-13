@@ -272,7 +272,7 @@ exports.create = function (project_path, config, options, events) {
     // Make the package conform to Java package types
     return exports.validatePackageName(package_name)
         .then(function () {
-            exports.validateProjectName(project_name);
+            return exports.validateProjectName(project_name);
         }).then(function () {
         // Log the given values for the project
             events.emit('log', 'Creating Cordova project for the Android platform:');

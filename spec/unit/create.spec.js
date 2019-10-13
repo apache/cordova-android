@@ -35,54 +35,42 @@ describe('create', function () {
                 'ball8.ball8.ball8ball'
             ];
             valid.forEach(function (package_name) {
-                it('Test#001 : should accept ' + package_name, function (done) {
-                    create.validatePackageName(package_name).fail(fail).done(done);
+                it('Test#001 : should accept ' + package_name, () => {
+                    return create.validatePackageName(package_name);
                 });
             });
         });
 
         describe('failure cases (invalid package names)', function () {
-            it('should reject empty package names', function (done) {
-                create.validatePackageName('').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
+            function expectPackageNameToBeRejected (name) {
+                return create.validatePackageName(name).then(() => {
+                    fail('Expected promise to be rejected');
+                }, err => {
+                    expect(err).toEqual(jasmine.any(Error));
                     expect(err.message).toContain('Error validating package name');
-                }).done(done);
+                });
+            }
+
+            it('should reject empty package names', () => {
+                return expectPackageNameToBeRejected('');
             });
-            it('should reject package names containing "class"', function (done) {
-                create.validatePackageName('com.class.is.bad').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
-                    expect(err.message).toContain('Error validating package name');
-                }).done(done);
+            it('should reject package names containing "class"', () => {
+                return expectPackageNameToBeRejected('com.class.is.bad');
             });
-            it('should reject package names that do not start with a latin letter', function (done) {
-                create.validatePackageName('_un.der.score').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
-                    expect(err.message).toContain('Error validating package name');
-                }).done(done);
+            it('should reject package names that do not start with a latin letter', () => {
+                return expectPackageNameToBeRejected('_un.der.score');
             });
-            it('should reject package names with terms that do not start with a latin letter', function (done) {
-                create.validatePackageName('un._der.score').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
-                    expect(err.message).toContain('Error validating package name');
-                }).done(done);
+            it('should reject package names with terms that do not start with a latin letter', () => {
+                return expectPackageNameToBeRejected('un._der.score');
             });
-            it('should reject package names containing non-alphanumeric or underscore characters', function (done) {
-                create.validatePackageName('th!$.!$.b@d').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
-                    expect(err.message).toContain('Error validating package name');
-                }).done(done);
+            it('should reject package names containing non-alphanumeric or underscore characters', () => {
+                return expectPackageNameToBeRejected('th!$.!$.b@d');
             });
-            it('should reject package names that do not contain enough dots', function (done) {
-                create.validatePackageName('therearenodotshere').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
-                    expect(err.message).toContain('Error validating package name');
-                }).done(done);
+            it('should reject package names that do not contain enough dots', () => {
+                return expectPackageNameToBeRejected('therearenodotshere');
             });
-            it('should reject package names that end with a dot', function (done) {
-                create.validatePackageName('this.is.a.complete.sentence.').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
-                    expect(err.message).toContain('Error validating package name');
-                }).done(done);
+            it('should reject package names that end with a dot', () => {
+                return expectPackageNameToBeRejected('this.is.a.complete.sentence.');
             });
         });
     });
@@ -95,29 +83,35 @@ describe('create', function () {
                 'CordovaLib'
             ];
             valid.forEach(function (project_name) {
-                it('Test#003 : should accept ' + project_name, function (done) {
-                    create.validateProjectName(project_name).fail(fail).done(done);
+                it('Test#003 : should accept ' + project_name, () => {
+                    return create.validateProjectName(project_name);
                 });
             });
         });
         describe('failure cases (invalid project names)', function () {
-            it('should reject empty project names', function (done) {
-                create.validateProjectName('').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
+            it('should reject empty project names', () => {
+                return create.validateProjectName('').then(() => {
+                    fail('Expected promise to be rejected');
+                }, err => {
+                    expect(err).toEqual(jasmine.any(Error));
                     expect(err.message).toContain('Project name cannot be empty');
-                }).done(done);
+                });
             });
-            it('should reject "CordovaActivity" as a project name', function (done) {
-                create.validateProjectName('CordovaActivity').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
+            it('should reject "CordovaActivity" as a project name', () => {
+                return create.validateProjectName('CordovaActivity').then(() => {
+                    fail('Expected promise to be rejected');
+                }, err => {
+                    expect(err).toEqual(jasmine.any(Error));
                     expect(err.message).toContain('Project name cannot be CordovaActivity');
-                }).done(done);
+                });
             });
-            it('should reject project names that begin with a number', function (done) {
-                create.validateProjectName('1337').then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
+            it('should reject project names that begin with a number', () => {
+                return create.validateProjectName('1337').then(() => {
+                    fail('Expected promise to be rejected');
+                }, err => {
+                    expect(err).toEqual(jasmine.any(Error));
                     expect(err.message).toContain('Project name must not begin with a number');
-                }).done(done);
+                });
             });
         });
     });
@@ -156,125 +150,138 @@ describe('create', function () {
             revert_manifest_mock();
         });
         describe('parameter values and defaults', function () {
-            it('should have a default package name of my.cordova.project', function (done) {
+            it('should have a default package name of my.cordova.project', () => {
                 config_mock.packageName.and.returnValue(undefined);
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.validatePackageName).toHaveBeenCalledWith('my.cordova.project');
-                }).fail(fail).done(done);
+                });
             });
-            it('should use the ConfigParser-provided package name, if exists', function (done) {
+            it('should use the ConfigParser-provided package name, if exists', () => {
                 config_mock.packageName.and.returnValue('org.apache.cordova');
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.validatePackageName).toHaveBeenCalledWith('org.apache.cordova');
-                }).fail(fail).done(done);
+                });
             });
-            it('should have a default project name of CordovaExample', function (done) {
+            it('should have a default project name of CordovaExample', () => {
                 config_mock.name.and.returnValue(undefined);
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.validateProjectName).toHaveBeenCalledWith('CordovaExample');
-                }).fail(fail).done(done);
+                });
             });
-            it('should use the ConfigParser-provided project name, if exists', function (done) {
+            it('should use the ConfigParser-provided project name, if exists', () => {
                 config_mock.name.and.returnValue('MySweetAppName');
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.validateProjectName).toHaveBeenCalledWith('MySweetAppName');
-                }).fail(fail).done(done);
+                });
             });
-            it('should replace any non-word characters (including unicode and spaces) in the ConfigParser-provided project name with underscores', function (done) {
+            it('should replace any non-word characters (including unicode and spaces) in the ConfigParser-provided project name with underscores', () => {
                 config_mock.name.and.returnValue('応応応応 hello 用用用用');
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.validateProjectName).toHaveBeenCalledWith('_____hello_____');
-                }).fail(fail).done(done);
+                });
             });
-            it('should have a default activity name of MainActivity', function (done) {
+            it('should have a default activity name of MainActivity', () => {
                 config_mock.android_activityName.and.returnValue(undefined);
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(Manifest_mock.prototype.setName).toHaveBeenCalledWith('MainActivity');
-                }).fail(fail).done(done);
+                });
             });
-            it('should use the activityName provided via options parameter, if exists', function (done) {
+            it('should use the activityName provided via options parameter, if exists', () => {
                 config_mock.android_activityName.and.returnValue(undefined);
-                create.create(project_path, config_mock, { activityName: 'AwesomeActivity' }, events_mock).then(function () {
+                return create.create(project_path, config_mock, { activityName: 'AwesomeActivity' }, events_mock).then(() => {
                     expect(Manifest_mock.prototype.setName).toHaveBeenCalledWith('AwesomeActivity');
-                }).fail(fail).done(done);
+                });
             });
-            it('should use the ConfigParser-provided activity name, if exists', function (done) {
+            it('should use the ConfigParser-provided activity name, if exists', () => {
                 config_mock.android_activityName.and.returnValue('AmazingActivity');
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(Manifest_mock.prototype.setName).toHaveBeenCalledWith('AmazingActivity');
-                }).fail(fail).done(done);
+                });
             });
         });
         describe('failure', function () {
-            it('should fail if the target path already exists', function (done) {
+            it('should fail if the target path already exists', () => {
                 fs.existsSync.and.returnValue(true);
-                create.create(project_path, config_mock, {}, events_mock).then(fail).fail(function (err) {
-                    expect(err).toBeDefined();
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
+                    fail('Expected promise to be rejected');
+                }, err => {
+                    expect(err).toEqual(jasmine.any(Error));
                     expect(err.message).toContain('Project already exists!');
-                }).done(done);
+                });
+            });
+            it('should fail if validateProjectName rejects', () => {
+                const fakeError = new Error();
+                create.validateProjectName.and.callFake(() => Promise.reject(fakeError));
+
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
+                    fail('Expected promise to be rejected');
+                }, err => {
+                    expect(err).toBe(fakeError);
+                });
+
             });
         });
         describe('happy path', function () {
-            it('should copy project templates from a specified custom template', function (done) {
-                create.create(project_path, config_mock, { customTemplate: '/template/path' }, events_mock).then(function () {
+            it('should copy project templates from a specified custom template', () => {
+                return create.create(project_path, config_mock, { customTemplate: '/template/path' }, events_mock).then(() => {
                     expect(shell.cp).toHaveBeenCalledWith('-r', path.join('/template/path', 'assets'), app_path);
                     expect(shell.cp).toHaveBeenCalledWith('-r', path.join('/template/path', 'res'), app_path);
                     expect(shell.cp).toHaveBeenCalledWith(path.join('/template/path', 'gitignore'), path.join(project_path, '.gitignore'));
-                }).fail(fail).done(done);
+                });
             });
-            it('should copy project templates from the default templates location if no custom template is provided', function (done) {
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+            it('should copy project templates from the default templates location if no custom template is provided', () => {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(shell.cp).toHaveBeenCalledWith('-r', path.join(default_templates, 'assets'), app_path);
                     expect(shell.cp).toHaveBeenCalledWith('-r', path.join(default_templates, 'res'), app_path);
                     expect(shell.cp).toHaveBeenCalledWith(path.join(default_templates, 'gitignore'), path.join(project_path, '.gitignore'));
-                }).fail(fail).done(done);
+                });
             });
-            it('should copy JS and library assets', function (done) {
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+            it('should copy JS and library assets', () => {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.copyJsAndLibrary).toHaveBeenCalled();
-                }).fail(fail).done(done);
+                });
             });
-            it('should create a java src directory based on the provided project package name', function (done) {
+            it('should create a java src directory based on the provided project package name', () => {
                 config_mock.packageName.and.returnValue('org.apache.cordova');
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(shell.mkdir).toHaveBeenCalledWith('-p', path.join(app_path, 'java', 'org', 'apache', 'cordova'));
-                }).fail(fail).done(done);
+                });
             });
-            it('should copy, rename and interpolate the template Activity java class with the project-specific activity name and package name', function (done) {
+            it('should copy, rename and interpolate the template Activity java class with the project-specific activity name and package name', () => {
                 config_mock.packageName.and.returnValue('org.apache.cordova');
                 config_mock.android_activityName.and.returnValue('CEEDEEVEE');
                 var activity_path = path.join(app_path, 'java', 'org', 'apache', 'cordova', 'CEEDEEVEE.java');
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(shell.cp).toHaveBeenCalledWith('-f', path.join(default_templates, 'Activity.java'), activity_path);
                     expect(shell.sed).toHaveBeenCalledWith('-i', /__ACTIVITY__/, 'CEEDEEVEE', activity_path);
                     expect(shell.sed).toHaveBeenCalledWith('-i', /__ID__/, 'org.apache.cordova', activity_path);
-                }).fail(fail).done(done);
+                });
             });
-            it('should interpolate the project name into strings.xml', function (done) {
+            it('should interpolate the project name into strings.xml', () => {
                 config_mock.name.and.returnValue('IncredibleApp');
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(shell.sed).toHaveBeenCalledWith('-i', /__NAME__/, 'IncredibleApp', path.join(app_path, 'res', 'values', 'strings.xml'));
-                }).fail(fail).done(done);
+                });
             });
-            it('should copy template scripts into generated project', function (done) {
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+            it('should copy template scripts into generated project', () => {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.copyScripts).toHaveBeenCalledWith(project_path);
-                }).fail(fail).done(done);
+                });
             });
-            it('should copy build rules / gradle files into generated project', function (done) {
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+            it('should copy build rules / gradle files into generated project', () => {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.copyBuildRules).toHaveBeenCalledWith(project_path);
-                }).fail(fail).done(done);
+                });
             });
-            it('should write project.properties file with project details and target API', function (done) {
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+            it('should write project.properties file with project details and target API', () => {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.writeProjectProperties).toHaveBeenCalledWith(project_path, fake_android_target);
-                }).fail(fail).done(done);
+                });
             });
-            it('should prepare build files', function (done) {
-                create.create(project_path, config_mock, {}, events_mock).then(function () {
+            it('should prepare build files', () => {
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.prepBuildFiles).toHaveBeenCalledWith(project_path);
-                }).fail(fail).done(done);
+                });
             });
         });
     });

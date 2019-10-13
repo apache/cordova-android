@@ -196,17 +196,27 @@ describe('run', () => {
                 expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, { apkPaths: [], buildType: 'debug' });
             });
         });
+
+        it('should fail with the error message if --packageType=bundle setting is used', () => {
+            const deviceList = ['testDevice1', 'testDevice2'];
+            getInstallTargetSpy.and.returnValue(null);
+
+            deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
+
+            return run.run({ argv: ['--packageType=bundle'] }).then(
+                () => fail('Expected error to be thrown'),
+                err => expect(err).toContain('Package type "bundle" is not supported during cordova run.')
+            );
+        });
     });
 
     describe('help', () => {
         it('should print out usage and help', () => {
-            const logSpy = jasmine.createSpy();
-            const errorSpy = jasmine.createSpy();
-            const procStub = { exit: _ => null, cwd: _ => '', argv: ['', ''] };
-            run.__set__({ console: { log: logSpy, error: errorSpy }, process: procStub });
+            spyOn(console, 'log');
+            spyOn(process, 'exit');
 
             run.help();
-            expect(logSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));
+            expect(console.log).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));
         });
     });
 });
