@@ -17,11 +17,16 @@
     under the License.
 */
 
-var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
+var rewire = require('rewire');
+var check_reqs = rewire('../../bin/templates/cordova/lib/check_reqs');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
 var shelljs = require('shelljs');
 var fs = require('fs');
 var path = require('path');
+var events = require('cordova-common').events;
+
+// This should match /bin/templates/project/build.gradle
+const DEFAULT_TARGET_API = 28;
 
 describe('check_reqs', function () {
     var original_env;
@@ -176,13 +181,87 @@ describe('check_reqs', function () {
             });
         });
     });
+
     describe('get_target', function () {
+        var ConfigParser;
+        var getPreferenceSpy;
+        beforeEach(function () {
+            getPreferenceSpy = jasmine.createSpy();
+            ConfigParser = jasmine.createSpy().and.returnValue({
+                getPreference: getPreferenceSpy
+            });
+            check_reqs.__set__('ConfigParser', ConfigParser);
+        });
+
         it('should retrieve target from framework project.properties file', function () {
             var target = check_reqs.get_target();
             expect(target).toBeDefined();
-            expect(target).toContain('android-');
+            expect(target).toContain('android-' + DEFAULT_TARGET_API);
+        });
+
+        it('should throw error if target cannot be found', function () {
+            spyOn(fs, 'existsSync').and.returnValue(false);
+            expect(function () {
+                check_reqs.get_target();
+            }).toThrow();
+        });
+
+        it('should override target from config.xml preference', () => {
+            var realExistsSync = fs.existsSync;
+            spyOn(fs, 'existsSync').and.callFake(function (path) {
+                if (path.indexOf('config.xml') > -1) {
+                    return true;
+                } else {
+                    return realExistsSync.call(fs, path);
+                }
+            });
+
+            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API + 1);
+
+            var target = check_reqs.get_target();
+
+            expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
+            expect(target).toBe('android-' + (DEFAULT_TARGET_API + 1));
+        });
+
+        it('should fallback to default target if config.xml has invalid preference', () => {
+            var realExistsSync = fs.existsSync;
+            spyOn(fs, 'existsSync').and.callFake(function (path) {
+                if (path.indexOf('config.xml') > -1) {
+                    return true;
+                } else {
+                    return realExistsSync.call(fs, path);
+                }
+            });
+
+            getPreferenceSpy.and.returnValue(NaN);
+
+            var target = check_reqs.get_target();
+
+            expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
+            expect(target).toBe('android-' + DEFAULT_TARGET_API);
+        });
+
+        it('should warn if target sdk preference is lower than the minimum required target SDK', () => {
+            var realExistsSync = fs.existsSync;
+            spyOn(fs, 'existsSync').and.callFake(function (path) {
+                if (path.indexOf('config.xml') > -1) {
+                    return true;
+                } else {
+                    return realExistsSync.call(fs, path);
+                }
+            });
+
+            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API - 1);
+
+            var target = check_reqs.get_target();
+
+            expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
+            expect(target).toBe('android-' + DEFAULT_TARGET_API);
+            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion must be greater than or equal to ' + DEFAULT_TARGET_API + '.');
         });
     });
+
     describe('check_android_target', function () {
         it('should should return full list of supported targets if there is a match to ideal api level', () => {
             var fake_targets = ['you are my fire', 'my one desire'];

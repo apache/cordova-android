@@ -26,7 +26,9 @@ var fs = require('fs');
 var os = require('os');
 var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
 var PROJECT_ROOT = path.join(__dirname, '..', '..');
+var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
+var ConfigParser = require('cordova-common').ConfigParser;
 var android_sdk = require('./android_sdk');
 
 function forgivingWhichSync (cmd) {
@@ -55,16 +57,40 @@ module.exports.get_target = function () {
         }
         return target.split('=')[1].trim();
     }
+
+    var target = null;
+
     var repo_file = path.join(REPO_ROOT, 'framework', 'project.properties');
-    if (fs.existsSync(repo_file)) {
-        return extractFromFile(repo_file);
-    }
     var project_file = path.join(PROJECT_ROOT, 'project.properties');
-    if (fs.existsSync(project_file)) {
+    var config_file = path.join(REPO_ROOT, 'config.xml');
+
+    if (fs.existsSync(repo_file)) {
+        target = extractFromFile(repo_file);
+    } else if (fs.existsSync(project_file)) {
         // if no target found, we're probably in a project and project.properties is in PROJECT_ROOT.
-        return extractFromFile(project_file);
+        target = extractFromFile(project_file);
     }
-    throw new Error('Could not find android target in either ' + repo_file + ' nor ' + project_file);
+
+    if (target === null) {
+        throw new Error('Could not find android target in either ' + repo_file + ' nor ' + project_file);
+    }
+
+    var minimumAPI = parseInt(target.split('-')[1]);
+
+    if (fs.existsSync(config_file)) {
+        // Find the desired android target from the project config
+        var configParser = new ConfigParser(config_file);
+        var desiredAPI = parseInt(configParser.getPreference('android-targetSdkVersion', 'android'));
+        if (!isNaN(desiredAPI)) {
+            if (desiredAPI >= minimumAPI) {
+                target = 'android-' + desiredAPI;
+            } else {
+                events.emit('warn', 'android-targetSdkVersion must be greater than or equal to ' + minimumAPI + '.');
+            }
+        }
+    }
+
+    return target;
 };
 
 // Returns a promise. Called only by build and clean commands.
