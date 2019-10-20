@@ -260,13 +260,10 @@ describe('android project handler', function () {
         });
 
         describe('of <asset> elements', function () {
-            var asset = { src: 'www/dummyPlugin.js', target: 'foo/dummy.js' };
-            var wwwDest; /* eslint no-unused-vars: "off" */
-            var platformWwwDest; /* eslint no-unused-vars: "off" */
+            var asset;
 
             beforeEach(function () {
-                wwwDest = path.resolve(dummyProject.www, asset.target);
-                platformWwwDest = path.resolve(dummyProject.platformWww, asset.target);
+                asset = { src: 'www/dummyPlugin.js', target: 'foo/dummy.js' };
             });
 
             it('Test#015 : should put asset to both www and platform_www when options.usePlatformWww flag is specified', function () {

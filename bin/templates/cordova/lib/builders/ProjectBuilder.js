@@ -16,8 +16,6 @@
        specific language governing permissions and limitations
        under the License.
 */
-/* eslint no-self-assign: 0 */
-/* eslint no-unused-vars: 0 */
 
 var Q = require('q');
 var fs = require('fs');
@@ -356,7 +354,7 @@ function findOutputApksHelper (dir, build_type, arch) {
         return true;
     }).sort(apkSorter);
 
-    shellSilent = shellSilent;
+    shell.config.silent = shellSilent;
 
     if (ret.length === 0) {
         return ret;
@@ -381,10 +379,6 @@ function findOutputApksHelper (dir, build_type, arch) {
 // While replacing shell with fs-extra, it might be a good idea to see if we can
 // generalise these findOutput methods.
 function findOutputBundlesHelper (dir, build_type) {
-    // This is an unused variable that was copied from findOutputApksHelper
-    // we are pretty sure it was meant to reset shell.config.silent back to
-    // the original value. However shell is planned to be replaced,
-    // it was left as is to avoid unintended consequences.
     const shellSilent = shell.config.silent;
     shell.config.silent = true;
 
@@ -403,6 +397,8 @@ function findOutputBundlesHelper (dir, build_type) {
         }
         return true;
     });
+
+    shell.config.silent = shellSilent;
 
     return ret;
 }
