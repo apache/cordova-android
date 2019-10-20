@@ -33,38 +33,38 @@
  * @param {String} action       Action to be run in cordova
  * @param {String[]} [args]     Zero or more arguments to pass to the method
  */
-var cordova = require('cordova'),
-    nativeApiProvider = require('cordova/android/nativeapiprovider'),
-    utils = require('cordova/utils'),
-    base64 = require('cordova/base64'),
-    channel = require('cordova/channel'),
-    jsToNativeModes = {
-        PROMPT: 0,
-        JS_OBJECT: 1
-    },
-    nativeToJsModes = {
-        // Polls for messages using the JS->Native bridge.
-        POLLING: 0,
-        // For LOAD_URL to be viable, it would need to have a work-around for
-        // the bug where the soft-keyboard gets dismissed when a message is sent.
-        LOAD_URL: 1,
-        // For the ONLINE_EVENT to be viable, it would need to intercept all event
-        // listeners (both through addEventListener and window.ononline) as well
-        // as set the navigator property itself.
-        ONLINE_EVENT: 2,
-        EVAL_BRIDGE: 3
-    },
-    jsToNativeBridgeMode,  // Set lazily.
-    nativeToJsBridgeMode = nativeToJsModes.EVAL_BRIDGE,
-    pollEnabled = false,
-    bridgeSecret = -1;
+var cordova = require('cordova');
+var nativeApiProvider = require('cordova/android/nativeapiprovider');
+var utils = require('cordova/utils');
+var base64 = require('cordova/base64');
+var channel = require('cordova/channel');
+var jsToNativeModes = {
+    PROMPT: 0,
+    JS_OBJECT: 1
+};
+var nativeToJsModes = {
+    // Polls for messages using the JS->Native bridge.
+    POLLING: 0,
+    // For LOAD_URL to be viable, it would need to have a work-around for
+    // the bug where the soft-keyboard gets dismissed when a message is sent.
+    LOAD_URL: 1,
+    // For the ONLINE_EVENT to be viable, it would need to intercept all event
+    // listeners (both through addEventListener and window.ononline) as well
+    // as set the navigator property itself.
+    ONLINE_EVENT: 2,
+    EVAL_BRIDGE: 3
+};
+var jsToNativeBridgeMode; // Set lazily.
+var nativeToJsBridgeMode = nativeToJsModes.EVAL_BRIDGE;
+var pollEnabled = false;
+var bridgeSecret = -1;
 
 var messagesFromNative = [];
 var isProcessing = false;
-var resolvedPromise = typeof Promise == 'undefined' ? null : Promise.resolve();
-var nextTick = resolvedPromise ? function(fn) { resolvedPromise.then(fn); } : function(fn) { setTimeout(fn); };
+var resolvedPromise = typeof Promise === 'undefined' ? null : Promise.resolve();
+var nextTick = resolvedPromise ? function (fn) { resolvedPromise.then(fn); } : function (fn) { setTimeout(fn); };
 
-function androidExec(success, fail, service, action, args) {
+function androidExec (success, fail, service, action, args) {
     if (bridgeSecret < 0) {
         // If we ever catch this firing, we'll need to queue up exec()s
         // and fire them once we get a secret. For now, I don't think
@@ -88,16 +88,16 @@ function androidExec(success, fail, service, action, args) {
         }
     }
 
-    var callbackId = service + cordova.callbackId++,
-        argsJson = JSON.stringify(args);
+    var callbackId = service + cordova.callbackId++;
+    var argsJson = JSON.stringify(args);
     if (success || fail) {
-        cordova.callbacks[callbackId] = {success:success, fail:fail};
+        cordova.callbacks[callbackId] = { success: success, fail: fail };
     }
 
     var msgs = nativeApiProvider.get().exec(bridgeSecret, service, action, callbackId, argsJson);
     // If argsJson was received by Java as null, try again with the PROMPT bridge mode.
     // This happens in rare circumstances, such as when certain Unicode characters are passed over the bridge on a Galaxy S2.  See CB-2666.
-    if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT && msgs === "@Null arguments.") {
+    if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT && msgs === '@Null arguments.') {
         androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
         androidExec(success, fail, service, action, args);
         androidExec.setJsToNativeBridgeMode(jsToNativeModes.JS_OBJECT);
@@ -108,16 +108,16 @@ function androidExec(success, fail, service, action, args) {
     }
 }
 
-androidExec.init = function() {
+androidExec.init = function () {
     bridgeSecret = +prompt('', 'gap_init:' + nativeToJsBridgeMode);
     channel.onNativeReady.fire();
 };
 
-function pollOnceFromOnlineEvent() {
+function pollOnceFromOnlineEvent () {
     pollOnce(true);
 }
 
-function pollOnce(opt_fromOnlineEvent) {
+function pollOnce (opt_fromOnlineEvent) {
     if (bridgeSecret < 0) {
         // This can happen when the NativeToJsMessageQueue resets the online state on page transitions.
         // We know there's nothing to retrieve, so no need to poll.
@@ -131,15 +131,15 @@ function pollOnce(opt_fromOnlineEvent) {
     }
 }
 
-function pollingTimerFunc() {
+function pollingTimerFunc () {
     if (pollEnabled) {
         pollOnce();
         setTimeout(pollingTimerFunc, 50);
     }
 }
 
-function hookOnlineApis() {
-    function proxyEvent(e) {
+function hookOnlineApis () {
+    function proxyEvent (e) {
         cordova.fireWindowEvent(e.type);
     }
     // The network module takes care of firing online and offline events.
@@ -159,7 +159,7 @@ hookOnlineApis();
 androidExec.jsToNativeModes = jsToNativeModes;
 androidExec.nativeToJsModes = nativeToJsModes;
 
-androidExec.setJsToNativeBridgeMode = function(mode) {
+androidExec.setJsToNativeBridgeMode = function (mode) {
     if (mode == jsToNativeModes.JS_OBJECT && !window._cordovaNative) {
         mode = jsToNativeModes.PROMPT;
     }
@@ -167,7 +167,7 @@ androidExec.setJsToNativeBridgeMode = function(mode) {
     jsToNativeBridgeMode = mode;
 };
 
-androidExec.setNativeToJsBridgeMode = function(mode) {
+androidExec.setNativeToJsBridgeMode = function (mode) {
     if (mode == nativeToJsBridgeMode) {
         return;
     }
@@ -188,7 +188,7 @@ androidExec.setNativeToJsBridgeMode = function(mode) {
     }
 };
 
-function buildPayload(payload, message) {
+function buildPayload (payload, message) {
     var payloadKind = message.charAt(0);
     if (payloadKind == 's') {
         payload.push(message.slice(1));
@@ -207,7 +207,7 @@ function buildPayload(payload, message) {
         payload.push(window.atob(message.slice(1)));
     } else if (payloadKind == 'M') {
         var multipartMessages = message.slice(1);
-        while (multipartMessages !== "") {
+        while (multipartMessages !== '') {
             var spaceIdx = multipartMessages.indexOf(' ');
             var msgLen = +multipartMessages.slice(0, spaceIdx);
             var multipartMessage = multipartMessages.substr(spaceIdx + 1, msgLen);
@@ -220,7 +220,7 @@ function buildPayload(payload, message) {
 }
 
 // Processes a single message, as encoded by NativeToJsMessageQueue.java.
-function processMessage(message) {
+function processMessage (message) {
     var firstChar = message.charAt(0);
     if (firstChar == 'J') {
         // This is deprecated on the .java side. It doesn't work with CSP enabled.
@@ -237,11 +237,11 @@ function processMessage(message) {
         buildPayload(payload, payloadMessage);
         cordova.callbackFromNative(callbackId, success, status, payload, keepCallback);
     } else {
-        console.log("processMessage failed: invalid message: " + JSON.stringify(message));
+        console.log('processMessage failed: invalid message: ' + JSON.stringify(message));
     }
 }
 
-function processMessages() {
+function processMessages () {
     // Check for the reentrant case.
     if (isProcessing) {
         return;
@@ -267,7 +267,7 @@ function processMessages() {
     }
 }
 
-function popMessageFromQueue() {
+function popMessageFromQueue () {
     var messageBatch = messagesFromNative.shift();
     if (messageBatch == '*') {
         return '*';
