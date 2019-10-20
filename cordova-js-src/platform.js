@@ -43,7 +43,7 @@ module.exports = {
         backButtonChannel.onHasSubscribersChange = function () {
             // If we just attached the first handler or detached the last handler,
             // let native know we need to override the back button.
-            exec(null, null, APP_PLUGIN_NAME, 'overrideBackbutton', [this.numHandlers == 1]);
+            exec(null, null, APP_PLUGIN_NAME, 'overrideBackbutton', [this.numHandlers === 1]);
         };
 
         // Add hardware MENU and SEARCH button handlers
@@ -54,7 +54,7 @@ module.exports = {
             // generic button bind used for volumeup/volumedown buttons
             var volumeButtonChannel = cordova.addDocumentEventHandler(buttonName + 'button');
             volumeButtonChannel.onHasSubscribersChange = function () {
-                exec(null, null, APP_PLUGIN_NAME, 'overrideButton', [buttonName, this.numHandlers == 1]);
+                exec(null, null, APP_PLUGIN_NAME, 'overrideButton', [buttonName, this.numHandlers === 1]);
             };
         }
         // Inject a listener for the volume buttons on the document.
@@ -88,13 +88,11 @@ function onMessageFromNative (msg) {
     var action = msg.action;
 
     switch (action) {
-    // Button events
+    // pause and resume are Android app life cycle events
     case 'backbutton':
     case 'menubutton':
     case 'searchbutton':
-        // App life cycle events
     case 'pause':
-        // Volume events
     case 'volumedownbutton':
     case 'volumeupbutton':
         cordova.fireDocumentEvent(action);

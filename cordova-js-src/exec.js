@@ -83,7 +83,7 @@ function androidExec (success, fail, service, action, args) {
 
     // Process any ArrayBuffers in the args into a string.
     for (var i = 0; i < args.length; i++) {
-        if (utils.typeName(args[i]) == 'ArrayBuffer') {
+        if (utils.typeName(args[i]) === 'ArrayBuffer') {
             args[i] = base64.fromArrayBuffer(args[i]);
         }
     }
@@ -97,7 +97,7 @@ function androidExec (success, fail, service, action, args) {
     var msgs = nativeApiProvider.get().exec(bridgeSecret, service, action, callbackId, argsJson);
     // If argsJson was received by Java as null, try again with the PROMPT bridge mode.
     // This happens in rare circumstances, such as when certain Unicode characters are passed over the bridge on a Galaxy S2.  See CB-2666.
-    if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT && msgs === '@Null arguments.') {
+    if (jsToNativeBridgeMode === jsToNativeModes.JS_OBJECT && msgs === '@Null arguments.') {
         androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
         androidExec(success, fail, service, action, args);
         androidExec.setJsToNativeBridgeMode(jsToNativeModes.JS_OBJECT);
@@ -160,18 +160,18 @@ androidExec.jsToNativeModes = jsToNativeModes;
 androidExec.nativeToJsModes = nativeToJsModes;
 
 androidExec.setJsToNativeBridgeMode = function (mode) {
-    if (mode == jsToNativeModes.JS_OBJECT && !window._cordovaNative) {
+    if (mode === jsToNativeModes.JS_OBJECT && !window._cordovaNative) {
         mode = jsToNativeModes.PROMPT;
     }
-    nativeApiProvider.setPreferPrompt(mode == jsToNativeModes.PROMPT);
+    nativeApiProvider.setPreferPrompt(mode === jsToNativeModes.PROMPT);
     jsToNativeBridgeMode = mode;
 };
 
 androidExec.setNativeToJsBridgeMode = function (mode) {
-    if (mode == nativeToJsBridgeMode) {
+    if (mode === nativeToJsBridgeMode) {
         return;
     }
-    if (nativeToJsBridgeMode == nativeToJsModes.POLLING) {
+    if (nativeToJsBridgeMode === nativeToJsModes.POLLING) {
         pollEnabled = false;
     }
 
@@ -182,7 +182,7 @@ androidExec.setNativeToJsBridgeMode = function (mode) {
         nativeApiProvider.get().setNativeToJsBridgeMode(bridgeSecret, mode);
     }
 
-    if (mode == nativeToJsModes.POLLING) {
+    if (mode === nativeToJsModes.POLLING) {
         pollEnabled = true;
         setTimeout(pollingTimerFunc, 1);
     }
@@ -190,22 +190,22 @@ androidExec.setNativeToJsBridgeMode = function (mode) {
 
 function buildPayload (payload, message) {
     var payloadKind = message.charAt(0);
-    if (payloadKind == 's') {
+    if (payloadKind === 's') {
         payload.push(message.slice(1));
-    } else if (payloadKind == 't') {
+    } else if (payloadKind === 't') {
         payload.push(true);
-    } else if (payloadKind == 'f') {
+    } else if (payloadKind === 'f') {
         payload.push(false);
-    } else if (payloadKind == 'N') {
+    } else if (payloadKind === 'N') {
         payload.push(null);
-    } else if (payloadKind == 'n') {
+    } else if (payloadKind === 'n') {
         payload.push(+message.slice(1));
-    } else if (payloadKind == 'A') {
+    } else if (payloadKind === 'A') {
         var data = message.slice(1);
         payload.push(base64.toArrayBuffer(data));
-    } else if (payloadKind == 'S') {
+    } else if (payloadKind === 'S') {
         payload.push(window.atob(message.slice(1)));
-    } else if (payloadKind == 'M') {
+    } else if (payloadKind === 'M') {
         var multipartMessages = message.slice(1);
         while (multipartMessages !== '') {
             var spaceIdx = multipartMessages.indexOf(' ');
@@ -222,12 +222,13 @@ function buildPayload (payload, message) {
 // Processes a single message, as encoded by NativeToJsMessageQueue.java.
 function processMessage (message) {
     var firstChar = message.charAt(0);
-    if (firstChar == 'J') {
+    if (firstChar === 'J') {
         // This is deprecated on the .java side. It doesn't work with CSP enabled.
+        // eslint-disable-next-line no-eval
         eval(message.slice(1));
-    } else if (firstChar == 'S' || firstChar == 'F') {
-        var success = firstChar == 'S';
-        var keepCallback = message.charAt(1) == '1';
+    } else if (firstChar === 'S' || firstChar === 'F') {
+        var success = firstChar === 'S';
+        var keepCallback = message.charAt(1) === '1';
         var spaceIdx = message.indexOf(' ', 2);
         var status = +message.slice(2, spaceIdx);
         var nextSpaceIdx = message.indexOf(' ', spaceIdx + 1);
@@ -254,7 +255,7 @@ function processMessages () {
         var msg = popMessageFromQueue();
         // The Java side can send a * message to indicate that it
         // still has messages waiting to be retrieved.
-        if (msg == '*' && messagesFromNative.length === 0) {
+        if (msg === '*' && messagesFromNative.length === 0) {
             nextTick(pollOnce);
             return;
         }
@@ -269,7 +270,7 @@ function processMessages () {
 
 function popMessageFromQueue () {
     var messageBatch = messagesFromNative.shift();
-    if (messageBatch == '*') {
+    if (messageBatch === '*') {
         return '*';
     }
 
