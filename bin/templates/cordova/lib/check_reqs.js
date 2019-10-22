@@ -47,23 +47,27 @@ module.exports.isDarwin = function () {
     return (os.platform() === 'darwin');
 };
 
-// Get valid target from framework/project.properties if run from this repo
-// Otherwise get target from project.properties file within a generated cordova-android project
+/**
+ * @description Get valid target from framework/project.properties if run from this repo
+ *              Otherwise get target from project.properties file within a generated cordova-android project
+ * @returns {string} The android target in format "android-${target}"
+ */
 module.exports.get_target = function () {
     function extractFromFile (filePath) {
         var target = shelljs.grep(/\btarget=/, filePath);
         if (!target) {
-            throw new Error('Could not find android target within: ' + filePath);
+            return null;
         }
         return target.split('=')[1].trim();
     }
 
     var target = null;
-
     var repo_file = path.join(REPO_ROOT, 'framework', 'project.properties');
     var project_file = path.join(PROJECT_ROOT, 'project.properties');
     var config_file = path.join(REPO_ROOT, 'config.xml');
 
+    // First get the desired target API from the framework. This will be treated as our
+    // minimum required target API.
     if (fs.existsSync(repo_file)) {
         target = extractFromFile(repo_file);
     } else if (fs.existsSync(project_file)) {
@@ -72,11 +76,13 @@ module.exports.get_target = function () {
     }
 
     if (target === null) {
-        throw new Error('Could not find android target in either ' + repo_file + ' nor ' + project_file);
+        throw new Error('We could not locate the "project.properties" at either ' + repo_file + ' or ' + project_file + '.');
     }
 
     var minimumAPI = parseInt(target.split('-')[1]);
 
+    // Next, check the app config.xml file for the desired targetSdkVersion and use it if
+    // found and valid.
     if (fs.existsSync(config_file)) {
         // Find the desired android target from the project config
         var configParser = new ConfigParser(config_file);
