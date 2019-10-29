@@ -17,28 +17,37 @@
  under the License.
  */
 
-var path = require('path');
-var actions = require('./helpers/projectActions.js');
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
+const shell = require('shelljs');
+const { PluginInfoProvider, superspawn } = require('cordova-common');
 
-var PLUGIN_ADD_TIMEOUT = 90000;
+const createBin = path.join(__dirname, '../../bin/create');
+const fakePluginPath = path.join(__dirname, 'fixtures/cordova-plugin-fake');
 
 describe('plugin add', function () {
+    let tmpDir;
+    beforeEach(() => {
+        const tmpDirTemplate = path.join(os.tmpdir(), `cordova-android-test-`);
+        tmpDir = fs.realpathSync(fs.mkdtempSync(tmpDirTemplate));
+    });
+    afterEach(() => {
+        shell.rm('-rf', tmpDir);
+    });
 
-    it('Test#001 : create project and add a plugin with framework', function (done) {
-        var projectname = 'testpluginframework';
-        var projectid = 'com.test.plugin.framework';
-        var fakePluginPath = path.join(__dirname, 'fixtures/cordova-plugin-fake');
+    it('Test#001 : create project and add a plugin with framework', function () {
+        const projectname = 'testpluginframework';
+        const projectid = 'com.test.plugin.framework';
 
-        actions.createProject(projectname, projectid, function () {
-            actions.addPlugin(projectid, fakePluginPath, function (error) {
-                actions.removeProject(projectid);
-                if (error) {
-                    console.error(error.stack);
-                }
-                expect(error).toBe(null);
-                done();
+        const projectPath = path.join(tmpDir, projectname);
+        const pluginInfo = new PluginInfoProvider().get(fakePluginPath);
+
+        return Promise.resolve()
+            .then(() => superspawn.spawn(createBin, [projectPath, projectid, projectname]))
+            .then(() => {
+                const Api = require(path.join(projectPath, 'cordova/Api.js'));
+                return new Api('android', projectPath).addPlugin(pluginInfo);
             });
-        });
-    }, PLUGIN_ADD_TIMEOUT);
-
+    }, 90000);
 });
