@@ -250,25 +250,8 @@ class ProjectBuilder {
         var wrapper = path.join(this.root, 'gradlew');
         var args = this.getArgs(opts.buildType === 'debug' ? 'debug' : 'release', opts);
 
-        return spawn(wrapper, args, { stdio: 'pipe' })
-            .progress(function (stdio) {
-                if (stdio.stderr) {
-                    /*
-                    * Workaround for the issue with Java printing some unwanted information to
-                    * stderr instead of stdout.
-                    * This function suppresses 'Picked up _JAVA_OPTIONS' message from being
-                    * printed to stderr. See https://issues.apache.org/jira/browse/CB-9971 for
-                    * explanation.
-                    */
-                    var suppressThisLine = /^Picked up _JAVA_OPTIONS: /i.test(stdio.stderr.toString());
-                    if (suppressThisLine) {
-                        return;
-                    }
-                    process.stderr.write(stdio.stderr);
-                } else {
-                    process.stdout.write(stdio.stdout);
-                }
-            }).catch(function (error) {
+        return spawn(wrapper, args, { stdio: 'inherit' })
+            .catch(function (error) {
                 if (error.toString().indexOf('failed to find target with hash string') >= 0) {
                     return check_reqs.check_android_target(error).then(function () {
                         // If due to some odd reason - check_android_target succeeds
