@@ -254,7 +254,7 @@ describe('emulator', () => {
         let emulator;
         let AdbSpy;
         let checkReqsSpy;
-        let childProcessSpy;
+        let execaSpy;
         let shellJsSpy;
 
         beforeEach(() => {
@@ -273,9 +273,10 @@ describe('emulator', () => {
             checkReqsSpy = jasmine.createSpyObj('create_reqs', ['getAbsoluteAndroidCmd']);
             emu.__set__('check_reqs', checkReqsSpy);
 
-            childProcessSpy = jasmine.createSpyObj('child_process', ['spawn']);
-            childProcessSpy.spawn.and.returnValue(jasmine.createSpyObj('spawnFns', ['unref']));
-            emu.__set__('child_process', childProcessSpy);
+            execaSpy = jasmine.createSpy('execa').and.returnValue(
+                jasmine.createSpyObj('spawnFns', ['unref'])
+            );
+            emu.__set__('execa', execaSpy);
 
             spyOn(emu, 'get_available_port').and.returnValue(Promise.resolve(port));
             spyOn(emu, 'wait_for_emulator').and.returnValue(Promise.resolve('randomname'));
@@ -296,7 +297,7 @@ describe('emulator', () => {
             return emu.start().then(() => {
                 // This is the earliest part in the code where we can hook in and check
                 // the emulator that has been selected.
-                const spawnArgs = childProcessSpy.spawn.calls.argsFor(0);
+                const spawnArgs = execaSpy.calls.argsFor(0);
                 expect(spawnArgs[1]).toContain(emulator.name);
             });
         });
@@ -307,7 +308,7 @@ describe('emulator', () => {
             return emu.start(emulator.name).then(() => {
                 expect(emu.best_image).not.toHaveBeenCalled();
 
-                const spawnArgs = childProcessSpy.spawn.calls.argsFor(0);
+                const spawnArgs = execaSpy.calls.argsFor(0);
                 expect(spawnArgs[1]).toContain(emulator.name);
             });
         });
@@ -581,7 +582,7 @@ describe('emulator', () => {
         let AndroidManifestGetActivitySpy;
         let AdbSpy;
         let buildSpy;
-        let childProcessSpy;
+        let execaSpy;
         let target;
 
         beforeEach(() => {
@@ -602,9 +603,8 @@ describe('emulator', () => {
             AdbSpy.uninstall.and.returnValue(Promise.resolve());
             emu.__set__('Adb', AdbSpy);
 
-            childProcessSpy = jasmine.createSpyObj('child_process', ['exec']);
-            childProcessSpy.exec.and.callFake((cmd, opts, callback) => callback());
-            emu.__set__('child_process', childProcessSpy);
+            execaSpy = jasmine.createSpy('execa').and.resolveTo({});
+            emu.__set__('execa', execaSpy);
         });
 
         it('should get the full target object if only id is specified', () => {
@@ -618,7 +618,7 @@ describe('emulator', () => {
 
         it('should install to the passed target', () => {
             return emu.install(target, {}).then(() => {
-                const execCmd = childProcessSpy.exec.calls.argsFor(0)[0];
+                const execCmd = execaSpy.calls.argsFor(0)[1].join(' ');
                 expect(execCmd).toContain(`-s ${target.target} install`);
             });
         });
@@ -636,33 +636,26 @@ describe('emulator', () => {
             return emu.install(target, buildResults).then(() => {
                 expect(buildSpy.findBestApkForArchitecture).toHaveBeenCalledWith(buildResults, target.arch);
 
-                const execCmd = childProcessSpy.exec.calls.argsFor(0)[0];
-                expect(execCmd).toMatch(new RegExp(`install.*${apkPath}`));
+                const execCmd = execaSpy.calls.argsFor(0)[1].join(' ');
+                expect(execCmd).toContain(`install -r ${apkPath}`);
             });
         });
 
         it('should uninstall and reinstall app if failure is due to different certificates', () => {
-            let execAlreadyCalled;
-            childProcessSpy.exec.and.callFake((cmd, opts, callback) => {
-                if (!execAlreadyCalled) {
-                    execAlreadyCalled = true;
-                    callback(null, 'Failure: INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES');
-                } else {
-                    callback();
-                }
-            });
+            execaSpy.and.returnValues(
+                ...['Failure: INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES', '']
+                    .map(out => Promise.resolve({ stdout: out }))
+            );
 
             return emu.install(target, {}).then(() => {
-                expect(childProcessSpy.exec).toHaveBeenCalledTimes(2);
+                expect(execaSpy).toHaveBeenCalledTimes(2);
                 expect(AdbSpy.uninstall).toHaveBeenCalled();
             });
         });
 
         it('should throw any error not caused by different certificates', () => {
             const errorMsg = 'Failure: Failed to install';
-            childProcessSpy.exec.and.callFake((cmd, opts, callback) => {
-                callback(null, errorMsg);
-            });
+            execaSpy.and.resolveTo({ stdout: errorMsg });
 
             return emu.install(target, {}).then(
                 () => fail('Unexpectedly resolved'),

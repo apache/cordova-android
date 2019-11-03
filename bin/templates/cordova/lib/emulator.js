@@ -34,7 +34,6 @@ var check_reqs = require('./check_reqs');
 
 var os = require('os');
 var fs = require('fs');
-var child_process = require('child_process');
 
 // constants
 var ONE_SECOND = 1000; // in milliseconds
@@ -294,8 +293,7 @@ module.exports.start = function (emulator_ID, boot_timeout) {
             var emulator_dir = path.dirname(shelljs.which('emulator'));
             var args = ['-avd', emulatorId, '-port', port];
             // Don't wait for it to finish, since the emulator will probably keep running for a long time.
-            child_process
-                .spawn('emulator', args, { stdio: 'inherit', detached: true, cwd: emulator_dir })
+            execa('emulator', args, { stdio: 'inherit', detached: true, cwd: emulator_dir })
                 .unref();
 
             // wait for emulator to start
@@ -474,24 +472,21 @@ module.exports.install = function (givenTarget, buildResults) {
             function adbInstallWithOptions (target, apk, opts) {
                 events.emit('verbose', 'Installing apk ' + apk + ' on ' + target + '...');
 
-                var command = 'adb -s ' + target + ' install -r "' + apk + '"';
-                return new Promise(function (resolve, reject) {
-                    child_process.exec(command, opts, function (err, stdout, stderr) {
-                        if (err) reject(new CordovaError('Error executing "' + command + '": ' + stderr));
-                        // adb does not return an error code even if installation fails. Instead it puts a specific
-                        // message to stdout, so we have to use RegExp matching to detect installation failure.
-                        else if (/Failure/.test(stdout)) {
-                            if (stdout.match(/INSTALL_PARSE_FAILED_NO_CERTIFICATES/)) {
-                                stdout += 'Sign the build using \'-- --keystore\' or \'--buildConfig\'' +
-                                    ' or sign and deploy the unsigned apk manually using Android tools.';
-                            } else if (stdout.match(/INSTALL_FAILED_VERSION_DOWNGRADE/)) {
-                                stdout += 'You\'re trying to install apk with a lower versionCode that is already installed.' +
-                                    '\nEither uninstall an app or increment the versionCode.';
-                            }
+                const args = ['-s', target, 'install', '-r', apk];
+                return execa('adb', args, opts).then(({ stdout }) => {
+                    // adb does not return an error code even if installation fails. Instead it puts a specific
+                    // message to stdout, so we have to use RegExp matching to detect installation failure.
+                    if (/Failure/.test(stdout)) {
+                        if (stdout.match(/INSTALL_PARSE_FAILED_NO_CERTIFICATES/)) {
+                            stdout += 'Sign the build using \'-- --keystore\' or \'--buildConfig\'' +
+                                ' or sign and deploy the unsigned apk manually using Android tools.';
+                        } else if (stdout.match(/INSTALL_FAILED_VERSION_DOWNGRADE/)) {
+                            stdout += 'You\'re trying to install apk with a lower versionCode that is already installed.' +
+                                '\nEither uninstall an app or increment the versionCode.';
+                        }
 
-                            reject(new CordovaError('Failed to install apk to emulator: ' + stdout));
-                        } else resolve(stdout);
-                    });
+                        throw new CordovaError('Failed to install apk to emulator: ' + stdout);
+                    }
                 });
             }
 
