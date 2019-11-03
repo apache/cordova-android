@@ -21,7 +21,6 @@
 
 const execa = require('execa');
 var shelljs = require('shelljs');
-var child_process = require('child_process');
 var Q = require('q');
 var path = require('path');
 var fs = require('fs');
@@ -89,7 +88,7 @@ module.exports.get_gradle_wrapper = function () {
     // OK, This hack only works on Windows, not on Mac OS or Linux.  We will be deleting this eventually!
     if (module.exports.isWindows()) {
 
-        var result = child_process.spawnSync(path.join(__dirname, 'getASPath.bat'));
+        var result = execa.sync(path.join(__dirname, 'getASPath.bat'));
         // console.log('result.stdout =' + result.stdout.toString());
         // console.log('result.stderr =' + result.stderr.toString());
 
@@ -194,11 +193,9 @@ module.exports.check_java = function () {
             }
         }
     }).then(function () {
-        return Q.denodeify(child_process.exec)('javac -version')
-            .then(outputs => {
-                // outputs contains two entries: stdout and stderr
+        return execa('javac', ['-version'], { all: true })
+            .then(({ all: output }) => {
                 // Java <= 8 writes version info to stderr, Java >= 9 to stdout
-                const output = outputs.join('').trim();
                 const match = /javac\s+([\d.]+)/i.exec(output);
                 return match && match[1];
             }, () => {
