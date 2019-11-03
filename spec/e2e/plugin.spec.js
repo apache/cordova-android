@@ -21,7 +21,8 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const shell = require('shelljs');
-const { PluginInfoProvider, superspawn } = require('cordova-common');
+const execa = require('execa');
+const { PluginInfoProvider } = require('cordova-common');
 
 const createBin = path.join(__dirname, '../../bin/create');
 const fakePluginPath = path.join(__dirname, 'fixtures/cordova-plugin-fake');
@@ -44,7 +45,7 @@ describe('plugin add', function () {
         const pluginInfo = new PluginInfoProvider().get(fakePluginPath);
 
         return Promise.resolve()
-            .then(() => superspawn.spawn(createBin, [projectPath, projectid, projectname]))
+            .then(() => execa(createBin, [projectPath, projectid, projectname]))
             .then(() => {
                 const Api = require(path.join(projectPath, 'cordova/Api.js'));
                 return new Api('android', projectPath).addPlugin(pluginInfo);
