@@ -55,9 +55,7 @@ module.exports.prepare = function (cordovaProject, options) {
     gradlePropertiesParser.configure(gradlePropertiesUserConfig);
 
     // Update own www dir with project's www assets and plugins' assets and js-files
-    return new Promise(() => {
-        updateWww(cordovaProject, this.locations);
-    }).then(function () {
+    return Promise.resolve(updateWww(cordovaProject, this.locations)).then(function () {
         // update project according to config.xml changes.
         return updateProjectAccordingTo(self._config, self.locations);
     }).then(function () {

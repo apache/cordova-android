@@ -214,7 +214,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
         require('./lib/builders/builders').getBuilder().prepBuildFiles();
     }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
-        .then(() => Promise.resolve(true));
+        .then(() => true);
 };
 
 /**
@@ -246,7 +246,7 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
             require('./lib/builders/builders').getBuilder().prepBuildFiles();
         }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
-        .then(() => Promise.resolve(true));
+        .then(() => true);
 };
 
 /**

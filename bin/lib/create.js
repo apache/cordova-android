@@ -332,7 +332,7 @@ exports.create = function (project_path, config, options, events) {
             exports.writeProjectProperties(project_path, target_api);
             exports.prepBuildFiles(project_path);
             events.emit('log', generateDoneMessage('create', options.link));
-        }).then(() => Promise.resolve(project_path));
+        }).then(() => project_path);
 };
 
 function generateDoneMessage (type, link) {
