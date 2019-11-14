@@ -209,7 +209,7 @@ function validatePackageName (package_name) {
 }
 
 /**
- * Test whether a project name is acceptable for use as a name
+ * Test whether given string is acceptable for use as a project name
  * Returns a promise, fulfilled if the project name is acceptable; rejected
  * otherwise.
  */
