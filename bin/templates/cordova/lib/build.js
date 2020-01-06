@@ -28,7 +28,7 @@ var Adb = require('./Adb');
 
 var builders = require('./builders/builders');
 var events = require('cordova-common').events;
-var spawn = require('cordova-common').superspawn.spawn;
+const execa = require('execa');
 var CordovaError = require('cordova-common').CordovaError;
 var PackageType = require('./PackageType');
 
@@ -212,11 +212,11 @@ module.exports.detectArchitecture = function (target) {
             // Could probably find a x-platform version of killall, but I'm not actually
             // sure that this scenario even happens on non-OSX machines.
             events.emit('verbose', 'adb timed out while detecting device/emulator architecture. Killing adb and trying again.');
-            return spawn('killall', ['adb']).then(function () {
+            return execa('killall', ['adb']).then(function () {
                 return helper().then(null, function () {
                     // The double kill is sadly often necessary, at least on mac.
                     events.emit('warn', 'adb timed out a second time while detecting device/emulator architecture. Killing adb and trying again.');
-                    return spawn('killall', ['adb']).then(function () {
+                    return execa('killall', ['adb']).then(function () {
                         return helper().then(null, function () {
                             return Q.reject(new CordovaError('adb timed out a third time while detecting device/emulator architecture. Try unplugging & replugging the device.'));
                         });

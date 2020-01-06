@@ -17,11 +17,10 @@
        under the License.
 */
 
-var Q = require('q');
 var fs = require('fs');
 var path = require('path');
 var shell = require('shelljs');
-var spawn = require('cordova-common').superspawn.spawn;
+const execa = require('execa');
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 var check_reqs = require('../check_reqs');
@@ -80,7 +79,7 @@ class ProjectBuilder {
         if (fs.existsSync(gradlePath)) {
             // Literally do nothing, for some reason this works, while !fs.existsSync didn't on Windows
         } else {
-            return spawn(gradle_cmd, ['-p', this.root, 'wrapper', '-b', wrapperGradle], { stdio: 'inherit' });
+            return execa(gradle_cmd, ['-p', this.root, 'wrapper', '-b', wrapperGradle], { stdio: 'inherit' });
         }
     }
 
@@ -250,16 +249,16 @@ class ProjectBuilder {
         var wrapper = path.join(this.root, 'gradlew');
         var args = this.getArgs(opts.buildType === 'debug' ? 'debug' : 'release', opts);
 
-        return spawn(wrapper, args, { stdio: 'inherit' })
+        return execa(wrapper, args, { stdio: 'inherit' })
             .catch(function (error) {
                 if (error.toString().indexOf('failed to find target with hash string') >= 0) {
                     return check_reqs.check_android_target(error).then(function () {
                         // If due to some odd reason - check_android_target succeeds
                         // we should still fail here.
-                        return Q.reject(error);
+                        throw error;
                     });
                 }
-                return Q.reject(error);
+                throw error;
             });
     }
 
@@ -267,9 +266,7 @@ class ProjectBuilder {
         var builder = this;
         var wrapper = path.join(this.root, 'gradlew');
         var args = builder.getArgs('clean', opts);
-        return Q().then(function () {
-            return spawn(wrapper, args, { stdio: 'inherit' });
-        })
+        return execa(wrapper, args, { stdio: 'inherit' })
             .then(function () {
                 shell.rm('-rf', path.join(builder.root, 'out'));
 

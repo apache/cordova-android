@@ -33,12 +33,12 @@ emulator-5554\tdevice
     const downgradeError = 'adb: failed to install app.apk: Failure[INSTALL_FAILED_VERSION_DOWNGRADE]';
 
     let Adb;
-    let spawnSpy;
+    let execaSpy;
 
     beforeEach(() => {
         Adb = rewire('../../bin/templates/cordova/lib/Adb');
-        spawnSpy = jasmine.createSpy('spawn');
-        Adb.__set__('spawn', spawnSpy);
+        execaSpy = jasmine.createSpy('execa');
+        Adb.__set__('execa', execaSpy);
     });
 
     describe('isDevice', () => {
@@ -61,7 +61,7 @@ emulator-5554\tdevice
 
     describe('devices', () => {
         beforeEach(() => {
-            spawnSpy.and.returnValue(Promise.resolve(adbOutput));
+            execaSpy.and.returnValue(Promise.resolve({ stdout: adbOutput }));
         });
 
         it('should return only devices if no options are specified', () => {
@@ -81,12 +81,12 @@ emulator-5554\tdevice
 
     describe('install', () => {
         beforeEach(() => {
-            spawnSpy.and.returnValue(Promise.resolve(''));
+            execaSpy.and.returnValue(Promise.resolve({ stdout: '' }));
         });
 
         it('should target the passed device id to adb', () => {
             return Adb.install(deviceId).then(() => {
-                const args = spawnSpy.calls.argsFor(0);
+                const args = execaSpy.calls.argsFor(0);
                 expect(args[0]).toBe('adb');
 
                 const adbArgs = args[1].join(' ');
@@ -96,7 +96,7 @@ emulator-5554\tdevice
 
         it('should add the -r flag if opts.replace is set', () => {
             return Adb.install(deviceId, '', { replace: true }).then(() => {
-                const adbArgs = spawnSpy.calls.argsFor(0)[1];
+                const adbArgs = execaSpy.calls.argsFor(0)[1];
                 expect(adbArgs).toContain('-r');
             });
         });
@@ -105,13 +105,13 @@ emulator-5554\tdevice
             const packagePath = 'build/test/app.apk';
 
             return Adb.install(deviceId, packagePath).then(() => {
-                const adbArgs = spawnSpy.calls.argsFor(0)[1];
+                const adbArgs = execaSpy.calls.argsFor(0)[1];
                 expect(adbArgs).toContain(packagePath);
             });
         });
 
         it('should reject with a CordovaError if the adb output suggests a failure', () => {
-            spawnSpy.and.returnValue(Promise.resolve(alreadyExistsError));
+            execaSpy.and.returnValue(Promise.resolve({ stdout: alreadyExistsError }));
 
             return Adb.install(deviceId, '').then(
                 () => fail('Unexpectedly resolved'),
@@ -124,7 +124,7 @@ emulator-5554\tdevice
         // The following two tests are somewhat brittle as they are dependent on the
         // exact message returned. But it is better to have them tested than not at all.
         it('should give a more specific error message if there is a certificate failure', () => {
-            spawnSpy.and.returnValue(Promise.resolve(certificateError));
+            execaSpy.and.returnValue(Promise.resolve({ stdout: certificateError }));
 
             return Adb.install(deviceId, '').then(
                 () => fail('Unexpectedly resolved'),
@@ -136,7 +136,7 @@ emulator-5554\tdevice
         });
 
         it('should give a more specific error message if there is a downgrade error', () => {
-            spawnSpy.and.returnValue(Promise.resolve(downgradeError));
+            execaSpy.and.returnValue(Promise.resolve({ stdout: downgradeError }));
 
             return Adb.install(deviceId, '').then(
                 () => fail('Unexpectedly resolved'),
@@ -151,10 +151,10 @@ emulator-5554\tdevice
     describe('uninstall', () => {
         it('should call adb uninstall with the correct arguments', () => {
             const packageId = 'io.cordova.test';
-            spawnSpy.and.returnValue(Promise.resolve(''));
+            execaSpy.and.returnValue(Promise.resolve({ stdout: '' }));
 
             return Adb.uninstall(deviceId, packageId).then(() => {
-                const args = spawnSpy.calls.argsFor(0);
+                const args = execaSpy.calls.argsFor(0);
                 expect(args[0]).toBe('adb');
 
                 const adbArgs = args[1];
@@ -169,10 +169,10 @@ emulator-5554\tdevice
         const shellCommand = 'ls -l /sdcard';
 
         it('should run the passed command on the target device', () => {
-            spawnSpy.and.returnValue(Promise.resolve(''));
+            execaSpy.and.returnValue(Promise.resolve({ stdout: '' }));
 
             return Adb.shell(deviceId, shellCommand).then(() => {
-                const args = spawnSpy.calls.argsFor(0);
+                const args = execaSpy.calls.argsFor(0);
                 expect(args[0]).toBe('adb');
 
                 const adbArgs = args[1].join(' ');
@@ -184,7 +184,7 @@ emulator-5554\tdevice
 
         it('should reject with a CordovaError on failure', () => {
             const errorMessage = 'shell error';
-            spawnSpy.and.returnValue(Promise.reject(errorMessage));
+            execaSpy.and.rejectWith(new Error(errorMessage));
 
             return Adb.shell(deviceId, shellCommand).then(
                 () => fail('Unexpectedly resolved'),
@@ -214,7 +214,7 @@ emulator-5554\tdevice
 
         it('should reject with a CordovaError on a shell error', () => {
             const errorMessage = 'Test Start error';
-            spyOn(Adb, 'shell').and.returnValue(Promise.reject(errorMessage));
+            spyOn(Adb, 'shell').and.rejectWith(new CordovaError(errorMessage));
 
             return Adb.start(deviceId, activityName).then(
                 () => fail('Unexpectedly resolved'),

@@ -19,6 +19,7 @@
        under the License.
 */
 
+const execa = require('execa');
 var android_versions = require('android-versions');
 var retry = require('./retry');
 var build = require('./build');
@@ -26,7 +27,6 @@ var path = require('path');
 var Adb = require('./Adb');
 var AndroidManifest = require('./AndroidManifest');
 var events = require('cordova-common').events;
-var superspawn = require('cordova-common').superspawn;
 var CordovaError = require('cordova-common').CordovaError;
 var shelljs = require('shelljs');
 var android_sdk = require('./android_sdk');
@@ -34,7 +34,6 @@ var check_reqs = require('./check_reqs');
 
 var os = require('os');
 var fs = require('fs');
-var child_process = require('child_process');
 
 // constants
 var ONE_SECOND = 1000; // in milliseconds
@@ -53,7 +52,7 @@ function forgivingWhichSync (cmd) {
 }
 
 module.exports.list_images_using_avdmanager = function () {
-    return superspawn.spawn('avdmanager', ['list', 'avd']).then(function (output) {
+    return execa('avdmanager', ['list', 'avd']).then(({ stdout: output }) => {
         var response = output.split('\n');
         var emulator_list = [];
         for (var i = 1; i < response.length; i++) {
@@ -113,7 +112,7 @@ module.exports.list_images_using_avdmanager = function () {
 };
 
 module.exports.list_images_using_android = function () {
-    return superspawn.spawn('android', ['list', 'avd']).then(function (output) {
+    return execa('android', ['list', 'avd']).then(({ stdout: output }) => {
         var response = output.split('\n');
         var emulator_list = [];
         for (var i = 1; i < response.length; i++) {
@@ -229,7 +228,7 @@ module.exports.list_started = function () {
 // Returns a promise.
 // TODO: we should remove this, there's a more robust method under android_sdk.js
 module.exports.list_targets = function () {
-    return superspawn.spawn('android', ['list', 'targets'], { cwd: os.tmpdir() }).then(function (output) {
+    return execa('android', ['list', 'targets'], { cwd: os.tmpdir() }).then(({ stdout: output }) => {
         var target_out = output.split('\n');
         var targets = [];
         for (var i = target_out.length; i >= 0; i--) {
@@ -294,8 +293,7 @@ module.exports.start = function (emulator_ID, boot_timeout) {
             var emulator_dir = path.dirname(shelljs.which('emulator'));
             var args = ['-avd', emulatorId, '-port', port];
             // Don't wait for it to finish, since the emulator will probably keep running for a long time.
-            child_process
-                .spawn('emulator', args, { stdio: 'inherit', detached: true, cwd: emulator_dir })
+            execa('emulator', args, { stdio: 'inherit', detached: true, cwd: emulator_dir })
                 .unref();
 
             // wait for emulator to start
@@ -387,22 +385,22 @@ module.exports.wait_for_boot = function (emulator_id, time_remaining) {
 module.exports.create_image = function (name, target) {
     console.log('Creating new avd named ' + name);
     if (target) {
-        return superspawn.spawn('android', ['create', 'avd', '--name', name, '--target', target]).then(null, function (error) {
+        return execa('android', ['create', 'avd', '--name', name, '--target', target]).then(null, function (error) {
             console.error('ERROR : Failed to create emulator image : ');
             console.error(' Do you have the latest android targets including ' + target + '?');
-            console.error(error);
+            console.error(error.message);
         });
     } else {
         console.log('WARNING : Project target not found, creating avd with a different target but the project may fail to install.');
         // TODO: there's a more robust method for finding targets in android_sdk.js
-        return superspawn.spawn('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]]).then(function () {
+        return execa('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]]).then(function () {
             // TODO: This seems like another error case, even though it always happens.
             console.error('ERROR : Unable to create an avd emulator, no targets found.');
             console.error('Ensure you have targets available by running the "android" command');
             return Promise.reject(new CordovaError());
         }, function (error) {
             console.error('ERROR : Failed to create emulator image : ');
-            console.error(error);
+            console.error(error.message);
         });
     }
 };
@@ -474,24 +472,21 @@ module.exports.install = function (givenTarget, buildResults) {
             function adbInstallWithOptions (target, apk, opts) {
                 events.emit('verbose', 'Installing apk ' + apk + ' on ' + target + '...');
 
-                var command = 'adb -s ' + target + ' install -r "' + apk + '"';
-                return new Promise(function (resolve, reject) {
-                    child_process.exec(command, opts, function (err, stdout, stderr) {
-                        if (err) reject(new CordovaError('Error executing "' + command + '": ' + stderr));
-                        // adb does not return an error code even if installation fails. Instead it puts a specific
-                        // message to stdout, so we have to use RegExp matching to detect installation failure.
-                        else if (/Failure/.test(stdout)) {
-                            if (stdout.match(/INSTALL_PARSE_FAILED_NO_CERTIFICATES/)) {
-                                stdout += 'Sign the build using \'-- --keystore\' or \'--buildConfig\'' +
-                                    ' or sign and deploy the unsigned apk manually using Android tools.';
-                            } else if (stdout.match(/INSTALL_FAILED_VERSION_DOWNGRADE/)) {
-                                stdout += 'You\'re trying to install apk with a lower versionCode that is already installed.' +
-                                    '\nEither uninstall an app or increment the versionCode.';
-                            }
+                const args = ['-s', target, 'install', '-r', apk];
+                return execa('adb', args, opts).then(({ stdout }) => {
+                    // adb does not return an error code even if installation fails. Instead it puts a specific
+                    // message to stdout, so we have to use RegExp matching to detect installation failure.
+                    if (/Failure/.test(stdout)) {
+                        if (stdout.match(/INSTALL_PARSE_FAILED_NO_CERTIFICATES/)) {
+                            stdout += 'Sign the build using \'-- --keystore\' or \'--buildConfig\'' +
+                                ' or sign and deploy the unsigned apk manually using Android tools.';
+                        } else if (stdout.match(/INSTALL_FAILED_VERSION_DOWNGRADE/)) {
+                            stdout += 'You\'re trying to install apk with a lower versionCode that is already installed.' +
+                                '\nEither uninstall an app or increment the versionCode.';
+                        }
 
-                            reject(new CordovaError('Failed to install apk to emulator: ' + stdout));
-                        } else resolve(stdout);
-                    });
+                        throw new CordovaError('Failed to install apk to emulator: ' + stdout);
+                    }
                 });
             }
 

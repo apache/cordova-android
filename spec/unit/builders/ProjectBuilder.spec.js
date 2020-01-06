@@ -19,7 +19,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const Q = require('q');
 const rewire = require('rewire');
 
 const CordovaError = require('cordova-common').CordovaError;
@@ -29,12 +28,12 @@ describe('ProjectBuilder', () => {
 
     let builder;
     let ProjectBuilder;
-    let spawnSpy;
+    let execaSpy;
 
     beforeEach(() => {
-        spawnSpy = jasmine.createSpy('spawn').and.returnValue(Q.defer().promise);
+        execaSpy = jasmine.createSpy('execa').and.returnValue(new Promise(() => {}));
         ProjectBuilder = rewire('../../../bin/templates/cordova/lib/builders/ProjectBuilder');
-        ProjectBuilder.__set__('spawn', spawnSpy);
+        ProjectBuilder.__set__('execa', execaSpy);
 
         builder = new ProjectBuilder(rootDir);
     });
@@ -120,13 +119,13 @@ describe('ProjectBuilder', () => {
         it('should run the provided gradle command if a gradle wrapper does not already exist', () => {
             spyOn(fs, 'existsSync').and.returnValue(false);
             builder.runGradleWrapper('/my/sweet/gradle');
-            expect(spawnSpy).toHaveBeenCalledWith('/my/sweet/gradle', jasmine.any(Array), jasmine.any(Object));
+            expect(execaSpy).toHaveBeenCalledWith('/my/sweet/gradle', jasmine.any(Array), jasmine.any(Object));
         });
 
         it('should do nothing if a gradle wrapper exists in the project directory', () => {
             spyOn(fs, 'existsSync').and.returnValue(true);
             builder.runGradleWrapper('/my/sweet/gradle');
-            expect(spawnSpy).not.toHaveBeenCalledWith('/my/sweet/gradle', jasmine.any(Array), jasmine.any(Object));
+            expect(execaSpy).not.toHaveBeenCalledWith('/my/sweet/gradle', jasmine.any(Array), jasmine.any(Object));
         });
     });
 
@@ -182,34 +181,34 @@ describe('ProjectBuilder', () => {
 
             builder.build({});
 
-            expect(spawnSpy).toHaveBeenCalledWith(path.join(rootDir, 'gradlew'), testArgs, jasmine.anything());
+            expect(execaSpy).toHaveBeenCalledWith(path.join(rootDir, 'gradlew'), testArgs, jasmine.anything());
         });
 
         it('should reject if the spawn fails', () => {
-            const errorMessage = 'ERROR: Failed to spawn';
-            spawnSpy.and.returnValue(Q.reject(errorMessage));
+            const errorMessage = 'Test error';
+            execaSpy.and.rejectWith(new Error(errorMessage));
 
             return builder.build({}).then(
                 () => fail('Unexpectedly resolved'),
-                err => {
-                    expect(err).toBe(errorMessage);
+                error => {
+                    expect(error.message).toBe(errorMessage);
                 }
             );
         });
 
         it('should check the Android target if failed to find target', () => {
             const checkReqsSpy = jasmine.createSpyObj('check_reqs', ['check_android_target']);
-            const errorMessage = 'ERROR: failed to find target with hash string';
+            const testError = 'failed to find target with hash string';
 
             ProjectBuilder.__set__('check_reqs', checkReqsSpy);
-            checkReqsSpy.check_android_target.and.returnValue(Q.resolve());
-            spawnSpy.and.returnValue(Q.reject(errorMessage));
+            checkReqsSpy.check_android_target.and.returnValue(Promise.resolve());
+            execaSpy.and.rejectWith(testError);
 
             return builder.build({}).then(
                 () => fail('Unexpectedly resolved'),
-                err => {
-                    expect(checkReqsSpy.check_android_target).toHaveBeenCalledWith(errorMessage);
-                    expect(err).toBe(errorMessage);
+                error => {
+                    expect(checkReqsSpy.check_android_target).toHaveBeenCalledWith(testError);
+                    expect(error).toBe(testError);
                 }
             );
         });
@@ -222,7 +221,7 @@ describe('ProjectBuilder', () => {
             shellSpy = jasmine.createSpyObj('shell', ['rm']);
             ProjectBuilder.__set__('shell', shellSpy);
             spyOn(builder, 'getArgs');
-            spawnSpy.and.returnValue(Promise.resolve());
+            execaSpy.and.returnValue(Promise.resolve());
         });
 
         it('should get arguments for cleaning', () => {
@@ -238,7 +237,7 @@ describe('ProjectBuilder', () => {
             builder.getArgs.and.returnValue(gradleArgs);
 
             return builder.clean(opts).then(() => {
-                expect(spawnSpy).toHaveBeenCalledWith(path.join(rootDir, 'gradlew'), gradleArgs, jasmine.anything());
+                expect(execaSpy).toHaveBeenCalledWith(path.join(rootDir, 'gradlew'), gradleArgs, jasmine.anything());
             });
         });
 
