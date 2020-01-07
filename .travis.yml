@@ -11,8 +11,6 @@ env:
     - ANDROID_BUILD_TOOLS_VERSION=28.0.3
     - TERM=dumb # Keep gradle from crapping all over the log
   matrix:
-    - nodejs_version=6
-    - nodejs_version=8
     - nodejs_version=10
     - nodejs_version=12
 

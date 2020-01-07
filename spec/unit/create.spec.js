@@ -22,7 +22,6 @@ var create = rewire('../../bin/lib/create');
 var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
 var fs = require('fs');
 var path = require('path');
-var Q = require('q');
 var shell = require('shelljs');
 
 describe('create', function () {
@@ -116,8 +115,8 @@ describe('create', function () {
             Manifest_mock.prototype.setPackageId.and.returnValue(new Manifest_mock());
             Manifest_mock.prototype.getActivity.and.returnValue(new Manifest_mock());
             Manifest_mock.prototype.setName.and.returnValue(new Manifest_mock());
-            spyOn(create, 'validatePackageName').and.returnValue(Q());
-            spyOn(create, 'validateProjectName').and.returnValue(Q());
+            spyOn(create, 'validatePackageName').and.resolveTo();
+            spyOn(create, 'validateProjectName').and.resolveTo();
             spyOn(create, 'setShellFatal').and.callFake(function (noop, cb) { cb(); });
             spyOn(create, 'copyJsAndLibrary');
             spyOn(create, 'copyScripts');

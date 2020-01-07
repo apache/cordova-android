@@ -42,12 +42,12 @@ describe('device', () => {
         });
 
         it('should kill adb and try to get devices again if none are found the first time, and `lookHarder` is set', () => {
-            const spawnSpy = jasmine.createSpy('spawn').and.returnValue(Promise.resolve());
-            device.__set__('spawn', spawnSpy);
+            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve());
+            device.__set__('execa', execaSpy);
             AdbSpy.devices.and.returnValues(Promise.resolve([]), Promise.resolve(DEVICE_LIST));
 
             return device.list(true).then(list => {
-                expect(spawnSpy).toHaveBeenCalledWith('killall', ['adb']);
+                expect(execaSpy).toHaveBeenCalledWith('killall', ['adb']);
                 expect(list).toBe(DEVICE_LIST);
                 expect(AdbSpy.devices).toHaveBeenCalledTimes(2);
             });
@@ -55,12 +55,12 @@ describe('device', () => {
 
         it('should return the empty list if killing adb fails', () => {
             const emptyDevices = [];
-            const spawnSpy = jasmine.createSpy('spawn').and.returnValue(Promise.reject());
-            device.__set__('spawn', spawnSpy);
+            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.reject());
+            device.__set__('execa', execaSpy);
             AdbSpy.devices.and.returnValues(Promise.resolve(emptyDevices));
 
             return device.list(true).then(list => {
-                expect(spawnSpy).toHaveBeenCalledWith('killall', ['adb']);
+                expect(execaSpy).toHaveBeenCalledWith('killall', ['adb']);
                 expect(list).toBe(emptyDevices);
                 expect(AdbSpy.devices).toHaveBeenCalledTimes(1);
             });

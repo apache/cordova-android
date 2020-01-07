@@ -22,9 +22,8 @@
 var path = require('path');
 var emulator = require('./emulator');
 var device = require('./device');
-var Q = require('q');
 var PackageType = require('./PackageType');
-var events = require('cordova-common').events;
+const { CordovaError, events } = require('cordova-common');
 
 function getInstallTarget (runOptions) {
     var install_target;
@@ -55,7 +54,7 @@ module.exports.run = function (runOptions) {
     var self = this;
     var install_target = getInstallTarget(runOptions);
 
-    return Q().then(function () {
+    return Promise.resolve().then(function () {
         if (!install_target) {
             // no target given, deploy to device if available, otherwise use the emulator.
             return device.list().then(function (device_list) {
@@ -97,7 +96,7 @@ module.exports.run = function (runOptions) {
                             });
                         }
                     }
-                    return Q.reject('Target \'' + install_target + '\' not found, unable to run project');
+                    return Promise.reject(new CordovaError(`Target '${install_target}' not found, unable to run project`));
                 });
             });
         });

@@ -171,7 +171,7 @@ describe('run', () => {
 
             return run.run().then(
                 () => fail('Expected error to be thrown'),
-                err => expect(err).toContain(target)
+                err => expect(err.message).toContain(target)
             );
         });
 

@@ -27,7 +27,7 @@ var args = process.argv;
 if (args.length > 2) {
     log.help();
 } else {
-    reqs.run().done(function () {
+    reqs.run().then(function () {
         return log.run();
     }, function (err) {
         console.error('ERROR: ' + err);

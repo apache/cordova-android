@@ -17,7 +17,7 @@
        under the License.
 */
 
-var superspawn = require('cordova-common').superspawn;
+const execa = require('execa');
 
 var suffix_number_regex = /(\d+)$/;
 // Used for sorting Android targets, example strings to sort:
@@ -77,11 +77,11 @@ function parse_targets (output) {
 }
 
 module.exports.list_targets_with_android = function () {
-    return superspawn.spawn('android', ['list', 'target']).then(parse_targets);
+    return execa('android', ['list', 'target']).then(result => parse_targets(result.stdout));
 };
 
 module.exports.list_targets_with_avdmanager = function () {
-    return superspawn.spawn('avdmanager', ['list', 'target']).then(parse_targets);
+    return execa('avdmanager', ['list', 'target']).then(result => parse_targets(result.stdout));
 };
 
 module.exports.list_targets = function () {

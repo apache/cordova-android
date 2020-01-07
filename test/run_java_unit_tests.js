@@ -19,12 +19,11 @@
        under the License.
 */
 
-var Q = require('q');
 var path = require('path');
-var superspawn = require('cordova-common').superspawn;
+var execa = require('execa');
 var ProjectBuilder = require('../bin/templates/cordova/lib/builders/ProjectBuilder');
 
-Q.resolve()
+Promise.resolve()
     .then(_ => console.log('Preparing Gradle wrapper for Java unit tests.'))
     .then(_ => new ProjectBuilder(__dirname).runGradleWrapper('gradle'))
     .then(_ => gradlew('--version'))
@@ -42,7 +41,7 @@ process.on('unhandledRejection', err => {
 
 function gradlew () {
     const wrapperPath = path.join(__dirname, 'gradlew');
-    return superspawn.spawn(wrapperPath, Array.from(arguments), {
+    return execa(wrapperPath, Array.from(arguments), {
         stdio: 'inherit',
         cwd: __dirname
     });
