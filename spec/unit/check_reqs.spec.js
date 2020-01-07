@@ -22,7 +22,6 @@ var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
 var shelljs = require('shelljs');
 var fs = require('fs');
 var path = require('path');
-var Q = require('q');
 
 describe('check_reqs', function () {
     var original_env;
@@ -51,7 +50,7 @@ describe('check_reqs', function () {
                     process.env.ProgramFiles = 'windows-program-files';
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toContain('windows-local-app-data');
-                    }).fin(function () {
+                    }).finally(function () {
                         delete process.env.LOCALAPPDATA;
                         delete process.env.ProgramFiles;
                     });
@@ -62,7 +61,7 @@ describe('check_reqs', function () {
                     process.env.HOME = 'home is where the heart is';
                     return check_reqs.check_android().then(function () {
                         expect(process.env.ANDROID_HOME).toContain('home is where the heart is');
-                    }).fin(function () {
+                    }).finally(function () {
                         delete process.env.HOME;
                     });
                 });
@@ -186,10 +185,8 @@ describe('check_reqs', function () {
     });
     describe('check_android_target', function () {
         it('should should return full list of supported targets if there is a match to ideal api level', () => {
-            var deferred = Q.defer();
-            spyOn(android_sdk, 'list_targets').and.returnValue(deferred.promise);
             var fake_targets = ['you are my fire', 'my one desire'];
-            deferred.resolve(fake_targets);
+            spyOn(android_sdk, 'list_targets').and.resolveTo(fake_targets);
             spyOn(check_reqs, 'get_target').and.returnValue('you are my fire');
             return check_reqs.check_android_target().then(function (targets) {
                 expect(targets).toBeDefined();
@@ -197,10 +194,8 @@ describe('check_reqs', function () {
             });
         });
         it('should error out if there is no match between ideal api level and installed targets', () => {
-            var deferred = Q.defer();
-            spyOn(android_sdk, 'list_targets').and.returnValue(deferred.promise);
             var fake_targets = ['you are my fire', 'my one desire'];
-            deferred.resolve(fake_targets);
+            spyOn(android_sdk, 'list_targets').and.resolveTo(fake_targets);
             spyOn(check_reqs, 'get_target').and.returnValue('and i knowwwwwwwwwwww');
             return check_reqs.check_android_target().then(() => {
                 fail('Expected promise to be rejected');

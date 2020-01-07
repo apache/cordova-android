@@ -201,7 +201,7 @@ describe('ProjectBuilder', () => {
             const testError = 'failed to find target with hash string';
 
             ProjectBuilder.__set__('check_reqs', checkReqsSpy);
-            checkReqsSpy.check_android_target.and.returnValue(Promise.resolve());
+            checkReqsSpy.check_android_target.and.resolveTo();
             execaSpy.and.rejectWith(testError);
 
             return builder.build({}).then(

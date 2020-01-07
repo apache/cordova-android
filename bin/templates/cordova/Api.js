@@ -18,7 +18,6 @@
 */
 
 var path = require('path');
-var Q = require('q');
 
 var AndroidProject = require('./lib/AndroidProject');
 var PluginManager = require('cordova-common').PluginManager;
@@ -206,7 +205,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
         installOptions.variables.PACKAGE_NAME = project.getPackageName();
     }
 
-    return Q().then(function () {
+    return Promise.resolve().then(function () {
         return PluginManager.get(self.platform, self.locations, project).addPlugin(plugin, installOptions);
     }).then(function () {
         if (plugin.getFrameworks(this.platform).length === 0) return;
@@ -215,7 +214,7 @@ Api.prototype.addPlugin = function (plugin, installOptions) {
         require('./lib/builders/builders').getBuilder().prepBuildFiles();
     }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
-        .thenResolve(true);
+        .then(() => true);
 };
 
 /**
@@ -247,7 +246,7 @@ Api.prototype.removePlugin = function (plugin, uninstallOptions) {
             require('./lib/builders/builders').getBuilder().prepBuildFiles();
         }.bind(this))
         // CB-11022 Return truthy value to prevent running prepare after
-        .thenResolve(true);
+        .then(() => true);
 };
 
 /**

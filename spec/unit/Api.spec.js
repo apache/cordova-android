@@ -17,7 +17,6 @@
     under the License.
 */
 
-var Q = require('q');
 var os = require('os');
 var path = require('path');
 var common = require('cordova-common');
@@ -38,13 +37,13 @@ describe('addPlugin method', function () {
         Api = rewire('../../bin/templates/cordova/Api');
 
         var pluginManager = jasmine.createSpyObj('pluginManager', ['addPlugin']);
-        pluginManager.addPlugin.and.returnValue(Q());
+        pluginManager.addPlugin.and.resolveTo();
         spyOn(common.PluginManager, 'get').and.returnValue(pluginManager);
 
         var projectSpy = jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write', 'isClean']);
         spyOn(AndroidProject, 'getProjectFile').and.returnValue(projectSpy);
 
-        Api.__set__('Api.prototype.clean', Q);
+        Api.__set__('Api.prototype.clean', async () => {});
 
         // Prevent logging to avoid polluting the test reports
         Api.__set__('selfEvents.emit', jasmine.createSpy());

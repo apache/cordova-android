@@ -19,7 +19,6 @@
        under the License.
 */
 
-var Q = require('q');
 var path = require('path');
 var fs = require('fs');
 var nopt = require('nopt');
@@ -204,9 +203,19 @@ module.exports.detectArchitecture = function (target) {
             return /intel/i.exec(output) ? 'x86' : 'arm';
         });
     }
+    function timeout (ms, err) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => reject(err), ms);
+        });
+    }
     // It sometimes happens (at least on OS X), that this command will hang forever.
     // To fix it, either unplug & replug device, or restart adb server.
-    return helper().timeout(1000, new CordovaError('Device communication timed out. Try unplugging & replugging the device.')).then(null, function (err) {
+    return Promise.race([
+        helper(),
+        timeout(1000, new CordovaError(
+            'Device communication timed out. Try unplugging & replugging the device.'
+        ))
+    ]).catch(err => {
         if (/timed out/.exec('' + err)) {
             // adb kill-server doesn't seem to do the trick.
             // Could probably find a x-platform version of killall, but I'm not actually
@@ -218,13 +227,13 @@ module.exports.detectArchitecture = function (target) {
                     events.emit('warn', 'adb timed out a second time while detecting device/emulator architecture. Killing adb and trying again.');
                     return execa('killall', ['adb']).then(function () {
                         return helper().then(null, function () {
-                            return Q.reject(new CordovaError('adb timed out a third time while detecting device/emulator architecture. Try unplugging & replugging the device.'));
+                            return Promise.reject(new CordovaError('adb timed out a third time while detecting device/emulator architecture. Try unplugging & replugging the device.'));
                         });
                     });
                 });
             }, function () {
                 // For non-killall OS's.
-                return Q.reject(err);
+                return Promise.reject(err);
             });
         }
         throw err;
