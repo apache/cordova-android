@@ -19,7 +19,7 @@ install:
     - set PATH=%PATH%;"%ANDROID_HOME%\tools\bin"
 
     - yes 2> nul | sdkmanager --licenses > nul
-    - sdkmanager "build-tools;28.0.3"
+    - sdkmanager "build-tools;29.0.2"
 
     - choco install gradle --version 3.4.1
 
