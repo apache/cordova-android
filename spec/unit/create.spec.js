@@ -79,7 +79,10 @@ describe('create', function () {
                 'mobilespec',
                 'package_name',
                 'PackageName',
-                'CordovaLib'
+                'CordovaLib',
+                '1337',
+                '3 Little Pigs',
+                'CordovaActivity'
             ];
             valid.forEach(function (project_name) {
                 it('Test#003 : should accept ' + project_name, () => {
@@ -94,22 +97,6 @@ describe('create', function () {
                 }, err => {
                     expect(err).toEqual(jasmine.any(Error));
                     expect(err.message).toContain('Project name cannot be empty');
-                });
-            });
-            it('should reject "CordovaActivity" as a project name', () => {
-                return create.validateProjectName('CordovaActivity').then(() => {
-                    fail('Expected promise to be rejected');
-                }, err => {
-                    expect(err).toEqual(jasmine.any(Error));
-                    expect(err.message).toContain('Project name cannot be CordovaActivity');
-                });
-            });
-            it('should reject project names that begin with a number', () => {
-                return create.validateProjectName('1337').then(() => {
-                    fail('Expected promise to be rejected');
-                }, err => {
-                    expect(err).toEqual(jasmine.any(Error));
-                    expect(err.message).toContain('Project name must not begin with a number');
                 });
             });
         });

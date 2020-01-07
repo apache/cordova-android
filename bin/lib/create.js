@@ -208,7 +208,7 @@ function validatePackageName (package_name) {
 }
 
 /**
- * Test whether a project name is acceptable for use as an android class.
+ * Test whether given string is acceptable for use as a project name
  * Returns a promise, fulfilled if the project name is acceptable; rejected
  * otherwise.
  */
@@ -217,16 +217,6 @@ function validateProjectName (project_name) {
     // Make sure there's something there
     if (project_name === '') {
         return Promise.reject(new CordovaError(msg + 'Project name cannot be empty'));
-    }
-
-    // Enforce stupid name error
-    if (project_name === 'CordovaActivity') {
-        return Promise.reject(new CordovaError(msg + 'Project name cannot be CordovaActivity'));
-    }
-
-    // Classes in Java don't begin with numbers
-    if (/^[0-9]/.test(project_name)) {
-        return Promise.reject(new CordovaError(msg + 'Project name must not begin with a number'));
     }
 
     return Promise.resolve();
