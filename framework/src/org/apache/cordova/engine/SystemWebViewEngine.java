@@ -148,6 +148,8 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         webView.setVerticalScrollBarEnabled(false);
         // Enable JavaScript
         final WebSettings settings = webView.getSettings();
+        settings.setUseWideViewPort(preferences.getBoolean("UseWideViewPort", false));
+
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
@@ -156,8 +158,8 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         LOG.d(TAG, "CordovaWebView is running on device made by: " + manufacturer);
 
         //We don't save any form data in the application
-        settings.setSaveFormData(false);
-        settings.setSavePassword(false);
+        settings.setSaveFormData(preferences.getBoolean("SaveFormData", false));
+        settings.setSavePassword(preferences.getBoolean("SavePassword", false));
 
         // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         // while we do this
