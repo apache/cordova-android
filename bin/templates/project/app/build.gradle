@@ -32,8 +32,22 @@ buildscript {
         classpath 'com.android.tools.build:gradle:3.3.0'
 
         if(cdvHelpers.getConfigPreference('EnableGoogleServicesPlugin', 'false').toBoolean()) {
-            println 'Adding classpath "com.google.gms:google-services:4.2.0"'
-            classpath 'com.google.gms:google-services:4.2.0'
+            String defaultGoogleServiceVersion = '4.2.0'
+
+            /**
+             * Fetches the user's defined Google Services Plugin Version from config.xml.
+             * If the version is not set or invalid, it will default to the ${defaultGoogleServiceVersion}
+             */
+            String googleServicesVersion = cdvHelpers.getConfigPreference('GoogleServicesPluginVersion', defaultGoogleServiceVersion)
+            if(!cdvHelpers.isVersionValid(googleServicesVersion)) {
+                println("The defined Google Services plugin version (${googleServicesVersion}) does not appear to be a valid version. Falling back to version: ${defaultGoogleServiceVersion}.")
+                googleServicesVersion = defaultGoogleServiceVersion
+            }
+
+            // Create the Google Services classpath and set it.
+            String googleServicesClassPath = "com.google.gms:google-services:${googleServicesVersion}"
+            println "Adding classpath: ${googleServicesClassPath}"
+            classpath googleServicesClassPath
         }
     }
 }
