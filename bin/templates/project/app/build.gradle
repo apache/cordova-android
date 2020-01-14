@@ -27,8 +27,15 @@ buildscript {
     }
 
     dependencies {
+        apply from: '../CordovaLib/cordova.gradle'
+
         classpath 'com.android.tools.build:gradle:3.3.0'
-        classpath 'com.google.gms:google-services:3.2.1'
+
+        if(cdvHelpers.getConfigPreference('EnableGoogleServicesPlugin', 'false').toBoolean()) {
+            println 'Adding classpath "com.google.gms:google-services:3.2.1"'
+
+            classpath 'com.google.gms:google-services:3.2.1'
+        }
     }
 }
 
