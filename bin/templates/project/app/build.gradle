@@ -31,7 +31,7 @@ buildscript {
 
         classpath 'com.android.tools.build:gradle:3.3.0'
 
-        if(cdvHelpers.getConfigPreference('GoogleServicesEnable', 'false').toBoolean()) {
+        if(cdvHelpers.getConfigPreference('GoogleServicesEnabled', 'false').toBoolean()) {
             String defaultGoogleServiceVersion = '4.2.0'
 
             /**
@@ -378,6 +378,6 @@ if (hasProperty('postBuildExtras')) {
     postBuildExtras()
 }
 
-if (cdvHelpers.getConfigPreference('GoogleServicesEnable', 'false').toBoolean()) {
+if (cdvHelpers.getConfigPreference('GoogleServicesEnabled', 'false').toBoolean()) {
     apply plugin: 'com.google.gms.google-services'
 }
