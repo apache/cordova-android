@@ -48,6 +48,10 @@ Version[] getAvailableBuildTools() {
         .sort { a, b -> a.isHigherThan(b) ? -1 : 1 }
 }
 
+Boolean isVersionValid(version) {
+    return !(new Version(version)).isEqual('0.0.0')
+}
+
 String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
     def availableBuildToolsVersions
     try {
