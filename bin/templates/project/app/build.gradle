@@ -19,7 +19,7 @@
 
 apply plugin: 'com.android.application'
 
-if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
+if (cdvHelpers.getConfigPreference('GradlePluginKotlinEnabled', 'false').toBoolean()) {
     apply plugin: 'kotlin-android'
     apply plugin: 'kotlin-android-extensions'
 }
@@ -27,20 +27,20 @@ if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
 buildscript {
     apply from: '../CordovaLib/cordova.gradle'
 
-    if(cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
-        String defaultKotlinVersion = '1.3.41'
+    if(cdvHelpers.getConfigPreference('GradlePluginKotlinEnabled', 'false').toBoolean()) {
+        String defaultGradlePluginKotlinVersion = '1.3.41'
 
         /**
          * Fetches the user's defined Kotlin Version from config.xml.
-         * If the version is not set or invalid, it will default to the ${defaultKotlinVersion}
+         * If the version is not set or invalid, it will default to the ${defaultGradlePluginKotlinVersion}
          */
-        String kotlinVersion = cdvHelpers.getConfigPreference('KotlinVersion', defaultKotlinVersion)
-        if(!cdvHelpers.isVersionValid(kotlinVersion)) {
-            println("The defined Kotlin version (${kotlinVersion}) does not appear to be a valid version. Falling back to version: ${defaultKotlinVersion}.")
-            kotlinVersion = defaultKotlinVersion
+        String gradlePluginKotlinVersion = cdvHelpers.getConfigPreference('GradlePluginKotlinVersion', defaultGradlePluginKotlinVersion)
+        if(!cdvHelpers.isVersionValid(gradlePluginKotlinVersion)) {
+            println("The defined Kotlin version (${gradlePluginKotlinVersion}) does not appear to be a valid version. Falling back to version: ${defaultGradlePluginKotlinVersion}.")
+            gradlePluginKotlinVersion = defaultGradlePluginKotlinVersion
         }
 
-        ext.kotlin_version = kotlinVersion
+        ext.kotlin_version = gradlePluginKotlinVersion
     }
 
     repositories {
@@ -54,7 +54,7 @@ buildscript {
 
         classpath 'com.android.tools.build:gradle:3.5.3'
 
-        if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
+        if (cdvHelpers.getConfigPreference('GradlePluginKotlinEnabled', 'false').toBoolean()) {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         }
 
@@ -344,7 +344,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
 
-    if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
+    if (cdvHelpers.getConfigPreference('GradlePluginKotlinEnabled', 'false').toBoolean()) {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     }
 
