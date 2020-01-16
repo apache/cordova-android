@@ -18,7 +18,8 @@
 */
 
 apply plugin: 'com.android.application'
-if (cdvHelpers.getConfigPreference('EnableKotlin', 'false').toBoolean()) {
+
+if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
     apply plugin: 'kotlin-android'
 }
 
@@ -35,7 +36,7 @@ buildscript {
 
         classpath 'com.android.tools.build:gradle:3.5.3'
 
-        if (cdvHelpers.getConfigPreference('EnableKotlin', 'false').toBoolean()) {
+        if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         }
 
@@ -321,7 +322,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
 
-    if (cdvHelpers.getConfigPreference('EnableKotlin', 'false').toBoolean()) {
+    if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
         compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     }
 
