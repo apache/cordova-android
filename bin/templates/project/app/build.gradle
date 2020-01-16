@@ -25,6 +25,8 @@ if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
 }
 
 buildscript {
+    apply from: '../CordovaLib/cordova.gradle'
+
     if(cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
         String defaultKotlinVersion = '1.3.41'
 
