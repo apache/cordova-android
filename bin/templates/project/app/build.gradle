@@ -25,7 +25,22 @@ if (cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
 }
 
 buildscript {
-    ext.kotlin_version = '1.3.41'
+    if(cdvHelpers.getConfigPreference('KotlinEnabled', 'false').toBoolean()) {
+        String defaultKotlinVersion = '1.3.41'
+
+        /**
+         * Fetches the user's defined Kotlin Version from config.xml.
+         * If the version is not set or invalid, it will default to the ${defaultKotlinVersion}
+         */
+        String kotlinVersion = cdvHelpers.getConfigPreference('KotlinVersion', defaultKotlinVersion)
+        if(!cdvHelpers.isVersionValid(kotlinVersion)) {
+            println("The defined Kotlin version (${kotlinVersion}) does not appear to be a valid version. Falling back to version: ${defaultKotlinVersion}.")
+            kotlinVersion = defaultKotlinVersion
+        }
+
+        ext.kotlin_version = kotlinVersion
+    }
+
     repositories {
         mavenCentral()
         google()
