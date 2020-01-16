@@ -54,7 +54,7 @@ module.exports.prepare = function (cordovaProject, options) {
     if (maxSdkVersion) gradlePropertiesUserConfig.cdvMaxSdkVersion = maxSdkVersion;
     if (targetSdkVersion) gradlePropertiesUserConfig.cdvTargetSdkVersion = targetSdkVersion;
     if (isKotlinEnabled) {
-        gradlePropertiesUserConfig['kotlin.code.style'] = kotlinCodeStyle ? kotlinCodeStyle : 'official';
+        gradlePropertiesUserConfig['kotlin.code.style'] = kotlinCodeStyle || 'official';
     }
 
     // Both 'useAndroidX' and 'enableJetifier' are linked together.
