@@ -31,23 +31,23 @@ buildscript {
 
         classpath 'com.android.tools.build:gradle:3.3.0'
 
-        if(cdvHelpers.getConfigPreference('GoogleServicesEnabled', 'false').toBoolean()) {
-            String defaultGoogleServiceVersion = '4.2.0'
+        if(cdvHelpers.getConfigPreference('GradlePluginGoogleServicesEnabled', 'false').toBoolean()) {
+            String defaultGradlePluginGoogleServicesVersion = '4.2.0'
 
             /**
              * Fetches the user's defined Google Services Plugin Version from config.xml.
-             * If the version is not set or invalid, it will default to the ${defaultGoogleServiceVersion}
+             * If the version is not set or invalid, it will default to the ${defaultGradlePluginGoogleServicesVersion}
              */
-            String googleServicesVersion = cdvHelpers.getConfigPreference('GoogleServicesVersion', defaultGoogleServiceVersion)
-            if(!cdvHelpers.isVersionValid(googleServicesVersion)) {
-                println("The defined Google Services plugin version (${googleServicesVersion}) does not appear to be a valid version. Falling back to version: ${defaultGoogleServiceVersion}.")
-                googleServicesVersion = defaultGoogleServiceVersion
+            String gradlePluginGoogleServicesVersion = cdvHelpers.getConfigPreference('GradlePluginGoogleServicesVersion', defaultGradlePluginGoogleServicesVersion)
+            if(!cdvHelpers.isVersionValid(gradlePluginGoogleServicesVersion)) {
+                println("The defined Google Services plugin version (${gradlePluginGoogleServicesVersion}) does not appear to be a valid version. Falling back to version: ${defaultGradlePluginGoogleServicesVersion}.")
+                gradlePluginGoogleServicesVersion = defaultGradlePluginGoogleServicesVersion
             }
 
             // Create the Google Services classpath and set it.
-            String googleServicesClassPath = "com.google.gms:google-services:${googleServicesVersion}"
-            println "Adding classpath: ${googleServicesClassPath}"
-            classpath googleServicesClassPath
+            String gradlePluginGoogleServicesClassPath = "com.google.gms:google-services:${gradlePluginGoogleServicesVersion}"
+            println "Adding classpath: ${gradlePluginGoogleServicesClassPath}"
+            classpath gradlePluginGoogleServicesClassPath
         }
     }
 }
@@ -378,6 +378,6 @@ if (hasProperty('postBuildExtras')) {
     postBuildExtras()
 }
 
-if (cdvHelpers.getConfigPreference('GoogleServicesEnabled', 'false').toBoolean()) {
+if (cdvHelpers.getConfigPreference('GradlePluginGoogleServicesEnabled', 'false').toBoolean()) {
     apply plugin: 'com.google.gms.google-services'
 }
