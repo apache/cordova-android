@@ -40,40 +40,42 @@ String doGetProjectTarget() {
     return doEnsureValueExists('project.properties', props, 'target')
 }
 
-Version[] getAvailableBuildTools() {
-    def buildToolsDir = new File(getAndroidSdkDir(), "build-tools")
-    buildToolsDir.list()
-        .collect { new Version(it) } // Invalid inputs will be handled as 0.0.0
-        .findAll { it.isHigherThan('0.0.0') }
-        .sort { a, b -> a.isHigherThan(b) ? -1 : 1 }
-}
-
 Boolean isVersionValid(version) {
     return !(new Version(version)).isEqual('0.0.0')
 }
 
 String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
-    def availableBuildToolsVersions
+    def buildToolsDirContents
     try {
-        availableBuildToolsVersions = getAvailableBuildTools()
+        def buildToolsDir = new File(getAndroidSdkDir(), "build-tools")
+        buildToolsDirContents = buildToolsDir.list()
     } catch (e) {
         println "An exception occurred while trying to find the Android build tools."
         throw e
     }
-    if (availableBuildToolsVersions.length > 0) {
-        def highestBuildToolsVersion = availableBuildToolsVersions[0]
-        if (highestBuildToolsVersion.isLowerThan(minBuildToolsVersionString)) {
-            throw new RuntimeException(
-                "No usable Android build tools found. Highest installed version is " +
-                highestBuildToolsVersion.getOriginalString() + "; minimum version required is " +
-                minBuildToolsVersionString + ".")
-        }
-        highestBuildToolsVersion.getOriginalString()
-    } else {
-        throw new RuntimeException(
-            "No installed build tools found. Install the Android build tools version " +
-            minBuildToolsVersionString + " or higher.")
+
+    def highestBuildToolsVersion = buildToolsDirContents
+        .collect { new Version(it) }
+        // Invalid inputs will be handled as 0.0.0
+        .findAll { it.isHigherThan('0.0.0') }
+        .max()
+
+    if (highestBuildToolsVersion == null) {
+        throw new RuntimeException("""
+            No installed build tools found. Install the Android build tools
+            version ${minBuildToolsVersionString} or higher.
+        """.replaceAll(/\s+/, ' ').trim())
     }
+
+    if (highestBuildToolsVersion.isLowerThan(minBuildToolsVersionString)) {
+        throw new RuntimeException("""
+            No usable Android build tools found. Highest installed version is
+            ${highestBuildToolsVersion.getOriginalString()}; minimum version
+            required is ${minBuildToolsVersionString}.
+        """.replaceAll(/\s+/, ' ').trim())
+    }
+
+    highestBuildToolsVersion.getOriginalString()
 }
 
 String getAndroidSdkDir() {
@@ -194,6 +196,6 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.g00fy2:versioncompare:1.3.1@jar'
+        classpath 'com.g00fy2:versioncompare:1.3.4@jar'
     }
 }
