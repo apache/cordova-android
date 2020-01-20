@@ -48,3 +48,4 @@ coverage/
 package-lock.json
 # Eclipse Buildship files
 .project
+.settings
