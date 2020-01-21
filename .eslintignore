@@ -1,2 +1,3 @@
 bin/templates/project/assets/www/cordova.js
-test/app
+test/android/app
+test/androidx/app
