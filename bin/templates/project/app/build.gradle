@@ -29,7 +29,7 @@ buildscript {
     dependencies {
         apply from: '../CordovaLib/cordova.gradle'
 
-        classpath 'com.android.tools.build:gradle:3.5.2'
+        classpath 'com.android.tools.build:gradle:3.5.3'
 
         if(cdvHelpers.getConfigPreference('GradlePluginGoogleServicesEnabled', 'false').toBoolean()) {
             String defaultGradlePluginGoogleServicesVersion = '4.2.0'
@@ -61,7 +61,7 @@ allprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '6.0'
+    gradleVersion = '6.1'
 }
 
 // Configuration properties. Set these via environment variables, build-extras.gradle, or gradle.properties.
