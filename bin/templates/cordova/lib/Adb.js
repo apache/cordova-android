@@ -83,10 +83,9 @@ Adb.shell = function (target, shellCommand) {
     events.emit('verbose', 'Running adb shell command "' + shellCommand + '" on target ' + target + '...');
     var args = ['-s', target, 'shell'];
     shellCommand = shellCommand.split(/\s+/);
-    return execa('adb', args.concat(shellCommand), { cwd: os.tmpdir() }).catch((error) => {
-        return Promise.reject(new CordovaError('Failed to execute shell command "' +
-            shellCommand + '"" on device: ' + error));
-    });
+    return execa('adb', args.concat(shellCommand), { cwd: os.tmpdir() })
+        .then(({ stdout }) => stdout)
+        .catch(error => Promise.reject(new CordovaError(`Failed to execute shell command "${shellCommand}" on device: ${error}`)));
 };
 
 Adb.start = function (target, activityName) {
