@@ -24,7 +24,8 @@
     "cover": "nyc jasmine --config=spec/coverage.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "java-unit-tests": "node test/run_java_unit_tests.js",
-    "eslint": "eslint . \"bin/**/!(*.*|gitignore)\""
+    "eslint": "eslint . \"bin/**/!(*.*|gitignore)\"",
+    "clean-tests": "node bin/clean_test.js"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",

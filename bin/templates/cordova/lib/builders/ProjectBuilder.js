@@ -226,7 +226,7 @@ class ProjectBuilder {
                 // If it's not set, do nothing, assuming that we're using a future version of gradle that we don't want to mess with.
                 // For some reason, using ^ and $ don't work.  This does the job, though.
                 var distributionUrlRegex = /distributionUrl.*zip/;
-                var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'https\\://services.gradle.org/distributions/gradle-4.10.3-all.zip';
+                var distributionUrl = process.env['CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL'] || 'https\\://services.gradle.org/distributions/gradle-6.1-all.zip';
                 var gradleWrapperPropertiesPath = path.join(self.root, 'gradle', 'wrapper', 'gradle-wrapper.properties');
                 shell.chmod('u+w', gradleWrapperPropertiesPath);
                 shell.sed('-i', distributionUrlRegex, 'distributionUrl=' + distributionUrl, gradleWrapperPropertiesPath);
