@@ -26,7 +26,7 @@ var path = require('path');
 var events = require('cordova-common').events;
 
 // This should match /bin/templates/project/build.gradle
-const DEFAULT_TARGET_API = 28;
+const DEFAULT_TARGET_API = 29;
 
 describe('check_reqs', function () {
     var original_env;
@@ -258,7 +258,7 @@ describe('check_reqs', function () {
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
             expect(target).toBe('android-' + DEFAULT_TARGET_API);
-            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion must be greater than or equal to ' + DEFAULT_TARGET_API + '.');
+            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + DEFAULT_TARGET_API + '.');
         });
     });
 

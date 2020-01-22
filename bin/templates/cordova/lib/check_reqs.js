@@ -26,10 +26,9 @@ var fs = require('fs');
 var os = require('os');
 var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
 var PROJECT_ROOT = path.join(__dirname, '..', '..');
-var events = require('cordova-common').events;
-var CordovaError = require('cordova-common').CordovaError;
-var ConfigParser = require('cordova-common').ConfigParser;
+const { CordovaError, ConfigParser, events } = require('cordova-common');
 var android_sdk = require('./android_sdk');
+const { createEditor } = require('properties-parser');
 
 function forgivingWhichSync (cmd) {
     try {
@@ -53,46 +52,34 @@ module.exports.isDarwin = function () {
  * @returns {string} The android target in format "android-${target}"
  */
 module.exports.get_target = function () {
-    function extractFromFile (filePath) {
-        var target = shelljs.grep(/\btarget=/, filePath);
-        if (!target) {
-            return null;
-        }
-        return target.split('=')[1].trim();
+    const projectPropertiesPaths = [
+        path.join(REPO_ROOT, 'framework', 'project.properties'),
+        path.join(PROJECT_ROOT, 'project.properties')
+    ];
+
+    // Get the minimum required target API from the framework.
+    let target = projectPropertiesPaths.filter(filePath => fs.existsSync(filePath))
+        .map(filePath => createEditor(filePath).get('target'))
+        .pop();
+
+    if (!target) {
+        throw new Error(`We could not locate the target from the "project.properties" at either "${projectPropertiesPaths.join('", "')}".`);
     }
 
-    var target = null;
-    var repo_file = path.join(REPO_ROOT, 'framework', 'project.properties');
-    var project_file = path.join(PROJECT_ROOT, 'project.properties');
-    var config_file = path.join(REPO_ROOT, 'config.xml');
+    // If the repo config.xml file exists, find the desired targetSdkVersion.
+    const configFile = path.join(REPO_ROOT, 'config.xml');
+    if (!fs.existsSync(configFile)) return target;
 
-    // First get the desired target API from the framework. This will be treated as our
-    // minimum required target API.
-    if (fs.existsSync(repo_file)) {
-        target = extractFromFile(repo_file);
-    } else if (fs.existsSync(project_file)) {
-        // if no target found, we're probably in a project and project.properties is in PROJECT_ROOT.
-        target = extractFromFile(project_file);
-    }
+    const configParser = new ConfigParser(configFile);
+    const desiredAPI = parseInt(configParser.getPreference('android-targetSdkVersion', 'android'), 10);
 
-    if (target === null) {
-        throw new Error('We could not locate the "project.properties" at either ' + repo_file + ' or ' + project_file + '.');
-    }
+    if (!isNaN(desiredAPI)) {
+        const minimumAPI = parseInt(target.split('-').pop(), 10);
 
-    var minimumAPI = parseInt(target.split('-')[1]);
-
-    // Next, check the app config.xml file for the desired targetSdkVersion and use it if
-    // found and valid.
-    if (fs.existsSync(config_file)) {
-        // Find the desired android target from the project config
-        var configParser = new ConfigParser(config_file);
-        var desiredAPI = parseInt(configParser.getPreference('android-targetSdkVersion', 'android'));
-        if (!isNaN(desiredAPI)) {
-            if (desiredAPI >= minimumAPI) {
-                target = 'android-' + desiredAPI;
-            } else {
-                events.emit('warn', 'android-targetSdkVersion must be greater than or equal to ' + minimumAPI + '.');
-            }
+        if (desiredAPI >= minimumAPI) {
+            target = `android-${desiredAPI}`;
+        } else {
+            events.emit('warn', `android-targetSdkVersion should be greater than or equal to ${minimumAPI}.`);
         }
     }
 
