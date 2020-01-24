@@ -29,7 +29,6 @@ var PROJECT_ROOT = path.join(__dirname, '..', '..');
 const { CordovaError, ConfigParser, events } = require('cordova-common');
 var android_sdk = require('./android_sdk');
 const { createEditor } = require('properties-parser');
-let utils = require('./utils');
 
 function forgivingWhichSync (cmd) {
     let whichResult = which.sync(cmd, { nothrow: true });
