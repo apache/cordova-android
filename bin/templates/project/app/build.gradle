@@ -28,7 +28,7 @@ buildscript {
     apply from: '../CordovaLib/cordova.gradle'
 
     if(cdvHelpers.getConfigPreference('GradlePluginKotlinEnabled', 'false').toBoolean()) {
-        String defaultGradlePluginKotlinVersion = ext.kotlin_version
+        String defaultGradlePluginKotlinVersion = kotlin_version
 
         /**
          * Fetches the user's defined Kotlin Version from config.xml.
