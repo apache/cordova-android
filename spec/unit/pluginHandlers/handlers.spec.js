@@ -382,7 +382,7 @@ describe('android project handler', function () {
             it('Test#019j : should remove stuff by calling common.deleteJava for Android Studio projects, with target-dir that includes "app"', function () {
                 android['source-file'].install(valid_source[10], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[10], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(deleteJavaSpy).toHaveBeenCalledWith(dummyProject.projectDir, 'app/src/main/java/com/appco/DummyPlugin2.java');
+                expect(deleteJavaSpy).toHaveBeenCalledWith(dummyProject.projectDir, path.join('app/src/main/java/com/appco/DummyPlugin2.java'));
             });
         });
 

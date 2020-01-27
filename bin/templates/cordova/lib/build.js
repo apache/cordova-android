@@ -264,45 +264,23 @@ module.exports.findBestApkForArchitecture = function (buildResults, arch) {
 };
 
 function PackageInfo (keystore, alias, storePassword, password, keystoreType) {
-    this.keystore = {
-        'name': 'key.store',
-        'value': keystore
-    };
-    this.alias = {
-        'name': 'key.alias',
-        'value': alias
-    };
-    if (storePassword) {
-        this.storePassword = {
-            'name': 'key.store.password',
-            'value': storePassword
-        };
-    }
-    if (password) {
-        this.password = {
-            'name': 'key.alias.password',
-            'value': password
-        };
-    }
-    if (keystoreType) {
-        this.keystoreType = {
-            'name': 'key.store.type',
-            'value': keystoreType
-        };
-    }
+    const createNameKeyObject = (name, value) => ({ name, value: value.replace(/\\/g, '\\\\') });
+
+    this.data = [
+        createNameKeyObject('key.store', keystore),
+        createNameKeyObject('key.alias', alias)
+    ];
+
+    if (storePassword) this.data.push(createNameKeyObject('key.store.password', storePassword));
+    if (password) this.data.push(createNameKeyObject('key.alias.password', password));
+    if (keystoreType) this.data.push(createNameKeyObject('key.store.type', keystoreType));
 }
 
 PackageInfo.prototype = {
-    toProperties: function () {
-        var self = this;
-        var result = '';
-        Object.keys(self).forEach(function (key) {
-            result += self[key].name;
-            result += '=';
-            result += self[key].value.replace(/\\/g, '\\\\');
-            result += '\n';
-        });
-        return result;
+    appendToProperties: function (propertiesParser) {
+        for (const { name, value } of this.data) propertiesParser.set(name, value);
+
+        propertiesParser.save();
     }
 };
 
