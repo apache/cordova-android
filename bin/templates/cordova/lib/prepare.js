@@ -45,11 +45,18 @@ module.exports.prepare = function (cordovaProject, options) {
     const minSdkVersion = this._config.getPreference('android-minSdkVersion', 'android');
     const maxSdkVersion = this._config.getPreference('android-maxSdkVersion', 'android');
     const targetSdkVersion = this._config.getPreference('android-targetSdkVersion', 'android');
+    const androidXEnabled = this._config.getPreference('AndroidXEnabled', 'android');
 
     let gradlePropertiesUserConfig = {};
     if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
     if (maxSdkVersion) gradlePropertiesUserConfig.cdvMaxSdkVersion = maxSdkVersion;
     if (targetSdkVersion) gradlePropertiesUserConfig.cdvTargetSdkVersion = targetSdkVersion;
+
+    // Both 'useAndroidX' and 'enableJetifier' are linked together.
+    if (androidXEnabled) {
+        gradlePropertiesUserConfig['android.useAndroidX'] = androidXEnabled;
+        gradlePropertiesUserConfig['android.enableJetifier'] = androidXEnabled;
+    }
 
     let gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);
     gradlePropertiesParser.configure(gradlePropertiesUserConfig);
