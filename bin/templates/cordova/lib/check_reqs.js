@@ -204,17 +204,6 @@ module.exports.check_java = function () {
                     }
                 }
             } else if (module.exports.isWindows()) {
-                // Try to auto-detect java in the default install paths.
-                // var oldSilent = shelljs.config.silent;
-                // shelljs.config.silent = true;
-                // var firstJdkDir =
-                //     shelljs.ls(process.env['ProgramFiles'] + '\\java\\jdk*')[0] ||
-                //     shelljs.ls('C:\\Program Files\\java\\jdk*')[0] ||
-                //     shelljs.ls('C:\\Program Files (x86)\\java\\jdk*')[0];
-                // shelljs.config.silent = oldSilent;
-
-                // TODO: This really needs to be tested...
-
                 const programFilesEnv = path.resolve(process.env['ProgramFiles']);
                 const programFiles = 'C:\\Program Files\\';
                 const programFilesx86 = 'C:\\Program Files (x86)\\';

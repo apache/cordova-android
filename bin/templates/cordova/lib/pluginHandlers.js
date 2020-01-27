@@ -219,8 +219,6 @@ function copyFile (plugin_dir, src, project_dir, dest, link) {
     fs.ensureDirSync(path.dirname(dest));
     if (link) {
         symlinkFileOrDirTree(src, dest);
-    // } else if (fs.statSync(src).isDirectory()) {
-        // fs.copySync(src, dest);
     } else {
         fs.copySync(src, dest);
     }
