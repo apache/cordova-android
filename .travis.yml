@@ -11,7 +11,6 @@ env:
     - ANDROID_BUILD_TOOLS_VERSION=29.0.2
     - TERM=dumb # Keep gradle from crapping all over the log
   matrix:
-    - nodejs_version=10
     - nodejs_version=12
 
 language: android
@@ -40,7 +39,6 @@ install:
 
 script:
   - npm test
-  - npm run cover
 
 after_script:
   - codecov
