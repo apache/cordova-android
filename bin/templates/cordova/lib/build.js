@@ -113,7 +113,7 @@ function parseOpts (options, resolvedTarget, projectRoot) {
         let shouldWarn = false;
         const signingKeys = ['keystore', 'alias', 'storePassword', 'password', 'keystoreType'];
 
-        for (let key in packageArgs) {
+        for (const key in packageArgs) {
             if (!shouldWarn && signingKeys.indexOf(key) > -1) {
                 // If we enter this condition, we have a key used for signing a build,
                 // but we are missing some required signing properties

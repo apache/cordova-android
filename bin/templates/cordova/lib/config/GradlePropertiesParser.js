@@ -17,10 +17,10 @@
     under the License.
 */
 
-let fs = require('fs');
-let path = require('path');
-let propertiesParser = require('properties-parser');
-let events = require('cordova-common').events;
+const fs = require('fs');
+const path = require('path');
+const propertiesParser = require('properties-parser');
+const events = require('cordova-common').events;
 
 class GradlePropertiesParser {
     /**
@@ -82,7 +82,7 @@ class GradlePropertiesParser {
     _configureProperties (properties) {
         // Iterate though the properties and set only if missing.
         Object.keys(properties).forEach(key => {
-            let value = this.gradleFile.get(key);
+            const value = this.gradleFile.get(key);
 
             if (!value) {
                 // Handles the case of adding missing defaults or new properties that are missing.

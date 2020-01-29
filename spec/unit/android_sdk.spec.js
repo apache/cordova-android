@@ -71,7 +71,7 @@ describe('android_sdk', () => {
             execaSpy.and.returnValue(Promise.resolve({ stdout: testTargets }));
 
             return android_sdk.list_targets_with_android().then(list => {
-                [ 'Google Inc.:Google APIs:23',
+                ['Google Inc.:Google APIs:23',
                     'Google Inc.:Google APIs:22',
                     'Google Inc.:Google APIs:21',
                     'android-25',
@@ -81,7 +81,7 @@ describe('android_sdk', () => {
                     'android-MNC',
                     'android-22',
                     'android-21',
-                    'android-20' ].forEach((target) => expect(list).toContain(target));
+                    'android-20'].forEach((target) => expect(list).toContain(target));
             });
         });
     });

@@ -140,7 +140,7 @@ function copyScripts (projectPath) {
     // Copy in the new ones.
     fs.copySync(srcScriptsDir, destScriptsDir);
 
-    let nodeModulesDir = path.join(ROOT, 'node_modules');
+    const nodeModulesDir = path.join(ROOT, 'node_modules');
     if (fs.existsSync(nodeModulesDir)) fs.copySync(nodeModulesDir, path.join(destScriptsDir, 'node_modules'));
 
     fs.copySync(path.join(bin, 'check_reqs'), path.join(destScriptsDir, 'check_reqs'));
@@ -156,7 +156,7 @@ function copyScripts (projectPath) {
     // `require` path for the two libraries. if there's a better way to share
     // modules across both the repo and generated projects, we should make sure
     // to remove/update this.
-    let templatesCordovaRegex = /templates\/cordova\//;
+    const templatesCordovaRegex = /templates\/cordova\//;
     utils.replaceFileContents(android_sdk_version, templatesCordovaRegex, '');
     utils.replaceFileContents(check_reqs, templatesCordovaRegex, '');
 }
@@ -218,7 +218,6 @@ function validateProjectName (project_name) {
  * @return  {Promise<String>}  Directory where application has been created
  */
 exports.create = function (project_path, config, options, events) {
-
     options = options || {};
 
     // Set default values for path, package and name
@@ -229,8 +228,8 @@ exports.create = function (project_path, config, options, events) {
     }
 
     var package_name = config.android_packageName() || config.packageName() || 'my.cordova.project';
-    var project_name = config.name() ?
-        config.name().replace(/[^\w.]/g, '_') : 'CordovaExample';
+    var project_name = config.name()
+        ? config.name().replace(/[^\w.]/g, '_') : 'CordovaExample';
 
     var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
     var target_api = check_reqs.get_target();
@@ -312,7 +311,6 @@ function generateDoneMessage (type, link) {
 
 // Returns a promise.
 exports.update = function (projectPath, options, events) {
-
     var errorString =
         'An in-place platform update is not supported. \n' +
         'The `platforms` folder is always treated as a build artifact in the CLI workflow.\n' +

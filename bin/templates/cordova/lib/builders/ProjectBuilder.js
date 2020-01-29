@@ -82,7 +82,7 @@ function findOutputFilesHelper (dir, build_type, arch, extension) {
     if (files.length === 0) return files;
 
     // Assume arch-specific build if newest apk has -x86 or -arm.
-    let archSpecific = !!/-x86|-arm/.exec(path.basename(files[0]));
+    const archSpecific = !!/-x86|-arm/.exec(path.basename(files[0]));
 
     // And show only arch-specific ones (or non-arch-specific)
     files = files.filter(p => !!/-x86|-arm/.exec(path.basename(p)) === archSpecific);

@@ -30,17 +30,17 @@ if (['--help', '/?', '-h', 'help', '-help', '/help'].indexOf(process.argv[2]) >=
 
 // Do some basic argument parsing
 var runOpts = nopt({
-    'verbose': Boolean,
-    'silent': Boolean,
-    'debug': Boolean,
-    'release': Boolean,
-    'nobuild': Boolean,
-    'buildConfig': path,
-    'archs': String,
-    'device': Boolean,
-    'emulator': Boolean,
-    'target': String
-}, { 'd': '--verbose' });
+    verbose: Boolean,
+    silent: Boolean,
+    debug: Boolean,
+    release: Boolean,
+    nobuild: Boolean,
+    buildConfig: path,
+    archs: String,
+    device: Boolean,
+    emulator: Boolean,
+    target: String
+}, { d: '--verbose' });
 
 // Make runOptions compatible with PlatformApi run method spec
 runOpts.argv = runOpts.argv.remain;

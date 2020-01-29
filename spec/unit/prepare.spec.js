@@ -29,7 +29,7 @@ const PATH_RESOURCE = path.join('platforms', 'android', 'app', 'src', 'main', 'r
  * @param {String} target specific resource item
  */
 function createResourceMap (target) {
-    let resources = {};
+    const resources = {};
 
     [
         'mipmap-ldpi',
@@ -152,8 +152,8 @@ describe('updateIcons method', function () {
         expect(emitSpy).toHaveBeenCalled();
 
         // The emit message was.
-        let actual = emitSpy.calls.argsFor(0)[1];
-        let expected = 'This app does not have launcher icons defined';
+        const actual = emitSpy.calls.argsFor(0)[1];
+        const expected = 'This app does not have launcher icons defined';
         expect(actual).toEqual(expected);
     });
 
@@ -340,11 +340,11 @@ describe('updateIcons method', function () {
         };
 
         // Creating Spies
-        let resourceMap = createResourceMap();
-        let phaseOneModification = {};
+        const resourceMap = createResourceMap();
+        const phaseOneModification = {};
         phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
         phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        let phaseOneUpdatedIconsForAdaptive = Object.assign({}, resourceMap, phaseOneModification);
+        const phaseOneUpdatedIconsForAdaptive = Object.assign({}, resourceMap, phaseOneModification);
 
         updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
         prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
@@ -352,10 +352,10 @@ describe('updateIcons method', function () {
             return phaseOneUpdatedIconsForAdaptive;
         });
 
-        let phaseTwoModification = {};
+        const phaseTwoModification = {};
         phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-foreground.png';
         phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        let phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+        const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
 
         updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
         prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
@@ -369,8 +369,8 @@ describe('updateIcons method', function () {
         expect(emitSpy).toHaveBeenCalled();
 
         // The emit message was.
-        let actual = emitSpy.calls.argsFor(0)[1];
-        let expected = 'Updating icons at ' + PATH_RESOURCE;
+        const actual = emitSpy.calls.argsFor(0)[1];
+        const expected = 'Updating icons at ' + PATH_RESOURCE;
         expect(actual).toEqual(expected);
 
         // Expected to be called.
@@ -378,8 +378,8 @@ describe('updateIcons method', function () {
         expect(updateIconResourceForAdaptiveSpy).toHaveBeenCalled();
         expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
 
-        let actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-        let expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
+        const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+        const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
         expect(actualResourceMap).toEqual(expectedResourceMap);
     });
 
@@ -397,11 +397,11 @@ describe('updateIcons method', function () {
         };
 
         // Creating Spies
-        let resourceMap = createResourceMap();
-        let phaseOneModification = {};
+        const resourceMap = createResourceMap();
+        const phaseOneModification = {};
         phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
         phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        let phaseOneUpdatedIconsForAdaptive = Object.assign({}, resourceMap, phaseOneModification);
+        const phaseOneUpdatedIconsForAdaptive = Object.assign({}, resourceMap, phaseOneModification);
 
         updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
         prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
@@ -409,10 +409,10 @@ describe('updateIcons method', function () {
             return phaseOneUpdatedIconsForAdaptive;
         });
 
-        let phaseTwoModification = {};
+        const phaseTwoModification = {};
         phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-foreground.png';
         phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        let phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+        const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
 
         updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
         prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
@@ -426,8 +426,8 @@ describe('updateIcons method', function () {
         expect(emitSpy).toHaveBeenCalled();
 
         // The emit message was.
-        let actual = emitSpy.calls.argsFor(0)[1];
-        let expected = 'Updating icons at ' + PATH_RESOURCE;
+        const actual = emitSpy.calls.argsFor(0)[1];
+        const expected = 'Updating icons at ' + PATH_RESOURCE;
         expect(actual).toEqual(expected);
 
         // Expected to be called.
@@ -435,8 +435,8 @@ describe('updateIcons method', function () {
         expect(updateIconResourceForAdaptiveSpy).toHaveBeenCalled();
         expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
 
-        let actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-        let expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
+        const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+        const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
         expect(actualResourceMap).toEqual(expectedResourceMap);
     });
 
@@ -452,7 +452,7 @@ describe('updateIcons method', function () {
         };
 
         // Creating Spies
-        let phaseOneUpdatedIconsForAdaptive = createResourceMap();
+        const phaseOneUpdatedIconsForAdaptive = createResourceMap();
 
         updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
         prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
@@ -460,9 +460,9 @@ describe('updateIcons method', function () {
             return phaseOneUpdatedIconsForAdaptive;
         });
 
-        let phaseTwoModification = {};
+        const phaseTwoModification = {};
         phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-icon.png';
-        let phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+        const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
 
         updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
         prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
@@ -476,8 +476,8 @@ describe('updateIcons method', function () {
         expect(emitSpy).toHaveBeenCalled();
 
         // The emit message was.
-        let actual = emitSpy.calls.argsFor(0)[1];
-        let expected = 'Updating icons at ' + PATH_RESOURCE;
+        const actual = emitSpy.calls.argsFor(0)[1];
+        const expected = 'Updating icons at ' + PATH_RESOURCE;
         expect(actual).toEqual(expected);
 
         // Expected to be called.
@@ -485,8 +485,8 @@ describe('updateIcons method', function () {
         expect(updateIconResourceForAdaptiveSpy).not.toHaveBeenCalled();
         expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
 
-        let actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-        let expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
+        const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+        const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
         expect(actualResourceMap).toEqual(expectedResourceMap);
     });
 });
@@ -510,50 +510,48 @@ describe('prepareIcons method', function () {
 
     it('Test#001 : should emit extra default icon found for adaptive use case.', function () {
         // mock data.
-        let ldpi = mockGetIconItem({
+        const ldpi = mockGetIconItem({
             density: 'ldpi',
             background: 'res/icon/android/ldpi-background.png',
             foreground: 'res/icon/android/ldpi-foreground.png'
         });
 
-        let mdpi = mockGetIconItem({
+        const mdpi = mockGetIconItem({
             density: 'mdpi',
             background: 'res/icon/android/mdpi-background.png',
             foreground: 'res/icon/android/mdpi-foreground.png'
         });
 
-        let icons = [ldpi, mdpi];
-        let actual = prepareIcons(icons);
-        let expected = {
+        const icons = [ldpi, mdpi];
+        const actual = prepareIcons(icons);
+        const expected = {
             android_icons: { ldpi, mdpi },
             default_icon: undefined
         };
 
         expect(expected).toEqual(actual);
-
     });
 
     it('Test#002 : should emit extra default icon found for legacy use case.', function () {
         // mock data.
-        let ldpi = mockGetIconItem({
+        const ldpi = mockGetIconItem({
             src: 'res/icon/android/ldpi-icon.png',
             density: 'ldpi'
         });
 
-        let mdpi = mockGetIconItem({
+        const mdpi = mockGetIconItem({
             src: 'res/icon/android/mdpi-icon.png',
             density: 'mdpi'
         });
 
-        let icons = [ldpi, mdpi];
-        let actual = prepareIcons(icons);
-        let expected = {
+        const icons = [ldpi, mdpi];
+        const actual = prepareIcons(icons);
+        const expected = {
             android_icons: { ldpi, mdpi },
             default_icon: undefined
         };
 
         expect(expected).toEqual(actual);
-
     });
 });
 
@@ -596,13 +594,12 @@ describe('updateIconResourceForLegacy method', function () {
         const updateIconResourceForLegacy = prepare.__get__('updateIconResourceForLegacy');
 
         // Run Test
-        let expectedModification = {};
+        const expectedModification = {};
         expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-icon.png';
-        let expected = Object.assign({}, resourceMap, expectedModification);
-        let actual = updateIconResourceForLegacy(preparedIcons, resourceMap, platformResourcesDir);
+        const expected = Object.assign({}, resourceMap, expectedModification);
+        const actual = updateIconResourceForLegacy(preparedIcons, resourceMap, platformResourcesDir);
 
         expect(actual).toEqual(expected);
-
     });
 });
 
@@ -646,15 +643,14 @@ describe('updateIconResourceForAdaptive method', function () {
         const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
 
         // Run Test
-        let expectedModification = {};
+        const expectedModification = {};
         expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
         expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
 
-        let expected = Object.assign({}, resourceMap, expectedModification);
-        let actual = updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
+        const expected = Object.assign({}, resourceMap, expectedModification);
+        const actual = updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
 
         expect(actual).toEqual(expected);
-
     });
 });
 
@@ -679,36 +675,36 @@ describe('cleanIcons method', function () {
 
     it('Test#001 : should detect that the app does not have defined icons.', function () {
         // Mock
-        let icons = [];
-        let projectRoot = '/mock';
-        let projectConfig = {
+        const icons = [];
+        const projectRoot = '/mock';
+        const projectConfig = {
             getIcons: function () { return icons; },
             path: '/mock/config.xml',
             cdvNamespacePrefix: 'cdv'
         };
-        let platformResourcesDir = PATH_RESOURCE;
+        const platformResourcesDir = PATH_RESOURCE;
 
         const cleanIcons = prepare.__get__('cleanIcons');
         cleanIcons(projectRoot, projectConfig, platformResourcesDir);
 
-        let actualEmitMessage = emitSpy.calls.argsFor(0)[1];
+        const actualEmitMessage = emitSpy.calls.argsFor(0)[1];
         expect(actualEmitMessage).toContain('This app does not have launcher icons defined');
     });
 
     it('Test#002 : Should clean paths for adaptive icons.', function () {
         // Mock
-        let icons = [mockGetIconItem({
+        const icons = [mockGetIconItem({
             density: 'mdpi',
             background: 'res/icon/android/mdpi-background.png',
             foreground: 'res/icon/android/mdpi-foreground.png'
         })];
-        let projectRoot = '/mock';
-        let projectConfig = {
+        const projectRoot = '/mock';
+        const projectConfig = {
             getIcons: function () { return icons; },
             path: '/mock/config.xml',
             cdvNamespacePrefix: 'cdv'
         };
-        let platformResourcesDir = PATH_RESOURCE;
+        const platformResourcesDir = PATH_RESOURCE;
 
         var expectedResourceMapBackground = createResourceMap('ic_launcher_background.png');
 
@@ -722,24 +718,24 @@ describe('cleanIcons method', function () {
         const cleanIcons = prepare.__get__('cleanIcons');
         cleanIcons(projectRoot, projectConfig, platformResourcesDir);
 
-        let actualResourceMapBackground = updatePathsSpy.calls.argsFor(0)[0];
+        const actualResourceMapBackground = updatePathsSpy.calls.argsFor(0)[0];
         expect(actualResourceMapBackground).toEqual(expectedResourceMapBackground);
     });
 
     it('Test#003 : Should clean paths for legacy icons.', function () {
         // Mock
-        let icons = [mockGetIconItem({
+        const icons = [mockGetIconItem({
             src: 'res/icon/android/mdpi.png',
             density: 'mdpi'
         })];
 
-        let projectRoot = '/mock';
-        let projectConfig = {
+        const projectRoot = '/mock';
+        const projectConfig = {
             getIcons: function () { return icons; },
             path: '/mock/config.xml',
             cdvNamespacePrefix: 'cdv'
         };
-        let platformResourcesDir = PATH_RESOURCE;
+        const platformResourcesDir = PATH_RESOURCE;
 
         var expectedResourceMap = createResourceMap();
 
@@ -751,7 +747,7 @@ describe('cleanIcons method', function () {
         const cleanIcons = prepare.__get__('cleanIcons');
         cleanIcons(projectRoot, projectConfig, platformResourcesDir);
 
-        let actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+        const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
         expect(actualResourceMap).toEqual(expectedResourceMap);
     });
 });

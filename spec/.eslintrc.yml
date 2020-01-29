@@ -1,4 +1,0 @@
-env:
-    jasmine: true
-rules:
-    prefer-promise-reject-errors: off
