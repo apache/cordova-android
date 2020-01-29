@@ -18,9 +18,8 @@
  */
 
 const os = require('os');
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
-const shell = require('shelljs');
 const execa = require('execa');
 const { PluginInfoProvider } = require('cordova-common');
 
@@ -34,7 +33,7 @@ describe('plugin add', function () {
         tmpDir = fs.realpathSync(fs.mkdtempSync(tmpDirTemplate));
     });
     afterEach(() => {
-        shell.rm('-rf', tmpDir);
+        fs.removeSync(tmpDir);
     });
 
     it('Test#001 : create project and add a plugin with framework', function () {

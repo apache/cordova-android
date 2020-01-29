@@ -20,10 +20,10 @@
 var rewire = require('rewire');
 var check_reqs = rewire('../../bin/templates/cordova/lib/check_reqs');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
-var shelljs = require('shelljs');
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
 var events = require('cordova-common').events;
+var which = require('which');
 
 // This should match /bin/templates/project/build.gradle
 const DEFAULT_TARGET_API = 29;
@@ -46,7 +46,7 @@ describe('check_reqs', function () {
             });
             describe('even if no Android binaries are on the PATH', function () {
                 beforeEach(function () {
-                    spyOn(shelljs, 'which').and.returnValue(null);
+                    spyOn(which, 'sync').and.returnValue(null);
                     spyOn(fs, 'existsSync').and.returnValue(true);
                 });
                 it('it should set ANDROID_HOME on Windows', () => {
@@ -79,7 +79,7 @@ describe('check_reqs', function () {
                 });
                 it('should set ANDROID_HOME based on `android` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
-                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                    spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'android') {
                             return '/android/sdk/tools/android';
                         } else {
@@ -91,7 +91,7 @@ describe('check_reqs', function () {
                     });
                 });
                 it('should error out if `android` command exists in a non-SDK-like directory structure', () => {
-                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                    spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'android') {
                             return '/just/some/random/path/android';
                         } else {
@@ -107,7 +107,7 @@ describe('check_reqs', function () {
                 });
                 it('should set ANDROID_HOME based on `adb` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
-                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                    spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'adb') {
                             return '/android/sdk/platform-tools/adb';
                         } else {
@@ -119,7 +119,7 @@ describe('check_reqs', function () {
                     });
                 });
                 it('should error out if `adb` command exists in a non-SDK-like directory structure', () => {
-                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                    spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'adb') {
                             return '/just/some/random/path/adb';
                         } else {
@@ -135,7 +135,7 @@ describe('check_reqs', function () {
                 });
                 it('should set ANDROID_HOME based on `avdmanager` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
-                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                    spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'avdmanager') {
                             return '/android/sdk/tools/bin/avdmanager';
                         } else {
@@ -147,7 +147,7 @@ describe('check_reqs', function () {
                     });
                 });
                 it('should error out if `avdmanager` command exists in a non-SDK-like directory structure', () => {
-                    spyOn(shelljs, 'which').and.callFake(function (cmd) {
+                    spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'avdmanager') {
                             return '/just/some/random/path/avdmanager';
                         } else {
@@ -165,7 +165,7 @@ describe('check_reqs', function () {
         });
         describe('set PATH for various Android binaries if not available', function () {
             beforeEach(function () {
-                spyOn(shelljs, 'which').and.returnValue(null);
+                spyOn(which, 'sync').and.returnValue(null);
                 process.env.ANDROID_HOME = 'let the children play';
                 spyOn(fs, 'existsSync').and.returnValue(true);
             });
