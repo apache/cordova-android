@@ -37,7 +37,7 @@ describe('emulator', () => {
         it('should properly parse details of SDK Tools 25.3.1 `avdmanager` output', () => {
             const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.3-avdmanager_list_avd.txt'), 'utf-8');
 
-            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
+            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
             emu.__set__('execa', execaSpy);
 
             return emu.list_images_using_avdmanager().then(list => {
@@ -52,7 +52,7 @@ describe('emulator', () => {
 
     describe('list_images_using_android', () => {
         it('should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions', () => {
-            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: '' }));
+            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: '' }));
             emu.__set__('execa', execaSpy);
 
             emu.list_images_using_android();
@@ -62,7 +62,7 @@ describe('emulator', () => {
         it('should properly parse details of SDK Tools pre-25.3.1 `android list avd` output', () => {
             const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.2-android_list_avd.txt'), 'utf-8');
 
-            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
+            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
             emu.__set__('execa', execaSpy);
 
             return emu.list_images_using_android().then(list => {

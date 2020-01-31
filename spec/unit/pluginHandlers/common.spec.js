@@ -35,7 +35,6 @@ var deleteJava = common.__get__('deleteJava');
 var copyNewFile = common.__get__('copyNewFile');
 
 describe('common platform handler', function () {
-
     describe('copyFile', function () {
         it('Test#001 : should throw if source path not found', function () {
             fs.removeSync(src);

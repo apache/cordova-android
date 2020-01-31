@@ -31,7 +31,7 @@ var android_sdk = require('./android_sdk');
 const { createEditor } = require('properties-parser');
 
 function forgivingWhichSync (cmd) {
-    let whichResult = which.sync(cmd, { nothrow: true });
+    const whichResult = which.sync(cmd, { nothrow: true });
 
     // On null, returns empty string to maintain backwards compatibility
     // realpathSync follows symlinks
@@ -39,11 +39,11 @@ function forgivingWhichSync (cmd) {
 }
 
 function getJDKDirectory (directory) {
-    let p = path.resolve(directory, 'java');
+    const p = path.resolve(directory, 'java');
     if (fs.existsSync(p)) {
-        let directories = fs.readdirSync(p);
+        const directories = fs.readdirSync(p);
         for (let i = 0; i < directories.length; i++) {
-            let dir = directories[i];
+            const dir = directories[i];
             if (/^(jdk)+./.test(dir)) {
                 return path.resolve(directory, 'java', dir);
             }
@@ -119,7 +119,6 @@ module.exports.get_gradle_wrapper = function () {
     var program_dir;
     // OK, This hack only works on Windows, not on Mac OS or Linux.  We will be deleting this eventually!
     if (module.exports.isWindows()) {
-
         var result = execa.sync(path.join(__dirname, 'getASPath.bat'));
         // console.log('result.stdout =' + result.stdout.toString());
         // console.log('result.stderr =' + result.stderr.toString());
@@ -431,7 +430,6 @@ var Requirement = function (id, name, version, installed) {
  * @return Promise<Requirement[]> Array of requirements. Due to implementation, promise is always fulfilled.
  */
 module.exports.check_all = function () {
-
     var requirements = [
         new Requirement('java', 'Java JDK'),
         new Requirement('androidSdk', 'Android SDK'),

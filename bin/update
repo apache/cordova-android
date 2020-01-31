@@ -21,10 +21,10 @@
 var path = require('path');
 var Api = require('./templates/cordova/Api');
 var args = require('nopt')({
-    'link': Boolean,
-    'shared': Boolean,
-    'help': Boolean
-}, { 'd': '--verbose' });
+    link: Boolean,
+    shared: Boolean,
+    help: Boolean
+}, { d: '--verbose' });
 
 if (args.help || args.argv.remain.length === 0) {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(__dirname, 'update')) + ' <path_to_project> [--link]');

@@ -224,7 +224,6 @@ describe('create', function () {
                 }, err => {
                     expect(err).toBe(fakeError);
                 });
-
             });
         });
 

@@ -65,7 +65,7 @@ var handlers = {
             removeFile(path.resolve(project.projectDir, dest));
         }
     },
-    'framework': {
+    framework: {
         install: function (obj, plugin, project, options) {
             var src = obj.src;
             if (!src) throw new CordovaError(generateAttributeError('src', 'framework', plugin.id));

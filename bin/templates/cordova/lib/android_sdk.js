@@ -49,6 +49,8 @@ module.exports.print_newest_available_sdk_target = function () {
     });
 };
 
+// Versions should not be represented as float, so we disable quote-props here
+/* eslint-disable quote-props */
 module.exports.version_string_to_api_level = {
     '4.0': 14,
     '4.0.3': 15,
@@ -64,6 +66,7 @@ module.exports.version_string_to_api_level = {
     '7.1.1': 25,
     '8.0': 26
 };
+/* eslint-enable quote-props */
 
 function parse_targets (output) {
     var target_out = output.split('\n');

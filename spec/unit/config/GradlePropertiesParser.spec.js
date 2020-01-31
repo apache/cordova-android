@@ -18,7 +18,7 @@
 */
 
 const rewire = require('rewire');
-let GradlePropertiesParser = rewire('../../../bin/templates/cordova/lib/config/GradlePropertiesParser');
+const GradlePropertiesParser = rewire('../../../bin/templates/cordova/lib/config/GradlePropertiesParser');
 
 describe('Gradle Builder', () => {
     describe('_initializeEditor method', () => {
@@ -91,8 +91,8 @@ describe('Gradle Builder', () => {
         });
 
         it('should detect missing default property and sets the property.', () => {
-            let setSpy = jasmine.createSpy('set');
-            let getSpy = jasmine.createSpy('get').and.returnValue(false);
+            const setSpy = jasmine.createSpy('set');
+            const getSpy = jasmine.createSpy('get').and.returnValue(false);
 
             parser.gradleFile = {
                 set: setSpy,
@@ -107,8 +107,8 @@ describe('Gradle Builder', () => {
         });
 
         it('should not detect missing defaults and call set.', () => {
-            let setSpy = jasmine.createSpy('set');
-            let getSpy = jasmine.createSpy('get').and.returnValue(true);
+            const setSpy = jasmine.createSpy('set');
+            const getSpy = jasmine.createSpy('get').and.returnValue(true);
 
             parser.gradleFile = {
                 set: setSpy,
@@ -122,8 +122,8 @@ describe('Gradle Builder', () => {
         });
 
         it('should detect default with changed value to match default and set.', () => {
-            let setSpy = jasmine.createSpy('set');
-            let getSpy = jasmine.createSpy('get').and.returnValue('-Xmx512m');
+            const setSpy = jasmine.createSpy('set');
+            const getSpy = jasmine.createSpy('get').and.returnValue('-Xmx512m');
 
             parser.gradleFile = {
                 set: setSpy,
@@ -138,8 +138,8 @@ describe('Gradle Builder', () => {
         });
 
         it('should detect default with changed value different from default and set.', () => {
-            let setSpy = jasmine.createSpy('set');
-            let getSpy = jasmine.createSpy('get').and.returnValue('-Xmx2048m');
+            const setSpy = jasmine.createSpy('set');
+            const getSpy = jasmine.createSpy('get').and.returnValue('-Xmx2048m');
 
             parser.gradleFile = {
                 set: setSpy,

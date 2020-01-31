@@ -43,7 +43,7 @@ const CHECK_BOOTED_INTERVAL = 3 * ONE_SECOND; // in milliseconds
 const EXEC_KILL_SIGNAL = 'SIGKILL';
 
 function forgivingWhichSync (cmd) {
-    let whichResult = which.sync(cmd, { nothrow: true });
+    const whichResult = which.sync(cmd, { nothrow: true });
 
     // On null, returns empty string to maintain backwards compatibility
     // realpathSync follows symlinks
@@ -104,7 +104,6 @@ module.exports.list_images_using_avdmanager = function () {
             if (response[i].match(/Name:\s/)) {
                 emulator_list.push(response[i].split('Name: ')[1].replace('\r', '');
             } */
-
         }
         return emulator_list;
     });
@@ -147,7 +146,6 @@ module.exports.list_images_using_android = function () {
             if (response[i].match(/Name:\s/)) {
                 emulator_list.push(response[i].split('Name: ')[1].replace('\r', '');
             } */
-
         }
         return emulator_list;
     });
@@ -429,7 +427,6 @@ module.exports.resolveTarget = function (target) {
  * Returns a promise.
  */
 module.exports.install = function (givenTarget, buildResults) {
-
     var target;
     // We need to find the proper path to the Android Manifest
     const manifestPath = path.join(__dirname, '..', '..', 'app', 'src', 'main', 'AndroidManifest.xml');
@@ -453,7 +450,6 @@ module.exports.install = function (givenTarget, buildResults) {
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
         return Promise.resolve().then(function () {
-
             var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
             var execOptions = {
                 cwd: os.tmpdir(),
@@ -512,7 +508,6 @@ module.exports.install = function (givenTarget, buildResults) {
         });
     // unlock screen
     }).then(function () {
-
         events.emit('verbose', 'Unlocking screen...');
         return Adb.shell(target.target, 'input keyevent 82');
     }).then(function () {

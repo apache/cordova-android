@@ -18,7 +18,7 @@
  */
 
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
-let fs = require('fs-extra');
+const fs = require('fs-extra');
 var cp = require('child_process');
 var path = require('path');
 var util = require('util');
@@ -77,7 +77,6 @@ module.exports.updateProject = function (projectid, platformpath, callback) {
         }
         callback(error);
     });
-
 };
 
 /**

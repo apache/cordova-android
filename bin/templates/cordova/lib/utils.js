@@ -49,9 +49,9 @@ exports.replaceFileContents = function (file, searchRegex, replacementString) {
  * @returns string|null
  */
 exports.grep = function (file, regex) {
-    let contents = fs.readFileSync(file).toString().replace(/\\r/g, '').split('\n');
+    const contents = fs.readFileSync(file).toString().replace(/\\r/g, '').split('\n');
     for (let i = 0; i < contents.length; i++) {
-        let line = contents[i];
+        const line = contents[i];
         if (regex.test(line)) {
             return line;
         }
@@ -71,12 +71,12 @@ exports.scanDirectory = function (directory, regex, recursive) {
     let output = [];
 
     if (fs.existsSync(directory)) {
-        let items = fs.readdirSync(directory);
+        const items = fs.readdirSync(directory);
 
         for (let i = 0; i < items.length; i++) {
-            let item = items[i];
-            let itemPath = path.join(directory, item);
-            let stats = fs.statSync(itemPath);
+            const item = items[i];
+            const itemPath = path.join(directory, item);
+            const stats = fs.statSync(itemPath);
 
             if (regex.test(itemPath)) {
                 output.push(itemPath);

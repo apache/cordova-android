@@ -238,5 +238,4 @@ describe('AndroidManifest', () => {
             expect(fsSpy.writeFileSync).toHaveBeenCalledWith(jasmine.any(String), newXml, 'utf-8');
         });
     });
-
 });

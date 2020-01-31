@@ -177,7 +177,6 @@ describe('android project handler', function () {
         });
 
         describe('of <framework> elements', function () {
-
             var someString = jasmine.any(String);
 
             var copyNewFileOrig = common.__get__('copyNewFile');
@@ -280,9 +279,8 @@ describe('android project handler', function () {
     });
 
     describe('uninstallation', function () {
-
         var deleteJavaOrig = common.__get__('deleteJava');
-        let originalRemoveSync = fs.removeSync;
+        const originalRemoveSync = fs.removeSync;
         var deleteJavaSpy = jasmine.createSpy('deleteJava');
         var dummyProject;
         let removeSyncSpy;
@@ -387,7 +385,6 @@ describe('android project handler', function () {
         });
 
         describe('of <framework> elements', function () {
-
             var someString = jasmine.any(String);
 
             beforeEach(function () {
