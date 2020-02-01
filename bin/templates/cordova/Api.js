@@ -352,7 +352,7 @@ class Api {
      * @return {Promise<PlatformApi>} Promise either fulfilled with PlatformApi
      *   instance or rejected with CordovaError.
      */
-    updatePlatform (destination, options, events) {
+    static updatePlatform (destination, options, events) {
         events = setupEvents(events);
         var result;
         try {
