@@ -19,18 +19,55 @@
        under the License.
 */
 
-var path = require('path');
-var execa = require('execa');
-var ProjectBuilder = require('../bin/templates/cordova/lib/builders/ProjectBuilder');
+const path = require('path');
+const execa = require('execa');
+const ProjectBuilder = require('../bin/templates/cordova/lib/builders/ProjectBuilder');
+
+class AndroidTestRunner {
+    constructor (testTitle, projectDir) {
+        this.testTitle = testTitle;
+        this.projectDir = projectDir;
+        this.gradleWrapper = path.join(this.projectDir, 'gradlew');
+    }
+
+    _gradlew (...args) {
+        return execa(
+            this.gradleWrapper,
+            args,
+            {
+                stdio: 'inherit',
+                cwd: this.projectDir
+            }
+        );
+    }
+
+    _createProjectBuilder () {
+        return new ProjectBuilder(this.projectDir).runGradleWrapper('gradle');
+    }
+
+    run () {
+        return Promise.resolve()
+            .then(_ => console.log(`[${this.testTitle}] Preparing Gradle wrapper for Java unit tests.`))
+            .then(_ => this._createProjectBuilder())
+            .then(_ => this._gradlew('--version'))
+            .then(_ => console.log(`[${this.testTitle}] Gradle wrapper is ready. Running tests now.`))
+            .then(_ => this._gradlew('test'))
+            .then(_ => console.log(`[${this.testTitle}] Java unit tests completed successfully`));
+    }
+}
 
 Promise.resolve()
-    .then(_ => console.log('Preparing Gradle wrapper for Java unit tests.'))
-    .then(_ => new ProjectBuilder(__dirname).runGradleWrapper('gradle'))
-    .then(_ => gradlew('--version'))
+    .then(_ => console.log('Starting to run all android platform tests'))
 
-    .then(_ => console.log('Gradle wrapper is ready. Running tests now.'))
-    .then(_ => gradlew('test'))
-    .then(_ => console.log('Java unit tests completed successfully.'));
+    // Android Test
+    .then(_ => new AndroidTestRunner('Android Project', path.resolve(__dirname, 'android')))
+    .then(test => test.run())
+
+    // AndroidX Test
+    .then(_ => new AndroidTestRunner('AndroidX Project', path.resolve(__dirname, 'androidx')))
+    .then(test => test.run())
+
+    .then(_ => console.log('Finished running all android platform tests'));
 
 process.on('unhandledRejection', err => {
     // If err has a stderr property, we have seen the message already
@@ -38,11 +75,3 @@ process.on('unhandledRejection', err => {
     console.error('JAVA UNIT TESTS FAILED!');
     process.exitCode = err.code || 1;
 });
-
-function gradlew () {
-    const wrapperPath = path.join(__dirname, 'gradlew');
-    return execa(wrapperPath, Array.from(arguments), {
-        stdio: 'inherit',
-        cwd: __dirname
-    });
-}

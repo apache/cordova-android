@@ -26,9 +26,14 @@ example
 /framework/javadoc-public
 /framework/javadoc-private
 /test/.externalNativeBuild
-/test/gradle
-/test/gradlew
-/test/gradlew.bat
+
+/test/android/gradle
+/test/android/gradlew
+/test/android/gradlew.bat
+/test/androidx/gradle
+/test/androidx/gradlew
+/test/androidx/gradlew.bat
+
 /test/assets/www/.tmp*
 /test/assets/www/cordova.js
 /test/bin
@@ -49,3 +54,4 @@ package-lock.json
 # Eclipse Buildship files
 .project
 .settings
+.classpath

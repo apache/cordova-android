@@ -20,6 +20,7 @@
 */
 
 const execa = require('execa');
+const fs = require('fs-extra');
 var android_versions = require('android-versions');
 var retry = require('./retry');
 var build = require('./build');
@@ -28,27 +29,25 @@ var Adb = require('./Adb');
 var AndroidManifest = require('./AndroidManifest');
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
-var shelljs = require('shelljs');
 var android_sdk = require('./android_sdk');
 var check_reqs = require('./check_reqs');
-
+var which = require('which');
 var os = require('os');
-var fs = require('fs');
 
 // constants
-var ONE_SECOND = 1000; // in milliseconds
-var ONE_MINUTE = 60 * ONE_SECOND; // in milliseconds
-var INSTALL_COMMAND_TIMEOUT = 5 * ONE_MINUTE; // in milliseconds
-var NUM_INSTALL_RETRIES = 3;
-var CHECK_BOOTED_INTERVAL = 3 * ONE_SECOND; // in milliseconds
-var EXEC_KILL_SIGNAL = 'SIGKILL';
+const ONE_SECOND = 1000; // in milliseconds
+const ONE_MINUTE = 60 * ONE_SECOND; // in milliseconds
+const INSTALL_COMMAND_TIMEOUT = 5 * ONE_MINUTE; // in milliseconds
+const NUM_INSTALL_RETRIES = 3;
+const CHECK_BOOTED_INTERVAL = 3 * ONE_SECOND; // in milliseconds
+const EXEC_KILL_SIGNAL = 'SIGKILL';
 
 function forgivingWhichSync (cmd) {
-    try {
-        return fs.realpathSync(shelljs.which(cmd));
-    } catch (e) {
-        return '';
-    }
+    const whichResult = which.sync(cmd, { nothrow: true });
+
+    // On null, returns empty string to maintain backwards compatibility
+    // realpathSync follows symlinks
+    return whichResult === null ? '' : fs.realpathSync(whichResult);
 }
 
 module.exports.list_images_using_avdmanager = function () {
@@ -105,7 +104,6 @@ module.exports.list_images_using_avdmanager = function () {
             if (response[i].match(/Name:\s/)) {
                 emulator_list.push(response[i].split('Name: ')[1].replace('\r', '');
             } */
-
         }
         return emulator_list;
     });
@@ -148,7 +146,6 @@ module.exports.list_images_using_android = function () {
             if (response[i].match(/Name:\s/)) {
                 emulator_list.push(response[i].split('Name: ')[1].replace('\r', '');
             } */
-
         }
         return emulator_list;
     });
@@ -290,7 +287,7 @@ module.exports.start = function (emulator_ID, boot_timeout) {
         return self.get_available_port().then(function (port) {
             // Figure out the directory the emulator binary runs in, and set the cwd to that directory.
             // Workaround for https://code.google.com/p/android/issues/detail?id=235461
-            var emulator_dir = path.dirname(shelljs.which('emulator'));
+            var emulator_dir = path.dirname(which.sync('emulator'));
             var args = ['-avd', emulatorId, '-port', port];
             // Don't wait for it to finish, since the emulator will probably keep running for a long time.
             execa('emulator', args, { stdio: 'inherit', detached: true, cwd: emulator_dir })
@@ -430,7 +427,6 @@ module.exports.resolveTarget = function (target) {
  * Returns a promise.
  */
 module.exports.install = function (givenTarget, buildResults) {
-
     var target;
     // We need to find the proper path to the Android Manifest
     const manifestPath = path.join(__dirname, '..', '..', 'app', 'src', 'main', 'AndroidManifest.xml');
@@ -454,7 +450,6 @@ module.exports.install = function (givenTarget, buildResults) {
         // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
         // or the app doesn't installed at all, so no error catching needed.
         return Promise.resolve().then(function () {
-
             var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
             var execOptions = {
                 cwd: os.tmpdir(),
@@ -513,7 +508,6 @@ module.exports.install = function (givenTarget, buildResults) {
         });
     // unlock screen
     }).then(function () {
-
         events.emit('verbose', 'Unlocking screen...');
         return Adb.shell(target.target, 'input keyevent 82');
     }).then(function () {

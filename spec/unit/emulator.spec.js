@@ -17,10 +17,10 @@
     under the License.
 */
 
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const rewire = require('rewire');
-const shelljs = require('shelljs');
+const which = require('which');
 
 const CordovaError = require('cordova-common').CordovaError;
 const check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
@@ -37,7 +37,7 @@ describe('emulator', () => {
         it('should properly parse details of SDK Tools 25.3.1 `avdmanager` output', () => {
             const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.3-avdmanager_list_avd.txt'), 'utf-8');
 
-            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
+            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
             emu.__set__('execa', execaSpy);
 
             return emu.list_images_using_avdmanager().then(list => {
@@ -52,7 +52,7 @@ describe('emulator', () => {
 
     describe('list_images_using_android', () => {
         it('should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions', () => {
-            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: '' }));
+            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: '' }));
             emu.__set__('execa', execaSpy);
 
             emu.list_images_using_android();
@@ -62,7 +62,7 @@ describe('emulator', () => {
         it('should properly parse details of SDK Tools pre-25.3.1 `android list avd` output', () => {
             const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.2-android_list_avd.txt'), 'utf-8');
 
-            let execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
+            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
             emu.__set__('execa', execaSpy);
 
             return emu.list_images_using_android().then(list => {
@@ -83,7 +83,7 @@ describe('emulator', () => {
         });
 
         it('should try to parse AVD information using `avdmanager` first', () => {
-            spyOn(shelljs, 'which').and.callFake(cmd => cmd === 'avdmanager');
+            spyOn(which, 'sync').and.callFake(cmd => cmd === 'avdmanager');
 
             const avdmanager_spy = spyOn(emu, 'list_images_using_avdmanager').and.returnValue(Promise.resolve([]));
 
@@ -93,7 +93,7 @@ describe('emulator', () => {
         });
 
         it('should delegate to `android` if `avdmanager` cant be found and `android` can', () => {
-            spyOn(shelljs, 'which').and.callFake(cmd => cmd !== 'avdmanager');
+            spyOn(which, 'sync').and.callFake(cmd => cmd !== 'avdmanager');
 
             const android_spy = spyOn(emu, 'list_images_using_android').and.returnValue(Promise.resolve([]));
 
@@ -103,7 +103,7 @@ describe('emulator', () => {
         });
 
         it('should correct api level information and fill in the blanks about api level if exists', () => {
-            spyOn(shelljs, 'which').and.callFake(cmd => cmd === 'avdmanager');
+            spyOn(which, 'sync').and.callFake(cmd => cmd === 'avdmanager');
             spyOn(emu, 'list_images_using_avdmanager').and.returnValue(Promise.resolve([
                 {
                     name: 'Pixel_7.0',
@@ -127,7 +127,7 @@ describe('emulator', () => {
         });
 
         it('should throw an error if neither `avdmanager` nor `android` are able to be found', () => {
-            spyOn(shelljs, 'which').and.returnValue(false);
+            spyOn(which, 'sync').and.returnValue(false);
 
             return emu.list_images().then(
                 () => fail('Unexpectedly resolved'),
@@ -255,7 +255,7 @@ describe('emulator', () => {
         let AdbSpy;
         let checkReqsSpy;
         let execaSpy;
-        let shellJsSpy;
+        let whichSpy;
 
         beforeEach(() => {
             emulator = {
@@ -286,9 +286,9 @@ describe('emulator', () => {
             const proc = emu.__get__('process');
             spyOn(proc.stdout, 'write').and.stub();
 
-            shellJsSpy = jasmine.createSpyObj('shelljs', ['which']);
-            shellJsSpy.which.and.returnValue('/dev/android-sdk/tools');
-            emu.__set__('shelljs', shellJsSpy);
+            whichSpy = jasmine.createSpyObj('which', ['sync']);
+            whichSpy.sync.and.returnValue('/dev/android-sdk/tools');
+            emu.__set__('which', whichSpy);
         });
 
         it('should find an emulator if an id is not specified', () => {

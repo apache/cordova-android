@@ -20,10 +20,10 @@
 */
 
 const execa = require('execa');
-var shelljs = require('shelljs');
 var path = require('path');
-var fs = require('fs');
+var fs = require('fs-extra');
 var os = require('os');
+var which = require('which');
 var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
 var PROJECT_ROOT = path.join(__dirname, '..', '..');
 const { CordovaError, ConfigParser, events } = require('cordova-common');
@@ -31,11 +31,25 @@ var android_sdk = require('./android_sdk');
 const { createEditor } = require('properties-parser');
 
 function forgivingWhichSync (cmd) {
-    try {
-        return fs.realpathSync(shelljs.which(cmd));
-    } catch (e) {
-        return '';
+    const whichResult = which.sync(cmd, { nothrow: true });
+
+    // On null, returns empty string to maintain backwards compatibility
+    // realpathSync follows symlinks
+    return whichResult === null ? '' : fs.realpathSync(whichResult);
+}
+
+function getJDKDirectory (directory) {
+    const p = path.resolve(directory, 'java');
+    if (fs.existsSync(p)) {
+        const directories = fs.readdirSync(p);
+        for (let i = 0; i < directories.length; i++) {
+            const dir = directories[i];
+            if (/^(jdk)+./.test(dir)) {
+                return path.resolve(directory, 'java', dir);
+            }
+        }
     }
+    return null;
 }
 
 module.exports.isWindows = function () {
@@ -105,7 +119,6 @@ module.exports.get_gradle_wrapper = function () {
     var program_dir;
     // OK, This hack only works on Windows, not on Mac OS or Linux.  We will be deleting this eventually!
     if (module.exports.isWindows()) {
-
         var result = execa.sync(path.join(__dirname, 'getASPath.bat'));
         // console.log('result.stdout =' + result.stdout.toString());
         // console.log('result.stderr =' + result.stderr.toString());
@@ -182,7 +195,6 @@ module.exports.check_java = function () {
                     });
                 } else {
                     // See if we can derive it from javac's location.
-                    // fs.realpathSync is require on Ubuntu, which symplinks from /usr/bin -> JDK
                     var maybeJavaHome = path.dirname(path.dirname(javacPath));
                     if (fs.existsSync(path.join(maybeJavaHome, 'lib', 'tools.jar'))) {
                         process.env['JAVA_HOME'] = maybeJavaHome;
@@ -191,16 +203,16 @@ module.exports.check_java = function () {
                     }
                 }
             } else if (module.exports.isWindows()) {
-                // Try to auto-detect java in the default install paths.
-                var oldSilent = shelljs.config.silent;
-                shelljs.config.silent = true;
-                var firstJdkDir =
-                    shelljs.ls(process.env['ProgramFiles'] + '\\java\\jdk*')[0] ||
-                    shelljs.ls('C:\\Program Files\\java\\jdk*')[0] ||
-                    shelljs.ls('C:\\Program Files (x86)\\java\\jdk*')[0];
-                shelljs.config.silent = oldSilent;
+                const programFilesEnv = path.resolve(process.env['ProgramFiles']);
+                const programFiles = 'C:\\Program Files\\';
+                const programFilesx86 = 'C:\\Program Files (x86)\\';
+
+                let firstJdkDir =
+                    getJDKDirectory(programFilesEnv) ||
+                    getJDKDirectory(programFiles) ||
+                    getJDKDirectory(programFilesx86);
+
                 if (firstJdkDir) {
-                    // shelljs always uses / in paths.
                     firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
                     if (!javacPath) {
                         process.env['PATH'] += path.delimiter + path.join(firstJdkDir, 'bin');
@@ -418,7 +430,6 @@ var Requirement = function (id, name, version, installed) {
  * @return Promise<Requirement[]> Array of requirements. Due to implementation, promise is always fulfilled.
  */
 module.exports.check_all = function () {
-
     var requirements = [
         new Requirement('java', 'Java JDK'),
         new Requirement('androidSdk', 'Android SDK'),

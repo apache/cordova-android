@@ -21,14 +21,13 @@ var rewire = require('rewire');
 var common = rewire('../../../bin/templates/cordova/lib/pluginHandlers');
 var android = common.__get__('handlers');
 var path = require('path');
-var fs = require('fs');
-var shell = require('shelljs');
+var fs = require('fs-extra');
 var os = require('os');
 var temp = path.join(os.tmpdir(), 'plugman');
 var plugins_dir = path.join(temp, 'cordova/plugins');
 var dummyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.dummyplugin');
 var faultyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.faultyplugin');
-var android_studio_project = path.join(__dirname, '../../fixtures/android_studio_project/*');
+var android_studio_project = path.join(__dirname, '../../fixtures/android_studio_project');
 
 var PluginInfo = require('cordova-common').PluginInfo;
 var AndroidProject = require('../../../bin/templates/cordova/lib/AndroidProject');
@@ -48,14 +47,14 @@ describe('android project handler', function () {
         var dummyProject;
 
         beforeEach(function () {
-            shell.mkdir('-p', temp);
+            fs.ensureDirSync(temp);
             dummyProject = AndroidProject.getProjectFile(temp);
             copyFileSpy.calls.reset();
             common.__set__('copyFile', copyFileSpy);
         });
 
         afterEach(function () {
-            shell.rm('-rf', temp);
+            fs.removeSync(temp);
             common.__set__('copyFile', copyFileOrig);
         });
 
@@ -75,7 +74,7 @@ describe('android project handler', function () {
 
         describe('of <source-file> elements', function () {
             beforeEach(function () {
-                shell.cp('-rf', android_studio_project, temp);
+                fs.copySync(android_studio_project, temp);
             });
 
             it('Test#003 : should copy stuff from one location to another by calling common.copyFile', function () {
@@ -94,7 +93,7 @@ describe('android project handler', function () {
             it('Test#006 : should throw if target file already exists', function () {
                 // write out a file
                 let target = path.resolve(temp, 'app', 'src', 'main', 'java', 'com', 'phonegap', 'plugins', 'dummyplugin');
-                shell.mkdir('-p', target);
+                fs.ensureDirSync(target);
                 target = path.join(target, 'DummyPlugin.java');
                 fs.writeFileSync(target, 'some bs', 'utf-8');
 
@@ -178,14 +177,13 @@ describe('android project handler', function () {
         });
 
         describe('of <framework> elements', function () {
-
             var someString = jasmine.any(String);
 
             var copyNewFileOrig = common.__get__('copyNewFile');
             var copyNewFileSpy = jasmine.createSpy('copyNewFile');
 
             beforeEach(function () {
-                shell.cp('-rf', android_studio_project, temp);
+                fs.copySync(android_studio_project, temp);
 
                 spyOn(dummyProject, 'addSystemLibrary');
                 spyOn(dummyProject, 'addSubProject');
@@ -215,7 +213,7 @@ describe('android project handler', function () {
 
             it('Test#010 : should not copy anything if "custom" attribute is not set', function () {
                 var framework = { src: 'plugin-lib' };
-                var cpSpy = spyOn(shell, 'cp');
+                var cpSpy = spyOn(fs, 'copySync');
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(someString, framework.src);
                 expect(cpSpy).not.toHaveBeenCalled();
@@ -281,27 +279,24 @@ describe('android project handler', function () {
     });
 
     describe('uninstallation', function () {
-
-        var removeFileOrig = common.__get__('removeFile');
         var deleteJavaOrig = common.__get__('deleteJava');
-
-        var removeFileSpy = jasmine.createSpy('removeFile');
+        const originalRemoveSync = fs.removeSync;
         var deleteJavaSpy = jasmine.createSpy('deleteJava');
         var dummyProject;
+        let removeSyncSpy;
 
         beforeEach(function () {
-            shell.mkdir('-p', temp);
-            shell.mkdir('-p', plugins_dir);
-            shell.cp('-rf', android_studio_project, temp);
+            fs.ensureDirSync(temp);
+            fs.ensureDirSync(plugins_dir);
+            fs.copySync(android_studio_project, temp);
             AndroidProject.purgeCache();
             dummyProject = AndroidProject.getProjectFile(temp);
-            common.__set__('removeFile', removeFileSpy);
+            removeSyncSpy = spyOn(fs, 'removeSync');
             common.__set__('deleteJava', deleteJavaSpy);
         });
 
         afterEach(function () {
-            shell.rm('-rf', temp);
-            common.__set__('removeFile', removeFileOrig);
+            originalRemoveSync.call(fs, temp);
             common.__set__('deleteJava', deleteJavaOrig);
         });
 
@@ -309,7 +304,7 @@ describe('android project handler', function () {
             it('Test#017 : should remove jar files for Android Studio projects', function () {
                 android['lib-file'].install(valid_libs[0], dummyPluginInfo, dummyProject);
                 android['lib-file'].uninstall(valid_libs[0], dummyPluginInfo, dummyProject);
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/libs/TestLib.jar'));
             });
         });
 
@@ -317,7 +312,7 @@ describe('android project handler', function () {
             it('Test#018 : should remove files for Android Studio projects', function () {
                 android['resource-file'].install(valid_resources[0], dummyPluginInfo, dummyProject);
                 android['resource-file'].uninstall(valid_resources[0], dummyPluginInfo, dummyProject);
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app', 'src', 'main', 'res', 'xml', 'dummy.xml'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app', 'src', 'main', 'res', 'xml', 'dummy.xml'));
             });
         });
 
@@ -337,64 +332,63 @@ describe('android project handler', function () {
             it('Test#019b : should remove stuff by calling common.removeFile for Android Studio projects, of jar with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[2], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[2], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestLib.jar'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/libs/TestLib.jar'));
             });
 
             it('Test#019c : should remove stuff by calling common.removeFile for Android Studio projects, of aar with new app target-dir scheme', function () {
                 android['source-file'].install(valid_source[3], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[3], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/TestAar.aar'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/libs/TestAar.aar'));
             });
 
             it('Test#019d : should remove stuff by calling common.removeFile for Android Studio projects, of xml with old target-dir scheme', function () {
                 android['source-file'].install(valid_source[4], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[4], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/xml/mysettings.xml'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/src/main/res/xml/mysettings.xml'));
             });
 
             it('Test#019e : should remove stuff by calling common.removeFile for Android Studio projects, of file with other extension with old target-dir scheme', function () {
                 android['source-file'].install(valid_source[5], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[5], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/res/values/other.extension'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/src/main/res/values/other.extension'));
             });
 
             it('Test#019f : should remove stuff by calling common.removeFile for Android Studio projects, of aidl with old target-dir scheme (GH-547)', function () {
                 android['source-file'].install(valid_source[6], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[6], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/aidl/com/mytest/myapi.aidl'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/src/main/aidl/com/mytest/myapi.aidl'));
             });
 
             it('Test#019g : should remove stuff by calling common.removeFile for Android Studio projects, of aar with old target-dir scheme (GH-547)', function () {
                 android['source-file'].install(valid_source[7], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[7], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/testaar2.aar'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/libs/testaar2.aar'));
             });
 
             it('Test#019h : should remove stuff by calling common.removeFile for Android Studio projects, of jar with old target-dir scheme (GH-547)', function () {
                 android['source-file'].install(valid_source[8], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[8], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/libs/testjar2.jar'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/libs/testjar2.jar'));
             });
 
             it('Test#019i : should remove stuff by calling common.removeFile for Android Studio projects, of .so lib file with old target-dir scheme (GH-547)', function () {
                 android['source-file'].install(valid_source[9], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[9], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(removeFileSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/jniLibs/x86/libnative.so'));
+                expect(removeSyncSpy).toHaveBeenCalledWith(path.join(dummyProject.projectDir, 'app/src/main/jniLibs/x86/libnative.so'));
             });
 
             it('Test#019j : should remove stuff by calling common.deleteJava for Android Studio projects, with target-dir that includes "app"', function () {
                 android['source-file'].install(valid_source[10], dummyPluginInfo, dummyProject, { android_studio: true });
                 android['source-file'].uninstall(valid_source[10], dummyPluginInfo, dummyProject, { android_studio: true });
-                expect(deleteJavaSpy).toHaveBeenCalledWith(temp, path.join('app/src/main/java/com/appco/DummyPlugin2.java'));
+                expect(deleteJavaSpy).toHaveBeenCalledWith(dummyProject.projectDir, path.join('app/src/main/java/com/appco/DummyPlugin2.java'));
             });
         });
 
         describe('of <framework> elements', function () {
-
             var someString = jasmine.any(String);
 
             beforeEach(function () {
-                shell.mkdir(path.join(dummyProject.projectDir, dummyPluginInfo.id));
+                fs.ensureDirSync(path.join(dummyProject.projectDir, dummyPluginInfo.id));
 
                 spyOn(dummyProject, 'removeSystemLibrary');
                 spyOn(dummyProject, 'removeSubProject');
@@ -421,13 +415,13 @@ describe('android project handler', function () {
                 var framework = { src: 'plugin-lib', custom: true };
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSubProject).toHaveBeenCalledWith(dummyProject.projectDir, someString);
-                expect(removeFileSpy).toHaveBeenCalledWith(dummyProject.projectDir, someString);
+                expect(removeSyncSpy).toHaveBeenCalledWith(someString);
             });
 
             it('Test#24 : should install gradleReference using project.removeGradleReference', function () {
                 var framework = { src: 'plugin-lib', custom: true, type: 'gradleReference' };
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
-                expect(removeFileSpy).toHaveBeenCalledWith(dummyProject.projectDir, someString);
+                expect(removeSyncSpy).toHaveBeenCalledWith(someString);
                 expect(dummyProject.removeGradleReference).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
         });
@@ -441,8 +435,6 @@ describe('android project handler', function () {
                 wwwDest = path.resolve(dummyProject.www, 'plugins', dummyPluginInfo.id, jsModule.src);
                 platformWwwDest = path.resolve(dummyProject.platformWww, 'plugins', dummyPluginInfo.id, jsModule.src);
 
-                spyOn(shell, 'rm');
-
                 var existsSyncOrig = fs.existsSync;
                 spyOn(fs, 'existsSync').and.callFake(function (file) {
                     if ([wwwDest, platformWwwDest].indexOf(file) >= 0) return true;
@@ -452,14 +444,14 @@ describe('android project handler', function () {
 
             it('Test#025 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
                 android['js-module'].uninstall(jsModule, dummyPluginInfo, dummyProject, { usePlatformWww: true });
-                expect(shell.rm).toHaveBeenCalledWith('-Rf', wwwDest);
-                expect(shell.rm).toHaveBeenCalledWith('-Rf', platformWwwDest);
+                expect(removeSyncSpy).toHaveBeenCalledWith(wwwDest);
+                expect(removeSyncSpy).toHaveBeenCalledWith(platformWwwDest);
             });
 
             it('Test#026 : should put module to www only when options.usePlatformWww flag is not specified', function () {
                 android['js-module'].uninstall(jsModule, dummyPluginInfo, dummyProject);
-                expect(shell.rm).toHaveBeenCalledWith('-Rf', wwwDest);
-                expect(shell.rm).not.toHaveBeenCalledWith('-Rf', platformWwwDest);
+                expect(removeSyncSpy).toHaveBeenCalledWith(wwwDest);
+                expect(removeSyncSpy).not.toHaveBeenCalledWith(platformWwwDest);
             });
         });
 
@@ -471,8 +463,6 @@ describe('android project handler', function () {
                 wwwDest = path.resolve(dummyProject.www, asset.target);
                 platformWwwDest = path.resolve(dummyProject.platformWww, asset.target);
 
-                spyOn(shell, 'rm');
-
                 var existsSyncOrig = fs.existsSync;
                 spyOn(fs, 'existsSync').and.callFake(function (file) {
                     if ([wwwDest, platformWwwDest].indexOf(file) >= 0) return true;
@@ -482,14 +472,14 @@ describe('android project handler', function () {
 
             it('Test#027 : should put module to both www and platform_www when options.usePlatformWww flag is specified', function () {
                 android.asset.uninstall(asset, dummyPluginInfo, dummyProject, { usePlatformWww: true });
-                expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), wwwDest);
-                expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), platformWwwDest);
+                expect(removeSyncSpy).toHaveBeenCalledWith(wwwDest);
+                expect(removeSyncSpy).toHaveBeenCalledWith(platformWwwDest);
             });
 
             it('Test#028 : should put module to www only when options.usePlatformWww flag is not specified', function () {
                 android.asset.uninstall(asset, dummyPluginInfo, dummyProject);
-                expect(shell.rm).toHaveBeenCalledWith(jasmine.any(String), wwwDest);
-                expect(shell.rm).not.toHaveBeenCalledWith(jasmine.any(String), platformWwwDest);
+                expect(removeSyncSpy).toHaveBeenCalledWith(wwwDest);
+                expect(removeSyncSpy).not.toHaveBeenCalledWith(platformWwwDest);
             });
         });
     });

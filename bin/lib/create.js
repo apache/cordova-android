@@ -19,9 +19,9 @@
        under the License.
 */
 
-var shell = require('shelljs');
 var path = require('path');
-var fs = require('fs');
+var fs = require('fs-extra');
+var utils = require('../../bin/lib/utils');
 var check_reqs = require('./../templates/cordova/lib/check_reqs');
 var ROOT = path.join(__dirname, '..', '..');
 
@@ -33,19 +33,11 @@ var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
 // (since we can then mock and control behaviour of all of these functions)
 exports.validatePackageName = validatePackageName;
 exports.validateProjectName = validateProjectName;
-exports.setShellFatal = setShellFatal;
 exports.copyJsAndLibrary = copyJsAndLibrary;
 exports.copyScripts = copyScripts;
 exports.copyBuildRules = copyBuildRules;
 exports.writeProjectProperties = writeProjectProperties;
 exports.prepBuildFiles = prepBuildFiles;
-
-function setShellFatal (value, func) {
-    var oldVal = shell.config.fatal;
-    shell.config.fatal = value;
-    func();
-    shell.config.fatal = oldVal;
-}
 
 function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
@@ -55,53 +47,33 @@ function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
     var app_path = path.join(projectPath, 'app', 'src', 'main');
+    const platform_www = path.join(projectPath, 'platform_www');
 
     if (isLegacy) {
         app_path = projectPath;
     }
 
-    shell.cp('-f', srcCordovaJsPath, path.join(app_path, 'assets', 'www', 'cordova.js'));
+    fs.copySync(srcCordovaJsPath, path.join(app_path, 'assets', 'www', 'cordova.js'));
 
     // Copy the cordova.js file to platforms/<platform>/platform_www/
     // The www dir is nuked on each prepare so we keep cordova.js in platform_www
-    shell.mkdir('-p', path.join(projectPath, 'platform_www'));
-    shell.cp('-f', srcCordovaJsPath, path.join(projectPath, 'platform_www'));
+    fs.ensureDirSync(platform_www);
+    fs.copySync(srcCordovaJsPath, path.join(platform_www, 'cordova.js'));
 
     // Copy cordova-js-src directory into platform_www directory.
     // We need these files to build cordova.js if using browserify method.
-    shell.cp('-rf', path.join(ROOT, 'cordova-js-src'), path.join(projectPath, 'platform_www'));
+    fs.copySync(path.join(ROOT, 'cordova-js-src'), path.join(platform_www, 'cordova-js-src'));
 
-    // Don't fail if there are no old jars.
-    exports.setShellFatal(false, function () {
-        shell.ls(path.join(app_path, 'libs', 'cordova-*.jar')).forEach(function (oldJar) {
-            console.log('Deleting ' + oldJar);
-            shell.rm('-f', oldJar);
-        });
-        var wasSymlink = true;
-        try {
-            // Delete the symlink if it was one.
-            fs.unlinkSync(nestedCordovaLibPath);
-        } catch (e) {
-            wasSymlink = false;
-        }
-        // Delete old library project if it existed.
-        if (shared) {
-            shell.rm('-rf', nestedCordovaLibPath);
-        } else if (!wasSymlink) {
-            // Delete only the src, since Eclipse / Android Studio can't handle their project files being deleted.
-            shell.rm('-rf', path.join(nestedCordovaLibPath, 'src'));
-        }
-    });
     if (shared) {
         var relativeFrameworkPath = path.relative(projectPath, getFrameworkDir(projectPath, true));
         fs.symlinkSync(relativeFrameworkPath, nestedCordovaLibPath, 'dir');
     } else {
-        shell.mkdir('-p', nestedCordovaLibPath);
-        shell.cp('-f', path.join(ROOT, 'framework', 'AndroidManifest.xml'), nestedCordovaLibPath);
-        shell.cp('-f', path.join(ROOT, 'framework', 'project.properties'), nestedCordovaLibPath);
-        shell.cp('-f', path.join(ROOT, 'framework', 'build.gradle'), nestedCordovaLibPath);
-        shell.cp('-f', path.join(ROOT, 'framework', 'cordova.gradle'), nestedCordovaLibPath);
-        shell.cp('-r', path.join(ROOT, 'framework', 'src'), nestedCordovaLibPath);
+        fs.ensureDirSync(nestedCordovaLibPath);
+        fs.copySync(path.join(ROOT, 'framework', 'AndroidManifest.xml'), path.join(nestedCordovaLibPath, 'AndroidManifest.xml'));
+        fs.copySync(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'));
+        fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
+        fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
+        fs.copySync(path.join(ROOT, 'framework', 'src'), path.join(nestedCordovaLibPath, 'src'));
     }
 }
 
@@ -150,12 +122,12 @@ function copyBuildRules (projectPath, isLegacy) {
 
     if (isLegacy) {
         // The project's build.gradle is identical to the earlier build.gradle, so it should still work
-        shell.cp('-f', path.join(srcDir, 'legacy', 'build.gradle'), projectPath);
-        shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+        fs.copySync(path.join(srcDir, 'legacy', 'build.gradle'), path.join(projectPath, 'legacy', 'build.gradle'));
+        fs.copySync(path.join(srcDir, 'wrapper.gradle'), path.join(projectPath, 'wrapper.gradle'));
     } else {
-        shell.cp('-f', path.join(srcDir, 'build.gradle'), projectPath);
-        shell.cp('-f', path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app'));
-        shell.cp('-f', path.join(srcDir, 'wrapper.gradle'), projectPath);
+        fs.copySync(path.join(srcDir, 'build.gradle'), path.join(projectPath, 'build.gradle'));
+        fs.copySync(path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app', 'build.gradle'));
+        fs.copySync(path.join(srcDir, 'wrapper.gradle'), path.join(projectPath, 'wrapper.gradle'));
     }
 }
 
@@ -164,24 +136,29 @@ function copyScripts (projectPath) {
     var srcScriptsDir = path.join(bin, 'templates', 'cordova');
     var destScriptsDir = path.join(projectPath, 'cordova');
     // Delete old scripts directory if this is an update.
-    shell.rm('-rf', destScriptsDir);
+    fs.removeSync(destScriptsDir);
     // Copy in the new ones.
-    shell.cp('-r', srcScriptsDir, projectPath);
+    fs.copySync(srcScriptsDir, destScriptsDir);
 
-    let nodeModulesDir = path.join(ROOT, 'node_modules');
-    if (fs.existsSync(nodeModulesDir)) shell.cp('-r', nodeModulesDir, destScriptsDir);
+    const nodeModulesDir = path.join(ROOT, 'node_modules');
+    if (fs.existsSync(nodeModulesDir)) fs.copySync(nodeModulesDir, path.join(destScriptsDir, 'node_modules'));
 
-    shell.cp(path.join(bin, 'check_reqs*'), destScriptsDir);
-    shell.cp(path.join(bin, 'android_sdk_version*'), destScriptsDir);
+    fs.copySync(path.join(bin, 'check_reqs'), path.join(destScriptsDir, 'check_reqs'));
+    fs.copySync(path.join(bin, 'check_reqs.bat'), path.join(destScriptsDir, 'check_reqs.bat'));
+    fs.copySync(path.join(bin, 'android_sdk_version'), path.join(destScriptsDir, 'android_sdk_version'));
+    fs.copySync(path.join(bin, 'android_sdk_version.bat'), path.join(destScriptsDir, 'android_sdk_version.bat'));
+
     var check_reqs = path.join(destScriptsDir, 'check_reqs');
     var android_sdk_version = path.join(destScriptsDir, 'android_sdk_version');
+
     // TODO: the two files being edited on-the-fly here are shared between
-    // platform and project-level commands. the below `sed` is updating the
+    // platform and project-level commands. the below is updating the
     // `require` path for the two libraries. if there's a better way to share
     // modules across both the repo and generated projects, we should make sure
     // to remove/update this.
-    shell.sed('-i', /templates\/cordova\//, '', android_sdk_version);
-    shell.sed('-i', /templates\/cordova\//, '', check_reqs);
+    const templatesCordovaRegex = /templates\/cordova\//;
+    utils.replaceFileContents(android_sdk_version, templatesCordovaRegex, '');
+    utils.replaceFileContents(check_reqs, templatesCordovaRegex, '');
 }
 
 /**
@@ -241,7 +218,6 @@ function validateProjectName (project_name) {
  * @return  {Promise<String>}  Directory where application has been created
  */
 exports.create = function (project_path, config, options, events) {
-
     options = options || {};
 
     // Set default values for path, package and name
@@ -252,8 +228,8 @@ exports.create = function (project_path, config, options, events) {
     }
 
     var package_name = config.android_packageName() || config.packageName() || 'my.cordova.project';
-    var project_name = config.name() ?
-        config.name().replace(/[^\w.]/g, '_') : 'CordovaExample';
+    var project_name = config.name()
+        ? config.name().replace(/[^\w.]/g, '_') : 'CordovaExample';
 
     var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
     var target_api = check_reqs.get_target();
@@ -273,51 +249,50 @@ exports.create = function (project_path, config, options, events) {
 
             events.emit('verbose', 'Copying android template project to ' + project_path);
 
-            exports.setShellFatal(true, function () {
-                var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
-                var app_path = path.join(project_path, 'app', 'src', 'main');
+            var project_template_dir = options.customTemplate || path.join(ROOT, 'bin', 'templates', 'project');
+            var app_path = path.join(project_path, 'app', 'src', 'main');
 
-                // copy project template
-                shell.mkdir('-p', app_path);
-                shell.cp('-r', path.join(project_template_dir, 'assets'), app_path);
-                shell.cp('-r', path.join(project_template_dir, 'res'), app_path);
-                shell.cp(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
+            // copy project template
+            fs.ensureDirSync(app_path);
+            fs.copySync(path.join(project_template_dir, 'assets'), path.join(app_path, 'assets'));
+            fs.copySync(path.join(project_template_dir, 'res'), path.join(app_path, 'res'));
+            fs.copySync(path.join(project_template_dir, 'gitignore'), path.join(project_path, '.gitignore'));
 
-                // Manually create directories that would be empty within the template (since git doesn't track directories).
-                shell.mkdir(path.join(app_path, 'libs'));
+            // Manually create directories that would be empty within the template (since git doesn't track directories).
+            fs.ensureDirSync(path.join(app_path, 'libs'));
 
-                // copy cordova.js, cordova.jar
-                exports.copyJsAndLibrary(project_path, options.link, safe_activity_name);
+            // copy cordova.js, cordova.jar
+            exports.copyJsAndLibrary(project_path, options.link, safe_activity_name);
 
-                // Set up ther Android Studio paths
-                var java_path = path.join(app_path, 'java');
-                var assets_path = path.join(app_path, 'assets');
-                var resource_path = path.join(app_path, 'res');
-                shell.mkdir('-p', java_path);
-                shell.mkdir('-p', assets_path);
-                shell.mkdir('-p', resource_path);
+            // Set up ther Android Studio paths
+            var java_path = path.join(app_path, 'java');
+            var assets_path = path.join(app_path, 'assets');
+            var resource_path = path.join(app_path, 'res');
+            fs.ensureDirSync(java_path);
+            fs.ensureDirSync(assets_path);
+            fs.ensureDirSync(resource_path);
 
-                // interpolate the activity name and package
-                var packagePath = package_name.replace(/\./g, path.sep);
-                var activity_dir = path.join(java_path, packagePath);
-                var activity_path = path.join(activity_dir, safe_activity_name + '.java');
+            // interpolate the activity name and package
+            var packagePath = package_name.replace(/\./g, path.sep);
+            var activity_dir = path.join(java_path, packagePath);
+            var activity_path = path.join(activity_dir, safe_activity_name + '.java');
 
-                shell.mkdir('-p', activity_dir);
-                shell.cp('-f', path.join(project_template_dir, 'Activity.java'), activity_path);
-                shell.sed('-i', /__ACTIVITY__/, safe_activity_name, activity_path);
-                shell.sed('-i', /__NAME__/, project_name, path.join(app_path, 'res', 'values', 'strings.xml'));
-                shell.sed('-i', /__ID__/, package_name, activity_path);
+            fs.ensureDirSync(activity_dir);
+            fs.copySync(path.join(project_template_dir, 'Activity.java'), activity_path);
+            utils.replaceFileContents(activity_path, /__ACTIVITY__/, safe_activity_name);
+            utils.replaceFileContents(path.join(app_path, 'res', 'values', 'strings.xml'), /__NAME__/, project_name);
+            utils.replaceFileContents(activity_path, /__ID__/, package_name);
 
-                var manifest = new AndroidManifest(path.join(project_template_dir, 'AndroidManifest.xml'));
-                manifest.setPackageId(package_name)
-                    .getActivity().setName(safe_activity_name);
+            var manifest = new AndroidManifest(path.join(project_template_dir, 'AndroidManifest.xml'));
+            manifest.setPackageId(package_name)
+                .getActivity().setName(safe_activity_name);
 
-                var manifest_path = path.join(app_path, 'AndroidManifest.xml');
-                manifest.write(manifest_path);
+            var manifest_path = path.join(app_path, 'AndroidManifest.xml');
+            manifest.write(manifest_path);
 
-                exports.copyScripts(project_path);
-                exports.copyBuildRules(project_path);
-            });
+            exports.copyScripts(project_path);
+            exports.copyBuildRules(project_path);
+
             // Link it to local android install.
             exports.writeProjectProperties(project_path, target_api);
             exports.prepBuildFiles(project_path);
@@ -336,7 +311,6 @@ function generateDoneMessage (type, link) {
 
 // Returns a promise.
 exports.update = function (projectPath, options, events) {
-
     var errorString =
         'An in-place platform update is not supported. \n' +
         'The `platforms` folder is always treated as a build artifact in the CLI workflow.\n' +
