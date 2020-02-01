@@ -23,104 +23,106 @@ var xml = require('cordova-common').xmlHelpers;
 var DEFAULT_ORIENTATION = 'default';
 
 /** Wraps an AndroidManifest file */
-function AndroidManifest (path) {
-    this.path = path;
-    this.doc = xml.parseElementtreeSync(path);
-    if (this.doc.getroot().tag !== 'manifest') {
-        throw new Error('AndroidManifest at ' + path + ' has incorrect root node name (expected "manifest")');
+class AndroidManifest {
+    constructor (path) {
+        this.path = path;
+        this.doc = xml.parseElementtreeSync(path);
+        if (this.doc.getroot().tag !== 'manifest') {
+            throw new Error('AndroidManifest at ' + path + ' has incorrect root node name (expected "manifest")');
+        }
+    }
+
+    getVersionName () {
+        return this.doc.getroot().attrib['android:versionName'];
+    }
+
+    setVersionName (versionName) {
+        this.doc.getroot().attrib['android:versionName'] = versionName;
+        return this;
+    }
+
+    getVersionCode () {
+        return this.doc.getroot().attrib['android:versionCode'];
+    }
+
+    setVersionCode (versionCode) {
+        this.doc.getroot().attrib['android:versionCode'] = versionCode;
+        return this;
+    }
+
+    getPackageId () {
+        return this.doc.getroot().attrib['package'];
+    }
+
+    setPackageId (pkgId) {
+        this.doc.getroot().attrib['package'] = pkgId;
+        return this;
+    }
+
+    getActivity () {
+        var activity = this.doc.getroot().find('./application/activity');
+        return {
+            getName: function () {
+                return activity.attrib['android:name'];
+            },
+            setName: function (name) {
+                if (!name) {
+                    delete activity.attrib['android:name'];
+                } else {
+                    activity.attrib['android:name'] = name;
+                }
+                return this;
+            },
+            getOrientation: function () {
+                return activity.attrib['android:screenOrientation'];
+            },
+            setOrientation: function (orientation) {
+                if (!orientation || orientation.toLowerCase() === DEFAULT_ORIENTATION) {
+                    delete activity.attrib['android:screenOrientation'];
+                } else {
+                    activity.attrib['android:screenOrientation'] = orientation;
+                }
+                return this;
+            },
+            getLaunchMode: function () {
+                return activity.attrib['android:launchMode'];
+            },
+            setLaunchMode: function (launchMode) {
+                if (!launchMode) {
+                    delete activity.attrib['android:launchMode'];
+                } else {
+                    activity.attrib['android:launchMode'] = launchMode;
+                }
+                return this;
+            }
+        };
+    }
+
+    getDebuggable () {
+        return this.doc.getroot().find('./application').attrib['android:debuggable'] === 'true';
+    }
+
+    setDebuggable (value) {
+        var application = this.doc.getroot().find('./application');
+        if (value) {
+            application.attrib['android:debuggable'] = 'true';
+        } else {
+            // The default value is "false", so we can remove attribute at all.
+            delete application.attrib['android:debuggable'];
+        }
+        return this;
+    }
+
+    /**
+     * Writes manifest to disk syncronously. If filename is specified, then manifest
+     *   will be written to that file
+     *
+     * @param   {String}  [destPath]  File to write manifest to. If omitted,
+     *   manifest will be written to file it has been read from.
+     */
+    write (destPath) {
+        fs.writeFileSync(destPath || this.path, this.doc.write({ indent: 4 }), 'utf-8');
     }
 }
-
-AndroidManifest.prototype.getVersionName = function () {
-    return this.doc.getroot().attrib['android:versionName'];
-};
-
-AndroidManifest.prototype.setVersionName = function (versionName) {
-    this.doc.getroot().attrib['android:versionName'] = versionName;
-    return this;
-};
-
-AndroidManifest.prototype.getVersionCode = function () {
-    return this.doc.getroot().attrib['android:versionCode'];
-};
-
-AndroidManifest.prototype.setVersionCode = function (versionCode) {
-    this.doc.getroot().attrib['android:versionCode'] = versionCode;
-    return this;
-};
-
-AndroidManifest.prototype.getPackageId = function () {
-    return this.doc.getroot().attrib['package'];
-};
-
-AndroidManifest.prototype.setPackageId = function (pkgId) {
-    this.doc.getroot().attrib['package'] = pkgId;
-    return this;
-};
-
-AndroidManifest.prototype.getActivity = function () {
-    var activity = this.doc.getroot().find('./application/activity');
-    return {
-        getName: function () {
-            return activity.attrib['android:name'];
-        },
-        setName: function (name) {
-            if (!name) {
-                delete activity.attrib['android:name'];
-            } else {
-                activity.attrib['android:name'] = name;
-            }
-            return this;
-        },
-        getOrientation: function () {
-            return activity.attrib['android:screenOrientation'];
-        },
-        setOrientation: function (orientation) {
-            if (!orientation || orientation.toLowerCase() === DEFAULT_ORIENTATION) {
-                delete activity.attrib['android:screenOrientation'];
-            } else {
-                activity.attrib['android:screenOrientation'] = orientation;
-            }
-            return this;
-        },
-        getLaunchMode: function () {
-            return activity.attrib['android:launchMode'];
-        },
-        setLaunchMode: function (launchMode) {
-            if (!launchMode) {
-                delete activity.attrib['android:launchMode'];
-            } else {
-                activity.attrib['android:launchMode'] = launchMode;
-            }
-            return this;
-        }
-    };
-};
-
-AndroidManifest.prototype.getDebuggable = function () {
-    return this.doc.getroot().find('./application').attrib['android:debuggable'] === 'true';
-};
-
-AndroidManifest.prototype.setDebuggable = function (value) {
-    var application = this.doc.getroot().find('./application');
-    if (value) {
-        application.attrib['android:debuggable'] = 'true';
-    } else {
-        // The default value is "false", so we can remove attribute at all.
-        delete application.attrib['android:debuggable'];
-    }
-    return this;
-};
-
-/**
- * Writes manifest to disk syncronously. If filename is specified, then manifest
- *   will be written to that file
- *
- * @param   {String}  [destPath]  File to write manifest to. If omitted,
- *   manifest will be written to file it has been read from.
- */
-AndroidManifest.prototype.write = function (destPath) {
-    fs.writeFileSync(destPath || this.path, this.doc.write({ indent: 4 }), 'utf-8');
-};
 
 module.exports = AndroidManifest;
