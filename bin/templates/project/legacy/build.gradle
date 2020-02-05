@@ -223,22 +223,6 @@ android {
             }
         }
     }
-    /*
-
-    ELSE NOTHING! DON'T MESS WITH THE VERSION CODE IF YOU DON'T HAVE TO!
-
-    else if (!cdvVersionCode) {
-      def minSdkVersion = cdvMinSdkVersion ?: privateHelpers.extractIntFromManifest("minSdkVersion")
-      // Vary versionCode by the two most common API levels:
-      // 14 is ICS, which is the lowest API level for many apps.
-      // 20 is Lollipop, which is the lowest API level for the updatable system webview.
-      if (minSdkVersion >= 20) {
-        defaultConfig.versionCode += 9
-      } else if (minSdkVersion >= 14) {
-        defaultConfig.versionCode += 8
-      }
-    }
-    */
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_6
