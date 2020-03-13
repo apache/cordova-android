@@ -155,7 +155,7 @@ public class SystemWebChromeClient extends WebChromeClient {
     {
         if (consoleMessage.message() != null)
             LOG.d(LOG_TAG, "%s: Line %d : %s" , consoleMessage.sourceId() , consoleMessage.lineNumber(), consoleMessage.message());
-         return super.onConsoleMessage(consoleMessage);
+        return super.onConsoleMessage(consoleMessage);
     }
 
     @Override
@@ -176,7 +176,6 @@ public class SystemWebChromeClient extends WebChromeClient {
         {
             geolocation.requestPermissions(0);
         }
-
     }
 
     // API level 7 is required for this, see if we could lower this using something else
@@ -199,7 +198,6 @@ public class SystemWebChromeClient extends WebChromeClient {
      * @return View The progress view.
      */
     public View getVideoLoadingProgressView() {
-
         if (mVideoProgressView == null) {
             // Create a new Loading view programmatically.
 
@@ -218,7 +216,7 @@ public class SystemWebChromeClient extends WebChromeClient {
 
             mVideoProgressView = layout;
         }
-    return mVideoProgressView;
+        return mVideoProgressView;
     }
 
     @Override
