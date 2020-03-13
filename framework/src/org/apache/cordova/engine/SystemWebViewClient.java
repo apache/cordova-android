@@ -333,7 +333,7 @@ public class SystemWebViewClient extends WebViewClient {
             // Allow plugins to intercept WebView requests.
             Uri remappedUri = resourceApi.remapUri(origUri);
 
-            if (!origUri.equals(remappedUri) || needsSpecialsInAssetUrlFix(origUri) || needsKitKatContentUrlFix(origUri)) {
+            if (!origUri.equals(remappedUri) || needsSpecialsInAssetUrlFix(origUri) || needsContentUrlFix(origUri)) {
                 CordovaResourceApi.OpenForReadResult result = resourceApi.openForRead(remappedUri, true);
                 return new WebResourceResponse(result.mimeType, "UTF-8", result.inputStream);
             }
@@ -348,7 +348,7 @@ public class SystemWebViewClient extends WebViewClient {
         }
     }
 
-    private static boolean needsKitKatContentUrlFix(Uri uri) {
+    private static boolean needsContentUrlFix(Uri uri) {
         return "content".equals(uri.getScheme());
     }
 
