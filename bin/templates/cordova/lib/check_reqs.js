@@ -392,12 +392,14 @@ module.exports.run = function () {
         console.log('Checking Java JDK and Android SDK versions');
         console.log('ANDROID_SDK_ROOT=' + process.env['ANDROID_SDK_ROOT'] + ' (recommended setting)');
         console.log('ANDROID_HOME=' + process.env['ANDROID_HOME'] + ' (DEPRECATED)');
-
-        if (!String(values[0]).startsWith('1.8.')) {
+           
+        if (values[0] === undefined) {
             throw new CordovaError(
-                'Requirements check failed for JDK 8 (\'1.8.*\')! Detected version: ' + values[0] + '\n' +
-                'Check your ANDROID_SDK_ROOT / JAVA_HOME / PATH environment variables.'
+                'Requirements check for Java Development Kit failed. Detected version: ' + values[0] + '\n' +
+                'Check your Java installation and ANDROID_SDK_ROOT / JAVA_HOME / PATH environment variables.'
             );
+        } else {
+          console.log('Detected JDK version: ' + values[0] + '\n');
         }
 
         if (!values[1]) {
