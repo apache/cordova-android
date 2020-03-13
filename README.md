@@ -32,7 +32,7 @@ at the core, applications written with web technology: HTML, CSS and JavaScript.
 
 ## Requires
 
-- Java JDK 1.8 or greater
+- Java JDK 1.8
 - Android SDK [http://developer.android.com](http://developer.android.com)
 
 
