@@ -392,7 +392,7 @@ module.exports.run = function () {
         console.log('Checking Java JDK and Android SDK versions');
         console.log('ANDROID_SDK_ROOT=' + process.env['ANDROID_SDK_ROOT'] + ' (recommended setting)');
         console.log('ANDROID_HOME=' + process.env['ANDROID_HOME'] + ' (DEPRECATED)');
-           
+
         if (values[0] === undefined) {
             throw new CordovaError(
                 'Requirements check for Java Development Kit failed. Detected version: ' + values[0] + '\n' +
