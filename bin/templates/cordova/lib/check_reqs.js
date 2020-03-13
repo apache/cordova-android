@@ -399,7 +399,7 @@ module.exports.run = function () {
                 'Check your Java installation and ANDROID_SDK_ROOT / JAVA_HOME / PATH environment variables.'
             );
         } else {
-          console.log('Detected JDK version: ' + values[0] + '\n');
+            console.log('Detected JDK version: ' + values[0] + '\n');
         }
 
         if (!values[1]) {
