@@ -17,6 +17,15 @@
     under the License.
 */
 
+/**
+ * @todo update coho to update this line.
+ * @todo use `package.json` instead but first
+ *  figure out how this fit in with the platform-centered workflow structure.
+ *  This workflow would not have the `package.json` file.
+ */
+// Coho updates this line
+const VERSION = '9.0.0-dev';
+
 var path = require('path');
 
 var AndroidProject = require('./lib/AndroidProject');
@@ -88,7 +97,7 @@ class Api {
         result.locations = this.locations;
         result.root = this.root;
         result.name = this.platform;
-        result.version = require('./version');
+        result.version = Api.version();
         result.projectConfig = this._config;
 
         return result;
@@ -364,6 +373,10 @@ class Api {
             throw (e);
         }
         return result;
+    }
+
+    static version () {
+        return VERSION;
     }
 }
 
