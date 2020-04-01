@@ -141,9 +141,9 @@ class ProjectBuilder {
             if (opts.arch) {
                 args.push('-PcdvBuildArch=' + opts.arch);
             }
-
-            args.push.apply(args, opts.extraArgs);
         }
+
+        args.push.apply(args, opts.extraArgs);
 
         return args;
     }
