@@ -55,3 +55,7 @@ jobs:
           npm t
         env:
           CI: true
+
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
