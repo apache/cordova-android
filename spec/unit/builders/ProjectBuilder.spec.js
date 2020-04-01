@@ -113,6 +113,23 @@ describe('ProjectBuilder', () => {
             });
             expect(args[0]).toBe('clean');
         });
+
+        describe('should accept extra arguments', () => {
+            it('apk', () => {
+                const args = builder.getArgs('debug', {
+                    extraArgs: ['-PcdvVersionCode=12344']
+                });
+                expect(args).toContain('-PcdvVersionCode=12344');
+            });
+
+            it('bundle', () => {
+                const args = builder.getArgs('debug', {
+                    packageType: 'bundle',
+                    extraArgs: ['-PcdvVersionCode=12344']
+                });
+                expect(args).toContain('-PcdvVersionCode=12344');
+            });
+        });
     });
 
     describe('runGradleWrapper', () => {
