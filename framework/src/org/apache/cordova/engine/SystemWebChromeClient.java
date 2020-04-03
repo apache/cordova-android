@@ -155,7 +155,7 @@ public class SystemWebChromeClient extends WebChromeClient {
     {
         if (consoleMessage.message() != null)
             LOG.d(LOG_TAG, "%s: Line %d : %s" , consoleMessage.sourceId() , consoleMessage.lineNumber(), consoleMessage.message());
-         return super.onConsoleMessage(consoleMessage);
+        return super.onConsoleMessage(consoleMessage);
     }
 
     @Override
@@ -176,7 +176,6 @@ public class SystemWebChromeClient extends WebChromeClient {
         {
             geolocation.requestPermissions(0);
         }
-
     }
 
     // API level 7 is required for this, see if we could lower this using something else
@@ -199,7 +198,6 @@ public class SystemWebChromeClient extends WebChromeClient {
      * @return View The progress view.
      */
     public View getVideoLoadingProgressView() {
-
         if (mVideoProgressView == null) {
             // Create a new Loading view programmatically.
 
@@ -218,36 +216,9 @@ public class SystemWebChromeClient extends WebChromeClient {
 
             mVideoProgressView = layout;
         }
-    return mVideoProgressView;
+        return mVideoProgressView;
     }
 
-    // <input type=file> support:
-    // openFileChooser() is for pre KitKat and in KitKat mr1 (it's known broken in KitKat).
-    // For Lollipop, we use onShowFileChooser().
-    public void openFileChooser(ValueCallback<Uri> uploadMsg) {
-        this.openFileChooser(uploadMsg, "*/*");
-    }
-
-    public void openFileChooser( ValueCallback<Uri> uploadMsg, String acceptType ) {
-        this.openFileChooser(uploadMsg, acceptType, null);
-    }
-
-    public void openFileChooser(final ValueCallback<Uri> uploadMsg, String acceptType, String capture)
-    {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
-            @Override
-            public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
-                LOG.d(LOG_TAG, "Receive file chooser URL: " + result);
-                uploadMsg.onReceiveValue(result);
-            }
-        }, intent, FILECHOOSER_RESULTCODE);
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final WebChromeClient.FileChooserParams fileChooserParams) {
         // Check if multiple-select is specified
@@ -288,7 +259,6 @@ public class SystemWebChromeClient extends WebChromeClient {
         return true;
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onPermissionRequest(final PermissionRequest request) {
         LOG.d(LOG_TAG, "onPermissionRequest: " + Arrays.toString(request.getResources()));
