@@ -34,7 +34,7 @@ class GradlePropertiesParser {
             'org.gradle.daemon': 'true',
 
             // to allow dex in process
-            'org.gradle.jvmargs': '-Xmx2048m',
+            'org.gradle.jvmargs': '-Xmx4096m',
 
             // Android X
             'android.useAndroidX': 'true',
