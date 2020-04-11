@@ -90,8 +90,15 @@ class GradlePropertiesParser {
                 this.gradleFile.set(key, properties[key]);
             } else if (value !== properties[key]) {
                 if (this._defaults[key] && this._defaults[key] !== properties[key]) {
-                    // Since the value does not match default, we will notify the discrepancy with Cordova's recommended value.
-                    events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${properties[key]}", Cordova's recommended value is "${this._defaults[key]}"`);
+                    let shouldEmit = true;
+                    if (key === 'org.gradle.jvmargs') {
+                        shouldEmit = this._isJVMMemoryLessThanRecommended(properties[key], this._defaults[key]);
+                    }
+
+                    if (shouldEmit) {
+                        // Since the value does not match default, we will notify the discrepancy with Cordova's recommended value.
+                        events.emit('info', `[Gradle Properties] Detected Gradle property "${key}" with the value of "${properties[key]}", Cordova's recommended value is "${this._defaults[key]}"`);
+                    }
                 } else {
                     // When the current value exists but does not match the new value or does matches the default key value, the new value it set.
                     events.emit('verbose', `[Gradle Properties] Updating Gradle property "${key}" with the value of "${properties[key]}"`);
@@ -101,6 +108,34 @@ class GradlePropertiesParser {
                 this.gradleFile.set(key, properties[key]);
             }
         });
+    }
+
+    _isJVMMemoryLessThanRecommended (memoryValue, recommendedMemoryValue) {
+        const UNIT = 2;
+        const SIZE = 1;
+        const regex = /-Xmx+([0-9]+)+([mMgGkK])/;
+
+        const recommendedCapture = regex.exec(recommendedMemoryValue);
+        const recommendedBase = this._getBaseJVMSize(recommendedCapture[SIZE], recommendedCapture[UNIT]);
+        const memoryCapture = regex.exec(memoryValue);
+        const memoryBase = this._getBaseJVMSize(memoryCapture[SIZE], memoryCapture[UNIT]);
+
+        return memoryBase < recommendedBase;
+    }
+
+    _getBaseJVMSize (size, unit) {
+        const KILOBYTE = 1024;
+        const MEGABYTE = 1048576;
+        const GIGABYTE = 1073741824;
+
+        switch (unit.toLowerCase()) {
+        case 'k': return size * KILOBYTE;
+        case 'm': return size * MEGABYTE;
+        case 'g': return size * GIGABYTE;
+        }
+
+        events.emit('warn', `[Gradle Properties] Unknown memory size unit (${unit})`);
+        return null;
     }
 
     /**
