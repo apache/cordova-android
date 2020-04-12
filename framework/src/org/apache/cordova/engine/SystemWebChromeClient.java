@@ -151,14 +151,6 @@ public class SystemWebChromeClient extends WebChromeClient {
     }
 
     @Override
-    public boolean onConsoleMessage(ConsoleMessage consoleMessage)
-    {
-        if (consoleMessage.message() != null)
-            LOG.d(LOG_TAG, "%s: Line %d : %s" , consoleMessage.sourceId() , consoleMessage.lineNumber(), consoleMessage.message());
-        return super.onConsoleMessage(consoleMessage);
-    }
-
-    @Override
     /**
      * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin.
      *
