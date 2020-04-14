@@ -515,8 +515,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
         public void clearLoadTimeoutTimer() {
             loadUrlTimeout++;
         }
-        @Override
 
+        @Override
         public void onPageStarted(String newUrl) {
             LOG.d(TAG, "onPageDidNavigate(" + newUrl + ")");
             boundKeyCodes.clear();
