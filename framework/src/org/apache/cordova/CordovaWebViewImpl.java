@@ -517,7 +517,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
         @Override
 
-
         public void onPageStarted(String newUrl) {
             LOG.d(TAG, "onPageDidNavigate(" + newUrl + ")");
             boundKeyCodes.clear();
