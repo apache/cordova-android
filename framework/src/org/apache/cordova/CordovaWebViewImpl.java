@@ -244,7 +244,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
     }
 
-
     private static class WrapperView extends FrameLayout {
 
         private final CordovaWebViewEngine engine;
