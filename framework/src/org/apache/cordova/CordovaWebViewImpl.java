@@ -244,6 +244,21 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
     }
 
+    private static class WrapperView extends FrameLayout {
+
+        private final CordovaWebViewEngine engine;
+
+        public WrapperView(Context context, CordovaWebViewEngine engine) {
+            super(context);
+            this.engine = engine;
+        }
+
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent event) {
+            return engine.getView().dispatchKeyEvent(event);
+        }
+    }
+
     @Override
     @Deprecated
     public void showCustomView(View view, WebChromeClient.CustomViewCallback callback) {
@@ -255,13 +270,16 @@ public class CordovaWebViewImpl implements CordovaWebView {
             return;
         }
 
+        WrapperView wrapperView = new WrapperView(getContext(), engine);
+        wrapperView.addView(view);
+
         // Store the view and its callback for later (to kill it properly)
-        mCustomView = view;
+        mCustomView = wrapperView;
         mCustomViewCallback = callback;
 
         // Add the custom view to its container.
         ViewGroup parent = (ViewGroup) engine.getView().getParent();
-        parent.addView(view, new FrameLayout.LayoutParams(
+        parent.addView(wrapperView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 Gravity.CENTER));
