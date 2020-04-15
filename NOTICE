@@ -1,15 +1,5 @@
 Apache Cordova
-Copyright 2015 The Apache Software Foundation
+Copyright 2015-2020 The Apache Software Foundation
 
 This product includes software developed at
-The Apache Software Foundation (http://www.apache.org)
-
-=========================================================================
-==  NOTICE file corresponding to the section 4 d of                    ==
-==  the Apache License, Version 2.0,                                   ==
-==  in this case for the Android-specific code.                        ==
-=========================================================================
-
-This product includes software developed as part of
-The Android Open Source Project (http://source.android.com).
-
+The Apache Software Foundation (http://www.apache.org/).

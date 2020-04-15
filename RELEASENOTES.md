@@ -18,7 +18,7 @@
 # under the License.
 #
 -->
-## Release Notes for Cordova (Android) ##
+## Release Notes for Cordova (Android)
 
 ### 8.1.0 (Sep 11, 2019)
 
