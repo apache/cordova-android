@@ -29,7 +29,7 @@ const fakePluginPath = path.join(__dirname, 'fixtures/cordova-plugin-fake');
 describe('plugin add', function () {
     let tmpDir;
     beforeEach(() => {
-        const tmpDirTemplate = path.join(os.tmpdir(), `cordova-android-test-`);
+        const tmpDirTemplate = path.join(os.tmpdir(), 'cordova-android-test-');
         tmpDir = fs.realpathSync(fs.mkdtempSync(tmpDirTemplate));
     });
     afterEach(() => {
