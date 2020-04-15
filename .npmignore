@@ -1,0 +1,5 @@
+.*
+coverage
+test
+spec
+framework/build
