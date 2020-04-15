@@ -4,5 +4,5 @@
 GUESS_FIELDS = True
 OPEN_BROWSER = True
 TARGET_GROUPS = 'cordova'
-REVIEWBOARD_URL = 'http://reviews.apache.org'
+REVIEWBOARD_URL = 'https://reviews.apache.org'
 

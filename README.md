@@ -19,22 +19,21 @@
 #
 -->
 
-[![Build Status](https://travis-ci.org/apache/cordova-android.svg?branch=master)](https://travis-ci.org/apache/cordova-android)
-[![codecov.io](https://codecov.io/github/apache/cordova-android/coverage.svg?branch=master)](https://codecov.io/github/apache/cordova-android?branch=master)
-
 # Cordova Android
 
-Cordova Android is an Android application library that allows for Cordova-based
-projects to be built for the Android Platform. Cordova based applications are,
-at the core, applications written with web technology: HTML, CSS and JavaScript.
+[![NPM](https://nodei.co/npm/cordova-android.png)](https://nodei.co/npm/cordova-android/)
+
+[![Node CI](https://github.com/apache/cordova-android/workflows/Node%20CI/badge.svg?branch=master)](https://github.com/apache/cordova-android/actions?query=branch%3Amaster)
+[![codecov.io](https://codecov.io/github/apache/cordova-android/coverage.svg?branch=master)](https://codecov.io/github/apache/cordova-android?branch=master)
+
+Cordova Android is an Android application library that allows for Cordova-based projects to be built for the Android Platform. Cordova based applications are, at the core, applications written with web technology: HTML, CSS and JavaScript.
 
 [Apache Cordova](https://cordova.apache.org) is a project of The Apache Software Foundation (ASF).
 
 ## Requires
 
 - Java JDK 1.8
-- Android SDK [http://developer.android.com](http://developer.android.com)
-
+- Android SDK [http://developer.android.com](https://developer.android.com/)
 
 ## Cordova Android Developer Tools
 
@@ -61,6 +60,4 @@ These commands live in a generated Cordova Android project. Any interactions wit
 
 ## Running the Native Tests
 
-The `test/` directory in this project contains an Android test project that can
-be used to run different kinds of native tests. Check out the
-[README contained therein](test/README.md) for more details!
+The `test/` directory in this project contains an Android test project that can be used to run different kinds of native tests. Check out the [README contained therein](test/README.md) for more details!
