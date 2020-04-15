@@ -80,7 +80,7 @@ describe('AndroidManifest', () => {
         });
 
         it('should throw an error if not a valid manifest', () => {
-            createTempManifestFile(`<?xml version='1.0' encoding='utf-8'?><notamanifest></notamanifest>`);
+            createTempManifestFile('<?xml version=\'1.0\' encoding=\'utf-8\'?><notamanifest></notamanifest>');
 
             expect(() => new AndroidManifest(manifestPath)).toThrowError();
         });

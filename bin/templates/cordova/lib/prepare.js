@@ -685,8 +685,7 @@ function cleanFileResources (projectRoot, projectConfig, platformDir) {
         });
 
         FileUpdater.updatePaths(
-            resourceMap, {
-                rootDir: projectRoot, all: true }, logFileOp);
+            resourceMap, { rootDir: projectRoot, all: true }, logFileOp);
     }
 }
 

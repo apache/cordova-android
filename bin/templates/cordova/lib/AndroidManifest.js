@@ -51,11 +51,11 @@ class AndroidManifest {
     }
 
     getPackageId () {
-        return this.doc.getroot().attrib['package'];
+        return this.doc.getroot().attrib.package;
     }
 
     setPackageId (pkgId) {
-        this.doc.getroot().attrib['package'] = pkgId;
+        this.doc.getroot().attrib.package = pkgId;
         return this;
     }
 

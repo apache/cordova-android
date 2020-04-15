@@ -122,13 +122,13 @@ module.exports.get_gradle_wrapper = function () {
         // console.log('result.stderr =' + result.stderr.toString());
 
         if (result.stderr.toString().length > 0) {
-            var androidPath = path.join(process.env['ProgramFiles'], 'Android') + '/';
+            var androidPath = path.join(process.env.ProgramFiles, 'Android') + '/';
             if (fs.existsSync(androidPath)) {
                 program_dir = fs.readdirSync(androidPath);
                 while (i < program_dir.length && !foundStudio) {
                     if (program_dir[i].startsWith('Android Studio')) {
                         foundStudio = true;
-                        androidStudioPath = path.join(process.env['ProgramFiles'], 'Android', program_dir[i], 'gradle');
+                        androidStudioPath = path.join(process.env.ProgramFiles, 'Android', program_dir[i], 'gradle');
                     } else { ++i; }
                 }
             }
@@ -153,7 +153,7 @@ module.exports.get_gradle_wrapper = function () {
 
 // Returns a promise. Called only by build and clean commands.
 module.exports.check_gradle = function () {
-    var sdkDir = process.env['ANDROID_HOME'];
+    var sdkDir = process.env.ANDROID_HOME;
     if (!sdkDir) {
         return Promise.reject(new CordovaError('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.\n' +
             'Might need to install Android SDK or set up \'ANDROID_HOME\' env variable.'));
@@ -171,12 +171,12 @@ module.exports.check_gradle = function () {
 // Returns a promise.
 module.exports.check_java = function () {
     var javacPath = forgivingWhichSync('javac');
-    var hasJavaHome = !!process.env['JAVA_HOME'];
+    var hasJavaHome = !!process.env.JAVA_HOME;
     return Promise.resolve().then(function () {
         if (hasJavaHome) {
             // Windows java installer doesn't add javac to PATH, nor set JAVA_HOME (ugh).
             if (!javacPath) {
-                process.env['PATH'] += path.delimiter + path.join(process.env['JAVA_HOME'], 'bin');
+                process.env.PATH += path.delimiter + path.join(process.env.JAVA_HOME, 'bin');
             }
         } else {
             if (javacPath) {
@@ -185,7 +185,7 @@ module.exports.check_java = function () {
                 var default_java_error_msg = 'Failed to find \'JAVA_HOME\' environment variable. Try setting it manually.';
                 if (fs.existsSync(find_java)) {
                     return execa(find_java).then(({ stdout }) => {
-                        process.env['JAVA_HOME'] = stdout;
+                        process.env.JAVA_HOME = stdout;
                     }).catch(function (err) {
                         if (err) {
                             throw new CordovaError(default_java_error_msg);
@@ -195,13 +195,13 @@ module.exports.check_java = function () {
                     // See if we can derive it from javac's location.
                     var maybeJavaHome = path.dirname(path.dirname(javacPath));
                     if (fs.existsSync(path.join(maybeJavaHome, 'lib', 'tools.jar'))) {
-                        process.env['JAVA_HOME'] = maybeJavaHome;
+                        process.env.JAVA_HOME = maybeJavaHome;
                     } else {
                         throw new CordovaError(default_java_error_msg);
                     }
                 }
             } else if (module.exports.isWindows()) {
-                const programFilesEnv = path.resolve(process.env['ProgramFiles']);
+                const programFilesEnv = path.resolve(process.env.ProgramFiles);
                 const programFiles = 'C:\\Program Files\\';
                 const programFilesx86 = 'C:\\Program Files (x86)\\';
 
@@ -213,9 +213,9 @@ module.exports.check_java = function () {
                 if (firstJdkDir) {
                     firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
                     if (!javacPath) {
-                        process.env['PATH'] += path.delimiter + path.join(firstJdkDir, 'bin');
+                        process.env.PATH += path.delimiter + path.join(firstJdkDir, 'bin');
                     }
-                    process.env['JAVA_HOME'] = firstJdkDir;
+                    process.env.JAVA_HOME = firstJdkDir;
                 }
             }
         }
@@ -230,9 +230,9 @@ module.exports.check_java = function () {
                 'Failed to run "javac -version", make sure that you have a JDK version 8 installed.\n' +
                 'You can get it from the following location:\n' +
                 'https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html';
-                if (process.env['JAVA_HOME']) {
+                if (process.env.JAVA_HOME) {
                     msg += '\n\n';
-                    msg += 'Your JAVA_HOME is invalid: ' + process.env['JAVA_HOME'];
+                    msg += 'Your JAVA_HOME is invalid: ' + process.env.JAVA_HOME;
                 }
                 throw new CordovaError(msg);
             });
@@ -245,47 +245,47 @@ module.exports.check_android = function () {
         var androidCmdPath = forgivingWhichSync('android');
         var adbInPath = forgivingWhichSync('adb');
         var avdmanagerInPath = forgivingWhichSync('avdmanager');
-        var hasAndroidHome = !!process.env['ANDROID_HOME'] && fs.existsSync(process.env['ANDROID_HOME']);
+        var hasAndroidHome = !!process.env.ANDROID_HOME && fs.existsSync(process.env.ANDROID_HOME);
         function maybeSetAndroidHome (value) {
             if (!hasAndroidHome && fs.existsSync(value)) {
                 hasAndroidHome = true;
-                process.env['ANDROID_HOME'] = value;
+                process.env.ANDROID_HOME = value;
             }
         }
         // First ensure ANDROID_HOME is set
         // If we have no hints (nothing in PATH), try a few default locations
         if (!hasAndroidHome && !androidCmdPath && !adbInPath && !avdmanagerInPath) {
-            if (process.env['ANDROID_SDK_ROOT']) {
+            if (process.env.ANDROID_SDK_ROOT) {
                 // Quick fix to set ANDROID_HOME according to ANDROID_SDK_ROOT
                 // if ANDROID_HOME is **not** defined and
                 // ANDROID_SDK_ROOT **is** defined
                 // according to environment variables as documented in:
                 // https://developer.android.com/studio/command-line/variables
-                maybeSetAndroidHome(path.join(process.env['ANDROID_SDK_ROOT']));
+                maybeSetAndroidHome(path.join(process.env.ANDROID_SDK_ROOT));
             }
             if (module.exports.isWindows()) {
                 // Android Studio 1.0 installer
-                maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'sdk'));
-                maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'sdk'));
+                maybeSetAndroidHome(path.join(process.env.LOCALAPPDATA, 'Android', 'sdk'));
+                maybeSetAndroidHome(path.join(process.env.ProgramFiles, 'Android', 'sdk'));
                 // Android Studio pre-1.0 installer
-                maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'android-studio', 'sdk'));
-                maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'android-studio', 'sdk'));
+                maybeSetAndroidHome(path.join(process.env.LOCALAPPDATA, 'Android', 'android-studio', 'sdk'));
+                maybeSetAndroidHome(path.join(process.env.ProgramFiles, 'Android', 'android-studio', 'sdk'));
                 // Stand-alone installer
-                maybeSetAndroidHome(path.join(process.env['LOCALAPPDATA'], 'Android', 'android-sdk'));
-                maybeSetAndroidHome(path.join(process.env['ProgramFiles'], 'Android', 'android-sdk'));
+                maybeSetAndroidHome(path.join(process.env.LOCALAPPDATA, 'Android', 'android-sdk'));
+                maybeSetAndroidHome(path.join(process.env.ProgramFiles, 'Android', 'android-sdk'));
             } else if (module.exports.isDarwin()) {
                 // Android Studio 1.0 installer
-                maybeSetAndroidHome(path.join(process.env['HOME'], 'Library', 'Android', 'sdk'));
+                maybeSetAndroidHome(path.join(process.env.HOME, 'Library', 'Android', 'sdk'));
                 // Android Studio pre-1.0 installer
                 maybeSetAndroidHome('/Applications/Android Studio.app/sdk');
                 // Stand-alone zip file that user might think to put under /Applications
                 maybeSetAndroidHome('/Applications/android-sdk-macosx');
                 maybeSetAndroidHome('/Applications/android-sdk');
             }
-            if (process.env['HOME']) {
+            if (process.env.HOME) {
                 // Stand-alone zip file that user might think to put under their home directory
-                maybeSetAndroidHome(path.join(process.env['HOME'], 'android-sdk-macosx'));
-                maybeSetAndroidHome(path.join(process.env['HOME'], 'android-sdk'));
+                maybeSetAndroidHome(path.join(process.env.HOME, 'android-sdk-macosx'));
+                maybeSetAndroidHome(path.join(process.env.HOME, 'android-sdk'));
             }
         }
         if (!hasAndroidHome) {
@@ -325,23 +325,23 @@ module.exports.check_android = function () {
                 }
             }
         }
-        if (!process.env['ANDROID_HOME']) {
+        if (!process.env.ANDROID_HOME) {
             throw new CordovaError('Failed to find \'ANDROID_HOME\' environment variable. Try setting it manually.\n' +
                 'Failed to find \'android\' command in your \'PATH\'. Try update your \'PATH\' to include path to valid SDK directory.');
         }
-        if (!fs.existsSync(process.env['ANDROID_HOME'])) {
-            throw new CordovaError('\'ANDROID_HOME\' environment variable is set to non-existent path: ' + process.env['ANDROID_HOME'] +
+        if (!fs.existsSync(process.env.ANDROID_HOME)) {
+            throw new CordovaError('\'ANDROID_HOME\' environment variable is set to non-existent path: ' + process.env.ANDROID_HOME +
                 '\nTry update it manually to point to valid SDK directory.');
         }
         // Next let's make sure relevant parts of the SDK tooling is in our PATH
         if (hasAndroidHome && !androidCmdPath) {
-            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools');
+            process.env.PATH += path.delimiter + path.join(process.env.ANDROID_HOME, 'tools');
         }
         if (hasAndroidHome && !adbInPath) {
-            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'platform-tools');
+            process.env.PATH += path.delimiter + path.join(process.env.ANDROID_HOME, 'platform-tools');
         }
         if (hasAndroidHome && !avdmanagerInPath) {
-            process.env['PATH'] += path.delimiter + path.join(process.env['ANDROID_HOME'], 'tools', 'bin');
+            process.env.PATH += path.delimiter + path.join(process.env.ANDROID_HOME, 'tools', 'bin');
         }
         return hasAndroidHome;
     });
@@ -388,8 +388,8 @@ module.exports.check_android_target = function (originalError) {
 module.exports.run = function () {
     return Promise.all([this.check_java(), this.check_android()]).then(function (values) {
         console.log('Checking Java JDK and Android SDK versions');
-        console.log('ANDROID_SDK_ROOT=' + process.env['ANDROID_SDK_ROOT'] + ' (recommended setting)');
-        console.log('ANDROID_HOME=' + process.env['ANDROID_HOME'] + ' (DEPRECATED)');
+        console.log('ANDROID_SDK_ROOT=' + process.env.ANDROID_SDK_ROOT + ' (recommended setting)');
+        console.log('ANDROID_HOME=' + process.env.ANDROID_HOME + ' (DEPRECATED)');
 
         if (!String(values[0]).startsWith('1.8.')) {
             throw new CordovaError(

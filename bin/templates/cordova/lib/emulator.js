@@ -56,19 +56,19 @@ module.exports.list_images_using_avdmanager = function () {
             // To return more detailed information use img_obj
             var img_obj = {};
             if (response[i].match(/Name:\s/)) {
-                img_obj['name'] = response[i].split('Name: ')[1].replace('\r', '');
+                img_obj.name = response[i].split('Name: ')[1].replace('\r', '');
                 if (response[i + 1].match(/Device:\s/)) {
                     i++;
-                    img_obj['device'] = response[i].split('Device: ')[1].replace('\r', '');
+                    img_obj.device = response[i].split('Device: ')[1].replace('\r', '');
                 }
                 if (response[i + 1].match(/Path:\s/)) {
                     i++;
-                    img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
+                    img_obj.path = response[i].split('Path: ')[1].replace('\r', '');
                 }
                 if (response[i + 1].match(/Target:\s/)) {
                     i++;
                     if (response[i + 1].match(/ABI:\s/)) {
-                        img_obj['abi'] = response[i + 1].split('ABI: ')[1].replace('\r', '');
+                        img_obj.abi = response[i + 1].split('ABI: ')[1].replace('\r', '');
                     }
                     // This next conditional just aims to match the old output of `android list avd`
                     // We do so so that we don't have to change the logic when parsing for the
@@ -76,24 +76,24 @@ module.exports.list_images_using_avdmanager = function () {
                     // This allows us to transitionally support both `android` and `avdmanager` binaries,
                     // depending on what SDK version the user has
                     if (response[i + 1].match(/Based\son:\s/)) {
-                        img_obj['target'] = response[i + 1].split('Based on:')[1];
-                        if (img_obj['target'].match(/Tag\/ABI:\s/)) {
-                            img_obj['target'] = img_obj['target'].split('Tag/ABI:')[0].replace('\r', '').trim();
-                            if (img_obj['target'].indexOf('(') > -1) {
-                                img_obj['target'] = img_obj['target'].substr(0, img_obj['target'].indexOf('(') - 1).trim();
+                        img_obj.target = response[i + 1].split('Based on:')[1];
+                        if (img_obj.target.match(/Tag\/ABI:\s/)) {
+                            img_obj.target = img_obj.target.split('Tag/ABI:')[0].replace('\r', '').trim();
+                            if (img_obj.target.indexOf('(') > -1) {
+                                img_obj.target = img_obj.target.substr(0, img_obj.target.indexOf('(') - 1).trim();
                             }
                         }
-                        var version_string = img_obj['target'].replace(/Android\s+/, '');
+                        var version_string = img_obj.target.replace(/Android\s+/, '');
 
                         var api_level = android_sdk.version_string_to_api_level[version_string];
                         if (api_level) {
-                            img_obj['target'] += ' (API level ' + api_level + ')';
+                            img_obj.target += ' (API level ' + api_level + ')';
                         }
                     }
                 }
                 if (response[i + 1].match(/Skin:\s/)) {
                     i++;
-                    img_obj['skin'] = response[i].split('Skin: ')[1].replace('\r', '');
+                    img_obj.skin = response[i].split('Skin: ')[1].replace('\r', '');
                 }
 
                 emulator_list.push(img_obj);
@@ -115,27 +115,27 @@ module.exports.list_images_using_android = function () {
             // To return more detailed information use img_obj
             var img_obj = {};
             if (response[i].match(/Name:\s/)) {
-                img_obj['name'] = response[i].split('Name: ')[1].replace('\r', '');
+                img_obj.name = response[i].split('Name: ')[1].replace('\r', '');
                 if (response[i + 1].match(/Device:\s/)) {
                     i++;
-                    img_obj['device'] = response[i].split('Device: ')[1].replace('\r', '');
+                    img_obj.device = response[i].split('Device: ')[1].replace('\r', '');
                 }
                 if (response[i + 1].match(/Path:\s/)) {
                     i++;
-                    img_obj['path'] = response[i].split('Path: ')[1].replace('\r', '');
+                    img_obj.path = response[i].split('Path: ')[1].replace('\r', '');
                 }
                 if (response[i + 1].match(/\(API\slevel\s/) || (response[i + 2] && response[i + 2].match(/\(API\slevel\s/))) {
                     i++;
                     var secondLine = response[i + 1].match(/\(API\slevel\s/) ? response[i + 1] : '';
-                    img_obj['target'] = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
+                    img_obj.target = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
                 }
                 if (response[i + 1].match(/ABI:\s/)) {
                     i++;
-                    img_obj['abi'] = response[i].split('ABI: ')[1].replace('\r', '');
+                    img_obj.abi = response[i].split('ABI: ')[1].replace('\r', '');
                 }
                 if (response[i + 1].match(/Skin:\s/)) {
                     i++;
-                    img_obj['skin'] = response[i].split('Skin: ')[1].replace('\r', '');
+                    img_obj.skin = response[i].split('Skin: ')[1].replace('\r', '');
                 }
 
                 emulator_list.push(img_obj);
