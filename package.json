@@ -6,13 +6,8 @@
     "create": "bin/create"
   },
   "main": "bin/templates/cordova/Api.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/apache/cordova-android"
-  },
-  "bugs": {
-    "url": "https://github.com/apache/cordova-android/issues"
-  },
+  "repository": "github:apache/cordova-android",
+  "bugs": "https://github.com/apache/cordova-android/issues",
   "keywords": [
     "android",
     "cordova",
