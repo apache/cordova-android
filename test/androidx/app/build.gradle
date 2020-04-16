@@ -55,3 +55,6 @@ dependencies {
         exclude group: 'androidx.test.espresso', module: 'androidx.annotation'
     })
 }
+repositories {
+    jcenter()
+}
