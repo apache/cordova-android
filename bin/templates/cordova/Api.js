@@ -34,6 +34,7 @@ var PluginManager = require('cordova-common').PluginManager;
 var CordovaLogger = require('cordova-common').CordovaLogger;
 var selfEvents = require('cordova-common').events;
 var ConfigParser = require('cordova-common').ConfigParser;
+const prepare = require('./lib/prepare').prepare;
 
 var PLATFORM = 'android';
 
@@ -120,7 +121,7 @@ class Api {
     prepare (cordovaProject, prepareOptions) {
         cordovaProject.projectConfig = new ConfigParser(cordovaProject.locations.rootConfigXml || cordovaProject.projectConfig.path);
 
-        return require('./lib/prepare').prepare.call(this, cordovaProject, prepareOptions);
+        return prepare.call(this, cordovaProject, prepareOptions);
     }
 
     /**

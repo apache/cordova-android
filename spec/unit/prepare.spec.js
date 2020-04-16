@@ -20,6 +20,7 @@
 var rewire = require('rewire');
 var path = require('path');
 var CordovaError = require('cordova-common').CordovaError;
+const GradlePropertiesParser = require('../../bin/templates/cordova/lib/config/GradlePropertiesParser');
 
 const PATH_RESOURCE = path.join('platforms', 'android', 'app', 'src', 'main', 'res');
 
@@ -749,5 +750,85 @@ describe('cleanIcons method', function () {
 
         const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
         expect(actualResourceMap).toEqual(expectedResourceMap);
+    });
+});
+
+describe('prepare arguments', () => {
+    // Rewire
+    let Api;
+    let api;
+    let prepare;
+
+    // Spies
+    let gradlePropertiesParserSpy;
+
+    // Mock Data
+    let cordovaProject;
+    let options;
+
+    beforeEach(function () {
+        Api = rewire('../../bin/templates/cordova/Api');
+        prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+        cordovaProject = {
+            root: '/mock',
+            projectConfig: {
+                path: '/mock/config.xml',
+                cdvNamespacePrefix: 'cdv'
+            },
+            locations: {
+                plugins: '/mock/plugins',
+                www: '/mock/www'
+            }
+        };
+
+        options = {
+            options: {}
+        };
+
+        Api.__set__('ConfigParser',
+            jasmine.createSpy('ConfigParser')
+                .and.returnValue(cordovaProject.projectConfig)
+        );
+
+        Api.__set__('prepare', prepare.prepare);
+
+        prepare.__set__('events', {
+            emit: jasmine.createSpy('emit')
+        });
+        prepare.__set__('updateWww', jasmine.createSpy());
+        prepare.__set__('updateProjectAccordingTo', jasmine.createSpy('updateProjectAccordingTo')
+            .and.returnValue(Promise.resolve()));
+        prepare.__set__('updateIcons', jasmine.createSpy('updateIcons').and.returnValue(Promise.resolve()));
+        prepare.__set__('updateSplashes', jasmine.createSpy('updateSplashes').and.returnValue(Promise.resolve()));
+        prepare.__set__('updateFileResources', jasmine.createSpy('updateFileResources').and.returnValue(Promise.resolve()));
+        prepare.__set__('updateConfigFilesFrom',
+            jasmine.createSpy('updateConfigFilesFrom')
+                .and.returnValue({
+                    getPreference: jasmine.createSpy('getPreference')
+                }));
+
+        gradlePropertiesParserSpy = spyOn(GradlePropertiesParser.prototype, 'configure');
+
+        api = new Api();
+    });
+
+    it('runs without arguments', () => {
+        expectAsync(
+            api.prepare(cordovaProject, options).then(() => {
+                expect(gradlePropertiesParserSpy).toHaveBeenCalledWith({});
+            })
+        ).toBeResolved();
+    });
+
+    it('runs with jvmargs', () => {
+        options.options.argv = ['--jvmargs=-Xmx=4096m'];
+        expectAsync(
+            api.prepare(cordovaProject, options).then(() => {
+                expect(gradlePropertiesParserSpy).toHaveBeenCalledWith({
+                    'org.gradle.jvmargs': '-Xmx=4096m'
+                });
+            })
+        ).toBeResolved();
     });
 });

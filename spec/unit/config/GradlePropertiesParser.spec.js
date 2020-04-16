@@ -180,4 +180,64 @@ describe('Gradle Builder', () => {
             expect(emitSpy.calls.argsFor(0)[1]).toContain('Updating and Saving File');
         });
     });
+
+    describe('JVM Settings detection', () => {
+        const parser = new GradlePropertiesParser('/root');
+
+        describe('_getBaseJVMSize', () => {
+            it('1024k = 1048576', () => {
+                expect(parser._getBaseJVMSize(1024, 'k')).toBe(1048576);
+                expect(parser._getBaseJVMSize(1024, 'K')).toBe(1048576);
+            });
+
+            it('1024m = 1073741824', () => {
+                expect(parser._getBaseJVMSize(1024, 'm')).toBe(1073741824);
+                expect(parser._getBaseJVMSize(1024, 'M')).toBe(1073741824);
+            });
+
+            it('2g = 2097152', () => {
+                expect(parser._getBaseJVMSize(2, 'g')).toBe(2147483648);
+                expect(parser._getBaseJVMSize(2, 'G')).toBe(2147483648);
+            });
+
+            it('unknown units should warn', () => {
+                const emitSpy = jasmine.createSpy('emit');
+                GradlePropertiesParser.__set__('events', {
+                    emit: emitSpy
+                });
+
+                parser._getBaseJVMSize(1024, 'bad unit');
+                expect(emitSpy.calls.argsFor(0)[1]).toContain('Unknown memory size unit');
+            });
+        });
+
+        describe('JVM recommended tests', () => {
+            const recommended = '-Xmx2048m';
+
+            const tests = {
+                // kb
+                '1024k': true,
+                '2097152k': false,
+                '2097151k': true,
+                '2097153k': false,
+
+                // mb
+                '1024m': true,
+                '2048m': false,
+                '2047m': true,
+                '2049m': false,
+
+                // gb
+                '1g': true,
+                '3g': false,
+                '2g': false
+            };
+
+            for (const i in tests) {
+                it(i + ' should return ' + tests[i], () => {
+                    expect(parser._isJVMMemoryLessThanRecommended('-Xmx' + i, recommended)).toBe(tests[i]);
+                });
+            }
+        });
+    });
 });

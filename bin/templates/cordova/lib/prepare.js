@@ -19,6 +19,7 @@
 
 var fs = require('fs-extra');
 var path = require('path');
+const nopt = require('nopt');
 var events = require('cordova-common').events;
 var AndroidManifest = require('./AndroidManifest');
 var checkReqs = require('./check_reqs');
@@ -33,8 +34,20 @@ const utils = require('./utils');
 
 const GradlePropertiesParser = require('./config/GradlePropertiesParser');
 
+function parseArguments (argv) {
+    return nopt({
+        // `jvmargs` is a valid option however, we don't actually want to parse it because we want the entire string as is.
+        // jvmargs: String
+    }, {}, argv || [], 0);
+}
+
 module.exports.prepare = function (cordovaProject, options) {
     var self = this;
+
+    let args = {};
+    if (options && options.options) {
+        args = parseArguments(options.options.argv);
+    }
 
     var platformJson = PlatformJson.load(this.locations.root, this.platform);
     var munger = new PlatformMunger(this.platform, this.locations.root, platformJson, new PluginInfoProvider());
@@ -53,6 +66,7 @@ module.exports.prepare = function (cordovaProject, options) {
     if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
     if (maxSdkVersion) gradlePropertiesUserConfig.cdvMaxSdkVersion = maxSdkVersion;
     if (targetSdkVersion) gradlePropertiesUserConfig.cdvTargetSdkVersion = targetSdkVersion;
+    if (args.jvmargs) gradlePropertiesUserConfig['org.gradle.jvmargs'] = args.jvmargs;
     if (isGradlePluginKotlinEnabled) {
         gradlePropertiesUserConfig['kotlin.code.style'] = gradlePluginKotlinCodeStyle || 'official';
     }
