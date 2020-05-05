@@ -146,6 +146,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     private void initWebViewSettings() {
         webView.setInitialScale(0);
         webView.setVerticalScrollBarEnabled(false);
+        webView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         // Enable JavaScript
         final WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
