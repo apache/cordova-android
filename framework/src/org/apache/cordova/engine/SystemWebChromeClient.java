@@ -220,6 +220,13 @@ public class SystemWebChromeClient extends WebChromeClient {
         }
         Intent intent = fileChooserParams.createIntent();
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, selectMultiple);
+        
+        // Uses Intent.EXTRA_MIME_TYPES to pass multiple mime types.
+        String[] acceptTypes = fileChooserParams.getAcceptTypes();
+        if (acceptTypes.length > 1) {
+            intent.setType("*/*"); // Accept all, filter mime types by Intent.EXTRA_MIME_TYPES.
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, acceptTypes);
+        }
         try {
             parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
                 @Override
