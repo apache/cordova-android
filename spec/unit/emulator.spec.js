@@ -452,7 +452,7 @@ describe('emulator', () => {
         it('should resolve with true if the system has booted', () => {
             AdbSpy.shell.and.callFake((emuId, shellArgs) => {
                 expect(emuId).toBe(emulatorId);
-                expect(shellArgs).toContain('ps');
+                expect(shellArgs).toContain('getprop sys.boot_completed');
 
                 return Promise.resolve(psOutput);
             });

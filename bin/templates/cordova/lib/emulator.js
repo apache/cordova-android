@@ -352,8 +352,8 @@ module.exports.wait_for_emulator = function (port) {
  */
 module.exports.wait_for_boot = function (emulator_id, time_remaining) {
     var self = this;
-    return Adb.shell(emulator_id, 'ps').then(function (output) {
-        if (output.match(/android\.process\.acore/)) {
+    return Adb.shell(emulator_id, 'getprop sys.boot_completed').then(function (output) {
+        if (output.match(/1/)) {
             return true;
         } else if (time_remaining === 0) {
             return false;
