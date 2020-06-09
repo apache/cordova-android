@@ -89,7 +89,7 @@ allprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '6.1'
+    gradleVersion = '6.5'
 }
 
 // Configuration properties. Set these via environment variables, build-extras.gradle, or gradle.properties.
