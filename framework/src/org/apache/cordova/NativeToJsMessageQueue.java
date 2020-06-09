@@ -39,7 +39,7 @@ public class NativeToJsMessageQueue {
     // Arbitrarily chosen upper limit for how much data to send to JS in one shot.
     // This currently only chops up on message boundaries. It may be useful
     // to allow it to break up messages.
-    private static int MAX_PAYLOAD_SIZE = 16 * 1024 * 1024;
+    private static int COMBINED_RESPONSE_CUTOFF = 16 * 1024 * 1024;
 
     /**
      * When true, the active listener is not fired upon enqueue. When set to false,
@@ -124,7 +124,7 @@ public class NativeToJsMessageQueue {
 
     /**
      * Combines and returns queued messages combined into a single string.
-     * Combines as many messages as possible, while staying under MAX_PAYLOAD_SIZE.
+     * Combines as many messages as possible, while staying under COMBINED_RESPONSE_CUTOFF.
      * Returns null if the queue is empty.
      */
     public String popAndEncode(boolean fromOnlineEvent) {
@@ -140,7 +140,7 @@ public class NativeToJsMessageQueue {
             int numMessagesToSend = 0;
             for (JsMessage message : queue) {
                 int messageSize = calculatePackedMessageLength(message);
-                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE && MAX_PAYLOAD_SIZE > 0) {
+                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > COMBINED_RESPONSE_CUTOFF && COMBINED_RESPONSE_CUTOFF > 0) {
                     break;
                 }
                 totalPayloadLen += messageSize;
@@ -175,7 +175,7 @@ public class NativeToJsMessageQueue {
             int numMessagesToSend = 0;
             for (JsMessage message : queue) {
                 int messageSize = message.calculateEncodedLength() + 50; // overestimate.
-                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > MAX_PAYLOAD_SIZE && MAX_PAYLOAD_SIZE > 0) {
+                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > COMBINED_RESPONSE_CUTOFF && COMBINED_RESPONSE_CUTOFF > 0) {
                     break;
                 }
                 totalPayloadLen += messageSize;
