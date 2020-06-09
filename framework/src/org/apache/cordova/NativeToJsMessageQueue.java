@@ -39,7 +39,7 @@ public class NativeToJsMessageQueue {
     // Arbitrarily chosen upper limit for how much data to send to JS in one shot.
     // This currently only chops up on message boundaries. It may be useful
     // to allow it to break up messages.
-    private static int MAX_PAYLOAD_SIZE = 50 * 1024 * 10240;
+    private static int MAX_PAYLOAD_SIZE = 16 * 1024 * 1024;
 
     /**
      * When true, the active listener is not fired upon enqueue. When set to false,
