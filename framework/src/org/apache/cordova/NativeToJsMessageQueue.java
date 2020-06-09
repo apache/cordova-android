@@ -144,7 +144,10 @@ public class NativeToJsMessageQueue {
             int numMessagesToSend = 0;
             for (JsMessage message : queue) {
                 int messageSize = calculatePackedMessageLength(message);
-                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > COMBINED_RESPONSE_CUTOFF && COMBINED_RESPONSE_CUTOFF > 0) {
+                if (numMessagesToSend > 0 &&
+                    COMBINED_RESPONSE_CUTOFF > 0 &&
+                    totalPayloadLen + messageSize > COMBINED_RESPONSE_CUTOFF
+                   ) {
                     break;
                 }
                 totalPayloadLen += messageSize;
@@ -179,7 +182,10 @@ public class NativeToJsMessageQueue {
             int numMessagesToSend = 0;
             for (JsMessage message : queue) {
                 int messageSize = message.calculateEncodedLength() + 50; // overestimate.
-                if (numMessagesToSend > 0 && totalPayloadLen + messageSize > COMBINED_RESPONSE_CUTOFF && COMBINED_RESPONSE_CUTOFF > 0) {
+                if (numMessagesToSend > 0 &&
+                    COMBINED_RESPONSE_CUTOFF > 0 &&
+                    totalPayloadLen + messageSize > COMBINED_RESPONSE_CUTOFF
+                   ) {
                     break;
                 }
                 totalPayloadLen += messageSize;
