@@ -24,10 +24,10 @@ We very much prefer issues created by using one of these templates.
 
 
 ### Version information
-<!-- 
+<!--
 What are relevant versions you are using?
 For example:
-Cordova: Cordova CLI, Cordova Platforms, Cordova Plugins 
+Cordova: Cordova CLI, Cordova Platforms, Cordova Plugins
 Other Frameworks: Ionic Framework and CLI version
 Operating System, Android Studio, Xcode etc.
 -->

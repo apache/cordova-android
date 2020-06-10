@@ -36,8 +36,8 @@
   "devDependencies": {
     "@cordova/eslint-config": "^3.0.0",
     "jasmine": "^3.5.0",
-    "jasmine-spec-reporter": "^5.0.1",
-    "nyc": "^15.0.1",
+    "jasmine-spec-reporter": "^5.0.2",
+    "nyc": "^15.1.0",
     "rewire": "^5.0.0"
   },
   "engines": {
