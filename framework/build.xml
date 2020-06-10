@@ -31,10 +31,10 @@
     <fail message="The required minimum version of ant is 1.8.0, you have ${ant.version}"
           unless="thisantversion" />
 
-    <!-- The local.properties file is created and updated by the 'android' 
+    <!-- The local.properties file is created and updated by the 'android'
          tool. (For example "sdkdir/tools/android update project -p ." inside
          of this directory where the AndroidManifest.xml file exists. This
-         properties file that gets built contains the path to the SDK. It 
+         properties file that gets built contains the path to the SDK. It
          should *NOT* be checked into Version Control Systems since it holds
          data about the local machine. -->
     <available file="local.properties" property="exists.local.properties" />
@@ -132,11 +132,11 @@
             excludes="org/apache/cordova/R.class,org/apache/cordova/R$*.class"
             jarfile="cordova-${version}.jar" />
     </target>
-    
+
     <target name="javadoc">
         <delete dir="javadoc-public" failonerror="false" />
         <javadoc
-            access="public" 
+            access="public"
             destdir="javadoc-public"
             classpath="${sdk.dir}/platforms/${target}/android.jar">
             <packageset dir="src">
@@ -145,7 +145,7 @@
         </javadoc>
         <delete dir="javadoc-private" failonerror="false" />
         <javadoc
-            access="private" 
+            access="private"
             destdir="javadoc-private"
             classpath="${sdk.dir}/platforms/${target}/android.jar">
             <packageset dir="src">
