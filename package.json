@@ -28,7 +28,7 @@
     "android-versions": "^1.5.0",
     "cordova-common": "^4.0.1",
     "execa": "^4.0.2",
-    "fs-extra": "^9.0.0",
+    "fs-extra": "^9.0.1",
     "nopt": "^4.0.3",
     "properties-parser": "^0.3.1",
     "which": "^2.0.2"
