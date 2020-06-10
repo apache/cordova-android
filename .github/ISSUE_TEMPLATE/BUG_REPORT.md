@@ -32,10 +32,10 @@ about: If something isn't working as expected.
 
 
 ### Version information
-<!-- 
+<!--
 What are relevant versions you are using?
 For example:
-Cordova: Cordova CLI, Cordova Platforms, Cordova Plugins 
+Cordova: Cordova CLI, Cordova Platforms, Cordova Plugins
 Other Frameworks: Ionic Framework and CLI version
 Operating System, Android Studio, Xcode etc.
 -->
