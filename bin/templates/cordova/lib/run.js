@@ -21,6 +21,7 @@ var emulator = require('./emulator');
 const target = require('./target');
 const build = require('./build');
 const PackageType = require('./PackageType');
+const AndroidManifest = require('./AndroidManifest');
 const { CordovaError, events } = require('cordova-common');
 
 /**
@@ -75,5 +76,8 @@ module.exports.run = async function (runOptions = {}) {
     if (resolvedTarget.type === 'emulator') {
         await emulator.wait_for_boot(resolvedTarget.id);
     }
-    return target.install(resolvedTarget, buildResults);
+
+    const manifest = new AndroidManifest(this.locations.manifest);
+
+    return target.install(resolvedTarget, { manifest, buildResults });
 };

@@ -226,24 +226,19 @@ describe('target', () => {
     });
 
     describe('install', () => {
-        let AndroidManifestSpy;
-        let AndroidManifestFns;
-        let AndroidManifestGetActivitySpy;
         let AdbSpy;
         let buildSpy;
-        let installTarget;
+        let installTarget, manifest, appSpec;
 
         beforeEach(() => {
             installTarget = { id: 'emulator-5556', type: 'emulator', arch: 'atari' };
 
+            manifest = jasmine.createSpyObj('manifestStub', ['getPackageId', 'getActivity']);
+            manifest.getActivity.and.returnValue(jasmine.createSpyObj('Activity', ['getName']));
+            appSpec = { manifest, buildResults: {} };
+
             buildSpy = jasmine.createSpyObj('build', ['findBestApkForArchitecture']);
             target.__set__('build', buildSpy);
-
-            AndroidManifestFns = jasmine.createSpyObj('AndroidManifestFns', ['getPackageId', 'getActivity']);
-            AndroidManifestGetActivitySpy = jasmine.createSpyObj('getActivity', ['getName']);
-            AndroidManifestFns.getActivity.and.returnValue(AndroidManifestGetActivitySpy);
-            AndroidManifestSpy = jasmine.createSpy('AndroidManifest').and.returnValue(AndroidManifestFns);
-            target.__set__('AndroidManifest', AndroidManifestSpy);
 
             AdbSpy = jasmine.createSpyObj('Adb', ['shell', 'start', 'install', 'uninstall']);
             AdbSpy.shell.and.returnValue(Promise.resolve());
@@ -257,7 +252,7 @@ describe('target', () => {
         });
 
         it('should install to the passed target', () => {
-            return target.install(installTarget, {}).then(() => {
+            return target.install(installTarget, appSpec).then(() => {
                 expect(AdbSpy.install.calls.argsFor(0)[0]).toBe(installTarget.id);
             });
         });
@@ -272,7 +267,7 @@ describe('target', () => {
             const apkPath = 'my/apk/path/app.apk';
             buildSpy.findBestApkForArchitecture.and.returnValue(apkPath);
 
-            return target.install(installTarget, buildResults).then(() => {
+            return target.install(installTarget, { manifest, buildResults }).then(() => {
                 expect(buildSpy.findBestApkForArchitecture).toHaveBeenCalledWith(buildResults, installTarget.arch);
 
                 expect(AdbSpy.install.calls.argsFor(0)[1]).toBe(apkPath);
@@ -285,7 +280,7 @@ describe('target', () => {
                 Promise.resolve()
             );
 
-            return target.install(installTarget, {}).then(() => {
+            return target.install(installTarget, appSpec).then(() => {
                 expect(AdbSpy.install).toHaveBeenCalledTimes(2);
                 expect(AdbSpy.uninstall).toHaveBeenCalled();
             });
@@ -295,7 +290,7 @@ describe('target', () => {
             const errorMsg = 'Failure: Failed to install';
             AdbSpy.install.and.rejectWith(new CordovaError(errorMsg));
 
-            return target.install(installTarget, {}).then(
+            return target.install(installTarget, appSpec).then(
                 () => fail('Unexpectedly resolved'),
                 err => {
                     expect(err).toEqual(jasmine.any(CordovaError));
@@ -305,7 +300,7 @@ describe('target', () => {
         });
 
         it('should unlock the screen on device', () => {
-            return target.install(installTarget, {}).then(() => {
+            return target.install(installTarget, appSpec).then(() => {
                 expect(AdbSpy.shell).toHaveBeenCalledWith(installTarget.id, 'input keyevent 82');
             });
         });
@@ -313,10 +308,10 @@ describe('target', () => {
         it('should start the newly installed app on the device', () => {
             const packageId = 'unittestapp';
             const activityName = 'TestActivity';
-            AndroidManifestFns.getPackageId.and.returnValue(packageId);
-            AndroidManifestGetActivitySpy.getName.and.returnValue(activityName);
+            manifest.getPackageId.and.returnValue(packageId);
+            manifest.getActivity().getName.and.returnValue(activityName);
 
-            return target.install(installTarget, {}).then(() => {
+            return target.install(installTarget, appSpec).then(() => {
                 expect(AdbSpy.start).toHaveBeenCalledWith(installTarget.id, `${packageId}/.${activityName}`);
             });
         });

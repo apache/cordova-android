@@ -17,13 +17,11 @@
        under the License.
 */
 
-const path = require('path');
 const { inspect } = require('util');
 const execa = require('execa');
 const Adb = require('./Adb');
 const build = require('./build');
 const emulator = require('./emulator');
-const AndroidManifest = require('./AndroidManifest');
 const { compareBy } = require('./utils');
 const { retryPromise } = require('./retry');
 const { events, CordovaError } = require('cordova-common');
@@ -129,9 +127,8 @@ exports.resolve = async (spec, buildResults) => {
     };
 };
 
-exports.install = async function ({ id: target, arch, type }, buildResults) {
+exports.install = async function ({ id: target, arch, type }, { manifest, buildResults }) {
     const apk_path = build.findBestApkForArchitecture(buildResults, arch);
-    const manifest = new AndroidManifest(path.join(__dirname, '../../app/src/main/AndroidManifest.xml'));
     const pkgName = manifest.getPackageId();
     const launchName = pkgName + '/.' + manifest.getActivity().getName();
 
