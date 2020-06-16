@@ -66,7 +66,7 @@ function setupEvents (externalEventEmitter) {
 class Api {
     constructor (platform, platformRootDir, events) {
         this.platform = PLATFORM;
-        this.root = path.resolve(__dirname, '..');
+        this.root = platformRootDir;
 
         setupEvents(events);
 
