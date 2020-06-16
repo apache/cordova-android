@@ -310,7 +310,7 @@ class ProjectBuilder {
             if (error.toString().includes('failed to find target with hash string')) {
                 // Add hint from check_android_target to error message
                 try {
-                    await check_reqs.check_android_target();
+                    await check_reqs.check_android_target(this.root);
                 } catch (checkAndroidTargetError) {
                     error.message += '\n' + checkAndroidTargetError.message;
                 }

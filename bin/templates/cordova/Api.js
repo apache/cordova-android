@@ -313,7 +313,7 @@ class Api {
      *   objects for current platform.
      */
     requirements () {
-        return require('./lib/check_reqs').check_all();
+        return require('./lib/check_reqs').check_all(this.root);
     }
 
     /**
