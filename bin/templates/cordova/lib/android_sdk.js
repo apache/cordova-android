@@ -29,17 +29,14 @@ var suffix_number_regex = /(\d+)$/;
 // the number at the end, the more recent the target, the closer to the
 // start of the array.
 function sort_by_largest_numerical_suffix (a, b) {
-    var suffix_a = a.match(suffix_number_regex);
-    var suffix_b = b.match(suffix_number_regex);
-    if (suffix_a && suffix_b) {
-        // If the two targets being compared have suffixes, return less than
-        // zero, or greater than zero, based on which suffix is larger.
-        return (parseInt(suffix_a[1]) > parseInt(suffix_b[1]) ? -1 : 1);
-    } else {
-        // If no suffix numbers were detected, leave the order as-is between
-        // elements a and b.
-        return 0;
-    }
+    let suffix_a = a.match(suffix_number_regex);
+    let suffix_b = b.match(suffix_number_regex);
+    // If no number is detected (eg: preview version like android-R),
+    // designate a suffix of 0 so it gets moved to the end
+    suffix_a = suffix_a || ['0', '0'];
+    suffix_b = suffix_b || ['0', '0'];
+    // Return < zero, or > zero, based on which suffix is larger.
+    return (parseInt(suffix_a[1]) > parseInt(suffix_b[1]) ? -1 : 1);
 }
 
 module.exports.print_newest_available_sdk_target = function () {

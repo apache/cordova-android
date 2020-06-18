@@ -33,14 +33,21 @@ describe('android_sdk', () => {
 
     describe('sort_by_largest_numerical_suffix', () => {
         it('should return the newest version first', () => {
-            const ids = ['android-24', 'android-19', 'android-27', 'android-23'];
-            const sortedIds = ['android-27', 'android-24', 'android-23', 'android-19'];
+            const ids = ['android-P', 'android-24', 'android-19', 'android-27', 'android-23'];
+            const sortedIds = ['android-27', 'android-24', 'android-23', 'android-19', 'android-P'];
             expect(ids.sort(android_sdk.__get__('sort_by_largest_numerical_suffix'))).toEqual(sortedIds);
         });
 
-        it('should return 0 (no sort) if one of the versions has no number', () => {
-            const ids = ['android-27', 'android-P'];
-            expect(android_sdk.__get__('sort_by_largest_numerical_suffix')(ids[0], ids[1])).toBe(0);
+        describe('should return release version over preview versions', () => {
+            it('Test #001', () => {
+                const ids = ['android-27', 'android-P'];
+                expect(android_sdk.__get__('sort_by_largest_numerical_suffix')(ids[0], ids[1])).toBe(-1);
+            });
+
+            it('Test #002', () => {
+                const ids = ['android-P', 'android-27'];
+                expect(android_sdk.__get__('sort_by_largest_numerical_suffix')(ids[0], ids[1])).toBe(1);
+            });
         });
     });
 
