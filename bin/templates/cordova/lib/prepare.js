@@ -457,6 +457,11 @@ function updateIconResourceForAdaptive (preparedIcons, resourceMap, platformReso
         background = android_icons[density].background;
         foreground = android_icons[density].foreground;
 
+        if (!background || !foreground) {
+            // This icon isn't an adaptive icon, so skip it
+            continue;
+        }
+
         if (background.startsWith('@color')) {
             // Colors Use Case
             backgroundVal = background; // Example: @color/background_foobar_1
