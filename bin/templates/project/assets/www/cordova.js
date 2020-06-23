@@ -1,5 +1,5 @@
 // Platform: android
-// 74fdba8b327b2a13b4366dd141b52def96d4cb56
+// 538a985db128858c0a0eb4dd40fb9c8e5433fc94
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '9.0.0-dev';
+var PLATFORM_VERSION_BUILD_LABEL = '9.0.0';
 // file: src/scripts/require.js
 var require;
 var define;
@@ -50,10 +50,10 @@ var define;
 
     require = function (id) {
         if (!modules[id]) {
-            throw 'module ' + id + ' not found';
+            throw new Error('module ' + id + ' not found');
         } else if (id in inProgressModules) {
             var cycle = requireStack.slice(inProgressModules[id]).join('->') + '->' + id;
-            throw 'Cycle in require graph: ' + cycle;
+            throw new Error('Cycle in require graph: ' + cycle);
         }
         if (modules[id].factory) {
             try {
@@ -70,7 +70,7 @@ var define;
 
     define = function (id, factory) {
         if (Object.prototype.hasOwnProperty.call(modules, id)) {
-            throw 'module ' + id + ' already defined';
+            throw new Error('module ' + id + ' already defined');
         }
 
         modules[id] = {
@@ -97,7 +97,7 @@ define("cordova", function(require, exports, module) {
 
 // Workaround for Windows 10 in hosted environment case
 // http://www.w3.org/html/wg/drafts/html/master/browsers.html#named-access-on-the-window-object
-if (window.cordova && !(window.cordova instanceof HTMLElement)) { // eslint-disable-line no-undef
+if (window.cordova && !(window.cordova instanceof HTMLElement)) {
     throw new Error('cordova already defined');
 }
 
@@ -162,7 +162,7 @@ function createEvent (type, data) {
     event.initEvent(type, false, false);
     if (data) {
         for (var i in data) {
-            if (data.hasOwnProperty(i)) {
+            if (Object.prototype.hasOwnProperty.call(data, i)) {
                 event[i] = data[i];
             }
         }
@@ -170,15 +170,12 @@ function createEvent (type, data) {
     return event;
 }
 
-/* eslint-disable no-undef */
 var cordova = {
     define: define,
     require: require,
     version: PLATFORM_VERSION_BUILD_LABEL,
     platformVersion: PLATFORM_VERSION_BUILD_LABEL,
     platformId: platform.id,
-
-    /* eslint-enable no-undef */
 
     /**
      * Methods to add/remove your own addEventListener hijacking on document + window.
@@ -198,15 +195,25 @@ var cordova = {
     removeDocumentEventHandler: function (event) {
         delete documentEventHandlers[event];
     },
+
     /**
      * Retrieve original event handlers that were replaced by Cordova
      *
      * @return object
      */
     getOriginalHandlers: function () {
-        return { 'document': { 'addEventListener': m_document_addEventListener, 'removeEventListener': m_document_removeEventListener },
-            'window': { 'addEventListener': m_window_addEventListener, 'removeEventListener': m_window_removeEventListener } };
+        return {
+            document: {
+                addEventListener: m_document_addEventListener,
+                removeEventListener: m_document_removeEventListener
+            },
+            window: {
+                addEventListener: m_window_addEventListener,
+                removeEventListener: m_window_removeEventListener
+            }
+        };
     },
+
     /**
      * Method to fire event from native code
      * bNoDetach is required for events which cause an exception which needs to be caught in native code
@@ -229,6 +236,7 @@ var cordova = {
             document.dispatchEvent(evt);
         }
     },
+
     fireWindowEvent: function (type, data) {
         var evt = createEvent(type, data);
         if (typeof windowEventHandlers[type] !== 'undefined') {
@@ -302,12 +310,11 @@ var cordova = {
             }
         } catch (err) {
             var msg = 'Error in ' + (isSuccess ? 'Success' : 'Error') + ' callbackId: ' + callbackId + ' : ' + err;
-            console && console.log && console.log(msg);
-            console && console.log && err.stack && console.log(err.stack);
-            cordova.fireWindowEvent('cordovacallbackerror', { 'message': msg });
+            cordova.fireWindowEvent('cordovacallbackerror', { message: msg, error: err });
             throw err;
         }
     },
+
     addConstructor: function (func) {
         channel.onCordovaReady.subscribe(function () {
             try {
@@ -334,12 +341,12 @@ var nativeApi = this._cordovaNative || require('cordova/android/promptbasednativ
 var currentApi = nativeApi;
 
 module.exports = {
-    get: function() { return currentApi; },
-    setPreferPrompt: function(value) {
+    get: function () { return currentApi; },
+    setPreferPrompt: function (value) {
         currentApi = value ? require('cordova/android/promptbasednativeapi') : nativeApi;
     },
     // Used only by tests.
-    set: function(value) {
+    set: function (value) {
         currentApi = value;
     }
 };
@@ -355,13 +362,13 @@ define("cordova/android/promptbasednativeapi", function(require, exports, module
  */
 
 module.exports = {
-    exec: function(bridgeSecret, service, action, callbackId, argsJson) {
-        return prompt(argsJson, 'gap:'+JSON.stringify([bridgeSecret, service, action, callbackId]));
+    exec: function (bridgeSecret, service, action, callbackId, argsJson) {
+        return prompt(argsJson, 'gap:' + JSON.stringify([bridgeSecret, service, action, callbackId]));
     },
-    setNativeToJsBridgeMode: function(bridgeSecret, value) {
+    setNativeToJsBridgeMode: function (bridgeSecret, value) {
         prompt(value, 'gap_bridge_mode:' + bridgeSecret);
     },
-    retrieveJsMessages: function(bridgeSecret, fromOnlineEvent) {
+    retrieveJsMessages: function (bridgeSecret, fromOnlineEvent) {
         return prompt(+fromOnlineEvent, 'gap_poll:' + bridgeSecret);
     }
 };
@@ -376,12 +383,12 @@ var utils = require('cordova/utils');
 var moduleExports = module.exports;
 
 var typeMap = {
-    'A': 'Array',
-    'D': 'Date',
-    'N': 'Number',
-    'S': 'String',
-    'F': 'Function',
-    'O': 'Object'
+    A: 'Array',
+    D: 'Date',
+    N: 'Number',
+    S: 'String',
+    F: 'Function',
+    O: 'Object'
 };
 
 function extractParamName (callee, argIndex) {
@@ -472,7 +479,7 @@ base64.fromArrayBuffer = function (arrayBuffer) {
 };
 
 base64.toArrayBuffer = function (str) {
-    var decodedStr = typeof atob !== 'undefined' ? atob(str) : Buffer.from(str, 'base64').toString('binary'); // eslint-disable-line no-undef
+    var decodedStr = atob(str);
     var arrayBuffer = new ArrayBuffer(decodedStr.length);
     var array = new Uint8Array(arrayBuffer);
     for (var i = 0, len = decodedStr.length; i < len; i++) {
@@ -534,14 +541,13 @@ var utils = require('cordova/utils');
 
 function each (objects, func, context) {
     for (var prop in objects) {
-        if (objects.hasOwnProperty(prop)) {
+        if (Object.prototype.hasOwnProperty.call(objects, prop)) {
             func.apply(context, [objects[prop], prop]);
         }
     }
 }
 
 function clobber (obj, key, value) {
-    exports.replaceHookForTesting(obj, key);
     var needsProperty = false;
     try {
         obj[key] = value;
@@ -615,7 +621,7 @@ function include (parent, objects, clobber, merge) {
  */
 function recursiveMerge (target, src) {
     for (var prop in src) {
-        if (src.hasOwnProperty(prop)) {
+        if (Object.prototype.hasOwnProperty.call(src, prop)) {
             if (target.prototype && target.prototype.constructor === target) {
                 // If the target object is a constructor override off prototype.
                 clobber(target.prototype, prop, src[prop]);
@@ -641,7 +647,6 @@ exports.buildIntoAndMerge = function (objects, target) {
 };
 exports.recursiveMerge = recursiveMerge;
 exports.assignOrWrapInDeprecateGetter = assignOrWrapInDeprecateGetter;
-exports.replaceHookForTesting = function () {};
 
 });
 
@@ -722,14 +727,14 @@ var channel = {
         }
         if (!len) h();
     },
-    /* eslint-disable no-return-assign */
+
     create: function (type) {
-        return channel[type] = new Channel(type, false);
+        return (channel[type] = new Channel(type, false));
     },
     createSticky: function (type) {
-        return channel[type] = new Channel(type, true);
+        return (channel[type] = new Channel(type, true));
     },
-    /* eslint-enable no-return-assign */
+
     /**
      * cordova Channels that must fire before "deviceready" is fired.
      */
@@ -850,7 +855,6 @@ Channel.prototype.unsubscribe = function (eventListenerOrFunction) {
  * Calls all functions subscribed to this channel.
  */
 Channel.prototype.fire = function (e) {
-    var fail = false; // eslint-disable-line no-unused-vars
     var fireArgs = Array.prototype.slice.call(arguments);
     // Apply stickiness.
     if (this.state === 1) {
@@ -924,38 +928,38 @@ define("cordova/exec", function(require, exports, module) {
  * @param {String} action       Action to be run in cordova
  * @param {String[]} [args]     Zero or more arguments to pass to the method
  */
-var cordova = require('cordova'),
-    nativeApiProvider = require('cordova/android/nativeapiprovider'),
-    utils = require('cordova/utils'),
-    base64 = require('cordova/base64'),
-    channel = require('cordova/channel'),
-    jsToNativeModes = {
-        PROMPT: 0,
-        JS_OBJECT: 1
-    },
-    nativeToJsModes = {
-        // Polls for messages using the JS->Native bridge.
-        POLLING: 0,
-        // For LOAD_URL to be viable, it would need to have a work-around for
-        // the bug where the soft-keyboard gets dismissed when a message is sent.
-        LOAD_URL: 1,
-        // For the ONLINE_EVENT to be viable, it would need to intercept all event
-        // listeners (both through addEventListener and window.ononline) as well
-        // as set the navigator property itself.
-        ONLINE_EVENT: 2,
-        EVAL_BRIDGE: 3
-    },
-    jsToNativeBridgeMode,  // Set lazily.
-    nativeToJsBridgeMode = nativeToJsModes.EVAL_BRIDGE,
-    pollEnabled = false,
-    bridgeSecret = -1;
+var cordova = require('cordova');
+var nativeApiProvider = require('cordova/android/nativeapiprovider');
+var utils = require('cordova/utils');
+var base64 = require('cordova/base64');
+var channel = require('cordova/channel');
+var jsToNativeModes = {
+    PROMPT: 0,
+    JS_OBJECT: 1
+};
+var nativeToJsModes = {
+    // Polls for messages using the JS->Native bridge.
+    POLLING: 0,
+    // For LOAD_URL to be viable, it would need to have a work-around for
+    // the bug where the soft-keyboard gets dismissed when a message is sent.
+    LOAD_URL: 1,
+    // For the ONLINE_EVENT to be viable, it would need to intercept all event
+    // listeners (both through addEventListener and window.ononline) as well
+    // as set the navigator property itself.
+    ONLINE_EVENT: 2,
+    EVAL_BRIDGE: 3
+};
+var jsToNativeBridgeMode; // Set lazily.
+var nativeToJsBridgeMode = nativeToJsModes.EVAL_BRIDGE;
+var pollEnabled = false;
+var bridgeSecret = -1;
 
 var messagesFromNative = [];
 var isProcessing = false;
-var resolvedPromise = typeof Promise == 'undefined' ? null : Promise.resolve();
-var nextTick = resolvedPromise ? function(fn) { resolvedPromise.then(fn); } : function(fn) { setTimeout(fn); };
+var resolvedPromise = typeof Promise === 'undefined' ? null : Promise.resolve();
+var nextTick = resolvedPromise ? function (fn) { resolvedPromise.then(fn); } : function (fn) { setTimeout(fn); };
 
-function androidExec(success, fail, service, action, args) {
+function androidExec (success, fail, service, action, args) {
     if (bridgeSecret < 0) {
         // If we ever catch this firing, we'll need to queue up exec()s
         // and fire them once we get a secret. For now, I don't think
@@ -974,21 +978,21 @@ function androidExec(success, fail, service, action, args) {
 
     // Process any ArrayBuffers in the args into a string.
     for (var i = 0; i < args.length; i++) {
-        if (utils.typeName(args[i]) == 'ArrayBuffer') {
+        if (utils.typeName(args[i]) === 'ArrayBuffer') {
             args[i] = base64.fromArrayBuffer(args[i]);
         }
     }
 
-    var callbackId = service + cordova.callbackId++,
-        argsJson = JSON.stringify(args);
+    var callbackId = service + cordova.callbackId++;
+    var argsJson = JSON.stringify(args);
     if (success || fail) {
-        cordova.callbacks[callbackId] = {success:success, fail:fail};
+        cordova.callbacks[callbackId] = { success: success, fail: fail };
     }
 
     var msgs = nativeApiProvider.get().exec(bridgeSecret, service, action, callbackId, argsJson);
     // If argsJson was received by Java as null, try again with the PROMPT bridge mode.
     // This happens in rare circumstances, such as when certain Unicode characters are passed over the bridge on a Galaxy S2.  See CB-2666.
-    if (jsToNativeBridgeMode == jsToNativeModes.JS_OBJECT && msgs === "@Null arguments.") {
+    if (jsToNativeBridgeMode === jsToNativeModes.JS_OBJECT && msgs === '@Null arguments.') {
         androidExec.setJsToNativeBridgeMode(jsToNativeModes.PROMPT);
         androidExec(success, fail, service, action, args);
         androidExec.setJsToNativeBridgeMode(jsToNativeModes.JS_OBJECT);
@@ -999,16 +1003,16 @@ function androidExec(success, fail, service, action, args) {
     }
 }
 
-androidExec.init = function() {
+androidExec.init = function () {
     bridgeSecret = +prompt('', 'gap_init:' + nativeToJsBridgeMode);
     channel.onNativeReady.fire();
 };
 
-function pollOnceFromOnlineEvent() {
+function pollOnceFromOnlineEvent () {
     pollOnce(true);
 }
 
-function pollOnce(opt_fromOnlineEvent) {
+function pollOnce (opt_fromOnlineEvent) {
     if (bridgeSecret < 0) {
         // This can happen when the NativeToJsMessageQueue resets the online state on page transitions.
         // We know there's nothing to retrieve, so no need to poll.
@@ -1022,15 +1026,15 @@ function pollOnce(opt_fromOnlineEvent) {
     }
 }
 
-function pollingTimerFunc() {
+function pollingTimerFunc () {
     if (pollEnabled) {
         pollOnce();
         setTimeout(pollingTimerFunc, 50);
     }
 }
 
-function hookOnlineApis() {
-    function proxyEvent(e) {
+function hookOnlineApis () {
+    function proxyEvent (e) {
         cordova.fireWindowEvent(e.type);
     }
     // The network module takes care of firing online and offline events.
@@ -1050,19 +1054,19 @@ hookOnlineApis();
 androidExec.jsToNativeModes = jsToNativeModes;
 androidExec.nativeToJsModes = nativeToJsModes;
 
-androidExec.setJsToNativeBridgeMode = function(mode) {
-    if (mode == jsToNativeModes.JS_OBJECT && !window._cordovaNative) {
+androidExec.setJsToNativeBridgeMode = function (mode) {
+    if (mode === jsToNativeModes.JS_OBJECT && !window._cordovaNative) {
         mode = jsToNativeModes.PROMPT;
     }
-    nativeApiProvider.setPreferPrompt(mode == jsToNativeModes.PROMPT);
+    nativeApiProvider.setPreferPrompt(mode === jsToNativeModes.PROMPT);
     jsToNativeBridgeMode = mode;
 };
 
-androidExec.setNativeToJsBridgeMode = function(mode) {
-    if (mode == nativeToJsBridgeMode) {
+androidExec.setNativeToJsBridgeMode = function (mode) {
+    if (mode === nativeToJsBridgeMode) {
         return;
     }
-    if (nativeToJsBridgeMode == nativeToJsModes.POLLING) {
+    if (nativeToJsBridgeMode === nativeToJsModes.POLLING) {
         pollEnabled = false;
     }
 
@@ -1073,32 +1077,32 @@ androidExec.setNativeToJsBridgeMode = function(mode) {
         nativeApiProvider.get().setNativeToJsBridgeMode(bridgeSecret, mode);
     }
 
-    if (mode == nativeToJsModes.POLLING) {
+    if (mode === nativeToJsModes.POLLING) {
         pollEnabled = true;
         setTimeout(pollingTimerFunc, 1);
     }
 };
 
-function buildPayload(payload, message) {
+function buildPayload (payload, message) {
     var payloadKind = message.charAt(0);
-    if (payloadKind == 's') {
+    if (payloadKind === 's') {
         payload.push(message.slice(1));
-    } else if (payloadKind == 't') {
+    } else if (payloadKind === 't') {
         payload.push(true);
-    } else if (payloadKind == 'f') {
+    } else if (payloadKind === 'f') {
         payload.push(false);
-    } else if (payloadKind == 'N') {
+    } else if (payloadKind === 'N') {
         payload.push(null);
-    } else if (payloadKind == 'n') {
+    } else if (payloadKind === 'n') {
         payload.push(+message.slice(1));
-    } else if (payloadKind == 'A') {
+    } else if (payloadKind === 'A') {
         var data = message.slice(1);
         payload.push(base64.toArrayBuffer(data));
-    } else if (payloadKind == 'S') {
+    } else if (payloadKind === 'S') {
         payload.push(window.atob(message.slice(1)));
-    } else if (payloadKind == 'M') {
+    } else if (payloadKind === 'M') {
         var multipartMessages = message.slice(1);
-        while (multipartMessages !== "") {
+        while (multipartMessages !== '') {
             var spaceIdx = multipartMessages.indexOf(' ');
             var msgLen = +multipartMessages.slice(0, spaceIdx);
             var multipartMessage = multipartMessages.substr(spaceIdx + 1, msgLen);
@@ -1111,14 +1115,15 @@ function buildPayload(payload, message) {
 }
 
 // Processes a single message, as encoded by NativeToJsMessageQueue.java.
-function processMessage(message) {
+function processMessage (message) {
     var firstChar = message.charAt(0);
-    if (firstChar == 'J') {
+    if (firstChar === 'J') {
         // This is deprecated on the .java side. It doesn't work with CSP enabled.
+        // eslint-disable-next-line no-eval
         eval(message.slice(1));
-    } else if (firstChar == 'S' || firstChar == 'F') {
-        var success = firstChar == 'S';
-        var keepCallback = message.charAt(1) == '1';
+    } else if (firstChar === 'S' || firstChar === 'F') {
+        var success = firstChar === 'S';
+        var keepCallback = message.charAt(1) === '1';
         var spaceIdx = message.indexOf(' ', 2);
         var status = +message.slice(2, spaceIdx);
         var nextSpaceIdx = message.indexOf(' ', spaceIdx + 1);
@@ -1128,11 +1133,11 @@ function processMessage(message) {
         buildPayload(payload, payloadMessage);
         cordova.callbackFromNative(callbackId, success, status, payload, keepCallback);
     } else {
-        console.log("processMessage failed: invalid message: " + JSON.stringify(message));
+        console.log('processMessage failed: invalid message: ' + JSON.stringify(message));
     }
 }
 
-function processMessages() {
+function processMessages () {
     // Check for the reentrant case.
     if (isProcessing) {
         return;
@@ -1145,7 +1150,7 @@ function processMessages() {
         var msg = popMessageFromQueue();
         // The Java side can send a * message to indicate that it
         // still has messages waiting to be retrieved.
-        if (msg == '*' && messagesFromNative.length === 0) {
+        if (msg === '*' && messagesFromNative.length === 0) {
             nextTick(pollOnce);
             return;
         }
@@ -1158,9 +1163,9 @@ function processMessages() {
     }
 }
 
-function popMessageFromQueue() {
+function popMessageFromQueue () {
     var messageBatch = messagesFromNative.shift();
-    if (messageBatch == '*') {
+    if (messageBatch === '*') {
         return '*';
     }
 
@@ -1216,7 +1221,6 @@ var cordova = require('cordova');
 var modulemapper = require('cordova/modulemapper');
 var platform = require('cordova/platform');
 var pluginloader = require('cordova/pluginloader');
-var utils = require('cordova/utils');
 
 var platformInitChannelsArray = [channel.onNativeReady, channel.onPluginsReady];
 
@@ -1235,34 +1239,6 @@ window.setTimeout(function () {
         logUnfiredChannels(channel.deviceReadyChannelsArray);
     }
 }, 5000);
-
-// Replace navigator before any modules are required(), to ensure it happens as soon as possible.
-// We replace it so that properties that can't be clobbered can instead be overridden.
-function replaceNavigator (origNavigator) {
-    var CordovaNavigator = function () {};
-    CordovaNavigator.prototype = origNavigator;
-    var newNavigator = new CordovaNavigator();
-    // This work-around really only applies to new APIs that are newer than Function.bind.
-    // Without it, APIs such as getGamepads() break.
-    if (CordovaNavigator.bind) {
-        for (var key in origNavigator) {
-            if (typeof origNavigator[key] === 'function') {
-                newNavigator[key] = origNavigator[key].bind(origNavigator);
-            } else {
-                (function (k) {
-                    utils.defineGetterSetter(newNavigator, key, function () {
-                        return origNavigator[k];
-                    });
-                })(key);
-            }
-        }
-    }
-    return newNavigator;
-}
-
-if (window.navigator) {
-    window.navigator = replaceNavigator(window.navigator);
-}
 
 if (!window.console) {
     window.console = {
@@ -1329,7 +1305,6 @@ channel.join(function () {
     channel.join(function () {
         require('cordova').fireDocumentEvent('deviceready');
     }, channel.deviceReadyChannelsArray);
-
 }, platformInitChannelsArray);
 
 });
@@ -1338,7 +1313,7 @@ channel.join(function () {
 define("cordova/modulemapper", function(require, exports, module) {
 
 var builder = require('cordova/builder');
-var moduleMap = define.moduleMap; // eslint-disable-line no-undef
+var moduleMap = define.moduleMap;
 var symbolList;
 var deprecationMap;
 
@@ -1378,12 +1353,9 @@ function prepareNamespace (symbolPath, context) {
     if (!symbolPath) {
         return context;
     }
-    var parts = symbolPath.split('.');
-    var cur = context;
-    for (var i = 0, part; part = parts[i]; ++i) { // eslint-disable-line no-cond-assign
-        cur = cur[part] = cur[part] || {};
-    }
-    return cur;
+    return symbolPath.split('.').reduce(function (cur, part) {
+        return (cur[part] = cur[part] || {});
+    }, context);
 }
 
 exports.mapModules = function (context) {
@@ -1442,11 +1414,11 @@ var lastResumeEvent = null;
 
 module.exports = {
     id: 'android',
-    bootstrap: function() {
-        var channel = require('cordova/channel'),
-            cordova = require('cordova'),
-            exec = require('cordova/exec'),
-            modulemapper = require('cordova/modulemapper');
+    bootstrap: function () {
+        var channel = require('cordova/channel');
+        var cordova = require('cordova');
+        var exec = require('cordova/exec');
+        var modulemapper = require('cordova/modulemapper');
 
         // Get the shared secret needed to use the bridge.
         exec.init();
@@ -1458,21 +1430,21 @@ module.exports = {
 
         // Inject a listener for the backbutton on the document.
         var backButtonChannel = cordova.addDocumentEventHandler('backbutton');
-        backButtonChannel.onHasSubscribersChange = function() {
+        backButtonChannel.onHasSubscribersChange = function () {
             // If we just attached the first handler or detached the last handler,
             // let native know we need to override the back button.
-            exec(null, null, APP_PLUGIN_NAME, "overrideBackbutton", [this.numHandlers == 1]);
+            exec(null, null, APP_PLUGIN_NAME, 'overrideBackbutton', [this.numHandlers === 1]);
         };
 
         // Add hardware MENU and SEARCH button handlers
         cordova.addDocumentEventHandler('menubutton');
         cordova.addDocumentEventHandler('searchbutton');
 
-        function bindButtonChannel(buttonName) {
+        function bindButtonChannel (buttonName) {
             // generic button bind used for volumeup/volumedown buttons
             var volumeButtonChannel = cordova.addDocumentEventHandler(buttonName + 'button');
-            volumeButtonChannel.onHasSubscribersChange = function() {
-                exec(null, null, APP_PLUGIN_NAME, "overrideButton", [buttonName, this.numHandlers == 1]);
+            volumeButtonChannel.onHasSubscribersChange = function () {
+                exec(null, null, APP_PLUGIN_NAME, 'overrideButton', [buttonName, this.numHandlers === 1]);
             };
         }
         // Inject a listener for the volume buttons on the document.
@@ -1484,7 +1456,7 @@ module.exports = {
         // plugin result is delivered even after the event is fired (CB-10498)
         var cordovaAddEventListener = document.addEventListener;
 
-        document.addEventListener = function(evt, handler, capture) {
+        document.addEventListener = function (evt, handler, capture) {
             cordovaAddEventListener(evt, handler, capture);
 
             if (evt === 'resume' && lastResumeEvent) {
@@ -1494,51 +1466,48 @@ module.exports = {
 
         // Let native code know we are all done on the JS side.
         // Native code will then un-hide the WebView.
-        channel.onCordovaReady.subscribe(function() {
+        channel.onCordovaReady.subscribe(function () {
             exec(onMessageFromNative, null, APP_PLUGIN_NAME, 'messageChannel', []);
-            exec(null, null, APP_PLUGIN_NAME, "show", []);
+            exec(null, null, APP_PLUGIN_NAME, 'show', []);
         });
     }
 };
 
-function onMessageFromNative(msg) {
+function onMessageFromNative (msg) {
     var cordova = require('cordova');
     var action = msg.action;
 
-    switch (action)
-    {
-        // Button events
-        case 'backbutton':
-        case 'menubutton':
-        case 'searchbutton':
-        // App life cycle events
-        case 'pause':
-        // Volume events
-        case 'volumedownbutton':
-        case 'volumeupbutton':
-            cordova.fireDocumentEvent(action);
-            break;
-        case 'resume':
-            if(arguments.length > 1 && msg.pendingResult) {
-                if(arguments.length === 2) {
-                    msg.pendingResult.result = arguments[1];
-                } else {
-                    // The plugin returned a multipart message
-                    var res = [];
-                    for(var i = 1; i < arguments.length; i++) {
-                        res.push(arguments[i]);
-                    }
-                    msg.pendingResult.result = res;
+    switch (action) {
+    // pause and resume are Android app life cycle events
+    case 'backbutton':
+    case 'menubutton':
+    case 'searchbutton':
+    case 'pause':
+    case 'volumedownbutton':
+    case 'volumeupbutton':
+        cordova.fireDocumentEvent(action);
+        break;
+    case 'resume':
+        if (arguments.length > 1 && msg.pendingResult) {
+            if (arguments.length === 2) {
+                msg.pendingResult.result = arguments[1];
+            } else {
+                // The plugin returned a multipart message
+                var res = [];
+                for (var i = 1; i < arguments.length; i++) {
+                    res.push(arguments[i]);
                 }
-
-                // Save the plugin result so that it can be delivered to the js
-                // even if they miss the initial firing of the event
-                lastResumeEvent = msg;
+                msg.pendingResult.result = res;
             }
-            cordova.fireDocumentEvent(action, msg);
-            break;
-        default:
-            throw new Error('Unknown event action ' + action);
+
+            // Save the plugin result so that it can be delivered to the js
+            // even if they miss the initial firing of the event
+            lastResumeEvent = msg;
+        }
+        cordova.fireDocumentEvent(action, msg);
+        break;
+    default:
+        throw new Error('Unknown event action ' + action);
     }
 }
 
@@ -1554,8 +1523,8 @@ module.exports = {
     /**
     * Clear the resource cache.
     */
-    clearCache:function() {
-        exec(null, null, APP_PLUGIN_NAME, "clearCache", []);
+    clearCache: function () {
+        exec(null, null, APP_PLUGIN_NAME, 'clearCache', []);
     },
 
     /**
@@ -1572,31 +1541,31 @@ module.exports = {
     * Example:
     *      navigator.app.loadUrl("http://server/myapp/index.html", {wait:2000, loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
     */
-    loadUrl:function(url, props) {
-        exec(null, null, APP_PLUGIN_NAME, "loadUrl", [url, props]);
+    loadUrl: function (url, props) {
+        exec(null, null, APP_PLUGIN_NAME, 'loadUrl', [url, props]);
     },
 
     /**
     * Cancel loadUrl that is waiting to be loaded.
     */
-    cancelLoadUrl:function() {
-        exec(null, null, APP_PLUGIN_NAME, "cancelLoadUrl", []);
+    cancelLoadUrl: function () {
+        exec(null, null, APP_PLUGIN_NAME, 'cancelLoadUrl', []);
     },
 
     /**
     * Clear web history in this web view.
     * Instead of BACK button loading the previous web page, it will exit the app.
     */
-    clearHistory:function() {
-        exec(null, null, APP_PLUGIN_NAME, "clearHistory", []);
+    clearHistory: function () {
+        exec(null, null, APP_PLUGIN_NAME, 'clearHistory', []);
     },
 
     /**
     * Go to previous page displayed.
     * This is the same as pressing the backbutton on Android device.
     */
-    backHistory:function() {
-        exec(null, null, APP_PLUGIN_NAME, "backHistory", []);
+    backHistory: function () {
+        exec(null, null, APP_PLUGIN_NAME, 'backHistory', []);
     },
 
     /**
@@ -1608,8 +1577,8 @@ module.exports = {
     *
     * @param override        T=override, F=cancel override
     */
-    overrideBackbutton:function(override) {
-        exec(null, null, APP_PLUGIN_NAME, "overrideBackbutton", [override]);
+    overrideBackbutton: function (override) {
+        exec(null, null, APP_PLUGIN_NAME, 'overrideBackbutton', [override]);
     },
 
     /**
@@ -1623,15 +1592,15 @@ module.exports = {
     * @param button          volumeup, volumedown
     * @param override        T=override, F=cancel override
     */
-    overrideButton:function(button, override) {
-        exec(null, null, APP_PLUGIN_NAME, "overrideButton", [button, override]);
+    overrideButton: function (button, override) {
+        exec(null, null, APP_PLUGIN_NAME, 'overrideButton', [button, override]);
     },
 
     /**
     * Exit and terminate the application.
     */
-    exitApp:function() {
-        return exec(null, null, APP_PLUGIN_NAME, "exitApp", []);
+    exitApp: function () {
+        return exec(null, null, APP_PLUGIN_NAME, 'exitApp', []);
     }
 };
 
@@ -1656,11 +1625,11 @@ exports.injectScript = function (url, onload, onerror) {
 
 function injectIfNecessary (id, url, onload, onerror) {
     onerror = onerror || onload;
-    if (id in define.moduleMap) { // eslint-disable-line no-undef
+    if (id in define.moduleMap) {
         onload();
     } else {
         exports.injectScript(url, function () {
-            if (id in define.moduleMap) { // eslint-disable-line no-undef
+            if (id in define.moduleMap) {
                 onload();
             } else {
                 onerror();
@@ -1671,7 +1640,7 @@ function injectIfNecessary (id, url, onload, onerror) {
 
 function onScriptLoadingComplete (moduleList, finishPluginLoading) {
     // Loop through all the plugins and then through their clobbers and merges.
-    for (var i = 0, module; module = moduleList[i]; i++) { // eslint-disable-line no-cond-assign
+    for (var i = 0, module; (module = moduleList[i]); i++) {
         if (module.clobbers && module.clobbers.length) {
             for (var j = 0; j < module.clobbers.length; j++) {
                 modulemapper.clobbers(module.id, module.clobbers[j]);
@@ -1854,10 +1823,11 @@ utils.clone = function (obj) {
 
     retVal = {};
     for (i in obj) {
-        // https://issues.apache.org/jira/browse/CB-11522 'unknown' type may be returned in
-        // custom protocol activation case on Windows Phone 8.1 causing "No such interface supported" exception
-        // on cloning.
-        if ((!(i in retVal) || retVal[i] !== obj[i]) && typeof obj[i] !== 'undefined' && typeof obj[i] !== 'unknown') { // eslint-disable-line valid-typeof
+        // 'unknown' type may be returned in custom protocol activation case on
+        // Windows Phone 8.1 causing "No such interface supported" exception on
+        // cloning (https://issues.apache.org/jira/browse/CB-11522)
+        // eslint-disable-next-line valid-typeof
+        if ((!(i in retVal) || retVal[i] !== obj[i]) && typeof obj[i] !== 'undefined' && typeof obj[i] !== 'unknown') {
             retVal[i] = utils.clone(obj[i]);
         }
     }
@@ -1907,7 +1877,6 @@ utils.extend = (function () {
     var F = function () {};
     // extend Child from Parent
     return function (Child, Parent) {
-
         F.prototype = Parent.prototype;
         Child.prototype = new F();
         Child.__super__ = Parent.prototype;
