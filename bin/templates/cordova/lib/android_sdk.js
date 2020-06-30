@@ -19,33 +19,6 @@
 
 const execa = require('execa');
 
-var suffix_number_regex = /(\d+)$/;
-// Used for sorting Android targets, example strings to sort:
-//   android-19
-//   android-L
-//   Google Inc.:Google APIs:20
-//   Google Inc.:Glass Development Kit Preview:20
-// The idea is to sort based on largest "suffix" number - meaning the bigger
-// the number at the end, the more recent the target, the closer to the
-// start of the array.
-function sort_by_largest_numerical_suffix (a, b) {
-    let suffix_a = a.match(suffix_number_regex);
-    let suffix_b = b.match(suffix_number_regex);
-    // If no number is detected (eg: preview version like android-R),
-    // designate a suffix of 0 so it gets moved to the end
-    suffix_a = suffix_a || ['0', '0'];
-    suffix_b = suffix_b || ['0', '0'];
-    // Return < zero, or > zero, based on which suffix is larger.
-    return (parseInt(suffix_a[1]) > parseInt(suffix_b[1]) ? -1 : 1);
-}
-
-module.exports.print_newest_available_sdk_target = function () {
-    return module.exports.list_targets().then(function (targets) {
-        targets.sort(sort_by_largest_numerical_suffix);
-        console.log(targets[0]);
-    });
-};
-
 // Versions should not be represented as float, so we disable quote-props here
 /* eslint-disable quote-props */
 module.exports.version_string_to_api_level = {
