@@ -19,7 +19,7 @@
 
 var path = require('path');
 var fs = require('fs-extra');
-var utils = require('../../bin/lib/utils');
+var utils = require('../templates/cordova/lib/utils');
 var check_reqs = require('./../templates/cordova/lib/check_reqs');
 var ROOT = path.join(__dirname, '..', '..');
 
