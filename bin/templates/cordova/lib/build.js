@@ -241,26 +241,3 @@ PackageInfo.prototype = {
         propertiesParser.save();
     }
 };
-
-module.exports.help = function () {
-    console.log('Usage: ' + path.relative(process.cwd(), path.join('../build')) + ' [flags] [Signed APK flags]');
-    console.log('Flags:');
-    console.log('    \'--debug\': will build project in debug mode (default)');
-    console.log('    \'--release\': will build project for release');
-    console.log('    \'--nobuild\': will skip build process (useful when using run command)');
-    console.log('    \'--prepenv\': don\'t build, but copy in build scripts where necessary');
-    console.log('    \'--versionCode=#\': Override versionCode for this build. Useful for uploading multiple APKs.');
-    console.log('    \'--minSdkVersion=#\': Override minSdkVersion for this build.');
-    console.log('    \'--maxSdkVersion=#\': Override maxSdkVersion for this build. (Not Recommended)');
-    console.log('    \'--targetSdkVersion=#\': Override targetSdkVersion for this build.');
-    console.log('    \'--gradleArg=<gradle command line arg>\': Extra args to pass to the gradle command. Use one flag per arg. Ex. --gradleArg=-PcdvBuildMultipleApks=true');
-    console.log('    \'--packageType=<apk|bundle>\': Builds an APK or a bundle');
-    console.log('');
-    console.log('Signed APK flags (overwrites debug/release-signing.proprties) :');
-    console.log('    \'--keystore=<path to keystore>\': Key store used to build a signed archive. (Required)');
-    console.log('    \'--alias=\': Alias for the key store. (Required)');
-    console.log('    \'--storePassword=\': Password for the key store. (Optional - prompted)');
-    console.log('    \'--password=\': Password for the key. (Optional - prompted)');
-    console.log('    \'--keystoreType\': Type of the keystore. (Optional)');
-    process.exit(0);
-};
