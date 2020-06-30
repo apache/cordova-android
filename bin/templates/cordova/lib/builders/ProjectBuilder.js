@@ -78,7 +78,7 @@ function findOutputFiles (bundleType, buildType, { arch } = {}) {
 
 class ProjectBuilder {
     constructor (rootDirectory) {
-        this.root = rootDirectory || path.resolve(__dirname, '../../..');
+        this.root = rootDirectory;
         this.apkDir = path.join(this.root, 'app', 'build', 'outputs', 'apk');
         this.aabDir = path.join(this.root, 'app', 'build', 'outputs', 'bundle');
     }

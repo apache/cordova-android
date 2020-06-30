@@ -43,10 +43,8 @@ describe('ProjectBuilder', () => {
             expect(builder.root).toBe(rootDir);
         });
 
-        it('should set the project directory to three folders up', () => {
-            ProjectBuilder.__set__('__dirname', 'projecttest/platforms/android/app');
-            builder = new ProjectBuilder();
-            expect(builder.root).toMatch(/projecttest$/);
+        it('should throw if project directory is missing', () => {
+            expect(() => new ProjectBuilder()).toThrowError(TypeError);
         });
     });
 
