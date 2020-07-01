@@ -23,7 +23,6 @@ var nopt = require('nopt');
 
 var Adb = require('./Adb');
 
-var builders = require('./builders/builders');
 var events = require('cordova-common').events;
 const execa = require('execa');
 var CordovaError = require('cordova-common').CordovaError;
@@ -145,7 +144,7 @@ function parseOpts (options, resolvedTarget, projectRoot) {
  */
 module.exports.runClean = function (options) {
     var opts = parseOpts(options, null, this.root);
-    var builder = builders.getBuilder();
+    var builder = this._builder;
 
     return builder.prepEnv(opts).then(function () {
         return builder.clean(opts);
@@ -166,7 +165,7 @@ module.exports.runClean = function (options) {
  */
 module.exports.run = function (options, optResolvedTarget) {
     var opts = parseOpts(options, optResolvedTarget, this.root);
-    var builder = builders.getBuilder();
+    var builder = this._builder;
 
     return builder.prepEnv(opts).then(function () {
         if (opts.prepEnv) {
