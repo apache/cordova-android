@@ -36,22 +36,7 @@ function getInstallTarget (runOptions) {
     return install_target;
 }
 
-/**
- * Runs the application on a device if available. If no device is found, it will
- *   use a started emulator. If no started emulators are found it will attempt
- *   to start an avd. If no avds are found it will error out.
- *
- * @param   {Object}  runOptions  various run/build options. See Api.js build/run
- *   methods for reference.
- *
- * @return  {Promise}
- */
-module.exports.run = function (runOptions) {
-    runOptions = runOptions || {};
-
-    var self = this;
-    var install_target = getInstallTarget(runOptions);
-
+function resolveInstallTarget (install_target) {
     return Promise.resolve().then(function () {
         if (!install_target) {
             // no target given, deploy to device if available, otherwise use the emulator.
@@ -98,7 +83,26 @@ module.exports.run = function (runOptions) {
                 });
             });
         });
-    }).then(function (resolvedTarget) {
+    });
+}
+
+/**
+ * Runs the application on a device if available. If no device is found, it will
+ *   use a started emulator. If no started emulators are found it will attempt
+ *   to start an avd. If no avds are found it will error out.
+ *
+ * @param   {Object}  runOptions  various run/build options. See Api.js build/run
+ *   methods for reference.
+ *
+ * @return  {Promise}
+ */
+module.exports.run = function (runOptions) {
+    runOptions = runOptions || {};
+
+    var self = this;
+    var install_target = getInstallTarget(runOptions);
+
+    return resolveInstallTarget(install_target).then(function (resolvedTarget) {
         return new Promise((resolve) => {
             const buildOptions = require('./build').parseBuildOptions(runOptions, null, self.root);
 
