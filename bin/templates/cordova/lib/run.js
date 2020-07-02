@@ -36,46 +36,50 @@ function getInstallTarget (runOptions) {
     return install_target;
 }
 
+async function isEmulatorName (name) {
+    const emus = await emulator.list_images();
+    return emus.some(avd => avd.name === name);
+}
+
+function formatResolvedTarget ({ target, isEmulator }) {
+    return `${isEmulator ? 'emulator' : 'device'} ${target}`;
+}
+
 async function resolveInstallTarget (install_target) {
-    if (!install_target) {
-        // no target given, deploy to device if available, otherwise use the emulator.
-        const device_list = await device.list();
-        if (device_list.length > 0) {
-            events.emit('warn', 'No target specified, deploying to device \'' + device_list[0] + '\'.');
-            install_target = device_list[0];
-        } else {
-            events.emit('warn', 'No target specified and no devices found, deploying to emulator');
-            install_target = '--emulator';
+    events.emit('verbose', `Trying to resolve install target "${install_target}"`);
+
+    let type;
+    if (/^--(device|emulator)$/.test(install_target)) {
+        type = RegExp.$1;
+        install_target = undefined;
+    }
+
+    if (type !== 'emulator') {
+        events.emit('verbose', 'Trying to resolve target to a connected device');
+        try {
+            return await device.resolveTarget(install_target);
+        } catch (error) {
+            if (!error.message.match(
+                /Unable to find target|no devices found/
+            )) throw error;
         }
     }
 
-    if (install_target === '--device') {
-        return device.resolveTarget(null);
-    } else if (install_target === '--emulator') {
-        // Give preference to any already started emulators. Else, start one.
-        return emulator.list_started().then(function (started) {
-            return started && started.length > 0 ? started[0] : emulator.start();
-        }).then(function (emulatorId) {
-            return emulator.resolveTarget(emulatorId);
-        });
-    }
+    if (type !== 'device') {
+        events.emit('verbose', 'Trying to resolve target to a started emulator');
+        try {
+            return await emulator.resolveTarget(install_target);
+        } catch (error) {
+            if (!error.message.match(
+                /Unable to find target|No running Android emulators/
+            )) throw error;
+        }
 
-    // They specified a specific device/emulator ID.
-    const devices = await device.list();
-    if (devices.indexOf(install_target) > -1) {
-        return device.resolveTarget(install_target);
-    }
-    const started_emulators = await emulator.list_started();
-    if (started_emulators.indexOf(install_target) > -1) {
-        return emulator.resolveTarget(install_target);
-    }
-    const avds = await emulator.list_images();
-    // if target emulator isn't started, then start it.
-    for (var avd in avds) {
-        if (avds[avd].name === install_target) {
-            return emulator.start(install_target).then(function (emulatorId) {
-                return emulator.resolveTarget(emulatorId);
-            });
+        // Last chance: try to start an emulator with ID install_target
+        // if install_target is undefined, pick best match regarding target API
+        if (!install_target || await isEmulatorName(install_target)) {
+            const emulatorId = await emulator.start(install_target);
+            return emulator.resolveTarget(emulatorId);
         }
     }
 
@@ -99,6 +103,8 @@ module.exports.run = function (runOptions) {
     var install_target = getInstallTarget(runOptions);
 
     return resolveInstallTarget(install_target).then(function (resolvedTarget) {
+        events.emit('log', `Deploying to ${formatResolvedTarget(resolvedTarget)}`);
+
         return new Promise((resolve) => {
             const buildOptions = require('./build').parseBuildOptions(runOptions, null, self.root);
 
