@@ -21,6 +21,7 @@ var common = rewire('../../../bin/templates/cordova/lib/pluginHandlers');
 var path = require('path');
 var fs = require('fs-extra');
 var osenv = require('os');
+
 var test_dir = path.join(osenv.tmpdir(), 'test_plugman');
 var project_dir = path.join(test_dir, 'project');
 var src = path.join(project_dir, 'src');
@@ -35,25 +36,27 @@ var deleteJava = common.__get__('deleteJava');
 var copyNewFile = common.__get__('copyNewFile');
 
 describe('common platform handler', function () {
+    afterEach(() => {
+        fs.removeSync(test_dir);
+        fs.removeSync(non_plugin_file);
+    });
+
     describe('copyFile', function () {
         it('Test#001 : should throw if source path not found', function () {
-            fs.removeSync(src);
             expect(function () { copyFile(test_dir, src, project_dir, dest); })
                 .toThrow(new Error('"' + src + '" not found!'));
         });
 
         it('Test#002 : should throw if src not in plugin directory', function () {
             fs.ensureDirSync(project_dir);
-            fs.writeFileSync(non_plugin_file, 'contents', 'utf-8');
+            fs.outputFileSync(non_plugin_file, 'contents');
             var outside_file = '../non_plugin_file';
             expect(function () { copyFile(test_dir, outside_file, project_dir, dest); })
                 .toThrow(new Error('File "' + path.resolve(test_dir, outside_file) + '" is located outside the plugin directory "' + test_dir + '"'));
-            fs.removeSync(test_dir);
         });
 
         it('Test#003 : should allow symlink src, if inside plugin', function () {
-            fs.ensureDirSync(java_dir);
-            fs.writeFileSync(java_file, 'contents', 'utf-8');
+            fs.outputFileSync(java_file, 'contents');
 
             // This will fail on windows if not admin - ignore the error in that case.
             if (ignoreEPERMonWin32(java_file, symlink_file)) {
@@ -61,12 +64,11 @@ describe('common platform handler', function () {
             }
 
             copyFile(test_dir, symlink_file, project_dir, dest);
-            fs.removeSync(project_dir);
         });
 
         it('Test#004 : should throw if symlink is linked to a file outside the plugin', function () {
             fs.ensureDirSync(java_dir);
-            fs.writeFileSync(non_plugin_file, 'contents', 'utf-8');
+            fs.outputFileSync(non_plugin_file, 'contents');
 
             // This will fail on windows if not admin - ignore the error in that case.
             if (ignoreEPERMonWin32(non_plugin_file, symlink_file)) {
@@ -75,20 +77,16 @@ describe('common platform handler', function () {
 
             expect(function () { copyFile(test_dir, symlink_file, project_dir, dest); })
                 .toThrow(new Error('File "' + path.resolve(test_dir, symlink_file) + '" is located outside the plugin directory "' + test_dir + '"'));
-            fs.removeSync(project_dir);
         });
 
         it('Test#005 : should throw if dest is outside the project directory', function () {
-            fs.ensureDirSync(java_dir);
-            fs.writeFileSync(java_file, 'contents', 'utf-8');
+            fs.outputFileSync(java_file, 'contents');
             expect(function () { copyFile(test_dir, java_file, project_dir, non_plugin_file); })
                 .toThrow(new Error('Destination "' + path.resolve(project_dir, non_plugin_file) + '" for source file "' + path.resolve(test_dir, java_file) + '" is located outside the project'));
-            fs.removeSync(project_dir);
         });
 
         it('Test#006 : should call mkdir -p on target path', function () {
-            fs.ensureDirSync(java_dir);
-            fs.writeFileSync(java_file, 'contents', 'utf-8');
+            fs.outputFileSync(java_file, 'contents');
 
             var s = spyOn(fs, 'ensureDirSync').and.callThrough();
             var resolvedDest = path.resolve(project_dir, dest);
@@ -97,12 +95,10 @@ describe('common platform handler', function () {
 
             expect(s).toHaveBeenCalled();
             expect(s).toHaveBeenCalledWith(path.dirname(resolvedDest));
-            fs.removeSync(project_dir);
         });
 
         it('Test#007 : should call cp source/dest paths', function () {
-            fs.ensureDirSync(java_dir);
-            fs.writeFileSync(java_file, 'contents', 'utf-8');
+            fs.outputFileSync(java_file, 'contents');
 
             var s = spyOn(fs, 'copySync').and.callThrough();
             var resolvedDest = path.resolve(project_dir, dest);
@@ -111,8 +107,6 @@ describe('common platform handler', function () {
 
             expect(s).toHaveBeenCalled();
             expect(s).toHaveBeenCalledWith(java_file, resolvedDest);
-
-            fs.removeSync(project_dir);
         });
     });
 
@@ -121,18 +115,12 @@ describe('common platform handler', function () {
             fs.ensureDirSync(dest);
             expect(function () { copyNewFile(test_dir, src, project_dir, dest); })
                 .toThrow(new Error('"' + dest + '" already exists!'));
-            fs.removeSync(dest);
         });
     });
 
     describe('deleteJava', function () {
         beforeEach(function () {
-            fs.ensureDirSync(java_dir);
-            fs.writeFileSync(java_file, 'contents', 'utf-8');
-        });
-
-        afterEach(function () {
-            fs.removeSync(java_dir);
+            fs.outputFileSync(java_file, 'contents');
         });
 
         it('Test#009 : should call fs.unlinkSync on the provided paths', function () {
