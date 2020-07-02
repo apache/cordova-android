@@ -76,13 +76,20 @@ async function isEmulatorName (name) {
  * @param {TargetSpec?} spec
  * @return {Promise<Target>}
  */
-async function resolveToOfflineEmulator (spec = {}) {
-    if (spec.type === 'device') return null;
-    if (spec.id && !(await isEmulatorName(spec.id))) return null;
+async function resolveToOfflineEmulator ({ id: avdName, type } = {}) {
+    if (type === 'device') return null;
 
-    // try to start an emulator with name spec.id
-    // if spec.id is undefined, picks best match regarding target API
-    const emulatorId = await emulator.start(spec.id);
+    if (avdName) {
+        if (!await isEmulatorName(avdName)) return null;
+    } else {
+        events.emit('verbose', 'Looking for emulator image that best matches the target API');
+        const best = await emulator.best_image();
+        avdName = best && best.name;
+        if (!avdName) return null;
+    }
+
+    // try to start an emulator with name avdName
+    const emulatorId = await emulator.start(avdName);
 
     return { id: emulatorId, type: 'emulator' };
 }

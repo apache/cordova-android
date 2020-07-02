@@ -189,28 +189,19 @@ module.exports.get_available_port = function () {
 /*
  * Starts an emulator with the given ID,
  * and returns the started ID of that emulator.
- * If no ID is given it will use the first image available,
- * if no image is available it will error out (maybe create one?).
  * If no boot timeout is given or the value is negative it will wait forever for
  * the emulator to boot
  *
  * Returns a promise.
  */
-module.exports.start = function (emulator_ID, boot_timeout) {
+module.exports.start = function (emulatorId, boot_timeout) {
     var self = this;
 
     return Promise.resolve().then(function () {
-        if (emulator_ID) return Promise.resolve(emulator_ID);
+        if (!emulatorId) {
+            throw new CordovaError('No emulator ID given');
+        }
 
-        return self.best_image().then(function (best) {
-            if (best && best.name) {
-                events.emit('warn', 'No emulator specified, defaulting to ' + best.name);
-                return best.name;
-            }
-
-            return Promise.reject(new CordovaError('No emulator images (avds) found'));
-        });
-    }).then(function (emulatorId) {
         return self.get_available_port().then(function (port) {
             // Figure out the directory the emulator binary runs in, and set the cwd to that directory.
             // Workaround for https://code.google.com/p/android/issues/detail?id=235461

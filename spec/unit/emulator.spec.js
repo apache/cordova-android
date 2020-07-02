@@ -249,23 +249,14 @@ describe('emulator', () => {
             emu.__set__('which', whichSpy);
         });
 
-        it('should find an emulator if an id is not specified', () => {
-            spyOn(emu, 'best_image').and.returnValue(Promise.resolve(emulator));
-
-            return emu.start().then(() => {
-                // This is the earliest part in the code where we can hook in and check
-                // the emulator that has been selected.
-                const spawnArgs = execaSpy.calls.argsFor(0);
-                expect(spawnArgs[1]).toContain(emulator.name);
-            });
-        });
-
         it('should use the specified emulator', () => {
             spyOn(emu, 'best_image');
 
             return emu.start(emulator.name).then(() => {
                 expect(emu.best_image).not.toHaveBeenCalled();
 
+                // This is the earliest part in the code where we can hook in and check
+                // the emulator that has been selected.
                 const spawnArgs = execaSpy.calls.argsFor(0);
                 expect(spawnArgs[1]).toContain(emulator.name);
             });

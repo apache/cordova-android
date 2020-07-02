@@ -122,8 +122,9 @@ describe('target', () => {
         beforeEach(() => {
             resolveToOfflineEmulator = target.__get__('resolveToOfflineEmulator');
 
-            emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['start']);
+            emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['start', 'best_image']);
             emulatorSpyObj.start.and.resolveTo(emuId);
+            emulatorSpyObj.best_image.and.resolveTo();
 
             target.__set__({
                 emulator: emulatorSpyObj,
@@ -132,9 +133,11 @@ describe('target', () => {
         });
 
         it('should start an emulator and run on that if none is running', () => {
+            emulatorSpyObj.best_image.and.resolveTo({ name: 'best-avd' });
+
             return resolveToOfflineEmulator().then(result => {
                 expect(result).toEqual({ id: emuId, type: 'emulator' });
-                expect(emulatorSpyObj.start).toHaveBeenCalled();
+                expect(emulatorSpyObj.start).toHaveBeenCalledWith('best-avd');
             });
         });
 
