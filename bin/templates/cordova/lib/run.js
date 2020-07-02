@@ -36,54 +36,50 @@ function getInstallTarget (runOptions) {
     return install_target;
 }
 
-function resolveInstallTarget (install_target) {
-    return Promise.resolve().then(function () {
-        if (!install_target) {
-            // no target given, deploy to device if available, otherwise use the emulator.
-            return device.list().then(function (device_list) {
-                if (device_list.length > 0) {
-                    events.emit('warn', 'No target specified, deploying to device \'' + device_list[0] + '\'.');
-                    install_target = device_list[0];
-                } else {
-                    events.emit('warn', 'No target specified and no devices found, deploying to emulator');
-                    install_target = '--emulator';
-                }
-            });
+async function resolveInstallTarget (install_target) {
+    if (!install_target) {
+        // no target given, deploy to device if available, otherwise use the emulator.
+        const device_list = await device.list();
+        if (device_list.length > 0) {
+            events.emit('warn', 'No target specified, deploying to device \'' + device_list[0] + '\'.');
+            install_target = device_list[0];
+        } else {
+            events.emit('warn', 'No target specified and no devices found, deploying to emulator');
+            install_target = '--emulator';
         }
-    }).then(function () {
-        if (install_target === '--device') {
-            return device.resolveTarget(null);
-        } else if (install_target === '--emulator') {
-            // Give preference to any already started emulators. Else, start one.
-            return emulator.list_started().then(function (started) {
-                return started && started.length > 0 ? started[0] : emulator.start();
-            }).then(function (emulatorId) {
+    }
+
+    if (install_target === '--device') {
+        return device.resolveTarget(null);
+    } else if (install_target === '--emulator') {
+        // Give preference to any already started emulators. Else, start one.
+        return emulator.list_started().then(function (started) {
+            return started && started.length > 0 ? started[0] : emulator.start();
+        }).then(function (emulatorId) {
+            return emulator.resolveTarget(emulatorId);
+        });
+    }
+
+    // They specified a specific device/emulator ID.
+    const devices = await device.list();
+    if (devices.indexOf(install_target) > -1) {
+        return device.resolveTarget(install_target);
+    }
+    const started_emulators = await emulator.list_started();
+    if (started_emulators.indexOf(install_target) > -1) {
+        return emulator.resolveTarget(install_target);
+    }
+    const avds = await emulator.list_images();
+    // if target emulator isn't started, then start it.
+    for (var avd in avds) {
+        if (avds[avd].name === install_target) {
+            return emulator.start(install_target).then(function (emulatorId) {
                 return emulator.resolveTarget(emulatorId);
             });
         }
-        // They specified a specific device/emulator ID.
-        return device.list().then(function (devices) {
-            if (devices.indexOf(install_target) > -1) {
-                return device.resolveTarget(install_target);
-            }
-            return emulator.list_started().then(function (started_emulators) {
-                if (started_emulators.indexOf(install_target) > -1) {
-                    return emulator.resolveTarget(install_target);
-                }
-                return emulator.list_images().then(function (avds) {
-                    // if target emulator isn't started, then start it.
-                    for (var avd in avds) {
-                        if (avds[avd].name === install_target) {
-                            return emulator.start(install_target).then(function (emulatorId) {
-                                return emulator.resolveTarget(emulatorId);
-                            });
-                        }
-                    }
-                    return Promise.reject(new CordovaError(`Target '${install_target}' not found, unable to run project`));
-                });
-            });
-        });
-    });
+    }
+
+    throw new CordovaError(`Target '${install_target}' not found, unable to run project`);
 }
 
 /**
