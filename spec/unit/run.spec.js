@@ -25,6 +25,9 @@ describe('run', () => {
 
     beforeEach(() => {
         run = rewire('../../bin/templates/cordova/lib/run');
+        run.__set__({
+            events: jasmine.createSpyObj('eventsSpy', ['emit'])
+        });
     });
 
     describe('getInstallTarget', () => {
@@ -42,38 +45,29 @@ describe('run', () => {
         });
     });
 
-    describe('run method', () => {
+    describe('resolveInstallTarget', () => {
+        let resolveInstallTarget;
         let deviceSpyObj;
         let emulatorSpyObj;
-        let eventsSpyObj;
-        let getInstallTargetSpy;
 
         beforeEach(() => {
-            deviceSpyObj = jasmine.createSpyObj('deviceSpy', ['install', 'list', 'resolveTarget']);
-            emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['install', 'list_images', 'list_started', 'resolveTarget', 'start', 'wait_for_boot']);
-            eventsSpyObj = jasmine.createSpyObj('eventsSpy', ['emit']);
-            getInstallTargetSpy = jasmine.createSpy('getInstallTargetSpy');
+            resolveInstallTarget = run.__get__('resolveInstallTarget');
+
+            deviceSpyObj = jasmine.createSpyObj('deviceSpy', ['list', 'resolveTarget']);
+            emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['list_images', 'list_started', 'resolveTarget', 'start']);
 
             run.__set__({
                 device: deviceSpyObj,
-                emulator: emulatorSpyObj,
-                events: eventsSpyObj,
-                getInstallTarget: getInstallTargetSpy
-            });
-
-            // run needs `this` to behave like an Api instance
-            run.run = run.run.bind({
-                _builder: builders.getBuilder('FakeRootPath')
+                emulator: emulatorSpyObj
             });
         });
 
         it('should run on default device when no target arguments are specified', () => {
             const deviceList = ['testDevice1', 'testDevice2'];
 
-            getInstallTargetSpy.and.returnValue(null);
             deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
 
-            return run.run().then(() => {
+            return resolveInstallTarget().then(() => {
                 expect(deviceSpyObj.resolveTarget).toHaveBeenCalledWith(deviceList[0]);
             });
         });
@@ -81,19 +75,16 @@ describe('run', () => {
         it('should run on emulator when no target arguments are specified, and no devices are found', () => {
             const deviceList = [];
 
-            getInstallTargetSpy.and.returnValue(null);
             deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
             emulatorSpyObj.list_started.and.returnValue(Promise.resolve([]));
 
-            return run.run().then(() => {
+            return resolveInstallTarget().then(() => {
                 expect(emulatorSpyObj.list_started).toHaveBeenCalled();
             });
         });
 
         it('should run on default device when device is requested, but none specified', () => {
-            getInstallTargetSpy.and.returnValue('--device');
-
-            return run.run().then(() => {
+            return resolveInstallTarget('--device').then(() => {
                 // Default device is selected by calling device.resolveTarget(null)
                 expect(deviceSpyObj.resolveTarget).toHaveBeenCalledWith(null);
             });
@@ -102,10 +93,9 @@ describe('run', () => {
         it('should run on a running emulator if one exists', () => {
             const emulatorList = ['emulator1', 'emulator2'];
 
-            getInstallTargetSpy.and.returnValue('--emulator');
             emulatorSpyObj.list_started.and.returnValue(Promise.resolve(emulatorList));
 
-            return run.run().then(() => {
+            return resolveInstallTarget('--emulator').then(() => {
                 expect(emulatorSpyObj.resolveTarget).toHaveBeenCalledWith(emulatorList[0]);
             });
         });
@@ -114,34 +104,31 @@ describe('run', () => {
             const emulatorList = [];
             const defaultEmulator = 'default-emu';
 
-            getInstallTargetSpy.and.returnValue('--emulator');
             emulatorSpyObj.list_started.and.returnValue(Promise.resolve(emulatorList));
             emulatorSpyObj.start.and.returnValue(Promise.resolve(defaultEmulator));
 
-            return run.run().then(() => {
+            return resolveInstallTarget('--emulator').then(() => {
                 expect(emulatorSpyObj.resolveTarget).toHaveBeenCalledWith(defaultEmulator);
             });
         });
 
         it('should run on a named device if it is specified', () => {
             const deviceList = ['device1', 'device2', 'device3'];
-            getInstallTargetSpy.and.returnValue(deviceList[1]);
 
             deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
 
-            return run.run().then(() => {
+            return resolveInstallTarget(deviceList[1]).then(() => {
                 expect(deviceSpyObj.resolveTarget).toHaveBeenCalledWith(deviceList[1]);
             });
         });
 
         it('should run on a named emulator if it is specified', () => {
             const startedEmulatorList = ['emu1', 'emu2', 'emu3'];
-            getInstallTargetSpy.and.returnValue(startedEmulatorList[2]);
 
             deviceSpyObj.list.and.returnValue(Promise.resolve([]));
             emulatorSpyObj.list_started.and.returnValue(Promise.resolve(startedEmulatorList));
 
-            return run.run().then(() => {
+            return resolveInstallTarget(startedEmulatorList[2]).then(() => {
                 expect(emulatorSpyObj.resolveTarget).toHaveBeenCalledWith(startedEmulatorList[2]);
             });
         });
@@ -152,14 +139,13 @@ describe('run', () => {
                 { name: 'emu2', id: 2 },
                 { name: 'emu3', id: 3 }
             ];
-            getInstallTargetSpy.and.returnValue(emulatorList[2].name);
 
             deviceSpyObj.list.and.returnValue(Promise.resolve([]));
             emulatorSpyObj.list_started.and.returnValue(Promise.resolve([]));
             emulatorSpyObj.list_images.and.returnValue(Promise.resolve(emulatorList));
             emulatorSpyObj.start.and.returnValue(Promise.resolve(emulatorList[2].id));
 
-            return run.run().then(() => {
+            return resolveInstallTarget(emulatorList[2].name).then(() => {
                 expect(emulatorSpyObj.start).toHaveBeenCalledWith(emulatorList[2].name);
                 expect(emulatorSpyObj.resolveTarget).toHaveBeenCalledWith(emulatorList[2].id);
             });
@@ -169,16 +155,38 @@ describe('run', () => {
             const emulatorList = [{ name: 'emu1', id: 1 }];
             const deviceList = ['device1'];
             const target = 'nonexistentdevice';
-            getInstallTargetSpy.and.returnValue(target);
 
             deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
             emulatorSpyObj.list_started.and.returnValue(Promise.resolve([]));
             emulatorSpyObj.list_images.and.returnValue(Promise.resolve(emulatorList));
 
-            return run.run().then(
+            return resolveInstallTarget(target).then(
                 () => fail('Expected error to be thrown'),
                 err => expect(err.message).toContain(target)
             );
+        });
+    });
+
+    describe('run method', () => {
+        let deviceSpyObj;
+        let emulatorSpyObj;
+        let getInstallTargetSpy;
+
+        beforeEach(() => {
+            deviceSpyObj = jasmine.createSpyObj('deviceSpy', ['install', 'list', 'resolveTarget']);
+            emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['install', 'list_images', 'list_started', 'resolveTarget', 'start', 'wait_for_boot']);
+            getInstallTargetSpy = jasmine.createSpy('getInstallTargetSpy');
+
+            run.__set__({
+                device: deviceSpyObj,
+                emulator: emulatorSpyObj,
+                getInstallTarget: getInstallTargetSpy
+            });
+
+            // run needs `this` to behave like an Api instance
+            run.run = run.run.bind({
+                _builder: builders.getBuilder('FakeRootPath')
+            });
         });
 
         it('should install on device after build', () => {
