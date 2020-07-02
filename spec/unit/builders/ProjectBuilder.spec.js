@@ -224,7 +224,7 @@ describe('ProjectBuilder', () => {
             return builder.build({}).then(
                 () => fail('Unexpectedly resolved'),
                 error => {
-                    expect(checkReqsSpy.check_android_target).toHaveBeenCalledWith(testError);
+                    expect(checkReqsSpy.check_android_target).toHaveBeenCalled();
                     expect(error).toBe(testError);
                 }
             );
