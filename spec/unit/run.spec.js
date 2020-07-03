@@ -145,17 +145,17 @@ describe('run', () => {
     describe('run method', () => {
         let deviceSpyObj;
         let emulatorSpyObj;
-        let getInstallTargetSpy;
+        let resolveInstallTargetSpy;
 
         beforeEach(() => {
             deviceSpyObj = jasmine.createSpyObj('deviceSpy', ['install', 'list', 'resolveTarget']);
             emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['install', 'list_images', 'list_started', 'resolveTarget', 'start', 'wait_for_boot']);
-            getInstallTargetSpy = jasmine.createSpy('getInstallTargetSpy');
+            resolveInstallTargetSpy = jasmine.createSpy('resolveInstallTargetSpy');
 
             run.__set__({
                 device: deviceSpyObj,
                 emulator: emulatorSpyObj,
-                getInstallTarget: getInstallTargetSpy
+                resolveInstallTarget: resolveInstallTargetSpy
             });
 
             // run needs `this` to behave like an Api instance
@@ -166,8 +166,7 @@ describe('run', () => {
 
         it('should install on device after build', () => {
             const deviceTarget = { target: 'device1', isEmulator: false };
-            getInstallTargetSpy.and.returnValue('--device');
-            deviceSpyObj.resolveTarget.and.returnValue(deviceTarget);
+            resolveInstallTargetSpy.and.resolveTo(deviceTarget);
 
             return run.run().then(() => {
                 expect(deviceSpyObj.install).toHaveBeenCalledWith(deviceTarget, { apkPaths: [], buildType: 'debug' });
@@ -176,10 +175,8 @@ describe('run', () => {
 
         it('should install on emulator after build', () => {
             const emulatorTarget = { target: 'emu1', isEmulator: true };
-            getInstallTargetSpy.and.returnValue('--emulator');
-            emulatorSpyObj.list_started.and.returnValue(Promise.resolve([emulatorTarget.target]));
-            emulatorSpyObj.resolveTarget.and.returnValue(emulatorTarget);
-            emulatorSpyObj.wait_for_boot.and.returnValue(Promise.resolve());
+            resolveInstallTargetSpy.and.resolveTo(emulatorTarget);
+            emulatorSpyObj.wait_for_boot.and.resolveTo();
 
             return run.run().then(() => {
                 expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, { apkPaths: [], buildType: 'debug' });
@@ -187,15 +184,9 @@ describe('run', () => {
         });
 
         it('should fail with the error message if --packageType=bundle setting is used', () => {
-            const deviceList = ['testDevice1', 'testDevice2'];
-            getInstallTargetSpy.and.returnValue(null);
-
-            deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
-
-            return run.run({ argv: ['--packageType=bundle'] }).then(
-                () => fail('Expected error to be thrown'),
-                err => expect(err).toContain('Package type "bundle" is not supported during cordova run.')
-            );
+            resolveInstallTargetSpy.and.resolveTo({ target: 'dev', isEmulator: false });
+            return expectAsync(run.run({ argv: ['--packageType=bundle'] }))
+                .toBeRejectedWith(jasmine.stringMatching(/Package type "bundle" is not supported/));
         });
     });
 
