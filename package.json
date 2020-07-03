@@ -15,12 +15,12 @@
   ],
   "scripts": {
     "test": "npm run lint && npm run cover && npm run java-unit-tests",
+    "lint": "eslint . \"bin/**/!(*.*|gitignore)\"",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
     "cover": "nyc jasmine --config=spec/coverage.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "java-unit-tests": "node test/run_java_unit_tests.js",
-    "lint": "eslint . \"bin/**/!(*.*|gitignore)\"",
-    "clean-tests": "node bin/clean_test.js"
+    "clean:java-unit-tests": "node test/clean.js"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
