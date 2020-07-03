@@ -100,7 +100,6 @@ module.exports.run = function (runOptions) {
         });
     }).then(function (resolvedTarget) {
         return new Promise((resolve) => {
-            const builder = require('./builders/builders').getBuilder();
             const buildOptions = require('./build').parseBuildOptions(runOptions, null, self.root);
 
             // Android app bundles cannot be deployed directly to the device
@@ -110,7 +109,7 @@ module.exports.run = function (runOptions) {
                 throw packageTypeErrorMessage;
             }
 
-            resolve(builder.fetchBuildResults(buildOptions.buildType, buildOptions.arch));
+            resolve(self._builder.fetchBuildResults(buildOptions.buildType, buildOptions.arch));
         }).then(function (buildResults) {
             if (resolvedTarget && resolvedTarget.isEmulator) {
                 return emulator.wait_for_boot(resolvedTarget.target).then(function () {

@@ -85,6 +85,8 @@ class Api {
             build: path.join(this.root, 'build'),
             javaSrc: path.join(appMain, 'java')
         };
+
+        this._builder = require('./lib/builders/builders').getBuilder(this.root);
     }
 
     /**
@@ -161,7 +163,7 @@ class Api {
             if (plugin.getFrameworks(this.platform).length === 0) return;
             selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
             // This should pick the correct builder, not just get gradle
-            require('./lib/builders/builders').getBuilder().prepBuildFiles();
+            this._builder.prepBuildFiles();
         }.bind(this))
             // CB-11022 Return truthy value to prevent running prepare after
             .then(() => true);
@@ -193,7 +195,7 @@ class Api {
                 if (plugin.getFrameworks(this.platform).length === 0) return;
 
                 selfEvents.emit('verbose', 'Updating build files since android plugin contained <framework>');
-                require('./lib/builders/builders').getBuilder().prepBuildFiles();
+                this._builder.prepBuildFiles();
             }.bind(this))
             // CB-11022 Return truthy value to prevent running prepare after
             .then(() => true);
