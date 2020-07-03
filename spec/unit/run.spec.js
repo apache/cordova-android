@@ -56,6 +56,25 @@ describe('run', () => {
             deviceSpyObj = jasmine.createSpyObj('deviceSpy', ['list', 'resolveTarget']);
             emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['list_images', 'list_started', 'resolveTarget', 'start']);
 
+            async function fakeResolveTarget (target) {
+                const list = await (this.list || this.list_started)();
+                target = target || list[0];
+                if (!list.length || !list.includes(target)) throw new Error('Unable to find target');
+                return { target };
+            }
+
+            deviceSpyObj.resolveTarget.and.callFake(fakeResolveTarget);
+            emulatorSpyObj.resolveTarget.and.callFake(fakeResolveTarget);
+
+            deviceSpyObj.list.and.resolveTo(['dev1', 'dev2']);
+
+            emulatorSpyObj.list_started.and.resolveTo(['running-emu']);
+            emulatorSpyObj.list_images.and.resolveTo([1, 2, 3].map(i => ({ name: 'emu' + i })));
+            emulatorSpyObj.start.and.callFake(async function (name = 'emu1') {
+                (await this.list_started()).push(name);
+                return name;
+            });
+
             run.__set__({
                 device: deviceSpyObj,
                 emulator: emulatorSpyObj
@@ -63,107 +82,63 @@ describe('run', () => {
         });
 
         it('should run on default device when no target arguments are specified', () => {
-            const deviceList = ['testDevice1', 'testDevice2'];
-
-            deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
-
-            return resolveInstallTarget().then(() => {
-                expect(deviceSpyObj.resolveTarget).toHaveBeenCalledWith(deviceList[0]);
+            return resolveInstallTarget().then(result => {
+                expect(result.target).toBe('dev1');
             });
         });
 
         it('should run on emulator when no target arguments are specified, and no devices are found', () => {
-            const deviceList = [];
-
-            deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
-            emulatorSpyObj.list_started.and.returnValue(Promise.resolve([]));
-
-            return resolveInstallTarget().then(() => {
-                expect(emulatorSpyObj.list_started).toHaveBeenCalled();
+            deviceSpyObj.list.and.resolveTo([]);
+            return resolveInstallTarget().then(result => {
+                expect(result.target).toBe('running-emu');
             });
         });
 
         it('should run on default device when device is requested, but none specified', () => {
-            return resolveInstallTarget('--device').then(() => {
-                // Default device is selected by calling device.resolveTarget(null)
-                expect(deviceSpyObj.resolveTarget).toHaveBeenCalledWith(null);
+            return resolveInstallTarget('--device').then(result => {
+                expect(result.target).toBe('dev1');
             });
         });
 
         it('should run on a running emulator if one exists', () => {
-            const emulatorList = ['emulator1', 'emulator2'];
-
-            emulatorSpyObj.list_started.and.returnValue(Promise.resolve(emulatorList));
-
-            return resolveInstallTarget('--emulator').then(() => {
-                expect(emulatorSpyObj.resolveTarget).toHaveBeenCalledWith(emulatorList[0]);
+            return resolveInstallTarget('--emulator').then(result => {
+                expect(result.target).toBe('running-emu');
             });
         });
 
         it('should start an emulator and run on that if none is running', () => {
-            const emulatorList = [];
-            const defaultEmulator = 'default-emu';
+            emulatorSpyObj.list_started.and.resolveTo([]);
 
-            emulatorSpyObj.list_started.and.returnValue(Promise.resolve(emulatorList));
-            emulatorSpyObj.start.and.returnValue(Promise.resolve(defaultEmulator));
-
-            return resolveInstallTarget('--emulator').then(() => {
-                expect(emulatorSpyObj.resolveTarget).toHaveBeenCalledWith(defaultEmulator);
+            return resolveInstallTarget('--emulator').then(result => {
+                expect(result.target).toBe('emu1');
+                expect(emulatorSpyObj.start).toHaveBeenCalled();
             });
         });
 
         it('should run on a named device if it is specified', () => {
-            const deviceList = ['device1', 'device2', 'device3'];
-
-            deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
-
-            return resolveInstallTarget(deviceList[1]).then(() => {
-                expect(deviceSpyObj.resolveTarget).toHaveBeenCalledWith(deviceList[1]);
+            return resolveInstallTarget('dev2').then(result => {
+                expect(result.target).toBe('dev2');
             });
         });
 
         it('should run on a named emulator if it is specified', () => {
-            const startedEmulatorList = ['emu1', 'emu2', 'emu3'];
+            emulatorSpyObj.list_started.and.resolveTo(['emu1', 'emu2']);
 
-            deviceSpyObj.list.and.returnValue(Promise.resolve([]));
-            emulatorSpyObj.list_started.and.returnValue(Promise.resolve(startedEmulatorList));
-
-            return resolveInstallTarget(startedEmulatorList[2]).then(() => {
-                expect(emulatorSpyObj.resolveTarget).toHaveBeenCalledWith(startedEmulatorList[2]);
+            return resolveInstallTarget('emu2').then(result => {
+                expect(result.target).toBe('emu2');
             });
         });
 
         it('should start named emulator and then run on it if it is specified', () => {
-            const emulatorList = [
-                { name: 'emu1', id: 1 },
-                { name: 'emu2', id: 2 },
-                { name: 'emu3', id: 3 }
-            ];
-
-            deviceSpyObj.list.and.returnValue(Promise.resolve([]));
-            emulatorSpyObj.list_started.and.returnValue(Promise.resolve([]));
-            emulatorSpyObj.list_images.and.returnValue(Promise.resolve(emulatorList));
-            emulatorSpyObj.start.and.returnValue(Promise.resolve(emulatorList[2].id));
-
-            return resolveInstallTarget(emulatorList[2].name).then(() => {
-                expect(emulatorSpyObj.start).toHaveBeenCalledWith(emulatorList[2].name);
-                expect(emulatorSpyObj.resolveTarget).toHaveBeenCalledWith(emulatorList[2].id);
+            return resolveInstallTarget('emu3').then(result => {
+                expect(result.target).toBe('emu3');
+                expect(emulatorSpyObj.start).toHaveBeenCalledWith('emu3');
             });
         });
 
         it('should throw an error if target is specified but does not exist', () => {
-            const emulatorList = [{ name: 'emu1', id: 1 }];
-            const deviceList = ['device1'];
-            const target = 'nonexistentdevice';
-
-            deviceSpyObj.list.and.returnValue(Promise.resolve(deviceList));
-            emulatorSpyObj.list_started.and.returnValue(Promise.resolve([]));
-            emulatorSpyObj.list_images.and.returnValue(Promise.resolve(emulatorList));
-
-            return resolveInstallTarget(target).then(
-                () => fail('Expected error to be thrown'),
-                err => expect(err.message).toContain(target)
-            );
+            return expectAsync(resolveInstallTarget('nonexistent'))
+                .toBeRejectedWithError(/nonexistent/);
         });
     });
 
