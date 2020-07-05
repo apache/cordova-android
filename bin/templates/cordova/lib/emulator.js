@@ -220,21 +220,6 @@ module.exports.list_started = function () {
     return Adb.devices({ emulators: true });
 };
 
-// Returns a promise.
-// TODO: we should remove this, there's a more robust method under android_sdk.js
-module.exports.list_targets = function () {
-    return execa('android', ['list', 'targets'], { cwd: os.tmpdir() }).then(({ stdout: output }) => {
-        var target_out = output.split('\n');
-        var targets = [];
-        for (var i = target_out.length; i >= 0; i--) {
-            if (target_out[i].match(/id:/)) {
-                targets.push(targets[i].split(' ')[1]);
-            }
-        }
-        return targets;
-    });
-};
-
 /*
  * Gets unused port for android emulator, between 5554 and 5584
  * Returns a promise.
@@ -370,34 +355,6 @@ module.exports.wait_for_boot = function (emulator_id, time_remaining) {
             });
         }
     });
-};
-
-/*
- * Create avd
- * TODO : Enter the stdin input required to complete the creation of an avd.
- * Returns a promise.
- */
-module.exports.create_image = function (name, target) {
-    console.log('Creating new avd named ' + name);
-    if (target) {
-        return execa('android', ['create', 'avd', '--name', name, '--target', target]).then(null, function (error) {
-            console.error('ERROR : Failed to create emulator image : ');
-            console.error(' Do you have the latest android targets including ' + target + '?');
-            console.error(error.message);
-        });
-    } else {
-        console.log('WARNING : Project target not found, creating avd with a different target but the project may fail to install.');
-        // TODO: there's a more robust method for finding targets in android_sdk.js
-        return execa('android', ['create', 'avd', '--name', name, '--target', this.list_targets()[0]]).then(function () {
-            // TODO: This seems like another error case, even though it always happens.
-            console.error('ERROR : Unable to create an avd emulator, no targets found.');
-            console.error('Ensure you have targets available by running the "android" command');
-            return Promise.reject(new CordovaError());
-        }, function (error) {
-            console.error('ERROR : Failed to create emulator image : ');
-            console.error(error.message);
-        });
-    }
 };
 
 module.exports.resolveTarget = function (target) {
