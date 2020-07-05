@@ -330,7 +330,7 @@ class ProjectBuilder {
         var wrapper = path.join(this.root, 'gradlew');
         var args = this.getArgs(opts.buildType === 'debug' ? 'debug' : 'release', opts);
 
-        return execa(wrapper, args, { stdio: 'inherit' })
+        return execa(wrapper, args, { stdio: 'inherit', cwd: path.resolve(this.root) })
             .catch(function (error) {
                 if (error.toString().indexOf('failed to find target with hash string') >= 0) {
                     return check_reqs.check_android_target(error).then(function () {
@@ -346,7 +346,7 @@ class ProjectBuilder {
     clean (opts) {
         const wrapper = path.join(this.root, 'gradlew');
         const args = this.getArgs('clean', opts);
-        return execa(wrapper, args, { stdio: 'inherit' })
+        return execa(wrapper, args, { stdio: 'inherit', cwd: path.resolve(this.root) })
             .then(() => {
                 fs.removeSync(path.join(this.root, 'out'));
 
