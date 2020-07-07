@@ -134,6 +134,7 @@ def doExtractStringFromManifest(name) {
 def doPromptForPassword(msg) {
     if (System.console() == null) {
         def ret = null
+        System.setProperty('java.awt.headless', 'false')
         new SwingBuilder().edt {
             dialog(modal: true, title: 'Enter password', alwaysOnTop: true, resizable: false, locationRelativeTo: null, pack: true, show: true) {
                 vbox {
@@ -146,6 +147,7 @@ def doPromptForPassword(msg) {
                 }
             }
         }
+        System.setProperty('java.awt.headless', 'true')
         if (!ret) {
             throw new GradleException('User canceled build')
         }
