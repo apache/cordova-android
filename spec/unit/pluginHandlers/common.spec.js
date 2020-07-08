@@ -108,6 +108,15 @@ describe('common platform handler', function () {
             expect(s).toHaveBeenCalled();
             expect(s).toHaveBeenCalledWith(java_file, resolvedDest);
         });
+
+        it('should handle relative paths when checking for sub paths', () => {
+            fs.outputFileSync(java_file, 'contents');
+            const relativeProjectPath = path.relative(process.cwd(), project_dir);
+
+            expect(() => {
+                copyFile(test_dir, java_file, relativeProjectPath, dest);
+            }).not.toThrow();
+        });
     });
 
     describe('copyNewFile', function () {
