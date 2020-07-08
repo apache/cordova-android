@@ -66,33 +66,6 @@ describe('android_sdk', () => {
         });
     });
 
-    describe('list_targets_with_android', () => {
-        it('should invoke `android` with the `list target` command and _not_ the `list targets` command, as the plural form is not supported in some Android SDK Tools versions', () => {
-            execaSpy.and.returnValue(Promise.resolve({ stdout: '' }));
-            android_sdk.list_targets_with_android();
-            expect(execaSpy).toHaveBeenCalledWith('android', ['list', 'target']);
-        });
-
-        it('should parse and return results from `android list targets` command', () => {
-            const testTargets = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.2-android_list_targets.txt'), 'utf-8');
-            execaSpy.and.returnValue(Promise.resolve({ stdout: testTargets }));
-
-            return android_sdk.list_targets_with_android().then(list => {
-                ['Google Inc.:Google APIs:23',
-                    'Google Inc.:Google APIs:22',
-                    'Google Inc.:Google APIs:21',
-                    'android-25',
-                    'android-24',
-                    'android-N',
-                    'android-23',
-                    'android-MNC',
-                    'android-22',
-                    'android-21',
-                    'android-20'].forEach((target) => expect(list).toContain(target));
-            });
-        });
-    });
-
     describe('list_targets_with_avdmanager', () => {
         it('should parse and return results from `avdmanager list target` command', () => {
             const testTargets = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.3-avdmanager_list_target.txt'), 'utf-8');
@@ -109,29 +82,6 @@ describe('android_sdk', () => {
             const avdmanager_spy = spyOn(android_sdk, 'list_targets_with_avdmanager').and.returnValue(new Promise(() => {}, () => {}));
             android_sdk.list_targets();
             expect(avdmanager_spy).toHaveBeenCalled();
-        });
-
-        it('should parse Android SDK installed target information with `android` command if list_targets_with_avdmanager fails with ENOENT', () => {
-            spyOn(android_sdk, 'list_targets_with_avdmanager').and.returnValue(Promise.reject({ code: 'ENOENT' }));
-            const avdmanager_spy = spyOn(android_sdk, 'list_targets_with_android').and.returnValue(Promise.resolve(['target1']));
-
-            return android_sdk.list_targets().then(targets => {
-                expect(avdmanager_spy).toHaveBeenCalled();
-                expect(targets[0]).toEqual('target1');
-            });
-        });
-
-        it('should parse Android SDK installed target information with `android` command if list_targets_with_avdmanager fails with not-recognized error (Windows)', () => {
-            spyOn(android_sdk, 'list_targets_with_avdmanager').and.returnValue(Promise.reject({
-                code: 1,
-                stderr: "'avdmanager' is not recognized as an internal or external commmand,\r\noperable program or batch file.\r\n"
-            }));
-
-            const avdmanager_spy = spyOn(android_sdk, 'list_targets_with_android').and.returnValue(Promise.resolve(['target1']));
-            return android_sdk.list_targets().then(targets => {
-                expect(avdmanager_spy).toHaveBeenCalled();
-                expect(targets[0]).toEqual('target1');
-            });
         });
 
         it('should throw an error if `avdmanager` command fails with an unknown error', () => {
