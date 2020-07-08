@@ -215,11 +215,7 @@ module.exports.start = function (emulator_ID, boot_timeout) {
                 return best.name;
             }
 
-            var androidCmd = check_reqs.getAbsoluteAndroidCmd();
-            return Promise.reject(new CordovaError('No emulator images (avds) found.\n' +
-                '1. Download desired System Image by running: ' + androidCmd + ' sdk\n' +
-                '2. Create an AVD by running: ' + androidCmd + ' avd\n' +
-                'HINT: For a faster emulator, use an Intel System Image and install the HAXM device driver\n'));
+            return Promise.reject(new CordovaError('No emulator images (avds) found'));
         });
     }).then(function (emulatorId) {
         return self.get_available_port().then(function (port) {

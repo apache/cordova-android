@@ -216,7 +216,6 @@ describe('emulator', () => {
         const port = 5555;
         let emulator;
         let AdbSpy;
-        let checkReqsSpy;
         let execaSpy;
         let whichSpy;
 
@@ -232,9 +231,6 @@ describe('emulator', () => {
             AdbSpy = jasmine.createSpyObj('Adb', ['shell']);
             AdbSpy.shell.and.returnValue(Promise.resolve());
             emu.__set__('Adb', AdbSpy);
-
-            checkReqsSpy = jasmine.createSpyObj('create_reqs', ['getAbsoluteAndroidCmd']);
-            emu.__set__('check_reqs', checkReqsSpy);
 
             execaSpy = jasmine.createSpy('execa').and.returnValue(
                 jasmine.createSpyObj('spawnFns', ['unref'])

@@ -382,7 +382,7 @@ describe('check_reqs', function () {
                 fail('Expected promise to be rejected');
             }, err => {
                 expect(err).toEqual(jasmine.any(Error));
-                expect(err.message).toContain('Please install Android target');
+                expect(err.message).toContain('Please install the Android SDK Platform');
             });
         });
     });

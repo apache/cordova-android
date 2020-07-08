@@ -323,18 +323,6 @@ module.exports.check_android = function () {
     });
 };
 
-// TODO: is this actually needed?
-module.exports.getAbsoluteAndroidCmd = function () {
-    var cmd = forgivingWhichSync('android');
-    if (cmd.length === 0) {
-        cmd = forgivingWhichSync('sdkmanager');
-    }
-    if (module.exports.isWindows()) {
-        return '"' + cmd + '"';
-    }
-    return cmd.replace(/(\s)/g, '\\$1');
-};
-
 module.exports.check_android_target = function (originalError) {
     // valid_target can look like:
     //   android-19
@@ -346,13 +334,7 @@ module.exports.check_android_target = function (originalError) {
         if (targets.indexOf(desired_api_level) >= 0) {
             return targets;
         }
-        var androidCmd = module.exports.getAbsoluteAndroidCmd();
-        var msg = 'Please install Android target / API level: "' + desired_api_level + '".\n\n' +
-            'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
-            'You will require:\n' +
-            '1. "SDK Platform" for API level ' + desired_api_level + '\n' +
-            '2. "Android SDK Platform-tools (latest)\n' +
-            '3. "Android SDK Build-tools" (latest)';
+        var msg = `Please install the Android SDK Platform "platforms;${desired_api_level}"`;
         if (originalError) {
             msg = originalError + '\n' + msg;
         }
