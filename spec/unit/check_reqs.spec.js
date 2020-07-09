@@ -112,34 +112,6 @@ describe('check_reqs', function () {
                         return path;
                     });
                 });
-                it('should set ANDROID_SDK_ROOT based on `android` command if command exists in a SDK-like directory structure', () => {
-                    spyOn(fs, 'existsSync').and.returnValue(true);
-                    spyOn(which, 'sync').and.callFake(function (cmd) {
-                        if (cmd === 'android') {
-                            return '/android/sdk/tools/android';
-                        } else {
-                            return null;
-                        }
-                    });
-                    return check_reqs.check_android().then(function () {
-                        expect(process.env.ANDROID_SDK_ROOT).toEqual('/android/sdk');
-                    });
-                });
-                it('should error out if `android` command exists in a non-SDK-like directory structure', () => {
-                    spyOn(which, 'sync').and.callFake(function (cmd) {
-                        if (cmd === 'android') {
-                            return '/just/some/random/path/android';
-                        } else {
-                            return null;
-                        }
-                    });
-                    return check_reqs.check_android().then(() => {
-                        fail('Expected promise to be rejected');
-                    }, err => {
-                        expect(err).toEqual(jasmine.any(Error));
-                        expect(err.message).toContain('update your PATH to include valid path');
-                    });
-                });
                 it('should set ANDROID_SDK_ROOT based on `adb` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
                     spyOn(which, 'sync').and.callFake(function (cmd) {
