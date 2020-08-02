@@ -19,6 +19,7 @@
 package org.apache.cordova;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,6 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Constructor;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -226,10 +228,19 @@ public class CordovaWebViewImpl implements CordovaWebView {
             LOG.w(TAG, "showWebPage: Refusing to send intent for URL since it is not in the <allow-intent> whitelist. URL=" + url);
             return;
         }
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+
+        Intent intent;
+
+        if (url.startsWith("intent://")) {
+            try {
+                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+                return;
+            }
+
+        } else {
+            intent = new Intent(Intent.ACTION_VIEW);
             Uri uri = Uri.parse(url);
             // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
             // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
@@ -238,9 +249,17 @@ public class CordovaWebViewImpl implements CordovaWebView {
             } else {
                 intent.setData(uri);
             }
+            // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        }
+        try {
             cordova.getActivity().startActivity(intent);
-        } catch (android.content.ActivityNotFoundException e) {
-            LOG.e(TAG, "Error loading url " + url, e);
+        } catch (ActivityNotFoundException e) {
+            if (url.startsWith("intent://") && intent != null && intent.getStringExtra("browser_fallback_url") != null) {
+                showWebPage(intent.getStringExtra("browser_fallback_url"), openExternal, clearHistory, params);
+            } else {
+                LOG.e(TAG, "Error loading url " + url, e);
+            }
         }
     }
 
