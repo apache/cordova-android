@@ -42,7 +42,7 @@
     "rewire": "^5.0.0"
   },
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=10.10.0"
   },
   "engineStrict": true,
   "nyc": {
