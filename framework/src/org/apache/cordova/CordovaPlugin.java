@@ -414,8 +414,23 @@ public class CordovaPlugin {
      * @param requestCode
      * @param permissions
      * @param grantResults
+     * 
+     * @deprecated Use {@link #onRequestPermissionsResult} instead.
      */
+    @Deprecated
     public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) throws JSONException {
+
+    }
+
+    /**
+     * Called by the system when the user grants permissions
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
 
     }
