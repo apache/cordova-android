@@ -313,9 +313,9 @@ android {
             release {
                 // These must be set or Gradle will complain (even if they are overridden).
                 keyAlias = ""
-                keyPassword = "__unset" // And these must be set to non-empty in order to have the signing step added to the task graph.
+                keyPassword = ""
                 storeFile = null
-                storePassword = "__unset"
+                storePassword = ""
             }
         }
         buildTypes {
@@ -353,26 +353,6 @@ dependencies {
     debugCompile(project(path: ":CordovaLib", configuration: "debug"))
     releaseCompile(project(path: ":CordovaLib", configuration: "release"))
     // SUB-PROJECT DEPENDENCIES END
-}
-
-def promptForReleaseKeyPassword() {
-    if (!cdvReleaseSigningPropertiesFile) {
-        return;
-    }
-    if ('__unset'.equals(android.signingConfigs.release.storePassword)) {
-        android.signingConfigs.release.storePassword = privateHelpers.promptForPassword('Enter key store password: ')
-    }
-    if ('__unset'.equals(android.signingConfigs.release.keyPassword)) {
-        android.signingConfigs.release.keyPassword = privateHelpers.promptForPassword('Enter key password: ');
-    }
-}
-
-gradle.taskGraph.whenReady { taskGraph ->
-    taskGraph.getAllTasks().each() { task ->
-      if(['validateReleaseSigning', 'validateSigningRelease', 'validateSigningArmv7Release', 'validateSigningX76Release'].contains(task.name)) {
-         promptForReleaseKeyPassword()
-      }
-    }
 }
 
 def addSigningProps(propsFilePath, signingConfig) {
