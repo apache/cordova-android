@@ -59,10 +59,6 @@ class AndroidTestRunner {
 Promise.resolve()
     .then(_ => console.log('Starting to run all android platform tests'))
 
-    // Android Test
-    .then(_ => new AndroidTestRunner('Android Project', path.resolve(__dirname, 'android')))
-    .then(test => test.run())
-
     // AndroidX Test
     .then(_ => new AndroidTestRunner('AndroidX Project', path.resolve(__dirname, 'androidx')))
     .then(test => test.run())

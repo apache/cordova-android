@@ -26,7 +26,6 @@ const CordovaError = require('cordova-common').CordovaError;
 const check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
 
 describe('emulator', () => {
-    const EMULATOR_LIST = ['emulator-5555', 'emulator-5556', 'emulator-5557'];
     let emu;
 
     beforeEach(() => {
@@ -50,33 +49,6 @@ describe('emulator', () => {
         });
     });
 
-    describe('list_images_using_android', () => {
-        it('should invoke `android` with the `list avd` command and _not_ the `list avds` command, as the plural form is not supported in some Android SDK Tools versions', () => {
-            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: '' }));
-            emu.__set__('execa', execaSpy);
-
-            emu.list_images_using_android();
-            expect(execaSpy).toHaveBeenCalledWith('android', ['list', 'avd']);
-        });
-
-        it('should properly parse details of SDK Tools pre-25.3.1 `android list avd` output', () => {
-            const avdList = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.2-android_list_avd.txt'), 'utf-8');
-
-            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve({ stdout: avdList }));
-            emu.__set__('execa', execaSpy);
-
-            return emu.list_images_using_android().then(list => {
-                expect(list).toBeDefined();
-                expect(list[0].name).toEqual('QWR');
-                expect(list[0].device).toEqual('Nexus 5 (Google)');
-                expect(list[0].path).toEqual('/Users/shazron/.android/avd/QWR.avd');
-                expect(list[0].target).toEqual('Android 7.1.1 (API level 25)');
-                expect(list[0].abi).toEqual('google_apis/x86_64');
-                expect(list[0].skin).toEqual('1080x1920');
-            });
-        });
-    });
-
     describe('list_images', () => {
         beforeEach(() => {
             spyOn(fs, 'realpathSync').and.callFake(cmd => cmd);
@@ -89,16 +61,6 @@ describe('emulator', () => {
 
             return emu.list_images().then(() => {
                 expect(avdmanager_spy).toHaveBeenCalled();
-            });
-        });
-
-        it('should delegate to `android` if `avdmanager` cant be found and `android` can', () => {
-            spyOn(which, 'sync').and.callFake(cmd => cmd !== 'avdmanager');
-
-            const android_spy = spyOn(emu, 'list_images_using_android').and.returnValue(Promise.resolve([]));
-
-            return emu.list_images().then(() => {
-                expect(android_spy).toHaveBeenCalled();
             });
         });
 
@@ -133,7 +95,7 @@ describe('emulator', () => {
                 () => fail('Unexpectedly resolved'),
                 err => {
                     expect(err).toBeDefined();
-                    expect(err.message).toContain('Could not find either `android` or `avdmanager`');
+                    expect(err.message).toContain('Could not find `avdmanager`');
                 }
             );
         });
@@ -205,13 +167,13 @@ describe('emulator', () => {
     });
 
     describe('list_started', () => {
-        it('should call adb devices with the emulators flag', () => {
+        it('should return a list of all online emulators', () => {
             const AdbSpy = jasmine.createSpyObj('Adb', ['devices']);
-            AdbSpy.devices.and.returnValue(Promise.resolve());
+            AdbSpy.devices.and.resolveTo(['emulator-5556', '123a76565509e124']);
             emu.__set__('Adb', AdbSpy);
 
-            return emu.list_started().then(() => {
-                expect(AdbSpy.devices).toHaveBeenCalledWith({ emulators: true });
+            return emu.list_started().then(emus => {
+                expect(emus).toEqual(['emulator-5556']);
             });
         });
     });
@@ -253,7 +215,6 @@ describe('emulator', () => {
         const port = 5555;
         let emulator;
         let AdbSpy;
-        let checkReqsSpy;
         let execaSpy;
         let whichSpy;
 
@@ -269,9 +230,6 @@ describe('emulator', () => {
             AdbSpy = jasmine.createSpyObj('Adb', ['shell']);
             AdbSpy.shell.and.returnValue(Promise.resolve());
             emu.__set__('Adb', AdbSpy);
-
-            checkReqsSpy = jasmine.createSpyObj('create_reqs', ['getAbsoluteAndroidCmd']);
-            emu.__set__('check_reqs', checkReqsSpy);
 
             execaSpy = jasmine.createSpy('execa').and.returnValue(
                 jasmine.createSpyObj('spawnFns', ['unref'])
@@ -526,160 +484,6 @@ describe('emulator', () => {
             return waitPromise.then(isReady => {
                 expect(isReady).toBe(false);
                 expect(emu.wait_for_boot).toHaveBeenCalledTimes(expectedRetries + 1);
-            });
-        });
-    });
-
-    describe('resolveTarget', () => {
-        const arch = 'arm7-test';
-
-        beforeEach(() => {
-            const buildSpy = jasmine.createSpyObj('build', ['detectArchitecture']);
-            buildSpy.detectArchitecture.and.returnValue(Promise.resolve(arch));
-            emu.__set__('build', buildSpy);
-
-            spyOn(emu, 'list_started').and.returnValue(Promise.resolve(EMULATOR_LIST));
-        });
-
-        it('should throw an error if there are no running emulators', () => {
-            emu.list_started.and.returnValue(Promise.resolve([]));
-
-            return emu.resolveTarget().then(
-                () => fail('Unexpectedly resolved'),
-                err => {
-                    expect(err).toEqual(jasmine.any(CordovaError));
-                }
-            );
-        });
-
-        it('should throw an error if the requested emulator is not running', () => {
-            const targetEmulator = 'unstarted-emu';
-
-            return emu.resolveTarget(targetEmulator).then(
-                () => fail('Unexpectedly resolved'),
-                err => {
-                    expect(err.message).toContain(targetEmulator);
-                }
-            );
-        });
-
-        it('should return info on the first running emulator if none is specified', () => {
-            return emu.resolveTarget().then(emulatorInfo => {
-                expect(emulatorInfo.target).toBe(EMULATOR_LIST[0]);
-            });
-        });
-
-        it('should return the emulator info', () => {
-            return emu.resolveTarget(EMULATOR_LIST[1]).then(emulatorInfo => {
-                expect(emulatorInfo).toEqual({ target: EMULATOR_LIST[1], arch, isEmulator: true });
-            });
-        });
-    });
-
-    describe('install', () => {
-        let AndroidManifestSpy;
-        let AndroidManifestFns;
-        let AndroidManifestGetActivitySpy;
-        let AdbSpy;
-        let buildSpy;
-        let execaSpy;
-        let target;
-
-        beforeEach(() => {
-            target = { target: EMULATOR_LIST[1], arch: 'arm7', isEmulator: true };
-
-            buildSpy = jasmine.createSpyObj('build', ['findBestApkForArchitecture']);
-            emu.__set__('build', buildSpy);
-
-            AndroidManifestFns = jasmine.createSpyObj('AndroidManifestFns', ['getPackageId', 'getActivity']);
-            AndroidManifestGetActivitySpy = jasmine.createSpyObj('getActivity', ['getName']);
-            AndroidManifestFns.getActivity.and.returnValue(AndroidManifestGetActivitySpy);
-            AndroidManifestSpy = jasmine.createSpy('AndroidManifest').and.returnValue(AndroidManifestFns);
-            emu.__set__('AndroidManifest', AndroidManifestSpy);
-
-            AdbSpy = jasmine.createSpyObj('Adb', ['shell', 'start', 'uninstall']);
-            AdbSpy.shell.and.returnValue(Promise.resolve());
-            AdbSpy.start.and.returnValue(Promise.resolve());
-            AdbSpy.uninstall.and.returnValue(Promise.resolve());
-            emu.__set__('Adb', AdbSpy);
-
-            execaSpy = jasmine.createSpy('execa').and.resolveTo({});
-            emu.__set__('execa', execaSpy);
-        });
-
-        it('should get the full target object if only id is specified', () => {
-            const targetId = target.target;
-            spyOn(emu, 'resolveTarget').and.returnValue(Promise.resolve(target));
-
-            return emu.install(targetId, {}).then(() => {
-                expect(emu.resolveTarget).toHaveBeenCalledWith(targetId);
-            });
-        });
-
-        it('should install to the passed target', () => {
-            return emu.install(target, {}).then(() => {
-                const execCmd = execaSpy.calls.argsFor(0)[1].join(' ');
-                expect(execCmd).toContain(`-s ${target.target} install`);
-            });
-        });
-
-        it('should install the correct apk based on the architecture and build results', () => {
-            const buildResults = {
-                apkPaths: 'path/to/apks',
-                buildType: 'debug',
-                buildMethod: 'foo'
-            };
-
-            const apkPath = 'my/apk/path/app.apk';
-            buildSpy.findBestApkForArchitecture.and.returnValue(apkPath);
-
-            return emu.install(target, buildResults).then(() => {
-                expect(buildSpy.findBestApkForArchitecture).toHaveBeenCalledWith(buildResults, target.arch);
-
-                const execCmd = execaSpy.calls.argsFor(0)[1].join(' ');
-                expect(execCmd).toContain(`install -r ${apkPath}`);
-            });
-        });
-
-        it('should uninstall and reinstall app if failure is due to different certificates', () => {
-            execaSpy.and.returnValues(
-                ...['Failure: INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES', '']
-                    .map(out => Promise.resolve({ stdout: out }))
-            );
-
-            return emu.install(target, {}).then(() => {
-                expect(execaSpy).toHaveBeenCalledTimes(2);
-                expect(AdbSpy.uninstall).toHaveBeenCalled();
-            });
-        });
-
-        it('should throw any error not caused by different certificates', () => {
-            const errorMsg = 'Failure: Failed to install';
-            execaSpy.and.resolveTo({ stdout: errorMsg });
-
-            return emu.install(target, {}).then(
-                () => fail('Unexpectedly resolved'),
-                err => {
-                    expect(err).toEqual(jasmine.any(CordovaError));
-                    expect(err.message).toContain(errorMsg);
-                }
-            );
-        });
-
-        it('should unlock the screen on device', () => {
-            return emu.install(target, {}).then(() => {
-                expect(AdbSpy.shell).toHaveBeenCalledWith(target.target, 'input keyevent 82');
-            });
-        });
-
-        it('should start the newly installed app on the device', () => {
-            const packageId = 'unittestapp';
-            const activityName = 'TestActivity';
-            AndroidManifestFns.getPackageId.and.returnValue(packageId);
-            AndroidManifestGetActivitySpy.getName.and.returnValue(activityName);
-
-            return emu.install(target, {}).then(() => {
-                expect(AdbSpy.start).toHaveBeenCalledWith(target.target, `${packageId}/.${activityName}`);
             });
         });
     });

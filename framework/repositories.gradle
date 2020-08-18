@@ -16,6 +16,7 @@
    under the License.
 */
 
-wrapper {
-    gradleVersion = '6.5'
+ext.repos = {
+    google()
+    jcenter()
 }
