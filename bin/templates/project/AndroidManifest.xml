@@ -35,7 +35,7 @@
         <activity android:name="__ACTIVITY__"
                 android:label="@string/activity_name"
                 android:launchMode="singleTop"
-                android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+                android:theme="@style/Theme.AppCompat.NoActionBar"
                 android:windowSoftInputMode="adjustResize"
                 android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode">
             <intent-filter android:label="@string/launcher_name">
