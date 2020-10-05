@@ -664,7 +664,7 @@ function cleanIcons (projectRoot, projectConfig, platformResourcesDir) {
  */
 function mapImageResources (rootDir, subDir, type, resourceName) {
     const pathMap = {};
-    const pattern = new RegExp(type + '+-.+');
+    const pattern = new RegExp(type + '-.+');
     utils.scanDirectory(path.join(rootDir, subDir), pattern).forEach(function (drawableFolder) {
         const imagePath = path.join(subDir, path.basename(drawableFolder), resourceName);
         pathMap[imagePath] = null;
