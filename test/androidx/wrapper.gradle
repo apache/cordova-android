@@ -19,4 +19,3 @@
 wrapper {
     gradleVersion = '6.6.1'
 }
-
