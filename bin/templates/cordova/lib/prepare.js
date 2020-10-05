@@ -239,7 +239,8 @@ function updateProjectAccordingTo (platformConfig, locations) {
     const javaDirectory = path.join(locations.javaSrc, manifestId.replace(/\./g, '/'));
     const javaPattern = /\.java$/;
     const java_files = utils.scanDirectory(javaDirectory, javaPattern, true).filter(function (f) {
-        return utils.grep(f, /extends\s+CordovaActivity/g) !== null;
+        const contents = fs.readFileSync(f, 'utf-8');
+        return /extends\s+CordovaActivity/.test(contents);
     });
 
     if (java_files.length === 0) {

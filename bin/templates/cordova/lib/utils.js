@@ -42,24 +42,6 @@ exports.replaceFileContents = function (file, searchRegex, replacementString) {
 };
 
 /**
- * Reads a file and scans for regex. Returns the line of the first occurence or null if no occurences are found.
- *
- * @param {string} file A file path
- * @param {RegExp} regex A search regex
- * @returns string|null
- */
-exports.grep = function (file, regex) {
-    const contents = fs.readFileSync(file).toString().replace(/\\r/g, '').split('\n');
-    for (let i = 0; i < contents.length; i++) {
-        const line = contents[i];
-        if (regex.test(line)) {
-            return line;
-        }
-    }
-    return null;
-};
-
-/**
  * Scans directories and outputs a list of found paths that matches the regex
  *
  * @param {string} directory The starting directory
