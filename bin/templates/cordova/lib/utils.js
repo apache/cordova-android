@@ -24,7 +24,6 @@
 // TODO: Perhaps this should live in cordova-common?
 
 const fs = require('fs-extra');
-const path = require('path');
 
 /**
  * Reads, searches, and replaces the found occurences with replacementString and then writes the file back out.
@@ -39,41 +38,4 @@ exports.replaceFileContents = function (file, searchRegex, replacementString) {
     let contents = fs.readFileSync(file).toString();
     contents = contents.replace(searchRegex, replacementString);
     fs.writeFileSync(file, contents);
-};
-
-/**
- * Scans directories and outputs a list of found paths that matches the regex
- *
- * @param {string} directory The starting directory
- * @param {RegExp} regex The search regex
- * @param {boolean} recursive Enables recursion
- * @returns Array<string>
- */
-exports.scanDirectory = function (directory, regex, recursive) {
-    let output = [];
-
-    if (fs.existsSync(directory)) {
-        const items = fs.readdirSync(directory);
-
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            const itemPath = path.join(directory, item);
-            const stats = fs.statSync(itemPath);
-
-            if (regex.test(itemPath)) {
-                output.push(itemPath);
-            }
-
-            if (stats.isDirectory()) {
-                if (recursive) {
-                    output = output.concat(exports.scanDirectory(itemPath, regex, recursive));
-                } else {
-                    // Move onto the next item
-                    continue;
-                }
-            }
-        }
-    }
-
-    return output;
 };
