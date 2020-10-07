@@ -248,14 +248,18 @@ function updateProjectAccordingTo (platformConfig, locations) {
         events.emit('log', 'Multiple candidate Java files that extend CordovaActivity found. Guessing at the first one, ' + java_files[0]);
     }
 
-    const destFile = java_files[0];
+    var destFile = java_files[0];
 
-    // var destFile = path.join(locations.root, 'app', 'src', 'main', 'java', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
-    // fs.ensureDirSync(path.dirname(destFile));
-    // events.emit('verbose', java_files[0]);
-    // events.emit('verbose', destFile);
-    // console.log(locations);
-    // fs.copySync(java_files[0], destFile);
+    // if package name has changed, path to MainActivity.java has to track it
+    var newDestFile = path.join(locations.root, 'app', 'src', 'main', 'java', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
+    if (newDestFile !== destFile) {
+        fs.ensureDirSync(path.dirname(newDestFile));
+        events.emit('verbose', destFile);
+        events.emit('verbose', newDestFile);
+        console.log(locations);
+        fs.copySync(destFile, newDestFile);
+        destFile = newDestFile;
+    }
     utils.replaceFileContents(destFile, /package [\w.]*;/, 'package ' + androidPkgName + ';');
     events.emit('verbose', 'Wrote out Android package name "' + androidPkgName + '" to ' + destFile);
 
