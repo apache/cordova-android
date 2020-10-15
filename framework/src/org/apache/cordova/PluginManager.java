@@ -19,7 +19,9 @@
 package org.apache.cordova;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.json.JSONException;
 
@@ -40,8 +42,8 @@ public class PluginManager {
     private static final int SLOW_EXEC_WARNING_THRESHOLD = Debug.isDebuggerConnected() ? 60 : 16;
 
     // List of service entries
-    private final LinkedHashMap<String, CordovaPlugin> pluginMap = new LinkedHashMap<String, CordovaPlugin>();
-    private final LinkedHashMap<String, PluginEntry> entryMap = new LinkedHashMap<String, PluginEntry>();
+    private final Map<String, CordovaPlugin> pluginMap = Collections.synchronizedMap(new LinkedHashMap<String, CordovaPlugin>());
+    private final Map<String, PluginEntry> entryMap = Collections.synchronizedMap(new LinkedHashMap<String, PluginEntry>());
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
@@ -90,13 +92,17 @@ public class PluginManager {
      * Create plugins objects that have onload set.
      */
     private void startupPlugins() {
-        for (PluginEntry entry : entryMap.values()) {
-            // Add a null entry to for each non-startup plugin to avoid ConcurrentModificationException
-            // When iterating plugins.
-            if (entry.onload) {
-                getPlugin(entry.service);
-            } else {
-                pluginMap.put(entry.service, null);
+        synchronized (entryMap) {
+            for (PluginEntry entry : entryMap.values()) {
+                // Add a null entry to for each non-startup plugin to avoid ConcurrentModificationException
+                // When iterating plugins.
+                if (entry.onload) {
+                    getPlugin(entry.service);
+                }
+                else {
+                    LOG.d(TAG, "startupPlugins: put - " + entry.service);
+                    pluginMap.put(entry.service, null);
+                }
             }
         }
     }
@@ -169,6 +175,7 @@ public class PluginManager {
                 ret = instantiatePlugin(pe.pluginClass);
             }
             ret.privateInitialize(service, ctx, app, app.getPreferences());
+            LOG.d(TAG, "getPlugin - put: " + service);
             pluginMap.put(service, ret);
         }
         return ret;
@@ -196,6 +203,7 @@ public class PluginManager {
         this.entryMap.put(entry.service, entry);
         if (entry.plugin != null) {
             entry.plugin.privateInitialize(entry.service, ctx, app, app.getPreferences());
+            LOG.d(TAG, "addService: put - " + entry.service);
             pluginMap.put(entry.service, entry.plugin);
         }
     }
@@ -206,9 +214,11 @@ public class PluginManager {
      * @param multitasking      Flag indicating if multitasking is turned on for app
      */
     public void onPause(boolean multitasking) {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onPause(multitasking);
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    plugin.onPause(multitasking);
+                }
             }
         }
     }
@@ -226,9 +236,11 @@ public class PluginManager {
      *
      */
     public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null && plugin.onReceivedHttpAuthRequest(app, handler, host, realm)) {
-                return true;
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null && plugin.onReceivedHttpAuthRequest(app, handler, host, realm)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -245,9 +257,11 @@ public class PluginManager {
      *
      */
     public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null && plugin.onReceivedClientCertRequest(app, request)) {
-                return true;
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null && plugin.onReceivedClientCertRequest(app, request)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -259,9 +273,11 @@ public class PluginManager {
      * @param multitasking      Flag indicating if multitasking is turned on for app
      */
     public void onResume(boolean multitasking) {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onResume(multitasking);
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    plugin.onResume(multitasking);
+                }
             }
         }
     }
@@ -270,9 +286,11 @@ public class PluginManager {
      * Called when the activity is becoming visible to the user.
      */
     public void onStart() {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onStart();
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    plugin.onStart();
+                }
             }
         }
     }
@@ -281,9 +299,11 @@ public class PluginManager {
      * Called when the activity is no longer visible to the user.
      */
     public void onStop() {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onStop();
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    plugin.onStop();
+                }
             }
         }
     }
@@ -292,9 +312,11 @@ public class PluginManager {
      * The final call you receive before your activity is destroyed.
      */
     public void onDestroy() {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onDestroy();
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    plugin.onDestroy();
+                }
             }
         }
     }
@@ -307,11 +329,14 @@ public class PluginManager {
      * @return                  Object to stop propagation or null
      */
     public Object postMessage(String id, Object data) {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                Object obj = plugin.onMessage(id, data);
-                if (obj != null) {
-                    return obj;
+        LOG.d(TAG, "postMessage: " + id);
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    Object obj = plugin.onMessage(id, data);
+                    if (obj != null) {
+                        return obj;
+                    }
                 }
             }
         }
@@ -322,9 +347,11 @@ public class PluginManager {
      * Called when the activity receives a new intent.
      */
     public void onNewIntent(Intent intent) {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onNewIntent(intent);
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    plugin.onNewIntent(intent);
+                }
             }
         }
     }
@@ -341,12 +368,14 @@ public class PluginManager {
      *                  false to block the resource.
      */
     public boolean shouldAllowRequest(String url) {
-        for (PluginEntry entry : this.entryMap.values()) {
-            CordovaPlugin plugin = pluginMap.get(entry.service);
-            if (plugin != null) {
-                Boolean result = plugin.shouldAllowRequest(url);
-                if (result != null) {
-                    return result;
+        synchronized (this.entryMap) {
+            for (PluginEntry entry : this.entryMap.values()) {
+                CordovaPlugin plugin = pluginMap.get(entry.service);
+                if (plugin != null) {
+                    Boolean result = plugin.shouldAllowRequest(url);
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
         }
@@ -379,12 +408,14 @@ public class PluginManager {
      *                  false to block the navigation.
      */
     public boolean shouldAllowNavigation(String url) {
-        for (PluginEntry entry : this.entryMap.values()) {
-            CordovaPlugin plugin = pluginMap.get(entry.service);
-            if (plugin != null) {
-                Boolean result = plugin.shouldAllowNavigation(url);
-                if (result != null) {
-                    return result;
+        synchronized (this.entryMap) {
+            for (PluginEntry entry : this.entryMap.values()) {
+                CordovaPlugin plugin = pluginMap.get(entry.service);
+                if (plugin != null) {
+                    Boolean result = plugin.shouldAllowNavigation(url);
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
         }
@@ -398,12 +429,14 @@ public class PluginManager {
      * Called when the webview is requesting the exec() bridge be enabled.
      */
     public boolean shouldAllowBridgeAccess(String url) {
-        for (PluginEntry entry : this.entryMap.values()) {
-            CordovaPlugin plugin = pluginMap.get(entry.service);
-            if (plugin != null) {
-                Boolean result = plugin.shouldAllowBridgeAccess(url);
-                if (result != null) {
-                    return result;
+        synchronized (this.entryMap) {
+            for (PluginEntry entry : this.entryMap.values()) {
+                CordovaPlugin plugin = pluginMap.get(entry.service);
+                if (plugin != null) {
+                    Boolean result = plugin.shouldAllowBridgeAccess(url);
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
         }
@@ -425,12 +458,14 @@ public class PluginManager {
      *                  false to block the intent.
      */
     public Boolean shouldOpenExternalUrl(String url) {
-        for (PluginEntry entry : this.entryMap.values()) {
-            CordovaPlugin plugin = pluginMap.get(entry.service);
-            if (plugin != null) {
-                Boolean result = plugin.shouldOpenExternalUrl(url);
-                if (result != null) {
-                    return result;
+        synchronized (this.entryMap) {
+            for (PluginEntry entry : this.entryMap.values()) {
+                CordovaPlugin plugin = pluginMap.get(entry.service);
+                if (plugin != null) {
+                    Boolean result = plugin.shouldOpenExternalUrl(url);
+                    if (result != null) {
+                        return result;
+                    }
                 }
             }
         }
@@ -446,32 +481,38 @@ public class PluginManager {
      * @return                  Return false to allow the URL to load, return true to prevent the URL from loading.
      */
     public boolean onOverrideUrlLoading(String url) {
-        for (PluginEntry entry : this.entryMap.values()) {
-            CordovaPlugin plugin = pluginMap.get(entry.service);
-            if (plugin != null && plugin.onOverrideUrlLoading(url)) {
-                return true;
+        synchronized (this.entryMap) {
+            for (PluginEntry entry : this.entryMap.values()) {
+                CordovaPlugin plugin = pluginMap.get(entry.service);
+                if (plugin != null && plugin.onOverrideUrlLoading(url)) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 
     /**
      * Called when the app navigates or refreshes.
      */
     public void onReset() {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onReset();
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    plugin.onReset();
+                }
             }
         }
     }
 
     Uri remapUri(Uri uri) {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                Uri ret = plugin.remapUri(uri);
-                if (ret != null) {
-                    return ret;
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    Uri ret = plugin.remapUri(uri);
+                    if (ret != null) {
+                        return ret;
+                    }
                 }
             }
         }
@@ -504,20 +545,24 @@ public class PluginManager {
      * @param newConfig		The new device configuration
      */
     public void onConfigurationChanged(Configuration newConfig) {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onConfigurationChanged(newConfig);
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    plugin.onConfigurationChanged(newConfig);
+                }
             }
         }
     }
 
     public Bundle onSaveInstanceState() {
         Bundle state = new Bundle();
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                Bundle pluginState = plugin.onSaveInstanceState();
-                if(pluginState != null) {
-                    state.putBundle(plugin.getServiceName(), pluginState);
+        synchronized (this.pluginMap) {
+            for (CordovaPlugin plugin : this.pluginMap.values()) {
+                if (plugin != null) {
+                    Bundle pluginState = plugin.onSaveInstanceState();
+                    if (pluginState != null) {
+                        state.putBundle(plugin.getServiceName(), pluginState);
+                    }
                 }
             }
         }
