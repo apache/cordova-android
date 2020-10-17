@@ -21,6 +21,7 @@ var os = require('os');
 var path = require('path');
 var common = require('cordova-common');
 var rewire = require('rewire');
+const EventEmitter = require('events');
 
 var AndroidProject = require('../../bin/templates/cordova/lib/AndroidProject');
 
@@ -45,10 +46,7 @@ describe('Api', () => {
 
             Api.__set__('Api.prototype.clean', async () => {});
 
-            // Prevent logging to avoid polluting the test reports
-            Api.__set__('selfEvents.emit', jasmine.createSpy());
-
-            api = new Api('android', FAKE_PROJECT_DIR);
+            api = new Api('android', FAKE_PROJECT_DIR, new EventEmitter());
             spyOn(api._builder, 'prepBuildFiles');
         });
 
