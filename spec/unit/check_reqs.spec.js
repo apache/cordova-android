@@ -18,7 +18,6 @@
 */
 
 var rewire = require('rewire');
-var check_reqs = rewire('../../bin/templates/cordova/lib/check_reqs');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
 var fs = require('fs-extra');
 var path = require('path');
@@ -29,6 +28,11 @@ var which = require('which');
 const DEFAULT_TARGET_API = 29;
 
 describe('check_reqs', function () {
+    let check_reqs;
+    beforeEach(() => {
+        check_reqs = rewire('../../bin/templates/cordova/lib/check_reqs');
+    });
+
     var original_env;
     beforeAll(function () {
         original_env = Object.assign({}, process.env);
