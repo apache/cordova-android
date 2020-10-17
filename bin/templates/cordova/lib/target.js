@@ -18,17 +18,97 @@
 */
 
 const path = require('path');
+const { inspect } = require('util');
 const Adb = require('./Adb');
 const build = require('./build');
+const emulator = require('./emulator');
 const AndroidManifest = require('./AndroidManifest');
+const { compareBy } = require('./utils');
 const { retryPromise } = require('./retry');
-const { events } = require('cordova-common');
+const { events, CordovaError } = require('cordova-common');
 
 const INSTALL_COMMAND_TIMEOUT = 5 * 60 * 1000;
 const NUM_INSTALL_RETRIES = 3;
 const EXEC_KILL_SIGNAL = 'SIGKILL';
 
-exports.install = async function ({ target, arch, isEmulator }, buildResults) {
+/**
+ * @typedef { 'device' | 'emulator' } TargetType
+ * @typedef { { id: string, type: TargetType } } Target
+ * @typedef { { id?: string, type?: TargetType } } TargetSpec
+ */
+
+/**
+ * Returns a list of available targets (connected devices & started emulators)
+ *
+ * @return {Promise<Target[]>}
+ */
+exports.list = async () => {
+    return (await Adb.devices())
+        .map(id => ({
+            id,
+            type: id.startsWith('emulator-') ? 'emulator' : 'device'
+        }));
+};
+
+/**
+ * @param {TargetSpec?} spec
+ * @return {Promise<Target>}
+ */
+async function resolveToOnlineTarget (spec = {}) {
+    const targetList = await exports.list();
+    if (targetList.length === 0) return null;
+
+    // Sort by type: devices first, then emulators.
+    targetList.sort(compareBy(t => t.type));
+
+    // Find first matching target for spec. {} matches any target.
+    return targetList.find(target =>
+        Object.keys(spec).every(k => spec[k] === target[k])
+    ) || null;
+}
+
+async function isEmulatorName (name) {
+    const emus = await emulator.list_images();
+    return emus.some(avd => avd.name === name);
+}
+
+/**
+ * @param {TargetSpec?} spec
+ * @return {Promise<Target>}
+ */
+async function resolveToOfflineEmulator (spec = {}) {
+    if (spec.type === 'device') return null;
+    if (spec.id && !(await isEmulatorName(spec.id))) return null;
+
+    // try to start an emulator with name spec.id
+    // if spec.id is undefined, picks best match regarding target API
+    const emulatorId = await emulator.start(spec.id);
+
+    return { id: emulatorId, type: 'emulator' };
+}
+
+/**
+ * @param {TargetSpec?} spec
+ * @return {Promise<Target & {arch: string}>}
+ */
+exports.resolve = async (spec = {}) => {
+    events.emit('verbose', `Trying to find target matching ${inspect(spec)}`);
+
+    const resolvedTarget =
+        (await resolveToOnlineTarget(spec)) ||
+        (await resolveToOfflineEmulator(spec));
+
+    if (!resolvedTarget) {
+        throw new CordovaError(`Could not find target matching ${inspect(spec)}`);
+    }
+
+    return {
+        ...resolvedTarget,
+        arch: await build.detectArchitecture(resolvedTarget.id)
+    };
+};
+
+exports.install = async function ({ id: target, arch, type }, buildResults) {
     const apk_path = build.findBestApkForArchitecture(buildResults, arch);
     const manifest = new AndroidManifest(path.join(__dirname, '../../app/src/main/AndroidManifest.xml'));
     const pkgName = manifest.getPackageId();
@@ -56,7 +136,7 @@ exports.install = async function ({ target, arch, isEmulator }, buildResults) {
         }
     }
 
-    if (isEmulator) {
+    if (type === 'emulator') {
         // Work around sporadic emulator hangs: http://issues.apache.org/jira/browse/CB-9119
         await retryPromise(NUM_INSTALL_RETRIES, () => doInstall({
             timeout: INSTALL_COMMAND_TIMEOUT,
