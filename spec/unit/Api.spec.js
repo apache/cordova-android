@@ -20,9 +20,9 @@
 var os = require('os');
 var path = require('path');
 var common = require('cordova-common');
-var rewire = require('rewire');
 const EventEmitter = require('events');
 
+var Api = require('../../bin/templates/cordova/Api');
 var AndroidProject = require('../../bin/templates/cordova/lib/AndroidProject');
 
 var PluginInfo = common.PluginInfo;
@@ -32,19 +32,15 @@ var FAKE_PROJECT_DIR = path.join(os.tmpdir(), 'plugin-test-project');
 
 describe('Api', () => {
     describe('addPlugin method', function () {
-        var api, Api;
+        var api;
 
         beforeEach(function () {
-            Api = rewire('../../bin/templates/cordova/Api');
-
             var pluginManager = jasmine.createSpyObj('pluginManager', ['addPlugin']);
             pluginManager.addPlugin.and.resolveTo();
             spyOn(common.PluginManager, 'get').and.returnValue(pluginManager);
 
             var projectSpy = jasmine.createSpyObj('AndroidProject', ['getPackageName', 'write', 'isClean']);
             spyOn(AndroidProject, 'getProjectFile').and.returnValue(projectSpy);
-
-            Api.__set__('Api.prototype.clean', async () => {});
 
             api = new Api('android', FAKE_PROJECT_DIR, new EventEmitter());
             spyOn(api._builder, 'prepBuildFiles');
