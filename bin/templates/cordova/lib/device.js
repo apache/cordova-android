@@ -25,6 +25,8 @@ var AndroidManifest = require('./AndroidManifest');
 var CordovaError = require('cordova-common').CordovaError;
 var events = require('cordova-common').events;
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 /**
  * Returns a promise for the list of the device ID's found
  * @param lookHarder When true, try restarting adb if no devices are found.
@@ -37,7 +39,13 @@ module.exports.list = function (lookHarder) {
             // sure that this scenario even happens on non-OSX machines.
             return execa('killall', ['adb']).then(function () {
                 events.emit('verbose', 'Restarting adb to see if more devices are detected.');
-                return Adb.devices();
+
+                // Explicitly run `adb start-server` and wait for it to setup.
+                // If we run `adb devices` right away it lists emulators as
+                // offline even if they are not.
+                return execa('adb', ['start-server'])
+                    .then(() => delay(100))
+                    .then(() => Adb.devices());
             }, function () {
                 // For non-killall OS's.
                 return list;
