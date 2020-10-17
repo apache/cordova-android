@@ -348,6 +348,8 @@ describe('check_reqs', function () {
                 }
             });
 
+            spyOn(events, 'emit');
+
             getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API - 1);
 
             var target = check_reqs.get_target();
