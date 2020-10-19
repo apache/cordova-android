@@ -18,11 +18,8 @@
 */
 
 var build = require('./build');
-var path = require('path');
 var Adb = require('./Adb');
-var AndroidManifest = require('./AndroidManifest');
 var CordovaError = require('cordova-common').CordovaError;
-var events = require('cordova-common').events;
 
 /**
  * Returns a promise for the list of the device ID's found
@@ -46,49 +43,6 @@ module.exports.resolveTarget = function (target) {
 
         return build.detectArchitecture(target).then(function (arch) {
             return { target: target, arch: arch, isEmulator: false };
-        });
-    });
-};
-
-/*
- * Installs a previously built application on the device
- * and launches it.
- * Returns a promise.
- */
-module.exports.install = function (target, buildResults) {
-    return Promise.resolve().then(function () {
-        if (target && typeof target === 'object') {
-            return target;
-        }
-        return module.exports.resolveTarget(target);
-    }).then(function (resolvedTarget) {
-        var apk_path = build.findBestApkForArchitecture(buildResults, resolvedTarget.arch);
-        var manifest = new AndroidManifest(path.join(__dirname, '../../app/src/main/AndroidManifest.xml'));
-        var pkgName = manifest.getPackageId();
-        var launchName = pkgName + '/.' + manifest.getActivity().getName();
-        events.emit('log', 'Using apk: ' + apk_path);
-        events.emit('log', 'Package name: ' + pkgName);
-
-        return Adb.install(resolvedTarget.target, apk_path, { replace: true }).catch(function (error) {
-            // CB-9557 CB-10157 only uninstall and reinstall app if the one that
-            // is already installed on device was signed w/different certificate
-            if (!/INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES/.test(error.toString())) { throw error; }
-
-            events.emit('warn', 'Uninstalling app from device and reinstalling it again because the ' +
-                'installed app already signed with different key');
-
-            // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
-            // or the app doesn't installed at all, so no error catching needed.
-            return Adb.uninstall(resolvedTarget.target, pkgName).then(function () {
-                return Adb.install(resolvedTarget.target, apk_path, { replace: true });
-            });
-        }).then(function () {
-            // unlock screen
-            return Adb.shell(resolvedTarget.target, 'input keyevent 82');
-        }).then(function () {
-            return Adb.start(resolvedTarget.target, launchName);
-        }).then(function () {
-            events.emit('log', 'LAUNCH SUCCESS');
         });
     });
 };
