@@ -35,10 +35,10 @@ const TEMPLATE =
 
 const fileSorter = compareByAll([
     // Sort arch specific builds after generic ones
-    filePath => /-x86|-arm/.test(filePath),
+    filePath => /-x86|-arm/.test(path.basename(filePath)),
 
     // Sort unsigned builds after signed ones
-    filePath => /-unsigned/.test(filePath),
+    filePath => /-unsigned/.test(path.basename(filePath)),
 
     // Sort by file modification time, latest first
     filePath => -fs.statSync(filePath).mtime.getTime(),
