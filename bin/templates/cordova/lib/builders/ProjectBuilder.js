@@ -73,7 +73,7 @@ function findOutputFilesHelper (dir, build_type, arch, extension) {
     files = files.filter(p => isPathArchSpecific(p) === archSpecific);
 
     if (archSpecific && files.length > 1 && arch) {
-        files = files.filter(p => path.basename(p).indexOf('-' + arch) !== -1);
+        files = files.filter(p => path.basename(p).includes('-' + arch));
     }
 
     return files;
