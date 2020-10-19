@@ -19,6 +19,7 @@
 
 var emulator = require('./emulator');
 const target = require('./target');
+const build = require('./build');
 var PackageType = require('./PackageType');
 const { CordovaError, events } = require('cordova-common');
 
@@ -61,7 +62,7 @@ module.exports.run = async function (runOptions) {
     const resolvedTarget = await target.resolve(spec);
     events.emit('log', `Deploying to ${formatResolvedTarget(resolvedTarget)}`);
 
-    const buildOptions = require('./build').parseBuildOptions(runOptions, null, this.root);
+    const buildOptions = build.parseBuildOptions(runOptions, null, this.root);
 
     // Android app bundles cannot be deployed directly to the device
     if (buildOptions.packageType === PackageType.BUNDLE) {
