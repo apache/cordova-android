@@ -20,7 +20,7 @@
 var emulator = require('./emulator');
 const target = require('./target');
 const build = require('./build');
-var PackageType = require('./PackageType');
+const PackageType = require('./PackageType');
 const { CordovaError, events } = require('cordova-common');
 
 /**
@@ -55,9 +55,7 @@ function formatResolvedTarget ({ id, type }) {
  *
  * @return  {Promise}
  */
-module.exports.run = async function (runOptions) {
-    runOptions = runOptions || {};
-
+module.exports.run = async function (runOptions = {}) {
     const spec = buildTargetSpec(runOptions);
     const resolvedTarget = await target.resolve(spec);
     events.emit('log', `Deploying to ${formatResolvedTarget(resolvedTarget)}`);
