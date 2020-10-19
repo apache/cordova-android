@@ -27,8 +27,9 @@ var events = require('cordova-common').events;
 /**
  * Returns a promise for the list of the device ID's found
  */
-module.exports.list = function () {
-    return Adb.devices();
+module.exports.list = async () => {
+    return (await Adb.devices())
+        .filter(id => !id.startsWith('emulator-'));
 };
 
 module.exports.resolveTarget = function (target) {

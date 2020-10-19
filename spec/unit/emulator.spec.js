@@ -205,13 +205,13 @@ describe('emulator', () => {
     });
 
     describe('list_started', () => {
-        it('should call adb devices with the emulators flag', () => {
+        it('should return a list of all online emulators', () => {
             const AdbSpy = jasmine.createSpyObj('Adb', ['devices']);
-            AdbSpy.devices.and.returnValue(Promise.resolve());
+            AdbSpy.devices.and.resolveTo(['emulator-5556', '123a76565509e124']);
             emu.__set__('Adb', AdbSpy);
 
-            return emu.list_started().then(() => {
-                expect(AdbSpy.devices).toHaveBeenCalledWith({ emulators: true });
+            return emu.list_started().then(emus => {
+                expect(emus).toEqual(['emulator-5556']);
             });
         });
     });

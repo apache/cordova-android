@@ -24,33 +24,27 @@ var CordovaError = require('cordova-common').CordovaError;
 
 var Adb = {};
 
-function isDevice (line) {
-    return line.match(/\w+\tdevice/) && !line.match(/emulator/);
-}
-
-function isEmulator (line) {
-    return line.match(/device/) && line.match(/emulator/);
-}
-
 /**
  * Lists available/connected devices and emulators
- *
- * @param   {Object}   opts            Various options
- * @param   {Boolean}  opts.emulators  Specifies whether this method returns
- *   emulators only
  *
  * @return  {Promise<String[]>}        list of available/connected
  *   devices/emulators
  */
-Adb.devices = function (opts) {
-    return execa('adb', ['devices'], { cwd: os.tmpdir() }).then(({ stdout: output }) => {
-        return output.split('\n').filter(function (line) {
-            // Filter out either real devices or emulators, depending on options
-            return (line && opts && opts.emulators) ? isEmulator(line) : isDevice(line);
-        }).map(function (line) {
-            return line.replace(/\tdevice/, '').replace('\r', '');
-        });
-    });
+Adb.devices = async function () {
+    const { stdout } = await execa('adb', ['devices'], { cwd: os.tmpdir() });
+
+    // Split into lines & drop first one (header)
+    const rawDeviceLines = stdout.trim().split(/\r?\n/).slice(1);
+
+    return rawDeviceLines
+        .map(line => line.split('\t'))
+
+        // We are only interested in fully booted devices & emulators. These
+        // have a state of `device`. For a list of all the other possible states
+        // see https://github.com/aosp-mirror/platform_system_core/blob/2abdb1eb5b83c8f39874644af576c869815f5c5b/adb/transport.cpp#L1129
+        .filter(([, state]) => state === 'device')
+
+        .map(([id]) => id);
 };
 
 Adb.install = function (target, packagePath, { replace = false, execOptions = {} } = {}) {
