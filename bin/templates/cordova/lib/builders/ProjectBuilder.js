@@ -36,7 +36,7 @@ const TEMPLATE =
 
 const isPathArchSpecific = p => /-x86|-arm/.test(path.basename(p));
 
-const fileSorter = compareByAll([
+const outputFileComparator = compareByAll([
     // Sort arch specific builds after generic ones
     isPathArchSpecific,
 
@@ -76,7 +76,7 @@ function findOutputFilesHelper (dir, build_type, arch, extension) {
         files = files.filter(p => path.basename(p).includes('-' + arch));
     }
 
-    return files;
+    return files.sort(outputFileComparator);
 }
 
 class ProjectBuilder {
@@ -330,11 +330,11 @@ class ProjectBuilder {
     }
 
     findOutputApks (build_type, arch) {
-        return findOutputFilesHelper(this.apkDir, build_type, arch, 'apk').sort(fileSorter);
+        return findOutputFilesHelper(this.apkDir, build_type, arch, 'apk');
     }
 
     findOutputBundles (build_type) {
-        return findOutputFilesHelper(this.aabDir, build_type, false, 'aab').sort(fileSorter);
+        return findOutputFilesHelper(this.aabDir, build_type, false, 'aab');
     }
 
     fetchBuildResults (build_type, arch) {
