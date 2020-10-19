@@ -51,17 +51,14 @@ const outputFileComparator = compareByAll([
 ]);
 
 /**
- * @param {String} dir
- * @param {String} build_type
- * @param {String} arch
- * @param {String} extension
+ * @param {'apk' | 'aab'} bundleType
+ * @param {'debug' | 'release'} buildType
+ * @param {{arch?: string}} options
  */
-function findOutputFilesHelper (dir, build_type, arch, extension) {
-    if (!extension) return [];
-
-    let files = glob.sync(`**/*.${extension}`, {
+function findOutputFiles (bundleType, buildType, { arch }) {
+    let files = glob.sync(`**/*.${bundleType}`, {
         absolute: true,
-        cwd: path.resolve(dir, build_type)
+        cwd: path.resolve(this[`${bundleType}Dir`], buildType)
     }).map(path.normalize);
 
     if (files.length === 0) return files;
@@ -330,11 +327,11 @@ class ProjectBuilder {
     }
 
     findOutputApks (build_type, arch) {
-        return findOutputFilesHelper(this.apkDir, build_type, arch, 'apk');
+        return findOutputFiles.call(this, 'apk', build_type, { arch });
     }
 
     findOutputBundles (build_type) {
-        return findOutputFilesHelper(this.aabDir, build_type, false, 'aab');
+        return findOutputFiles.call(this, 'aab', build_type);
     }
 
     fetchBuildResults (build_type, arch) {
