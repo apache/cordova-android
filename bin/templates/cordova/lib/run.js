@@ -54,30 +54,24 @@ function formatResolvedTarget ({ id, type }) {
  *
  * @return  {Promise}
  */
-module.exports.run = function (runOptions) {
+module.exports.run = async function (runOptions) {
     runOptions = runOptions || {};
 
-    var self = this;
     const spec = buildTargetSpec(runOptions);
+    const resolvedTarget = await target.resolve(spec);
+    events.emit('log', `Deploying to ${formatResolvedTarget(resolvedTarget)}`);
 
-    return target.resolve(spec).then(function (resolvedTarget) {
-        events.emit('log', `Deploying to ${formatResolvedTarget(resolvedTarget)}`);
+    const buildOptions = require('./build').parseBuildOptions(runOptions, null, this.root);
 
-        return new Promise((resolve) => {
-            const buildOptions = require('./build').parseBuildOptions(runOptions, null, self.root);
+    // Android app bundles cannot be deployed directly to the device
+    if (buildOptions.packageType === PackageType.BUNDLE) {
+        throw new CordovaError('Package type "bundle" is not supported during cordova run.');
+    }
 
-            // Android app bundles cannot be deployed directly to the device
-            if (buildOptions.packageType === PackageType.BUNDLE) {
-                throw new CordovaError('Package type "bundle" is not supported during cordova run.');
-            }
+    const buildResults = this._builder.fetchBuildResults(buildOptions.buildType, buildOptions.arch);
 
-            resolve(self._builder.fetchBuildResults(buildOptions.buildType, buildOptions.arch));
-        }).then(async function (buildResults) {
-            if (resolvedTarget.type === 'emulator') {
-                await emulator.wait_for_boot(resolvedTarget.id);
-            }
-
-            return target.install(resolvedTarget, buildResults);
-        });
-    });
+    if (resolvedTarget.type === 'emulator') {
+        await emulator.wait_for_boot(resolvedTarget.id);
+    }
+    return target.install(resolvedTarget, buildResults);
 };
