@@ -582,7 +582,6 @@ describe('emulator', () => {
         let AndroidManifestGetActivitySpy;
         let AdbSpy;
         let buildSpy;
-        let execaSpy;
         let target;
 
         beforeEach(() => {
@@ -597,14 +596,12 @@ describe('emulator', () => {
             AndroidManifestSpy = jasmine.createSpy('AndroidManifest').and.returnValue(AndroidManifestFns);
             emu.__set__('AndroidManifest', AndroidManifestSpy);
 
-            AdbSpy = jasmine.createSpyObj('Adb', ['shell', 'start', 'uninstall']);
+            AdbSpy = jasmine.createSpyObj('Adb', ['shell', 'start', 'install', 'uninstall']);
             AdbSpy.shell.and.returnValue(Promise.resolve());
             AdbSpy.start.and.returnValue(Promise.resolve());
+            AdbSpy.install.and.returnValue(Promise.resolve());
             AdbSpy.uninstall.and.returnValue(Promise.resolve());
             emu.__set__('Adb', AdbSpy);
-
-            execaSpy = jasmine.createSpy('execa').and.resolveTo({});
-            emu.__set__('execa', execaSpy);
         });
 
         it('should get the full target object if only id is specified', () => {
@@ -618,8 +615,7 @@ describe('emulator', () => {
 
         it('should install to the passed target', () => {
             return emu.install(target, {}).then(() => {
-                const execCmd = execaSpy.calls.argsFor(0)[1].join(' ');
-                expect(execCmd).toContain(`-s ${target.target} install`);
+                expect(AdbSpy.install.calls.argsFor(0)[0]).toBe(target.target);
             });
         });
 
@@ -636,26 +632,25 @@ describe('emulator', () => {
             return emu.install(target, buildResults).then(() => {
                 expect(buildSpy.findBestApkForArchitecture).toHaveBeenCalledWith(buildResults, target.arch);
 
-                const execCmd = execaSpy.calls.argsFor(0)[1].join(' ');
-                expect(execCmd).toContain(`install -r ${apkPath}`);
+                expect(AdbSpy.install.calls.argsFor(0)[1]).toBe(apkPath);
             });
         });
 
         it('should uninstall and reinstall app if failure is due to different certificates', () => {
-            execaSpy.and.returnValues(
-                ...['Failure: INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES', '']
-                    .map(out => Promise.resolve({ stdout: out }))
+            AdbSpy.install.and.returnValues(
+                Promise.reject('Failure: INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES'),
+                Promise.resolve()
             );
 
             return emu.install(target, {}).then(() => {
-                expect(execaSpy).toHaveBeenCalledTimes(2);
+                expect(AdbSpy.install).toHaveBeenCalledTimes(2);
                 expect(AdbSpy.uninstall).toHaveBeenCalled();
             });
         });
 
         it('should throw any error not caused by different certificates', () => {
             const errorMsg = 'Failure: Failed to install';
-            execaSpy.and.resolveTo({ stdout: errorMsg });
+            AdbSpy.install.and.rejectWith(new CordovaError(errorMsg));
 
             return emu.install(target, {}).then(
                 () => fail('Unexpectedly resolved'),

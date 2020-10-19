@@ -53,13 +53,17 @@ Adb.devices = function (opts) {
     });
 };
 
-Adb.install = function (target, packagePath, opts) {
+Adb.install = function (target, packagePath, { replace = false, execOptions = {} } = {}) {
     events.emit('verbose', 'Installing apk ' + packagePath + ' on target ' + target + '...');
+
     var args = ['-s', target, 'install'];
-    if (opts && opts.replace) args.push('-r');
-    return execa('adb', args.concat(packagePath), { cwd: os.tmpdir() }).then(({ stdout: output }) => {
-        // 'adb install' seems to always returns no error, even if installation fails
-        // so we catching output to detect installation failure
+    if (replace) args.push('-r');
+
+    const opts = { cwd: os.tmpdir(), ...execOptions };
+
+    return execa('adb', args.concat(packagePath), opts).then(({ stdout: output }) => {
+        // adb does not return an error code even if installation fails. Instead it puts a specific
+        // message to stdout, so we have to use RegExp matching to detect installation failure.
         if (output.match(/Failure/)) {
             if (output.match(/INSTALL_PARSE_FAILED_NO_CERTIFICATES/)) {
                 output += '\n\n' + 'Sign the build using \'-- --keystore\' or \'--buildConfig\'' +
@@ -69,7 +73,7 @@ Adb.install = function (target, packagePath, opts) {
                     '\nEither uninstall an app or increment the versionCode.';
             }
 
-            return Promise.reject(new CordovaError('Failed to install apk to device: ' + output));
+            throw new CordovaError('Failed to install apk to target: ' + output);
         }
     });
 };
