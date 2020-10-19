@@ -20,6 +20,7 @@
 var fs = require('fs-extra');
 var path = require('path');
 const execa = require('execa');
+const glob = require('fast-glob');
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 var check_reqs = require('../check_reqs');
@@ -48,36 +49,18 @@ const fileSorter = compareByAll([
 ]);
 
 /**
- * If the provided directory does not exist or extension is missing, return an empty array.
- * If the director exists, loop the directories and collect list of files matching the extension.
- *
- * @param {String} dir Directory to scan
- * @param {String} extension
- */
-function recursivelyFindFiles (dir, extension) {
-    if (!fs.existsSync(dir) || !extension) return [];
-
-    const files = fs.readdirSync(dir, { withFileTypes: true })
-        .map(entry => {
-            const item = path.resolve(dir, entry.name);
-
-            if (entry.isDirectory()) return recursivelyFindFiles(item, extension);
-            if (path.extname(entry.name) === `.${extension}`) return item;
-            return false;
-        });
-
-    return Array.prototype.concat(...files)
-        .filter(file => file !== false);
-}
-
-/**
  * @param {String} dir
  * @param {String} build_type
  * @param {String} arch
  * @param {String} extension
  */
 function findOutputFilesHelper (dir, build_type, arch, extension) {
-    let files = recursivelyFindFiles(path.resolve(dir, build_type), extension);
+    if (!extension) return [];
+
+    let files = glob.sync(`**/*.${extension}`, {
+        absolute: true,
+        cwd: path.resolve(dir, build_type)
+    }).map(path.normalize);
 
     if (files.length === 0) return files;
 
