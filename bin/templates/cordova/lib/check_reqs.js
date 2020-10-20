@@ -193,9 +193,7 @@ module.exports.check_java = function () {
                 }
 
                 if (jdkDir) {
-                    if (!javacPath) {
-                        process.env.PATH += path.delimiter + path.join(jdkDir, 'bin');
-                    }
+                    process.env.PATH += path.delimiter + path.join(jdkDir, 'bin');
                     process.env.JAVA_HOME = path.normalize(jdkDir);
                 }
             }
