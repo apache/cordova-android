@@ -22,6 +22,7 @@ var path = require('path');
 var fs = require('fs-extra');
 var os = require('os');
 var which = require('which');
+const glob = require('fast-glob');
 var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
 var PROJECT_ROOT = path.join(__dirname, '..', '..');
 const { CordovaError, ConfigParser, events } = require('cordova-common');
@@ -34,20 +35,6 @@ function forgivingWhichSync (cmd) {
     // On null, returns empty string to maintain backwards compatibility
     // realpathSync follows symlinks
     return whichResult === null ? '' : fs.realpathSync(whichResult);
-}
-
-function getJDKDirectory (directory) {
-    const p = path.resolve(directory, 'java');
-    if (fs.existsSync(p)) {
-        const directories = fs.readdirSync(p);
-        for (let i = 0; i < directories.length; i++) {
-            const dir = directories[i];
-            if (/^(jdk)+./.test(dir)) {
-                return path.resolve(directory, 'java', dir);
-            }
-        }
-    }
-    return null;
 }
 
 module.exports.isWindows = function () {
@@ -189,21 +176,27 @@ module.exports.check_java = function () {
                     }
                 }
             } else if (module.exports.isWindows()) {
-                const programFilesEnv = path.resolve(process.env.ProgramFiles);
-                const programFiles = 'C:\\Program Files\\';
-                const programFilesx86 = 'C:\\Program Files (x86)\\';
+                const dirs = [
+                    process.env.ProgramFiles,
+                    'C:/Program Files',
+                    'C:/Program Files (x86)'
+                ];
 
-                let firstJdkDir =
-                    getJDKDirectory(programFilesEnv) ||
-                    getJDKDirectory(programFiles) ||
-                    getJDKDirectory(programFilesx86);
+                let jdkDir;
+                for (const dir of dirs) {
+                    jdkDir = glob.sync('java/jdk*', {
+                        cwd: dir,
+                        absolute: true,
+                        onlyDirectories: true
+                    })[0];
+                    if (jdkDir) break;
+                }
 
-                if (firstJdkDir) {
-                    firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
+                if (jdkDir) {
                     if (!javacPath) {
-                        process.env.PATH += path.delimiter + path.join(firstJdkDir, 'bin');
+                        process.env.PATH += path.delimiter + path.join(jdkDir, 'bin');
                     }
-                    process.env.JAVA_HOME = firstJdkDir;
+                    process.env.JAVA_HOME = path.normalize(jdkDir);
                 }
             }
         }
