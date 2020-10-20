@@ -176,24 +176,18 @@ module.exports.check_java = function () {
                     }
                 }
             } else if (module.exports.isWindows()) {
-                const dirs = [
-                    process.env.ProgramFiles,
-                    process.env['ProgramFiles(x86)']
-                ];
+                const { env } = process;
+                const baseDirs = [env.ProgramFiles, env['ProgramFiles(x86)']];
+                const globOpts = { absolute: true, onlyDirectories: true };
+                const flatMap = (arr, f) => [].concat(...arr.map(f));
 
-                let jdkDir;
-                for (const dir of dirs) {
-                    jdkDir = glob.sync('java/jdk*', {
-                        cwd: dir,
-                        absolute: true,
-                        onlyDirectories: true
-                    })[0];
-                    if (jdkDir) break;
-                }
+                const jdkDir = flatMap(baseDirs, cwd =>
+                    glob.sync('java/jdk*', { cwd, ...globOpts })
+                )[0];
 
                 if (jdkDir) {
-                    process.env.PATH += path.delimiter + path.join(jdkDir, 'bin');
-                    process.env.JAVA_HOME = path.normalize(jdkDir);
+                    env.PATH += path.delimiter + path.join(jdkDir, 'bin');
+                    env.JAVA_HOME = path.normalize(jdkDir);
                 }
             }
         }
