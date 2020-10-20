@@ -56,10 +56,6 @@ function formatResolvedTarget ({ id, type }) {
  * @return  {Promise}
  */
 module.exports.run = async function (runOptions = {}) {
-    const spec = buildTargetSpec(runOptions);
-    const resolvedTarget = await target.resolve(spec);
-    events.emit('log', `Deploying to ${formatResolvedTarget(resolvedTarget)}`);
-
     const { packageType, buildType } = build.parseBuildOptions(runOptions, null, this.root);
 
     // Android app bundles cannot be deployed directly to the device
@@ -68,6 +64,13 @@ module.exports.run = async function (runOptions = {}) {
     }
 
     const buildResults = this._builder.fetchBuildResults(buildType);
+    if (buildResults.apkPaths.length === 0) {
+        throw new CordovaError('Could not find any APKs to deploy');
+    }
+
+    const targetSpec = buildTargetSpec(runOptions);
+    const resolvedTarget = await target.resolve(targetSpec, buildResults);
+    events.emit('log', `Deploying to ${formatResolvedTarget(resolvedTarget)}`);
 
     if (resolvedTarget.type === 'emulator') {
         await emulator.wait_for_boot(resolvedTarget.id);

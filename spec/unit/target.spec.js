@@ -117,46 +117,52 @@ describe('target', () => {
 
     describe('resolveToOfflineEmulator', () => {
         const emuId = 'emulator-5554';
-        let resolveToOfflineEmulator, emulatorSpyObj;
+        let resolveToOfflineEmulator, emulatorSpyObj, getTargetSdkFromApkSpy, buildResults;
 
         beforeEach(() => {
             resolveToOfflineEmulator = target.__get__('resolveToOfflineEmulator');
+
+            buildResults = { apkPaths: ['fake.apk'] };
 
             emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['start', 'best_image']);
             emulatorSpyObj.start.and.resolveTo(emuId);
             emulatorSpyObj.best_image.and.resolveTo();
 
+            getTargetSdkFromApkSpy = jasmine.createSpy('getTargetSdkFromApk').and.resolveTo(99);
+
             target.__set__({
                 emulator: emulatorSpyObj,
-                isEmulatorName: name => name.startsWith('emu')
+                isEmulatorName: name => name.startsWith('emu'),
+                getTargetSdkFromApk: getTargetSdkFromApkSpy
             });
         });
 
         it('should start an emulator and run on that if none is running', () => {
             emulatorSpyObj.best_image.and.resolveTo({ name: 'best-avd' });
 
-            return resolveToOfflineEmulator().then(result => {
+            return resolveToOfflineEmulator({ type: 'emulator' }, buildResults).then(result => {
                 expect(result).toEqual({ id: emuId, type: 'emulator' });
+                expect(getTargetSdkFromApkSpy).toHaveBeenCalledWith(buildResults.apkPaths[0]);
                 expect(emulatorSpyObj.start).toHaveBeenCalledWith('best-avd');
             });
         });
 
         it('should start named emulator and then run on it if it is specified', () => {
-            return resolveToOfflineEmulator({ id: 'emu3' }).then(result => {
+            return resolveToOfflineEmulator({ id: 'emu3' }, buildResults).then(result => {
                 expect(result).toEqual({ id: emuId, type: 'emulator' });
                 expect(emulatorSpyObj.start).toHaveBeenCalledWith('emu3');
             });
         });
 
         it('should return null if given ID is not an avd name', () => {
-            return resolveToOfflineEmulator({ id: 'dev1' }).then(result => {
+            return resolveToOfflineEmulator({ id: 'dev1' }, buildResults).then(result => {
                 expect(result).toBe(null);
                 expect(emulatorSpyObj.start).not.toHaveBeenCalled();
             });
         });
 
         it('should return null if given type is not emulator', () => {
-            return resolveToOfflineEmulator({ type: 'device' }).then(result => {
+            return resolveToOfflineEmulator({ type: 'device' }, buildResults).then(result => {
                 expect(result).toBe(null);
                 expect(emulatorSpyObj.start).not.toHaveBeenCalled();
             });
@@ -164,7 +170,7 @@ describe('target', () => {
     });
 
     describe('resolve', () => {
-        let resolveToOnlineTarget, resolveToOfflineEmulator;
+        let resolveToOnlineTarget, resolveToOfflineEmulator, buildResults;
 
         beforeEach(() => {
             resolveToOnlineTarget = jasmine.createSpy('resolveToOnlineTarget')
@@ -172,6 +178,8 @@ describe('target', () => {
 
             resolveToOfflineEmulator = jasmine.createSpy('resolveToOfflineEmulator')
                 .and.resolveTo(null);
+
+            buildResults = { apkPaths: ['fake.apk'] };
 
             target.__set__({
                 resolveToOnlineTarget,
@@ -184,7 +192,7 @@ describe('target', () => {
             const spec = { type: 'device' };
             resolveToOnlineTarget.and.resolveTo({ id: 'dev1', type: 'device' });
 
-            return target.resolve(spec).then(result => {
+            return target.resolve(spec, buildResults).then(result => {
                 expect(result.id).toBe('dev1');
                 expect(resolveToOnlineTarget).toHaveBeenCalledWith(spec);
                 expect(resolveToOfflineEmulator).not.toHaveBeenCalled();
@@ -195,10 +203,10 @@ describe('target', () => {
             const spec = { type: 'emulator' };
             resolveToOfflineEmulator.and.resolveTo({ id: 'emu1', type: 'emulator' });
 
-            return target.resolve(spec).then(result => {
+            return target.resolve(spec, buildResults).then(result => {
                 expect(result.id).toBe('emu1');
                 expect(resolveToOnlineTarget).toHaveBeenCalledWith(spec);
-                expect(resolveToOfflineEmulator).toHaveBeenCalledWith(spec);
+                expect(resolveToOfflineEmulator).toHaveBeenCalledWith(spec, buildResults);
             });
         });
 
@@ -206,7 +214,7 @@ describe('target', () => {
             const spec = { type: 'device' };
             resolveToOnlineTarget.and.resolveTo({ id: 'dev1', type: 'device' });
 
-            return target.resolve(spec).then(result => {
+            return target.resolve(spec, buildResults).then(result => {
                 expect(result.arch).toBe('dev1-arch');
             });
         });

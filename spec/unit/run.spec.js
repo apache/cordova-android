@@ -59,17 +59,21 @@ describe('run', () => {
                 emulator: emulatorSpyObj
             });
 
-            // run needs `this` to behave like an Api instance
-            run.run = run.run.bind({
-                _builder: builders.getBuilder('FakeRootPath')
+            const builder = builders.getBuilder('FakeRootPath');
+            spyOn(builder, 'fetchBuildResults').and.returnValue({
+                buildType: 'debug',
+                apkPaths: ['fake.apk']
             });
+
+            // run needs `this` to behave like an Api instance
+            run.run = run.run.bind({ _builder: builder });
         });
 
         it('should install on target after build', () => {
             return run.run().then(() => {
                 expect(targetSpyObj.install).toHaveBeenCalledWith(
                     resolvedTarget,
-                    { apkPaths: [], buildType: 'debug' }
+                    { apkPaths: ['fake.apk'], buildType: 'debug' }
                 );
             });
         });
