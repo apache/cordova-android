@@ -19,6 +19,7 @@
 
 var rewire = require('rewire');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
+var os = require('os');
 var fs = require('fs-extra');
 var path = require('path');
 var events = require('cordova-common').events;
@@ -45,6 +46,38 @@ describe('check_reqs', function () {
         });
         Object.assign(process.env, original_env);
     });
+
+    describe('check_java', () => {
+        let tmpDir;
+        beforeEach(() => {
+            const tmpDirTemplate = path.join(os.tmpdir(), 'cordova-android-test-');
+            tmpDir = fs.realpathSync(fs.mkdtempSync(tmpDirTemplate));
+        });
+        afterEach(() => {
+            fs.removeSync(tmpDir);
+        });
+
+        it('detects JDK in default location on windows', async () => {
+            check_reqs.isWindows = () => true;
+            check_reqs.__set__({
+                execa: async () => ({}),
+                forgivingWhichSync: () => ''
+            });
+
+            delete process.env.JAVA_HOME;
+            process.env.ProgramFiles = tmpDir;
+
+            const jdkDir = path.join(tmpDir, 'java/jdk1.6.0_02');
+            fs.ensureDirSync(jdkDir);
+
+            await check_reqs.check_java();
+
+            expect(process.env.JAVA_HOME).toBe(jdkDir);
+            expect(process.env.PATH.split(path.delimiter))
+                .toContain(path.join(jdkDir, 'bin'));
+        });
+    });
+
     describe('check_android', function () {
         describe('find and set ANDROID_HOME when ANDROID_HOME and ANDROID_SDK_ROOT is not set', function () {
             beforeEach(function () {
