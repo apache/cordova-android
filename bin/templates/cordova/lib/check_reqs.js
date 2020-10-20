@@ -178,8 +178,7 @@ module.exports.check_java = function () {
             } else if (module.exports.isWindows()) {
                 const dirs = [
                     process.env.ProgramFiles,
-                    'C:/Program Files',
-                    'C:/Program Files (x86)'
+                    process.env['ProgramFiles(x86)']
                 ];
 
                 let jdkDir;
