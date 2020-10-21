@@ -67,7 +67,7 @@ module.exports.run = async function (runOptions = {}) {
         throw new CordovaError('Package type "bundle" is not supported during cordova run.');
     }
 
-    const buildResults = this._builder.fetchBuildResults(buildOptions.buildType, buildOptions.arch);
+    const buildResults = this._builder.fetchBuildResults(buildOptions.buildType);
 
     if (resolvedTarget.type === 'emulator') {
         await emulator.wait_for_boot(resolvedTarget.id);
