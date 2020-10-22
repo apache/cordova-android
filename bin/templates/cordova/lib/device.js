@@ -17,7 +17,6 @@
        under the License.
 */
 
-const execa = require('execa');
 var build = require('./build');
 var path = require('path');
 var Adb = require('./Adb');
@@ -27,28 +26,13 @@ var events = require('cordova-common').events;
 
 /**
  * Returns a promise for the list of the device ID's found
- * @param lookHarder When true, try restarting adb if no devices are found.
  */
-module.exports.list = function (lookHarder) {
-    return Adb.devices().then(function (list) {
-        if (list.length === 0 && lookHarder) {
-            // adb kill-server doesn't seem to do the trick.
-            // Could probably find a x-platform version of killall, but I'm not actually
-            // sure that this scenario even happens on non-OSX machines.
-            return execa('killall', ['adb']).then(function () {
-                events.emit('verbose', 'Restarting adb to see if more devices are detected.');
-                return Adb.devices();
-            }, function () {
-                // For non-killall OS's.
-                return list;
-            });
-        }
-        return list;
-    });
+module.exports.list = function () {
+    return Adb.devices();
 };
 
 module.exports.resolveTarget = function (target) {
-    return this.list(true).then(function (device_list) {
+    return this.list().then(function (device_list) {
         if (!device_list || !device_list.length) {
             return Promise.reject(new CordovaError('Failed to deploy to device, no devices found.'));
         }
