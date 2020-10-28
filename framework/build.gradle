@@ -20,6 +20,13 @@ ext {
     apply from: 'cordova.gradle'
     cdvCompileSdkVersion = privateHelpers.getProjectTarget()
     cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+    if (project.hasProperty('cdvMinSdkVersion')) {
+        cdvMinSdkVersion = Integer.parseInt('' + cdvMinSdkVersion)
+        println "[Cordova] CdvMinSdkVersion is overriden, try it at your own risk."
+    } else {
+        cdvMinSdkVersion = 22; // current Cordova's default
+        println "[Cordova] CdvMinSdkVersion is current Cordova's default."
+    }
 }
 
 buildscript {
@@ -60,9 +67,9 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    // For the Android Cordova Lib, we will hardcode the minSdkVersion and not allow changes.
+    // For the Android Cordova Lib, we allow changing the minSdkVersion, but it is at the users own risk
     defaultConfig {
-        minSdkVersion 22
+        minSdkVersion cdvMinSdkVersion
     }
 
     sourceSets {
