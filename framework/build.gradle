@@ -25,7 +25,6 @@ ext {
         println "[Cordova] CdvMinSdkVersion is overriden, try it at your own risk."
     } else {
         cdvMinSdkVersion = 22; // current Cordova's default
-        println "[Cordova] CdvMinSdkVersion is current Cordova's default."
     }
 }
 
