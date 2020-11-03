@@ -22,7 +22,7 @@ ext {
     cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
     if (project.hasProperty('cdvMinSdkVersion')) {
         cdvMinSdkVersion = Integer.parseInt('' + cdvMinSdkVersion)
-        println "[Cordova] CdvMinSdkVersion is overriden, try it at your own risk."
+        println "[Cordova] cdvMinSdkVersion is overridden, try it at your own risk."
     } else {
         cdvMinSdkVersion = 22; // current Cordova's default
     }
