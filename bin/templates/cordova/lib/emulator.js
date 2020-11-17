@@ -30,7 +30,6 @@ var CordovaError = require('cordova-common').CordovaError;
 var android_sdk = require('./android_sdk');
 var check_reqs = require('./check_reqs');
 var which = require('which');
-var os = require('os');
 
 // constants
 const ONE_SECOND = 1000; // in milliseconds
@@ -406,11 +405,6 @@ module.exports.install = function (givenTarget, buildResults) {
         // or the app doesn't installed at all, so no error catching needed.
         return Promise.resolve().then(function () {
             var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
-            var execOptions = {
-                cwd: os.tmpdir(),
-                timeout: INSTALL_COMMAND_TIMEOUT, // in milliseconds
-                killSignal: EXEC_KILL_SIGNAL
-            };
 
             events.emit('log', 'Using apk: ' + apk_path);
             events.emit('log', 'Package name: ' + pkgName);
@@ -419,29 +413,18 @@ module.exports.install = function (givenTarget, buildResults) {
             // A special function to call adb install in specific environment w/ specific options.
             // Introduced as a part of fix for http://issues.apache.org/jira/browse/CB-9119
             // to workaround sporadic emulator hangs
-            function adbInstallWithOptions (target, apk, opts) {
-                events.emit('verbose', 'Installing apk ' + apk + ' on ' + target + '...');
-
-                const args = ['-s', target, 'install', '-r', apk];
-                return execa('adb', args, opts).then(({ stdout }) => {
-                    // adb does not return an error code even if installation fails. Instead it puts a specific
-                    // message to stdout, so we have to use RegExp matching to detect installation failure.
-                    if (/Failure/.test(stdout)) {
-                        if (stdout.match(/INSTALL_PARSE_FAILED_NO_CERTIFICATES/)) {
-                            stdout += 'Sign the build using \'-- --keystore\' or \'--buildConfig\'' +
-                                ' or sign and deploy the unsigned apk manually using Android tools.';
-                        } else if (stdout.match(/INSTALL_FAILED_VERSION_DOWNGRADE/)) {
-                            stdout += 'You\'re trying to install apk with a lower versionCode that is already installed.' +
-                                '\nEither uninstall an app or increment the versionCode.';
-                        }
-
-                        throw new CordovaError('Failed to install apk to emulator: ' + stdout);
+            function adbInstallWithOptions (...args) {
+                return Adb.install(...args, {
+                    replace: true,
+                    execOptions: {
+                        timeout: INSTALL_COMMAND_TIMEOUT, // in milliseconds
+                        killSignal: EXEC_KILL_SIGNAL
                     }
                 });
             }
 
             function installPromise () {
-                return adbInstallWithOptions(target.target, apk_path, execOptions).catch(function (error) {
+                return adbInstallWithOptions(target.target, apk_path).catch(function (error) {
                     // CB-9557 CB-10157 only uninstall and reinstall app if the one that
                     // is already installed on device was signed w/different certificate
                     if (!/INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES/.test(error.toString())) { throw error; }
@@ -452,7 +435,7 @@ module.exports.install = function (givenTarget, buildResults) {
                     // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
                     // or the app doesn't installed at all, so no error catching needed.
                     return Adb.uninstall(target.target, pkgName).then(function () {
-                        return adbInstallWithOptions(target.target, apk_path, execOptions);
+                        return adbInstallWithOptions(target.target, apk_path);
                     });
                 });
             }
