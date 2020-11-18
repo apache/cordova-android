@@ -20,6 +20,12 @@ ext {
     apply from: 'cordova.gradle'
     cdvCompileSdkVersion = privateHelpers.getProjectTarget()
     cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
+    if (project.hasProperty('cdvMinSdkVersion') && cdvMinSdkVersion.isInteger()) {
+        cdvMinSdkVersion = cdvMinSdkVersion as int
+        println '[Cordova] cdvMinSdkVersion is overridden, try it at your own risk.'
+    } else {
+        cdvMinSdkVersion = 22; // current Cordova's default
+    }
 }
 
 buildscript {
@@ -60,9 +66,9 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    // For the Android Cordova Lib, we will hardcode the minSdkVersion and not allow changes.
+    // For the Android Cordova Lib, we allow changing the minSdkVersion, but it is at the users own risk
     defaultConfig {
-        minSdkVersion 22
+        minSdkVersion cdvMinSdkVersion
     }
 
     sourceSets {
@@ -141,7 +147,7 @@ bintray {
         labels = ['android', 'cordova', 'phonegap']
         version {
             name = '9.1.0-dev'
-            released  = new Date()
+            released = new Date()
             vcsTag = '9.1.0-dev'
         }
     }
