@@ -33,11 +33,11 @@ describe('device', () => {
     });
 
     describe('list', () => {
-        it('should return the list from adb devices', () => {
-            AdbSpy.devices.and.returnValue(Promise.resolve(DEVICE_LIST));
+        it('should return a list of all connected devices', () => {
+            AdbSpy.devices.and.resolveTo(['emulator-5556', '123a76565509e124']);
 
             return device.list().then(list => {
-                expect(list).toEqual(DEVICE_LIST);
+                expect(list).toEqual(['123a76565509e124']);
             });
         });
     });

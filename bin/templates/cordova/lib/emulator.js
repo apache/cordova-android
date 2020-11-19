@@ -214,9 +214,9 @@ module.exports.best_image = function () {
     });
 };
 
-// Returns a promise.
-module.exports.list_started = function () {
-    return Adb.devices({ emulators: true });
+exports.list_started = async () => {
+    return (await Adb.devices())
+        .filter(id => id.startsWith('emulator-'));
 };
 
 /*
