@@ -19,6 +19,7 @@
        under the License.
 */
 
+const { install } = require('./target');
 var device = require('./device');
 var args = process.argv;
 
@@ -26,17 +27,13 @@ if (args.length > 2) {
     var install_target;
     if (args[2].substring(0, 9) === '--target=') {
         install_target = args[2].substring(9, args[2].length);
-        device.install(install_target).catch(function (err) {
-            console.error('ERROR: ' + err);
-            process.exit(2);
-        });
     } else {
         console.error('ERROR : argument \'' + args[2] + '\' not recognized.');
         process.exit(2);
     }
-} else {
-    device.install().catch(function (err) {
-        console.error('ERROR: ' + err);
-        process.exit(2);
-    });
 }
+
+device.resolveTarget(install_target).then(install).catch(err => {
+    console.error('ERROR: ' + err);
+    process.exit(2);
+});

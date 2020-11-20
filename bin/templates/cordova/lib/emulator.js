@@ -20,11 +20,9 @@
 const execa = require('execa');
 const fs = require('fs-extra');
 var android_versions = require('android-versions');
-var retry = require('./retry');
 var build = require('./build');
 var path = require('path');
 var Adb = require('./Adb');
-var AndroidManifest = require('./AndroidManifest');
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 var android_sdk = require('./android_sdk');
@@ -33,11 +31,7 @@ var which = require('which');
 
 // constants
 const ONE_SECOND = 1000; // in milliseconds
-const ONE_MINUTE = 60 * ONE_SECOND; // in milliseconds
-const INSTALL_COMMAND_TIMEOUT = 5 * ONE_MINUTE; // in milliseconds
-const NUM_INSTALL_RETRIES = 3;
 const CHECK_BOOTED_INTERVAL = 3 * ONE_SECOND; // in milliseconds
-const EXEC_KILL_SIGNAL = 'SIGKILL';
 
 function forgivingWhichSync (cmd) {
     const whichResult = which.sync(cmd, { nothrow: true });
@@ -371,87 +365,5 @@ module.exports.resolveTarget = function (target) {
         return build.detectArchitecture(target).then(function (arch) {
             return { target: target, arch: arch, isEmulator: true };
         });
-    });
-};
-
-/*
- * Installs a previously built application on the emulator and launches it.
- * If no target is specified, then it picks one.
- * If no started emulators are found, error out.
- * Returns a promise.
- */
-module.exports.install = function (givenTarget, buildResults) {
-    var target;
-    // We need to find the proper path to the Android Manifest
-    const manifestPath = path.join(__dirname, '..', '..', 'app', 'src', 'main', 'AndroidManifest.xml');
-    const manifest = new AndroidManifest(manifestPath);
-    const pkgName = manifest.getPackageId();
-
-    // resolve the target emulator
-    return Promise.resolve().then(function () {
-        if (givenTarget && typeof givenTarget === 'object') {
-            return givenTarget;
-        } else {
-            return module.exports.resolveTarget(givenTarget);
-        }
-
-    // set the resolved target
-    }).then(function (resolvedTarget) {
-        target = resolvedTarget;
-
-    // install the app
-    }).then(function () {
-        // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
-        // or the app doesn't installed at all, so no error catching needed.
-        return Promise.resolve().then(function () {
-            var apk_path = build.findBestApkForArchitecture(buildResults, target.arch);
-
-            events.emit('log', 'Using apk: ' + apk_path);
-            events.emit('log', 'Package name: ' + pkgName);
-            events.emit('verbose', 'Installing app on emulator...');
-
-            // A special function to call adb install in specific environment w/ specific options.
-            // Introduced as a part of fix for http://issues.apache.org/jira/browse/CB-9119
-            // to workaround sporadic emulator hangs
-            function adbInstallWithOptions (...args) {
-                return Adb.install(...args, {
-                    replace: true,
-                    execOptions: {
-                        timeout: INSTALL_COMMAND_TIMEOUT, // in milliseconds
-                        killSignal: EXEC_KILL_SIGNAL
-                    }
-                });
-            }
-
-            function installPromise () {
-                return adbInstallWithOptions(target.target, apk_path).catch(function (error) {
-                    // CB-9557 CB-10157 only uninstall and reinstall app if the one that
-                    // is already installed on device was signed w/different certificate
-                    if (!/INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES/.test(error.toString())) { throw error; }
-
-                    events.emit('warn', 'Uninstalling app from device and reinstalling it because the ' +
-                        'currently installed app was signed with different key');
-
-                    // This promise is always resolved, even if 'adb uninstall' fails to uninstall app
-                    // or the app doesn't installed at all, so no error catching needed.
-                    return Adb.uninstall(target.target, pkgName).then(function () {
-                        return adbInstallWithOptions(target.target, apk_path);
-                    });
-                });
-            }
-
-            return retry.retryPromise(NUM_INSTALL_RETRIES, installPromise).then(function (output) {
-                events.emit('log', 'INSTALL SUCCESS');
-            });
-        });
-    // unlock screen
-    }).then(function () {
-        events.emit('verbose', 'Unlocking screen...');
-        return Adb.shell(target.target, 'input keyevent 82');
-    }).then(function () {
-        Adb.start(target.target, pkgName + '/.' + manifest.getActivity().getName());
-    // report success or failure
-    }).then(function (output) {
-        events.emit('log', 'LAUNCH SUCCESS');
     });
 };
