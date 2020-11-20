@@ -384,7 +384,7 @@ module.exports.run = function () {
     return Promise.all([this.check_java(), this.check_android()]).then(function (values) {
         console.log('Using Android SDK: ' + process.env.ANDROID_SDK_ROOT);
 
-        if (!String(values[0]).startsWith('1.8.')) {
+        if (!(String(values[0]).startsWith('1.8.') || String(values[0]).startsWith('11.'))) {
             throw new CordovaError(
                 'Requirements check failed for JDK 8 (\'1.8.*\')! Detected version: ' + values[0] + '\n' +
                 'Check your ANDROID_SDK_ROOT / JAVA_HOME / PATH environment variables.'
