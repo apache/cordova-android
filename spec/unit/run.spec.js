@@ -45,18 +45,23 @@ describe('run', () => {
     describe('run method', () => {
         let deviceSpyObj;
         let emulatorSpyObj;
+        let targetSpyObj;
         let eventsSpyObj;
         let getInstallTargetSpy;
 
         beforeEach(() => {
-            deviceSpyObj = jasmine.createSpyObj('deviceSpy', ['install', 'list', 'resolveTarget']);
-            emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['install', 'list_images', 'list_started', 'resolveTarget', 'start', 'wait_for_boot']);
+            deviceSpyObj = jasmine.createSpyObj('deviceSpy', ['list', 'resolveTarget']);
+            emulatorSpyObj = jasmine.createSpyObj('emulatorSpy', ['list_images', 'list_started', 'resolveTarget', 'start', 'wait_for_boot']);
             eventsSpyObj = jasmine.createSpyObj('eventsSpy', ['emit']);
             getInstallTargetSpy = jasmine.createSpy('getInstallTargetSpy');
+
+            targetSpyObj = jasmine.createSpyObj('target', ['install']);
+            targetSpyObj.install.and.resolveTo();
 
             run.__set__({
                 device: deviceSpyObj,
                 emulator: emulatorSpyObj,
+                target: targetSpyObj,
                 events: eventsSpyObj,
                 getInstallTarget: getInstallTargetSpy
             });
@@ -187,7 +192,7 @@ describe('run', () => {
             deviceSpyObj.resolveTarget.and.returnValue(deviceTarget);
 
             return run.run().then(() => {
-                expect(deviceSpyObj.install).toHaveBeenCalledWith(deviceTarget, { apkPaths: [], buildType: 'debug' });
+                expect(targetSpyObj.install).toHaveBeenCalledWith(deviceTarget, { apkPaths: [], buildType: 'debug' });
             });
         });
 
@@ -199,7 +204,7 @@ describe('run', () => {
             emulatorSpyObj.wait_for_boot.and.returnValue(Promise.resolve());
 
             return run.run().then(() => {
-                expect(emulatorSpyObj.install).toHaveBeenCalledWith(emulatorTarget, { apkPaths: [], buildType: 'debug' });
+                expect(targetSpyObj.install).toHaveBeenCalledWith(emulatorTarget, { apkPaths: [], buildType: 'debug' });
             });
         });
 
