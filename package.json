@@ -33,6 +33,7 @@
     "is-path-inside": "^3.0.2",
     "nopt": "^4.0.3",
     "properties-parser": "^0.3.1",
+    "semver": "^7.3.4",
     "which": "^2.0.2"
   },
   "devDependencies": {

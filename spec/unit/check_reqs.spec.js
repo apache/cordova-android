@@ -19,11 +19,11 @@
 
 var rewire = require('rewire');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
-var os = require('os');
 var fs = require('fs-extra');
 var path = require('path');
 var events = require('cordova-common').events;
 var which = require('which');
+const { CordovaError } = require('cordova-common');
 
 // This should match /bin/templates/project/build.gradle
 const DEFAULT_TARGET_API = 29;
@@ -48,33 +48,13 @@ describe('check_reqs', function () {
     });
 
     describe('check_java', () => {
-        let tmpDir;
-        beforeEach(() => {
-            const tmpDirTemplate = path.join(os.tmpdir(), 'cordova-android-test-');
-            tmpDir = fs.realpathSync(fs.mkdtempSync(tmpDirTemplate));
-        });
-        afterEach(() => {
-            fs.removeSync(tmpDir);
-        });
-
-        it('detects JDK in default location on windows', async () => {
-            check_reqs.isWindows = () => true;
+        it('detects if unexpected JDK version is installed', async () => {
             check_reqs.__set__({
-                execa: async () => ({}),
-                forgivingWhichSync: () => ''
+                EXPECTED_JAVA_VERSION: '9999.9999.9999',
+                java: { getVersion: async () => ({ version: '1.8.0' }) }
             });
 
-            delete process.env.JAVA_HOME;
-            process.env.ProgramFiles = tmpDir;
-
-            const jdkDir = path.join(tmpDir, 'java/jdk1.6.0_02');
-            fs.ensureDirSync(jdkDir);
-
-            await check_reqs.check_java();
-
-            expect(process.env.JAVA_HOME).toBe(jdkDir);
-            expect(process.env.PATH.split(path.delimiter))
-                .toContain(path.join(jdkDir, 'bin'));
+            await expectAsync(check_reqs.check_java()).toBeRejectedWithError(CordovaError, /Requirements check failed for JDK 9999.9999.9999! Detected version: 1.8.0/);
         });
     });
 

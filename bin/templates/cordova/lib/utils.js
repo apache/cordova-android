@@ -24,6 +24,8 @@
 // TODO: Perhaps this should live in cordova-common?
 
 const fs = require('fs-extra');
+const which = require('which');
+const os = require('os');
 
 /**
  * Reads, searches, and replaces the found occurences with replacementString and then writes the file back out.
@@ -53,3 +55,14 @@ exports.compareByAll = fns => {
         return 0;
     };
 };
+
+exports.forgivingWhichSync = (cmd) => {
+    const whichResult = which.sync(cmd, { nothrow: true });
+
+    // On null, returns empty string to maintain backwards compatibility
+    // realpathSync follows symlinks
+    return whichResult === null ? '' : fs.realpathSync(whichResult);
+};
+
+exports.isWindows = () => os.platform() === 'win32';
+exports.isDarwin = () => os.platform() === 'darwin';
