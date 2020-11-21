@@ -39,3 +39,17 @@ exports.replaceFileContents = function (file, searchRegex, replacementString) {
     contents = contents.replace(searchRegex, replacementString);
     fs.writeFileSync(file, contents);
 };
+
+// Some helpers for easier sorting
+exports.compare = (a, b) => (a < b && -1) || +(a > b);
+exports.compareBy = f => (a, b) => exports.compare(f(a), f(b));
+exports.compareByAll = fns => {
+    const comparators = fns.map(exports.compareBy);
+    return (a, b) => {
+        for (const cmp of comparators) {
+            const result = cmp(a, b);
+            if (result) return result;
+        }
+        return 0;
+    };
+};
