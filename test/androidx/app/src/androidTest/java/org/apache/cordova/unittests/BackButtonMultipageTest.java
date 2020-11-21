@@ -45,6 +45,8 @@ import static org.apache.cordova.unittests.R.id.cordovaWebView;
 public class BackButtonMultipageTest {
 
     private static final String START_URL = "file:///android_asset/www/backbuttonmultipage/index.html";
+    private static final String SAMPLE3_URL = "file:///android_asset/www/backbuttonmultipage/sample3.html";
+    private static final String SAMPLE2_URL = "file:///android_asset/www/backbuttonmultipage/sample2.html";
     //I have no idea why we picked 100, but we did.
     private static final int WEBVIEW_ID = 100;
     private TestActivity mActivity;
@@ -71,19 +73,19 @@ public class BackButtonMultipageTest {
                 webInterface.sendJavascript("window.location = 'sample2.html';");
             }
         });
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 webInterface.sendJavascript("window.location = 'sample3.html';");
             }
         });
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample3.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE3_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 assertTrue(webInterface.backHistory());
             }
         });
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 assertTrue(webInterface.backHistory());
@@ -104,22 +106,22 @@ public class BackButtonMultipageTest {
 
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
-                webInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+                webInterface.loadUrl(SAMPLE2_URL);
             }
         });
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
-                webInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+                webInterface.loadUrl(SAMPLE3_URL);
             }
         });
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample3.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE3_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 assertTrue(webInterface.backHistory());
             }
         });
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 assertTrue(webInterface.backHistory());
@@ -140,19 +142,23 @@ public class BackButtonMultipageTest {
 
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
-                webInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample2.html");
+                webInterface.loadUrl(SAMPLE2_URL);
             }
         });
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
-                webInterface.loadUrl("file:///android_asset/www/backbuttonmultipage/sample3.html");
+                webInterface.loadUrl(SAMPLE3_URL);
             }
         });
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample3.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE3_URL);
         onView(withId(WEBVIEW_ID)).perform(pressBack());
-        assertEquals("file:///android_asset/www/backbuttonmultipage/sample2.html", mActivity.onPageFinishedUrl.take());
+        assertPageSample(SAMPLE2_URL);
         onView(withId(WEBVIEW_ID)).perform(pressBack());
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
+    }
+
+    private void assertPageSample(String url) {
+        assertEquals(url, mActivity.onPageFinishedUrl.take());
     }
 }

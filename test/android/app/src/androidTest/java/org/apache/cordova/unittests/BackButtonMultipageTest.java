@@ -73,19 +73,19 @@ public class BackButtonMultipageTest {
                 webInterface.sendJavascript("window.location = 'sample2.html';");
             }
         });
-        assertPageSample2();
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 webInterface.sendJavascript("window.location = 'sample3.html';");
             }
         });
-        assertPageSample3();
+        assertPageSample(SAMPLE3_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 assertTrue(webInterface.backHistory());
             }
         });
-        assertPageSample2();
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 assertTrue(webInterface.backHistory());
@@ -109,19 +109,19 @@ public class BackButtonMultipageTest {
                 webInterface.loadUrl(SAMPLE2_URL);
             }
         });
-        assertPageSample2();
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 webInterface.loadUrl(SAMPLE3_URL);
             }
         });
-        assertPageSample3();
+        assertPageSample(SAMPLE3_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 assertTrue(webInterface.backHistory());
             }
         });
-        assertPageSample2();
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 assertTrue(webInterface.backHistory());
@@ -145,25 +145,21 @@ public class BackButtonMultipageTest {
                 webInterface.loadUrl(SAMPLE2_URL);
             }
         });
-        assertPageSample2();
+        assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
             public void run() {
                 webInterface.loadUrl(SAMPLE3_URL);
             }
         });
-        assertPageSample3();
+        assertPageSample(SAMPLE3_URL);
         onView(withId(WEBVIEW_ID)).perform(pressBack());
-        assertPageSample2();
+        assertPageSample(SAMPLE2_URL);
         onView(withId(WEBVIEW_ID)).perform(pressBack());
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
     }
 
-    private void assertPageSample3() {
-        assertEquals(SAMPLE3_URL, mActivity.onPageFinishedUrl.take());
-    }
-
-    private void assertPageSample2() {
-        assertEquals(SAMPLE2_URL, mActivity.onPageFinishedUrl.take());
+    private void assertPageSample(String url) {
+        assertEquals(url, mActivity.onPageFinishedUrl.take());
     }
 
 }
