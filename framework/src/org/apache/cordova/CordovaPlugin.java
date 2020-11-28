@@ -35,6 +35,8 @@ import android.os.Bundle;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import androidx.webkit.WebViewAssetLoader;
+
 /**
  * Plugins must extend this class and override one of the execute methods.
  */
@@ -433,5 +435,13 @@ public class CordovaPlugin {
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
 
+    }
+
+    /**
+     * Allow plugins to supply a PathHandler for the WebViewAssetHandler
+     * @return a CordovaPluginPathHandler which listen for paths and returns a response
+     */
+    public CordovaPluginPathHandler getPathHandler() {
+        return null;
     }
 }
