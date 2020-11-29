@@ -302,11 +302,12 @@ function default_versionCode (version) {
 }
 
 function getImageResourcePath (resourcesDir, type, density, name, sourceName) {
-    if (/\.9\.png$/.test(sourceName)) {
-        name = name.replace(/\.png$/, '.9.png');
-    }
-    var resourcePath = path.join(resourcesDir, (density ? type + '-' + density : type), name);
-    return resourcePath;
+    // Use same extension as source with special case for 9-Patch files
+    const ext = sourceName.endsWith('.9.png')
+        ? '.9.png' : path.extname(sourceName).toLowerCase();
+
+    const subDir = density ? `${type}-${density}` : type;
+    return path.join(resourcesDir, subDir, name + ext);
 }
 
 function getAdaptiveImageResourcePath (resourcesDir, type, density, name, sourceName) {
@@ -337,14 +338,14 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
             hadMdpi = true;
         }
         var targetPath = getImageResourcePath(
-            platformResourcesDir, 'drawable', resource.density, 'screen.png', path.basename(resource.src));
+            platformResourcesDir, 'drawable', resource.density, 'screen', path.basename(resource.src));
         resourceMap[targetPath] = resource.src;
     });
 
     // There's no "default" drawable, so assume default == mdpi.
     if (!hadMdpi && resources.defaultResource) {
         var targetPath = getImageResourcePath(
-            platformResourcesDir, 'drawable', 'mdpi', 'screen.png', path.basename(resources.defaultResource.src));
+            platformResourcesDir, 'drawable', 'mdpi', 'screen', path.basename(resources.defaultResource.src));
         resourceMap[targetPath] = resources.defaultResource.src;
     }
 
@@ -546,13 +547,13 @@ function updateIconResourceForLegacy (preparedIcons, resourceMap, platformResour
     // The source paths for icons and splashes are relative to
     // project's config.xml location, so we use it as base path.
     for (var density in android_icons) {
-        var targetPath = getImageResourcePath(platformResourcesDir, 'mipmap', density, 'ic_launcher.png', path.basename(android_icons[density].src));
+        var targetPath = getImageResourcePath(platformResourcesDir, 'mipmap', density, 'ic_launcher', path.basename(android_icons[density].src));
         resourceMap[targetPath] = android_icons[density].src;
     }
 
     // There's no "default" drawable, so assume default == mdpi.
     if (default_icon && !android_icons.mdpi) {
-        var defaultTargetPath = getImageResourcePath(platformResourcesDir, 'mipmap', 'mdpi', 'ic_launcher.png', path.basename(default_icon.src));
+        var defaultTargetPath = getImageResourcePath(platformResourcesDir, 'mipmap', 'mdpi', 'ic_launcher', path.basename(default_icon.src));
         resourceMap[defaultTargetPath] = default_icon.src;
     }
 
