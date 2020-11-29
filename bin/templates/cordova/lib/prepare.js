@@ -665,7 +665,8 @@ function cleanIcons (projectRoot, projectConfig, platformResourcesDir) {
  */
 function mapImageResources (rootDir, subDir, type, resourceName) {
     const pathMap = {};
-    glob.sync(type + '-*', { cwd: path.join(rootDir, subDir) }).forEach(drawableFolder => {
+    const globOptions = { cwd: path.join(rootDir, subDir), onlyDirectories: true };
+    glob.sync(type + '-*', globOptions).forEach(drawableFolder => {
         const imagePath = path.join(subDir, drawableFolder, resourceName);
         pathMap[imagePath] = null;
     });
