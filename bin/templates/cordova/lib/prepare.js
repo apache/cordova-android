@@ -317,30 +317,6 @@ function getAdaptiveImageResourcePath (resourcesDir, type, density, name, source
     return resourcePath;
 }
 
-/**
- * The splashScreenSrc is a .webp image or a .png (or .jpg) image.
- * An inputted .webp should be copied to a screen.webp file.
- * An inputted .png (or .jpg) should be copied to a screen.png file.
- *
- * When a splashscreen is changed from a .png to a .webp or the other way round,
- * the other image must be deleted, to avoid a duplicate resource exception.
- *
- * @param splashScreenSrc
- * @returns {{splashScreenDestToRemove: string, splashScreenDest: string}}
- */
-function buildSplashScreenImageToCopyAndToRemove (splashScreenSrc) {
-    if (path.extname(splashScreenSrc) === '.webp') {
-        return {
-            splashScreenDest: 'screen.webp',
-            splashScreenDestToRemove: 'screen.png'
-        };
-    }
-    return {
-        splashScreenDest: 'screen.png',
-        splashScreenDestToRemove: 'screen.webp'
-    };
-}
-
 function updateSplashes (cordovaProject, platformResourcesDir) {
     var resources = cordovaProject.projectConfig.getSplashScreens('android');
 
@@ -360,28 +336,16 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
         if (resource.density === 'mdpi') {
             hadMdpi = true;
         }
-        const splashScreenToCopyAndRemove = buildSplashScreenImageToCopyAndToRemove(resource.src);
-
-        const targetPath = getImageResourcePath(platformResourcesDir, 'drawable', resource.density,
-            splashScreenToCopyAndRemove.splashScreenDest, path.basename(resource.src));
+        var targetPath = getImageResourcePath(
+            platformResourcesDir, 'drawable', resource.density, 'screen.png', path.basename(resource.src));
         resourceMap[targetPath] = resource.src;
-
-        const targetPathToDelete = getImageResourcePath(platformResourcesDir, 'drawable', resource.density,
-            splashScreenToCopyAndRemove.splashScreenDestToRemove, path.basename(resource.src));
-        resourceMap[targetPathToDelete] = null;
     });
 
     // There's no "default" drawable, so assume default == mdpi.
     if (!hadMdpi && resources.defaultResource) {
-        const splashScreenToCopyAndRemove = buildSplashScreenImageToCopyAndToRemove(resources.defaultResource.src);
-
-        const targetPath = getImageResourcePath(platformResourcesDir, 'drawable', 'mdpi',
-            splashScreenToCopyAndRemove.splashScreenDest, path.basename(resources.defaultResource.src));
+        var targetPath = getImageResourcePath(
+            platformResourcesDir, 'drawable', 'mdpi', 'screen.png', path.basename(resources.defaultResource.src));
         resourceMap[targetPath] = resources.defaultResource.src;
-
-        const targetPathToDelete = getImageResourcePath(platformResourcesDir, 'drawable', 'mdpi',
-            splashScreenToCopyAndRemove.splashScreenDestToRemove, path.basename(resources.defaultResource.src));
-        resourceMap[targetPathToDelete] = null;
     }
 
     events.emit('verbose', 'Updating splash screens at ' + platformResourcesDir);
@@ -392,19 +356,12 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
 function cleanSplashes (projectRoot, projectConfig, platformResourcesDir) {
     var resources = projectConfig.getSplashScreens('android');
     if (resources.length > 0) {
-        const pngResourceMap = mapImageResources(projectRoot, platformResourcesDir, 'drawable', 'screen.png');
-        events.emit('verbose', 'Cleaning png splash screens at ' + platformResourcesDir);
+        var resourceMap = mapImageResources(projectRoot, platformResourcesDir, 'drawable', 'screen.png');
+        events.emit('verbose', 'Cleaning splash screens at ' + platformResourcesDir);
 
         // No source paths are specified in the map, so updatePaths() will delete the target files.
         FileUpdater.updatePaths(
-            pngResourceMap, { rootDir: projectRoot, all: true }, logFileOp);
-
-        const webpResourceMap = mapImageResources(projectRoot, platformResourcesDir, 'drawable', 'screen.webp');
-        events.emit('verbose', 'Cleaning webp splash screens at ' + platformResourcesDir);
-
-        // No source paths are specified in the map, so updatePaths() will delete the target files.
-        FileUpdater.updatePaths(
-            webpResourceMap, { rootDir: projectRoot, all: true }, logFileOp);
+            resourceMap, { rootDir: projectRoot, all: true }, logFileOp);
     }
 }
 
