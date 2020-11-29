@@ -318,6 +318,15 @@ function getAdaptiveImageResourcePath (resourcesDir, type, density, name, source
     return resourcePath;
 }
 
+function makeSplashCleanupMap (projectRoot, resourcesDir) {
+    // Build an initial resource map that deletes all existing splash screens
+    const existingSplashPaths = glob.sync(
+        `${resourcesDir}/drawable-*/screen.{png,9.png,webp,jpg,jpeg}`,
+        { cwd: projectRoot }
+    );
+    return makeCleanResourceMap(existingSplashPaths);
+}
+
 function updateSplashes (cordovaProject, platformResourcesDir) {
     var resources = cordovaProject.projectConfig.getSplashScreens('android');
 
@@ -327,7 +336,8 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
         return;
     }
 
-    var resourceMap = mapImageResources(cordovaProject.root, platformResourcesDir, 'drawable', 'screen.png');
+    // Build an initial resource map that deletes all existing splash screens
+    const resourceMap = makeSplashCleanupMap(cordovaProject.root, platformResourcesDir);
 
     var hadMdpi = false;
     resources.forEach(function (resource) {
@@ -357,7 +367,8 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
 function cleanSplashes (projectRoot, projectConfig, platformResourcesDir) {
     var resources = projectConfig.getSplashScreens('android');
     if (resources.length > 0) {
-        var resourceMap = mapImageResources(projectRoot, platformResourcesDir, 'drawable', 'screen.png');
+        const resourceMap = makeSplashCleanupMap(projectRoot, platformResourcesDir);
+
         events.emit('verbose', 'Cleaning splash screens at ' + platformResourcesDir);
 
         // No source paths are specified in the map, so updatePaths() will delete the target files.
@@ -670,6 +681,16 @@ function mapImageResources (rootDir, subDir, type, resourceName) {
         const imagePath = path.join(subDir, drawableFolder, resourceName);
         pathMap[imagePath] = null;
     });
+    return pathMap;
+}
+
+/** Returns resource map that deletes all given paths */
+function makeCleanResourceMap (resourcePaths) {
+    const pathMap = {};
+    resourcePaths.map(path.normalize)
+        .forEach(resourcePath => {
+            pathMap[resourcePath] = null;
+        });
     return pathMap;
 }
 
