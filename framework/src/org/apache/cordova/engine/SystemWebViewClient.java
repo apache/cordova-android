@@ -74,32 +74,7 @@ public class SystemWebViewClient extends WebViewClient {
 
         WebViewAssetLoader.Builder assetLoaderBuilder = new WebViewAssetLoader.Builder()
                 .setDomain("localhost")
-                .setHttpAllowed(true)
-                .addPathHandler("/", path -> {
-                    try {
-                        if (path.isEmpty())
-                            path = "index.html";
-                        InputStream is = parentEngine.webView.getContext().getAssets().open("www/" + path, AssetManager.ACCESS_STREAMING);
-                        String mimeType = "text/html";
-                        String extension = MimeTypeMap.getFileExtensionFromUrl(path);
-                        if (extension != null) {
-                            if (path.endsWith(".js") || path.endsWith(".mjs")) {
-                                // Make sure JS files get the proper mimetype to support ES modules
-                                mimeType = "application/javascript";
-                            } else if (path.endsWith(".wasm")) {
-                                mimeType = "application/wasm";
-                            } else {
-                                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-                            }
-                        }
-
-                        return new WebResourceResponse(mimeType, null, is);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Log.e("WebViewAssetLoader", e.getMessage());
-                    }
-                    return null;
-                });
+                .setHttpAllowed(true);
                 
         // Check if there a plugins with pathHandlers
         PluginManager pluginManager = this.parentEngine.pluginManager;
@@ -108,6 +83,32 @@ public class SystemWebViewClient extends WebViewClient {
                assetLoaderBuilder.addPathHandler(handler.getPath(), handler.getPathHandler());
            }
         }
+
+        assetLoaderBuilder.addPathHandler("/", path -> {
+            try {
+                if (path.isEmpty())
+                    path = "index.html";
+                InputStream is = parentEngine.webView.getContext().getAssets().open("www/" + path, AssetManager.ACCESS_STREAMING);
+                String mimeType = "text/html";
+                String extension = MimeTypeMap.getFileExtensionFromUrl(path);
+                if (extension != null) {
+                    if (path.endsWith(".js") || path.endsWith(".mjs")) {
+                        // Make sure JS files get the proper mimetype to support ES modules
+                        mimeType = "application/javascript";
+                    } else if (path.endsWith(".wasm")) {
+                        mimeType = "application/wasm";
+                    } else {
+                        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+                    }
+                }
+
+                return new WebResourceResponse(mimeType, null, is);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("WebViewAssetLoader", e.getMessage());
+            }
+            return null;
+        });
 
         this.assetLoader = assetLoaderBuilder.build();
     }
