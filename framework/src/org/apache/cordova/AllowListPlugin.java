@@ -28,8 +28,9 @@ import org.xmlpull.v1.XmlPullParser;
 import android.content.Context;
 
 public class AllowListPlugin extends CordovaPlugin {
-    public static final String PLUGIN_NAME = "CordovaAllowList";
-    protected static final String LOG_TAG = "CordovaAllowList";
+    public static final String PLUGIN_NAME = "CordovaAllowListPlugin";
+    protected static final String LOG_TAG = "CordovaAllowListPlugin";
+
     private AllowList allowedNavigations;
     private AllowList allowedIntents;
     private AllowList allowedRequests;
@@ -54,6 +55,7 @@ public class AllowListPlugin extends CordovaPlugin {
             allowedRequests.addAllowListEntry("file:///*", false);
             allowedRequests.addAllowListEntry("data:*", false);
         }
+
         this.allowedNavigations = allowedNavigations;
         this.allowedIntents = allowedIntents;
         this.allowedRequests = allowedRequests;
@@ -61,10 +63,11 @@ public class AllowListPlugin extends CordovaPlugin {
 
     @Override
     public void pluginInitialize() {
-        if (allowedNavigations == null) {
-            allowedNavigations = new AllowList();
-            allowedIntents = new AllowList();
-            allowedRequests = new AllowList();
+        if (this.allowedNavigations == null) {
+            this.allowedNavigations = new AllowList();
+            this.allowedIntents = new AllowList();
+            this.allowedRequests = new AllowList();
+
             new CustomConfigXmlParser().parse(webView.getContext());
         }
     }
@@ -107,40 +110,34 @@ public class AllowListPlugin extends CordovaPlugin {
                 }
             }
         }
+
         @Override
-        public void handleEndTag(XmlPullParser xml) {
-        }
+        public void handleEndTag(XmlPullParser xml) { }
     }
 
     @Override
     public Boolean shouldAllowNavigation(String url) {
-        if (allowedNavigations.isUrlAllowListed(url)) {
-            return true;
-        }
-        return null; // Default policy
+        return this.allowedNavigations.isUrlAllowListed(url)
+            ? true
+            : null; // default policy
     }
 
     @Override
     public Boolean shouldAllowRequest(String url) {
-        if (Boolean.TRUE == shouldAllowNavigation(url)) {
-            return true;
-        }
-        if (allowedRequests.isUrlAllowListed(url)) {
-            return true;
-        }
-        return null; // Default policy
+        return (this.shouldAllowNavigation(url) || this.allowedRequests.isUrlAllowListed(url))
+            ? true
+            : null; // default policy
     }
 
     @Override
     public Boolean shouldOpenExternalUrl(String url) {
-        if (allowedIntents.isUrlAllowListed(url)) {
-            return true;
-        }
-        return null; // Default policy
+        return (this.allowedIntents.isUrlAllowListed(url))
+            ? true
+            : null; // default policy
     }
 
     public AllowList getAllowedNavigations() {
-        return allowedNavigations;
+        return this.allowedNavigations;
     }
 
     public void setAllowedNavigations(AllowList allowedNavigations) {
@@ -148,7 +145,7 @@ public class AllowListPlugin extends CordovaPlugin {
     }
 
     public AllowList getAllowedIntents() {
-        return allowedIntents;
+        return this.allowedIntents;
     }
 
     public void setAllowedIntents(AllowList allowedIntents) {
@@ -156,7 +153,7 @@ public class AllowListPlugin extends CordovaPlugin {
     }
 
     public AllowList getAllowedRequests() {
-        return allowedRequests;
+        return this.allowedRequests;
     }
 
     public void setAllowedRequests(AllowList allowedRequests) {

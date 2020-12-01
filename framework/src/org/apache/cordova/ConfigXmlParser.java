@@ -71,7 +71,7 @@ public class ConfigXmlParser {
 
         pluginEntries.add(
             new PluginEntry(
-                "CDVAllowListPlugin",
+                AllowListPlugin.PLUGIN_NAME,
                 "org.apache.cordova.AllowListPlugin",
                 true
             )
