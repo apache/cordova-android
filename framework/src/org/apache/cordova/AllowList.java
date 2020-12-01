@@ -94,7 +94,7 @@ public class AllowList {
 
     private ArrayList<URLPattern> allowList;
 
-    public static final String TAG = "AllowList";
+    public static final String TAG = "CordovaAllowList";
 
     public AllowList() {
         this.allowList = new ArrayList<URLPattern>();
