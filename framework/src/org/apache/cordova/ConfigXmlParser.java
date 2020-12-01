@@ -60,6 +60,15 @@ public class ConfigXmlParser {
                 return;
             }
         }
+
+        pluginEntries.add(
+            new PluginEntry(
+                "CDVAllowListPlugin",
+                "org.apache.cordova.AllowListPlugin",
+                true
+            )
+        );
+
         parse(action.getResources().getXml(id));
     }
 
