@@ -76,16 +76,23 @@ public class SystemWebViewClient extends WebViewClient {
                 .setDomain("localhost")
                 .setHttpAllowed(true);
                 
-        // Check if there a plugins with pathHandlers
-        PluginManager pluginManager = this.parentEngine.pluginManager;
-        if (pluginManager != null) {
-           for (CordovaPluginPathHandler handler : pluginManager.getPluginPathHandlers()) {
-               assetLoaderBuilder.addPathHandler(handler.getPath(), handler.getPathHandler());
-           }
-        }
+
 
         assetLoaderBuilder.addPathHandler("/", path -> {
             try {
+                // Check if there a plugins with pathHandlers
+                PluginManager pluginManager = this.parentEngine.pluginManager;
+                if (pluginManager != null) {
+                    for (CordovaPluginPathHandler handler : pluginManager.getPluginPathHandlers()) {
+                        if (handler.getPathHandler() != null) {
+                            WebResourceResponse response = handler.getPathHandler().handle(path);
+                            if (response != null) {
+                                return response;
+                            }
+                        };
+                    }
+                }
+
                 if (path.isEmpty())
                     path = "index.html";
                 InputStream is = parentEngine.webView.getContext().getAssets().open("www/" + path, AssetManager.ACCESS_STREAMING);

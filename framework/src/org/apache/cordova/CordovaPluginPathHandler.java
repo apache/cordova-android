@@ -7,16 +7,10 @@ import androidx.webkit.WebViewAssetLoader;
  */
 public class CordovaPluginPathHandler {
 
-    private final String path;
     private final WebViewAssetLoader.PathHandler handler;
 
-    public  CordovaPluginPathHandler(String path, WebViewAssetLoader.PathHandler handler) {
-        this.path = path;
+    public  CordovaPluginPathHandler(WebViewAssetLoader.PathHandler handler) {
         this.handler = handler;
-    }
-
-    public String getPath() {
-        return path;
     }
 
     public WebViewAssetLoader.PathHandler getPathHandler() {
