@@ -112,7 +112,7 @@ public class SystemWebViewClient extends WebViewClient {
                 return new WebResourceResponse(mimeType, null, is);
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e("WebViewAssetLoader", e.getMessage());
+                Log.e(TAG, e.getMessage());
             }
             return null;
         });
