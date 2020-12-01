@@ -371,10 +371,10 @@ public class SystemWebViewClient extends WebViewClient {
     @SuppressWarnings("deprecation")
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
         try {
-            // Check the against the whitelist and lock out access to the WebView directory
+            // Check the against the allow list and lock out access to the WebView directory
             // Changing this will cause problems for your application
             if (!parentEngine.pluginManager.shouldAllowRequest(url)) {
-                LOG.w(TAG, "URL blocked by whitelist: " + url);
+                LOG.w(TAG, "URL blocked by allow list: " + url);
                 // Results in a 404.
                 return new WebResourceResponse("text/plain", "UTF-8", null);
             }
