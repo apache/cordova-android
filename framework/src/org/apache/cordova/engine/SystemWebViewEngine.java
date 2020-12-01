@@ -168,7 +168,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         settings.setSaveFormData(false);
         settings.setSavePassword(false);
 
-        // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
+        // Jellybean rightfully tried to lock this down. Too bad they didn't give us an allow list
         // while we do this
         settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setMediaPlaybackRequiresUserGesture(false);

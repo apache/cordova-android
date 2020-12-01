@@ -211,19 +211,19 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // If loading into our webview
         if (!openExternal) {
-            // Make sure url is in whitelist
+            // Make sure url is in allow list
             if (pluginManager.shouldAllowNavigation(url)) {
                 // TODO: What about params?
                 // Load new URL
                 loadUrlIntoView(url, true);
                 return;
             } else {
-                LOG.w(TAG, "showWebPage: Refusing to load URL into webview since it is not in the <allow-navigation> whitelist. URL=" + url);
+                LOG.w(TAG, "showWebPage: Refusing to load URL into webview since it is not in the <allow-navigation> allow list. URL=" + url);
                 return;
             }
         }
         if (!pluginManager.shouldOpenExternalUrl(url)) {
-            LOG.w(TAG, "showWebPage: Refusing to send intent for URL since it is not in the <allow-intent> whitelist. URL=" + url);
+            LOG.w(TAG, "showWebPage: Refusing to send intent for URL since it is not in the <allow-intent> allow list. URL=" + url);
             return;
         }
         try {

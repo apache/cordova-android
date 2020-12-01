@@ -28,7 +28,7 @@ import org.apache.cordova.LOG;
 
 import android.net.Uri;
 
-public class Whitelist {
+public class AllowList {
     private static class URLPattern {
         public Pattern scheme;
         public Pattern host;
@@ -92,12 +92,12 @@ public class Whitelist {
         }
     }
 
-    private ArrayList<URLPattern> whiteList;
+    private ArrayList<URLPattern> allowList;
 
-    public static final String TAG = "Whitelist";
+    public static final String TAG = "AllowList";
 
-    public Whitelist() {
-        this.whiteList = new ArrayList<URLPattern>();
+    public AllowList() {
+        this.allowList = new ArrayList<URLPattern>();
     }
 
     /* Match patterns (from http://developer.chrome.com/extensions/match_patterns.html)
@@ -111,13 +111,13 @@ public class Whitelist {
      * the scheme to be omitted for backwards compatibility. (Also host is not required
      * to begin with a "*" or "*.".)
      */
-    public void addWhiteListEntry(String origin, boolean subdomains) {
-        if (whiteList != null) {
+    public void addAllowListEntry(String origin, boolean subdomains) {
+        if (allowList != null) {
             try {
                 // Unlimited access to network resources
                 if (origin.compareTo("*") == 0) {
                     LOG.d(TAG, "Unlimited access to network resources");
-                    whiteList = null;
+                    allowList = null;
                 }
                 else { // specific access
                     Pattern parts = Pattern.compile("^((\\*|[A-Za-z-]+):(//)?)?(\\*|((\\*\\.)?[^*/:]+))?(:(\\d+))?(/.*)?");
@@ -131,10 +131,10 @@ public class Whitelist {
                         String path = m.group(9);
                         if (scheme == null) {
                             // XXX making it stupid friendly for people who forget to include protocol/SSL
-                            whiteList.add(new URLPattern("http", host, port, path));
-                            whiteList.add(new URLPattern("https", host, port, path));
+                            allowList.add(new URLPattern("http", host, port, path));
+                            allowList.add(new URLPattern("https", host, port, path));
                         } else {
-                            whiteList.add(new URLPattern(scheme, host, port, path));
+                            allowList.add(new URLPattern(scheme, host, port, path));
                         }
                     }
                 }
@@ -149,15 +149,15 @@ public class Whitelist {
      * Determine if URL is in approved list of URLs to load.
      *
      * @param uri
-     * @return true if wide open or whitelisted
+     * @return true if wide open or allow listed
      */
-    public boolean isUrlWhiteListed(String uri) {
-        // If there is no whitelist, then it's wide open
-        if (whiteList == null) return true;
+    public boolean isUrlAllowListed(String uri) {
+        // If there is no allowList, then it's wide open
+        if (allowList == null) return true;
 
         Uri parsedUri = Uri.parse(uri);
-        // Look for match in white list
-        Iterator<URLPattern> pit = whiteList.iterator();
+        // Look for match in allow list
+        Iterator<URLPattern> pit = allowList.iterator();
         while (pit.hasNext()) {
             URLPattern p = pit.next();
             if (p.matches(parsedUri)) {
