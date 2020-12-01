@@ -152,15 +152,6 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setLayoutAlgorithm(LayoutAlgorithm.NORMAL);
 
-        /**
-         * https://developer.android.com/reference/android/webkit/WebSettings#setAllowFileAccess(boolean)
-         * 
-         * SDK >= 30 has recently set this value to false by default.
-         * It is recommended to turn off this settings To prevent possible security issues targeting Build.VERSION_CODES.Q and earlier.
-         * For existing functionality, this setting is set to true. In a future release, this should be defaulted to false.
-         */
-        settings.setAllowFileAccess(true);
-
         String manufacturer = android.os.Build.MANUFACTURER;
         LOG.d(TAG, "CordovaWebView is running on device made by: " + manufacturer);
 
@@ -168,9 +159,6 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         settings.setSaveFormData(false);
         settings.setSavePassword(false);
 
-        // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
-        // while we do this
-        settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
 
         // Enable database
