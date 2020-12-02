@@ -93,19 +93,14 @@ public class AllowListPlugin extends CordovaPlugin {
                 allowedIntents.addAllowListEntry(origin, false);
             } else if (strNode.equals("access")) {
                 String origin = xml.getAttributeValue(null, "origin");
-                String subdomains = xml.getAttributeValue(null, "subdomains");
-                boolean external = (xml.getAttributeValue(null, "launch-external") != null);
+
                 if (origin != null) {
-                    if (external) {
-                        LOG.w(LOG_TAG, "Found <access launch-external> within config.xml. Please use <allow-intent> instead.");
-                        allowedIntents.addAllowListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
+                    if ("*".equals(origin)) {
+                        allowedRequests.addAllowListEntry("http://*/*", false);
+                        allowedRequests.addAllowListEntry("https://*/*", false);
                     } else {
-                        if ("*".equals(origin)) {
-                            allowedRequests.addAllowListEntry("http://*/*", false);
-                            allowedRequests.addAllowListEntry("https://*/*", false);
-                        } else {
-                            allowedRequests.addAllowListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
-                        }
+                        String subdomains = xml.getAttributeValue(null, "subdomains");
+                        allowedRequests.addAllowListEntry(origin, (subdomains != null) && (subdomains.compareToIgnoreCase("true") == 0));
                     }
                 }
             }
