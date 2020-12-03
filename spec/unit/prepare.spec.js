@@ -836,6 +836,7 @@ describe('prepare', function () {
     });
 
     describe('updateProjectAccordingTo', function () {
+    describe('relocate MainActivity.java', function () {
         // Rewire
         let Api;
         let api;
