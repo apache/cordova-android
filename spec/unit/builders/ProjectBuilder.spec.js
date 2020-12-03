@@ -289,7 +289,7 @@ describe('ProjectBuilder', () => {
         });
     });
 
-    describe('fileSorter', () => {
+    describe('outputFileComparator', () => {
         it('should sort APKs from most recent to oldest, deprioritising unsigned arch-specific builds', () => {
             const APKs = {
                 'app-debug.apk': new Date('2018-04-20'),
@@ -309,7 +309,7 @@ describe('ProjectBuilder', () => {
             });
 
             const apkArray = Object.keys(APKs);
-            const sortedApks = apkArray.sort(ProjectBuilder.__get__('fileSorter'));
+            const sortedApks = apkArray.sort(ProjectBuilder.__get__('outputFileComparator'));
 
             expect(sortedApks).toEqual(expectedResult);
         });

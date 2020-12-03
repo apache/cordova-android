@@ -15,6 +15,30 @@
 # specific language governing permissions and limitations
 # under the License.
 
+github:
+  description: Apache Cordova Android
+  homepage: https://cordova.apache.org/
+
+  labels:
+    - cordova
+    - cordova-platform
+    - android
+    - java
+    - mobile
+    - javascript
+    - nodejs
+    - hacktoberfest
+
+  features:
+    wiki: false
+    issues: true
+    projects: true
+
+  enabled_merge_buttons:
+    squash: true
+    merge: false
+    rebase: false
+
 notifications:
   commits:              commits@cordova.apache.org
   issues:               issues@cordova.apache.org

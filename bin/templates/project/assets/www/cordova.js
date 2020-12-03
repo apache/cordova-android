@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '9.0.0';
+var PLATFORM_VERSION_BUILD_LABEL = '9.1.0-dev';
 // file: src/scripts/require.js
 var require;
 var define;

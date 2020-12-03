@@ -18,7 +18,7 @@
 */
 
 var rewire = require('rewire');
-var utils = require('../../bin/lib/utils');
+var utils = require('../../bin/templates/cordova/lib/utils');
 var create = rewire('../../bin/lib/create');
 var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
 var fs = require('fs-extra');

@@ -22,6 +22,7 @@ var path = require('path');
 var fs = require('fs-extra');
 var os = require('os');
 var which = require('which');
+const glob = require('fast-glob');
 var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
 var PROJECT_ROOT = path.join(__dirname, '..', '..');
 const { CordovaError, ConfigParser, events } = require('cordova-common');
@@ -34,20 +35,6 @@ function forgivingWhichSync (cmd) {
     // On null, returns empty string to maintain backwards compatibility
     // realpathSync follows symlinks
     return whichResult === null ? '' : fs.realpathSync(whichResult);
-}
-
-function getJDKDirectory (directory) {
-    const p = path.resolve(directory, 'java');
-    if (fs.existsSync(p)) {
-        const directories = fs.readdirSync(p);
-        for (let i = 0; i < directories.length; i++) {
-            const dir = directories[i];
-            if (/^(jdk)+./.test(dir)) {
-                return path.resolve(directory, 'java', dir);
-            }
-        }
-    }
-    return null;
 }
 
 module.exports.isWindows = function () {
@@ -96,18 +83,6 @@ module.exports.get_target = function () {
     }
 
     return target;
-};
-
-// Returns a promise. Called only by build and clean commands.
-module.exports.check_ant = function () {
-    return execa('ant', ['-version']).then(({ stdout: output }) => {
-        // Parse Ant version from command output
-        return /version ((?:\d+\.)+(?:\d+))/i.exec(output)[1];
-    }).catch(function (err) {
-        if (err) {
-            throw new CordovaError('Failed to run `ant -version`. Make sure you have `ant` on your $PATH.');
-        }
-    });
 };
 
 module.exports.get_gradle_wrapper = function () {
@@ -201,21 +176,18 @@ module.exports.check_java = function () {
                     }
                 }
             } else if (module.exports.isWindows()) {
-                const programFilesEnv = path.resolve(process.env.ProgramFiles);
-                const programFiles = 'C:\\Program Files\\';
-                const programFilesx86 = 'C:\\Program Files (x86)\\';
+                const { env } = process;
+                const baseDirs = [env.ProgramFiles, env['ProgramFiles(x86)']];
+                const globOpts = { absolute: true, onlyDirectories: true };
+                const flatMap = (arr, f) => [].concat(...arr.map(f));
 
-                let firstJdkDir =
-                    getJDKDirectory(programFilesEnv) ||
-                    getJDKDirectory(programFiles) ||
-                    getJDKDirectory(programFilesx86);
+                const jdkDir = flatMap(baseDirs, cwd =>
+                    glob.sync('java/jdk*', { cwd, ...globOpts })
+                )[0];
 
-                if (firstJdkDir) {
-                    firstJdkDir = firstJdkDir.replace(/\//g, path.sep);
-                    if (!javacPath) {
-                        process.env.PATH += path.delimiter + path.join(firstJdkDir, 'bin');
-                    }
-                    process.env.JAVA_HOME = firstJdkDir;
+                if (jdkDir) {
+                    env.PATH += path.delimiter + path.join(jdkDir, 'bin');
+                    env.JAVA_HOME = path.normalize(jdkDir);
                 }
             }
         }

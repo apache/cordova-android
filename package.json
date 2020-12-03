@@ -1,6 +1,6 @@
 {
   "name": "cordova-android",
-  "version": "9.0.0",
+  "version": "9.1.0-dev",
   "description": "cordova-android release",
   "bin": {
     "create": "bin/create"
@@ -15,12 +15,12 @@
   ],
   "scripts": {
     "test": "npm run lint && npm run cover && npm run java-unit-tests",
+    "lint": "eslint . \"bin/**/!(*.*|gitignore)\"",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
     "cover": "nyc jasmine --config=spec/coverage.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
     "java-unit-tests": "node test/run_java_unit_tests.js",
-    "lint": "eslint . \"bin/**/!(*.*|gitignore)\"",
-    "clean-tests": "node bin/clean_test.js"
+    "clean:java-unit-tests": "node test/clean.js"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
@@ -28,7 +28,9 @@
     "android-versions": "^1.5.0",
     "cordova-common": "^4.0.1",
     "execa": "^4.0.2",
+    "fast-glob": "^3.2.4",
     "fs-extra": "^9.0.1",
+    "is-path-inside": "^3.0.2",
     "nopt": "^4.0.3",
     "properties-parser": "^0.3.1",
     "which": "^2.0.2"
@@ -41,9 +43,8 @@
     "rewire": "^5.0.0"
   },
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=10.10.0"
   },
-  "engineStrict": true,
   "nyc": {
     "include": [
       "bin/lib/**",

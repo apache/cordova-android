@@ -20,13 +20,15 @@
 const CordovaError = require('cordova-common').CordovaError;
 const rewire = require('rewire');
 
-describe('Adb', () => {
-    const adbOutput = `List of devices attached
+const adbOutput = `List of devices attached
 emulator-5554\tdevice
-123a76565509e124\tdevice`;
-    const [, emulatorLine, deviceLine] = adbOutput.split('\n');
-    const emulatorId = emulatorLine.split('\t')[0];
-    const deviceId = deviceLine.split('\t')[0];
+emulator-5556\toffline
+123a76565509e124\tdevice
+123a76565509e123\tbootloader
+`;
+
+describe('Adb', () => {
+    const deviceId = '123a76565509e124';
 
     const alreadyExistsError = 'adb: failed to install app.apk: Failure[INSTALL_FAILED_ALREADY_EXISTS]';
     const certificateError = 'adb: failed to install app.apk: Failure[INSTALL_PARSE_FAILED_NO_CERTIFICATES]';
@@ -41,40 +43,15 @@ emulator-5554\tdevice
         Adb.__set__('execa', execaSpy);
     });
 
-    describe('isDevice', () => {
-        it('should return true for a real device', () => {
-            const isDevice = Adb.__get__('isDevice');
-
-            expect(isDevice(deviceLine)).toBeTruthy();
-            expect(isDevice(emulatorLine)).toBeFalsy();
-        });
-    });
-
-    describe('isEmulator', () => {
-        it('should return true for an emulator', () => {
-            const isEmulator = Adb.__get__('isEmulator');
-
-            expect(isEmulator(emulatorLine)).toBeTruthy();
-            expect(isEmulator(deviceLine)).toBeFalsy();
-        });
-    });
-
     describe('devices', () => {
-        beforeEach(() => {
-            execaSpy.and.returnValue(Promise.resolve({ stdout: adbOutput }));
-        });
+        it('should return the IDs of all fully booted devices & emulators', () => {
+            execaSpy.and.resolveTo({ stdout: adbOutput });
 
-        it('should return only devices if no options are specified', () => {
             return Adb.devices().then(devices => {
-                expect(devices.length).toBe(1);
-                expect(devices[0]).toBe(deviceId);
-            });
-        });
-
-        it('should return only emulators if opts.emulators is true', () => {
-            return Adb.devices({ emulators: true }).then(devices => {
-                expect(devices.length).toBe(1);
-                expect(devices[0]).toBe(emulatorId);
+                expect(devices).toEqual([
+                    'emulator-5554',
+                    '123a76565509e124'
+                ]);
             });
         });
     });

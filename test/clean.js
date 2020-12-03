@@ -17,12 +17,16 @@
        under the License.
 */
 
-const fs = require('fs');
+const fs = require('fs-extra');
+const path = require('path');
 
-if (fs.existsSync('./test/gradlew')) {
-    fs.unlinkSync('./test/gradlew');
-}
+/**
+ * This script is to be run manually (e.g. by npm run clean:java-unit-tests) if
+ * you want to upgrade gradlew or test its proper generation.
+ */
 
-if (fs.existsSync('./test/gradlew.bat')) {
-    fs.unlinkSync('./test/gradlew.bat');
+for (const variant of ['android', 'androidx']) {
+    for (const file of ['gradlew', 'gradlew.bat']) {
+        fs.removeSync(path.join(__dirname, variant, file));
+    }
 }

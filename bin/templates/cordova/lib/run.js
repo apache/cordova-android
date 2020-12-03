@@ -20,6 +20,7 @@
 var path = require('path');
 var emulator = require('./emulator');
 var device = require('./device');
+const target = require('./target');
 var PackageType = require('./PackageType');
 const { CordovaError, events } = require('cordova-common');
 
@@ -100,7 +101,6 @@ module.exports.run = function (runOptions) {
         });
     }).then(function (resolvedTarget) {
         return new Promise((resolve) => {
-            const builder = require('./builders/builders').getBuilder();
             const buildOptions = require('./build').parseBuildOptions(runOptions, null, self.root);
 
             // Android app bundles cannot be deployed directly to the device
@@ -110,15 +110,13 @@ module.exports.run = function (runOptions) {
                 throw packageTypeErrorMessage;
             }
 
-            resolve(builder.fetchBuildResults(buildOptions.buildType, buildOptions.arch));
-        }).then(function (buildResults) {
+            resolve(self._builder.fetchBuildResults(buildOptions.buildType, buildOptions.arch));
+        }).then(async function (buildResults) {
             if (resolvedTarget && resolvedTarget.isEmulator) {
-                return emulator.wait_for_boot(resolvedTarget.target).then(function () {
-                    return emulator.install(resolvedTarget, buildResults);
-                });
+                await emulator.wait_for_boot(resolvedTarget.id);
             }
 
-            return device.install(resolvedTarget, buildResults);
+            return target.install(resolvedTarget, buildResults);
         });
     });
 };
