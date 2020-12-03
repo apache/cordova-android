@@ -73,7 +73,7 @@ public class SystemWebViewClient extends WebViewClient {
         this.parentEngine = parentEngine;
 
         WebViewAssetLoader.Builder assetLoaderBuilder = new WebViewAssetLoader.Builder()
-                .setDomain("localhost")
+                .setDomain(parentEngine.preferences.getString("hostname", "localhost"))
                 .setHttpAllowed(true);
                 
 
