@@ -27,9 +27,6 @@ example
 /framework/javadoc-private
 /test/.externalNativeBuild
 
-/test/android/gradle
-/test/android/gradlew
-/test/android/gradlew.bat
 /test/androidx/gradle
 /test/androidx/gradlew
 /test/androidx/gradlew.bat
