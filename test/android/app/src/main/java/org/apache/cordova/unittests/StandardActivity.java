@@ -17,7 +17,7 @@
        under the License.
 */
 
-package org.apache.cordova.unittests2;
+package org.apache.cordova.unittests;
 
 import android.os.Bundle;
 
