@@ -889,9 +889,9 @@ describe('relocate CordovaActivity class java file', () => {
         prepare.__set__('updateConfigFilesFrom',
             jasmine.createSpy('updateConfigFilesFrom')
                 .and.returnValue({
-
                     getPreference: jasmine.createSpy('getPreference')
                 }));
+        spyOn(GradlePropertiesParser.prototype, 'configure');
 
         replaceFileContents = spyOn(utils, 'replaceFileContents');
 
