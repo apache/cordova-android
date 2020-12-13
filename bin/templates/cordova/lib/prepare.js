@@ -302,11 +302,12 @@ function default_versionCode (version) {
 }
 
 function getImageResourcePath (resourcesDir, type, density, name, sourceName) {
-    if (/\.9\.png$/.test(sourceName)) {
-        name = name.replace(/\.png$/, '.9.png');
-    }
-    var resourcePath = path.join(resourcesDir, (density ? type + '-' + density : type), name);
-    return resourcePath;
+    // Use same extension as source with special case for 9-Patch files
+    const ext = sourceName.endsWith('.9.png')
+        ? '.9.png' : path.extname(sourceName).toLowerCase();
+
+    const subDir = density ? `${type}-${density}` : type;
+    return path.join(resourcesDir, subDir, name + ext);
 }
 
 function getAdaptiveImageResourcePath (resourcesDir, type, density, name, sourceName) {
@@ -317,28 +318,13 @@ function getAdaptiveImageResourcePath (resourcesDir, type, density, name, source
     return resourcePath;
 }
 
-/**
- * The splashScreenSrc is a .webp image or a .png (or .jpg) image.
- * An inputted .webp should be copied to a screen.webp file.
- * An inputted .png (or .jpg) should be copied to a screen.png file.
- *
- * When a splashscreen is changed from a .png to a .webp or the other way round,
- * the other image must be deleted, to avoid a duplicate resource exception.
- *
- * @param splashScreenSrc
- * @returns {{splashScreenDestToRemove: string, splashScreenDest: string}}
- */
-function buildSplashScreenImageToCopyAndToRemove (splashScreenSrc) {
-    if (path.extname(splashScreenSrc) === '.webp') {
-        return {
-            splashScreenDest: 'screen.webp',
-            splashScreenDestToRemove: 'screen.png'
-        };
-    }
-    return {
-        splashScreenDest: 'screen.png',
-        splashScreenDestToRemove: 'screen.webp'
-    };
+function makeSplashCleanupMap (projectRoot, resourcesDir) {
+    // Build an initial resource map that deletes all existing splash screens
+    const existingSplashPaths = glob.sync(
+        `${resourcesDir}/drawable-*/screen.{png,9.png,webp,jpg,jpeg}`,
+        { cwd: projectRoot }
+    );
+    return makeCleanResourceMap(existingSplashPaths);
 }
 
 function updateSplashes (cordovaProject, platformResourcesDir) {
@@ -350,7 +336,8 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
         return;
     }
 
-    var resourceMap = mapImageResources(cordovaProject.root, platformResourcesDir, 'drawable', 'screen.png');
+    // Build an initial resource map that deletes all existing splash screens
+    const resourceMap = makeSplashCleanupMap(cordovaProject.root, platformResourcesDir);
 
     var hadMdpi = false;
     resources.forEach(function (resource) {
@@ -360,28 +347,16 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
         if (resource.density === 'mdpi') {
             hadMdpi = true;
         }
-        const splashScreenToCopyAndRemove = buildSplashScreenImageToCopyAndToRemove(resource.src);
-
-        const targetPath = getImageResourcePath(platformResourcesDir, 'drawable', resource.density,
-            splashScreenToCopyAndRemove.splashScreenDest, path.basename(resource.src));
+        var targetPath = getImageResourcePath(
+            platformResourcesDir, 'drawable', resource.density, 'screen', path.basename(resource.src));
         resourceMap[targetPath] = resource.src;
-
-        const targetPathToDelete = getImageResourcePath(platformResourcesDir, 'drawable', resource.density,
-            splashScreenToCopyAndRemove.splashScreenDestToRemove, path.basename(resource.src));
-        resourceMap[targetPathToDelete] = null;
     });
 
     // There's no "default" drawable, so assume default == mdpi.
     if (!hadMdpi && resources.defaultResource) {
-        const splashScreenToCopyAndRemove = buildSplashScreenImageToCopyAndToRemove(resources.defaultResource.src);
-
-        const targetPath = getImageResourcePath(platformResourcesDir, 'drawable', 'mdpi',
-            splashScreenToCopyAndRemove.splashScreenDest, path.basename(resources.defaultResource.src));
+        var targetPath = getImageResourcePath(
+            platformResourcesDir, 'drawable', 'mdpi', 'screen', path.basename(resources.defaultResource.src));
         resourceMap[targetPath] = resources.defaultResource.src;
-
-        const targetPathToDelete = getImageResourcePath(platformResourcesDir, 'drawable', 'mdpi',
-            splashScreenToCopyAndRemove.splashScreenDestToRemove, path.basename(resources.defaultResource.src));
-        resourceMap[targetPathToDelete] = null;
     }
 
     events.emit('verbose', 'Updating splash screens at ' + platformResourcesDir);
@@ -392,19 +367,13 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
 function cleanSplashes (projectRoot, projectConfig, platformResourcesDir) {
     var resources = projectConfig.getSplashScreens('android');
     if (resources.length > 0) {
-        const pngResourceMap = mapImageResources(projectRoot, platformResourcesDir, 'drawable', 'screen.png');
-        events.emit('verbose', 'Cleaning png splash screens at ' + platformResourcesDir);
+        const resourceMap = makeSplashCleanupMap(projectRoot, platformResourcesDir);
+
+        events.emit('verbose', 'Cleaning splash screens at ' + platformResourcesDir);
 
         // No source paths are specified in the map, so updatePaths() will delete the target files.
         FileUpdater.updatePaths(
-            pngResourceMap, { rootDir: projectRoot, all: true }, logFileOp);
-
-        const webpResourceMap = mapImageResources(projectRoot, platformResourcesDir, 'drawable', 'screen.webp');
-        events.emit('verbose', 'Cleaning webp splash screens at ' + platformResourcesDir);
-
-        // No source paths are specified in the map, so updatePaths() will delete the target files.
-        FileUpdater.updatePaths(
-            webpResourceMap, { rootDir: projectRoot, all: true }, logFileOp);
+            resourceMap, { rootDir: projectRoot, all: true }, logFileOp);
     }
 }
 
@@ -589,13 +558,13 @@ function updateIconResourceForLegacy (preparedIcons, resourceMap, platformResour
     // The source paths for icons and splashes are relative to
     // project's config.xml location, so we use it as base path.
     for (var density in android_icons) {
-        var targetPath = getImageResourcePath(platformResourcesDir, 'mipmap', density, 'ic_launcher.png', path.basename(android_icons[density].src));
+        var targetPath = getImageResourcePath(platformResourcesDir, 'mipmap', density, 'ic_launcher', path.basename(android_icons[density].src));
         resourceMap[targetPath] = android_icons[density].src;
     }
 
     // There's no "default" drawable, so assume default == mdpi.
     if (default_icon && !android_icons.mdpi) {
-        var defaultTargetPath = getImageResourcePath(platformResourcesDir, 'mipmap', 'mdpi', 'ic_launcher.png', path.basename(default_icon.src));
+        var defaultTargetPath = getImageResourcePath(platformResourcesDir, 'mipmap', 'mdpi', 'ic_launcher', path.basename(default_icon.src));
         resourceMap[defaultTargetPath] = default_icon.src;
     }
 
@@ -712,6 +681,16 @@ function mapImageResources (rootDir, subDir, type, resourceName) {
         const imagePath = path.join(subDir, drawableFolder, resourceName);
         pathMap[imagePath] = null;
     });
+    return pathMap;
+}
+
+/** Returns resource map that deletes all given paths */
+function makeCleanResourceMap (resourcePaths) {
+    const pathMap = {};
+    resourcePaths.map(path.normalize)
+        .forEach(resourcePath => {
+            pathMap[resourcePath] = null;
+        });
     return pathMap;
 }
 

@@ -885,13 +885,10 @@ describe('prepare', () => {
             });
 
             // mocking initial responses for mapImageResources
-            prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
-                if (resourceName.includes('screen.png')) {
-                    return createResourceMap('screen.png');
-                } else if (resourceName.includes('screen.webp')) {
-                    return createResourceMap('screen.webp');
-                }
-            });
+            prepare.__set__('makeSplashCleanupMap', (rootDir, resourcesDir) => ({
+                [path.join(resourcesDir, 'drawable-mdpi/screen.png')]: null,
+                [path.join(resourcesDir, 'drawable-mdpi/screen.webp')]: null
+            }));
         });
 
         it('Test#001 : Should detect no defined splash screens.', function () {
