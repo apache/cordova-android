@@ -321,7 +321,7 @@ function getAdaptiveImageResourcePath (resourcesDir, type, density, name, source
 function makeSplashCleanupMap (projectRoot, resourcesDir) {
     // Build an initial resource map that deletes all existing splash screens
     const existingSplashPaths = glob.sync(
-        `${resourcesDir}/drawable-*/screen.{png,9.png,webp,jpg,jpeg}`,
+        `${resourcesDir.replace(/\\/g, '/')}/drawable-*/screen.{png,9.png,webp,jpg,jpeg}`,
         { cwd: projectRoot }
     );
     return makeCleanResourceMap(existingSplashPaths);
