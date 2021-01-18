@@ -176,22 +176,24 @@ public class CordovaWebViewImpl implements CordovaWebView {
                     e.printStackTrace();
                 }
 
-                // If timeout, then stop loading and handle error
-                if (loadUrlTimeout == currentLoadUrlTimeout) {
+                // If timeout, then stop loading and handle error (if activity still exists)
+                if (loadUrlTimeout == currentLoadUrlTimeout && cordova.getActivity() != null) {
                     cordova.getActivity().runOnUiThread(loadError);
                 }
             }
         };
 
-        final boolean _recreatePlugins = recreatePlugins;
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-                if (loadUrlTimeoutValue > 0) {
-                    cordova.getThreadPool().execute(timeoutCheck);
+        if (cordova.getActivity() != null) {
+            final boolean _recreatePlugins = recreatePlugins;
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    if (loadUrlTimeoutValue > 0) {
+                        cordova.getThreadPool().execute(timeoutCheck);
+                    }
+                    engine.loadUrl(url, _recreatePlugins);
                 }
-                engine.loadUrl(url, _recreatePlugins);
-            }
-        });
+            });
+        }
     }
 
 
@@ -238,7 +240,9 @@ public class CordovaWebViewImpl implements CordovaWebView {
             } else {
                 intent.setData(uri);
             }
-            cordova.getActivity().startActivity(intent);
+            if (cordova.getActivity() != null) {
+                cordova.getActivity().startActivity(intent);
+            }
         } catch (android.content.ActivityNotFoundException e) {
             LOG.e(TAG, "Error loading url " + url, e);
         }
@@ -553,11 +557,13 @@ public class CordovaWebViewImpl implements CordovaWebView {
                     public void run() {
                         try {
                             Thread.sleep(2000);
-                            cordova.getActivity().runOnUiThread(new Runnable() {
-                                public void run() {
-                                    pluginManager.postMessage("spinner", "stop");
-                                }
-                            });
+                            if (cordova.getActivity() != null) {
+                                cordova.getActivity().runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        pluginManager.postMessage("spinner", "stop");
+                                    }
+                                });
+                            }
                         } catch (InterruptedException e) {
                         }
                     }
