@@ -179,6 +179,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
                 // If timeout, then stop loading and handle error (if activity still exists)
                 if (loadUrlTimeout == currentLoadUrlTimeout && cordova.getActivity() != null) {
                     cordova.getActivity().runOnUiThread(loadError);
+                } else if (cordova.getActivity() == null) {
+                    LOG.d(TAG, "Cordova activity does not exist.");
                 }
             }
         };
@@ -193,6 +195,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
                     engine.loadUrl(url, _recreatePlugins);
                 }
             });
+        } else {
+            LOG.d(TAG, "Cordova activity does not exist.");
         }
     }
 
@@ -242,6 +246,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
             }
             if (cordova.getActivity() != null) {
                 cordova.getActivity().startActivity(intent);
+            } else {
+                LOG.d(TAG, "Cordova activity does not exist.");
             }
         } catch (android.content.ActivityNotFoundException e) {
             LOG.e(TAG, "Error loading url " + url, e);
@@ -563,6 +569,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
                                         pluginManager.postMessage("spinner", "stop");
                                     }
                                 });
+                            } else {
+                                LOG.d(TAG, "Cordova activity does not exist.");
                             }
                         } catch (InterruptedException e) {
                         }
