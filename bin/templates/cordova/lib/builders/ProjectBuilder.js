@@ -55,7 +55,7 @@ const outputFileComparator = compareByAll([
  * @param {'debug' | 'release'} buildType
  * @param {{arch?: string}} options
  */
-function findOutputFiles (bundleType, buildType, { arch }) {
+function findOutputFiles (bundleType, buildType, { arch } = {}) {
     let files = glob.sync(`**/*.${bundleType}`, {
         absolute: true,
         cwd: path.resolve(this[`${bundleType}Dir`], buildType)
