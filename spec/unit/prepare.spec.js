@@ -871,7 +871,7 @@ describe('prepare', () => {
             prepare = rewire('../../bin/templates/cordova/lib/prepare');
             api = new Api();
 
-            initialJavaActivityPath = `${api.locations.javaSrc}/com/company/product/MainActivity.java`.replace(/\//g, '\\');
+            initialJavaActivityPath = path.join(api.locations.javaSrc, 'com/company/product/MainActivity.java');
 
             cordovaProject = {
                 root: '/mock',
@@ -969,8 +969,8 @@ describe('prepare', () => {
 
         it('moves CordovaActivity class java file to path that tracks the package name when package name changed', async () => {
             packageName = 'com.company.renamed';
-            const renamedPath = `${api.locations.javaSrc}/${packageName.replace(/\./g, '/')}`.replace(/\//g, '\\');
-            const renamedJavaActivityPath = `${renamedPath}\\MainActivity.java`;
+            const renamedPath = path.join(api.locations.javaSrc, packageName.replace(/\./g, '/'));
+            const renamedJavaActivityPath = path.join(renamedPath, 'MainActivity.java');
 
             await api.prepare(cordovaProject, options).then(() => {
                 expect(replaceFileContents).toHaveBeenCalledWith(renamedJavaActivityPath, /package [\w.]*;/, 'package ' + packageName + ';');
