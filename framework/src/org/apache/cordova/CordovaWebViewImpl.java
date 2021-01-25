@@ -256,7 +256,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         @Override
         public boolean dispatchKeyEvent(KeyEvent event) {
             boolean ret = engine.getView().dispatchKeyEvent(event);
-            if (! ret) {
+            if (!ret) {
                 // If the engine didn't handle the event, handle it normally.
                 ret = super.dispatchKeyEvent(event);
             }
