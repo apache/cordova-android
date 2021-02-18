@@ -52,6 +52,10 @@ public final class PluginEntry {
         this(service, plugin.getClass().getName(), true, plugin);
     }
 
+    public PluginEntry(String service, CordovaPlugin plugin, boolean onload) {
+        this(service, plugin.getClass().getName(), onload, plugin);
+    }
+
     /**
      * @param service               The name of the service
      * @param pluginClass           The plugin class name
