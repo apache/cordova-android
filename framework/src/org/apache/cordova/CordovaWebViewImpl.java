@@ -229,31 +229,26 @@ public class CordovaWebViewImpl implements CordovaWebView {
             return;
         }
 
-        Intent intent;
-
-        if (url.startsWith("intent://")) {
-            try {
-                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-                return;
-            }
-
-        } else {
-            intent = new Intent(Intent.ACTION_VIEW);
-            Uri uri = Uri.parse(url);
-            // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
-            // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
-            if ("file".equals(uri.getScheme())) {
-                intent.setDataAndType(uri, resourceApi.getMimeType(uri));
-            } else {
-                intent.setData(uri);
-            }
-            // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        }
+        Intent intent = null;
         try {
+            if (url.startsWith("intent://")) {
+                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+            } else {
+                intent = new Intent(Intent.ACTION_VIEW);
+                // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
+                intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                Uri uri = Uri.parse(url);
+                // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
+                // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
+                if ("file".equals(uri.getScheme())) {
+                    intent.setDataAndType(uri, resourceApi.getMimeType(uri));
+                } else {
+                    intent.setData(uri);
+                }
+            }
             cordova.getActivity().startActivity(intent);
+        } catch (URISyntaxException e) {
+            LOG.e(TAG, "Error parsing url " + url, e);
         } catch (ActivityNotFoundException e) {
             if (url.startsWith("intent://") && intent != null && intent.getStringExtra("browser_fallback_url") != null) {
                 showWebPage(intent.getStringExtra("browser_fallback_url"), openExternal, clearHistory, params);
