@@ -57,5 +57,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 repositories {
-    jcenter()
+    mavenCentral()
+    maven {url 'https://plugins.gradle.org/m2/' }
 }
