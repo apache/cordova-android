@@ -47,7 +47,8 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven {url 'https://plugins.gradle.org/m2/' }
+        // org.jetbrains.trove4j:trove4j:20160824.
+        maven { url 'https://repo.appspace.com/list/plugins-release/' }
     }
 
     dependencies {
