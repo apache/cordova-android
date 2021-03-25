@@ -132,6 +132,7 @@ describe('create', function () {
             spyOn(create, 'copyBuildRules');
             spyOn(create, 'writeProjectProperties');
             spyOn(create, 'prepBuildFiles');
+            spyOn(create, 'writeNameForAndroidStudio');
             revert_manifest_mock = create.__set__('AndroidManifest', Manifest_mock);
             spyOn(fs, 'existsSync').and.returnValue(false);
             spyOn(fs, 'copySync');
@@ -298,6 +299,25 @@ describe('create', function () {
                     expect(create.prepBuildFiles).toHaveBeenCalledWith(project_path);
                 });
             });
+        });
+    });
+
+    describe('writeNameForAndroidStudio', () => {
+        var project_path = path.join('some', 'path');
+
+        it('should call ensureDirSync with path', () => {
+            spyOn(fs, 'ensureDirSync');
+            spyOn(fs, 'writeFileSync');
+            create.writeNameForAndroidStudio(project_path, 'Test Android');
+            expect(fs.ensureDirSync).toHaveBeenCalledWith(path.join(project_path, '.idea'));
+        });
+
+        it('should call writeFileSync with content', () => {
+            var appName = 'Test Cordova';
+            spyOn(fs, 'ensureDirSync');
+            spyOn(fs, 'writeFileSync');
+            create.writeNameForAndroidStudio(project_path, appName);
+            expect(fs.writeFileSync).toHaveBeenCalledWith(path.join(project_path, '.idea', '.name'), appName);
         });
     });
 });
