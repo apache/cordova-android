@@ -303,19 +303,20 @@ describe('create', function () {
     });
 
     describe('writeNameForAndroidStudio', () => {
-        var project_path = path.join('some', 'path');
+        const project_path = path.join('some', 'path');
+        const appName = 'Test Cordova';
 
-        it('should call ensureDirSync with path', () => {
+        beforeEach(function () {
             spyOn(fs, 'ensureDirSync');
             spyOn(fs, 'writeFileSync');
-            create.writeNameForAndroidStudio(project_path, 'Test Android');
+        });
+
+        it('should call ensureDirSync with path', () => {
+            create.writeNameForAndroidStudio(project_path, appName);
             expect(fs.ensureDirSync).toHaveBeenCalledWith(path.join(project_path, '.idea'));
         });
 
         it('should call writeFileSync with content', () => {
-            var appName = 'Test Cordova';
-            spyOn(fs, 'ensureDirSync');
-            spyOn(fs, 'writeFileSync');
             create.writeNameForAndroidStudio(project_path, appName);
             expect(fs.writeFileSync).toHaveBeenCalledWith(path.join(project_path, '.idea', '.name'), appName);
         });

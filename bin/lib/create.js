@@ -206,7 +206,7 @@ function validateProjectName (project_name) {
  * https://github.com/apache/cordova-android/issues/1172
  */
 function writeNameForAndroidStudio (project_path, project_name) {
-    var ideaPath = path.join(project_path, '.idea');
+    const ideaPath = path.join(project_path, '.idea');
     fs.ensureDirSync(ideaPath);
     fs.writeFileSync(path.join(ideaPath, '.name'), project_name);
 }
