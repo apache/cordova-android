@@ -1,0 +1,5 @@
+ext.repos = {
+    mavenCentral()
+    google()
+    jcenter()
+}
