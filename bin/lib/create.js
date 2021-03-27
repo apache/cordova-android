@@ -36,6 +36,7 @@ exports.copyScripts = copyScripts;
 exports.copyBuildRules = copyBuildRules;
 exports.writeProjectProperties = writeProjectProperties;
 exports.prepBuildFiles = prepBuildFiles;
+exports.writeNameForAndroidStudio = writeNameForAndroidStudio;
 
 function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
@@ -198,6 +199,19 @@ function validateProjectName (project_name) {
 }
 
 /**
+ * Write the name of the app in "platforms/android/.idea/.name" so that Android Studio can show that name in the
+ * project listing. This is helpful to quickly look in the Android Studio listing if there are so many projects in
+ * Android Studio.
+ *
+ * https://github.com/apache/cordova-android/issues/1172
+ */
+function writeNameForAndroidStudio (project_path, project_name) {
+    const ideaPath = path.join(project_path, '.idea');
+    fs.ensureDirSync(ideaPath);
+    fs.writeFileSync(path.join(ideaPath, '.name'), project_name);
+}
+
+/**
  * Creates an android application with the given options.
  *
  * @param   {String}  project_path  Path to the new Cordova android project.
@@ -294,6 +308,7 @@ exports.create = function (project_path, config, options, events) {
             // Link it to local android install.
             exports.writeProjectProperties(project_path, target_api);
             exports.prepBuildFiles(project_path);
+            exports.writeNameForAndroidStudio(project_path, project_name);
             events.emit('log', generateDoneMessage('create', options.link));
         }).then(() => project_path);
 };
