@@ -81,754 +81,893 @@ function mockGetIconItem (data) {
     }, data);
 }
 
-describe('updateIcons method', function () {
+/**
+ * Create a mock item from the getSplashScreen collection with the supplied updated data.
+ *
+ * @param {Object} data Changes to apply to the mock getSplashScreen item
+ */
+function mockGetSplashScreenItem (data) {
+    return Object.assign({}, {
+        src: undefined,
+        density: undefined
+    }, data);
+}
+
+describe('prepare', () => {
+    describe('updateIcons method', function () {
     // Rewire
-    let prepare;
+        let prepare;
 
-    // Spies
-    let updateIconResourceForAdaptiveSpy;
-    let updateIconResourceForLegacySpy;
-    let emitSpy;
-    let updatePathsSpy;
+        // Spies
+        let updateIconResourceForAdaptiveSpy;
+        let updateIconResourceForLegacySpy;
+        let emitSpy;
+        let updatePathsSpy;
 
-    // Mock Data
-    let cordovaProject;
-    let platformResourcesDir;
+        // Mock Data
+        let cordovaProject;
+        let platformResourcesDir;
 
-    beforeEach(function () {
-        prepare = rewire('../../bin/templates/cordova/lib/prepare');
+        beforeEach(function () {
+            prepare = rewire('../../bin/templates/cordova/lib/prepare');
 
-        cordovaProject = {
-            root: '/mock',
-            projectConfig: {
-                path: '/mock/config.xml',
-                cdvNamespacePrefix: 'cdv'
-            },
-            locations: {
-                plugins: '/mock/plugins',
-                www: '/mock/www'
-            }
-        };
-        platformResourcesDir = PATH_RESOURCE;
+            cordovaProject = {
+                root: '/mock',
+                projectConfig: {
+                    path: '/mock/config.xml',
+                    cdvNamespacePrefix: 'cdv'
+                },
+                locations: {
+                    plugins: '/mock/plugins',
+                    www: '/mock/www'
+                }
+            };
+            platformResourcesDir = PATH_RESOURCE;
 
-        emitSpy = jasmine.createSpy('emit');
-        prepare.__set__('events', {
-            emit: emitSpy
+            emitSpy = jasmine.createSpy('emit');
+            prepare.__set__('events', {
+                emit: emitSpy
+            });
+
+            updatePathsSpy = jasmine.createSpy('updatePaths');
+            prepare.__set__('FileUpdater', {
+                updatePaths: updatePathsSpy
+            });
+
+            // mocking initial responses for mapImageResources
+            prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
+                if (resourceName.includes('ic_launcher.png')) {
+                    return createResourceMap('ic_launcher.png');
+                } else if (resourceName.includes('ic_launcher_foreground.png')) {
+                    return createResourceMap('ic_launcher_foreground.png');
+                } else if (resourceName.includes('ic_launcher_background.png')) {
+                    return createResourceMap('ic_launcher_background.png');
+                } else if (resourceName.includes('ic_launcher_foreground.xml')) {
+                    return createResourceMap('ic_launcher_foreground.xml');
+                } else if (resourceName.includes('ic_launcher_background.xml')) {
+                    return createResourceMap('ic_launcher_background.xml');
+                } else if (resourceName.includes('ic_launcher.xml')) {
+                    return createResourceMap('ic_launcher.xml');
+                }
+            });
         });
 
-        updatePathsSpy = jasmine.createSpy('updatePaths');
-        prepare.__set__('FileUpdater', {
-            updatePaths: updatePathsSpy
-        });
+        it('Test#001 : Should detect no defined icons.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        // mocking initial responses for mapImageResources
-        prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
-            if (resourceName.includes('ic_launcher.png')) {
-                return createResourceMap('ic_launcher.png');
-            } else if (resourceName.includes('ic_launcher_foreground.png')) {
-                return createResourceMap('ic_launcher_foreground.png');
-            } else if (resourceName.includes('ic_launcher_background.png')) {
-                return createResourceMap('ic_launcher_background.png');
-            } else if (resourceName.includes('ic_launcher_foreground.xml')) {
-                return createResourceMap('ic_launcher_foreground.xml');
-            } else if (resourceName.includes('ic_launcher_background.xml')) {
-                return createResourceMap('ic_launcher_background.xml');
-            } else if (resourceName.includes('ic_launcher.xml')) {
-                return createResourceMap('ic_launcher.xml');
-            }
-        });
-    });
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [];
+            };
 
-    it('Test#001 : Should detect no defined icons.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [];
-        };
-
-        updateIcons(cordovaProject, platformResourcesDir);
-
-        // The emit was called
-        expect(emitSpy).toHaveBeenCalled();
-
-        // The emit message was.
-        const actual = emitSpy.calls.argsFor(0)[1];
-        const expected = 'This app does not have launcher icons defined';
-        expect(actual).toEqual(expected);
-    });
-
-    it('Test#002 : Should detech incorrect configrations for adaptive icon and throws error.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                background: 'res/icon/android/mdpi-background.png'
-            })];
-        };
-
-        expect(function () {
             updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
-        );
-    });
 
-    it('Test#003 : Should detech incorrect configrations (missing foreground) for adaptive icon and throw an error.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
+            // The emit was called
+            expect(emitSpy).toHaveBeenCalled();
 
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                background: 'res/icon/android/mdpi-background.png'
-            })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
-        );
-    });
-
-    it('Test#004 : Should detech incorrect configrations (missing background) for adaptive icon and throw an error.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                foreground: 'res/icon/android/mdpi-foreground.png'
-            })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
-        );
-    });
-
-    it('Test#005 : Should detech incorrect configrations and throw an error.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({ density: 'mdpi' })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
-        );
-    });
-
-    it('Test#006 : Should display incorrect configuration with density in message.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({ density: 'mdpi' })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
-        );
-    });
-
-    it('Test#007 : Should display incorrect configuration with size in message from height.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({ height: '192' })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('One of the following attributes are set but missing the other for the density type: size=192. Please ensure that all require attributes are defined.')
-        );
-    });
-
-    it('Test#008 : Should display incorrect configuration with size in message from width.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({ width: '192' })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('One of the following attributes are set but missing the other for the density type: size=192. Please ensure that all require attributes are defined.')
-        );
-    });
-
-    it('Test#009 : Should detech incorrect configrations (missing background) for adaptive icon and throw an error.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                foreground: 'res/icon/android/mdpi-foreground.png'
-            })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
-        );
-    });
-
-    it('Test#010 : Should detech adaptive icon with vector foreground and throws error for missing backwards compatability settings.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                background: 'res/icon/android/mdpi-background.png',
-                foreground: 'res/icon/android/mdpi-foreground.xml'
-            })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('For the following icons with the density of: mdpi, adaptive foreground with a defined color or vector can not be used as a standard fallback icon for older Android devices. To support older Android environments, please provide a value for the src attribute.')
-        );
-    });
-
-    it('Test#011 : Should detech adaptive icon with color foreground and throws error for missing backwards compatability settings.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                background: 'res/icon/android/mdpi-background.png',
-                foreground: '@color/background'
-            })];
-        };
-
-        expect(function () {
-            updateIcons(cordovaProject, platformResourcesDir);
-        }).toThrow(
-            new CordovaError('For the following icons with the density of: mdpi, adaptive foreground with a defined color or vector can not be used as a standard fallback icon for older Android devices. To support older Android environments, please provide a value for the src attribute.')
-        );
-    });
-
-    it('Test#012 : Should update paths with adaptive and standard icons. Standard icon comes from adaptive foreground', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                background: 'res/icon/android/mdpi-background.png',
-                foreground: 'res/icon/android/mdpi-foreground.png'
-            })];
-        };
-
-        // Creating Spies
-        const resourceMap = createResourceMap();
-        const phaseOneModification = {};
-        phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
-        phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        const phaseOneUpdatedIconsForAdaptive = Object.assign({}, resourceMap, phaseOneModification);
-
-        updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
-        prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
-            updateIconResourceForAdaptiveSpy();
-            return phaseOneUpdatedIconsForAdaptive;
+            // The emit message was.
+            const actual = emitSpy.calls.argsFor(0)[1];
+            const expected = 'This app does not have launcher icons defined';
+            expect(actual).toEqual(expected);
         });
 
-        const phaseTwoModification = {};
-        phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-foreground.png';
-        phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+        it('Test#002 : Should detech incorrect configrations for adaptive icon and throws error.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
-        prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
-            updateIconResourceForLegacySpy();
-            return phaseTwoUpdatedIconsForLegacy;
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
+                    density: 'mdpi',
+                    background: 'res/icon/android/mdpi-background.png'
+                })];
+            };
+
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
+            );
         });
 
-        updateIcons(cordovaProject, platformResourcesDir);
+        it('Test#003 : Should detech incorrect configrations (missing foreground) for adaptive icon and throw an error.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        // The emit was called
-        expect(emitSpy).toHaveBeenCalled();
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
+                    density: 'mdpi',
+                    background: 'res/icon/android/mdpi-background.png'
+                })];
+            };
 
-        // The emit message was.
-        const actual = emitSpy.calls.argsFor(0)[1];
-        const expected = 'Updating icons at ' + PATH_RESOURCE;
-        expect(actual).toEqual(expected);
-
-        // Expected to be called.
-        expect(updatePathsSpy).toHaveBeenCalled();
-        expect(updateIconResourceForAdaptiveSpy).toHaveBeenCalled();
-        expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
-
-        const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-        const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
-        expect(actualResourceMap).toEqual(expectedResourceMap);
-    });
-
-    it('Test#013 : Should update paths with adaptive and standard icons.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                src: 'res/icon/android/mdpi-icon.png',
-                background: 'res/icon/android/mdpi-background.png',
-                foreground: 'res/icon/android/mdpi-foreground.png'
-            })];
-        };
-
-        // Creating Spies
-        const resourceMap = createResourceMap();
-        const phaseOneModification = {};
-        phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
-        phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        const phaseOneUpdatedIconsForAdaptive = Object.assign({}, resourceMap, phaseOneModification);
-
-        updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
-        prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
-            updateIconResourceForAdaptiveSpy();
-            return phaseOneUpdatedIconsForAdaptive;
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
+            );
         });
 
-        const phaseTwoModification = {};
-        phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-foreground.png';
-        phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+        it('Test#004 : Should detech incorrect configrations (missing background) for adaptive icon and throw an error.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
-        prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
-            updateIconResourceForLegacySpy();
-            return phaseTwoUpdatedIconsForLegacy;
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
+                    density: 'mdpi',
+                    foreground: 'res/icon/android/mdpi-foreground.png'
+                })];
+            };
+
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
+            );
         });
 
-        updateIcons(cordovaProject, platformResourcesDir);
+        it('Test#005 : Should detech incorrect configrations and throw an error.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        // The emit was called
-        expect(emitSpy).toHaveBeenCalled();
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({ density: 'mdpi' })];
+            };
 
-        // The emit message was.
-        const actual = emitSpy.calls.argsFor(0)[1];
-        const expected = 'Updating icons at ' + PATH_RESOURCE;
-        expect(actual).toEqual(expected);
-
-        // Expected to be called.
-        expect(updatePathsSpy).toHaveBeenCalled();
-        expect(updateIconResourceForAdaptiveSpy).toHaveBeenCalled();
-        expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
-
-        const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-        const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
-        expect(actualResourceMap).toEqual(expectedResourceMap);
-    });
-
-    it('Test#014 : Should update paths with standard icons.', function () {
-        const updateIcons = prepare.__get__('updateIcons');
-
-        // mock data.
-        cordovaProject.projectConfig.getIcons = function () {
-            return [mockGetIconItem({
-                density: 'mdpi',
-                src: 'res/icon/android/mdpi-icon.png'
-            })];
-        };
-
-        // Creating Spies
-        const phaseOneUpdatedIconsForAdaptive = createResourceMap();
-
-        updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
-        prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
-            updateIconResourceForAdaptiveSpy();
-            return phaseOneUpdatedIconsForAdaptive;
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
+            );
         });
 
-        const phaseTwoModification = {};
-        phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-icon.png';
-        const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+        it('Test#006 : Should display incorrect configuration with density in message.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
-        prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
-            updateIconResourceForLegacySpy();
-            return phaseTwoUpdatedIconsForLegacy;
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({ density: 'mdpi' })];
+            };
+
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
+            );
         });
 
-        updateIcons(cordovaProject, platformResourcesDir);
+        it('Test#007 : Should display incorrect configuration with size in message from height.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        // The emit was called
-        expect(emitSpy).toHaveBeenCalled();
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({ height: '192' })];
+            };
 
-        // The emit message was.
-        const actual = emitSpy.calls.argsFor(0)[1];
-        const expected = 'Updating icons at ' + PATH_RESOURCE;
-        expect(actual).toEqual(expected);
-
-        // Expected to be called.
-        expect(updatePathsSpy).toHaveBeenCalled();
-        expect(updateIconResourceForAdaptiveSpy).not.toHaveBeenCalled();
-        expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
-
-        const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-        const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
-        expect(actualResourceMap).toEqual(expectedResourceMap);
-    });
-});
-
-describe('prepareIcons method', function () {
-    let prepare;
-    let emitSpy;
-    let prepareIcons;
-
-    beforeEach(function () {
-        prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
-        prepareIcons = prepare.__get__('prepareIcons');
-
-        // Creating Spies
-        emitSpy = jasmine.createSpy('emit');
-        prepare.__set__('events', {
-            emit: emitSpy
-        });
-    });
-
-    it('Test#001 : should emit extra default icon found for adaptive use case.', function () {
-        // mock data.
-        const ldpi = mockGetIconItem({
-            density: 'ldpi',
-            background: 'res/icon/android/ldpi-background.png',
-            foreground: 'res/icon/android/ldpi-foreground.png'
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('One of the following attributes are set but missing the other for the density type: size=192. Please ensure that all require attributes are defined.')
+            );
         });
 
-        const mdpi = mockGetIconItem({
-            density: 'mdpi',
-            background: 'res/icon/android/mdpi-background.png',
-            foreground: 'res/icon/android/mdpi-foreground.png'
+        it('Test#008 : Should display incorrect configuration with size in message from width.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
+
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({ width: '192' })];
+            };
+
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('One of the following attributes are set but missing the other for the density type: size=192. Please ensure that all require attributes are defined.')
+            );
         });
 
-        const icons = [ldpi, mdpi];
-        const actual = prepareIcons(icons);
-        const expected = {
-            android_icons: { ldpi, mdpi },
-            default_icon: undefined
-        };
+        it('Test#009 : Should detech incorrect configrations (missing background) for adaptive icon and throw an error.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        expect(expected).toEqual(actual);
-    });
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
+                    density: 'mdpi',
+                    foreground: 'res/icon/android/mdpi-foreground.png'
+                })];
+            };
 
-    it('Test#002 : should emit extra default icon found for legacy use case.', function () {
-        // mock data.
-        const ldpi = mockGetIconItem({
-            src: 'res/icon/android/ldpi-icon.png',
-            density: 'ldpi'
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('One of the following attributes are set but missing the other for the density type: mdpi. Please ensure that all require attributes are defined.')
+            );
         });
 
-        const mdpi = mockGetIconItem({
-            src: 'res/icon/android/mdpi-icon.png',
-            density: 'mdpi'
+        it('Test#010 : Should detech adaptive icon with vector foreground and throws error for missing backwards compatability settings.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
+
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
+                    density: 'mdpi',
+                    background: 'res/icon/android/mdpi-background.png',
+                    foreground: 'res/icon/android/mdpi-foreground.xml'
+                })];
+            };
+
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('For the following icons with the density of: mdpi, adaptive foreground with a defined color or vector can not be used as a standard fallback icon for older Android devices. To support older Android environments, please provide a value for the src attribute.')
+            );
         });
 
-        const icons = [ldpi, mdpi];
-        const actual = prepareIcons(icons);
-        const expected = {
-            android_icons: { ldpi, mdpi },
-            default_icon: undefined
-        };
+        it('Test#011 : Should detech adaptive icon with color foreground and throws error for missing backwards compatability settings.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        expect(expected).toEqual(actual);
-    });
-});
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
+                    density: 'mdpi',
+                    background: 'res/icon/android/mdpi-background.png',
+                    foreground: '@color/background'
+                })];
+            };
 
-describe('updateIconResourceForLegacy method', function () {
-    let prepare;
-
-    // Spies
-    let fsWriteFileSyncSpy;
-
-    // Mock Data
-    let platformResourcesDir;
-    let preparedIcons;
-    let resourceMap;
-
-    beforeEach(function () {
-        prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
-        // Mocked Data
-        platformResourcesDir = PATH_RESOURCE;
-        preparedIcons = {
-            android_icons: {
-                mdpi: mockGetIconItem({
-                    src: 'res/icon/android/mdpi-icon.png',
-                    density: 'mdpi'
-                })
-            },
-            default_icon: undefined
-        };
-
-        resourceMap = createResourceMap();
-
-        fsWriteFileSyncSpy = jasmine.createSpy('writeFileSync');
-        prepare.__set__('fs', {
-            writeFileSync: fsWriteFileSyncSpy
+            expect(function () {
+                updateIcons(cordovaProject, platformResourcesDir);
+            }).toThrow(
+                new CordovaError('For the following icons with the density of: mdpi, adaptive foreground with a defined color or vector can not be used as a standard fallback icon for older Android devices. To support older Android environments, please provide a value for the src attribute.')
+            );
         });
-    });
 
-    it('Test#001 : Should update resource map with prepared icons.', function () {
-        // Get method for testing
-        const updateIconResourceForLegacy = prepare.__get__('updateIconResourceForLegacy');
+        it('Test#012 : Should update paths with adaptive and standard icons. Standard icon comes from adaptive foreground', function () {
+            const updateIcons = prepare.__get__('updateIcons');
 
-        // Run Test
-        const expectedModification = {};
-        expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-icon.png';
-        const expected = Object.assign({}, resourceMap, expectedModification);
-        const actual = updateIconResourceForLegacy(preparedIcons, resourceMap, platformResourcesDir);
-
-        expect(actual).toEqual(expected);
-    });
-});
-
-describe('updateIconResourceForAdaptive method', function () {
-    let prepare;
-
-    // Spies
-    let fsWriteFileSyncSpy;
-
-    // Mock Data
-    let platformResourcesDir;
-    let preparedIcons;
-    let resourceMap;
-
-    beforeEach(function () {
-        prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
-        // Mocked Data
-        platformResourcesDir = PATH_RESOURCE;
-        preparedIcons = {
-            android_icons: {
-                mdpi: mockGetIconItem({
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
                     density: 'mdpi',
                     background: 'res/icon/android/mdpi-background.png',
                     foreground: 'res/icon/android/mdpi-foreground.png'
-                })
-            },
-            default_icon: undefined
-        };
+                })];
+            };
 
-        resourceMap = createResourceMap();
+            // Creating Spies
+            const resourceMap = createResourceMap();
+            const phaseOneModification = {};
+            phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
+            phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
+            const phaseOneUpdatedIconsForAdaptive = Object.assign({}, resourceMap, phaseOneModification);
 
-        fsWriteFileSyncSpy = jasmine.createSpy('writeFileSync');
-        prepare.__set__('fs', {
-            writeFileSync: fsWriteFileSyncSpy
+            updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
+            prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
+                updateIconResourceForAdaptiveSpy();
+                return phaseOneUpdatedIconsForAdaptive;
+            });
+
+            const phaseTwoModification = {};
+            phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-foreground.png';
+            phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
+            const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+
+            updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
+            prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
+                updateIconResourceForLegacySpy();
+                return phaseTwoUpdatedIconsForLegacy;
+            });
+
+            updateIcons(cordovaProject, platformResourcesDir);
+
+            // The emit was called
+            expect(emitSpy).toHaveBeenCalled();
+
+            // The emit message was.
+            const actual = emitSpy.calls.argsFor(0)[1];
+            const expected = 'Updating icons at ' + PATH_RESOURCE;
+            expect(actual).toEqual(expected);
+
+            // Expected to be called.
+            expect(updatePathsSpy).toHaveBeenCalled();
+            expect(updateIconResourceForAdaptiveSpy).toHaveBeenCalled();
+            expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
+
+            const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+            const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
+            expect(actualResourceMap).toEqual(expectedResourceMap);
+        });
+
+        it('Test#013 : Should update paths with adaptive and standard icons.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
+
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
+                    density: 'mdpi',
+                    src: 'res/icon/android/mdpi-icon.png',
+                    background: 'res/icon/android/mdpi-background.png',
+                    foreground: 'res/icon/android/mdpi-foreground.png'
+                })];
+            };
+
+            // Creating Spies
+            const resourceMap = createResourceMap();
+            const phaseOneModification = {};
+            phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
+            phaseOneModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
+            const phaseOneUpdatedIconsForAdaptive = Object.assign({}, resourceMap, phaseOneModification);
+
+            updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
+            prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
+                updateIconResourceForAdaptiveSpy();
+                return phaseOneUpdatedIconsForAdaptive;
+            });
+
+            const phaseTwoModification = {};
+            phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-foreground.png';
+            phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
+            const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+
+            updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
+            prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
+                updateIconResourceForLegacySpy();
+                return phaseTwoUpdatedIconsForLegacy;
+            });
+
+            updateIcons(cordovaProject, platformResourcesDir);
+
+            // The emit was called
+            expect(emitSpy).toHaveBeenCalled();
+
+            // The emit message was.
+            const actual = emitSpy.calls.argsFor(0)[1];
+            const expected = 'Updating icons at ' + PATH_RESOURCE;
+            expect(actual).toEqual(expected);
+
+            // Expected to be called.
+            expect(updatePathsSpy).toHaveBeenCalled();
+            expect(updateIconResourceForAdaptiveSpy).toHaveBeenCalled();
+            expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
+
+            const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+            const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
+            expect(actualResourceMap).toEqual(expectedResourceMap);
+        });
+
+        it('Test#014 : Should update paths with standard icons.', function () {
+            const updateIcons = prepare.__get__('updateIcons');
+
+            // mock data.
+            cordovaProject.projectConfig.getIcons = function () {
+                return [mockGetIconItem({
+                    density: 'mdpi',
+                    src: 'res/icon/android/mdpi-icon.png'
+                })];
+            };
+
+            // Creating Spies
+            const phaseOneUpdatedIconsForAdaptive = createResourceMap();
+
+            updateIconResourceForAdaptiveSpy = jasmine.createSpy('updateIconResourceForAdaptiveSpy');
+            prepare.__set__('updateIconResourceForAdaptive', function (preparedIcons, resourceMap, platformResourcesDir) {
+                updateIconResourceForAdaptiveSpy();
+                return phaseOneUpdatedIconsForAdaptive;
+            });
+
+            const phaseTwoModification = {};
+            phaseTwoModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-icon.png';
+            const phaseTwoUpdatedIconsForLegacy = Object.assign({}, phaseOneUpdatedIconsForAdaptive, phaseTwoModification);
+
+            updateIconResourceForLegacySpy = jasmine.createSpy('updateIconResourceForLegacySpy');
+            prepare.__set__('updateIconResourceForLegacy', function (preparedIcons, resourceMap, platformResourcesDir) {
+                updateIconResourceForLegacySpy();
+                return phaseTwoUpdatedIconsForLegacy;
+            });
+
+            updateIcons(cordovaProject, platformResourcesDir);
+
+            // The emit was called
+            expect(emitSpy).toHaveBeenCalled();
+
+            // The emit message was.
+            const actual = emitSpy.calls.argsFor(0)[1];
+            const expected = 'Updating icons at ' + PATH_RESOURCE;
+            expect(actual).toEqual(expected);
+
+            // Expected to be called.
+            expect(updatePathsSpy).toHaveBeenCalled();
+            expect(updateIconResourceForAdaptiveSpy).not.toHaveBeenCalled();
+            expect(updateIconResourceForLegacySpy).toHaveBeenCalled();
+
+            const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+            const expectedResourceMap = phaseTwoUpdatedIconsForLegacy;
+            expect(actualResourceMap).toEqual(expectedResourceMap);
         });
     });
 
-    it('Test#001 : Should update resource map with prepared icons.', function () {
+    describe('prepareIcons method', function () {
+        let prepare;
+        let emitSpy;
+        let prepareIcons;
+
+        beforeEach(function () {
+            prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+            prepareIcons = prepare.__get__('prepareIcons');
+
+            // Creating Spies
+            emitSpy = jasmine.createSpy('emit');
+            prepare.__set__('events', {
+                emit: emitSpy
+            });
+        });
+
+        it('Test#001 : should emit extra default icon found for adaptive use case.', function () {
+        // mock data.
+            const ldpi = mockGetIconItem({
+                density: 'ldpi',
+                background: 'res/icon/android/ldpi-background.png',
+                foreground: 'res/icon/android/ldpi-foreground.png'
+            });
+
+            const mdpi = mockGetIconItem({
+                density: 'mdpi',
+                background: 'res/icon/android/mdpi-background.png',
+                foreground: 'res/icon/android/mdpi-foreground.png'
+            });
+
+            const icons = [ldpi, mdpi];
+            const actual = prepareIcons(icons);
+            const expected = {
+                android_icons: { ldpi, mdpi },
+                default_icon: undefined
+            };
+
+            expect(expected).toEqual(actual);
+        });
+
+        it('Test#002 : should emit extra default icon found for legacy use case.', function () {
+        // mock data.
+            const ldpi = mockGetIconItem({
+                src: 'res/icon/android/ldpi-icon.png',
+                density: 'ldpi'
+            });
+
+            const mdpi = mockGetIconItem({
+                src: 'res/icon/android/mdpi-icon.png',
+                density: 'mdpi'
+            });
+
+            const icons = [ldpi, mdpi];
+            const actual = prepareIcons(icons);
+            const expected = {
+                android_icons: { ldpi, mdpi },
+                default_icon: undefined
+            };
+
+            expect(expected).toEqual(actual);
+        });
+    });
+
+    describe('updateIconResourceForLegacy method', function () {
+        let prepare;
+
+        // Spies
+        let fsWriteFileSyncSpy;
+
+        // Mock Data
+        let platformResourcesDir;
+        let preparedIcons;
+        let resourceMap;
+
+        beforeEach(function () {
+            prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+            // Mocked Data
+            platformResourcesDir = PATH_RESOURCE;
+            preparedIcons = {
+                android_icons: {
+                    mdpi: mockGetIconItem({
+                        src: 'res/icon/android/mdpi-icon.png',
+                        density: 'mdpi'
+                    })
+                },
+                default_icon: undefined
+            };
+
+            resourceMap = createResourceMap();
+
+            fsWriteFileSyncSpy = jasmine.createSpy('writeFileSync');
+            prepare.__set__('fs', {
+                writeFileSync: fsWriteFileSyncSpy
+            });
+        });
+
+        it('Test#001 : Should update resource map with prepared icons.', function () {
         // Get method for testing
-        const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
+            const updateIconResourceForLegacy = prepare.__get__('updateIconResourceForLegacy');
 
-        // Run Test
-        const expectedModification = {};
-        expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-        expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
+            // Run Test
+            const expectedModification = {};
+            expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi', 'ic_launcher.png')] = 'res/icon/android/mdpi-icon.png';
+            const expected = Object.assign({}, resourceMap, expectedModification);
+            const actual = updateIconResourceForLegacy(preparedIcons, resourceMap, platformResourcesDir);
 
-        const expected = Object.assign({}, resourceMap, expectedModification);
-        const actual = updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
-
-        expect(actual).toEqual(expected);
-    });
-});
-
-describe('cleanIcons method', function () {
-    let prepare;
-    let emitSpy;
-    let updatePathsSpy;
-
-    beforeEach(function () {
-        prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
-        emitSpy = jasmine.createSpy('emit');
-        prepare.__set__('events', {
-            emit: emitSpy
-        });
-
-        updatePathsSpy = jasmine.createSpy('updatePaths');
-        prepare.__set__('FileUpdater', {
-            updatePaths: updatePathsSpy
+            expect(actual).toEqual(expected);
         });
     });
 
-    it('Test#001 : should detect that the app does not have defined icons.', function () {
+    describe('updateIconResourceForAdaptive method', function () {
+        let prepare;
+
+        // Spies
+        let fsWriteFileSyncSpy;
+
+        // Mock Data
+        let platformResourcesDir;
+        let preparedIcons;
+        let resourceMap;
+
+        beforeEach(function () {
+            prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+            // Mocked Data
+            platformResourcesDir = PATH_RESOURCE;
+            preparedIcons = {
+                android_icons: {
+                    mdpi: mockGetIconItem({
+                        density: 'mdpi',
+                        background: 'res/icon/android/mdpi-background.png',
+                        foreground: 'res/icon/android/mdpi-foreground.png'
+                    })
+                },
+                default_icon: undefined
+            };
+
+            resourceMap = createResourceMap();
+
+            fsWriteFileSyncSpy = jasmine.createSpy('writeFileSync');
+            prepare.__set__('fs', {
+                writeFileSync: fsWriteFileSyncSpy
+            });
+        });
+
+        it('Test#001 : Should update resource map with prepared icons.', function () {
+        // Get method for testing
+            const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
+
+            // Run Test
+            const expectedModification = {};
+            expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
+            expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
+
+            const expected = Object.assign({}, resourceMap, expectedModification);
+            const actual = updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('cleanIcons method', function () {
+        let prepare;
+        let emitSpy;
+        let updatePathsSpy;
+
+        beforeEach(function () {
+            prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+            emitSpy = jasmine.createSpy('emit');
+            prepare.__set__('events', {
+                emit: emitSpy
+            });
+
+            updatePathsSpy = jasmine.createSpy('updatePaths');
+            prepare.__set__('FileUpdater', {
+                updatePaths: updatePathsSpy
+            });
+        });
+
+        it('Test#001 : should detect that the app does not have defined icons.', function () {
         // Mock
-        const icons = [];
-        const projectRoot = '/mock';
-        const projectConfig = {
-            getIcons: function () { return icons; },
-            path: '/mock/config.xml',
-            cdvNamespacePrefix: 'cdv'
-        };
-        const platformResourcesDir = PATH_RESOURCE;
-
-        const cleanIcons = prepare.__get__('cleanIcons');
-        cleanIcons(projectRoot, projectConfig, platformResourcesDir);
-
-        const actualEmitMessage = emitSpy.calls.argsFor(0)[1];
-        expect(actualEmitMessage).toContain('This app does not have launcher icons defined');
-    });
-
-    it('Test#002 : Should clean paths for adaptive icons.', function () {
-        // Mock
-        const icons = [mockGetIconItem({
-            density: 'mdpi',
-            background: 'res/icon/android/mdpi-background.png',
-            foreground: 'res/icon/android/mdpi-foreground.png'
-        })];
-        const projectRoot = '/mock';
-        const projectConfig = {
-            getIcons: function () { return icons; },
-            path: '/mock/config.xml',
-            cdvNamespacePrefix: 'cdv'
-        };
-        const platformResourcesDir = PATH_RESOURCE;
-
-        var expectedResourceMapBackground = createResourceMap('ic_launcher_background.png');
-
-        // mocking initial responses for mapImageResources
-        prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
-            if (resourceName.includes('ic_launcher_background.png')) {
-                return expectedResourceMapBackground;
-            }
-        });
-
-        const cleanIcons = prepare.__get__('cleanIcons');
-        cleanIcons(projectRoot, projectConfig, platformResourcesDir);
-
-        const actualResourceMapBackground = updatePathsSpy.calls.argsFor(0)[0];
-        expect(actualResourceMapBackground).toEqual(expectedResourceMapBackground);
-    });
-
-    it('Test#003 : Should clean paths for legacy icons.', function () {
-        // Mock
-        const icons = [mockGetIconItem({
-            src: 'res/icon/android/mdpi.png',
-            density: 'mdpi'
-        })];
-
-        const projectRoot = '/mock';
-        const projectConfig = {
-            getIcons: function () { return icons; },
-            path: '/mock/config.xml',
-            cdvNamespacePrefix: 'cdv'
-        };
-        const platformResourcesDir = PATH_RESOURCE;
-
-        var expectedResourceMap = createResourceMap();
-
-        // mocking initial responses for mapImageResources
-        prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
-            return expectedResourceMap;
-        });
-
-        const cleanIcons = prepare.__get__('cleanIcons');
-        cleanIcons(projectRoot, projectConfig, platformResourcesDir);
-
-        const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-        expect(actualResourceMap).toEqual(expectedResourceMap);
-    });
-});
-
-describe('prepare arguments', () => {
-    // Rewire
-    let Api;
-    let api;
-    let prepare;
-
-    // Spies
-    let gradlePropertiesParserSpy;
-
-    // Mock Data
-    let cordovaProject;
-    let options;
-
-    beforeEach(function () {
-        Api = rewire('../../bin/templates/cordova/Api');
-        prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
-        cordovaProject = {
-            root: '/mock',
-            projectConfig: {
+            const icons = [];
+            const projectRoot = '/mock';
+            const projectConfig = {
+                getIcons: function () { return icons; },
                 path: '/mock/config.xml',
                 cdvNamespacePrefix: 'cdv'
-            },
-            locations: {
-                plugins: '/mock/plugins',
-                www: '/mock/www'
-            }
-        };
+            };
+            const platformResourcesDir = PATH_RESOURCE;
 
-        options = {
-            options: {}
-        };
+            const cleanIcons = prepare.__get__('cleanIcons');
+            cleanIcons(projectRoot, projectConfig, platformResourcesDir);
 
-        Api.__set__('ConfigParser',
-            jasmine.createSpy('ConfigParser')
-                .and.returnValue(cordovaProject.projectConfig)
-        );
-
-        Api.__set__('prepare', prepare.prepare);
-
-        prepare.__set__('events', {
-            emit: jasmine.createSpy('emit')
+            const actualEmitMessage = emitSpy.calls.argsFor(0)[1];
+            expect(actualEmitMessage).toContain('This app does not have launcher icons defined');
         });
-        prepare.__set__('updateWww', jasmine.createSpy());
-        prepare.__set__('updateProjectAccordingTo', jasmine.createSpy('updateProjectAccordingTo')
-            .and.returnValue(Promise.resolve()));
-        prepare.__set__('updateIcons', jasmine.createSpy('updateIcons').and.returnValue(Promise.resolve()));
-        prepare.__set__('updateSplashes', jasmine.createSpy('updateSplashes').and.returnValue(Promise.resolve()));
-        prepare.__set__('updateFileResources', jasmine.createSpy('updateFileResources').and.returnValue(Promise.resolve()));
-        prepare.__set__('updateConfigFilesFrom',
-            jasmine.createSpy('updateConfigFilesFrom')
-                .and.returnValue({
-                    getPreference: jasmine.createSpy('getPreference')
-                }));
 
-        gradlePropertiesParserSpy = spyOn(GradlePropertiesParser.prototype, 'configure');
+        it('Test#002 : Should clean paths for adaptive icons.', function () {
+        // Mock
+            const icons = [mockGetIconItem({
+                density: 'mdpi',
+                background: 'res/icon/android/mdpi-background.png',
+                foreground: 'res/icon/android/mdpi-foreground.png'
+            })];
+            const projectRoot = '/mock';
+            const projectConfig = {
+                getIcons: function () { return icons; },
+                path: '/mock/config.xml',
+                cdvNamespacePrefix: 'cdv'
+            };
+            const platformResourcesDir = PATH_RESOURCE;
 
-        api = new Api();
+            var expectedResourceMapBackground = createResourceMap('ic_launcher_background.png');
+
+            // mocking initial responses for mapImageResources
+            prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
+                if (resourceName.includes('ic_launcher_background.png')) {
+                    return expectedResourceMapBackground;
+                }
+            });
+
+            const cleanIcons = prepare.__get__('cleanIcons');
+            cleanIcons(projectRoot, projectConfig, platformResourcesDir);
+
+            const actualResourceMapBackground = updatePathsSpy.calls.argsFor(0)[0];
+            expect(actualResourceMapBackground).toEqual(expectedResourceMapBackground);
+        });
+
+        it('Test#003 : Should clean paths for legacy icons.', function () {
+        // Mock
+            const icons = [mockGetIconItem({
+                src: 'res/icon/android/mdpi.png',
+                density: 'mdpi'
+            })];
+
+            const projectRoot = '/mock';
+            const projectConfig = {
+                getIcons: function () { return icons; },
+                path: '/mock/config.xml',
+                cdvNamespacePrefix: 'cdv'
+            };
+            const platformResourcesDir = PATH_RESOURCE;
+
+            var expectedResourceMap = createResourceMap();
+
+            // mocking initial responses for mapImageResources
+            prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
+                return expectedResourceMap;
+            });
+
+            const cleanIcons = prepare.__get__('cleanIcons');
+            cleanIcons(projectRoot, projectConfig, platformResourcesDir);
+
+            const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+            expect(actualResourceMap).toEqual(expectedResourceMap);
+        });
     });
 
-    it('runs without arguments', () => {
-        expectAsync(
-            api.prepare(cordovaProject, options).then(() => {
-                expect(gradlePropertiesParserSpy).toHaveBeenCalledWith({});
-            })
-        ).toBeResolved();
+    describe('prepare arguments', () => {
+    // Rewire
+        let Api;
+        let api;
+        let prepare;
+
+        // Spies
+        let gradlePropertiesParserSpy;
+
+        // Mock Data
+        let cordovaProject;
+        let options;
+
+        beforeEach(function () {
+            Api = rewire('../../bin/templates/cordova/Api');
+            prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+            cordovaProject = {
+                root: '/mock',
+                projectConfig: {
+                    path: '/mock/config.xml',
+                    cdvNamespacePrefix: 'cdv'
+                },
+                locations: {
+                    plugins: '/mock/plugins',
+                    www: '/mock/www'
+                }
+            };
+
+            options = {
+                options: {}
+            };
+
+            Api.__set__('ConfigParser',
+                jasmine.createSpy('ConfigParser')
+                    .and.returnValue(cordovaProject.projectConfig)
+            );
+
+            Api.__set__('prepare', prepare.prepare);
+
+            prepare.__set__('events', {
+                emit: jasmine.createSpy('emit')
+            });
+            prepare.__set__('updateWww', jasmine.createSpy());
+            prepare.__set__('updateProjectAccordingTo', jasmine.createSpy('updateProjectAccordingTo')
+                .and.returnValue(Promise.resolve()));
+            prepare.__set__('updateIcons', jasmine.createSpy('updateIcons').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateSplashes', jasmine.createSpy('updateSplashes').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateFileResources', jasmine.createSpy('updateFileResources').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateConfigFilesFrom',
+                jasmine.createSpy('updateConfigFilesFrom')
+                    .and.returnValue({
+                        getPreference: jasmine.createSpy('getPreference')
+                    }));
+
+            gradlePropertiesParserSpy = spyOn(GradlePropertiesParser.prototype, 'configure');
+
+            api = new Api();
+        });
+
+        it('runs without arguments', () => {
+            expectAsync(
+                api.prepare(cordovaProject, options).then(() => {
+                    expect(gradlePropertiesParserSpy).toHaveBeenCalledWith({});
+                })
+            ).toBeResolved();
+        });
+
+        it('runs with jvmargs', () => {
+            options.options.argv = ['--jvmargs=-Xmx=4096m'];
+            expectAsync(
+                api.prepare(cordovaProject, options).then(() => {
+                    expect(gradlePropertiesParserSpy).toHaveBeenCalledWith({
+                        'org.gradle.jvmargs': '-Xmx=4096m'
+                    });
+                })
+            ).toBeResolved();
+        });
     });
 
-    it('runs with jvmargs', () => {
-        options.options.argv = ['--jvmargs=-Xmx=4096m'];
-        expectAsync(
-            api.prepare(cordovaProject, options).then(() => {
-                expect(gradlePropertiesParserSpy).toHaveBeenCalledWith({
-                    'org.gradle.jvmargs': '-Xmx=4096m'
-                });
-            })
-        ).toBeResolved();
+    describe('updateSplashes method', function () {
+        // Rewire
+        let prepare;
+
+        // Spies
+        let emitSpy;
+        let updatePathsSpy;
+
+        // Mock Data
+        let cordovaProject;
+        let platformResourcesDir;
+
+        beforeEach(function () {
+            prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+            cordovaProject = {
+                root: '/mock',
+                projectConfig: {
+                    path: '/mock/config.xml',
+                    cdvNamespacePrefix: 'cdv'
+                },
+                locations: {
+                    plugins: '/mock/plugins',
+                    www: '/mock/www'
+                }
+            };
+            platformResourcesDir = PATH_RESOURCE;
+
+            emitSpy = jasmine.createSpy('emit');
+            prepare.__set__('events', {
+                emit: emitSpy
+            });
+
+            updatePathsSpy = jasmine.createSpy('updatePaths');
+            prepare.__set__('FileUpdater', {
+                updatePaths: updatePathsSpy
+            });
+
+            // mocking initial responses for mapImageResources
+            prepare.__set__('makeSplashCleanupMap', (rootDir, resourcesDir) => ({
+                [path.join(resourcesDir, 'drawable-mdpi/screen.png')]: null,
+                [path.join(resourcesDir, 'drawable-mdpi/screen.webp')]: null
+            }));
+        });
+
+        it('Test#001 : Should detect no defined splash screens.', function () {
+            const updateSplashes = prepare.__get__('updateSplashes');
+
+            // mock data.
+            cordovaProject.projectConfig.getSplashScreens = function (platform) {
+                return [];
+            };
+
+            updateSplashes(cordovaProject, platformResourcesDir);
+
+            // The emit was called
+            expect(emitSpy).toHaveBeenCalled();
+
+            // The emit message was.
+            const actual = emitSpy.calls.argsFor(0)[1];
+            const expected = 'This app does not have splash screens defined';
+            expect(actual).toEqual(expected);
+        });
+
+        it('Test#02 : Should update splash png icon.', function () {
+            const updateSplashes = prepare.__get__('updateSplashes');
+
+            // mock data.
+            cordovaProject.projectConfig.getSplashScreens = function (platform) {
+                return [mockGetSplashScreenItem({
+                    density: 'mdpi',
+                    src: 'res/splash/android/mdpi-screen.png'
+                })];
+            };
+
+            updateSplashes(cordovaProject, platformResourcesDir);
+
+            // The emit was called
+            expect(emitSpy).toHaveBeenCalled();
+
+            // The emit message was.
+            const actual = emitSpy.calls.argsFor(0)[1];
+            const expected = 'Updating splash screens at ' + PATH_RESOURCE;
+            expect(actual).toEqual(expected);
+
+            const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+            const expectedResourceMap = {};
+            expectedResourceMap[path.join(PATH_RESOURCE, 'drawable-mdpi', 'screen.png')] = 'res/splash/android/mdpi-screen.png';
+            expectedResourceMap[path.join(PATH_RESOURCE, 'drawable-mdpi', 'screen.webp')] = null;
+
+            expect(actualResourceMap).toEqual(expectedResourceMap);
+        });
+
+        it('Test#03 : Should update splash webp icon.', function () {
+            const updateSplashes = prepare.__get__('updateSplashes');
+
+            // mock data.
+            cordovaProject.projectConfig.getSplashScreens = function (platform) {
+                return [mockGetSplashScreenItem({
+                    density: 'mdpi',
+                    src: 'res/splash/android/mdpi-screen.webp'
+                })];
+            };
+
+            // Creating Spies
+            updateSplashes(cordovaProject, platformResourcesDir);
+
+            // The emit was called
+            expect(emitSpy).toHaveBeenCalled();
+
+            // The emit message was.
+            const actual = emitSpy.calls.argsFor(0)[1];
+            const expected = 'Updating splash screens at ' + PATH_RESOURCE;
+            expect(actual).toEqual(expected);
+
+            const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
+
+            const expectedResourceMap = {};
+            expectedResourceMap[path.join(PATH_RESOURCE, 'drawable-mdpi', 'screen.webp')] = 'res/splash/android/mdpi-screen.webp';
+            expectedResourceMap[path.join(PATH_RESOURCE, 'drawable-mdpi', 'screen.png')] = null;
+
+            expect(actualResourceMap).toEqual(expectedResourceMap);
+        });
     });
 });

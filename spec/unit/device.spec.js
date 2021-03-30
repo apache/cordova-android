@@ -33,36 +33,11 @@ describe('device', () => {
     });
 
     describe('list', () => {
-        it('should return the list from adb devices', () => {
-            AdbSpy.devices.and.returnValue(Promise.resolve(DEVICE_LIST));
+        it('should return a list of all connected devices', () => {
+            AdbSpy.devices.and.resolveTo(['emulator-5556', '123a76565509e124']);
 
             return device.list().then(list => {
-                expect(list).toEqual(DEVICE_LIST);
-            });
-        });
-
-        it('should kill adb and try to get devices again if none are found the first time, and `lookHarder` is set', () => {
-            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.resolve());
-            device.__set__('execa', execaSpy);
-            AdbSpy.devices.and.returnValues(Promise.resolve([]), Promise.resolve(DEVICE_LIST));
-
-            return device.list(true).then(list => {
-                expect(execaSpy).toHaveBeenCalledWith('killall', ['adb']);
-                expect(list).toBe(DEVICE_LIST);
-                expect(AdbSpy.devices).toHaveBeenCalledTimes(2);
-            });
-        });
-
-        it('should return the empty list if killing adb fails', () => {
-            const emptyDevices = [];
-            const execaSpy = jasmine.createSpy('execa').and.returnValue(Promise.reject());
-            device.__set__('execa', execaSpy);
-            AdbSpy.devices.and.returnValues(Promise.resolve(emptyDevices));
-
-            return device.list(true).then(list => {
-                expect(execaSpy).toHaveBeenCalledWith('killall', ['adb']);
-                expect(list).toBe(emptyDevices);
-                expect(AdbSpy.devices).toHaveBeenCalledTimes(1);
+                expect(list).toEqual(['123a76565509e124']);
             });
         });
     });
@@ -125,108 +100,6 @@ describe('device', () => {
             return device.resolveTarget(target).then(deviceInfo => {
                 expect(buildSpy.detectArchitecture).toHaveBeenCalledWith(target);
                 expect(deviceInfo.arch).toBe(arch);
-            });
-        });
-    });
-
-    describe('install', () => {
-        let AndroidManifestSpy;
-        let AndroidManifestFns;
-        let AndroidManifestGetActivitySpy;
-        let buildSpy;
-        let target;
-
-        beforeEach(() => {
-            target = { target: DEVICE_LIST[0], arch: 'arm7', isEmulator: false };
-
-            buildSpy = jasmine.createSpyObj('build', ['findBestApkForArchitecture']);
-            device.__set__('build', buildSpy);
-
-            AndroidManifestFns = jasmine.createSpyObj('AndroidManifestFns', ['getPackageId', 'getActivity']);
-            AndroidManifestGetActivitySpy = jasmine.createSpyObj('getActivity', ['getName']);
-            AndroidManifestFns.getActivity.and.returnValue(AndroidManifestGetActivitySpy);
-            AndroidManifestSpy = jasmine.createSpy('AndroidManifest').and.returnValue(AndroidManifestFns);
-            device.__set__('AndroidManifest', AndroidManifestSpy);
-
-            AdbSpy.install.and.returnValue(Promise.resolve());
-            AdbSpy.shell.and.returnValue(Promise.resolve());
-            AdbSpy.start.and.returnValue(Promise.resolve());
-        });
-
-        it('should get the full target object if only id is specified', () => {
-            const targetId = DEVICE_LIST[0];
-            spyOn(device, 'resolveTarget').and.returnValue(Promise.resolve(target));
-
-            return device.install(targetId).then(() => {
-                expect(device.resolveTarget).toHaveBeenCalledWith(targetId);
-            });
-        });
-
-        it('should install to the passed target', () => {
-            return device.install(target).then(() => {
-                expect(AdbSpy.install).toHaveBeenCalledWith(target.target, undefined, jasmine.anything());
-            });
-        });
-
-        it('should install the correct apk based on the architecture and build results', () => {
-            const buildResults = {
-                apkPaths: 'path/to/apks',
-                buildType: 'debug',
-                buildMethod: 'foo'
-            };
-
-            const apkPath = 'my/apk/path/app.apk';
-            buildSpy.findBestApkForArchitecture.and.returnValue(apkPath);
-
-            return device.install(target, buildResults).then(() => {
-                expect(buildSpy.findBestApkForArchitecture).toHaveBeenCalledWith(buildResults, target.arch);
-                expect(AdbSpy.install).toHaveBeenCalledWith(jasmine.anything(), apkPath, jasmine.anything());
-            });
-        });
-
-        it('should uninstall and reinstall app if failure is due to different certificates', () => {
-            AdbSpy.install.and.returnValues(
-                Promise.reject('Failed to install: INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES'),
-                Promise.resolve()
-            );
-
-            AdbSpy.uninstall.and.callFake(() => {
-                expect(AdbSpy.install).toHaveBeenCalledTimes(1);
-                return Promise.resolve();
-            });
-
-            return device.install(target).then(() => {
-                expect(AdbSpy.install).toHaveBeenCalledTimes(2);
-                expect(AdbSpy.uninstall).toHaveBeenCalled();
-            });
-        });
-
-        it('should throw any error not caused by different certificates', () => {
-            const errorMsg = new CordovaError('Failed to install');
-            AdbSpy.install.and.returnValues(Promise.reject(errorMsg));
-
-            return device.install(target).then(
-                () => fail('Unexpectedly resolved'),
-                err => {
-                    expect(err).toBe(errorMsg);
-                }
-            );
-        });
-
-        it('should unlock the screen on device', () => {
-            return device.install(target).then(() => {
-                expect(AdbSpy.shell).toHaveBeenCalledWith(target.target, 'input keyevent 82');
-            });
-        });
-
-        it('should start the newly installed app on the device', () => {
-            const packageId = 'unittestapp';
-            const activityName = 'TestActivity';
-            AndroidManifestFns.getPackageId.and.returnValue(packageId);
-            AndroidManifestGetActivitySpy.getName.and.returnValue(activityName);
-
-            return device.install(target).then(() => {
-                expect(AdbSpy.start).toHaveBeenCalledWith(target.target, `${packageId}/.${activityName}`);
             });
         });
     });
