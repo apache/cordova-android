@@ -56,6 +56,14 @@ describe('check_reqs', function () {
 
             await expectAsync(check_reqs.check_java()).toBeRejectedWithError(CordovaError, /Requirements check failed for JDK 9999.9999.9999! Detected version: 1.8.0/);
         });
+
+        it('should return the version', async () => {
+            check_reqs.__set__({
+                java: { getVersion: async () => ({ version: '1.8.0' }) }
+            });
+
+            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
+        });
     });
 
     describe('check_android', function () {

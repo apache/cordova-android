@@ -135,6 +135,8 @@ module.exports.check_gradle = function () {
 
 /**
  * Checks for the java installation and correct version
+ *
+ * Despite the name, it should return the Java version value, it's used by the Cordova CLI.
  */
 module.exports.check_java = async function () {
     const javaVersion = await java.getVersion();
@@ -145,6 +147,8 @@ module.exports.check_java = async function () {
             'Check your ANDROID_SDK_ROOT / JAVA_HOME / PATH environment variables.'
         );
     }
+
+    return javaVersion;
 };
 
 // Returns a promise.
