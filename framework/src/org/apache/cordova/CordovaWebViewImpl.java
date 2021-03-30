@@ -19,6 +19,7 @@
 package org.apache.cordova;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,6 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Constructor;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -232,25 +234,37 @@ public class CordovaWebViewImpl implements CordovaWebView {
             LOG.w(TAG, "showWebPage: Refusing to send intent for URL since it is not in the <allow-intent> whitelist. URL=" + url);
             return;
         }
+
+        Intent intent = null;
         try {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
-            Uri uri = Uri.parse(url);
-            // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
-            // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
-            if ("file".equals(uri.getScheme())) {
-                intent.setDataAndType(uri, resourceApi.getMimeType(uri));
+            if (url.startsWith("intent://")) {
+                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
             } else {
-                intent.setData(uri);
+                intent = new Intent(Intent.ACTION_VIEW);
+                // To send an intent without CATEGORY_BROWSER, a custom plugin should be used.
+                intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                Uri uri = Uri.parse(url);
+                // Omitting the MIME type for file: URLs causes "No Activity found to handle Intent".
+                // Adding the MIME type to http: URLs causes them to not be handled by the downloader.
+                if ("file".equals(uri.getScheme())) {
+                    intent.setDataAndType(uri, resourceApi.getMimeType(uri));
+                } else {
+                    intent.setData(uri);
+                }
             }
             if (cordova.getActivity() != null) {
                 cordova.getActivity().startActivity(intent);
             } else {
                 LOG.d(TAG, "Cordova activity does not exist.");
             }
-        } catch (android.content.ActivityNotFoundException e) {
-            LOG.e(TAG, "Error loading url " + url, e);
+        } catch (URISyntaxException e) {
+            LOG.e(TAG, "Error parsing url " + url, e);
+        } catch (ActivityNotFoundException e) {
+            if (url.startsWith("intent://") && intent != null && intent.getStringExtra("browser_fallback_url") != null) {
+                showWebPage(intent.getStringExtra("browser_fallback_url"), openExternal, clearHistory, params);
+            } else {
+                LOG.e(TAG, "Error loading url " + url, e);
+            }
         }
     }
 
