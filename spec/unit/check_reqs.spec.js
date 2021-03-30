@@ -26,7 +26,7 @@ var which = require('which');
 const { CordovaError } = require('cordova-common');
 
 // This should match /bin/templates/project/build.gradle
-const DEFAULT_TARGET_API = 29;
+const DEFAULT_TARGET_API = 30;
 
 describe('check_reqs', function () {
     let check_reqs;
