@@ -72,6 +72,7 @@ function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
         fs.copySync(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'));
         fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
+        fs.copySync(path.join(ROOT, 'framework', 'repositories.gradle'), path.join(nestedCordovaLibPath, 'repositories.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'src'), path.join(nestedCordovaLibPath, 'src'));
     }
 }
@@ -126,6 +127,8 @@ function copyBuildRules (projectPath, isLegacy) {
     } else {
         fs.copySync(path.join(srcDir, 'build.gradle'), path.join(projectPath, 'build.gradle'));
         fs.copySync(path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app', 'build.gradle'));
+        fs.copySync(path.join(srcDir, 'app', 'repositories.gradle'), path.join(projectPath, 'app', 'repositories.gradle'));
+        fs.copySync(path.join(srcDir, 'repositories.gradle'), path.join(projectPath, 'repositories.gradle'));
         fs.copySync(path.join(srcDir, 'wrapper.gradle'), path.join(projectPath, 'wrapper.gradle'));
     }
 }
