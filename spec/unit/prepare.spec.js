@@ -826,17 +826,17 @@ describe('prepare', () => {
             api = new Api();
         });
 
-        it('runs without arguments', () => {
-            expectAsync(
+        it('runs without arguments', async () => {
+            await expectAsync(
                 api.prepare(cordovaProject, options).then(() => {
                     expect(gradlePropertiesParserSpy).toHaveBeenCalledWith({});
                 })
             ).toBeResolved();
         });
 
-        it('runs with jvmargs', () => {
+        it('runs with jvmargs', async () => {
             options.options.argv = ['--jvmargs=-Xmx=4096m'];
-            expectAsync(
+            await expectAsync(
                 api.prepare(cordovaProject, options).then(() => {
                     expect(gradlePropertiesParserSpy).toHaveBeenCalledWith({
                         'org.gradle.jvmargs': '-Xmx=4096m'

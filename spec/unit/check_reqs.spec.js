@@ -255,20 +255,20 @@ describe('check_reqs', function () {
                 });
             });
 
-            it('with ANDROID_SDK_ROOT / without ANDROID_HOME', () => {
+            it('with ANDROID_SDK_ROOT / without ANDROID_HOME', async () => {
                 process.env.ANDROID_SDK_ROOT = '/android/sdk/root';
-                expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/root/bin/gradle');
+                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/root/bin/gradle');
             });
 
-            it('with ANDROID_SDK_ROOT / with ANDROID_HOME', () => {
+            it('with ANDROID_SDK_ROOT / with ANDROID_HOME', async () => {
                 process.env.ANDROID_SDK_ROOT = '/android/sdk/root';
                 process.env.ANDROID_HOME = '/android/sdk/home';
-                expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/root/bin/gradle');
+                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/root/bin/gradle');
             });
 
-            it('without ANDROID_SDK_ROOT / with ANDROID_HOME', () => {
+            it('without ANDROID_SDK_ROOT / with ANDROID_HOME', async () => {
                 process.env.ANDROID_HOME = '/android/sdk/home';
-                expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/home/bin/gradle');
+                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/home/bin/gradle');
             });
 
             it('without ANDROID_SDK_ROOT / without ANDROID_HOME', () => {
