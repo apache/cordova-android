@@ -26,7 +26,6 @@ const CordovaError = require('cordova-common').CordovaError;
 const check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
 
 describe('emulator', () => {
-    const EMULATOR_LIST = ['emulator-5555', 'emulator-5556', 'emulator-5557'];
     let emu;
 
     beforeEach(() => {
@@ -526,52 +525,6 @@ describe('emulator', () => {
             return waitPromise.then(isReady => {
                 expect(isReady).toBe(false);
                 expect(emu.wait_for_boot).toHaveBeenCalledTimes(expectedRetries + 1);
-            });
-        });
-    });
-
-    describe('resolveTarget', () => {
-        const arch = 'arm7-test';
-
-        beforeEach(() => {
-            const buildSpy = jasmine.createSpyObj('build', ['detectArchitecture']);
-            buildSpy.detectArchitecture.and.returnValue(Promise.resolve(arch));
-            emu.__set__('build', buildSpy);
-
-            spyOn(emu, 'list_started').and.returnValue(Promise.resolve(EMULATOR_LIST));
-        });
-
-        it('should throw an error if there are no running emulators', () => {
-            emu.list_started.and.returnValue(Promise.resolve([]));
-
-            return emu.resolveTarget().then(
-                () => fail('Unexpectedly resolved'),
-                err => {
-                    expect(err).toEqual(jasmine.any(CordovaError));
-                }
-            );
-        });
-
-        it('should throw an error if the requested emulator is not running', () => {
-            const targetEmulator = 'unstarted-emu';
-
-            return emu.resolveTarget(targetEmulator).then(
-                () => fail('Unexpectedly resolved'),
-                err => {
-                    expect(err.message).toContain(targetEmulator);
-                }
-            );
-        });
-
-        it('should return info on the first running emulator if none is specified', () => {
-            return emu.resolveTarget().then(emulatorInfo => {
-                expect(emulatorInfo.target).toBe(EMULATOR_LIST[0]);
-            });
-        });
-
-        it('should return the emulator info', () => {
-            return emu.resolveTarget(EMULATOR_LIST[1]).then(emulatorInfo => {
-                expect(emulatorInfo).toEqual({ target: EMULATOR_LIST[1], arch, isEmulator: true });
             });
         });
     });

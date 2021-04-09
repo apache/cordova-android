@@ -20,7 +20,6 @@
 const execa = require('execa');
 const fs = require('fs-extra');
 var android_versions = require('android-versions');
-var build = require('./build');
 var path = require('path');
 var Adb = require('./Adb');
 var events = require('cordova-common').events;
@@ -347,23 +346,5 @@ module.exports.wait_for_boot = function (emulator_id, time_remaining) {
                 }, delay);
             });
         }
-    });
-};
-
-module.exports.resolveTarget = function (target) {
-    return this.list_started().then(function (emulator_list) {
-        if (emulator_list.length < 1) {
-            return Promise.reject(new CordovaError('No running Android emulators found, please start an emulator before deploying your project.'));
-        }
-
-        // default emulator
-        target = target || emulator_list[0];
-        if (emulator_list.indexOf(target) < 0) {
-            return Promise.reject(new CordovaError('Unable to find target \'' + target + '\'. Failed to deploy to emulator.'));
-        }
-
-        return build.detectArchitecture(target).then(function (arch) {
-            return { target: target, arch: arch, isEmulator: true };
-        });
     });
 };
