@@ -92,9 +92,9 @@ task wrapper(type: Wrapper) {
 ext {
     apply from: '../CordovaLib/cordova.gradle'
 
-    // The value for android.compileSdkVersion.
-    if (!project.hasProperty('cdvCompileSdkVersion')) {
-        cdvCompileSdkVersion = null;
+    // The value for android.compileSdkVersion & android.targetSdkVersion
+    if (!project.hasProperty('cdvSdkVersion')) {
+        cdvSdkVersion = null;
     }
     // The value for android.buildToolsVersion.
     if (!project.hasProperty('cdvBuildToolsVersion')) {
@@ -111,10 +111,6 @@ ext {
     // Sets the maxSdkVersion to the given value.
     if (!project.hasProperty('cdvMaxSdkVersion')) {
         cdvMaxSdkVersion = null
-    }
-    // The value for android.targetSdkVersion.
-    if (!project.hasProperty('cdvTargetSdkVersion')) {
-        cdvTargetSdkVersion = null;
     }
     // Whether to build architecture-specific APKs.
     if (!project.hasProperty('cdvBuildMultipleApks')) {
@@ -160,11 +156,11 @@ if (hasBuildExtras2) {
 }
 
 // Set property defaults after extension .gradle files.
-ext.cdvCompileSdkVersion = cdvCompileSdkVersion == null ? (
-    defaultCompileSdkVersion == null
+ext.cdvSdkVersion = cdvSdkVersion == null ? (
+    defaultSdkVersion == null
         ? privateHelpers.getProjectTarget()
-        : defaultCompileSdkVersion
-) : Integer.parseInt('' + cdvCompileSdkVersion);
+        : defaultSdkVersion
+) : Integer.parseInt('' + cdvSdkVersion);
 
 if (ext.cdvBuildToolsVersion == null) {
     ext.cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
@@ -186,7 +182,6 @@ ext.cdvMinSdkVersion = cdvMinSdkVersion == null ? defaultMinSdkVersion : Integer
 if (cdvMaxSdkVersion != null) {
     ext.cdvMaxSdkVersion = Integer.parseInt('' + cdvMaxSdkVersion)
 }
-ext.cdvTargetSdkVersion = cdvTargetSdkVersion == null ? defaultTargetSdkVersion  : Integer.parseInt('' + cdvTargetSdkVersion)
 
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
 
@@ -214,13 +209,12 @@ cdvBuildRelease.dependsOn {
 
 task cdvPrintProps {
     doLast {
-        println('cdvCompileSdkVersion=' + cdvCompileSdkVersion)
+        println('cdvSdkVersion=' + cdvSdkVersion)
         println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
         println('cdvVersionCode=' + cdvVersionCode)
         println('cdvVersionCodeForceAbiDigit=' + cdvVersionCodeForceAbiDigit)
         println('cdvMinSdkVersion=' + cdvMinSdkVersion)
         println('cdvMaxSdkVersion=' + cdvMaxSdkVersion)
-        println('cdvTargetSdkVersion=' + cdvTargetSdkVersion)
         println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
         println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
         println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
@@ -246,8 +240,9 @@ android {
             maxSdkVersion cdvMaxSdkVersion
         }
 
-        if(cdvTargetSdkVersion != null) {
-            targetSdkVersion cdvTargetSdkVersion
+        if (cdvSdkVersion != null) {
+            targetSdkVersion cdvSdkVersion
+            compileSdkVersion cdvSdkVersion
         }
     }
 
@@ -255,7 +250,6 @@ android {
       abortOnError false;
     }
 
-    compileSdkVersion cdvCompileSdkVersion
     buildToolsVersion cdvBuildToolsVersion
 
     // This code exists for Crosswalk and other Native APIs.
