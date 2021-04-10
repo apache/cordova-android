@@ -28,6 +28,15 @@ String doEnsureValueExists(filePath, props, key) {
     return props.get(key)
 }
 
+Properties getGradleProperties() {
+    def props = new Properties()
+    def propsFile = 'gradle.properties';
+    file(propsFile).withReader { reader ->
+        props.load(reader)
+    }
+    return props
+}
+
 String doGetProjectTarget() {
     def props = new Properties()
     def propertiesFile = 'project.properties';
@@ -76,6 +85,12 @@ String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
     }
 
     highestBuildToolsVersion.getOriginalString()
+}
+
+def doGetCordovaDefaults() {
+    def jsonFile = new File("$rootDir/${getProperties().get('cordova.defaultsFileLocation')}/defaults.json")
+    def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
+    return parsedJson
 }
 
 String getAndroidSdkDir() {
@@ -155,8 +170,9 @@ def doGetConfigPreference(name, defaultValue) {
 ext {
     // These helpers are shared, but are not guaranteed to be stable / unchanged.
     privateHelpers = {}
+    privateHelpers.getCordovaDefaults = { doGetCordovaDefaults() }
     privateHelpers.getProjectTarget = { doGetProjectTarget() }
-    privateHelpers.findLatestInstalledBuildTools = { doFindLatestInstalledBuildTools('19.1.0') }
+    privateHelpers.findLatestInstalledBuildTools = { doFindLatestInstalledBuildTools("29.0.2") }
     privateHelpers.extractIntFromManifest = { name -> doExtractIntFromManifest(name) }
     privateHelpers.extractStringFromManifest = { name -> doExtractStringFromManifest(name) }
     privateHelpers.ensureValueExists = { filePath, props, key -> doEnsureValueExists(filePath, props, key) }

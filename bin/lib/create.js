@@ -20,8 +20,9 @@
 var path = require('path');
 var fs = require('fs-extra');
 var utils = require('../templates/cordova/lib/utils');
-var check_reqs = require('./../templates/cordova/lib/check_reqs');
+var constants = require('../../framework/defaults.json');
 var ROOT = path.join(__dirname, '..', '..');
+const TemplateFile = require('../templates/cordova/lib/TemplateFile');
 
 var CordovaError = require('cordova-common').CordovaError;
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
@@ -42,15 +43,11 @@ function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
+function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
     var app_path = path.join(projectPath, 'app', 'src', 'main');
     const platform_www = path.join(projectPath, 'platform_www');
-
-    if (isLegacy) {
-        app_path = projectPath;
-    }
 
     fs.copySync(srcCordovaJsPath, path.join(app_path, 'assets', 'www', 'cordova.js'));
 
@@ -69,11 +66,19 @@ function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
     } else {
         fs.ensureDirSync(nestedCordovaLibPath);
         fs.copySync(path.join(ROOT, 'framework', 'AndroidManifest.xml'), path.join(nestedCordovaLibPath, 'AndroidManifest.xml'));
-        fs.copySync(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'));
-        fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
-        fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
+        TemplateFile.render(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'), {
+            DEFAULT_SDK_VERSION: targetAPI || constants.DEFAULT_SDK_VERSION,
+            DEFAULTS_FILE_PATH: './defaults.json'
+        });
+        TemplateFile.render(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'), {
+            DEFAULT_MIN_SDK_VERSION: constants.DEFAULT_MIN_SDK_VERSION
+        });
+        TemplateFile.render(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'), {
+            DEFAULT_BUILD_TOOLS_VERSION: constants.DEFAULT_BUILD_TOOLS_VERSION
+        });
         fs.copySync(path.join(ROOT, 'framework', 'repositories.gradle'), path.join(nestedCordovaLibPath, 'repositories.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'src'), path.join(nestedCordovaLibPath, 'src'));
+        fs.copySync(path.join(ROOT, 'framework', 'defaults.json'), path.join(projectPath, 'defaults.json'));
     }
 }
 
@@ -93,7 +98,7 @@ function writeProjectProperties (projectPath, target_api) {
     var srcPath = fs.existsSync(dstPath) ? dstPath : templatePath;
 
     var data = fs.readFileSync(srcPath, 'utf8');
-    data = data.replace(/^target=.*/m, 'target=' + target_api);
+    data = data.replace(/^target=.*/m, `target=android-${target_api}`);
     var subProjects = extractSubProjectPaths(data);
     subProjects = subProjects.filter(function (p) {
         return !(/^CordovaLib$/m.exec(p) ||
@@ -125,8 +130,14 @@ function copyBuildRules (projectPath, isLegacy) {
         fs.copySync(path.join(srcDir, 'legacy', 'build.gradle'), path.join(projectPath, 'legacy', 'build.gradle'));
         fs.copySync(path.join(srcDir, 'wrapper.gradle'), path.join(projectPath, 'wrapper.gradle'));
     } else {
-        fs.copySync(path.join(srcDir, 'build.gradle'), path.join(projectPath, 'build.gradle'));
-        fs.copySync(path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app', 'build.gradle'));
+        TemplateFile.render(path.join(srcDir, 'build.gradle'), path.join(projectPath, 'build.gradle'), {
+            DEFAULT_BUILD_TOOLS_VERSION: constants.DEFAULT_BUILD_TOOLS_VERSION,
+            DEFAULT_MIN_SDK_VERSION: constants.DEFAULT_MIN_SDK_VERSION,
+            DEFAULT_SDK_VERSION: constants.DEFAULT_SDK_VERSION
+        });
+        TemplateFile.render(path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app', 'build.gradle'), {
+            DEFAULT_GRADLE_VERSION: constants.DEFAULT_GRADLE_VERSION
+        });
         fs.copySync(path.join(srcDir, 'app', 'repositories.gradle'), path.join(projectPath, 'app', 'repositories.gradle'));
         fs.copySync(path.join(srcDir, 'repositories.gradle'), path.join(projectPath, 'repositories.gradle'));
         fs.copySync(path.join(srcDir, 'wrapper.gradle'), path.join(projectPath, 'wrapper.gradle'));
@@ -247,7 +258,10 @@ exports.create = function (project_path, config, options, events) {
         ? config.name().replace(/[^\w.]/g, '_') : 'CordovaExample';
 
     var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
-    var target_api = check_reqs.get_target();
+    let target_api = parseInt(config.getPreference('android-targetSdkVersion', 'android'), 10);
+    if (isNaN(target_api)) {
+        target_api = constants.DEFAULT_SDK_VERSION;
+    }
 
     // Make the package conform to Java package types
     return exports.validatePackageName(package_name)
@@ -277,7 +291,7 @@ exports.create = function (project_path, config, options, events) {
             fs.ensureDirSync(path.join(app_path, 'libs'));
 
             // copy cordova.js, cordova.jar
-            exports.copyJsAndLibrary(project_path, options.link, safe_activity_name);
+            exports.copyJsAndLibrary(project_path, options.link, safe_activity_name, target_api);
 
             // Set up ther Android Studio paths
             var java_path = path.join(app_path, 'java');
