@@ -66,7 +66,7 @@ module.exports.prepare = function (cordovaProject, options) {
     const gradlePropertiesUserConfig = {};
     if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
     if (maxSdkVersion) gradlePropertiesUserConfig.cdvMaxSdkVersion = maxSdkVersion;
-    if (targetSdkVersion) gradlePropertiesUserConfig.cdvTargetSdkVersion = targetSdkVersion;
+    if (targetSdkVersion) gradlePropertiesUserConfig.cdvSdkVersion = targetSdkVersion;
     if (args.jvmargs) gradlePropertiesUserConfig['org.gradle.jvmargs'] = args.jvmargs;
     if (isGradlePluginKotlinEnabled) {
         gradlePropertiesUserConfig['kotlin.code.style'] = gradlePluginKotlinCodeStyle || 'official';
