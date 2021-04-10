@@ -265,10 +265,11 @@ class ProjectBuilder {
             }).then(function () {
                 return self.prepBuildFiles();
             }).then(() => {
+                const defaults = this._getCordovaDefaults();
                 // update/set the distributionUrl in the gradle-wrapper.properties
                 const gradleWrapperPropertiesPath = path.join(self.root, 'gradle/wrapper/gradle-wrapper.properties');
                 const gradleWrapperProperties = createEditor(gradleWrapperPropertiesPath);
-                const distributionUrl = process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL || 'https://services.gradle.org/distributions/gradle-6.8.3-all.zip';
+                const distributionUrl = process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL || `https://services.gradle.org/distributions/gradle-${defaults.DEFAULT_GRADLE_VERSION}-all.zip`;
                 gradleWrapperProperties.set('distributionUrl', distributionUrl);
                 gradleWrapperProperties.save();
 
@@ -285,6 +286,16 @@ class ProjectBuilder {
                     opts.packageInfo.appendToProperties(signingProperties);
                 }
             });
+    }
+
+    /**
+     * @private
+     * @returns The defaults file contents
+     */
+    _getCordovaDefaults () {
+        return JSON.parse(fs.readFileSync(path.resolve(this.root, 'defaults.json'), {
+            encoding: 'utf8'
+        }));
     }
 
     /*
