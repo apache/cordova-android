@@ -20,7 +20,7 @@
 var rewire = require('rewire');
 var utils = require('../../bin/templates/cordova/lib/utils');
 var create = rewire('../../bin/lib/create');
-var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
+const defaults = require('../../framework/defaults.json');
 var fs = require('fs-extra');
 var path = require('path');
 
@@ -118,7 +118,7 @@ describe('create', function () {
         var project_path = path.join('some', 'path');
         var app_path = path.join(project_path, 'app', 'src', 'main');
         var default_templates = path.join(__dirname, '..', '..', 'bin', 'templates', 'project');
-        var fake_android_target = 'android-1337';
+        var fake_android_target = 1337;
 
         beforeEach(function () {
             Manifest_mock.prototype = jasmine.createSpyObj('AndroidManifest instance mock', ['setPackageId', 'getActivity', 'setName', 'write']);
@@ -138,9 +138,16 @@ describe('create', function () {
             spyOn(fs, 'copySync');
             spyOn(fs, 'ensureDirSync');
             spyOn(utils, 'replaceFileContents');
-            config_mock = jasmine.createSpyObj('ConfigParser mock instance', ['packageName', 'android_packageName', 'name', 'android_activityName']);
+            config_mock = jasmine.createSpyObj('ConfigParser mock instance', ['packageName', 'android_packageName', 'name', 'android_activityName', 'getPreference']);
             events_mock = jasmine.createSpyObj('EventEmitter mock instance', ['emit']);
-            spyOn(check_reqs, 'get_target').and.returnValue(fake_android_target);
+            const getPreferenceOriginal = config_mock.getPreference;
+            config_mock.getPreference.and.callFake((key) => {
+                if (key === 'android-targetSdkVersion') {
+                    return fake_android_target;
+                } else {
+                    return getPreferenceOriginal(key);
+                }
+            });
         });
 
         afterEach(function () {
@@ -291,6 +298,13 @@ describe('create', function () {
             it('should write project.properties file with project details and target API', () => {
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.writeProjectProperties).toHaveBeenCalledWith(project_path, fake_android_target);
+                });
+            });
+
+            it('should write project.properties file with project details and defaulted target API', () => {
+                config_mock.getPreference.and.returnValue(NaN);
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
+                    expect(create.writeProjectProperties).toHaveBeenCalledWith(project_path, defaults.DEFAULT_SDK_VERSION);
                 });
             });
 

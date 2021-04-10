@@ -24,7 +24,7 @@ ext {
         cdvMinSdkVersion = cdvMinSdkVersion as int
         println '[Cordova] cdvMinSdkVersion is overridden, try it at your own risk.'
     } else {
-        cdvMinSdkVersion = 22; // current Cordova's default
+        cdvMinSdkVersion = getCordovaDefaults().DEFAULT_MIN_SDK_VERSION
     }
 
     if (project.hasProperty('cdvAndroidXAppCompatVersion')) {

@@ -38,7 +38,10 @@ class GradlePropertiesParser {
 
             // Android X
             'android.useAndroidX': 'true',
-            'android.enableJetifier': 'true'
+            'android.enableJetifier': 'true',
+
+            // Cordova Configurations
+            'cordova.defaultsFileLocation': '.'
 
             // Shaves another 100ms, but produces a "try at own risk" warning. Not worth it (yet):
             // 'org.gradle.parallel': 'true'

@@ -18,14 +18,16 @@
 
 apply plugin: 'com.android.application'
 
+apply from: '../../../framework/cordova.gradle'
+
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdkVersion getCordovaDefaults().DEFAULT_SDK_VERSION
+    buildToolsVersion getCordovaDefaults().DEFAULT_BUILD_TOOLS_VERSION
 
     defaultConfig {
         applicationId "org.apache.cordova.unittests"
-        minSdkVersion 22
-        targetSdkVersion 30
+        minSdkVersion getCordovaDefaults().DEFAULT_MIN_SDK_VERSION
+        targetSdkVersion getCordovaDefaults().DEFAULT_SDK_VERSION
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
