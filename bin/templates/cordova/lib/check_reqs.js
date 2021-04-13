@@ -161,7 +161,6 @@ module.exports.check_android = function () {
             }
         }
 
-        var androidCmdPath = forgivingWhichSync('android');
         var adbInPath = forgivingWhichSync('adb');
         var avdmanagerInPath = forgivingWhichSync('avdmanager');
         var hasAndroidHome = false;
@@ -172,7 +171,7 @@ module.exports.check_android = function () {
 
         // First ensure ANDROID_HOME is set
         // If we have no hints (nothing in PATH), try a few default locations
-        if (!hasAndroidHome && !androidCmdPath && !adbInPath && !avdmanagerInPath) {
+        if (!hasAndroidHome && !adbInPath && !avdmanagerInPath) {
             if (process.env.ANDROID_HOME) {
                 // Fallback to deprecated `ANDROID_HOME` variable
                 maybeSetAndroidHome(path.join(process.env.ANDROID_HOME));
@@ -222,17 +221,6 @@ module.exports.check_android = function () {
         if (!hasAndroidHome) {
             // If we dont have ANDROID_SDK_ROOT, but we do have some tools on the PATH, try to infer from the tooling PATH.
             var parentDir, grandParentDir;
-            if (androidCmdPath) {
-                parentDir = path.dirname(androidCmdPath);
-                grandParentDir = path.dirname(parentDir);
-                if (path.basename(parentDir) === 'tools' || fs.existsSync(path.join(grandParentDir, 'tools', 'android'))) {
-                    maybeSetAndroidHome(grandParentDir);
-                } else {
-                    throw new CordovaError('Failed to find \'ANDROID_SDK_ROOT\' environment variable. Try setting it manually.\n' +
-                        'Detected \'android\' command at ' + parentDir + ' but no \'tools\' directory found near.\n' +
-                        'Try reinstall Android SDK or update your PATH to include valid path to SDK' + path.sep + 'tools directory.');
-                }
-            }
             if (adbInPath) {
                 parentDir = path.dirname(adbInPath);
                 grandParentDir = path.dirname(parentDir);
@@ -265,9 +253,6 @@ module.exports.check_android = function () {
                 '\nTry update it manually to point to valid SDK directory.');
         }
         // Next let's make sure relevant parts of the SDK tooling is in our PATH
-        if (hasAndroidHome && !androidCmdPath) {
-            process.env.PATH += path.delimiter + path.join(process.env.ANDROID_SDK_ROOT, 'tools');
-        }
         if (hasAndroidHome && !adbInPath) {
             process.env.PATH += path.delimiter + path.join(process.env.ANDROID_SDK_ROOT, 'platform-tools');
         }
@@ -276,18 +261,6 @@ module.exports.check_android = function () {
         }
         return hasAndroidHome;
     });
-};
-
-// TODO: is this actually needed?
-module.exports.getAbsoluteAndroidCmd = function () {
-    var cmd = forgivingWhichSync('android');
-    if (cmd.length === 0) {
-        cmd = forgivingWhichSync('sdkmanager');
-    }
-    if (module.exports.isWindows()) {
-        return '"' + cmd + '"';
-    }
-    return cmd.replace(/(\s)/g, '\\$1');
 };
 
 module.exports.check_android_target = function (originalError) {
@@ -301,13 +274,7 @@ module.exports.check_android_target = function (originalError) {
         if (targets.indexOf(desired_api_level) >= 0) {
             return targets;
         }
-        var androidCmd = module.exports.getAbsoluteAndroidCmd();
-        var msg = 'Please install Android target / API level: "' + desired_api_level + '".\n\n' +
-            'Hint: Open the SDK manager by running: ' + androidCmd + '\n' +
-            'You will require:\n' +
-            '1. "SDK Platform" for API level ' + desired_api_level + '\n' +
-            '2. "Android SDK Platform-tools (latest)\n' +
-            '3. "Android SDK Build-tools" (latest)';
+        var msg = `Please install the Android SDK Platform "platforms;${desired_api_level}"`;
         if (originalError) {
             msg = originalError + '\n' + msg;
         }

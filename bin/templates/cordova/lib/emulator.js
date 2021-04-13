@@ -99,48 +99,6 @@ module.exports.list_images_using_avdmanager = function () {
     });
 };
 
-module.exports.list_images_using_android = function () {
-    return execa('android', ['list', 'avd']).then(({ stdout: output }) => {
-        var response = output.split('\n');
-        var emulator_list = [];
-        for (var i = 1; i < response.length; i++) {
-            // To return more detailed information use img_obj
-            var img_obj = {};
-            if (response[i].match(/Name:\s/)) {
-                img_obj.name = response[i].split('Name: ')[1].replace('\r', '');
-                if (response[i + 1].match(/Device:\s/)) {
-                    i++;
-                    img_obj.device = response[i].split('Device: ')[1].replace('\r', '');
-                }
-                if (response[i + 1].match(/Path:\s/)) {
-                    i++;
-                    img_obj.path = response[i].split('Path: ')[1].replace('\r', '');
-                }
-                if (response[i + 1].match(/\(API\slevel\s/) || (response[i + 2] && response[i + 2].match(/\(API\slevel\s/))) {
-                    i++;
-                    var secondLine = response[i + 1].match(/\(API\slevel\s/) ? response[i + 1] : '';
-                    img_obj.target = (response[i] + secondLine).split('Target: ')[1].replace('\r', '');
-                }
-                if (response[i + 1].match(/ABI:\s/)) {
-                    i++;
-                    img_obj.abi = response[i].split('ABI: ')[1].replace('\r', '');
-                }
-                if (response[i + 1].match(/Skin:\s/)) {
-                    i++;
-                    img_obj.skin = response[i].split('Skin: ')[1].replace('\r', '');
-                }
-
-                emulator_list.push(img_obj);
-            }
-            /* To just return a list of names use this
-            if (response[i].match(/Name:\s/)) {
-                emulator_list.push(response[i].split('Name: ')[1].replace('\r', '');
-            } */
-        }
-        return emulator_list;
-    });
-};
-
 /**
  * Returns a Promise for a list of emulator images in the form of objects
  * {
@@ -156,10 +114,8 @@ module.exports.list_images = function () {
     return Promise.resolve().then(function () {
         if (forgivingWhichSync('avdmanager')) {
             return module.exports.list_images_using_avdmanager();
-        } else if (forgivingWhichSync('android')) {
-            return module.exports.list_images_using_android();
         } else {
-            return Promise.reject(new CordovaError('Could not find either `android` or `avdmanager` on your $PATH! Are you sure the Android SDK is installed and available?'));
+            return Promise.reject(new CordovaError('Could not find `avdmanager` on your $PATH! Are you sure the Android SDK is installed and available?'));
         }
     }).then(function (avds) {
         // In case we're missing the Android OS version string from the target description, add it.
@@ -252,11 +208,7 @@ module.exports.start = function (emulator_ID, boot_timeout) {
                 return best.name;
             }
 
-            var androidCmd = check_reqs.getAbsoluteAndroidCmd();
-            return Promise.reject(new CordovaError('No emulator images (avds) found.\n' +
-                '1. Download desired System Image by running: ' + androidCmd + ' sdk\n' +
-                '2. Create an AVD by running: ' + androidCmd + ' avd\n' +
-                'HINT: For a faster emulator, use an Intel System Image and install the HAXM device driver\n'));
+            return Promise.reject(new CordovaError('No emulator images (avds) found'));
         });
     }).then(function (emulatorId) {
         return self.get_available_port().then(function (port) {
