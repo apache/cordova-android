@@ -137,6 +137,11 @@ ext {
         cdvBuildArch = null
     }
 
+    // Sets the default cdvAndroidXAppCompatVersion to the given value.
+    if (!project.hasProperty('cdvAndroidXAppCompatVersion')) {
+        cdvAndroidXAppCompatVersion = null
+    }
+
     // Plugin gradle extensions can append to this to have code run at the end.
     cdvPluginPostBuildExtras = []
 }
@@ -185,6 +190,8 @@ ext.cdvTargetSdkVersion = cdvTargetSdkVersion == null ? defaultTargetSdkVersion 
 
 ext.cdvVersionCode = cdvVersionCode == null ? null : Integer.parseInt('' + cdvVersionCode)
 
+ext.cdvAndroidXAppCompatVersion = cdvAndroidXAppCompatVersion == null ? defaultAndroidXAppCompatVersion : cdvAndroidXAppCompatVersion
+
 def computeBuildTargetName(debugBuild) {
     def ret = 'assemble'
     if (cdvBuildMultipleApks && cdvBuildArch) {
@@ -219,6 +226,7 @@ task cdvPrintProps {
         println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
         println('cdvBuildArch=' + cdvBuildArch)
         println('computedVersionCode=' + android.defaultConfig.versionCode)
+        println('cdvAndroidXAppCompatVersion=' + cdvAndroidXAppCompatVersion)
         android.productFlavors.each { flavor ->
             println('computed' + flavor.name.capitalize() + 'VersionCode=' + flavor.versionCode)
         }
@@ -339,7 +347,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation "androidx.appcompat:appcompat:$cdvAndroidXAppCompatVersion"
 
     if (cdvHelpers.getConfigPreference('GradlePluginKotlinEnabled', 'false').toBoolean()) {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
