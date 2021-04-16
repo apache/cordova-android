@@ -117,7 +117,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         pluginManager.addService(CoreAndroid.PLUGIN_NAME, "org.apache.cordova.CoreAndroid");
         pluginManager.init();
-        
     }
 
     @Override
