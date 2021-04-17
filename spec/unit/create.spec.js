@@ -162,10 +162,10 @@ describe('create', function () {
                 });
             });
 
-            it('should have a default project name of CordovaExample', () => {
+            it('should have a default project name of Hello Cordova', () => {
                 config_mock.name.and.returnValue(undefined);
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(create.validateProjectName).toHaveBeenCalledWith('CordovaExample');
+                    expect(create.validateProjectName).toHaveBeenCalledWith('Hello Cordova');
                 });
             });
 
