@@ -112,9 +112,9 @@ function writeProjectProperties (projectPath, target_api) {
 }
 
 // This makes no sense, what if you're building with a different build system?
-function prepBuildFiles (projectPath) {
+function prepBuildFiles (projectPath, projectName) {
     var buildModule = require('../templates/cordova/lib/builders/builders');
-    buildModule.getBuilder(projectPath).prepBuildFiles();
+    buildModule.getBuilder(projectPath, projectName).prepBuildFiles();
 }
 
 function copyBuildRules (projectPath, isLegacy) {
@@ -310,7 +310,7 @@ exports.create = function (project_path, config, options, events) {
 
             // Link it to local android install.
             exports.writeProjectProperties(project_path, target_api);
-            exports.prepBuildFiles(project_path);
+            exports.prepBuildFiles(project_path, project_name);
             exports.writeNameForAndroidStudio(project_path, project_name);
             events.emit('log', generateDoneMessage('create', options.link));
         }).then(() => project_path);

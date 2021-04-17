@@ -295,8 +295,9 @@ describe('create', function () {
             });
 
             it('should prepare build files', () => {
+                config_mock.name.and.returnValue('BuiltApp');
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(create.prepBuildFiles).toHaveBeenCalledWith(project_path);
+                    expect(create.prepBuildFiles).toHaveBeenCalledWith(project_path, 'BuiltApp');
                 });
             });
         });

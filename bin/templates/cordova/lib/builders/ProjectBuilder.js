@@ -77,10 +77,11 @@ function findOutputFiles (bundleType, buildType, { arch } = {}) {
 }
 
 class ProjectBuilder {
-    constructor (rootDirectory) {
+    constructor (rootDirectory, name) {
         this.root = rootDirectory || path.resolve(__dirname, '../../..');
         this.apkDir = path.join(this.root, 'app', 'build', 'outputs', 'apk');
         this.aabDir = path.join(this.root, 'app', 'build', 'outputs', 'bundle');
+        this.name = name;
     }
 
     getArgs (cmd, opts) {
@@ -183,13 +184,13 @@ class ProjectBuilder {
                 checkAndCopy(subProjects[i], this.root);
             }
         }
-        var name = this.extractRealProjectNameFromManifest();
+        var realName = this.extractRealProjectNameFromManifest();
         // Remove the proj.id/name- prefix from projects: https://issues.apache.org/jira/browse/CB-9149
         var settingsGradlePaths = subProjects.map(function (p) {
             var realDir = p.replace(/[/\\]/g, ':');
-            var libName = realDir.replace(name + '-', '');
+            var libName = realDir.replace(realName + '-', '');
             var str = 'include ":' + libName + '"\n';
-            if (realDir.indexOf(name + '-') !== -1) {
+            if (realDir.indexOf(realName + '-') !== -1) {
                 str += 'project(":' + libName + '").projectDir = new File("' + p + '")\n';
             }
             return str;
@@ -197,7 +198,9 @@ class ProjectBuilder {
 
         fs.writeFileSync(path.join(this.root, 'settings.gradle'),
             '// GENERATED FILE - DO NOT EDIT\n' +
-            'include ":"\n' + settingsGradlePaths.join(''));
+            'rootProject.name = "' + this.name + '"\n' +
+            'include ":"\n' +
+            settingsGradlePaths.join(''));
 
         // Update dependencies within build.gradle.
         var buildGradle = fs.readFileSync(path.join(this.root, 'app', 'build.gradle'), 'utf8');
@@ -214,7 +217,7 @@ class ProjectBuilder {
         };
         subProjects.forEach(function (p) {
             events.emit('log', 'Subproject Path: ' + p);
-            var libName = p.replace(/[/\\]/g, ':').replace(name + '-', '');
+            var libName = p.replace(/[/\\]/g, ':').replace(realName + '-', '');
             if (libName !== 'app') {
                 depsList += '    implementation(project(path: ":' + libName + '"))';
                 insertExclude(p);
