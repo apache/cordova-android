@@ -176,10 +176,10 @@ describe('create', function () {
                 });
             });
 
-            it('should replace any non-word characters (including unicode and spaces) in the ConfigParser-provided project name with underscores', () => {
+            it('should keep non-word characters (including unicode and spaces) in the ConfigParser-provided project name', () => {
                 config_mock.name.and.returnValue('応応応応 hello 用用用用');
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(create.validateProjectName).toHaveBeenCalledWith('_____hello_____');
+                    expect(create.validateProjectName).toHaveBeenCalledWith('応応応応 hello 用用用用');
                 });
             });
 
