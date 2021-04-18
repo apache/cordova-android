@@ -40,6 +40,7 @@ allprojects {
       defaultMinSdkVersion=22 //Integer - Minimum requirement is Android 5.1
       defaultTargetSdkVersion=30 //Integer - We ALWAYS target the latest by default
       defaultCompileSdkVersion=30 //Integer - We ALWAYS compile with the latest by default
+      defaultAndroidXAppCompatVersion="1.2.0" //String - We ALWAYS compile with the latest stable by default
     }
 }
 

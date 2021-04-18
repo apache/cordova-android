@@ -61,6 +61,7 @@ module.exports.prepare = function (cordovaProject, options) {
     const targetSdkVersion = this._config.getPreference('android-targetSdkVersion', 'android');
     const isGradlePluginKotlinEnabled = this._config.getPreference('GradlePluginKotlinEnabled', 'android');
     const gradlePluginKotlinCodeStyle = this._config.getPreference('GradlePluginKotlinCodeStyle', 'android');
+    const androidXAppCompatVersion = this._config.getPreference('AndroidXAppCompatVersion', 'android');
 
     const gradlePropertiesUserConfig = {};
     if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
@@ -69,6 +70,10 @@ module.exports.prepare = function (cordovaProject, options) {
     if (args.jvmargs) gradlePropertiesUserConfig['org.gradle.jvmargs'] = args.jvmargs;
     if (isGradlePluginKotlinEnabled) {
         gradlePropertiesUserConfig['kotlin.code.style'] = gradlePluginKotlinCodeStyle || 'official';
+    }
+
+    if (androidXAppCompatVersion) {
+        gradlePropertiesUserConfig.cdvAndroidXAppCompatVersion = androidXAppCompatVersion;
     }
 
     const gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);

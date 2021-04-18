@@ -26,6 +26,13 @@ ext {
     } else {
         cdvMinSdkVersion = 22; // current Cordova's default
     }
+
+    if (project.hasProperty('cdvAndroidXAppCompatVersion')) {
+        cdvAndroidXAppCompatVersion = cdvAndroidXAppCompatVersion
+        println '[Cordova] cdvAndroidXAppCompatVersion is overridden, try it at your own risk.'
+    } else {
+        cdvAndroidXAppCompatVersion = "1.2.0"; // current Cordova's default
+    }
 }
 
 buildscript {
@@ -123,7 +130,7 @@ task sourcesJar(type: Jar) {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation "androidx.appcompat:appcompat:$cdvAndroidXAppCompatVersion"
 }
 
 artifacts {
