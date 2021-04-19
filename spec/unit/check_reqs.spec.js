@@ -23,7 +23,8 @@ var fs = require('fs-extra');
 var path = require('path');
 var which = require('which');
 const { createEditor } = require('properties-parser');
-const { CordovaError } = require('cordova-common');
+const { CordovaError, events } = require('cordova-common');
+const { DEFAULT_SDK_VERSION } = require('../../framework/defaults.json');
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -287,9 +288,30 @@ describe('check_reqs', function () {
     });
 
     describe('get_target', function () {
+        let ConfigParser;
+        let getPreferenceSpy;
+        beforeEach(function () {
+            getPreferenceSpy = jasmine.createSpy();
+            ConfigParser = jasmine.createSpy().and.returnValue({
+                getPreference: getPreferenceSpy
+            });
+            check_reqs.__set__({
+                ConfigParser: ConfigParser,
+                createEditor: jasmine.createSpy('createEditor').and.callFake(() => {
+                    return {
+                        get: jasmine.createSpy('Editor.get').and.callFake(() => {
+                            return `android-${DEFAULT_SDK_VERSION}`;
+                        })
+                    };
+                })
+            });
+        });
+
         it('should retrieve target from framework project.properties file', function () {
-            // let spy = null;
-            spyOn(fs, 'existsSync').and.returnValue(true);
+            spyOn(fs, 'existsSync').and.callFake((path) => {
+                // return /project\.properties$/.test(path);
+                return true;
+            });
             check_reqs.__set__({
                 createEditor: () => {
                     const editor = createEditor(path.resolve('./framework/project.properties'));
@@ -311,62 +333,63 @@ describe('check_reqs', function () {
         });
 
         // TODO(Breautek) Delete these tests if they are not actually required...
-        // it('should override target from config.xml preference', () => {
-        //     var realExistsSync = fs.existsSync;
-        //     spyOn(fs, 'existsSync').and.callFake(function (path) {
-        //         if (path.indexOf('config.xml') > -1) {
-        //             return true;
-        //         } else {
-        //             return realExistsSync.call(fs, path);
-        //         }
-        //     });
+        it('should override target from config.xml preference', () => {
+            var realExistsSync = fs.existsSync;
 
-        //     getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API + 1);
+            spyOn(fs, 'existsSync').and.callFake(function (path) {
+                if (path.indexOf('config.xml') > -1) {
+                    return true;
+                } else {
+                    return realExistsSync.call(fs, path);
+                }
+            });
 
-        //     var target = check_reqs.get_target();
+            getPreferenceSpy.and.returnValue(DEFAULT_SDK_VERSION + 1);
 
-        //     expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-        //     expect(target).toBe('android-' + (DEFAULT_TARGET_API + 1));
-        // });
+            var target = check_reqs.get_target();
 
-        // it('should fallback to default target if config.xml has invalid preference', () => {
-        //     var realExistsSync = fs.existsSync;
-        //     spyOn(fs, 'existsSync').and.callFake(function (path) {
-        //         if (path.indexOf('config.xml') > -1) {
-        //             return true;
-        //         } else {
-        //             return realExistsSync.call(fs, path);
-        //         }
-        //     });
+            expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
+            expect(target).toBe('android-' + (DEFAULT_SDK_VERSION + 1));
+        });
 
-        //     getPreferenceSpy.and.returnValue(NaN);
+        it('should fallback to default target if config.xml has invalid preference', () => {
+            var realExistsSync = fs.existsSync;
+            spyOn(fs, 'existsSync').and.callFake(function (path) {
+                if (path.indexOf('config.xml') > -1) {
+                    return true;
+                } else {
+                    return realExistsSync.call(fs, path);
+                }
+            });
 
-        //     var target = check_reqs.get_target();
+            getPreferenceSpy.and.returnValue(NaN);
 
-        //     expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-        //     expect(target).toBe('android-' + DEFAULT_TARGET_API);
-        // });
+            var target = check_reqs.get_target();
 
-        // it('should warn if target sdk preference is lower than the minimum required target SDK', () => {
-        //     var realExistsSync = fs.existsSync;
-        //     spyOn(fs, 'existsSync').and.callFake(function (path) {
-        //         if (path.indexOf('config.xml') > -1) {
-        //             return true;
-        //         } else {
-        //             return realExistsSync.call(fs, path);
-        //         }
-        //     });
+            expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
+            expect(target).toBe('android-' + DEFAULT_SDK_VERSION);
+        });
 
-        //     spyOn(events, 'emit');
+        it('should warn if target sdk preference is lower than the minimum required target SDK', () => {
+            var realExistsSync = fs.existsSync;
+            spyOn(fs, 'existsSync').and.callFake(function (path) {
+                if (path.indexOf('config.xml') > -1) {
+                    return true;
+                } else {
+                    return realExistsSync.call(fs, path);
+                }
+            });
 
-        //     getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API - 1);
+            spyOn(events, 'emit');
 
-        //     var target = check_reqs.get_target();
+            getPreferenceSpy.and.returnValue(DEFAULT_SDK_VERSION - 1);
 
-        //     expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-        //     expect(target).toBe('android-' + DEFAULT_TARGET_API);
-        //     expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + DEFAULT_TARGET_API + '.');
-        // });
+            var target = check_reqs.get_target();
+
+            expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
+            expect(target).toBe('android-' + DEFAULT_SDK_VERSION);
+            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + DEFAULT_SDK_VERSION + '.');
+        });
     });
 
     describe('check_android_target', function () {
