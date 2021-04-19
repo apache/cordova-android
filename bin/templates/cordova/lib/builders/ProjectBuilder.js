@@ -265,7 +265,7 @@ class ProjectBuilder {
             }).then(function () {
                 return self.prepBuildFiles();
             }).then(() => {
-                const defaults = this._getCordovaDefaults();
+                const { DEFAULT_GRADLE_VERSION } = this._getCordovaDefaults();
                 // update/set the distributionUrl in the gradle-wrapper.properties
                 const gradleWrapperPropertiesPath = path.join(self.root, 'gradle/wrapper/gradle-wrapper.properties');
                 const gradleWrapperProperties = createEditor(gradleWrapperPropertiesPath);
