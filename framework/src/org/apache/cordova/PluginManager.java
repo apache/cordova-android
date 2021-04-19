@@ -33,8 +33,6 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.os.Build;
 
-import androidx.webkit.WebViewAssetLoader;
-
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
  *
