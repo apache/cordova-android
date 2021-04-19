@@ -44,7 +44,7 @@ allprojects {
       defaultMinSdkVersion=getCordovaDefaults().DEFAULT_MIN_SDK_VERSION
       defaultTargetSdkVersion=getCordovaDefaults().DEFAULT_SDK_VERSION
       defaultCompileSdkVersion=getCordovaDefaults().DEFAULT_SDK_VERSION
-      defaultAndroidXAppCompatVersion=getCordovaDefaults().ANDROIDX_APP_COMPAT_VERSION
+      defaultAndroidXAppCompatVersion=getCordovaDefaults().DEFAULT_ANDROIDX_APP_COMPAT_VERSION
     }
 }
 

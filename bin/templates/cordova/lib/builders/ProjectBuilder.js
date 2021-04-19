@@ -293,9 +293,7 @@ class ProjectBuilder {
      * @returns The defaults file contents
      */
     _getCordovaDefaults () {
-        return JSON.parse(fs.readFileSync(path.resolve(this.root, 'defaults.json'), {
-            encoding: 'utf8'
-        }));
+        return fs.readJsonSync(path.resolve(this.root, 'defaults.json'));
     }
 
     /*
