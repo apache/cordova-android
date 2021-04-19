@@ -35,8 +35,6 @@ import android.os.Bundle;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import androidx.webkit.WebViewAssetLoader;
-
 /**
  * Plugins must extend this class and override one of the execute methods.
  */

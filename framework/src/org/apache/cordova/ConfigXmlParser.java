@@ -46,6 +46,7 @@ public class ConfigXmlParser {
     }
 
     public String getLaunchUrl() {
+        launchUrl = "https://" +  this.prefs.getString("hostname", "localhost");
         return launchUrl;
     }
 
