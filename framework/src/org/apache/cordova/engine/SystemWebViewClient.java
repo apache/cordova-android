@@ -75,8 +75,6 @@ public class SystemWebViewClient extends WebViewClient {
         WebViewAssetLoader.Builder assetLoaderBuilder = new WebViewAssetLoader.Builder()
                 .setDomain(parentEngine.preferences.getString("hostname", "localhost"))
                 .setHttpAllowed(true);
-                
-
 
         assetLoaderBuilder.addPathHandler("/", path -> {
             try {

@@ -583,8 +583,8 @@ public class PluginManager {
 
     /**
      * Collect all plugins PathHandlers
-     * @return list of PathHandlers in no particular order
      *
+     * @return list of PathHandlers in no particular order
      */
     public ArrayList<CordovaPluginPathHandler> getPluginPathHandlers() {
         ArrayList<CordovaPluginPathHandler> handlers = new ArrayList<CordovaPluginPathHandler>();
