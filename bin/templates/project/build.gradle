@@ -17,18 +17,13 @@
 */
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-
-apply from: 'CordovaLib/cordova.gradle'
-
 buildscript {
-    apply from: 'CordovaLib/cordova.gradle' // This isn't a typo... IDK why Gradle needs this in this block to access getCordovaDefaults
-    ext.kotlin_version = getCordovaDefaults().KOTLIN_VERSION
+    apply from: 'CordovaLib/cordova.gradle'
     apply from: 'repositories.gradle'
     repositories repos
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:'+ getCordovaDefaults().AGP_VERSION
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.android.tools.build:gradle:${cordovaConfig.AGP_VERSION}"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${cordovaConfig.KOTLIN_VERSION}"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -37,15 +32,6 @@ buildscript {
 allprojects {
     apply from: 'repositories.gradle'
     repositories repos
-
-    //This replaces project.properties w.r.t. build settings
-    project.ext {
-      defaultBuildToolsVersion=getCordovaDefaults().DEFAULT_BUILD_TOOLS_VERSION
-      defaultMinSdkVersion=getCordovaDefaults().DEFAULT_MIN_SDK_VERSION
-      defaultTargetSdkVersion=getCordovaDefaults().DEFAULT_SDK_VERSION
-      defaultCompileSdkVersion=getCordovaDefaults().DEFAULT_SDK_VERSION
-      defaultAndroidXAppCompatVersion="1.2.0" //String - We ALWAYS compile with the latest stable by default
-    }
 }
 
 task clean(type: Delete) {

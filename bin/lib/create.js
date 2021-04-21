@@ -67,18 +67,14 @@ function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
         fs.ensureDirSync(nestedCordovaLibPath);
         fs.copySync(path.join(ROOT, 'framework', 'AndroidManifest.xml'), path.join(nestedCordovaLibPath, 'AndroidManifest.xml'));
         TemplateFile.render(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'), {
-            DEFAULT_SDK_VERSION: targetAPI || constants.DEFAULT_SDK_VERSION,
-            DEFAULTS_FILE_PATH: './defaults.json'
+            SDK_VERSION: targetAPI || constants.SDK_VERSION,
+            FILE_PATH: './config.json'
         });
-        TemplateFile.render(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'), {
-            DEFAULT_MIN_SDK_VERSION: constants.DEFAULT_MIN_SDK_VERSION
-        });
-        TemplateFile.render(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'), {
-            DEFAULT_BUILD_TOOLS_VERSION: constants.DEFAULT_BUILD_TOOLS_VERSION
-        });
+        fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
+        fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'repositories.gradle'), path.join(nestedCordovaLibPath, 'repositories.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'src'), path.join(nestedCordovaLibPath, 'src'));
-        fs.copySync(path.join(ROOT, 'framework', 'defaults.json'), path.join(projectPath, 'defaults.json'));
+        fs.copySync(path.join(ROOT, 'framework', 'defaults.json'), path.join(projectPath, 'config.json'));
     }
 }
 
@@ -130,14 +126,8 @@ function copyBuildRules (projectPath, isLegacy) {
         fs.copySync(path.join(srcDir, 'legacy', 'build.gradle'), path.join(projectPath, 'legacy', 'build.gradle'));
         fs.copySync(path.join(srcDir, 'wrapper.gradle'), path.join(projectPath, 'wrapper.gradle'));
     } else {
-        TemplateFile.render(path.join(srcDir, 'build.gradle'), path.join(projectPath, 'build.gradle'), {
-            DEFAULT_BUILD_TOOLS_VERSION: constants.DEFAULT_BUILD_TOOLS_VERSION,
-            DEFAULT_MIN_SDK_VERSION: constants.DEFAULT_MIN_SDK_VERSION,
-            DEFAULT_SDK_VERSION: constants.DEFAULT_SDK_VERSION
-        });
-        TemplateFile.render(path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app', 'build.gradle'), {
-            DEFAULT_GRADLE_VERSION: constants.DEFAULT_GRADLE_VERSION
-        });
+        fs.copySync(path.join(srcDir, 'build.gradle'), path.join(projectPath, 'build.gradle'));
+        fs.copySync(path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app', 'build.gradle'));
         fs.copySync(path.join(srcDir, 'app', 'repositories.gradle'), path.join(projectPath, 'app', 'repositories.gradle'));
         fs.copySync(path.join(srcDir, 'repositories.gradle'), path.join(projectPath, 'repositories.gradle'));
         fs.copySync(path.join(srcDir, 'wrapper.gradle'), path.join(projectPath, 'wrapper.gradle'));
@@ -260,7 +250,7 @@ exports.create = function (project_path, config, options, events) {
     var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
     let target_api = parseInt(config.getPreference('android-targetSdkVersion', 'android'), 10);
     if (isNaN(target_api)) {
-        target_api = constants.DEFAULT_SDK_VERSION;
+        target_api = constants.SDK_VERSION;
     }
 
     // Make the package conform to Java package types

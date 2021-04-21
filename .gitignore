@@ -30,6 +30,7 @@ example
 /test/androidx/gradle
 /test/androidx/gradlew
 /test/androidx/gradlew.bat
+/test/androidx/config.json
 
 /test/assets/www/.tmp*
 /test/assets/www/cordova.js

@@ -304,7 +304,7 @@ describe('create', function () {
             it('should write project.properties file with project details and defaulted target API', () => {
                 config_mock.getPreference.and.returnValue(NaN);
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(create.writeProjectProperties).toHaveBeenCalledWith(project_path, defaults.DEFAULT_SDK_VERSION);
+                    expect(create.writeProjectProperties).toHaveBeenCalledWith(project_path, defaults.SDK_VERSION);
                 });
             });
 
