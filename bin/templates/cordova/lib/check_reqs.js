@@ -22,7 +22,6 @@ var path = require('path');
 var fs = require('fs-extra');
 const { forgivingWhichSync, isWindows, isDarwin } = require('./utils');
 const java = require('./env/java');
-// var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
 var PROJECT_ROOT = path.join(__dirname, '..', '..');
 const { CordovaError } = require('cordova-common');
 var android_sdk = require('./android_sdk');
@@ -42,7 +41,6 @@ Object.assign(module.exports, { isWindows, isDarwin });
  */
 module.exports.get_target = function () {
     const projectPropertiesPaths = [
-        // path.join(REPO_ROOT, 'framework', 'project.properties'),
         path.join(PROJECT_ROOT, 'project.properties')
     ];
 
