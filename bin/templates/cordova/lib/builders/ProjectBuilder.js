@@ -265,11 +265,11 @@ class ProjectBuilder {
             }).then(function () {
                 return self.prepBuildFiles();
             }).then(() => {
-                const defaults = this._getCordovaDefaults();
+                const config = this._getCordovaConfig();
                 // update/set the distributionUrl in the gradle-wrapper.properties
                 const gradleWrapperPropertiesPath = path.join(self.root, 'gradle/wrapper/gradle-wrapper.properties');
                 const gradleWrapperProperties = createEditor(gradleWrapperPropertiesPath);
-                const distributionUrl = process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL || `https://services.gradle.org/distributions/gradle-${defaults.DEFAULT_GRADLE_VERSION}-all.zip`;
+                const distributionUrl = process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL || `https://services.gradle.org/distributions/gradle-${config.GRADLE_VERSION}-all.zip`;
                 gradleWrapperProperties.set('distributionUrl', distributionUrl);
                 gradleWrapperProperties.save();
 
@@ -290,10 +290,10 @@ class ProjectBuilder {
 
     /**
      * @private
-     * @returns The defaults file contents
+     * @returns The user defined configs
      */
-    _getCordovaDefaults () {
-        return JSON.parse(fs.readFileSync(path.resolve(this.root, 'defaults.json'), {
+    _getCordovaConfig () {
+        return JSON.parse(fs.readFileSync(path.resolve(this.root, 'config.json'), {
             encoding: 'utf8'
         }));
     }
