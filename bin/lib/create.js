@@ -67,8 +67,7 @@ function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
         fs.ensureDirSync(nestedCordovaLibPath);
         fs.copySync(path.join(ROOT, 'framework', 'AndroidManifest.xml'), path.join(nestedCordovaLibPath, 'AndroidManifest.xml'));
         TemplateFile.render(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'), {
-            SDK_VERSION: targetAPI || constants.SDK_VERSION,
-            FILE_PATH: './config.json'
+            SDK_VERSION: targetAPI || constants.SDK_VERSION
         });
         fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
