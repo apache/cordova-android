@@ -24,7 +24,7 @@ var path = require('path');
 var which = require('which');
 const { createEditor } = require('properties-parser');
 const { CordovaError, events } = require('cordova-common');
-const { DEFAULT_SDK_VERSION } = require('../../framework/defaults.json');
+const { SDK_VERSION } = require('../../framework/defaults.json');
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -281,7 +281,7 @@ describe('check_reqs', function () {
                 createEditor: jasmine.createSpy('createEditor').and.callFake(() => {
                     return {
                         get: jasmine.createSpy('Editor.get').and.callFake(() => {
-                            return `android-${DEFAULT_SDK_VERSION}`;
+                            return `android-${SDK_VERSION}`;
                         })
                     };
                 })
@@ -313,7 +313,6 @@ describe('check_reqs', function () {
             }).toThrow();
         });
 
-        // TODO(Breautek) Delete these tests if they are not actually required...
         it('should override target from config.xml preference', () => {
             var realExistsSync = fs.existsSync;
 
@@ -325,12 +324,12 @@ describe('check_reqs', function () {
                 }
             });
 
-            getPreferenceSpy.and.returnValue(DEFAULT_SDK_VERSION + 1);
+            getPreferenceSpy.and.returnValue(SDK_VERSION + 1);
 
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + (DEFAULT_SDK_VERSION + 1));
+            expect(target).toBe('android-' + (SDK_VERSION + 1));
         });
 
         it('should fallback to default target if config.xml has invalid preference', () => {
@@ -348,7 +347,7 @@ describe('check_reqs', function () {
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + DEFAULT_SDK_VERSION);
+            expect(target).toBe('android-' + SDK_VERSION);
         });
 
         it('should warn if target sdk preference is lower than the minimum required target SDK', () => {
@@ -363,13 +362,13 @@ describe('check_reqs', function () {
 
             spyOn(events, 'emit');
 
-            getPreferenceSpy.and.returnValue(DEFAULT_SDK_VERSION - 1);
+            getPreferenceSpy.and.returnValue(SDK_VERSION - 1);
 
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + DEFAULT_SDK_VERSION);
-            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + DEFAULT_SDK_VERSION + '.');
+            expect(target).toBe('android-' + SDK_VERSION);
+            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + SDK_VERSION + '.');
         });
     });
 
