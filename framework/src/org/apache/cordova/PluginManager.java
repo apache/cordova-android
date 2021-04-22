@@ -18,6 +18,7 @@
  */
 package org.apache.cordova;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -576,5 +577,20 @@ public class PluginManager {
             }
         }
         return state;
+    }
+
+    /**
+     * Collect all plugins PathHandlers
+     *
+     * @return list of PathHandlers in no particular order
+     */
+    public ArrayList<CordovaPluginPathHandler> getPluginPathHandlers() {
+        ArrayList<CordovaPluginPathHandler> handlers = new ArrayList<CordovaPluginPathHandler>();
+        for (CordovaPlugin plugin : this.pluginMap.values()) {
+            if (plugin != null && plugin.getPathHandler() != null) {
+                handlers.add(plugin.getPathHandler());
+            }
+        }
+        return handlers;
     }
 }
