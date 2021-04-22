@@ -25,7 +25,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.net.http.SslError;
-import android.util.Log;
 import android.webkit.ClientCertRequest;
 import android.webkit.HttpAuthHandler;
 import android.webkit.MimeTypeMap;
@@ -49,7 +48,6 @@ import java.io.InputStream;
 import java.util.Hashtable;
 
 import androidx.webkit.WebViewAssetLoader;
-
 
 /**
  * This class is the WebViewClient that implements callbacks for our web view.
@@ -91,8 +89,9 @@ public class SystemWebViewClient extends WebViewClient {
                     }
                 }
 
-                if (path.isEmpty())
+                if (path.isEmpty()) {
                     path = "index.html";
+                }
                 InputStream is = parentEngine.webView.getContext().getAssets().open("www/" + path, AssetManager.ACCESS_STREAMING);
                 String mimeType = "text/html";
                 String extension = MimeTypeMap.getFileExtensionFromUrl(path);
@@ -110,7 +109,7 @@ public class SystemWebViewClient extends WebViewClient {
                 return new WebResourceResponse(mimeType, null, is);
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(TAG, e.getMessage());
+                LOG.e(TAG, e.getMessage());
             }
             return null;
         });
