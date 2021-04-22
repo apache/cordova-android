@@ -339,6 +339,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // Show the content view.
         engine.getView().setVisibility(View.VISIBLE);
+        engine.getView().requestFocus();
     }
 
     @Override
