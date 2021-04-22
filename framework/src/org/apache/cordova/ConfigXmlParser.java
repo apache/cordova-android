@@ -33,7 +33,7 @@ import android.content.Context;
 public class ConfigXmlParser {
     private static String TAG = "ConfigXmlParser";
 
-    private String launchUrl = "https://localhost/";
+    private String launchUrl = null;
     private CordovaPreferences prefs = new CordovaPreferences();
     private ArrayList<PluginEntry> pluginEntries = new ArrayList<PluginEntry>(20);
 
@@ -46,7 +46,9 @@ public class ConfigXmlParser {
     }
 
     public String getLaunchUrl() {
-        launchUrl = "https://" +  this.prefs.getString("hostname", "localhost");
+        if (launchUrl == null) { 
+            launchUrl = "https://" +  this.prefs.getString("hostname", "localhost");
+        }
         return launchUrl;
     }
 
@@ -140,7 +142,7 @@ public class ConfigXmlParser {
             if (src.charAt(0) == '/') {
                 src = src.substring(1);
             }
-            launchUrl = "https://localhost/" + src;
+            launchUrl = "https://" +  this.prefs.getString("hostname", "localhost") + "/" + src;
         }
     }
 }
