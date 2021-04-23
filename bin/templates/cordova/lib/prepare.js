@@ -23,7 +23,6 @@ const nopt = require('nopt');
 const glob = require('fast-glob');
 var events = require('cordova-common').events;
 var AndroidManifest = require('./AndroidManifest');
-var checkReqs = require('./check_reqs');
 var xmlHelpers = require('cordova-common').xmlHelpers;
 var CordovaError = require('cordova-common').CordovaError;
 var ConfigParser = require('cordova-common').ConfigParser;
@@ -253,22 +252,16 @@ function updateProjectAccordingTo (platformConfig, locations) {
 
     // if package name has changed, path to MainActivity.java has to track it
     const newDestFile = path.join(locations.root, 'app', 'src', 'main', 'java', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
-    if (newDestFile !== destFile) {
+    if (newDestFile.toLowerCase() !== destFile.toLowerCase()) {
+        // If package was name changed we need to create new java with main activity in path matching new package name
         fs.ensureDirSync(path.dirname(newDestFile));
-        events.emit('verbose', destFile);
-        events.emit('verbose', newDestFile);
+        events.emit('verbose', `copy ${destFile} to ${newDestFile}`);
         fs.copySync(destFile, newDestFile);
         destFile = newDestFile;
         utils.replaceFileContents(destFile, /package [\w.]*;/, 'package ' + androidPkgName + ';');
         events.emit('verbose', 'Wrote out Android package name "' + androidPkgName + '" to ' + destFile);
-    }
-
-    var removeOrigPkg = checkReqs.isWindows() || checkReqs.isDarwin()
-        ? manifestId.toUpperCase() !== androidPkgName.toUpperCase()
-        : manifestId !== androidPkgName;
-
-    if (removeOrigPkg) {
         // If package was name changed we need to remove old java with main activity
+        events.emit('verbose', `remove ${java_files[0]}`);
         fs.removeSync(java_files[0]);
         // remove any empty directories
         var currentDir = path.dirname(java_files[0]);

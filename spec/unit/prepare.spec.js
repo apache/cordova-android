@@ -858,6 +858,7 @@ describe('prepare', () => {
         let replaceFileContents;
         let ensureDirSyncSpy;
         let copySyncSpy;
+        let removeSyncSpy;
 
         // Mock Data
         let cordovaProject;
@@ -959,15 +960,18 @@ describe('prepare', () => {
 
             ensureDirSyncSpy = jasmine.createSpy('ensureDirSync');
             copySyncSpy = jasmine.createSpy('copySync');
+            removeSyncSpy = jasmine.createSpy('removeSync');
 
             prepare.__set__('fs', {
                 writeFileSync: jasmine.createSpy('writeFileSync'),
                 ensureDirSync: ensureDirSyncSpy,
-                copySync: copySyncSpy
+                copySync: copySyncSpy,
+                removeSync: removeSyncSpy,
+                existsSync: jasmine.createSpy('existsSync')
             });
         });
 
-        it('moves CordovaActivity class java file to path that tracks the package name when package name changed', async () => {
+        it('moves main activity class java file to path that tracks the package name when package name changed', async () => {
             packageName = 'com.company.renamed';
             const renamedPath = path.join(api.locations.javaSrc, packageName.replace(/\./g, '/'));
             const renamedJavaActivityPath = path.join(renamedPath, 'MainActivity.java');
@@ -976,16 +980,18 @@ describe('prepare', () => {
                 expect(replaceFileContents).toHaveBeenCalledWith(renamedJavaActivityPath, /package [\w.]*;/, 'package ' + packageName + ';');
                 expect(ensureDirSyncSpy).toHaveBeenCalledWith(renamedPath);
                 expect(copySyncSpy).toHaveBeenCalledWith(initialJavaActivityPath, renamedJavaActivityPath);
+                expect(removeSyncSpy).toHaveBeenCalledWith(initialJavaActivityPath);
             });
         });
 
-        it('doesn\'t move CordovaActivity class java file when package name not changed', async () => {
+        it('doesn\'t move main activity class java file when package name not changed', async () => {
             packageName = 'com.company.product';
 
             await api.prepare(cordovaProject, options).then(() => {
                 expect(replaceFileContents).toHaveBeenCalledTimes(0);
                 expect(ensureDirSyncSpy).toHaveBeenCalledTimes(0);
                 expect(copySyncSpy).toHaveBeenCalledTimes(0);
+                expect(removeSyncSpy).toHaveBeenCalledTimes(0);
             });
         });
     });
