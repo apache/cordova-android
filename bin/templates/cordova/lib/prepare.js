@@ -248,23 +248,22 @@ function updateProjectAccordingTo (platformConfig, locations) {
         events.emit('log', 'Multiple candidate Java files that extend CordovaActivity found. Guessing at the first one, ' + java_files[0]);
     }
 
-    let destFile = java_files[0];
+    const destFile = java_files[0];
 
     // if package name has changed, path to MainActivity.java has to track it
-    const newDestFile = path.join(locations.root, 'app', 'src', 'main', 'java', androidPkgName.replace(/\./g, '/'), path.basename(java_files[0]));
+    const newDestFile = path.join(locations.root, 'app', 'src', 'main', 'java', androidPkgName.replace(/\./g, '/'), path.basename(destFile));
     if (newDestFile.toLowerCase() !== destFile.toLowerCase()) {
         // If package was name changed we need to create new java with main activity in path matching new package name
         fs.ensureDirSync(path.dirname(newDestFile));
         events.emit('verbose', `copy ${destFile} to ${newDestFile}`);
         fs.copySync(destFile, newDestFile);
-        destFile = newDestFile;
-        utils.replaceFileContents(destFile, /package [\w.]*;/, 'package ' + androidPkgName + ';');
-        events.emit('verbose', 'Wrote out Android package name "' + androidPkgName + '" to ' + destFile);
+        utils.replaceFileContents(newDestFile, /package [\w.]*;/, 'package ' + androidPkgName + ';');
+        events.emit('verbose', 'Wrote out Android package name "' + androidPkgName + '" to ' + newDestFile);
         // If package was name changed we need to remove old java with main activity
-        events.emit('verbose', `remove ${java_files[0]}`);
-        fs.removeSync(java_files[0]);
+        events.emit('verbose', `remove ${destFile}`);
+        fs.removeSync(destFile);
         // remove any empty directories
-        var currentDir = path.dirname(java_files[0]);
+        var currentDir = path.dirname(destFile);
         var sourcesRoot = path.resolve(locations.root, 'src');
         while (currentDir !== sourcesRoot) {
             if (fs.existsSync(currentDir) && fs.readdirSync(currentDir).length === 0) {
