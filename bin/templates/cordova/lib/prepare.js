@@ -84,17 +84,17 @@ function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, proj
     const mergedConfigs = Object.assign(profileGradleConfig, defaultGradleConfig);
 
     const configXmlToGradleMapping = [
-        { xmlKey: 'android-minSdkVersion', gradleKey: 'MIN_SDK_VERSION' },
-        { xmlKey: 'android-maxSdkVersion', gradleKey: 'MAX_SDK_VERSION', default: null },
-        { xmlKey: 'android-targetSdkVersion', gradleKey: 'SDK_VERSION' },
-        { xmlKey: 'android-buildToolsVersion', gradleKey: 'BUILD_TOOLS_VERSION' },
-        { xmlKey: 'GradleVersion', gradleKey: 'GRADLE_VERSION' },
-        { xmlKey: 'AndroidGradlePluginVersion', gradleKey: 'AGP_VERSION' },
-        { xmlKey: 'GradlePluginKotlinVersion', gradleKey: 'KOTLIN_VERSION' },
-        { xmlKey: 'AndroidXAppCompatVersion', gradleKey: 'ANDROIDX_APP_COMPAT_VERSION' },
-        { xmlKey: 'GradlePluginGoogleServicesVersion', gradleKey: 'GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION' },
-        { xmlKey: 'GradlePluginGoogleServicesEnabled', gradleKey: 'IS_GRADLE_PLUGIN_GOOGLE_SERVICES_ENABLED' },
-        { xmlKey: 'GradlePluginKotlinEnabled', gradleKey: 'IS_GRADLE_PLUGIN_KOTLIN_ENABLED' }
+        { xmlKey: 'android-minSdkVersion', gradleKey: 'MIN_SDK_VERSION', type: Number },
+        { xmlKey: 'android-maxSdkVersion', gradleKey: 'MAX_SDK_VERSION', default: null, type: Number },
+        { xmlKey: 'android-targetSdkVersion', gradleKey: 'SDK_VERSION', type: Number },
+        { xmlKey: 'android-buildToolsVersion', gradleKey: 'BUILD_TOOLS_VERSION', type: String },
+        { xmlKey: 'GradleVersion', gradleKey: 'GRADLE_VERSION', type: String },
+        { xmlKey: 'AndroidGradlePluginVersion', gradleKey: 'AGP_VERSION', type: String },
+        { xmlKey: 'GradlePluginKotlinVersion', gradleKey: 'KOTLIN_VERSION', type: String },
+        { xmlKey: 'AndroidXAppCompatVersion', gradleKey: 'ANDROIDX_APP_COMPAT_VERSION', type: String },
+        { xmlKey: 'GradlePluginGoogleServicesVersion', gradleKey: 'GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION', type: String },
+        { xmlKey: 'GradlePluginGoogleServicesEnabled', gradleKey: 'IS_GRADLE_PLUGIN_GOOGLE_SERVICES_ENABLED', type: Boolean },
+        { xmlKey: 'GradlePluginKotlinEnabled', gradleKey: 'IS_GRADLE_PLUGIN_KOTLIN_ENABLED', type: Boolean }
     ];
 
     configXmlToGradleMapping.forEach(mapping => {
@@ -107,7 +107,22 @@ function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, proj
                 delete mergedConfigs[mapping.gradleKey];
             }
         } else {
-            mergedConfigs[mapping.gradleKey] = configXmlValue || defaultGradleConfig[mapping.gradleKey];
+            let value = configXmlValue || defaultGradleConfig[mapping.gradleKey];
+
+            switch (mapping.type) {
+            default:
+            case String:
+                value = value.toString();
+                break;
+            case Number:
+                value = parseFloat(value);
+                break;
+            case Boolean:
+                value = value.toString().toLowerCase() === 'true';
+                break;
+            }
+
+            mergedConfigs[mapping.gradleKey] = value;
         }
     });
 
