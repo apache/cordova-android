@@ -22,7 +22,7 @@ var fs = require('fs-extra');
 var utils = require('../templates/cordova/lib/utils');
 var constants = require('../../framework/defaults.json');
 var ROOT = path.join(__dirname, '..', '..');
-const TemplateFile = require('../templates/cordova/lib/TemplateFile');
+const { createEditor } = require('properties-parser');
 
 var CordovaError = require('cordova-common').CordovaError;
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
@@ -43,7 +43,7 @@ function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
+async function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
     var app_path = path.join(projectPath, 'app', 'src', 'main');
@@ -66,8 +66,10 @@ function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
     } else {
         fs.ensureDirSync(nestedCordovaLibPath);
         fs.copySync(path.join(ROOT, 'framework', 'AndroidManifest.xml'), path.join(nestedCordovaLibPath, 'AndroidManifest.xml'));
-        TemplateFile.render(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'), {
-            SDK_VERSION: targetAPI || constants.SDK_VERSION
+        await new Promise((resolve) => {
+            const propertiesEditor = createEditor(path.join(ROOT, 'framework', 'project.properties'));
+            propertiesEditor.set('target', `android-${targetAPI || constants.SDK_VERSION}`);
+            propertiesEditor.save(path.join(nestedCordovaLibPath, 'project.properties'), resolve);
         });
         fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
@@ -256,7 +258,7 @@ exports.create = function (project_path, config, options, events) {
     return exports.validatePackageName(package_name)
         .then(function () {
             return exports.validateProjectName(project_name);
-        }).then(function () {
+        }).then(async function () {
         // Log the given values for the project
             events.emit('log', 'Creating Cordova project for the Android platform:');
             events.emit('log', '\tPath: ' + project_path);
@@ -280,7 +282,7 @@ exports.create = function (project_path, config, options, events) {
             fs.ensureDirSync(path.join(app_path, 'libs'));
 
             // copy cordova.js, cordova.jar
-            exports.copyJsAndLibrary(project_path, options.link, safe_activity_name, target_api);
+            await exports.copyJsAndLibrary(project_path, options.link, safe_activity_name, target_api);
 
             // Set up ther Android Studio paths
             var java_path = path.join(app_path, 'java');
