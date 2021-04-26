@@ -64,6 +64,19 @@ describe('check_reqs', function () {
 
             await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
         });
+
+        it('should return the correct version if javac prints _JAVA_OPTIONS', async () => {
+            check_reqs.__set__({
+                java: { getVersion: async () => {
+                    javacOutput = 'Picked up _JAVA_OPTIONS: -Xms1024M -Xmx2048M\njavac 1.8.0_271';
+                    version = /javac\s+([\d.]+)/i.exec(javacOutput)?.[1];
+
+                    return { version };
+                } }
+            });
+
+            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
+        });
     });
 
     describe('check_android', function () {
