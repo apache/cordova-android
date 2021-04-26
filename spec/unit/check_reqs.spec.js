@@ -69,8 +69,12 @@ describe('check_reqs', function () {
             check_reqs.__set__({
                 java: {
                     getVersion: async () => {
+                        let version = null;
                         const javacOutput = 'Picked up _JAVA_OPTIONS: -Xms1024M -Xmx2048M\njavac 1.8.0_271';
-                        const version = /javac\s+([\d.]+)/i.exec(javacOutput)?.[1];
+                        const match = /javac\s+([\d.]+)/i.exec(javacOutput);
+                        if (match && match[1]) {
+                            version = match[1];
+                        }
 
                         return { version };
                     }

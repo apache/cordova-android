@@ -61,7 +61,10 @@ const java = {
             will fail to get the correct version from the output.
             */
 
-            version = /javac\s+([\d.]+)/i.exec(javacOutput)?.[1];
+            const match = /javac\s+([\d.]+)/i.exec(javacOutput);
+            if (match && match[1]) {
+                version = match[1];
+            }
         } catch (ex) {
             events.emit('verbose', ex.shortMessage);
 
