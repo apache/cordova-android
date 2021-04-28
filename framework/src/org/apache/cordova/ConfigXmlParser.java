@@ -46,9 +46,14 @@ public class ConfigXmlParser {
     }
 
     public String getLaunchUrl() {
-        if (launchUrl == null) { 
+        if (launchUrl == null) {
             launchUrl = "https://" +  this.prefs.getString("hostname", "localhost");
         }
+
+        if (this.prefs.getBoolean("InsecureFileMode", false)) {
+            launchUrl = "file:///android_asset/www/index.html";
+        }
+
         return launchUrl;
     }
 
