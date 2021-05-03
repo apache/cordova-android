@@ -159,7 +159,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         settings.setSaveFormData(false);
         settings.setSavePassword(false);
 
-        if (preferences.getBoolean("InsecureFileMode", false)) {
+        if (preferences.getBoolean("AndroidInsecureFileModeEnabled", false)) {
             //These settings are deprecated and loading content via file:// URLs is generally discouraged,
             //but we allow this for compatibility reasons
             LOG.d(TAG, "Enabled insecure file access");
