@@ -334,7 +334,7 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
         // We must not return here!
         // If the user defines no splash screens, the cleanup map will cause any
         // existing splash screen images (e.g. the defaults that we copy into a
-        // new app) to be removed the app folder, which is what we want.
+        // new app) to be removed from the app folder, which is what we want.
     }
 
     // Build an initial resource map that deletes all existing splash screens
