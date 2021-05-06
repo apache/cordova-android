@@ -46,9 +46,14 @@ public class ConfigXmlParser {
     }
 
     public String getLaunchUrl() {
-        if (launchUrl == null) { 
+        if (launchUrl == null) {
             launchUrl = "https://" +  this.prefs.getString("hostname", "localhost");
         }
+
+        if (this.prefs.getBoolean("AndroidInsecureFileModeEnabled", false)) {
+            launchUrl = "file:///android_asset/www/index.html";
+        }
+
         return launchUrl;
     }
 
@@ -142,7 +147,11 @@ public class ConfigXmlParser {
             if (src.charAt(0) == '/') {
                 src = src.substring(1);
             }
-            launchUrl = "https://" +  this.prefs.getString("hostname", "localhost") + "/" + src;
+            if (this.prefs.getBoolean("AndroidInsecureFileModeEnabled", false)) {
+                launchUrl = "file:///android_asset/www/" + src;
+            } else {
+                launchUrl = "https://" +  this.prefs.getString("hostname", "localhost") + "/" + src;
+            }
         }
     }
 }
