@@ -328,10 +328,13 @@ function makeSplashCleanupMap (projectRoot, resourcesDir) {
 function updateSplashes (cordovaProject, platformResourcesDir) {
     var resources = cordovaProject.projectConfig.getSplashScreens('android');
 
-    // if there are "splash" elements in config.xml
+    // if there are no "splash" elements in config.xml
     if (resources.length === 0) {
         events.emit('verbose', 'This app does not have splash screens defined');
-        return;
+        // We must not return here!
+        // If the user defines no splash screens, the cleanup map will cause any
+        // existing splash screen images (e.g. the defaults that we copy into a
+        // new app) to be removed from the app folder, which is what we want.
     }
 
     // Build an initial resource map that deletes all existing splash screens
