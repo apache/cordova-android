@@ -47,9 +47,19 @@ describe('Java', () => {
                 all: 'javac 1.8.0_275'
             }));
 
-            console.log('BEFORE', process.env.JAVA_HOME);
             const result = await Java.getVersion();
-            console.log('AFTER', process.env.JAVA_HOME);
+            expect(result.major).toBe(1);
+            expect(result.minor).toBe(8);
+            expect(result.patch).toBe(0);
+            expect(result.version).toBe('1.8.0');
+        });
+
+        it('detects JDK when additional details are printed', async () => {
+            Java.__set__('execa', () => Promise.resolve({
+                all: 'Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8\njavac 1.8.0_275'
+            }));
+
+            const result = await Java.getVersion();
             expect(result.major).toBe(1);
             expect(result.minor).toBe(8);
             expect(result.patch).toBe(0);

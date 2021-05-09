@@ -93,16 +93,15 @@ const java = {
             return;
         }
 
-        const javacPath = utils.forgivingWhichSync('javac');
         const javaHome = environment.CORDOVA_JAVA_HOME || environment.JAVA_HOME;
         if (javaHome) {
             // Ensure that CORDOVA_JAVA_HOME overrides
             environment.JAVA_HOME = javaHome;
-            // Windows java installer doesn't add javac to PATH, nor set JAVA_HOME (ugh).
-            if (!javacPath) {
-                environment.PATH += path.delimiter + path.join(environment.JAVA_HOME, 'bin');
-            }
+            // Ensure that the JAVA_HOME bin path is before anything else
+            // to cover cases where different Java versions is in the PATH
+            environment.PATH = path.join(environment.JAVA_HOME, 'bin') + path.delimiter + environment.PATH;
         } else {
+            const javacPath = utils.forgivingWhichSync('javac');
             if (javacPath) {
                 // OS X has a command for finding JAVA_HOME.
                 const find_java = '/usr/libexec/java_home';
