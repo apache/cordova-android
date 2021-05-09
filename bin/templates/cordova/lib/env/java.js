@@ -79,10 +79,6 @@ const java = {
             throw new CordovaError(msg);
         }
 
-        // This parses out additional lines that
-        // the Java executable may print out
-        version = /^javac? .+$/im.exec(version)[0];
-
         return semver.coerce(version);
     },
 
