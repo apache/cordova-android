@@ -102,10 +102,9 @@ const java = {
         if (javaHome) {
             // Ensure that CORDOVA_JAVA_HOME overrides
             environment.JAVA_HOME = javaHome;
-            // Windows java installer doesn't add javac to PATH, nor set JAVA_HOME (ugh).
-            if (!javacPath) {
-                environment.PATH += path.delimiter + path.join(environment.JAVA_HOME, 'bin');
-            }
+            // Ensure that the JAVA_HOME bin path is before anything else
+            // to cover cases where different Java versions is in the PATH
+            environment.PATH = path.join(environment.JAVA_HOME, 'bin') + path.delimiter + environment.PATH;
         } else {
             if (javacPath) {
                 // OS X has a command for finding JAVA_HOME.
