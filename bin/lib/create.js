@@ -43,7 +43,7 @@ function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-async function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
+function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
     var app_path = path.join(projectPath, 'app', 'src', 'main');
@@ -66,11 +66,9 @@ async function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
     } else {
         fs.ensureDirSync(nestedCordovaLibPath);
         fs.copySync(path.join(ROOT, 'framework', 'AndroidManifest.xml'), path.join(nestedCordovaLibPath, 'AndroidManifest.xml'));
-        await new Promise((resolve) => {
-            const propertiesEditor = createEditor(path.join(ROOT, 'framework', 'project.properties'));
-            propertiesEditor.set('target', `android-${targetAPI || constants.SDK_VERSION}`);
-            propertiesEditor.save(path.join(nestedCordovaLibPath, 'project.properties'), resolve);
-        });
+        const propertiesEditor = createEditor(path.join(ROOT, 'framework', 'project.properties'));
+        propertiesEditor.set('target', `android-${targetAPI || constants.SDK_VERSION}`);
+        propertiesEditor.save(path.join(nestedCordovaLibPath, 'project.properties'));
         fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'repositories.gradle'), path.join(nestedCordovaLibPath, 'repositories.gradle'));
@@ -282,7 +280,7 @@ exports.create = function (project_path, config, options, events) {
             fs.ensureDirSync(path.join(app_path, 'libs'));
 
             // copy cordova.js, cordova.jar
-            await exports.copyJsAndLibrary(project_path, options.link, safe_activity_name, target_api);
+            exports.copyJsAndLibrary(project_path, options.link, safe_activity_name, target_api);
 
             // Set up ther Android Studio paths
             var java_path = path.join(app_path, 'java');
