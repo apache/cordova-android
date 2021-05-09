@@ -18,7 +18,6 @@
 */
 
 import java.util.regex.Pattern
-import groovy.swing.SwingBuilder
 import com.g00fy2.versioncompare.Version
 
 String doEnsureValueExists(filePath, props, key) {
@@ -153,10 +152,17 @@ def doGetConfigPreference(name, defaultValue) {
 
 // Properties exported here are visible to all plugins.
 ext {
+    def jsonFile = new File("$rootDir/config.json")
+    def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
+
+    cordovaConfig = parsedJson
+    cordovaConfig.LATEST_INSTALLED_BUILD_TOOLS = doFindLatestInstalledBuildTools(
+        cordovaConfig.BUILD_TOOLS_VERSION
+    )
+
     // These helpers are shared, but are not guaranteed to be stable / unchanged.
     privateHelpers = {}
     privateHelpers.getProjectTarget = { doGetProjectTarget() }
-    privateHelpers.findLatestInstalledBuildTools = { doFindLatestInstalledBuildTools('19.1.0') }
     privateHelpers.extractIntFromManifest = { name -> doExtractIntFromManifest(name) }
     privateHelpers.extractStringFromManifest = { name -> doExtractStringFromManifest(name) }
     privateHelpers.ensureValueExists = { filePath, props, key -> doEnsureValueExists(filePath, props, key) }

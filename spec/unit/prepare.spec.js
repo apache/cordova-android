@@ -771,6 +771,8 @@ describe('prepare', () => {
         let Api;
         let api;
         let prepare;
+        let fsReadJSONSyncSpy;
+        let fsWriteJSONSyncSpy;
 
         // Spies
         let gradlePropertiesParserSpy;
@@ -782,6 +784,23 @@ describe('prepare', () => {
         beforeEach(function () {
             Api = rewire('../../bin/templates/cordova/Api');
             prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+            prepare.__set__('require.resolve', (file) => {
+                if (file === 'cordova-android/framework/defaults.json') {
+                    return path.resolve('./framework/defaults.json');
+                }
+                return path.resolve(file);
+            });
+
+            const defaults = require('../../framework/defaults.json');
+
+            fsReadJSONSyncSpy = jasmine.createSpy('readJSONSync').and.returnValue(defaults);
+            fsWriteJSONSyncSpy = jasmine.createSpy('writeJSONSync');
+
+            prepare.__set__('fs', {
+                readJSONSync: fsReadJSONSyncSpy,
+                writeJSONSync: fsWriteJSONSyncSpy
+            });
 
             cordovaProject = {
                 root: '/mock',

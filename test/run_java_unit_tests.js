@@ -21,6 +21,7 @@
 
 const path = require('path');
 const execa = require('execa');
+const fs = require('fs-extra');
 const ProjectBuilder = require('../bin/templates/cordova/lib/builders/ProjectBuilder');
 
 class AndroidTestRunner {
@@ -48,6 +49,9 @@ class AndroidTestRunner {
     run () {
         return Promise.resolve()
             .then(_ => console.log(`[${this.testTitle}] Preparing Gradle wrapper for Java unit tests.`))
+            .then(_ => {
+                fs.copyFileSync(path.resolve(this.projectDir, '../../framework/defaults.json'), path.resolve(this.projectDir, 'config.json'));
+            })
             .then(_ => this._createProjectBuilder())
             .then(_ => this._gradlew('--version'))
             .then(_ => console.log(`[${this.testTitle}] Gradle wrapper is ready. Running tests now.`))

@@ -21,12 +21,11 @@ var rewire = require('rewire');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
 var fs = require('fs-extra');
 var path = require('path');
-var events = require('cordova-common').events;
 var which = require('which');
-const { CordovaError } = require('cordova-common');
-
-// This should match /bin/templates/project/build.gradle
-const DEFAULT_TARGET_API = 30;
+const { createEditor } = require('properties-parser');
+const { CordovaError, events } = require('cordova-common');
+const { SDK_VERSION } = require('../../framework/defaults.json');
+const semver = require('semver');
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -49,8 +48,9 @@ describe('check_reqs', function () {
 
     describe('check_java', () => {
         it('detects if unexpected JDK version is installed', async () => {
+            spyOn(semver, 'satisfies').and.returnValue(false);
+            spyOn(check_reqs, '_getExpectedJavaVersion').and.returnValue('9999.9999.9999');
             check_reqs.__set__({
-                EXPECTED_JAVA_VERSION: '9999.9999.9999',
                 java: { getVersion: async () => ({ version: '1.8.0' }) }
             });
 
@@ -58,14 +58,17 @@ describe('check_reqs', function () {
         });
 
         it('should return the version', async () => {
+            spyOn(semver, 'satisfies').and.returnValue(true);
+            spyOn(check_reqs, '_getExpectedJavaVersion').and.returnValue('11.x.x');
             check_reqs.__set__({
-                java: { getVersion: async () => ({ version: '1.8.0' }) }
+                java: { getVersion: async () => ({ version: '11.0.11' }) }
             });
 
-            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
+            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '11.0.11' });
         });
 
         it('should return the correct version if javac prints _JAVA_OPTIONS', async () => {
+            spyOn(semver, 'satisfies').and.returnValue(true);
             check_reqs.__set__({
                 java: {
                     getVersion: async () => {
@@ -290,20 +293,41 @@ describe('check_reqs', function () {
     });
 
     describe('get_target', function () {
-        var ConfigParser;
-        var getPreferenceSpy;
+        let ConfigParser;
+        let getPreferenceSpy;
         beforeEach(function () {
             getPreferenceSpy = jasmine.createSpy();
             ConfigParser = jasmine.createSpy().and.returnValue({
                 getPreference: getPreferenceSpy
             });
-            check_reqs.__set__('ConfigParser', ConfigParser);
+            check_reqs.__set__({
+                ConfigParser: ConfigParser,
+                createEditor: jasmine.createSpy('createEditor').and.callFake(() => {
+                    return {
+                        get: jasmine.createSpy('Editor.get').and.callFake(() => {
+                            return `android-${SDK_VERSION}`;
+                        })
+                    };
+                })
+            });
         });
 
         it('should retrieve target from framework project.properties file', function () {
+            spyOn(fs, 'existsSync').and.callFake((path) => {
+                // return /project\.properties$/.test(path);
+                return true;
+            });
+            check_reqs.__set__({
+                createEditor: () => {
+                    const editor = createEditor(path.resolve('./framework/project.properties'));
+                    spyOn(editor, 'get').and.returnValue('android-34');
+                    return editor;
+                }
+            });
+
             var target = check_reqs.get_target();
             expect(target).toBeDefined();
-            expect(target).toContain('android-' + DEFAULT_TARGET_API);
+            expect(target).toContain('android-34');
         });
 
         it('should throw error if target cannot be found', function () {
@@ -315,6 +339,7 @@ describe('check_reqs', function () {
 
         it('should override target from config.xml preference', () => {
             var realExistsSync = fs.existsSync;
+
             spyOn(fs, 'existsSync').and.callFake(function (path) {
                 if (path.indexOf('config.xml') > -1) {
                     return true;
@@ -323,12 +348,12 @@ describe('check_reqs', function () {
                 }
             });
 
-            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API + 1);
+            getPreferenceSpy.and.returnValue(SDK_VERSION + 1);
 
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + (DEFAULT_TARGET_API + 1));
+            expect(target).toBe('android-' + (SDK_VERSION + 1));
         });
 
         it('should fallback to default target if config.xml has invalid preference', () => {
@@ -346,7 +371,7 @@ describe('check_reqs', function () {
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + DEFAULT_TARGET_API);
+            expect(target).toBe('android-' + SDK_VERSION);
         });
 
         it('should warn if target sdk preference is lower than the minimum required target SDK', () => {
@@ -361,13 +386,13 @@ describe('check_reqs', function () {
 
             spyOn(events, 'emit');
 
-            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API - 1);
+            getPreferenceSpy.and.returnValue(SDK_VERSION - 1);
 
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + DEFAULT_TARGET_API);
-            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + DEFAULT_TARGET_API + '.');
+            expect(target).toBe('android-' + SDK_VERSION);
+            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + SDK_VERSION + '.');
         });
     });
 
