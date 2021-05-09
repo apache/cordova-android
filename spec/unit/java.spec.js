@@ -86,7 +86,7 @@ describe('Java', () => {
             await Java._ensure(env);
 
             expect(env.JAVA_HOME).toBe('/tmp/jdk');
-            expect(env.PATH.split(path.delimiter)).toContain('/tmp/jdk/bin');
+            expect(env.PATH.split(path.delimiter)).toContain(['', 'tmp', 'jdk', 'bin'].join(path.sep));
         });
 
         it('with JAVA_HOME / without javac', async () => {
