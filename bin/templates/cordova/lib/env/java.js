@@ -116,7 +116,7 @@ const java = {
                 } else {
                     // See if we can derive it from javac's location.
                     var maybeJavaHome = path.dirname(path.dirname(javacPath));
-                    if (fs.existsSync(path.join(maybeJavaHome, 'lib', 'tools.jar'))) {
+                    if (fs.existsSync(path.join(maybeJavaHome, 'lib'))) {
                         environment.JAVA_HOME = maybeJavaHome;
                     } else {
                         throw new CordovaError(default_java_error_msg);

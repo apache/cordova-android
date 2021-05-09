@@ -49,8 +49,8 @@ android {
     buildToolsVersion cordovaConfig.BUILD_TOOLS_VERSION
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     // For the Android Cordova Lib, we allow changing the minSdkVersion, but it is at the users own risk

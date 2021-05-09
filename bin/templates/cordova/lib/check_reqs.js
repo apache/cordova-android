@@ -29,11 +29,25 @@ var android_sdk = require('./android_sdk');
 const { createEditor } = require('properties-parser');
 const semver = require('semver');
 
-const EXPECTED_JAVA_VERSION = '1.8.x';
-
 // Re-exporting these for backwards compatibility and for unit testing.
 // TODO: Remove uses and use the ./utils module directly.
 Object.assign(module.exports, { isWindows, isDarwin });
+
+/**
+ * @private Exported purely for unit testing purposes.
+ * @returns expected java string
+ */
+module.exports._getExpectedJavaVersion = function () {
+    let javaVersion;
+    try {
+        javaVersion = require.resolve('cordova-android/framework/defaults.json').JAVA_VERSION;
+    } catch (ex) {
+        // Must be running in a test environment
+        javaVersion = require('../../../../framework/defaults.json').JAVA_VERSION;
+    }
+
+    return `${javaVersion}.x.x`;
+};
 
 /**
  * @description Get valid target from framework/project.properties if run from this repo
@@ -140,10 +154,11 @@ module.exports.check_gradle = function () {
  */
 module.exports.check_java = async function () {
     const javaVersion = await java.getVersion();
+    const expectedJavaVersion = module.exports._getExpectedJavaVersion();
 
-    if (!semver.satisfies(javaVersion.version, EXPECTED_JAVA_VERSION)) {
+    if (!semver.satisfies(javaVersion.version, expectedJavaVersion)) {
         throw new CordovaError(
-            `Requirements check failed for JDK ${EXPECTED_JAVA_VERSION}! Detected version: ${javaVersion.version}\n` +
+            `Requirements check failed for JDK ${expectedJavaVersion}! Detected version: ${javaVersion.version}\n` +
             'Check your ANDROID_SDK_ROOT / JAVA_HOME / PATH environment variables.'
         );
     }

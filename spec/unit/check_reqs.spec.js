@@ -25,6 +25,7 @@ var which = require('which');
 const { createEditor } = require('properties-parser');
 const { CordovaError, events } = require('cordova-common');
 const { SDK_VERSION } = require('../../framework/defaults.json');
+const semver = require('semver');
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -47,8 +48,9 @@ describe('check_reqs', function () {
 
     describe('check_java', () => {
         it('detects if unexpected JDK version is installed', async () => {
+            spyOn(semver, 'satisfies').and.returnValue(false);
+            spyOn(check_reqs, '_getExpectedJavaVersion').and.returnValue('9999.9999.9999');
             check_reqs.__set__({
-                EXPECTED_JAVA_VERSION: '9999.9999.9999',
                 java: { getVersion: async () => ({ version: '1.8.0' }) }
             });
 
@@ -56,14 +58,17 @@ describe('check_reqs', function () {
         });
 
         it('should return the version', async () => {
+            spyOn(semver, 'satisfies').and.returnValue(true);
+            spyOn(check_reqs, '_getExpectedJavaVersion').and.returnValue('11.x.x');
             check_reqs.__set__({
-                java: { getVersion: async () => ({ version: '1.8.0' }) }
+                java: { getVersion: async () => ({ version: '11.0.11' }) }
             });
 
-            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
+            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '11.0.11' });
         });
 
         it('should return the correct version if javac prints _JAVA_OPTIONS', async () => {
+            spyOn(semver, 'satisfies').and.returnValue(true);
             check_reqs.__set__({
                 java: {
                     getVersion: async () => {
