@@ -94,8 +94,10 @@ const java = {
         }
 
         const javacPath = utils.forgivingWhichSync('javac');
-        const hasJavaHome = !!environment.JAVA_HOME;
-        if (hasJavaHome) {
+        const javaHome = environment.CORDOVA_JAVA_HOME || environment.JAVA_HOME;
+        if (javaHome) {
+            // Ensure that CORDOVA_JAVA_HOME overrides
+            environment.JAVA_HOME = javaHome;
             // Windows java installer doesn't add javac to PATH, nor set JAVA_HOME (ugh).
             if (!javacPath) {
                 environment.PATH += path.delimiter + path.join(environment.JAVA_HOME, 'bin');
