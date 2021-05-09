@@ -43,7 +43,28 @@ const java = {
         // Java <= 8 writes version info to stderr, Java >= 9 to stdout
         let version = null;
         try {
-            version = (await execa('javac', ['-version'], { all: true })).all;
+            const javacOutput = (await execa('javac', ['-version'], { all: true })).all;
+
+            /*
+            A regex match for the java version looks like the following:
+
+            version: [
+                'javac 1.8.0',
+                '1.8.0',
+                index: 45,
+                input: 'Picked up _JAVA_OPTIONS: -Xms1024M -Xmx2048M\njavac 1.8.0_271',
+                groups: undefined
+            ]
+
+            We have to use a regular expression to get the java version, because on some environments
+            (e.g. macOS Big Sur) javac prints _JAVA_OPTIONS before printing the version and semver.coerce()
+            will fail to get the correct version from the output.
+            */
+
+            const match = /javac\s+([\d.]+)/i.exec(javacOutput);
+            if (match && match[1]) {
+                version = match[1];
+            }
         } catch (ex) {
             events.emit('verbose', ex.shortMessage);
 
