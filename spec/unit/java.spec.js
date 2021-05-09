@@ -76,6 +76,19 @@ describe('Java', () => {
             Java.__set__('javaIsEnsured', false);
         });
 
+        it('CORDOVA_JAVA_HOME overrides JAVA_HOME', async () => {
+            spyOn(utils, 'forgivingWhichSync').and.returnValue('');
+
+            const env = {
+                CORDOVA_JAVA_HOME: '/tmp/jdk'
+            };
+
+            await Java._ensure(env);
+
+            expect(env.PATH.split(path.delimiter))
+                .toContain(path.join(env.JAVA_HOME, 'bin'));
+        });
+
         it('with JAVA_HOME / without javac', async () => {
             spyOn(utils, 'forgivingWhichSync').and.returnValue('');
 
