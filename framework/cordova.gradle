@@ -150,19 +150,44 @@ def doGetConfigPreference(name, defaultValue) {
     return ret
 }
 
+def doApplyCordovaConfigCustomization() {
+    // Apply user overide properties that comes from the "--gradleArg=-P" parameters
+    if (project.hasProperty('cdvMinSdkVersion')) {
+        cordovaConfig.MIN_SDK_VERSION = Integer.parseInt('' + cdvMinSdkVersion)
+    }
+    if (project.hasProperty('cdvSdkVersion')) {
+        cordovaConfig.SDK_VERSION = Integer.parseInt('' + cdvSdkVersion)
+    }
+    if (project.hasProperty('cdvMaxSdkVersion')) {
+        cordovaConfig.MAX_SDK_VERSION = Integer.parseInt('' + cdvMaxSdkVersion)
+    }
+    if (project.hasProperty('cdvBuildToolsVersion')) {
+        cordovaConfig.BUILD_TOOLS_VERSION = cdvBuildToolsVersion
+    }
+    if (project.hasProperty('cdvAndroidXAppCompatVersion')) {
+        cordovaConfig.ANDROIDX_APP_COMPAT_VERSION = cdvAndroidXAppCompatVersion
+    }
+
+    // Ensure the latest installed build tools is selected, with or without defined override
+    cordovaConfig.LATEST_INSTALLED_BUILD_TOOLS = doFindLatestInstalledBuildTools(
+        cordovaConfig.BUILD_TOOLS_VERSION
+    )
+}
+
 // Properties exported here are visible to all plugins.
 ext {
     def jsonFile = new File("$rootDir/config.json")
     def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
 
     cordovaConfig = parsedJson
-    cordovaConfig.LATEST_INSTALLED_BUILD_TOOLS = doFindLatestInstalledBuildTools(
-        cordovaConfig.BUILD_TOOLS_VERSION
-    )
+
+    // Apply Gradle Properties
+    doApplyCordovaConfigCustomization()
 
     // These helpers are shared, but are not guaranteed to be stable / unchanged.
     privateHelpers = {}
     privateHelpers.getProjectTarget = { doGetProjectTarget() }
+    privateHelpers.applyCordovaConfigCustomization = { doApplyCordovaConfigCustomization() }
     privateHelpers.extractIntFromManifest = { name -> doExtractIntFromManifest(name) }
     privateHelpers.extractStringFromManifest = { name -> doExtractStringFromManifest(name) }
     privateHelpers.ensureValueExists = { filePath, props, key -> doEnsureValueExists(filePath, props, key) }

@@ -73,10 +73,6 @@ task wrapper(type: Wrapper) {
 ext {
     apply from: '../CordovaLib/cordova.gradle'
 
-    // The value for android.buildToolsVersion.
-    if (!project.hasProperty('cdvBuildToolsVersion')) {
-        cdvBuildToolsVersion = null;
-    }
     // Sets the versionCode to the given value.
     if (!project.hasProperty('cdvVersionCode')) {
         cdvVersionCode = null
@@ -119,6 +115,9 @@ if (hasBuildExtras2) {
     apply from: '../build-extras.gradle'
 }
 
+// Apply updates that might come from build-extra.
+privateHelpers.applyCordovaConfigCustomization()
+
 // Set property defaults after extension .gradle files.
 if (ext.cdvDebugSigningPropertiesFile == null && file('../debug-signing.properties').exists()) {
     ext.cdvDebugSigningPropertiesFile = '../debug-signing.properties'
@@ -157,11 +156,15 @@ task cdvPrintProps {
         println('cdvBuildToolsVersion=' + cdvBuildToolsVersion)
         println('cdvVersionCode=' + cdvVersionCode)
         println('cdvVersionCodeForceAbiDigit=' + cdvVersionCodeForceAbiDigit)
+        println('cdvSdkVersion=' + cdvSdkVersion)
+        println('cdvMinSdkVersion=' + cdvMinSdkVersion)
+        println('cdvMaxSdkVersion=' + cdvMaxSdkVersion)
         println('cdvBuildMultipleApks=' + cdvBuildMultipleApks)
         println('cdvReleaseSigningPropertiesFile=' + cdvReleaseSigningPropertiesFile)
         println('cdvDebugSigningPropertiesFile=' + cdvDebugSigningPropertiesFile)
         println('cdvBuildArch=' + cdvBuildArch)
         println('computedVersionCode=' + android.defaultConfig.versionCode)
+        println('cdvAndroidXAppCompatVersion=' + cdvAndroidXAppCompatVersion)
         android.productFlavors.each { flavor ->
             println('computed' + flavor.name.capitalize() + 'VersionCode=' + flavor.versionCode)
         }
