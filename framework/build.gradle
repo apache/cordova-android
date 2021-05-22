@@ -42,7 +42,7 @@ buildscript {
     dependencies {
         // The gradle plugin and the maven plugin have to be updated after each version of Android
         // studio comes out
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
     }
