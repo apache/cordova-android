@@ -57,7 +57,7 @@ buildscript {
         }
 
         if(cdvHelpers.getConfigPreference('GradlePluginGoogleServicesEnabled', 'false').toBoolean()) {
-            String defaultGradlePluginGoogleServicesVersion = '4.3.5'
+            String defaultGradlePluginGoogleServicesVersion = '4.3.8'
 
             /**
              * Fetches the user's defined Google Services Plugin Version from config.xml.
