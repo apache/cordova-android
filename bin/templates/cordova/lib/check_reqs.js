@@ -27,9 +27,6 @@ var PROJECT_ROOT = path.join(__dirname, '..', '..');
 const { CordovaError, ConfigParser, events } = require('cordova-common');
 var android_sdk = require('./android_sdk');
 const { createEditor } = require('properties-parser');
-const semver = require('semver');
-
-const EXPECTED_JAVA_VERSION = '1.8.x';
 
 // Re-exporting these for backwards compatibility and for unit testing.
 // TODO: Remove uses and use the ./utils module directly.
@@ -140,14 +137,6 @@ module.exports.check_gradle = function () {
  */
 module.exports.check_java = async function () {
     const javaVersion = await java.getVersion();
-
-    if (!semver.satisfies(javaVersion.version, EXPECTED_JAVA_VERSION)) {
-        throw new CordovaError(
-            `Requirements check failed for JDK ${EXPECTED_JAVA_VERSION}! Detected version: ${javaVersion.version}\n` +
-            'Check your ANDROID_SDK_ROOT / JAVA_HOME / PATH environment variables.'
-        );
-    }
-
     return javaVersion;
 };
 
