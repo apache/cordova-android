@@ -33,7 +33,7 @@ import android.content.Context;
 public class ConfigXmlParser {
     private static String TAG = "ConfigXmlParser";
 
-    private String launchUrl = "file:///android_asset/www/index.html";
+    private String launchUrl = null;
     private CordovaPreferences prefs = new CordovaPreferences();
     private ArrayList<PluginEntry> pluginEntries = new ArrayList<PluginEntry>(20);
 
@@ -46,6 +46,14 @@ public class ConfigXmlParser {
     }
 
     public String getLaunchUrl() {
+        if (launchUrl == null) {
+            launchUrl = "https://" +  this.prefs.getString("hostname", "localhost");
+        }
+
+        if (this.prefs.getBoolean("AndroidInsecureFileModeEnabled", false)) {
+            launchUrl = "file:///android_asset/www/index.html";
+        }
+
         return launchUrl;
     }
 
@@ -148,7 +156,11 @@ public class ConfigXmlParser {
             if (src.charAt(0) == '/') {
                 src = src.substring(1);
             }
-            launchUrl = "file:///android_asset/www/" + src;
+            if (this.prefs.getBoolean("AndroidInsecureFileModeEnabled", false)) {
+                launchUrl = "file:///android_asset/www/" + src;
+            } else {
+                launchUrl = "https://" +  this.prefs.getString("hostname", "localhost") + "/" + src;
+            }
         }
     }
 }

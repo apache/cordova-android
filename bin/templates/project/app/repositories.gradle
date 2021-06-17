@@ -16,6 +16,8 @@
    under the License.
 */
 
-wrapper {
-    gradleVersion = '6.6.1'
+ext.repos = {
+    mavenCentral()
+    google()
+    jcenter()
 }

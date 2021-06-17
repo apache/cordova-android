@@ -55,7 +55,7 @@ const outputFileComparator = compareByAll([
  * @param {'debug' | 'release'} buildType
  * @param {{arch?: string}} options
  */
-function findOutputFiles (bundleType, buildType, { arch }) {
+function findOutputFiles (bundleType, buildType, { arch } = {}) {
     let files = glob.sync(`**/*.${bundleType}`, {
         absolute: true,
         cwd: path.resolve(this[`${bundleType}Dir`], buildType)
@@ -268,7 +268,7 @@ class ProjectBuilder {
                 // update/set the distributionUrl in the gradle-wrapper.properties
                 const gradleWrapperPropertiesPath = path.join(self.root, 'gradle/wrapper/gradle-wrapper.properties');
                 const gradleWrapperProperties = createEditor(gradleWrapperPropertiesPath);
-                const distributionUrl = process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL || 'https://services.gradle.org/distributions/gradle-6.6.1-all.zip';
+                const distributionUrl = process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL || 'https://services.gradle.org/distributions/gradle-6.8.3-all.zip';
                 gradleWrapperProperties.set('distributionUrl', distributionUrl);
                 gradleWrapperProperties.save();
 

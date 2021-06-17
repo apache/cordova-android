@@ -19,14 +19,14 @@
 
 var rewire = require('rewire');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
-var os = require('os');
 var fs = require('fs-extra');
 var path = require('path');
 var events = require('cordova-common').events;
 var which = require('which');
+const { CordovaError } = require('cordova-common');
 
 // This should match /bin/templates/project/build.gradle
-const DEFAULT_TARGET_API = 29;
+const DEFAULT_TARGET_API = 30;
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -48,33 +48,40 @@ describe('check_reqs', function () {
     });
 
     describe('check_java', () => {
-        let tmpDir;
-        beforeEach(() => {
-            const tmpDirTemplate = path.join(os.tmpdir(), 'cordova-android-test-');
-            tmpDir = fs.realpathSync(fs.mkdtempSync(tmpDirTemplate));
-        });
-        afterEach(() => {
-            fs.removeSync(tmpDir);
-        });
-
-        it('detects JDK in default location on windows', async () => {
-            check_reqs.isWindows = () => true;
+        it('detects if unexpected JDK version is installed', async () => {
             check_reqs.__set__({
-                execa: async () => ({}),
-                forgivingWhichSync: () => ''
+                EXPECTED_JAVA_VERSION: '9999.9999.9999',
+                java: { getVersion: async () => ({ version: '1.8.0' }) }
             });
 
-            delete process.env.JAVA_HOME;
-            process.env.ProgramFiles = tmpDir;
+            await expectAsync(check_reqs.check_java()).toBeRejectedWithError(CordovaError, /Requirements check failed for JDK 9999.9999.9999! Detected version: 1.8.0/);
+        });
 
-            const jdkDir = path.join(tmpDir, 'java/jdk1.6.0_02');
-            fs.ensureDirSync(jdkDir);
+        it('should return the version', async () => {
+            check_reqs.__set__({
+                java: { getVersion: async () => ({ version: '1.8.0' }) }
+            });
 
-            await check_reqs.check_java();
+            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
+        });
 
-            expect(process.env.JAVA_HOME).toBe(jdkDir);
-            expect(process.env.PATH.split(path.delimiter))
-                .toContain(path.join(jdkDir, 'bin'));
+        it('should return the correct version if javac prints _JAVA_OPTIONS', async () => {
+            check_reqs.__set__({
+                java: {
+                    getVersion: async () => {
+                        let version = null;
+                        const javacOutput = 'Picked up _JAVA_OPTIONS: -Xms1024M -Xmx2048M\njavac 1.8.0_271';
+                        const match = /javac\s+([\d.]+)/i.exec(javacOutput);
+                        if (match && match[1]) {
+                            version = match[1];
+                        }
+
+                        return { version };
+                    }
+                }
+            });
+
+            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
         });
     });
 
@@ -110,34 +117,6 @@ describe('check_reqs', function () {
                 beforeEach(function () {
                     spyOn(fs, 'realpathSync').and.callFake(function (path) {
                         return path;
-                    });
-                });
-                it('should set ANDROID_SDK_ROOT based on `android` command if command exists in a SDK-like directory structure', () => {
-                    spyOn(fs, 'existsSync').and.returnValue(true);
-                    spyOn(which, 'sync').and.callFake(function (cmd) {
-                        if (cmd === 'android') {
-                            return '/android/sdk/tools/android';
-                        } else {
-                            return null;
-                        }
-                    });
-                    return check_reqs.check_android().then(function () {
-                        expect(process.env.ANDROID_SDK_ROOT).toEqual('/android/sdk');
-                    });
-                });
-                it('should error out if `android` command exists in a non-SDK-like directory structure', () => {
-                    spyOn(which, 'sync').and.callFake(function (cmd) {
-                        if (cmd === 'android') {
-                            return '/just/some/random/path/android';
-                        } else {
-                            return null;
-                        }
-                    });
-                    return check_reqs.check_android().then(() => {
-                        fail('Expected promise to be rejected');
-                    }, err => {
-                        expect(err).toEqual(jasmine.any(Error));
-                        expect(err.message).toContain('update your PATH to include valid path');
                     });
                 });
                 it('should set ANDROID_SDK_ROOT based on `adb` command if command exists in a SDK-like directory structure', () => {
@@ -275,20 +254,20 @@ describe('check_reqs', function () {
                 });
             });
 
-            it('with ANDROID_SDK_ROOT / without ANDROID_HOME', () => {
+            it('with ANDROID_SDK_ROOT / without ANDROID_HOME', async () => {
                 process.env.ANDROID_SDK_ROOT = '/android/sdk/root';
-                expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/root/bin/gradle');
+                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/root/bin/gradle');
             });
 
-            it('with ANDROID_SDK_ROOT / with ANDROID_HOME', () => {
+            it('with ANDROID_SDK_ROOT / with ANDROID_HOME', async () => {
                 process.env.ANDROID_SDK_ROOT = '/android/sdk/root';
                 process.env.ANDROID_HOME = '/android/sdk/home';
-                expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/root/bin/gradle');
+                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/root/bin/gradle');
             });
 
-            it('without ANDROID_SDK_ROOT / with ANDROID_HOME', () => {
+            it('without ANDROID_SDK_ROOT / with ANDROID_HOME', async () => {
                 process.env.ANDROID_HOME = '/android/sdk/home';
-                expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/home/bin/gradle');
+                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo('/android/sdk/home/bin/gradle');
             });
 
             it('without ANDROID_SDK_ROOT / without ANDROID_HOME', () => {
@@ -410,7 +389,7 @@ describe('check_reqs', function () {
                 fail('Expected promise to be rejected');
             }, err => {
                 expect(err).toEqual(jasmine.any(Error));
-                expect(err.message).toContain('Please install Android target');
+                expect(err.message).toContain('Please install the Android SDK Platform');
             });
         });
     });

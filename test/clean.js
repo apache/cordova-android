@@ -25,7 +25,7 @@ const path = require('path');
  * you want to upgrade gradlew or test its proper generation.
  */
 
-for (const variant of ['android', 'androidx']) {
+for (const variant of ['androidx']) {
     for (const file of ['gradlew', 'gradlew.bat']) {
         fs.removeSync(path.join(__dirname, variant, file));
     }

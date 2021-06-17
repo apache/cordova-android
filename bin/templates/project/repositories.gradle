@@ -16,6 +16,7 @@
    under the License.
 */
 
-include ':app'
-include ":CordovaLib"
-project(':CordovaLib').projectDir = new File('../../framework')
+ext.repos = {
+    google()
+    jcenter()
+}

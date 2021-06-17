@@ -59,9 +59,9 @@ module.exports.prepare = function (cordovaProject, options) {
     const minSdkVersion = this._config.getPreference('android-minSdkVersion', 'android');
     const maxSdkVersion = this._config.getPreference('android-maxSdkVersion', 'android');
     const targetSdkVersion = this._config.getPreference('android-targetSdkVersion', 'android');
-    const androidXEnabled = this._config.getPreference('AndroidXEnabled', 'android');
     const isGradlePluginKotlinEnabled = this._config.getPreference('GradlePluginKotlinEnabled', 'android');
     const gradlePluginKotlinCodeStyle = this._config.getPreference('GradlePluginKotlinCodeStyle', 'android');
+    const androidXAppCompatVersion = this._config.getPreference('AndroidXAppCompatVersion', 'android');
 
     const gradlePropertiesUserConfig = {};
     if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
@@ -72,10 +72,8 @@ module.exports.prepare = function (cordovaProject, options) {
         gradlePropertiesUserConfig['kotlin.code.style'] = gradlePluginKotlinCodeStyle || 'official';
     }
 
-    // Both 'useAndroidX' and 'enableJetifier' are linked together.
-    if (androidXEnabled) {
-        gradlePropertiesUserConfig['android.useAndroidX'] = androidXEnabled;
-        gradlePropertiesUserConfig['android.enableJetifier'] = androidXEnabled;
+    if (androidXAppCompatVersion) {
+        gradlePropertiesUserConfig.cdvAndroidXAppCompatVersion = androidXAppCompatVersion;
     }
 
     const gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);
@@ -302,11 +300,12 @@ function default_versionCode (version) {
 }
 
 function getImageResourcePath (resourcesDir, type, density, name, sourceName) {
-    if (/\.9\.png$/.test(sourceName)) {
-        name = name.replace(/\.png$/, '.9.png');
-    }
-    var resourcePath = path.join(resourcesDir, (density ? type + '-' + density : type), name);
-    return resourcePath;
+    // Use same extension as source with special case for 9-Patch files
+    const ext = sourceName.endsWith('.9.png')
+        ? '.9.png' : path.extname(sourceName).toLowerCase();
+
+    const subDir = density ? `${type}-${density}` : type;
+    return path.join(resourcesDir, subDir, name + ext);
 }
 
 function getAdaptiveImageResourcePath (resourcesDir, type, density, name, sourceName) {
@@ -317,16 +316,29 @@ function getAdaptiveImageResourcePath (resourcesDir, type, density, name, source
     return resourcePath;
 }
 
+function makeSplashCleanupMap (projectRoot, resourcesDir) {
+    // Build an initial resource map that deletes all existing splash screens
+    const existingSplashPaths = glob.sync(
+        `${resourcesDir.replace(/\\/g, '/')}/drawable-*/screen.{png,9.png,webp,jpg,jpeg}`,
+        { cwd: projectRoot }
+    );
+    return makeCleanResourceMap(existingSplashPaths);
+}
+
 function updateSplashes (cordovaProject, platformResourcesDir) {
     var resources = cordovaProject.projectConfig.getSplashScreens('android');
 
-    // if there are "splash" elements in config.xml
+    // if there are no "splash" elements in config.xml
     if (resources.length === 0) {
         events.emit('verbose', 'This app does not have splash screens defined');
-        return;
+        // We must not return here!
+        // If the user defines no splash screens, the cleanup map will cause any
+        // existing splash screen images (e.g. the defaults that we copy into a
+        // new app) to be removed from the app folder, which is what we want.
     }
 
-    var resourceMap = mapImageResources(cordovaProject.root, platformResourcesDir, 'drawable', 'screen.png');
+    // Build an initial resource map that deletes all existing splash screens
+    const resourceMap = makeSplashCleanupMap(cordovaProject.root, platformResourcesDir);
 
     var hadMdpi = false;
     resources.forEach(function (resource) {
@@ -337,14 +349,14 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
             hadMdpi = true;
         }
         var targetPath = getImageResourcePath(
-            platformResourcesDir, 'drawable', resource.density, 'screen.png', path.basename(resource.src));
+            platformResourcesDir, 'drawable', resource.density, 'screen', path.basename(resource.src));
         resourceMap[targetPath] = resource.src;
     });
 
     // There's no "default" drawable, so assume default == mdpi.
     if (!hadMdpi && resources.defaultResource) {
         var targetPath = getImageResourcePath(
-            platformResourcesDir, 'drawable', 'mdpi', 'screen.png', path.basename(resources.defaultResource.src));
+            platformResourcesDir, 'drawable', 'mdpi', 'screen', path.basename(resources.defaultResource.src));
         resourceMap[targetPath] = resources.defaultResource.src;
     }
 
@@ -356,7 +368,8 @@ function updateSplashes (cordovaProject, platformResourcesDir) {
 function cleanSplashes (projectRoot, projectConfig, platformResourcesDir) {
     var resources = projectConfig.getSplashScreens('android');
     if (resources.length > 0) {
-        var resourceMap = mapImageResources(projectRoot, platformResourcesDir, 'drawable', 'screen.png');
+        const resourceMap = makeSplashCleanupMap(projectRoot, platformResourcesDir);
+
         events.emit('verbose', 'Cleaning splash screens at ' + platformResourcesDir);
 
         // No source paths are specified in the map, so updatePaths() will delete the target files.
@@ -546,13 +559,13 @@ function updateIconResourceForLegacy (preparedIcons, resourceMap, platformResour
     // The source paths for icons and splashes are relative to
     // project's config.xml location, so we use it as base path.
     for (var density in android_icons) {
-        var targetPath = getImageResourcePath(platformResourcesDir, 'mipmap', density, 'ic_launcher.png', path.basename(android_icons[density].src));
+        var targetPath = getImageResourcePath(platformResourcesDir, 'mipmap', density, 'ic_launcher', path.basename(android_icons[density].src));
         resourceMap[targetPath] = android_icons[density].src;
     }
 
     // There's no "default" drawable, so assume default == mdpi.
     if (default_icon && !android_icons.mdpi) {
-        var defaultTargetPath = getImageResourcePath(platformResourcesDir, 'mipmap', 'mdpi', 'ic_launcher.png', path.basename(default_icon.src));
+        var defaultTargetPath = getImageResourcePath(platformResourcesDir, 'mipmap', 'mdpi', 'ic_launcher', path.basename(default_icon.src));
         resourceMap[defaultTargetPath] = default_icon.src;
     }
 
@@ -665,10 +678,21 @@ function cleanIcons (projectRoot, projectConfig, platformResourcesDir) {
  */
 function mapImageResources (rootDir, subDir, type, resourceName) {
     const pathMap = {};
-    glob.sync(type + '-*', { cwd: path.join(rootDir, subDir) }).forEach(drawableFolder => {
+    const globOptions = { cwd: path.join(rootDir, subDir), onlyDirectories: true };
+    glob.sync(type + '-*', globOptions).forEach(drawableFolder => {
         const imagePath = path.join(subDir, drawableFolder, resourceName);
         pathMap[imagePath] = null;
     });
+    return pathMap;
+}
+
+/** Returns resource map that deletes all given paths */
+function makeCleanResourceMap (resourcePaths) {
+    const pathMap = {};
+    resourcePaths.map(path.normalize)
+        .forEach(resourcePath => {
+            pathMap[resourcePath] = null;
+        });
     return pathMap;
 }
 

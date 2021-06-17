@@ -36,6 +36,7 @@ exports.copyScripts = copyScripts;
 exports.copyBuildRules = copyBuildRules;
 exports.writeProjectProperties = writeProjectProperties;
 exports.prepBuildFiles = prepBuildFiles;
+exports.writeNameForAndroidStudio = writeNameForAndroidStudio;
 
 function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
@@ -71,6 +72,7 @@ function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
         fs.copySync(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'));
         fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
+        fs.copySync(path.join(ROOT, 'framework', 'repositories.gradle'), path.join(nestedCordovaLibPath, 'repositories.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'src'), path.join(nestedCordovaLibPath, 'src'));
     }
 }
@@ -125,6 +127,8 @@ function copyBuildRules (projectPath, isLegacy) {
     } else {
         fs.copySync(path.join(srcDir, 'build.gradle'), path.join(projectPath, 'build.gradle'));
         fs.copySync(path.join(srcDir, 'app', 'build.gradle'), path.join(projectPath, 'app', 'build.gradle'));
+        fs.copySync(path.join(srcDir, 'app', 'repositories.gradle'), path.join(projectPath, 'app', 'repositories.gradle'));
+        fs.copySync(path.join(srcDir, 'repositories.gradle'), path.join(projectPath, 'repositories.gradle'));
         fs.copySync(path.join(srcDir, 'wrapper.gradle'), path.join(projectPath, 'wrapper.gradle'));
     }
 }
@@ -195,6 +199,19 @@ function validateProjectName (project_name) {
     }
 
     return Promise.resolve();
+}
+
+/**
+ * Write the name of the app in "platforms/android/.idea/.name" so that Android Studio can show that name in the
+ * project listing. This is helpful to quickly look in the Android Studio listing if there are so many projects in
+ * Android Studio.
+ *
+ * https://github.com/apache/cordova-android/issues/1172
+ */
+function writeNameForAndroidStudio (project_path, project_name) {
+    const ideaPath = path.join(project_path, '.idea');
+    fs.ensureDirSync(ideaPath);
+    fs.writeFileSync(path.join(ideaPath, '.name'), project_name);
 }
 
 /**
@@ -294,6 +311,7 @@ exports.create = function (project_path, config, options, events) {
             // Link it to local android install.
             exports.writeProjectProperties(project_path, target_api);
             exports.prepBuildFiles(project_path);
+            exports.writeNameForAndroidStudio(project_path, project_name);
             events.emit('log', generateDoneMessage('create', options.link));
         }).then(() => project_path);
 };
