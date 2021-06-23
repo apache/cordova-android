@@ -66,6 +66,15 @@ describe('Java', () => {
             expect(result.version).toBe('1.8.0');
         });
 
+        it('detects JDK when additional details contain numbers', async () => {
+            Java.__set__('execa', () => Promise.resolve({
+                all: 'Picked up _JAVA_OPTIONS: -Xms1024M -Xmx2048M\njavac 1.8.0_271'
+            }));
+
+            const { version } = await Java.getVersion();
+            expect(version).toBe('1.8.0');
+        });
+
         it('produces a CordovaError on error', async () => {
             Java.__set__('execa', () => Promise.reject({
                 shortMessage: 'test error'
