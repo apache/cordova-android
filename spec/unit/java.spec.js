@@ -27,19 +27,9 @@ describe('Java', () => {
     const Java = rewire('../../bin/templates/cordova/lib/env/java');
 
     describe('getVersion', () => {
-        let originalEnsureFunc = null;
-
         beforeEach(() => {
-            /*
-                This is to avoid changing/polluting the
-                process environment variables
-                as a result of running these java tests; which could produce
-                unexpected side effects to other tests.
-             */
-            originalEnsureFunc = Java._ensure;
-            spyOn(Java, '_ensure').and.callFake(() => {
-                return originalEnsureFunc({});
-            });
+            // No need to run _ensure, since we are stubbing execa
+            spyOn(Java, '_ensure').and.resolveTo();
         });
 
         it('runs', async () => {
