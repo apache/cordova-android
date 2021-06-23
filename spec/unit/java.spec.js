@@ -65,7 +65,7 @@ describe('Java', () => {
             expect(version).toBe('1.8.0');
         });
 
-        it('produces a CordovaError on error', async () => {
+        it('produces a CordovaError on subprocess error', async () => {
             Java.__set__('execa', () => Promise.reject({
                 shortMessage: 'test error'
             }));
@@ -77,6 +77,14 @@ describe('Java', () => {
             await expectAsync(Java.getVersion())
                 .toBeRejectedWithError(CordovaError, /Failed to run "javac -version"/);
             expect(emitSpy).toHaveBeenCalledWith('verbose', 'test error');
+        });
+
+        it('throws an error on unexpected output', async () => {
+            Java.__set__('execa', () => Promise.reject({
+                all: '-version not supported'
+            }));
+
+            await expectAsync(Java.getVersion()).toBeRejectedWithError();
         });
     });
 
