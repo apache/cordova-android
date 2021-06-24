@@ -256,7 +256,7 @@ exports.create = function (project_path, config, options, events) {
     return exports.validatePackageName(package_name)
         .then(function () {
             return exports.validateProjectName(project_name);
-        }).then(async function () {
+        }).then(function () {
         // Log the given values for the project
             events.emit('log', 'Creating Cordova project for the Android platform:');
             events.emit('log', '\tPath: ' + project_path);
