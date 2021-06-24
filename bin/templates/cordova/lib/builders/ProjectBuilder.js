@@ -293,9 +293,7 @@ class ProjectBuilder {
      * @returns The user defined configs
      */
     _getCordovaConfig () {
-        return JSON.parse(fs.readFileSync(path.resolve(this.root, 'config.json'), {
-            encoding: 'utf8'
-        }));
+        return fs.readJSONSync(path.join(this.root, 'config.json'));
     }
 
     /*
