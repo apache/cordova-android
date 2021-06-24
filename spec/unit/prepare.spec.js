@@ -771,8 +771,6 @@ describe('prepare', () => {
         let Api;
         let api;
         let prepare;
-        let fsReadJSONSyncSpy;
-        let fsWriteJSONSyncSpy;
 
         // Spies
         let gradlePropertiesParserSpy;
@@ -794,12 +792,9 @@ describe('prepare', () => {
 
             const defaults = require('../../framework/defaults.json');
 
-            fsReadJSONSyncSpy = jasmine.createSpy('readJSONSync').and.returnValue(defaults);
-            fsWriteJSONSyncSpy = jasmine.createSpy('writeJSONSync');
-
             prepare.__set__('fs', {
-                readJSONSync: fsReadJSONSyncSpy,
-                writeJSONSync: fsWriteJSONSyncSpy
+                readJSONSync: () => defaults,
+                writeJSONSync: () => {}
             });
 
             cordovaProject = {
