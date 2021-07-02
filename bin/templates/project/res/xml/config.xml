@@ -33,7 +33,7 @@
     <!-- <content src="http://mysite.com/myapp.html" /> for external pages -->
     <content src="index.html" />
 
-    <!-- Whitelist docs: https://github.com/apache/cordova-plugin-whitelist -->
+    <!-- Allow List docs: https://cordova.apache.org/docs/en/latest/ -->
     <access origin="*" />
     <!-- Grant certain URLs the ability to launch external applications. This
          behaviour is set to match that of Cordova versions before 3.6.0, and
