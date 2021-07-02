@@ -40,11 +40,11 @@ buildscript {
     repositories repos
 
     dependencies {
-        // The gradle plugin and the maven plugin have to be updated after each version of Android
-        // studio comes out
+        // Android Gradle Plugin (AGP) Build Tools
         classpath 'com.android.tools.build:gradle:4.2.1'
+
+        // @todo remove this abandoned plugin. maven-publish-plugin is now supported by Android Gradle plugin 3.6.0 and higher
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5'
     }
 }
 
@@ -54,8 +54,9 @@ allprojects {
 }
 
 apply plugin: 'com.android.library'
+
+// @todo remove this abandoned plugin. maven-publish-plugin is now supported by Android Gradle plugin 3.6.0 and higher
 apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: 'com.jfrog.bintray'
 
 group = 'org.apache.cordova'
 version = '10.0.0-dev'
@@ -94,6 +95,7 @@ android {
     }
 }
 
+// @todo after removing abandoned plugin "com.github.dcendents.android-maven". figure out what to do with this.
 install {
     repositories.mavenInstaller {
         pom {
@@ -135,29 +137,6 @@ dependencies {
 
 artifacts {
     archives sourcesJar
-}
-
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    configurations = ['archives']
-    pkg {
-        repo = 'maven'
-        name = 'cordova-android'
-        userOrg = 'cordova'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/apache/cordova-android'
-        websiteUrl = 'https://cordova.apache.org'
-        issueTrackerUrl = 'https://github.com/apache/cordova-android/issues'
-        publicDownloadNumbers = true
-        licenses = ['Apache-2.0']
-        labels = ['android', 'cordova', 'phonegap']
-        version {
-            name = '10.0.0-dev'
-            released = new Date()
-            vcsTag = '10.0.0-dev'
-        }
-    }
 }
 
 dependencies {
