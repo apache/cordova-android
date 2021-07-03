@@ -56,5 +56,6 @@ dependencies {
     })
 }
 repositories {
-    jcenter()
+    google()
+    mavenCentral()
 }
