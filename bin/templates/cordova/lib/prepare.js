@@ -78,10 +78,10 @@ module.exports.prepare = function (cordovaProject, options) {
 
 function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, projectGradleConfigPath) {
     const defaultGradleConfig = fs.readJSONSync(defaultGradleConfigPath);
-    const profileGradleConfig = fs.readJSONSync(projectGradleConfigPath);
+    const projectGradleConfig = fs.readJSONSync(projectGradleConfigPath);
 
     // Replace modified configs with defaults
-    const mergedConfigs = Object.assign(profileGradleConfig, defaultGradleConfig);
+    const mergedConfigs = Object.assign(projectGradleConfig, defaultGradleConfig);
 
     const configXmlToGradleMapping = [
         { xmlKey: 'android-minSdkVersion', gradleKey: 'MIN_SDK_VERSION', type: Number },
