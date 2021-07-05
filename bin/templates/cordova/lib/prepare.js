@@ -56,9 +56,7 @@ module.exports.prepare = function (cordovaProject, options) {
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
 
     // Update Gradle cdv-gradle-config.json
-    const defaultGradleConfigPath = require.resolve('cordova-android/framework/cdv-gradle-config-defaults.json');
-    const projectGradleConfigPath = path.join(this.locations.root, 'cdv-gradle-config.json');
-    updateUserProjectGradleConfig(this._config, defaultGradleConfigPath, projectGradleConfigPath);
+    updateUserProjectGradleConfig(this);
 
     // Update Project's Gradle Properties
     updateUserProjectGradlePropertiesConfig(this._config, this.locations.root, args);
@@ -76,28 +74,20 @@ module.exports.prepare = function (cordovaProject, options) {
     });
 };
 
-function castValueToType (value, type) {
-    if (value === undefined) return undefined;
+/** @param {PlatformApi} project */
+function updateUserProjectGradleConfig (project) {
+    // Generate project gradle config
+    const projectGradleConfig = {
+        ...require('cordova-android/framework/cdv-gradle-config-defaults.json'),
+        ...getUserGradleConfig(project._config)
+    };
 
-    switch (type) {
-    case String:
-        return String(value);
-    case Number:
-        return parseFloat(value);
-    case Boolean:
-        return String(value).toLowerCase() === 'true';
-    default:
-        return undefined;
-    }
+    // Write out changes
+    const projectGradleConfigPath = path.join(project.root, 'cdv-gradle-config.json');
+    fs.writeJSONSync(projectGradleConfigPath, projectGradleConfig, { spaces: 2 });
 }
 
-function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, projectGradleConfigPath) {
-    const defaultGradleConfig = fs.readJSONSync(defaultGradleConfigPath);
-    const projectGradleConfig = fs.readJSONSync(projectGradleConfigPath);
-
-    // Replace modified configs with defaults
-    const mergedConfigs = Object.assign(projectGradleConfig, defaultGradleConfig);
-
+function getUserGradleConfig (configXml) {
     const configXmlToGradleMapping = [
         { xmlKey: 'android-minSdkVersion', gradleKey: 'MIN_SDK_VERSION', type: Number },
         { xmlKey: 'android-maxSdkVersion', gradleKey: 'MAX_SDK_VERSION', type: Number },
@@ -112,21 +102,30 @@ function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, proj
         { xmlKey: 'GradlePluginKotlinEnabled', gradleKey: 'IS_GRADLE_PLUGIN_KOTLIN_ENABLED', type: Boolean }
     ];
 
-    configXmlToGradleMapping.forEach(mapping => {
-        const defaultValue = defaultGradleConfig[mapping.gradleKey];
-        const configXmlValue = configXml.getPreference(mapping.xmlKey, 'android');
-        const typecastValue = castValueToType(configXmlValue || defaultValue, mapping.type);
+    return configXmlToGradleMapping.reduce((config, mapping) => {
+        const rawValue = configXml.getPreference(mapping.xmlKey, 'android');
+        const typecastValue = castValueToType(rawValue, mapping.type);
 
-        if (typecastValue === undefined) {
-            // If "configXmlValue" has an incorrect data type and the key already exists, remove it as cleanup.
-            delete mergedConfigs[mapping.gradleKey];
-        } else {
-            mergedConfigs[mapping.gradleKey] = typecastValue;
+        if (typecastValue !== undefined) {
+            config[mapping.gradleKey] = typecastValue;
         }
-    });
+        return config;
+    }, {});
+}
 
-    // Write Out Changes
-    fs.writeJSONSync(projectGradleConfigPath, mergedConfigs, { spaces: 2 });
+function castValueToType (value, type) {
+    if (value === undefined) return undefined;
+
+    switch (type) {
+    case String:
+        return String(value);
+    case Number:
+        return parseFloat(value);
+    case Boolean:
+        return String(value).toLowerCase() === 'true';
+    default:
+        return undefined;
+    }
 }
 
 function updateUserProjectGradlePropertiesConfig (configXml, platformDir, args) {

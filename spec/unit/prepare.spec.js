@@ -783,20 +783,6 @@ describe('prepare', () => {
             Api = rewire('../../bin/templates/cordova/Api');
             prepare = rewire('../../bin/templates/cordova/lib/prepare');
 
-            prepare.__set__('require.resolve', (file) => {
-                if (file === 'cordova-android/framework/cdv-gradle-config-defaults.json') {
-                    return path.resolve('./framework/cdv-gradle-config-defaults.json');
-                }
-                return path.resolve(file);
-            });
-
-            const defaults = require('../../framework/cdv-gradle-config-defaults.json');
-
-            prepare.__set__('fs', {
-                readJSONSync: () => defaults,
-                writeJSONSync: () => {}
-            });
-
             cordovaProject = {
                 root: '/mock',
                 projectConfig: {
@@ -823,6 +809,7 @@ describe('prepare', () => {
             prepare.__set__('events', {
                 emit: jasmine.createSpy('emit')
             });
+            prepare.__set__('updateUserProjectGradleConfig', jasmine.createSpy());
             prepare.__set__('updateWww', jasmine.createSpy());
             prepare.__set__('updateProjectAccordingTo', jasmine.createSpy('updateProjectAccordingTo')
                 .and.returnValue(Promise.resolve()));
