@@ -76,28 +76,19 @@ module.exports.prepare = function (cordovaProject, options) {
     });
 };
 
-function formatConfigValueByType (configXmlValue, mapping, defaultValue) {
-    let formattedValue = configXmlValue || defaultValue;
+function castValueToType (value, type) {
+    if (value === undefined) return undefined;
 
-    if (formattedValue === undefined) {
+    switch (type) {
+    case String:
+        return String(value);
+    case Number:
+        return parseFloat(value);
+    case Boolean:
+        return String(value).toLowerCase() === 'true';
+    default:
         return undefined;
     }
-
-    switch (mapping.type) {
-    case String:
-        formattedValue = formattedValue.toString();
-        break;
-    case Number:
-        formattedValue = parseFloat(formattedValue);
-        break;
-    case Boolean:
-        formattedValue = formattedValue.toString().toLowerCase() === 'true';
-        break;
-    default:
-        formattedValue = undefined;
-    }
-
-    return formattedValue;
 }
 
 function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, projectGradleConfigPath) {
@@ -124,13 +115,13 @@ function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, proj
     configXmlToGradleMapping.forEach(mapping => {
         const defaultValue = defaultGradleConfig[mapping.gradleKey];
         const configXmlValue = configXml.getPreference(mapping.xmlKey, 'android');
-        const formattedValue = formatConfigValueByType(configXmlValue, mapping, defaultValue);
+        const typecastValue = castValueToType(configXmlValue || defaultValue, mapping.type);
 
-        if (formattedValue === undefined) {
+        if (typecastValue === undefined) {
             // If "configXmlValue" has an incorrect data type and the key already exists, remove it as cleanup.
             delete mergedConfigs[mapping.gradleKey];
         } else {
-            mergedConfigs[mapping.gradleKey] = formattedValue;
+            mergedConfigs[mapping.gradleKey] = typecastValue;
         }
     });
 
