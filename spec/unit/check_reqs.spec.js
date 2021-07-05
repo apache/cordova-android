@@ -24,7 +24,7 @@ var path = require('path');
 var which = require('which');
 const { createEditor } = require('properties-parser');
 const { CordovaError, events } = require('cordova-common');
-const { SDK_VERSION } = require('../../framework/cdv-gradle-config-defaults.json');
+const { SDK_VERSION: DEFAULT_TARGET_API } = require('../../framework/cdv-gradle-config-defaults.json');
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -269,8 +269,8 @@ describe('check_reqs', function () {
     });
 
     describe('get_target', function () {
-        let ConfigParser;
-        let getPreferenceSpy;
+        var ConfigParser;
+        var getPreferenceSpy;
         beforeEach(function () {
             getPreferenceSpy = jasmine.createSpy();
             ConfigParser = jasmine.createSpy().and.returnValue({
@@ -281,7 +281,7 @@ describe('check_reqs', function () {
                 createEditor: jasmine.createSpy('createEditor').and.callFake(() => {
                     return {
                         get: jasmine.createSpy('Editor.get').and.callFake(() => {
-                            return `android-${SDK_VERSION}`;
+                            return `android-${DEFAULT_TARGET_API}`;
                         })
                     };
                 })
@@ -315,7 +315,6 @@ describe('check_reqs', function () {
 
         it('should override target from config.xml preference', () => {
             var realExistsSync = fs.existsSync;
-
             spyOn(fs, 'existsSync').and.callFake(function (path) {
                 if (path.indexOf('config.xml') > -1) {
                     return true;
@@ -324,12 +323,12 @@ describe('check_reqs', function () {
                 }
             });
 
-            getPreferenceSpy.and.returnValue(SDK_VERSION + 1);
+            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API + 1);
 
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + (SDK_VERSION + 1));
+            expect(target).toBe('android-' + (DEFAULT_TARGET_API + 1));
         });
 
         it('should fallback to default target if config.xml has invalid preference', () => {
@@ -347,7 +346,7 @@ describe('check_reqs', function () {
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + SDK_VERSION);
+            expect(target).toBe('android-' + DEFAULT_TARGET_API);
         });
 
         it('should warn if target sdk preference is lower than the minimum required target SDK', () => {
@@ -362,13 +361,13 @@ describe('check_reqs', function () {
 
             spyOn(events, 'emit');
 
-            getPreferenceSpy.and.returnValue(SDK_VERSION - 1);
+            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API - 1);
 
             var target = check_reqs.get_target();
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
-            expect(target).toBe('android-' + SDK_VERSION);
-            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + SDK_VERSION + '.');
+            expect(target).toBe('android-' + DEFAULT_TARGET_API);
+            expect(events.emit).toHaveBeenCalledWith('warn', 'android-targetSdkVersion should be greater than or equal to ' + DEFAULT_TARGET_API + '.');
         });
     });
 
