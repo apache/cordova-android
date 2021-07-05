@@ -21,10 +21,12 @@ var rewire = require('rewire');
 var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
 var fs = require('fs-extra');
 var path = require('path');
+var events = require('cordova-common').events;
 var which = require('which');
-const { createEditor } = require('properties-parser');
-const { CordovaError, events } = require('cordova-common');
-const { SDK_VERSION: DEFAULT_TARGET_API } = require('../../framework/cdv-gradle-config-defaults.json');
+const { CordovaError } = require('cordova-common');
+
+// This should match /bin/templates/project/build.gradle
+const DEFAULT_TARGET_API = 30;
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -276,41 +278,13 @@ describe('check_reqs', function () {
             ConfigParser = jasmine.createSpy().and.returnValue({
                 getPreference: getPreferenceSpy
             });
-            check_reqs.__set__({
-                ConfigParser: ConfigParser,
-                createEditor: jasmine.createSpy('createEditor').and.callFake(() => {
-                    return {
-                        get: jasmine.createSpy('Editor.get').and.callFake(() => {
-                            return `android-${DEFAULT_TARGET_API}`;
-                        })
-                    };
-                })
-            });
+            check_reqs.__set__('ConfigParser', ConfigParser);
         });
 
-        it('should retrieve target from framework project.properties file', function () {
-            spyOn(fs, 'existsSync').and.callFake((path) => {
-                // return /project\.properties$/.test(path);
-                return true;
-            });
-            check_reqs.__set__({
-                createEditor: () => {
-                    const editor = createEditor(path.resolve('./framework/project.properties'));
-                    spyOn(editor, 'get').and.returnValue('android-34');
-                    return editor;
-                }
-            });
-
+        it('should retrieve DEFAULT_TARGET_API', function () {
             var target = check_reqs.get_target();
             expect(target).toBeDefined();
-            expect(target).toContain('android-34');
-        });
-
-        it('should throw error if target cannot be found', function () {
-            spyOn(fs, 'existsSync').and.returnValue(false);
-            expect(function () {
-                check_reqs.get_target();
-            }).toThrow();
+            expect(target).toContain('android-' + DEFAULT_TARGET_API);
         });
 
         it('should override target from config.xml preference', () => {
