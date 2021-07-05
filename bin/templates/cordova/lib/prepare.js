@@ -59,7 +59,7 @@ module.exports.prepare = function (cordovaProject, options) {
     updateUserProjectGradleConfig(this);
 
     // Update Project's Gradle Properties
-    updateUserProjectGradlePropertiesConfig(this._config, this.locations.root, args);
+    updateUserProjectGradlePropertiesConfig(this, args);
 
     // Update own www dir with project's www assets and plugins' assets and js-files
     return Promise.resolve(updateWww(cordovaProject, this.locations)).then(function () {
@@ -128,19 +128,19 @@ function parseStringAsType (value, type) {
     }
 }
 
-function updateUserProjectGradlePropertiesConfig (configXml, platformDir, args) {
+function updateUserProjectGradlePropertiesConfig (project, args) {
     const gradlePropertiesUserConfig = {};
 
     // Get the min SDK version from config.xml
     if (args.jvmargs) gradlePropertiesUserConfig['org.gradle.jvmargs'] = args.jvmargs;
 
-    const isGradlePluginKotlinEnabled = configXml.getPreference('GradlePluginKotlinEnabled', 'android');
+    const isGradlePluginKotlinEnabled = project._config.getPreference('GradlePluginKotlinEnabled', 'android');
     if (isGradlePluginKotlinEnabled) {
-        const gradlePluginKotlinCodeStyle = this._config.getPreference('GradlePluginKotlinCodeStyle', 'android');
+        const gradlePluginKotlinCodeStyle = project._config.getPreference('GradlePluginKotlinCodeStyle', 'android');
         gradlePropertiesUserConfig['kotlin.code.style'] = gradlePluginKotlinCodeStyle || 'official';
     }
 
-    const gradlePropertiesParser = new GradlePropertiesParser(platformDir);
+    const gradlePropertiesParser = new GradlePropertiesParser(project.root);
     gradlePropertiesParser.configure(gradlePropertiesUserConfig);
 }
 
