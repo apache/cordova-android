@@ -21,8 +21,11 @@ ext {
 }
 
 buildscript {
+    apply from: 'cordova.gradle'
     apply from: 'repositories.gradle'
+
     repositories repos
+
     dependencies {
         // Android Gradle Plugin (AGP) Build Tools
         classpath "com.android.tools.build:gradle:${cordovaConfig.AGP_VERSION}"

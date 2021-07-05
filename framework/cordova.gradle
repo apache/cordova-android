@@ -176,7 +176,22 @@ def doApplyCordovaConfigCustomization() {
 
 // Properties exported here are visible to all plugins.
 ext {
-    def jsonFile = new File("$rootDir/config.json")
+    def defaultsFilePath = './defaults.json'
+    def projectConfigFilePath = "$rootDir/config.json"
+    def targetConfigFilePath = null
+
+    /**
+     * Check if the project config file path exists. This file will exist if coming from CLI project.
+     * If this file does not exist, falls back onto the default file.
+     * This scenario can occur if building the framework's AAR package for publishing.
+     */
+    if(file(projectConfigFilePath).exists()) {
+        targetConfigFilePath = projectConfigFilePath
+    } else {
+        targetConfigFilePath = defaultsFilePath
+    }
+
+    def jsonFile = new File(targetConfigFilePath)
     def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
 
     cordovaConfig = parsedJson
