@@ -140,14 +140,9 @@ describe('create', function () {
             spyOn(utils, 'replaceFileContents');
             config_mock = jasmine.createSpyObj('ConfigParser mock instance', ['packageName', 'android_packageName', 'name', 'android_activityName', 'getPreference']);
             events_mock = jasmine.createSpyObj('EventEmitter mock instance', ['emit']);
-            const getPreferenceOriginal = config_mock.getPreference;
-            config_mock.getPreference.and.callFake((key) => {
-                if (key === 'android-targetSdkVersion') {
-                    return fake_android_target;
-                } else {
-                    return getPreferenceOriginal(key);
-                }
-            });
+            config_mock.getPreference
+                .withArgs('android-targetSdkVersion', 'android')
+                .and.returnValue(String(fake_android_target));
         });
 
         afterEach(function () {
@@ -302,7 +297,10 @@ describe('create', function () {
             });
 
             it('should write project.properties file with project details and defaulted target API', () => {
-                config_mock.getPreference.and.returnValue(NaN);
+                config_mock.getPreference
+                    .withArgs('android-targetSdkVersion', 'android')
+                    .and.returnValue('');
+
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.writeProjectProperties).toHaveBeenCalledWith(project_path, defaults.SDK_VERSION);
                 });
