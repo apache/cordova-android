@@ -76,6 +76,30 @@ module.exports.prepare = function (cordovaProject, options) {
     });
 };
 
+function formatConfigValueByType (configXmlValue, mapping, defaultValue) {
+    let formattedValue = configXmlValue || defaultValue;
+
+    if (formattedValue === undefined) {
+        return undefined;
+    }
+
+    switch (mapping.type) {
+    case String:
+        formattedValue = formattedValue.toString();
+        break;
+    case Number:
+        formattedValue = parseFloat(formattedValue);
+        break;
+    case Boolean:
+        formattedValue = formattedValue.toString().toLowerCase() === 'true';
+        break;
+    default:
+        formattedValue = undefined;
+    }
+
+    return formattedValue;
+}
+
 function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, projectGradleConfigPath) {
     const defaultGradleConfig = fs.readJSONSync(defaultGradleConfigPath);
     const projectGradleConfig = fs.readJSONSync(projectGradleConfigPath);
@@ -85,7 +109,7 @@ function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, proj
 
     const configXmlToGradleMapping = [
         { xmlKey: 'android-minSdkVersion', gradleKey: 'MIN_SDK_VERSION', type: Number },
-        { xmlKey: 'android-maxSdkVersion', gradleKey: 'MAX_SDK_VERSION', default: null, type: Number },
+        { xmlKey: 'android-maxSdkVersion', gradleKey: 'MAX_SDK_VERSION', type: Number },
         { xmlKey: 'android-targetSdkVersion', gradleKey: 'SDK_VERSION', type: Number },
         { xmlKey: 'android-buildToolsVersion', gradleKey: 'BUILD_TOOLS_VERSION', type: String },
         { xmlKey: 'GradleVersion', gradleKey: 'GRADLE_VERSION', type: String },
@@ -98,31 +122,15 @@ function updateUserProjectGradleConfig (configXml, defaultGradleConfigPath, proj
     ];
 
     configXmlToGradleMapping.forEach(mapping => {
+        const defaultValue = defaultGradleConfig[mapping.gradleKey];
         const configXmlValue = configXml.getPreference(mapping.xmlKey, 'android');
+        const formattedValue = formatConfigValueByType(configXmlValue, mapping, defaultValue);
 
-        if (Object.prototype.hasOwnProperty.call(mapping, 'default')) {
-            if (configXmlValue || typeof configXmlValue === 'boolean') {
-                mergedConfigs[mapping.gradleKey] = configXmlValue;
-            } else if (Object.prototype.hasOwnProperty.call(mergedConfigs, mapping.gradleKey)) {
-                delete mergedConfigs[mapping.gradleKey];
-            }
+        if (formattedValue === undefined) {
+            // If "configXmlValue" has an incorrect data type and the key already exists, remove it as cleanup.
+            delete mergedConfigs[mapping.gradleKey];
         } else {
-            let value = configXmlValue || defaultGradleConfig[mapping.gradleKey];
-
-            switch (mapping.type) {
-            default:
-            case String:
-                value = value.toString();
-                break;
-            case Number:
-                value = parseFloat(value);
-                break;
-            case Boolean:
-                value = value.toString().toLowerCase() === 'true';
-                break;
-            }
-
-            mergedConfigs[mapping.gradleKey] = value;
+            mergedConfigs[mapping.gradleKey] = formattedValue;
         }
     });
 
