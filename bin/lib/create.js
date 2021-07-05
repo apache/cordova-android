@@ -20,7 +20,7 @@
 var path = require('path');
 var fs = require('fs-extra');
 var utils = require('../templates/cordova/lib/utils');
-var constants = require('../../framework/cdv-gradle-config-defaults.json');
+var check_reqs = require('./../templates/cordova/lib/check_reqs');
 var ROOT = path.join(__dirname, '..', '..');
 const { createEditor } = require('properties-parser');
 
@@ -67,7 +67,7 @@ function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
         fs.ensureDirSync(nestedCordovaLibPath);
         fs.copySync(path.join(ROOT, 'framework', 'AndroidManifest.xml'), path.join(nestedCordovaLibPath, 'AndroidManifest.xml'));
         const propertiesEditor = createEditor(path.join(ROOT, 'framework', 'project.properties'));
-        propertiesEditor.set('target', `android-${targetAPI || constants.SDK_VERSION}`);
+        propertiesEditor.set('target', targetAPI);
         propertiesEditor.save(path.join(nestedCordovaLibPath, 'project.properties'));
         fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
@@ -93,7 +93,7 @@ function writeProjectProperties (projectPath, target_api) {
     var srcPath = fs.existsSync(dstPath) ? dstPath : templatePath;
 
     var data = fs.readFileSync(srcPath, 'utf8');
-    data = data.replace(/^target=.*/m, `target=android-${target_api}`);
+    data = data.replace(/^target=.*/m, 'target=' + target_api);
     var subProjects = extractSubProjectPaths(data);
     subProjects = subProjects.filter(function (p) {
         return !(/^CordovaLib$/m.exec(p) ||
@@ -247,10 +247,7 @@ exports.create = function (project_path, config, options, events) {
         ? config.name().replace(/[^\w.]/g, '_') : 'CordovaExample';
 
     var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
-    let target_api = parseInt(config.getPreference('android-targetSdkVersion', 'android'), 10);
-    if (isNaN(target_api)) {
-        target_api = constants.SDK_VERSION;
-    }
+    var target_api = check_reqs.get_target();
 
     // Make the package conform to Java package types
     return exports.validatePackageName(package_name)
