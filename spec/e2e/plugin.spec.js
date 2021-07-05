@@ -46,6 +46,13 @@ describe('plugin add', function () {
         return Promise.resolve()
             .then(() => execa(createBin, [projectPath, projectid, projectname]))
             .then(() => {
+                // Allow test project to find the `cordova-android` module
+                fs.ensureSymlinkSync(
+                    path.join(__dirname, '../..'),
+                    path.join(projectPath, 'node_modules/cordova-android'),
+                    'junction'
+                );
+
                 const Api = require(path.join(projectPath, 'cordova/Api.js'));
                 return new Api('android', projectPath).addPlugin(pluginInfo);
             });
