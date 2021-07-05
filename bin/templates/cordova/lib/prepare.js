@@ -32,6 +32,7 @@ var PlatformJson = require('cordova-common').PlatformJson;
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 const utils = require('./utils');
+const gradleConfigDefaults = require('./gradle-config-defaults');
 
 const GradlePropertiesParser = require('./config/GradlePropertiesParser');
 
@@ -78,7 +79,7 @@ module.exports.prepare = function (cordovaProject, options) {
 function updateUserProjectGradleConfig (project) {
     // Generate project gradle config
     const projectGradleConfig = {
-        ...require('cordova-android/framework/cdv-gradle-config-defaults.json'),
+        ...gradleConfigDefaults,
         ...getUserGradleConfig(project._config)
     };
 
