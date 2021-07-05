@@ -19,7 +19,9 @@
 
 var rewire = require('rewire');
 var path = require('path');
+var utils = require('../../bin/templates/cordova/lib/utils');
 var CordovaError = require('cordova-common').CordovaError;
+const et = require('elementtree');
 const GradlePropertiesParser = require('../../bin/templates/cordova/lib/config/GradlePropertiesParser');
 
 const PATH_RESOURCE = path.join('platforms', 'android', 'app', 'src', 'main', 'res');
@@ -95,7 +97,7 @@ function mockGetSplashScreenItem (data) {
 
 describe('prepare', () => {
     describe('updateIcons method', function () {
-    // Rewire
+        // Rewire
         let prepare;
 
         // Spies
@@ -523,7 +525,7 @@ describe('prepare', () => {
         });
 
         it('Test#001 : should emit extra default icon found for adaptive use case.', function () {
-        // mock data.
+            // mock data.
             const ldpi = mockGetIconItem({
                 density: 'ldpi',
                 background: 'res/icon/android/ldpi-background.png',
@@ -547,7 +549,7 @@ describe('prepare', () => {
         });
 
         it('Test#002 : should emit extra default icon found for legacy use case.', function () {
-        // mock data.
+            // mock data.
             const ldpi = mockGetIconItem({
                 src: 'res/icon/android/ldpi-icon.png',
                 density: 'ldpi'
@@ -604,7 +606,7 @@ describe('prepare', () => {
         });
 
         it('Test#001 : Should update resource map with prepared icons.', function () {
-        // Get method for testing
+            // Get method for testing
             const updateIconResourceForLegacy = prepare.__get__('updateIconResourceForLegacy');
 
             // Run Test
@@ -653,7 +655,7 @@ describe('prepare', () => {
         });
 
         it('Test#001 : Should update resource map with prepared icons.', function () {
-        // Get method for testing
+            // Get method for testing
             const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
 
             // Run Test
@@ -688,7 +690,7 @@ describe('prepare', () => {
         });
 
         it('Test#001 : should detect that the app does not have defined icons.', function () {
-        // Mock
+            // Mock
             const icons = [];
             const projectRoot = '/mock';
             const projectConfig = {
@@ -706,7 +708,7 @@ describe('prepare', () => {
         });
 
         it('Test#002 : Should clean paths for adaptive icons.', function () {
-        // Mock
+            // Mock
             const icons = [mockGetIconItem({
                 density: 'mdpi',
                 background: 'res/icon/android/mdpi-background.png',
@@ -737,7 +739,7 @@ describe('prepare', () => {
         });
 
         it('Test#003 : Should clean paths for legacy icons.', function () {
-        // Mock
+            // Mock
             const icons = [mockGetIconItem({
                 src: 'res/icon/android/mdpi.png',
                 density: 'mdpi'
@@ -767,7 +769,7 @@ describe('prepare', () => {
     });
 
     describe('prepare arguments', () => {
-    // Rewire
+        // Rewire
         let Api;
         let api;
         let prepare;
@@ -843,6 +845,154 @@ describe('prepare', () => {
                     });
                 })
             ).toBeResolved();
+        });
+    });
+
+    describe('relocate CordovaActivity class java file', () => {
+        // Rewire
+        let Api;
+        let api;
+        let prepare;
+
+        // Spies
+        let replaceFileContents;
+        let ensureDirSyncSpy;
+        let copySyncSpy;
+        let removeSyncSpy;
+
+        // Mock Data
+        let cordovaProject;
+        let options;
+        let packageName;
+
+        let initialJavaActivityPath;
+
+        beforeEach(() => {
+            Api = rewire('../../bin/templates/cordova/Api');
+            prepare = rewire('../../bin/templates/cordova/lib/prepare');
+            api = new Api();
+
+            initialJavaActivityPath = path.join(api.locations.javaSrc, 'com/company/product/MainActivity.java');
+
+            cordovaProject = {
+                root: '/mock',
+                projectConfig: {
+                    path: '/mock/config.xml',
+                    cdvNamespacePrefix: 'cdv',
+                    shortName: () => 'rn',
+                    name: () => 'rename',
+                    android_versionCode: jasmine.createSpy('android_versionCode'),
+                    android_packageName: () => packageName,
+                    packageName: () => packageName,
+                    getPreference: jasmine.createSpy('getPreference'),
+                    version: () => '1.0.0'
+                },
+                locations: {
+                    plugins: '/mock/plugins',
+                    www: '/mock/www',
+                    strings: '/mock/res/values/strings.xml'
+                }
+            };
+
+            options = {
+                options: {}
+            };
+
+            Api.__set__('ConfigParser',
+                jasmine.createSpy('ConfigParser')
+                    .and.returnValue(cordovaProject.projectConfig)
+            );
+
+            Api.__set__('prepare', prepare.prepare);
+
+            prepare.__set__('updateWww', jasmine.createSpy('updateWww'));
+            prepare.__set__('updateIcons', jasmine.createSpy('updateIcons').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateSplashes', jasmine.createSpy('updateSplashes').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateFileResources', jasmine.createSpy('updateFileResources').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateConfigFilesFrom',
+                jasmine.createSpy('updateConfigFilesFrom')
+                    .and.returnValue(cordovaProject.projectConfig
+                    ));
+            prepare.__set__('glob', {
+                sync: jasmine.createSpy('sync').and.returnValue({
+                    filter: jasmine.createSpy('filter').and.returnValue([
+                        initialJavaActivityPath
+                    ])
+                })
+            });
+            // prepare.__set__('events', {
+            //     emit: function () {
+            //         console.log(arguments);
+            //     }
+            // });
+            spyOn(GradlePropertiesParser.prototype, 'configure');
+
+            replaceFileContents = spyOn(utils, 'replaceFileContents');
+
+            prepare.__set__('AndroidManifest', jasmine.createSpy('AndroidManifest').and.returnValue({
+                getPackageId: () => packageName,
+                getActivity: jasmine.createSpy('getActivity').and.returnValue({
+                    setOrientation: jasmine.createSpy('setOrientation').and.returnValue({
+                        setLaunchMode: jasmine.createSpy('setLaunchValue')
+                    })
+                }),
+                setVersionName: jasmine.createSpy('setVersionName').and.returnValue({
+                    setVersionCode: jasmine.createSpy('setVersionCode').and.returnValue({
+                        setPackageId: jasmine.createSpy('setPackageId').and.returnValue({
+                            write: jasmine.createSpy('write')
+                        })
+                    })
+                })
+            }));
+
+            prepare.__set__('xmlHelpers', {
+                parseElementtreeSync: jasmine.createSpy('parseElementtreeSync').and.returnValue(et.parse(`<?xml version="1.0" encoding="utf-8"?>
+                <resources>
+                    <!-- App label shown within list of installed apps, battery & network usage screens. -->
+                    <string name="app_name">__NAME__</string>
+                    <!-- App label shown on the launcher. -->
+                    <string name="launcher_name">@string/app_name</string>
+                    <!-- App label shown on the task switcher. -->
+                    <string name="activity_name">@string/launcher_name</string>
+                </resources>
+                `))
+            });
+
+            ensureDirSyncSpy = jasmine.createSpy('ensureDirSync');
+            copySyncSpy = jasmine.createSpy('copySync');
+            removeSyncSpy = jasmine.createSpy('removeSync');
+
+            prepare.__set__('fs', {
+                writeFileSync: jasmine.createSpy('writeFileSync'),
+                ensureDirSync: ensureDirSyncSpy,
+                copySync: copySyncSpy,
+                removeSync: removeSyncSpy,
+                existsSync: jasmine.createSpy('existsSync')
+            });
+        });
+
+        it('moves main activity class java file to path that tracks the package name when package name changed', async () => {
+            packageName = 'com.company.renamed';
+            const renamedPath = path.join(api.locations.javaSrc, packageName.replace(/\./g, '/'));
+            const renamedJavaActivityPath = path.join(renamedPath, 'MainActivity.java');
+
+            await api.prepare(cordovaProject, options).then(() => {
+                expect(replaceFileContents).toHaveBeenCalledWith(renamedJavaActivityPath, /package [\w.]*;/, 'package ' + packageName + ';');
+                expect(ensureDirSyncSpy).toHaveBeenCalledWith(renamedPath);
+                expect(copySyncSpy).toHaveBeenCalledWith(initialJavaActivityPath, renamedJavaActivityPath);
+                expect(removeSyncSpy).toHaveBeenCalledWith(initialJavaActivityPath);
+            });
+        });
+
+        it('doesn\'t move main activity class java file when package name not changed', async () => {
+            packageName = 'com.company.product';
+
+            await api.prepare(cordovaProject, options).then(() => {
+                expect(replaceFileContents).toHaveBeenCalledTimes(0);
+                expect(ensureDirSyncSpy).toHaveBeenCalledTimes(0);
+                expect(copySyncSpy).toHaveBeenCalledTimes(0);
+                expect(removeSyncSpy).toHaveBeenCalledTimes(0);
+            });
         });
     });
 

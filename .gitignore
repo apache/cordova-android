@@ -51,3 +51,4 @@ coverage/
 .project
 .settings
 .classpath
+.vscode/
