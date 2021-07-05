@@ -104,27 +104,27 @@ function getUserGradleConfig (configXml) {
 
     return configXmlToGradleMapping.reduce((config, mapping) => {
         const rawValue = configXml.getPreference(mapping.xmlKey, 'android');
-        const typecastValue = castValueToType(rawValue, mapping.type);
 
-        if (typecastValue !== undefined) {
-            config[mapping.gradleKey] = typecastValue;
+        // ignore missing preferences (which occur as '')
+        if (rawValue) {
+            config[mapping.gradleKey] = parseStringAsType(rawValue, mapping.type);
         }
+
         return config;
     }, {});
 }
 
-function castValueToType (value, type) {
-    if (value === undefined) return undefined;
-
+/** Converts given string to given type */
+function parseStringAsType (value, type) {
     switch (type) {
     case String:
         return String(value);
     case Number:
         return parseFloat(value);
     case Boolean:
-        return String(value).toLowerCase() === 'true';
+        return value.toLowerCase() === 'true';
     default:
-        return undefined;
+        throw new CordovaError('Invalid type: ' + type);
     }
 }
 
