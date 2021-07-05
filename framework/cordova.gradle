@@ -192,9 +192,7 @@ ext {
     }
 
     def jsonFile = new File(targetConfigFilePath)
-    def parsedJson = new groovy.json.JsonSlurper().parseText(jsonFile.text)
-
-    cordovaConfig = parsedJson
+    cordovaConfig = new groovy.json.JsonSlurper().parseText(jsonFile.text)
 
     // Apply Gradle Properties
     doApplyCordovaConfigCustomization()
