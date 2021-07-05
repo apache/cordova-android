@@ -176,8 +176,8 @@ def doApplyCordovaConfigCustomization() {
 
 // Properties exported here are visible to all plugins.
 ext {
-    def defaultsFilePath = './defaults.json'
-    def projectConfigFilePath = "$rootDir/config.json"
+    def defaultsFilePath = './cdv-gradle-config-defaults.json'
+    def projectConfigFilePath = "$rootDir/cdv-gradle-config.json"
     def targetConfigFilePath = null
 
     /**

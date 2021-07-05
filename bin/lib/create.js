@@ -20,7 +20,7 @@
 var path = require('path');
 var fs = require('fs-extra');
 var utils = require('../templates/cordova/lib/utils');
-var constants = require('../../framework/defaults.json');
+var constants = require('../../framework/cdv-gradle-config-defaults.json');
 var ROOT = path.join(__dirname, '..', '..');
 const { createEditor } = require('properties-parser');
 
@@ -73,7 +73,7 @@ function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
         fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'repositories.gradle'), path.join(nestedCordovaLibPath, 'repositories.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'src'), path.join(nestedCordovaLibPath, 'src'));
-        fs.copySync(path.join(ROOT, 'framework', 'defaults.json'), path.join(projectPath, 'config.json'));
+        fs.copySync(path.join(ROOT, 'framework', 'cdv-gradle-config-defaults.json'), path.join(projectPath, 'cdv-gradle-config.json'));
     }
 }
 

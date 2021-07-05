@@ -50,7 +50,7 @@ class AndroidTestRunner {
         return Promise.resolve()
             .then(_ => console.log(`[${this.testTitle}] Preparing Gradle wrapper for Java unit tests.`))
             .then(_ => {
-                fs.copyFileSync(path.resolve(this.projectDir, '../../framework/defaults.json'), path.resolve(this.projectDir, 'config.json'));
+                fs.copyFileSync(path.resolve(this.projectDir, '../../framework/cdv-gradle-config-defaults.json'), path.resolve(this.projectDir, 'cdv-gradle-config.json'));
             })
             .then(_ => this._createProjectBuilder())
             .then(_ => this._gradlew('--version'))

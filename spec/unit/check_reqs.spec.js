@@ -24,7 +24,7 @@ var path = require('path');
 var which = require('which');
 const { createEditor } = require('properties-parser');
 const { CordovaError, events } = require('cordova-common');
-const { SDK_VERSION } = require('../../framework/defaults.json');
+const { SDK_VERSION } = require('../../framework/cdv-gradle-config-defaults.json');
 
 describe('check_reqs', function () {
     let check_reqs;

@@ -55,9 +55,9 @@ module.exports.prepare = function (cordovaProject, options) {
 
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
 
-    // Update Gradle config.json
-    const defaultGradleConfigPath = require.resolve('cordova-android/framework/defaults.json');
-    const projectGradleConfigPath = path.join(this.locations.root, 'config.json');
+    // Update Gradle cdv-gradle-config.json
+    const defaultGradleConfigPath = require.resolve('cordova-android/framework/cdv-gradle-config-defaults.json');
+    const projectGradleConfigPath = path.join(this.locations.root, 'cdv-gradle-config.json');
     updateUserProjectGradleConfig(this._config, defaultGradleConfigPath, projectGradleConfigPath);
 
     // Update Project's Gradle Properties

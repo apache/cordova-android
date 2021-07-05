@@ -784,13 +784,13 @@ describe('prepare', () => {
             prepare = rewire('../../bin/templates/cordova/lib/prepare');
 
             prepare.__set__('require.resolve', (file) => {
-                if (file === 'cordova-android/framework/defaults.json') {
-                    return path.resolve('./framework/defaults.json');
+                if (file === 'cordova-android/framework/cdv-gradle-config-defaults.json') {
+                    return path.resolve('./framework/cdv-gradle-config-defaults.json');
                 }
                 return path.resolve(file);
             });
 
-            const defaults = require('../../framework/defaults.json');
+            const defaults = require('../../framework/cdv-gradle-config-defaults.json');
 
             prepare.__set__('fs', {
                 readJSONSync: () => defaults,

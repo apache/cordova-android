@@ -293,7 +293,7 @@ class ProjectBuilder {
      * @returns The user defined configs
      */
     _getCordovaConfig () {
-        return fs.readJSONSync(path.join(this.root, 'config.json'));
+        return fs.readJSONSync(path.join(this.root, 'cdv-gradle-config.json'));
     }
 
     /*

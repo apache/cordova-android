@@ -20,7 +20,7 @@
 var rewire = require('rewire');
 var utils = require('../../bin/templates/cordova/lib/utils');
 var create = rewire('../../bin/lib/create');
-const defaults = require('../../framework/defaults.json');
+const defaults = require('../../framework/cdv-gradle-config-defaults.json');
 var fs = require('fs-extra');
 var path = require('path');
 
