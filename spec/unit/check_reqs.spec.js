@@ -288,16 +288,8 @@ describe('check_reqs', function () {
         });
 
         it('should override target from config.xml preference', () => {
-            var realExistsSync = fs.existsSync;
-            spyOn(fs, 'existsSync').and.callFake(function (path) {
-                if (path.indexOf('config.xml') > -1) {
-                    return true;
-                } else {
-                    return realExistsSync.call(fs, path);
-                }
-            });
-
-            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API + 1);
+            spyOn(fs, 'existsSync').and.returnValue(true);
+            getPreferenceSpy.and.returnValue(String(DEFAULT_TARGET_API + 1));
 
             var target = check_reqs.get_target();
 
@@ -306,16 +298,8 @@ describe('check_reqs', function () {
         });
 
         it('should fallback to default target if config.xml has invalid preference', () => {
-            var realExistsSync = fs.existsSync;
-            spyOn(fs, 'existsSync').and.callFake(function (path) {
-                if (path.indexOf('config.xml') > -1) {
-                    return true;
-                } else {
-                    return realExistsSync.call(fs, path);
-                }
-            });
-
-            getPreferenceSpy.and.returnValue(NaN);
+            spyOn(fs, 'existsSync').and.returnValue(true);
+            getPreferenceSpy.and.returnValue('android-99');
 
             var target = check_reqs.get_target();
 
@@ -324,18 +308,11 @@ describe('check_reqs', function () {
         });
 
         it('should warn if target sdk preference is lower than the minimum required target SDK', () => {
-            var realExistsSync = fs.existsSync;
-            spyOn(fs, 'existsSync').and.callFake(function (path) {
-                if (path.indexOf('config.xml') > -1) {
-                    return true;
-                } else {
-                    return realExistsSync.call(fs, path);
-                }
-            });
+            spyOn(fs, 'existsSync').and.returnValue(true);
 
             spyOn(events, 'emit');
 
-            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API - 1);
+            getPreferenceSpy.and.returnValue(String(DEFAULT_TARGET_API - 1));
 
             var target = check_reqs.get_target();
 
