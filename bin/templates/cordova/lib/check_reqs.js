@@ -246,7 +246,7 @@ module.exports.check_android = function () {
     });
 };
 
-module.exports.check_android_target = function (originalError) {
+module.exports.check_android_target = function () {
     // valid_target can look like:
     //   android-19
     //   android-L
@@ -257,11 +257,7 @@ module.exports.check_android_target = function (originalError) {
         if (targets.indexOf(desired_api_level) >= 0) {
             return targets;
         }
-        var msg = `Please install the Android SDK Platform "platforms;${desired_api_level}"`;
-        if (originalError) {
-            msg = originalError + '\n' + msg;
-        }
-        throw new CordovaError(msg);
+        throw new CordovaError(`Please install the Android SDK Platform "platforms;${desired_api_level}"`);
     });
 };
 
