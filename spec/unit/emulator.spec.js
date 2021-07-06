@@ -28,7 +28,7 @@ describe('emulator', () => {
     let emu;
 
     beforeEach(() => {
-        emu = rewire('../../bin/templates/cordova/lib/emulator');
+        emu = rewire('../../lib/emulator');
     });
 
     describe('list_images_using_avdmanager', () => {
@@ -376,7 +376,7 @@ describe('emulator', () => {
             // If we use Jasmine's fake clock, we need to re-require the target module,
             // or else it will not work.
             jasmine.clock().install();
-            emu = rewire('../../bin/templates/cordova/lib/emulator');
+            emu = rewire('../../lib/emulator');
 
             AdbSpy = jasmine.createSpyObj('Adb', ['shell']);
             emu.__set__('Adb', AdbSpy);

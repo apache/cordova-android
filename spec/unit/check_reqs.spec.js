@@ -18,7 +18,7 @@
 */
 
 var rewire = require('rewire');
-var android_sdk = require('../../bin/templates/cordova/lib/android_sdk');
+var android_sdk = require('../../lib/android_sdk');
 var fs = require('fs-extra');
 var path = require('path');
 var events = require('cordova-common').events;
@@ -26,12 +26,12 @@ var which = require('which');
 
 const {
     SDK_VERSION: DEFAULT_TARGET_API
-} = require('../../bin/templates/cordova/lib/gradle-config-defaults');
+} = require('../../lib/gradle-config-defaults');
 
 describe('check_reqs', function () {
     let check_reqs;
     beforeEach(() => {
-        check_reqs = rewire('../../bin/templates/cordova/lib/check_reqs');
+        check_reqs = rewire('../../lib/check_reqs');
     });
 
     var original_env;

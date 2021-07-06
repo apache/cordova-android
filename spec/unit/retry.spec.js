@@ -17,7 +17,7 @@
     under the License.
 */
 
-const retry = require('../../bin/templates/cordova/lib/retry');
+const retry = require('../../lib/retry');
 
 describe('retry', () => {
     describe('retryPromise method', () => {

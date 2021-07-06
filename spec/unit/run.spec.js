@@ -18,13 +18,13 @@
 */
 
 const rewire = require('rewire');
-const builders = require('../../bin/templates/cordova/lib/builders/builders');
+const builders = require('../../lib/builders/builders');
 
 describe('run', () => {
     let run;
 
     beforeEach(() => {
-        run = rewire('../../bin/templates/cordova/lib/run');
+        run = rewire('../../lib/run');
         run.__set__({
             events: jasmine.createSpyObj('eventsSpy', ['emit'])
         });

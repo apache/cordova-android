@@ -22,7 +22,7 @@
 const path = require('path');
 const execa = require('execa');
 const fs = require('fs-extra');
-const ProjectBuilder = require('../bin/templates/cordova/lib/builders/ProjectBuilder');
+const ProjectBuilder = require('../lib/builders/ProjectBuilder');
 
 class AndroidTestRunner {
     constructor (testTitle, projectDir) {

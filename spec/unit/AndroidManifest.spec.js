@@ -66,7 +66,7 @@ describe('AndroidManifest', () => {
     beforeEach(() => {
         createTempManifestFile(DEFAULT_MANIFEST);
 
-        AndroidManifest = rewire('../../bin/templates/cordova/lib/AndroidManifest');
+        AndroidManifest = rewire('../../lib/AndroidManifest');
         manifest = new AndroidManifest(manifestPath);
     });
 

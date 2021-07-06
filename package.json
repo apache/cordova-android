@@ -2,7 +2,7 @@
   "name": "cordova-android",
   "version": "10.0.0-dev",
   "description": "cordova-android release",
-  "main": "bin/templates/cordova/Api.js",
+  "main": "lib/Api.js",
   "repository": "github:apache/cordova-android",
   "bugs": "https://github.com/apache/cordova-android/issues",
   "keywords": [
@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "test": "npm run lint && npm run cover && npm run java-unit-tests",
-    "lint": "eslint . \"bin/**/!(*.*|gitignore)\"",
+    "lint": "eslint lib spec test \"templates/cordova/**/!(*.*)\"",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
     "cover": "nyc jasmine --config=spec/coverage.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
@@ -45,8 +45,7 @@
   },
   "nyc": {
     "include": [
-      "bin/lib/**",
-      "bin/templates/cordova/**"
+      "lib"
     ],
     "reporter": [
       "lcov",

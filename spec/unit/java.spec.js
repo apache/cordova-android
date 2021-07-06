@@ -20,11 +20,11 @@
 const path = require('path');
 const rewire = require('rewire');
 const { CordovaError } = require('cordova-common');
-const utils = require('../../bin/templates/cordova/lib/utils');
+const utils = require('../../lib/utils');
 const glob = require('fast-glob');
 
 describe('Java', () => {
-    const Java = rewire('../../bin/templates/cordova/lib/env/java');
+    const Java = rewire('../../lib/env/java');
 
     describe('getVersion', () => {
         beforeEach(() => {

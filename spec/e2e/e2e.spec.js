@@ -22,7 +22,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { EventEmitter } = require('events');
 const { ConfigParser, PluginInfoProvider } = require('cordova-common');
-const Api = require('../../bin/templates/cordova/Api');
+const Api = require('../../lib/Api');
 
 function makeTempDir () {
     const tmpDirTemplate = path.join(os.tmpdir(), 'cordova-android-test-');
@@ -30,7 +30,7 @@ function makeTempDir () {
 }
 
 async function makeProject (projectPath) {
-    const configXmlPath = path.join(__dirname, '../../bin/templates/project/res/xml/config.xml');
+    const configXmlPath = path.join(__dirname, '../../templates/project/res/xml/config.xml');
     const config = new ConfigParser(configXmlPath);
     config.setPackageName('io.cordova.testapp');
     config.setName('TestApp');

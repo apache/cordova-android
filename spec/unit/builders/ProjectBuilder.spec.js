@@ -32,7 +32,7 @@ describe('ProjectBuilder', () => {
 
     beforeEach(() => {
         execaSpy = jasmine.createSpy('execa').and.returnValue(new Promise(() => {}));
-        ProjectBuilder = rewire('../../../bin/templates/cordova/lib/builders/ProjectBuilder');
+        ProjectBuilder = rewire('../../../lib/builders/ProjectBuilder');
         ProjectBuilder.__set__('execa', execaSpy);
 
         builder = new ProjectBuilder(rootDir);

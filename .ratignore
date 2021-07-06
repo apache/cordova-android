@@ -1,5 +1,5 @@
 *.properties
-bin
+templates
 gen
 proguard-project.txt
 spec

@@ -18,7 +18,7 @@
 */
 
 var rewire = require('rewire');
-var common = rewire('../../../bin/templates/cordova/lib/pluginHandlers');
+var common = rewire('../../../lib/pluginHandlers');
 var android = common.__get__('handlers');
 var path = require('path');
 var fs = require('fs-extra');
@@ -30,7 +30,7 @@ var faultyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.faultyp
 var android_studio_project = path.join(__dirname, '../../fixtures/android_studio_project');
 
 var PluginInfo = require('cordova-common').PluginInfo;
-var AndroidProject = require('../../../bin/templates/cordova/lib/AndroidProject');
+var AndroidProject = require('../../../lib/AndroidProject');
 
 var dummyPluginInfo = new PluginInfo(dummyplugin);
 var valid_source = dummyPluginInfo.getSourceFiles('android');

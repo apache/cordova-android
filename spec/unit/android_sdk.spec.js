@@ -26,7 +26,7 @@ describe('android_sdk', () => {
     let execaSpy;
 
     beforeEach(() => {
-        android_sdk = rewire('../../bin/templates/cordova/lib/android_sdk');
+        android_sdk = rewire('../../lib/android_sdk');
         execaSpy = jasmine.createSpy('execa');
         android_sdk.__set__('execa', execaSpy);
     });
