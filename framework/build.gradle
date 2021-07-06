@@ -16,10 +16,6 @@
    under the License.
 */
 
-ext {
-    apply from: 'cordova.gradle'
-}
-
 buildscript {
     apply from: 'cordova.gradle'
     apply from: 'repositories.gradle'
