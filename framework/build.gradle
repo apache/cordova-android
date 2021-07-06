@@ -74,6 +74,11 @@ dependencies {
     implementation "androidx.webkit:webkit:${cordovaConfig.ANDROIDX_WEBKIT_VERSION}"
 }
 
+/**
+ * In a project created though CLI, the `cordova-publish.gradle` file is not copied to the `framework` dir.
+ * App development (CLI) projects can not and should not publish our framework.
+ * In this case, there is no need for the gradle build process to know about the publish process.
+ */
 def cordovaPublishGradle = './cordova-publish.gradle'
 if(file(cordovaPublishGradle).exists()) {
     apply from: cordovaPublishGradle
