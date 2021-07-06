@@ -98,6 +98,7 @@ function getUserGradleConfig (configXml) {
         { xmlKey: 'AndroidGradlePluginVersion', gradleKey: 'AGP_VERSION', type: String },
         { xmlKey: 'GradlePluginKotlinVersion', gradleKey: 'KOTLIN_VERSION', type: String },
         { xmlKey: 'AndroidXAppCompatVersion', gradleKey: 'ANDROIDX_APP_COMPAT_VERSION', type: String },
+        { xmlKey: 'AndroidXWebKitVersion', gradleKey: 'ANDROIDX_WEBKIT_VERSION', type: String },
         { xmlKey: 'GradlePluginGoogleServicesVersion', gradleKey: 'GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION', type: String },
         { xmlKey: 'GradlePluginGoogleServicesEnabled', gradleKey: 'IS_GRADLE_PLUGIN_GOOGLE_SERVICES_ENABLED', type: Boolean },
         { xmlKey: 'GradlePluginKotlinEnabled', gradleKey: 'IS_GRADLE_PLUGIN_KOTLIN_ENABLED', type: Boolean }
