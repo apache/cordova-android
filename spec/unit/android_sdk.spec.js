@@ -31,6 +31,41 @@ describe('android_sdk', () => {
         android_sdk.__set__('execa', execaSpy);
     });
 
+    describe('sort_by_largest_numerical_suffix', () => {
+        it('should return the newest version first', () => {
+            const ids = ['android-P', 'android-24', 'android-19', 'android-27', 'android-23'];
+            const sortedIds = ['android-27', 'android-24', 'android-23', 'android-19', 'android-P'];
+            expect(ids.sort(android_sdk.__get__('sort_by_largest_numerical_suffix'))).toEqual(sortedIds);
+        });
+
+        describe('should return release version over preview versions', () => {
+            it('Test #001', () => {
+                const ids = ['android-27', 'android-P'];
+                expect(android_sdk.__get__('sort_by_largest_numerical_suffix')(ids[0], ids[1])).toBe(-1);
+            });
+
+            it('Test #002', () => {
+                const ids = ['android-P', 'android-27'];
+                expect(android_sdk.__get__('sort_by_largest_numerical_suffix')(ids[0], ids[1])).toBe(1);
+            });
+        });
+    });
+
+    describe('print_newest_available_sdk_target', () => {
+        it('should log the newest version', () => {
+            const sortedIds = ['android-27', 'android-24', 'android-23', 'android-19'];
+
+            spyOn(android_sdk, 'list_targets').and.returnValue(Promise.resolve(sortedIds));
+            spyOn(sortedIds, 'sort');
+            spyOn(console, 'log');
+
+            return android_sdk.print_newest_available_sdk_target().then(() => {
+                expect(sortedIds.sort).toHaveBeenCalledWith(android_sdk.__get__('sort_by_largest_numerical_suffix'));
+                expect(console.log).toHaveBeenCalledWith(sortedIds[0]);
+            });
+        });
+    });
+
     describe('list_targets_with_avdmanager', () => {
         it('should parse and return results from `avdmanager list target` command', () => {
             const testTargets = fs.readFileSync(path.join('spec', 'fixtures', 'sdk25.3-avdmanager_list_target.txt'), 'utf-8');
