@@ -34,7 +34,6 @@ allprojects {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion cordovaConfig.SDK_VERSION
@@ -70,56 +69,12 @@ android {
     }
 }
 
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-publishing {
-    publications {
-        Cordova(MavenPublication) {
-            groupId = 'org.apache.cordova'
-            artifactId = 'framework'
-            version = cordovaAndroid.version
-
-            artifact(sourcesJar)
-            artifact("$buildDir/outputs/aar/framework-release.aar")
-
-            pom {
-                name = 'Cordova'
-                description = 'A library to build Cordova-based projects for the Android platform.'
-                url = 'https://cordova.apache.org'
-
-                licenses {
-                    license {
-                        name = 'Apache License, Version 2.0'
-                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'stevengill'
-                        name = 'Steve Gill'
-                    }
-                    developer {
-                        id = 'erisu'
-                        name = 'Bryan Ellis'
-                        email = 'erisu@apache.org'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:https://github.com/apache/cordova-android.git'
-                    developerConnection = 'scm:git:git@github.com:apache/cordova-android.git'
-                    url = 'https://github.com/apache/cordova-android'
-                }
-            }
-        }
-    }
-}
-
 dependencies {
     implementation "androidx.appcompat:appcompat:${cordovaConfig.ANDROIDX_APP_COMPAT_VERSION}"
     implementation "androidx.webkit:webkit:${cordovaConfig.ANDROIDX_WEBKIT_VERSION}"
+}
+
+def cordovaPublishGradle = './cordova-publish.gradle'
+if(file(cordovaPublishGradle).exists()) {
+    apply from: cordovaPublishGradle
 }
