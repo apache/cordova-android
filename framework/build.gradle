@@ -29,9 +29,6 @@ buildscript {
     dependencies {
         // Android Gradle Plugin (AGP) Build Tools
         classpath "com.android.tools.build:gradle:${cordovaConfig.AGP_VERSION}"
-
-        // @todo remove this abandoned plugin. maven-publish-plugin is now supported by Android Gradle plugin 3.6.0 and higher
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
 
@@ -41,12 +38,7 @@ allprojects {
 }
 
 apply plugin: 'com.android.library'
-
-// @todo remove this abandoned plugin. maven-publish-plugin is now supported by Android Gradle plugin 3.6.0 and higher
-apply plugin: 'com.github.dcendents.android-maven'
-
-group = 'org.apache.cordova'
-version = '10.0.0-dev'
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion cordovaConfig.SDK_VERSION
@@ -82,48 +74,57 @@ android {
     }
 }
 
-// @todo after removing abandoned plugin "com.github.dcendents.android-maven". figure out what to do with this.
-install {
-    repositories.mavenInstaller {
-        pom {
-            project {
-                packaging 'aar'
-                name 'Cordova'
-                url 'https://cordova.apache.org'
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+publishing {
+    publications {
+        Cordova(MavenPublication) {
+            groupId = 'org.apache.cordova'
+            artifactId = 'framework'
+            version = '10.0.0-dev'
+
+            artifact(sourcesJar)
+            artifact("$buildDir/outputs/aar/framework-release.aar")
+
+            pom {
+                name = 'Cordova'
+                description = 'A library to build Cordova-based projects for the Android platform.'
+                url = 'https://cordova.apache.org'
+
                 licenses {
                     license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        name = 'Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
                 }
+
                 developers {
                     developer {
-                        id 'stevengill'
-                        name 'Steve Gill'
+                        id = 'stevengill'
+                        name = 'Steve Gill'
+                    }
+                    developer {
+                        id = 'erisu'
+                        name = 'Bryan Ellis'
+                        email = 'erisu@apache.org'
                     }
                 }
-                scm {
-                    connection 'scm:git:https://github.com/apache/cordova-android.git'
-                    developerConnection 'scm:git:git@github.com:apache/cordova-android.git'
-                    url 'https://github.com/apache/cordova-android'
 
+                scm {
+                    connection = 'scm:git:https://github.com/apache/cordova-android.git'
+                    developerConnection = 'scm:git:git@github.com:apache/cordova-android.git'
+                    url = 'https://github.com/apache/cordova-android'
                 }
             }
         }
     }
 }
 
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
 dependencies {
     implementation "androidx.appcompat:appcompat:${cordovaConfig.ANDROIDX_APP_COMPAT_VERSION}"
-}
-
-artifacts {
-    archives sourcesJar
 }
 
 dependencies {
