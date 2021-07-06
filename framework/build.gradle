@@ -16,10 +16,6 @@
    under the License.
 */
 
-ext {
-    apply from: 'cordova.gradle'
-}
-
 buildscript {
     apply from: 'cordova.gradle'
     apply from: 'repositories.gradle'
@@ -38,7 +34,6 @@ allprojects {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion cordovaConfig.SDK_VERSION
@@ -74,59 +69,17 @@ android {
     }
 }
 
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-publishing {
-    publications {
-        Cordova(MavenPublication) {
-            groupId = 'org.apache.cordova'
-            artifactId = 'framework'
-            version = '10.0.0-dev'
-
-            artifact(sourcesJar)
-            artifact("$buildDir/outputs/aar/framework-release.aar")
-
-            pom {
-                name = 'Cordova'
-                description = 'A library to build Cordova-based projects for the Android platform.'
-                url = 'https://cordova.apache.org'
-
-                licenses {
-                    license {
-                        name = 'Apache License, Version 2.0'
-                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'stevengill'
-                        name = 'Steve Gill'
-                    }
-                    developer {
-                        id = 'erisu'
-                        name = 'Bryan Ellis'
-                        email = 'erisu@apache.org'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:https://github.com/apache/cordova-android.git'
-                    developerConnection = 'scm:git:git@github.com:apache/cordova-android.git'
-                    url = 'https://github.com/apache/cordova-android'
-                }
-            }
-        }
-    }
-}
-
 dependencies {
     implementation "androidx.appcompat:appcompat:${cordovaConfig.ANDROIDX_APP_COMPAT_VERSION}"
+    implementation "androidx.webkit:webkit:${cordovaConfig.ANDROIDX_WEBKIT_VERSION}"
 }
 
-dependencies {
-    implementation 'androidx.webkit:webkit:1.3.0'
+/**
+ * In a project created though CLI, the `cordova-publish.gradle` file is not copied to the `framework` dir.
+ * App development (CLI) projects can not and should not publish our framework.
+ * In this case, there is no need for the gradle build process to know about the publish process.
+ */
+def cordovaPublishGradle = './cordova-publish.gradle'
+if(file(cordovaPublishGradle).exists()) {
+    apply from: cordovaPublishGradle
 }
