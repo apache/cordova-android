@@ -144,23 +144,6 @@ function copyScripts (projectPath) {
 
     const nodeModulesDir = path.join(ROOT, 'node_modules');
     if (fs.existsSync(nodeModulesDir)) fs.copySync(nodeModulesDir, path.join(destScriptsDir, 'node_modules'));
-
-    fs.copySync(path.join(bin, 'check_reqs'), path.join(destScriptsDir, 'check_reqs'));
-    fs.copySync(path.join(bin, 'check_reqs.bat'), path.join(destScriptsDir, 'check_reqs.bat'));
-    fs.copySync(path.join(bin, 'android_sdk_version'), path.join(destScriptsDir, 'android_sdk_version'));
-    fs.copySync(path.join(bin, 'android_sdk_version.bat'), path.join(destScriptsDir, 'android_sdk_version.bat'));
-
-    var check_reqs = path.join(destScriptsDir, 'check_reqs');
-    var android_sdk_version = path.join(destScriptsDir, 'android_sdk_version');
-
-    // TODO: the two files being edited on-the-fly here are shared between
-    // platform and project-level commands. the below is updating the
-    // `require` path for the two libraries. if there's a better way to share
-    // modules across both the repo and generated projects, we should make sure
-    // to remove/update this.
-    const templatesCordovaRegex = /templates\/cordova\//;
-    utils.replaceFileContents(android_sdk_version, templatesCordovaRegex, '');
-    utils.replaceFileContents(check_reqs, templatesCordovaRegex, '');
 }
 
 /**

@@ -20,11 +20,13 @@
 const os = require('os');
 const fs = require('fs-extra');
 const path = require('path');
-const execa = require('execa');
-const { PluginInfoProvider } = require('cordova-common');
+const { EventEmitter } = require('events');
+const { ConfigParser, PluginInfoProvider } = require('cordova-common');
 
-const createBin = path.join(__dirname, '../../bin/create');
+const Api = require('../../bin/templates/cordova/Api');
+
 const fakePluginPath = path.join(__dirname, 'fixtures/cordova-plugin-fake');
+const configXmlPath = path.join(__dirname, '../../bin/templates/project/res/xml/config.xml');
 
 describe('plugin add', function () {
     let tmpDir;
@@ -40,11 +42,16 @@ describe('plugin add', function () {
         const projectname = 'testpluginframework';
         const projectid = 'com.test.plugin.framework';
 
+        const config = new ConfigParser(configXmlPath);
+        config.setPackageName(projectid);
+        config.setName(projectname);
+
         const projectPath = path.join(tmpDir, projectname);
         const pluginInfo = new PluginInfoProvider().get(fakePluginPath);
+        const noopEvents = new EventEmitter();
 
         return Promise.resolve()
-            .then(() => execa(createBin, [projectPath, projectid, projectname]))
+            .then(() => Api.createPlatform(projectPath, config, {}, noopEvents))
             .then(() => {
                 // Allow test project to find the `cordova-android` module
                 fs.ensureSymlinkSync(
@@ -53,8 +60,13 @@ describe('plugin add', function () {
                     'junction'
                 );
 
+                // We need to use the API from the project or some paths break
+                // TODO remove this and use the API instance returned from
+                // createPlatform once we fixed the platform
                 const Api = require(path.join(projectPath, 'cordova/Api.js'));
-                return new Api('android', projectPath).addPlugin(pluginInfo);
+                const api = new Api('android', projectPath, noopEvents);
+
+                return api.addPlugin(pluginInfo);
             });
     }, 90000);
 });

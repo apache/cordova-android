@@ -37,21 +37,7 @@ Cordova Android is an Android application library that allows for Cordova-based 
 
 ## Cordova Android Developer Tools
 
-We recommend using the [Cordova command-line tool](https://www.npmjs.com/package/cordova) to create projects and be able to easily install plugins.
-
-However, the following scripts can be used instead:
-
-    ./bin/create [path package activity] ... creates the ./example app or a cordova android project
-    ./bin/check_reqs ....................... checks that your environment is set up for cordova-android development
-    ./bin/update [path] .................... updates an existing cordova-android project to the version of the framework
-
-These commands live in a generated Cordova Android project. Any interactions with the emulator require you to have an AVD defined.
-
-    ./cordova/clean ........................ cleans the project
-    ./cordova/build ........................ calls `clean` then compiles the project
-    ./cordova/log   ........................ streams device or emulator logs to STDOUT
-    ./cordova/run   ........................ calls `build` then deploys to a connected Android device. If no Android device is detected, will launch an emulator and deploy to it.
-    ./cordova/version ...................... returns the cordova-android version of the current project
+Use the [Cordova command-line tool](https://www.npmjs.com/package/cordova) to create projects and install plugins.
 
 ## Using Android Studio
 

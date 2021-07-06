@@ -80,14 +80,4 @@ describe('run', () => {
                 .toBeRejectedWith(jasmine.stringMatching(/Package type "bundle" is not supported/));
         });
     });
-
-    describe('help', () => {
-        it('should print out usage and help', () => {
-            spyOn(console, 'log');
-            spyOn(process, 'exit');
-
-            run.help();
-            expect(console.log).toHaveBeenCalledWith(jasmine.stringMatching(/^Usage:/));
-        });
-    });
 });
