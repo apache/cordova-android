@@ -167,6 +167,9 @@ def doApplyCordovaConfigCustomization() {
     if (project.hasProperty('cdvAndroidXAppCompatVersion')) {
         cordovaConfig.ANDROIDX_APP_COMPAT_VERSION = cdvAndroidXAppCompatVersion
     }
+    if (project.hasProperty('cdvAndroidXWebKitVersion')) {
+        cordovaConfig.ANDROIDX_WEBKIT_VERSION = cdvAndroidXWebKitVersion
+    }
 
     // Ensure the latest installed build tools is selected, with or without defined override
     cordovaConfig.LATEST_INSTALLED_BUILD_TOOLS = doFindLatestInstalledBuildTools(

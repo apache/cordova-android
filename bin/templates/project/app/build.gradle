@@ -165,6 +165,7 @@ task cdvPrintProps {
         println('cdvBuildArch=' + cdvBuildArch)
         println('computedVersionCode=' + android.defaultConfig.versionCode)
         println('cdvAndroidXAppCompatVersion=' + cdvAndroidXAppCompatVersion)
+        println('cdvAndroidXWebKitVersion=' + cdvAndroidXWebKitVersion)
         android.productFlavors.each { flavor ->
             println('computed' + flavor.name.capitalize() + 'VersionCode=' + flavor.versionCode)
         }
