@@ -211,6 +211,15 @@ ext {
     cdvHelpers.getConfigXml = { doGetConfigXml() }
     // Returns the value for the desired <preference>. Added in 4.1.0.
     cdvHelpers.getConfigPreference = { name, defaultValue -> doGetConfigPreference(name, defaultValue) }
+
+    // Fetch Data from Cordova-Android package.json (Used only by framework build/publishing)
+    def cordovaAndroidRepoPackageJson = "$projectDir/../package.json"
+    if(file(cordovaAndroidRepoPackageJson).exists()) {
+        def packageJsonFile = new File(cordovaAndroidRepoPackageJson)
+        def packageJson = new groovy.json.JsonSlurper().parseText(packageJsonFile.text)
+        cordovaAndroid = {}
+        cordovaAndroid.version = packageJson.version
+    }
 }
 
 buildscript {

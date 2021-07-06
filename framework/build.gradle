@@ -80,7 +80,7 @@ publishing {
         Cordova(MavenPublication) {
             groupId = 'org.apache.cordova'
             artifactId = 'framework'
-            version = '10.0.0-dev'
+            version = cordovaAndroid.version
 
             artifact(sourcesJar)
             artifact("$buildDir/outputs/aar/framework-release.aar")
