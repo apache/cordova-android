@@ -809,6 +809,7 @@ describe('prepare', () => {
             prepare.__set__('events', {
                 emit: jasmine.createSpy('emit')
             });
+            prepare.__set__('updateUserProjectGradleConfig', jasmine.createSpy());
             prepare.__set__('updateWww', jasmine.createSpy());
             prepare.__set__('updateProjectAccordingTo', jasmine.createSpy('updateProjectAccordingTo')
                 .and.returnValue(Promise.resolve()));

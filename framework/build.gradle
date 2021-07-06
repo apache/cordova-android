@@ -18,30 +18,17 @@
 
 ext {
     apply from: 'cordova.gradle'
-    cdvCompileSdkVersion = privateHelpers.getProjectTarget()
-    cdvBuildToolsVersion = privateHelpers.findLatestInstalledBuildTools()
-    if (project.hasProperty('cdvMinSdkVersion') && cdvMinSdkVersion.isInteger()) {
-        cdvMinSdkVersion = cdvMinSdkVersion as int
-        println '[Cordova] cdvMinSdkVersion is overridden, try it at your own risk.'
-    } else {
-        cdvMinSdkVersion = 22; // current Cordova's default
-    }
-
-    if (project.hasProperty('cdvAndroidXAppCompatVersion')) {
-        cdvAndroidXAppCompatVersion = cdvAndroidXAppCompatVersion
-        println '[Cordova] cdvAndroidXAppCompatVersion is overridden, try it at your own risk.'
-    } else {
-        cdvAndroidXAppCompatVersion = "1.2.0"; // current Cordova's default
-    }
 }
 
 buildscript {
+    apply from: 'cordova.gradle'
     apply from: 'repositories.gradle'
+
     repositories repos
 
     dependencies {
         // Android Gradle Plugin (AGP) Build Tools
-        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath "com.android.tools.build:gradle:${cordovaConfig.AGP_VERSION}"
 
         // @todo remove this abandoned plugin. maven-publish-plugin is now supported by Android Gradle plugin 3.6.0 and higher
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
@@ -62,8 +49,8 @@ group = 'org.apache.cordova'
 version = '10.0.0-dev'
 
 android {
-    compileSdkVersion cdvCompileSdkVersion
-    buildToolsVersion cdvBuildToolsVersion
+    compileSdkVersion cordovaConfig.SDK_VERSION
+    buildToolsVersion cordovaConfig.BUILD_TOOLS_VERSION
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -72,7 +59,7 @@ android {
 
     // For the Android Cordova Lib, we allow changing the minSdkVersion, but it is at the users own risk
     defaultConfig {
-        minSdkVersion cdvMinSdkVersion
+        minSdkVersion cordovaConfig.MIN_SDK_VERSION
     }
 
     sourceSets {
@@ -132,7 +119,7 @@ task sourcesJar(type: Jar) {
 }
 
 dependencies {
-    implementation "androidx.appcompat:appcompat:$cdvAndroidXAppCompatVersion"
+    implementation "androidx.appcompat:appcompat:${cordovaConfig.ANDROIDX_APP_COMPAT_VERSION}"
 }
 
 artifacts {

@@ -32,6 +32,7 @@ var PlatformJson = require('cordova-common').PlatformJson;
 var PlatformMunger = require('cordova-common').ConfigChanges.PlatformMunger;
 var PluginInfoProvider = require('cordova-common').PluginInfoProvider;
 const utils = require('./utils');
+const gradleConfigDefaults = require('./gradle-config-defaults');
 
 const GradlePropertiesParser = require('./config/GradlePropertiesParser');
 
@@ -55,29 +56,11 @@ module.exports.prepare = function (cordovaProject, options) {
 
     this._config = updateConfigFilesFrom(cordovaProject.projectConfig, munger, this.locations);
 
-    // Get the min SDK version from config.xml
-    const minSdkVersion = this._config.getPreference('android-minSdkVersion', 'android');
-    const maxSdkVersion = this._config.getPreference('android-maxSdkVersion', 'android');
-    const targetSdkVersion = this._config.getPreference('android-targetSdkVersion', 'android');
-    const isGradlePluginKotlinEnabled = this._config.getPreference('GradlePluginKotlinEnabled', 'android');
-    const gradlePluginKotlinCodeStyle = this._config.getPreference('GradlePluginKotlinCodeStyle', 'android');
-    const androidXAppCompatVersion = this._config.getPreference('AndroidXAppCompatVersion', 'android');
+    // Update Gradle cdv-gradle-config.json
+    updateUserProjectGradleConfig(this);
 
-    const gradlePropertiesUserConfig = {};
-    if (minSdkVersion) gradlePropertiesUserConfig.cdvMinSdkVersion = minSdkVersion;
-    if (maxSdkVersion) gradlePropertiesUserConfig.cdvMaxSdkVersion = maxSdkVersion;
-    if (targetSdkVersion) gradlePropertiesUserConfig.cdvTargetSdkVersion = targetSdkVersion;
-    if (args.jvmargs) gradlePropertiesUserConfig['org.gradle.jvmargs'] = args.jvmargs;
-    if (isGradlePluginKotlinEnabled) {
-        gradlePropertiesUserConfig['kotlin.code.style'] = gradlePluginKotlinCodeStyle || 'official';
-    }
-
-    if (androidXAppCompatVersion) {
-        gradlePropertiesUserConfig.cdvAndroidXAppCompatVersion = androidXAppCompatVersion;
-    }
-
-    const gradlePropertiesParser = new GradlePropertiesParser(this.locations.root);
-    gradlePropertiesParser.configure(gradlePropertiesUserConfig);
+    // Update Project's Gradle Properties
+    updateUserProjectGradlePropertiesConfig(this, args);
 
     // Update own www dir with project's www assets and plugins' assets and js-files
     return Promise.resolve(updateWww(cordovaProject, this.locations)).then(function () {
@@ -91,6 +74,76 @@ module.exports.prepare = function (cordovaProject, options) {
         events.emit('verbose', 'Prepared android project successfully');
     });
 };
+
+/** @param {PlatformApi} project */
+function updateUserProjectGradleConfig (project) {
+    // Generate project gradle config
+    const projectGradleConfig = {
+        ...gradleConfigDefaults,
+        ...getUserGradleConfig(project._config)
+    };
+
+    // Write out changes
+    const projectGradleConfigPath = path.join(project.root, 'cdv-gradle-config.json');
+    fs.writeJSONSync(projectGradleConfigPath, projectGradleConfig, { spaces: 2 });
+}
+
+function getUserGradleConfig (configXml) {
+    const configXmlToGradleMapping = [
+        { xmlKey: 'android-minSdkVersion', gradleKey: 'MIN_SDK_VERSION', type: Number },
+        { xmlKey: 'android-maxSdkVersion', gradleKey: 'MAX_SDK_VERSION', type: Number },
+        { xmlKey: 'android-targetSdkVersion', gradleKey: 'SDK_VERSION', type: Number },
+        { xmlKey: 'android-buildToolsVersion', gradleKey: 'BUILD_TOOLS_VERSION', type: String },
+        { xmlKey: 'GradleVersion', gradleKey: 'GRADLE_VERSION', type: String },
+        { xmlKey: 'AndroidGradlePluginVersion', gradleKey: 'AGP_VERSION', type: String },
+        { xmlKey: 'GradlePluginKotlinVersion', gradleKey: 'KOTLIN_VERSION', type: String },
+        { xmlKey: 'AndroidXAppCompatVersion', gradleKey: 'ANDROIDX_APP_COMPAT_VERSION', type: String },
+        { xmlKey: 'GradlePluginGoogleServicesVersion', gradleKey: 'GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION', type: String },
+        { xmlKey: 'GradlePluginGoogleServicesEnabled', gradleKey: 'IS_GRADLE_PLUGIN_GOOGLE_SERVICES_ENABLED', type: Boolean },
+        { xmlKey: 'GradlePluginKotlinEnabled', gradleKey: 'IS_GRADLE_PLUGIN_KOTLIN_ENABLED', type: Boolean }
+    ];
+
+    return configXmlToGradleMapping.reduce((config, mapping) => {
+        const rawValue = configXml.getPreference(mapping.xmlKey, 'android');
+
+        // ignore missing preferences (which occur as '')
+        if (rawValue) {
+            config[mapping.gradleKey] = parseStringAsType(rawValue, mapping.type);
+        }
+
+        return config;
+    }, {});
+}
+
+/** Converts given string to given type */
+function parseStringAsType (value, type) {
+    switch (type) {
+    case String:
+        return String(value);
+    case Number:
+        return parseFloat(value);
+    case Boolean:
+        return value.toLowerCase() === 'true';
+    default:
+        throw new CordovaError('Invalid type: ' + type);
+    }
+}
+
+function updateUserProjectGradlePropertiesConfig (project, args) {
+    const gradlePropertiesUserConfig = {};
+
+    // Get the min SDK version from config.xml
+    if (args.jvmargs) gradlePropertiesUserConfig['org.gradle.jvmargs'] = args.jvmargs;
+
+    const isGradlePluginKotlinEnabled = project._config.getPreference('GradlePluginKotlinEnabled', 'android');
+    if (isGradlePluginKotlinEnabled) {
+        const gradlePluginKotlinCodeStyle = project._config.getPreference('GradlePluginKotlinCodeStyle', 'android');
+        gradlePropertiesUserConfig['kotlin.code.style'] = gradlePluginKotlinCodeStyle || 'official';
+    }
+
+    const gradlePropertiesParser = new GradlePropertiesParser(project.root);
+    gradlePropertiesParser.configure(gradlePropertiesUserConfig);
+}
 
 module.exports.clean = function (options) {
     // A cordovaProject isn't passed into the clean() function, because it might have
