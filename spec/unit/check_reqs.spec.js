@@ -25,8 +25,9 @@ var events = require('cordova-common').events;
 var which = require('which');
 const { CordovaError } = require('cordova-common');
 
-// This should match /bin/templates/project/build.gradle
-const DEFAULT_TARGET_API = 30;
+const {
+    SDK_VERSION: DEFAULT_TARGET_API
+} = require('../../bin/templates/cordova/lib/gradle-config-defaults');
 
 describe('check_reqs', function () {
     let check_reqs;
