@@ -23,7 +23,6 @@ var fs = require('fs-extra');
 var path = require('path');
 var events = require('cordova-common').events;
 var which = require('which');
-const { CordovaError } = require('cordova-common');
 
 const {
     SDK_VERSION: DEFAULT_TARGET_API
@@ -49,15 +48,6 @@ describe('check_reqs', function () {
     });
 
     describe('check_java', () => {
-        it('detects if unexpected JDK version is installed', async () => {
-            check_reqs.__set__({
-                EXPECTED_JAVA_VERSION: '9999.9999.9999',
-                java: { getVersion: async () => ({ version: '1.8.0' }) }
-            });
-
-            await expectAsync(check_reqs.check_java()).toBeRejectedWithError(CordovaError, /Requirements check failed for JDK 9999.9999.9999! Detected version: 1.8.0/);
-        });
-
         it('should return the version', async () => {
             check_reqs.__set__({
                 java: { getVersion: async () => ({ version: '1.8.0' }) }
