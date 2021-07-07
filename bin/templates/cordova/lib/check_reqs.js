@@ -23,54 +23,37 @@ var fs = require('fs-extra');
 const { forgivingWhichSync, isWindows, isDarwin } = require('./utils');
 const java = require('./env/java');
 var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
-var PROJECT_ROOT = path.join(__dirname, '..', '..');
 const { CordovaError, ConfigParser, events } = require('cordova-common');
 var android_sdk = require('./android_sdk');
-const { createEditor } = require('properties-parser');
+const { SDK_VERSION } = require('./gradle-config-defaults');
 
 // Re-exporting these for backwards compatibility and for unit testing.
 // TODO: Remove uses and use the ./utils module directly.
 Object.assign(module.exports, { isWindows, isDarwin });
 
 /**
- * @description Get valid target from framework/project.properties if run from this repo
- *              Otherwise get target from project.properties file within a generated cordova-android project
  * @returns {string} The android target in format "android-${target}"
  */
 module.exports.get_target = function () {
-    const projectPropertiesPaths = [
-        path.join(REPO_ROOT, 'framework', 'project.properties'),
-        path.join(PROJECT_ROOT, 'project.properties')
-    ];
+    const userTargetSdkVersion = getUserTargetSdkVersion();
 
-    // Get the minimum required target API from the framework.
-    let target = projectPropertiesPaths.filter(filePath => fs.existsSync(filePath))
-        .map(filePath => createEditor(filePath).get('target'))
-        .pop();
-
-    if (!target) {
-        throw new Error(`We could not locate the target from the "project.properties" at either "${projectPropertiesPaths.join('", "')}".`);
+    if (userTargetSdkVersion && userTargetSdkVersion < SDK_VERSION) {
+        events.emit('warn', `android-targetSdkVersion should be greater than or equal to ${SDK_VERSION}.`);
     }
 
+    return `android-${Math.max(userTargetSdkVersion, SDK_VERSION)}`;
+};
+
+/** @returns {number} target sdk or 0 if undefined */
+function getUserTargetSdkVersion () {
     // If the repo config.xml file exists, find the desired targetSdkVersion.
     const configFile = path.join(REPO_ROOT, 'config.xml');
-    if (!fs.existsSync(configFile)) return target;
+    if (!fs.existsSync(configFile)) return 0;
 
     const configParser = new ConfigParser(configFile);
-    const desiredAPI = parseInt(configParser.getPreference('android-targetSdkVersion', 'android'), 10);
-
-    if (!isNaN(desiredAPI)) {
-        const minimumAPI = parseInt(target.split('-').pop(), 10);
-
-        if (desiredAPI >= minimumAPI) {
-            target = `android-${desiredAPI}`;
-        } else {
-            events.emit('warn', `android-targetSdkVersion should be greater than or equal to ${minimumAPI}.`);
-        }
-    }
-
-    return target;
-};
+    const targetSdkVersion = parseInt(configParser.getPreference('android-targetSdkVersion', 'android'), 10);
+    return isNaN(targetSdkVersion) ? 0 : targetSdkVersion;
+}
 
 module.exports.get_gradle_wrapper = function () {
     var androidStudioPath;
@@ -252,7 +235,7 @@ module.exports.check_android = function () {
     });
 };
 
-module.exports.check_android_target = function (originalError) {
+module.exports.check_android_target = function () {
     // valid_target can look like:
     //   android-19
     //   android-L
@@ -263,11 +246,7 @@ module.exports.check_android_target = function (originalError) {
         if (targets.indexOf(desired_api_level) >= 0) {
             return targets;
         }
-        var msg = `Please install the Android SDK Platform "platforms;${desired_api_level}"`;
-        if (originalError) {
-            msg = originalError + '\n' + msg;
-        }
-        throw new CordovaError(msg);
+        throw new CordovaError(`Please install the Android SDK Platform "platforms;${desired_api_level}"`);
     });
 };
 

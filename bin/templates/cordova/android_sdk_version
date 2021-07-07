@@ -19,21 +19,9 @@
        under the License.
 */
 
-const { resolve, install } = require('./target');
+var android_sdk = require('./lib/android_sdk');
 
-var args = process.argv;
-const targetSpec = { type: 'device' };
-
-if (args.length > 2) {
-    if (args[2].substring(0, 9) === '--target=') {
-        targetSpec.id = args[2].substring(9, args[2].length);
-    } else {
-        console.error('ERROR : argument \'' + args[2] + '\' not recognized.');
-        process.exit(2);
-    }
-}
-
-resolve(targetSpec).then(install).catch(err => {
-    console.error('ERROR: ' + err);
+android_sdk.print_newest_available_sdk_target().catch(err => {
+    console.error(err);
     process.exit(2);
 });

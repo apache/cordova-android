@@ -24,8 +24,9 @@ var path = require('path');
 var events = require('cordova-common').events;
 var which = require('which');
 
-// This should match /bin/templates/project/build.gradle
-const DEFAULT_TARGET_API = 30;
+const {
+    SDK_VERSION: DEFAULT_TARGET_API
+} = require('../../bin/templates/cordova/lib/gradle-config-defaults');
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -50,25 +51,6 @@ describe('check_reqs', function () {
         it('should return the version', async () => {
             check_reqs.__set__({
                 java: { getVersion: async () => ({ version: '1.8.0' }) }
-            });
-
-            await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
-        });
-
-        it('should return the correct version if javac prints _JAVA_OPTIONS', async () => {
-            check_reqs.__set__({
-                java: {
-                    getVersion: async () => {
-                        let version = null;
-                        const javacOutput = 'Picked up _JAVA_OPTIONS: -Xms1024M -Xmx2048M\njavac 1.8.0_271';
-                        const match = /javac\s+([\d.]+)/i.exec(javacOutput);
-                        if (match && match[1]) {
-                            version = match[1];
-                        }
-
-                        return { version };
-                    }
-                }
             });
 
             await expectAsync(check_reqs.check_java()).toBeResolvedTo({ version: '1.8.0' });
@@ -290,30 +272,15 @@ describe('check_reqs', function () {
             check_reqs.__set__('ConfigParser', ConfigParser);
         });
 
-        it('should retrieve target from framework project.properties file', function () {
+        it('should retrieve DEFAULT_TARGET_API', function () {
             var target = check_reqs.get_target();
             expect(target).toBeDefined();
             expect(target).toContain('android-' + DEFAULT_TARGET_API);
         });
 
-        it('should throw error if target cannot be found', function () {
-            spyOn(fs, 'existsSync').and.returnValue(false);
-            expect(function () {
-                check_reqs.get_target();
-            }).toThrow();
-        });
-
         it('should override target from config.xml preference', () => {
-            var realExistsSync = fs.existsSync;
-            spyOn(fs, 'existsSync').and.callFake(function (path) {
-                if (path.indexOf('config.xml') > -1) {
-                    return true;
-                } else {
-                    return realExistsSync.call(fs, path);
-                }
-            });
-
-            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API + 1);
+            spyOn(fs, 'existsSync').and.returnValue(true);
+            getPreferenceSpy.and.returnValue(String(DEFAULT_TARGET_API + 1));
 
             var target = check_reqs.get_target();
 
@@ -322,16 +289,8 @@ describe('check_reqs', function () {
         });
 
         it('should fallback to default target if config.xml has invalid preference', () => {
-            var realExistsSync = fs.existsSync;
-            spyOn(fs, 'existsSync').and.callFake(function (path) {
-                if (path.indexOf('config.xml') > -1) {
-                    return true;
-                } else {
-                    return realExistsSync.call(fs, path);
-                }
-            });
-
-            getPreferenceSpy.and.returnValue(NaN);
+            spyOn(fs, 'existsSync').and.returnValue(true);
+            getPreferenceSpy.and.returnValue('android-99');
 
             var target = check_reqs.get_target();
 
@@ -340,18 +299,11 @@ describe('check_reqs', function () {
         });
 
         it('should warn if target sdk preference is lower than the minimum required target SDK', () => {
-            var realExistsSync = fs.existsSync;
-            spyOn(fs, 'existsSync').and.callFake(function (path) {
-                if (path.indexOf('config.xml') > -1) {
-                    return true;
-                } else {
-                    return realExistsSync.call(fs, path);
-                }
-            });
+            spyOn(fs, 'existsSync').and.returnValue(true);
 
             spyOn(events, 'emit');
 
-            getPreferenceSpy.and.returnValue(DEFAULT_TARGET_API - 1);
+            getPreferenceSpy.and.returnValue(String(DEFAULT_TARGET_API - 1));
 
             var target = check_reqs.get_target();
 

@@ -27,19 +27,9 @@ describe('Java', () => {
     const Java = rewire('../../bin/templates/cordova/lib/env/java');
 
     describe('getVersion', () => {
-        let originalEnsureFunc = null;
-
         beforeEach(() => {
-            /*
-                This is to avoid changing/polluting the
-                process environment variables
-                as a result of running these java tests; which could produce
-                unexpected side effects to other tests.
-             */
-            originalEnsureFunc = Java._ensure;
-            spyOn(Java, '_ensure').and.callFake(() => {
-                return originalEnsureFunc({});
-            });
+            // No need to run _ensure, since we are stubbing execa
+            spyOn(Java, '_ensure').and.resolveTo();
         });
 
         it('runs', async () => {
@@ -66,7 +56,16 @@ describe('Java', () => {
             expect(result.version).toBe('1.8.0');
         });
 
-        it('produces a CordovaError on error', async () => {
+        it('detects JDK when additional details contain numbers', async () => {
+            Java.__set__('execa', () => Promise.resolve({
+                all: 'Picked up _JAVA_OPTIONS: -Xms1024M -Xmx2048M\njavac 1.8.0_271'
+            }));
+
+            const { version } = await Java.getVersion();
+            expect(version).toBe('1.8.0');
+        });
+
+        it('produces a CordovaError on subprocess error', async () => {
             Java.__set__('execa', () => Promise.reject({
                 shortMessage: 'test error'
             }));
@@ -78,6 +77,14 @@ describe('Java', () => {
             await expectAsync(Java.getVersion())
                 .toBeRejectedWithError(CordovaError, /Failed to run "javac -version"/);
             expect(emitSpy).toHaveBeenCalledWith('verbose', 'test error');
+        });
+
+        it('throws an error on unexpected output', async () => {
+            Java.__set__('execa', () => Promise.reject({
+                all: '-version not supported'
+            }));
+
+            await expectAsync(Java.getVersion()).toBeRejectedWithError();
         });
     });
 

@@ -94,7 +94,7 @@ public interface CordovaWebView {
     /**
      * Load the specified URL in the Cordova webview or a new browser instance.
      *
-     * NOTE: If openExternal is false, only whitelisted URLs can be loaded.
+     * NOTE: If openExternal is false, only allow listed URLs can be loaded.
      *
      * @param url           The url to load.
      * @param openExternal  Load url in browser instead of Cordova webview.

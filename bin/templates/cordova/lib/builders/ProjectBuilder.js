@@ -265,10 +265,11 @@ class ProjectBuilder {
             }).then(function () {
                 return self.prepBuildFiles();
             }).then(() => {
+                const config = this._getCordovaConfig();
                 // update/set the distributionUrl in the gradle-wrapper.properties
                 const gradleWrapperPropertiesPath = path.join(self.root, 'gradle/wrapper/gradle-wrapper.properties');
                 const gradleWrapperProperties = createEditor(gradleWrapperPropertiesPath);
-                const distributionUrl = process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL || 'https://services.gradle.org/distributions/gradle-6.8.3-all.zip';
+                const distributionUrl = process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL || `https://services.gradle.org/distributions/gradle-${config.GRADLE_VERSION}-all.zip`;
                 gradleWrapperProperties.set('distributionUrl', distributionUrl);
                 gradleWrapperProperties.save();
 
@@ -287,25 +288,35 @@ class ProjectBuilder {
             });
     }
 
+    /**
+     * @private
+     * @returns The user defined configs
+     */
+    _getCordovaConfig () {
+        return fs.readJSONSync(path.join(this.root, 'cdv-gradle-config.json'));
+    }
+
     /*
     * Builds the project with gradle.
     * Returns a promise.
     */
-    build (opts) {
+    async build (opts) {
         var wrapper = path.join(this.root, 'gradlew');
         var args = this.getArgs(opts.buildType === 'debug' ? 'debug' : 'release', opts);
 
-        return execa(wrapper, args, { stdio: 'inherit', cwd: path.resolve(this.root) })
-            .catch(function (error) {
-                if (error.toString().indexOf('failed to find target with hash string') >= 0) {
-                    return check_reqs.check_android_target(error).then(function () {
-                        // If due to some odd reason - check_android_target succeeds
-                        // we should still fail here.
-                        throw error;
-                    });
+        try {
+            return await execa(wrapper, args, { stdio: 'inherit', cwd: path.resolve(this.root) });
+        } catch (error) {
+            if (error.toString().includes('failed to find target with hash string')) {
+                // Add hint from check_android_target to error message
+                try {
+                    await check_reqs.check_android_target();
+                } catch (checkAndroidTargetError) {
+                    error.message += '\n' + checkAndroidTargetError.message;
                 }
-                throw error;
-            });
+            }
+            throw error;
+        }
     }
 
     clean (opts) {

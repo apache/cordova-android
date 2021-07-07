@@ -94,23 +94,37 @@ function mockGetSplashScreenItem (data) {
 }
 
 describe('prepare', () => {
-    describe('updateIcons method', function () {
     // Rewire
-        let prepare;
+    let prepare;
 
+    // Spies
+    let emitSpy;
+    let updatePathsSpy;
+
+    beforeEach(() => {
+        prepare = rewire('../../bin/templates/cordova/lib/prepare');
+
+        emitSpy = jasmine.createSpy('emit');
+        prepare.__set__('events', {
+            emit: emitSpy
+        });
+
+        updatePathsSpy = jasmine.createSpy('updatePaths');
+        prepare.__set__('FileUpdater', {
+            updatePaths: updatePathsSpy
+        });
+    });
+
+    describe('updateIcons method', function () {
         // Spies
         let updateIconResourceForAdaptiveSpy;
         let updateIconResourceForLegacySpy;
-        let emitSpy;
-        let updatePathsSpy;
 
         // Mock Data
         let cordovaProject;
         let platformResourcesDir;
 
         beforeEach(function () {
-            prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
             cordovaProject = {
                 root: '/mock',
                 projectConfig: {
@@ -123,16 +137,6 @@ describe('prepare', () => {
                 }
             };
             platformResourcesDir = PATH_RESOURCE;
-
-            emitSpy = jasmine.createSpy('emit');
-            prepare.__set__('events', {
-                emit: emitSpy
-            });
-
-            updatePathsSpy = jasmine.createSpy('updatePaths');
-            prepare.__set__('FileUpdater', {
-                updatePaths: updatePathsSpy
-            });
 
             // mocking initial responses for mapImageResources
             prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
@@ -506,20 +510,10 @@ describe('prepare', () => {
     });
 
     describe('prepareIcons method', function () {
-        let prepare;
-        let emitSpy;
         let prepareIcons;
 
         beforeEach(function () {
-            prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
             prepareIcons = prepare.__get__('prepareIcons');
-
-            // Creating Spies
-            emitSpy = jasmine.createSpy('emit');
-            prepare.__set__('events', {
-                emit: emitSpy
-            });
         });
 
         it('Test#001 : should emit extra default icon found for adaptive use case.', function () {
@@ -570,8 +564,6 @@ describe('prepare', () => {
     });
 
     describe('updateIconResourceForLegacy method', function () {
-        let prepare;
-
         // Spies
         let fsWriteFileSyncSpy;
 
@@ -581,8 +573,6 @@ describe('prepare', () => {
         let resourceMap;
 
         beforeEach(function () {
-            prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
             // Mocked Data
             platformResourcesDir = PATH_RESOURCE;
             preparedIcons = {
@@ -618,8 +608,6 @@ describe('prepare', () => {
     });
 
     describe('updateIconResourceForAdaptive method', function () {
-        let prepare;
-
         // Spies
         let fsWriteFileSyncSpy;
 
@@ -629,8 +617,6 @@ describe('prepare', () => {
         let resourceMap;
 
         beforeEach(function () {
-            prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
             // Mocked Data
             platformResourcesDir = PATH_RESOURCE;
             preparedIcons = {
@@ -669,24 +655,6 @@ describe('prepare', () => {
     });
 
     describe('cleanIcons method', function () {
-        let prepare;
-        let emitSpy;
-        let updatePathsSpy;
-
-        beforeEach(function () {
-            prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
-            emitSpy = jasmine.createSpy('emit');
-            prepare.__set__('events', {
-                emit: emitSpy
-            });
-
-            updatePathsSpy = jasmine.createSpy('updatePaths');
-            prepare.__set__('FileUpdater', {
-                updatePaths: updatePathsSpy
-            });
-        });
-
         it('Test#001 : should detect that the app does not have defined icons.', function () {
         // Mock
             const icons = [];
@@ -767,10 +735,9 @@ describe('prepare', () => {
     });
 
     describe('prepare arguments', () => {
-    // Rewire
+        // Rewire
         let Api;
         let api;
-        let prepare;
 
         // Spies
         let gradlePropertiesParserSpy;
@@ -781,7 +748,6 @@ describe('prepare', () => {
 
         beforeEach(function () {
             Api = rewire('../../bin/templates/cordova/Api');
-            prepare = rewire('../../bin/templates/cordova/lib/prepare');
 
             cordovaProject = {
                 root: '/mock',
@@ -806,9 +772,7 @@ describe('prepare', () => {
 
             Api.__set__('prepare', prepare.prepare);
 
-            prepare.__set__('events', {
-                emit: jasmine.createSpy('emit')
-            });
+            prepare.__set__('updateUserProjectGradleConfig', jasmine.createSpy());
             prepare.__set__('updateWww', jasmine.createSpy());
             prepare.__set__('updateProjectAccordingTo', jasmine.createSpy('updateProjectAccordingTo')
                 .and.returnValue(Promise.resolve()));
@@ -847,20 +811,11 @@ describe('prepare', () => {
     });
 
     describe('updateSplashes method', function () {
-        // Rewire
-        let prepare;
-
-        // Spies
-        let emitSpy;
-        let updatePathsSpy;
-
         // Mock Data
         let cordovaProject;
         let platformResourcesDir;
 
         beforeEach(function () {
-            prepare = rewire('../../bin/templates/cordova/lib/prepare');
-
             cordovaProject = {
                 root: '/mock',
                 projectConfig: {
@@ -873,16 +828,6 @@ describe('prepare', () => {
                 }
             };
             platformResourcesDir = PATH_RESOURCE;
-
-            emitSpy = jasmine.createSpy('emit');
-            prepare.__set__('events', {
-                emit: emitSpy
-            });
-
-            updatePathsSpy = jasmine.createSpy('updatePaths');
-            prepare.__set__('FileUpdater', {
-                updatePaths: updatePathsSpy
-            });
 
             // mocking initial responses for mapImageResources
             prepare.__set__('makeSplashCleanupMap', (rootDir, resourcesDir) => ({

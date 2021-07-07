@@ -22,6 +22,7 @@ var fs = require('fs-extra');
 var utils = require('../templates/cordova/lib/utils');
 var check_reqs = require('./../templates/cordova/lib/check_reqs');
 var ROOT = path.join(__dirname, '..', '..');
+const { createEditor } = require('properties-parser');
 
 var CordovaError = require('cordova-common').CordovaError;
 var AndroidManifest = require('../templates/cordova/lib/AndroidManifest');
@@ -42,15 +43,11 @@ function getFrameworkDir (projectPath, shared) {
     return shared ? path.join(ROOT, 'framework') : path.join(projectPath, 'CordovaLib');
 }
 
-function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
+function copyJsAndLibrary (projectPath, shared, projectName, targetAPI) {
     var nestedCordovaLibPath = getFrameworkDir(projectPath, false);
     var srcCordovaJsPath = path.join(ROOT, 'bin', 'templates', 'project', 'assets', 'www', 'cordova.js');
     var app_path = path.join(projectPath, 'app', 'src', 'main');
     const platform_www = path.join(projectPath, 'platform_www');
-
-    if (isLegacy) {
-        app_path = projectPath;
-    }
 
     fs.copySync(srcCordovaJsPath, path.join(app_path, 'assets', 'www', 'cordova.js'));
 
@@ -69,11 +66,14 @@ function copyJsAndLibrary (projectPath, shared, projectName, isLegacy) {
     } else {
         fs.ensureDirSync(nestedCordovaLibPath);
         fs.copySync(path.join(ROOT, 'framework', 'AndroidManifest.xml'), path.join(nestedCordovaLibPath, 'AndroidManifest.xml'));
-        fs.copySync(path.join(ROOT, 'framework', 'project.properties'), path.join(nestedCordovaLibPath, 'project.properties'));
+        const propertiesEditor = createEditor(path.join(ROOT, 'framework', 'project.properties'));
+        propertiesEditor.set('target', targetAPI);
+        propertiesEditor.save(path.join(nestedCordovaLibPath, 'project.properties'));
         fs.copySync(path.join(ROOT, 'framework', 'build.gradle'), path.join(nestedCordovaLibPath, 'build.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'cordova.gradle'), path.join(nestedCordovaLibPath, 'cordova.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'repositories.gradle'), path.join(nestedCordovaLibPath, 'repositories.gradle'));
         fs.copySync(path.join(ROOT, 'framework', 'src'), path.join(nestedCordovaLibPath, 'src'));
+        fs.copySync(path.join(ROOT, 'framework', 'cdv-gradle-config-defaults.json'), path.join(projectPath, 'cdv-gradle-config.json'));
     }
 }
 
@@ -144,23 +144,6 @@ function copyScripts (projectPath) {
 
     const nodeModulesDir = path.join(ROOT, 'node_modules');
     if (fs.existsSync(nodeModulesDir)) fs.copySync(nodeModulesDir, path.join(destScriptsDir, 'node_modules'));
-
-    fs.copySync(path.join(bin, 'check_reqs'), path.join(destScriptsDir, 'check_reqs'));
-    fs.copySync(path.join(bin, 'check_reqs.bat'), path.join(destScriptsDir, 'check_reqs.bat'));
-    fs.copySync(path.join(bin, 'android_sdk_version'), path.join(destScriptsDir, 'android_sdk_version'));
-    fs.copySync(path.join(bin, 'android_sdk_version.bat'), path.join(destScriptsDir, 'android_sdk_version.bat'));
-
-    var check_reqs = path.join(destScriptsDir, 'check_reqs');
-    var android_sdk_version = path.join(destScriptsDir, 'android_sdk_version');
-
-    // TODO: the two files being edited on-the-fly here are shared between
-    // platform and project-level commands. the below is updating the
-    // `require` path for the two libraries. if there's a better way to share
-    // modules across both the repo and generated projects, we should make sure
-    // to remove/update this.
-    const templatesCordovaRegex = /templates\/cordova\//;
-    utils.replaceFileContents(android_sdk_version, templatesCordovaRegex, '');
-    utils.replaceFileContents(check_reqs, templatesCordovaRegex, '');
 }
 
 /**
@@ -277,7 +260,7 @@ exports.create = function (project_path, config, options, events) {
             fs.ensureDirSync(path.join(app_path, 'libs'));
 
             // copy cordova.js, cordova.jar
-            exports.copyJsAndLibrary(project_path, options.link, safe_activity_name);
+            exports.copyJsAndLibrary(project_path, options.link, safe_activity_name, target_api);
 
             // Set up ther Android Studio paths
             var java_path = path.join(app_path, 'java');
