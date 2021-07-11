@@ -77,7 +77,7 @@ describe('run', () => {
         it('should fail with the error message if --packageType=bundle setting is used', () => {
             targetSpyObj.resolve.and.resolveTo(resolvedTarget);
             return expectAsync(run.run({ argv: ['--packageType=bundle'] }))
-                .toBeRejectedWith(jasmine.stringMatching(/Package type "bundle" is not supported/));
+                .toBeRejectedWithError(/Package type "bundle" is not supported/);
         });
     });
 });
