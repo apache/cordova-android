@@ -60,14 +60,14 @@ module.exports.run = async function (runOptions = {}) {
     const resolvedTarget = await target.resolve(spec);
     events.emit('log', `Deploying to ${formatResolvedTarget(resolvedTarget)}`);
 
-    const buildOptions = build.parseBuildOptions(runOptions, null, this.root);
+    const { packageType, buildType } = build.parseBuildOptions(runOptions, null, this.root);
 
     // Android app bundles cannot be deployed directly to the device
-    if (buildOptions.packageType === PackageType.BUNDLE) {
+    if (packageType === PackageType.BUNDLE) {
         throw new CordovaError('Package type "bundle" is not supported during cordova run.');
     }
 
-    const buildResults = this._builder.fetchBuildResults(buildOptions.buildType);
+    const buildResults = this._builder.fetchBuildResults(buildType);
 
     if (resolvedTarget.type === 'emulator') {
         await emulator.wait_for_boot(resolvedTarget.id);
