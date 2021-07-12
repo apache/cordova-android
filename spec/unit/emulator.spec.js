@@ -23,7 +23,6 @@ const rewire = require('rewire');
 const which = require('which');
 
 const CordovaError = require('cordova-common').CordovaError;
-const check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
 
 describe('emulator', () => {
     let emu;
@@ -102,17 +101,14 @@ describe('emulator', () => {
     });
 
     describe('best_image', () => {
-        let target_mock;
-
         beforeEach(() => {
             spyOn(emu, 'list_images');
-            target_mock = spyOn(check_reqs, 'get_target').and.returnValue('android-26');
         });
 
         it('should return undefined if there are no defined AVDs', () => {
             emu.list_images.and.returnValue(Promise.resolve([]));
 
-            return emu.best_image().then(best_avd => {
+            return emu.best_image(26).then(best_avd => {
                 expect(best_avd).toBeUndefined();
             });
         });
@@ -122,31 +118,29 @@ describe('emulator', () => {
             const second_fake_avd = { name: 'AnotherAVD' };
             emu.list_images.and.returnValue(Promise.resolve([fake_avd, second_fake_avd]));
 
-            return emu.best_image().then(best_avd => {
+            return emu.best_image(26).then(best_avd => {
                 expect(best_avd).toBe(fake_avd);
             });
         });
 
         it('should return the first AVD for the API level that matches the project target', () => {
-            target_mock.and.returnValue('android-25');
             const fake_avd = { name: 'MyFakeAVD', target: 'Android 7.0 (API level 24)' };
             const second_fake_avd = { name: 'AnotherAVD', target: 'Android 7.1 (API level 25)' };
             const third_fake_avd = { name: 'AVDThree', target: 'Android 8.0 (API level 26)' };
             emu.list_images.and.returnValue(Promise.resolve([fake_avd, second_fake_avd, third_fake_avd]));
 
-            return emu.best_image().then(best_avd => {
+            return emu.best_image(25).then(best_avd => {
                 expect(best_avd).toBe(second_fake_avd);
             });
         });
 
         it('should return the AVD with API level that is closest to the project target API level, without going over', () => {
-            target_mock.and.returnValue('android-26');
             const fake_avd = { name: 'MyFakeAVD', target: 'Android 7.0 (API level 24)' };
             const second_fake_avd = { name: 'AnotherAVD', target: 'Android 7.1 (API level 25)' };
             const third_fake_avd = { name: 'AVDThree', target: 'Android 99.0 (API level 134)' };
             emu.list_images.and.returnValue(Promise.resolve([fake_avd, second_fake_avd, third_fake_avd]));
 
-            return emu.best_image().then(best_avd => {
+            return emu.best_image(26).then(best_avd => {
                 expect(best_avd).toBe(second_fake_avd);
             });
         });
@@ -160,7 +154,7 @@ describe('emulator', () => {
                 target: 'Android 8.0'
             }]));
 
-            return emu.best_image().then(best_avd => {
+            return emu.best_image(26).then(best_avd => {
                 expect(best_avd).toBeDefined();
             });
         });
@@ -249,23 +243,14 @@ describe('emulator', () => {
             emu.__set__('which', whichSpy);
         });
 
-        it('should find an emulator if an id is not specified', () => {
-            spyOn(emu, 'best_image').and.returnValue(Promise.resolve(emulator));
-
-            return emu.start().then(() => {
-                // This is the earliest part in the code where we can hook in and check
-                // the emulator that has been selected.
-                const spawnArgs = execaSpy.calls.argsFor(0);
-                expect(spawnArgs[1]).toContain(emulator.name);
-            });
-        });
-
         it('should use the specified emulator', () => {
             spyOn(emu, 'best_image');
 
             return emu.start(emulator.name).then(() => {
                 expect(emu.best_image).not.toHaveBeenCalled();
 
+                // This is the earliest part in the code where we can hook in and check
+                // the emulator that has been selected.
                 const spawnArgs = execaSpy.calls.argsFor(0);
                 expect(spawnArgs[1]).toContain(emulator.name);
             });

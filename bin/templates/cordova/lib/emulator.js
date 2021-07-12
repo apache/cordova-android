@@ -25,7 +25,6 @@ var Adb = require('./Adb');
 var events = require('cordova-common').events;
 var CordovaError = require('cordova-common').CordovaError;
 var android_sdk = require('./android_sdk');
-var check_reqs = require('./check_reqs');
 var which = require('which');
 
 // constants
@@ -135,18 +134,19 @@ module.exports.list_images = function () {
 };
 
 /**
- * Will return the closest avd to the projects target
+ * Returns the best image (if any) for given target.
+ *
+ * @param {Number} project_target Android targetSDK API level
+ * @return {{name: string} | undefined} the closest avd to the given target
  * or undefined if no avds exist.
- * Returns a promise.
  */
-module.exports.best_image = function () {
+module.exports.best_image = function (project_target) {
     return this.list_images().then(function (images) {
         // Just return undefined if there is no images
         if (images.length === 0) return;
 
         var closest = 9999;
         var best = images[0];
-        var project_target = parseInt(check_reqs.get_target().replace('android-', ''));
         for (var i in images) {
             var target = images[i].target;
             if (target && target.indexOf('API level') > -1) {
@@ -189,28 +189,19 @@ module.exports.get_available_port = function () {
 /*
  * Starts an emulator with the given ID,
  * and returns the started ID of that emulator.
- * If no ID is given it will use the first image available,
- * if no image is available it will error out (maybe create one?).
  * If no boot timeout is given or the value is negative it will wait forever for
  * the emulator to boot
  *
  * Returns a promise.
  */
-module.exports.start = function (emulator_ID, boot_timeout) {
+module.exports.start = function (emulatorId, boot_timeout) {
     var self = this;
 
     return Promise.resolve().then(function () {
-        if (emulator_ID) return Promise.resolve(emulator_ID);
+        if (!emulatorId) {
+            throw new CordovaError('No emulator ID given');
+        }
 
-        return self.best_image().then(function (best) {
-            if (best && best.name) {
-                events.emit('warn', 'No emulator specified, defaulting to ' + best.name);
-                return best.name;
-            }
-
-            return Promise.reject(new CordovaError('No emulator images (avds) found'));
-        });
-    }).then(function (emulatorId) {
         return self.get_available_port().then(function (port) {
             // Figure out the directory the emulator binary runs in, and set the cwd to that directory.
             // Workaround for https://code.google.com/p/android/issues/detail?id=235461

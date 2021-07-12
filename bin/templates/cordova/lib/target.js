@@ -19,6 +19,7 @@
 
 const path = require('path');
 const { inspect } = require('util');
+const execa = require('execa');
 const Adb = require('./Adb');
 const build = require('./build');
 const emulator = require('./emulator');
@@ -35,6 +36,7 @@ const EXEC_KILL_SIGNAL = 'SIGKILL';
  * @typedef { 'device' | 'emulator' } TargetType
  * @typedef { { id: string, type: TargetType } } Target
  * @typedef { { id?: string, type?: TargetType } } TargetSpec
+ * @typedef { { apkPaths: string[] } } BuildResults
  */
 
 /**
@@ -73,30 +75,49 @@ async function isEmulatorName (name) {
 }
 
 /**
- * @param {TargetSpec?} spec
+ * @param {TargetSpec} spec
+ * @param {BuildResults} buildResults
  * @return {Promise<Target>}
  */
-async function resolveToOfflineEmulator (spec = {}) {
-    if (spec.type === 'device') return null;
-    if (spec.id && !(await isEmulatorName(spec.id))) return null;
+async function resolveToOfflineEmulator ({ id: avdName, type }, { apkPaths }) {
+    if (type === 'device') return null;
 
-    // try to start an emulator with name spec.id
-    // if spec.id is undefined, picks best match regarding target API
-    const emulatorId = await emulator.start(spec.id);
+    if (avdName) {
+        if (!await isEmulatorName(avdName)) return null;
+    } else {
+        events.emit('verbose', 'Looking for emulator image that best matches the target API');
+
+        const targetSdk = await getTargetSdkFromApk(apkPaths[0]);
+        const bestImage = await emulator.best_image(targetSdk);
+        if (!bestImage) return null;
+
+        avdName = bestImage.name;
+    }
+
+    // try to start an emulator with name avdName
+    const emulatorId = await emulator.start(avdName);
 
     return { id: emulatorId, type: 'emulator' };
 }
 
+async function getTargetSdkFromApk (apkPath) {
+    const { stdout: targetSdkStr } = await execa('apkanalyzer', [
+        'manifest', 'target-sdk', apkPath
+    ]);
+    return Number(targetSdkStr);
+}
+
 /**
  * @param {TargetSpec?} spec
+ * @param {BuildResults} buildResults
  * @return {Promise<Target & {arch: string}>}
  */
-exports.resolve = async (spec = {}) => {
+exports.resolve = async (spec, buildResults) => {
     events.emit('verbose', `Trying to find target matching ${inspect(spec)}`);
 
     const resolvedTarget =
         (await resolveToOnlineTarget(spec)) ||
-        (await resolveToOfflineEmulator(spec));
+        (await resolveToOfflineEmulator(spec, buildResults));
 
     if (!resolvedTarget) {
         throw new CordovaError(`Could not find target matching ${inspect(spec)}`);
