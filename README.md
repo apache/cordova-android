@@ -30,20 +30,42 @@ Cordova Android is an Android application library that allows for Cordova-based 
 
 [Apache Cordova](https://cordova.apache.org) is a project of The Apache Software Foundation (ASF).
 
-## Requires
+## Requirements
 
-- Java JDK 1.8
-- Android SDK [http://developer.android.com](https://developer.android.com/)
+* Java JDK 1.8
+* Android SDK [http://developer.android.com](https://developer.android.com/)
 
 ## Cordova Android Developer Tools
 
 Use the [Cordova command-line tool](https://www.npmjs.com/package/cordova) to create projects and install plugins.
+
+To use a **shared CordovaLib**, for example in development, link the appropriate cordova-android platform folder path:
+
+```bash
+cordova platform add --link /path/to/cordova-android
+```
 
 ## Using Android Studio
 
 1. Create a project
 2. Import it via "Non-Android Studio Project"
 
-## Running the Native Tests
+## Updating a Cordova project
 
-The `test/` directory in this project contains an Android test project that can be used to run different kinds of native tests. Check out the [README contained therein](test/README.md) for more details!
+When you install a new `cordova-cli` version that comes with a new Android platform version, from within your project:
+
+```bash
+cordova platform rm android
+cordova platform add android
+```
+
+## How to Test Repo Development
+
+```bash
+npm install
+npm test
+```
+
+## Futher reading
+
+* [https://cordova.apache.org/](https://cordova.apache.org/)
