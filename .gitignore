@@ -25,6 +25,9 @@ example
 /framework/libs
 /framework/javadoc-public
 /framework/javadoc-private
+
+**/assets/www/cordova.js
+
 /test/.externalNativeBuild
 
 /test/androidx/gradle
