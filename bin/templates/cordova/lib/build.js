@@ -130,7 +130,11 @@ function parseOpts (options, resolvedTarget, projectRoot) {
             ret.packageType = packageArgs.packageType;
         }
     } else {
-        ret.packageType = PackageType.APK;
+        if (ret.buildType === 'release') {
+            ret.packageType = PackageType.BUNDLE;
+        } else {
+            ret.packageType = PackageType.APK;
+        }
     }
 
     return ret;
