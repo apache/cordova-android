@@ -26,7 +26,7 @@ describe('AndroidProject', () => {
     let AndroidStudioSpy;
 
     beforeEach(() => {
-        AndroidProject = rewire('../../bin/templates/cordova/lib/AndroidProject');
+        AndroidProject = rewire('../../lib/AndroidProject');
 
         AndroidStudioSpy = jasmine.createSpyObj('AndroidStudio', ['isAndroidStudioProject']);
         AndroidProject.__set__('AndroidStudio', AndroidStudioSpy);

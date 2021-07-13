@@ -22,8 +22,8 @@ var path = require('path');
 var common = require('cordova-common');
 const EventEmitter = require('events');
 
-var Api = require('../../bin/templates/cordova/Api');
-var AndroidProject = require('../../bin/templates/cordova/lib/AndroidProject');
+var Api = require('../../lib/Api');
+var AndroidProject = require('../../lib/AndroidProject');
 
 var PluginInfo = common.PluginInfo;
 

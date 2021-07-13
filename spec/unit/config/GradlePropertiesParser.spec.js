@@ -18,7 +18,7 @@
 */
 
 const rewire = require('rewire');
-const GradlePropertiesParser = rewire('../../../bin/templates/cordova/lib/config/GradlePropertiesParser');
+const GradlePropertiesParser = rewire('../../../lib/config/GradlePropertiesParser');
 
 describe('Gradle Builder', () => {
     describe('_initializeEditor method', () => {

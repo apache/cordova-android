@@ -20,13 +20,13 @@
 const rewire = require('rewire');
 
 const CordovaError = require('cordova-common').CordovaError;
-const ProjectBuilder = require('../../../bin/templates/cordova/lib/builders/ProjectBuilder');
+const ProjectBuilder = require('../../../lib/builders/ProjectBuilder');
 
 describe('builders', () => {
     let builders;
 
     beforeEach(() => {
-        builders = rewire('../../../bin/templates/cordova/lib/builders/builders');
+        builders = rewire('../../../lib/builders/builders');
     });
 
     describe('getBuilder', () => {

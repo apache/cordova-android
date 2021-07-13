@@ -18,9 +18,9 @@
 */
 
 var rewire = require('rewire');
-var utils = require('../../bin/templates/cordova/lib/utils');
-var create = rewire('../../bin/lib/create');
-var check_reqs = require('../../bin/templates/cordova/lib/check_reqs');
+var utils = require('../../lib/utils');
+var create = rewire('../../lib/create');
+var check_reqs = require('../../lib/check_reqs');
 var fs = require('fs-extra');
 var path = require('path');
 
@@ -117,7 +117,7 @@ describe('create', function () {
         var revert_manifest_mock;
         var project_path = path.join('some', 'path');
         var app_path = path.join(project_path, 'app', 'src', 'main');
-        var default_templates = path.join(__dirname, '..', '..', 'bin', 'templates', 'project');
+        var default_templates = path.join(__dirname, '..', '..', 'templates', 'project');
         var fake_android_target = 'android-1337';
 
         beforeEach(function () {

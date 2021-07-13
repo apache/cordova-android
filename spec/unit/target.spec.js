@@ -24,7 +24,7 @@ describe('target', () => {
     let target;
 
     beforeEach(() => {
-        target = rewire('../../bin/templates/cordova/lib/target');
+        target = rewire('../../lib/target');
     });
 
     describe('list', () => {

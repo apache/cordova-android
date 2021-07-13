@@ -20,7 +20,7 @@
 var rewire = require('rewire');
 var path = require('path');
 var CordovaError = require('cordova-common').CordovaError;
-const GradlePropertiesParser = require('../../bin/templates/cordova/lib/config/GradlePropertiesParser');
+const GradlePropertiesParser = require('../../lib/config/GradlePropertiesParser');
 
 const PATH_RESOURCE = path.join('platforms', 'android', 'app', 'src', 'main', 'res');
 
@@ -102,7 +102,7 @@ describe('prepare', () => {
     let updatePathsSpy;
 
     beforeEach(() => {
-        prepare = rewire('../../bin/templates/cordova/lib/prepare');
+        prepare = rewire('../../lib/prepare');
 
         emitSpy = jasmine.createSpy('emit');
         prepare.__set__('events', {
@@ -747,7 +747,7 @@ describe('prepare', () => {
         let options;
 
         beforeEach(function () {
-            Api = rewire('../../bin/templates/cordova/Api');
+            Api = rewire('../../lib/Api');
 
             cordovaProject = {
                 root: '/mock',

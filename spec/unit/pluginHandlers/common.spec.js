@@ -17,7 +17,7 @@
 */
 
 var rewire = require('rewire');
-var common = rewire('../../../bin/templates/cordova/lib/pluginHandlers');
+var common = rewire('../../../lib/pluginHandlers');
 var path = require('path');
 var fs = require('fs-extra');
 var osenv = require('os');
