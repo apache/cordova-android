@@ -56,7 +56,8 @@ describe('run', () => {
 
             run.__set__({
                 target: targetSpyObj,
-                emulator: emulatorSpyObj
+                emulator: emulatorSpyObj,
+                AndroidManifest: class {}
             });
 
             const builder = builders.getBuilder('FakeRootPath');
@@ -66,14 +67,25 @@ describe('run', () => {
             });
 
             // run needs `this` to behave like an Api instance
-            run.run = run.run.bind({ _builder: builder });
+            run.run = run.run.bind({
+                _builder: builder,
+                locations: { manifest: 'FakeManifestPath' }
+            });
         });
 
         it('should install on target after build', () => {
+            const AndroidManifest = run.__get__('AndroidManifest');
+
             return run.run().then(() => {
                 expect(targetSpyObj.install).toHaveBeenCalledWith(
                     resolvedTarget,
-                    { apkPaths: ['fake.apk'], buildType: 'debug' }
+                    {
+                        manifest: jasmine.any(AndroidManifest),
+                        buildResults: {
+                            buildType: 'debug',
+                            apkPaths: ['fake.apk']
+                        }
+                    }
                 );
             });
         });

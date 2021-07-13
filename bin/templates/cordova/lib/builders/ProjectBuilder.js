@@ -78,7 +78,7 @@ function findOutputFiles (bundleType, buildType, { arch } = {}) {
 
 class ProjectBuilder {
     constructor (rootDirectory) {
-        this.root = rootDirectory || path.resolve(__dirname, '../../..');
+        this.root = rootDirectory;
         this.apkDir = path.join(this.root, 'app', 'build', 'outputs', 'apk');
         this.aabDir = path.join(this.root, 'app', 'build', 'outputs', 'bundle');
     }
@@ -310,7 +310,7 @@ class ProjectBuilder {
             if (error.toString().includes('failed to find target with hash string')) {
                 // Add hint from check_android_target to error message
                 try {
-                    await check_reqs.check_android_target();
+                    await check_reqs.check_android_target(this.root);
                 } catch (checkAndroidTargetError) {
                     error.message += '\n' + checkAndroidTargetError.message;
                 }

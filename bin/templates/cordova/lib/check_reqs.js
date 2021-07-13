@@ -22,7 +22,6 @@ var path = require('path');
 var fs = require('fs-extra');
 const { forgivingWhichSync, isWindows, isDarwin } = require('./utils');
 const java = require('./env/java');
-var REPO_ROOT = path.join(__dirname, '..', '..', '..', '..');
 const { CordovaError, ConfigParser, events } = require('cordova-common');
 var android_sdk = require('./android_sdk');
 const { SDK_VERSION } = require('./gradle-config-defaults');
@@ -32,10 +31,11 @@ const { SDK_VERSION } = require('./gradle-config-defaults');
 Object.assign(module.exports, { isWindows, isDarwin });
 
 /**
+ * @param {string} projectRoot
  * @returns {string} The android target in format "android-${target}"
  */
-module.exports.get_target = function () {
-    const userTargetSdkVersion = getUserTargetSdkVersion();
+module.exports.get_target = function (projectRoot) {
+    const userTargetSdkVersion = getUserTargetSdkVersion(projectRoot);
 
     if (userTargetSdkVersion && userTargetSdkVersion < SDK_VERSION) {
         events.emit('warn', `android-targetSdkVersion should be greater than or equal to ${SDK_VERSION}.`);
@@ -44,10 +44,16 @@ module.exports.get_target = function () {
     return `android-${Math.max(userTargetSdkVersion, SDK_VERSION)}`;
 };
 
-/** @returns {number} target sdk or 0 if undefined */
-function getUserTargetSdkVersion () {
+/**
+ * @param {string} projectRoot
+ * @returns {number} target sdk or 0 if undefined
+ */
+function getUserTargetSdkVersion (projectRoot) {
     // If the repo config.xml file exists, find the desired targetSdkVersion.
-    const configFile = path.join(REPO_ROOT, 'config.xml');
+    // We need to use the cordova project's config.xml here, since the platform
+    // project's config.xml does not yet have the user's preferences when this
+    // function is called during `Api.createPlatform`.
+    const configFile = path.join(projectRoot, '../../config.xml');
     if (!fs.existsSync(configFile)) return 0;
 
     const configParser = new ConfigParser(configFile);
@@ -235,13 +241,13 @@ module.exports.check_android = function () {
     });
 };
 
-module.exports.check_android_target = function () {
+module.exports.check_android_target = function (projectRoot) {
     // valid_target can look like:
     //   android-19
     //   android-L
     //   Google Inc.:Google APIs:20
     //   Google Inc.:Glass Development Kit Preview:20
-    var desired_api_level = module.exports.get_target();
+    var desired_api_level = module.exports.get_target(projectRoot);
     return android_sdk.list_targets().then(function (targets) {
         if (targets.indexOf(desired_api_level) >= 0) {
             return targets;
@@ -286,9 +292,10 @@ var Requirement = function (id, name, version, installed) {
  * Methods that runs all checks one by one and returns a result of checks
  * as an array of Requirement objects. This method intended to be used by cordova-lib check_reqs method
  *
+ * @param {string} projectRoot
  * @return Promise<Requirement[]> Array of requirements. Due to implementation, promise is always fulfilled.
  */
-module.exports.check_all = function () {
+module.exports.check_all = function (projectRoot) {
     var requirements = [
         new Requirement('java', 'Java JDK'),
         new Requirement('androidSdk', 'Android SDK'),
@@ -299,7 +306,7 @@ module.exports.check_all = function () {
     var checkFns = [
         this.check_java,
         this.check_android,
-        this.check_android_target,
+        this.check_android_target.bind(this, projectRoot),
         this.check_gradle
     ];
 

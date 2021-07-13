@@ -262,6 +262,7 @@ describe('check_reqs', function () {
     });
 
     describe('get_target', function () {
+        const projectRoot = 'fakeProjectRoot';
         var ConfigParser;
         var getPreferenceSpy;
         beforeEach(function () {
@@ -273,7 +274,7 @@ describe('check_reqs', function () {
         });
 
         it('should retrieve DEFAULT_TARGET_API', function () {
-            var target = check_reqs.get_target();
+            var target = check_reqs.get_target(projectRoot);
             expect(target).toBeDefined();
             expect(target).toContain('android-' + DEFAULT_TARGET_API);
         });
@@ -282,7 +283,7 @@ describe('check_reqs', function () {
             spyOn(fs, 'existsSync').and.returnValue(true);
             getPreferenceSpy.and.returnValue(String(DEFAULT_TARGET_API + 1));
 
-            var target = check_reqs.get_target();
+            var target = check_reqs.get_target(projectRoot);
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
             expect(target).toBe('android-' + (DEFAULT_TARGET_API + 1));
@@ -292,7 +293,7 @@ describe('check_reqs', function () {
             spyOn(fs, 'existsSync').and.returnValue(true);
             getPreferenceSpy.and.returnValue('android-99');
 
-            var target = check_reqs.get_target();
+            var target = check_reqs.get_target(projectRoot);
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
             expect(target).toBe('android-' + DEFAULT_TARGET_API);
@@ -305,7 +306,7 @@ describe('check_reqs', function () {
 
             getPreferenceSpy.and.returnValue(String(DEFAULT_TARGET_API - 1));
 
-            var target = check_reqs.get_target();
+            var target = check_reqs.get_target(projectRoot);
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
             expect(target).toBe('android-' + DEFAULT_TARGET_API);

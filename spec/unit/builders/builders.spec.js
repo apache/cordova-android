@@ -31,8 +31,10 @@ describe('builders', () => {
 
     describe('getBuilder', () => {
         it('should return an instance of ProjectBuilder when gradle is requested', () => {
-            const newBuilder = builders.getBuilder();
+            const root = 'FakeProjectRoot';
+            const newBuilder = builders.getBuilder(root);
             expect(newBuilder).toEqual(jasmine.any(ProjectBuilder));
+            expect(newBuilder.root).toBe(root);
         });
 
         it('should throw an error if a builder cannot be instantiated', () => {

@@ -66,7 +66,7 @@ function setupEvents (externalEventEmitter) {
 class Api {
     constructor (platform, platformRootDir, events) {
         this.platform = PLATFORM;
-        this.root = path.resolve(__dirname, '..');
+        this.root = platformRootDir;
 
         setupEvents(events);
 
@@ -313,7 +313,7 @@ class Api {
      *   objects for current platform.
      */
     requirements () {
-        return require('./lib/check_reqs').check_all();
+        return require('./lib/check_reqs').check_all(this.root);
     }
 
     /**

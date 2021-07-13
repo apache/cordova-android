@@ -787,7 +787,7 @@ describe('prepare', () => {
 
             gradlePropertiesParserSpy = spyOn(GradlePropertiesParser.prototype, 'configure');
 
-            api = new Api();
+            api = new Api('android', cordovaProject.root);
         });
 
         it('runs without arguments', async () => {

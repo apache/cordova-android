@@ -230,7 +230,7 @@ exports.create = function (project_path, config, options, events) {
         ? config.name().replace(/[^\w.]/g, '_') : 'CordovaExample';
 
     var safe_activity_name = config.android_activityName() || options.activityName || 'MainActivity';
-    var target_api = check_reqs.get_target();
+    var target_api = check_reqs.get_target(project_path);
 
     // Make the package conform to Java package types
     return exports.validatePackageName(package_name)
