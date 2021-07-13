@@ -31,6 +31,7 @@
     "nopt": "^5.0.0",
     "properties-parser": "^0.3.1",
     "semver": "^7.3.5",
+    "untildify": "^4.0.0",
     "which": "^2.0.2"
   },
   "devDependencies": {
