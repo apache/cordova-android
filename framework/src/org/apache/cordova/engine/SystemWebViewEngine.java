@@ -155,9 +155,9 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         String manufacturer = android.os.Build.MANUFACTURER;
         LOG.d(TAG, "CordovaWebView is running on device made by: " + manufacturer);
 
-        //We don't save any form data in the application
+        // We don't save any form data in the application
+        // @todo remove when Cordova drop API level 26 support
         settings.setSaveFormData(false);
-        settings.setSavePassword(false);
 
         if (preferences.getBoolean("AndroidInsecureFileModeEnabled", false)) {
             //These settings are deprecated and loading content via file:// URLs is generally discouraged,
@@ -173,8 +173,6 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         // We keep this disabled because we use or shim to get around DOM_EXCEPTION_ERROR_16
         String databasePath = webView.getContext().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         settings.setDatabaseEnabled(true);
-        settings.setDatabasePath(databasePath);
-
 
         //Determine whether we're in debug or release mode, and turn on Debugging!
         ApplicationInfo appInfo = webView.getContext().getApplicationContext().getApplicationInfo();
@@ -182,6 +180,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
             enableRemoteDebugging();
         }
 
+        // @todo remove when Cordova drop API level 24 support
         settings.setGeolocationDatabasePath(databasePath);
 
         // Enable DOM storage
