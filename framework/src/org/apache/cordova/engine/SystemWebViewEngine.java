@@ -155,7 +155,8 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         String manufacturer = android.os.Build.MANUFACTURER;
         LOG.d(TAG, "CordovaWebView is running on device made by: " + manufacturer);
 
-        //We don't save any form data in the application
+        // We don't save any form data in the application
+        // @todo remove when Cordova drop API level 26 support
         settings.setSaveFormData(false);
         settings.setSavePassword(false);
 
