@@ -84,7 +84,9 @@ public class AllowListPlugin extends CordovaPlugin {
                 allowedNavigations.addAllowListEntry(startPage, false);
 
                 // Allow origin for WebViewAssetLoader
-                allowedNavigations.addAllowListEntry("https://" + this.prefs.getString("hostname", "localhost") + "/" + startPage, false);
+                if (!this.prefs.getBoolean("AndroidInsecureFileModeEnabled", false)) {
+                    allowedNavigations.addAllowListEntry("https://" + this.prefs.getString("hostname", "localhost"), false);
+                }
             } else if (strNode.equals("allow-navigation")) {
                 String origin = xml.getAttributeValue(null, "href");
                 if ("*".equals(origin)) {
