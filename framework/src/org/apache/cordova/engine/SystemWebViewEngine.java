@@ -180,6 +180,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
             enableRemoteDebugging();
         }
 
+        // @todo remove when Cordova drop API level 24 support
         settings.setGeolocationDatabasePath(databasePath);
 
         // Enable DOM storage
