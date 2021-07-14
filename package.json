@@ -11,6 +11,7 @@
     "apache"
   ],
   "scripts": {
+    "prepare": "cordova-js build > templates/project/assets/www/cordova.js",
     "test": "npm run lint && npm run cover && npm run java-unit-tests",
     "lint": "eslint lib spec test \"templates/cordova/**/!(*.*)\"",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@cordova/eslint-config": "^3.0.0",
+    "cordova-js": "^6.1.0",
     "jasmine": "^3.7.0",
     "jasmine-spec-reporter": "^7.0.0",
     "nyc": "^15.1.0",

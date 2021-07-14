@@ -3,3 +3,4 @@ coverage
 test
 spec
 framework/build
+cordova-js-src
