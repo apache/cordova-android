@@ -158,7 +158,6 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         // We don't save any form data in the application
         // @todo remove when Cordova drop API level 26 support
         settings.setSaveFormData(false);
-        settings.setSavePassword(false);
 
         if (preferences.getBoolean("AndroidInsecureFileModeEnabled", false)) {
             //These settings are deprecated and loading content via file:// URLs is generally discouraged,
