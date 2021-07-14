@@ -23,6 +23,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.ConfigXmlParser;
 import org.apache.cordova.LOG;
 import org.apache.cordova.AllowList;
+import org.apache.cordova.CordovaPreferences;
 import org.xmlpull.v1.XmlPullParser;
 
 import android.content.Context;
@@ -73,12 +74,19 @@ public class AllowListPlugin extends CordovaPlugin {
     }
 
     private class CustomConfigXmlParser extends ConfigXmlParser {
+        private CordovaPreferences prefs = new CordovaPreferences();
+
         @Override
         public void handleStartTag(XmlPullParser xml) {
             String strNode = xml.getName();
             if (strNode.equals("content")) {
                 String startPage = xml.getAttributeValue(null, "src");
                 allowedNavigations.addAllowListEntry(startPage, false);
+
+                // Allow origin for WebViewAssetLoader
+                if (!this.prefs.getBoolean("AndroidInsecureFileModeEnabled", false)) {
+                    allowedNavigations.addAllowListEntry("https://" + this.prefs.getString("hostname", "localhost"), false);
+                }
             } else if (strNode.equals("allow-navigation")) {
                 String origin = xml.getAttributeValue(null, "href");
                 if ("*".equals(origin)) {
