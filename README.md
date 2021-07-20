@@ -30,10 +30,10 @@ Cordova Android is an Android application library that allows for Cordova-based 
 
 [Apache Cordova](https://cordova.apache.org) is a project of The Apache Software Foundation (ASF).
 
-## Requires
+## Requirements
 
-- Java JDK 1.8
-- Android SDK [http://developer.android.com](https://developer.android.com/)
+- Java Development Kit (JDK) 11
+- [Android SDK](https://developer.android.com/)
 
 ## Cordova Android Developer Tools
 
