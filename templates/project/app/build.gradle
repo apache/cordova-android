@@ -46,7 +46,7 @@ buildscript {
 
         if(cordovaConfig.IS_GRADLE_PLUGIN_GOOGLE_SERVICES_ENABLED) {
             // Checks if the kotlin version format is valid.
-            if(!cdvHelpers.isVersionValid(gradlePluginGoogleServicesVersion)) {
+            if(!cdvHelpers.isVersionValid(cordovaConfig.GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION)) {
                 throw new GradleException("The defined Google Services plugin version (${cordovaConfig.GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION}) does not appear to be a valid version.")
             }
 
