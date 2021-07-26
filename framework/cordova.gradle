@@ -174,10 +174,20 @@ def doApplyCordovaConfigCustomization() {
         cordovaConfig.ANDROIDX_WEBKIT_VERSION = cdvAndroidXWebKitVersion
     }
 
-    // Ensure the latest installed build tools is selected, with or without defined override
-    cordovaConfig.LATEST_INSTALLED_BUILD_TOOLS = doFindLatestInstalledBuildTools(
-        cordovaConfig.BUILD_TOOLS_VERSION
-    )
+    if (!cordovaConfig.BUILD_TOOLS_VERSION) {
+        cordovaConfig.BUILD_TOOLS_VERSION = doFindLatestInstalledBuildTools(
+            cordovaConfig.MIN_BUILD_TOOLS_VERSION
+        )
+    }
+
+    // Ensure the configured build tools version is at least our declared minimum
+    def buildToolsVersion = new Version(cordovaConfig.BUILD_TOOLS_VERSION)
+    if (buildToolsVersion.isLowerThan(cordovaConfig.MIN_BUILD_TOOLS_VERSION)) {
+        throw new RuntimeException("""
+            Expected Android Build Tools version >= ${cordovaConfig.MIN_BUILD_TOOLS_VERSION},
+            but got Android Build Tools version ${cordovaConfig.BUILD_TOOLS_VERSION}. Please use version ${cordovaConfig.MIN_BUILD_TOOLS_VERSION} or later.
+        """.replaceAll(/\s+/, ' ').trim())
+    }
 }
 
 // Properties exported here are visible to all plugins.

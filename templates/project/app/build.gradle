@@ -189,7 +189,7 @@ android {
       abortOnError false
     }
 
-    buildToolsVersion cordovaConfig.LATEST_INSTALLED_BUILD_TOOLS
+    buildToolsVersion cordovaConfig.BUILD_TOOLS_VERSION
 
     // This code exists for Crosswalk and other Native APIs.
     // By default, we multiply the existing version code in the
