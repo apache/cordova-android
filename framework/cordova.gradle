@@ -53,10 +53,13 @@ String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
         throw e
     }
 
+    def minBuildToolsVersion = new Version(minBuildToolsVersionString)
+    def maxVersion = new Version((minBuildToolsVersion.getMajor() + 1) + ".0.0")
+
     def highestBuildToolsVersion = buildToolsDirContents
         .collect { new Version(it) }
         // Invalid inputs will be handled as 0.0.0
-        .findAll { it.isHigherThan('0.0.0') }
+        .findAll { it.isHigherThan('0.0.0') && it.isLowerThan(maxVersion) }
         .max()
 
     if (highestBuildToolsVersion == null) {
@@ -68,7 +71,7 @@ String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
 
     if (highestBuildToolsVersion.isLowerThan(minBuildToolsVersionString)) {
         throw new RuntimeException("""
-            No usable Android build tools found. Highest installed version is
+            No usable Android build tools found. Highest ${minBuildToolsVersion.getMajor()}.x installed version is
             ${highestBuildToolsVersion.getOriginalString()}; minimum version
             required is ${minBuildToolsVersionString}.
         """.replaceAll(/\s+/, ' ').trim())
