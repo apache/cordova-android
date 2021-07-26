@@ -18,6 +18,7 @@
 */
 
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 String getCordovaAndroidVersion() {
    // Fetch Data from Cordova-Android package.json (Used only by framework build/publishing)
@@ -36,7 +37,7 @@ task sourcesJar(type: Jar) {
 
 publishing {
     publications {
-        Cordova(MavenPublication) {
+        mavenJava(MavenPublication) {
             groupId = 'org.apache.cordova'
             artifactId = 'framework'
             version = getCordovaAndroidVersion()
@@ -75,5 +76,26 @@ publishing {
                 }
             }
         }
+    }
+
+    repositories {
+        maven {
+            def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases'
+            def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots'
+
+            name = version.endsWith('SNAPSHOT') ? 'Apache Snapshots' : 'Apache Release'
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+            credentials {
+                if (apacheUserName && apachePassWord) {
+                    username apacheUserName
+                    password apachePassWord
+                }
+            }
+        }
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
     }
 }
