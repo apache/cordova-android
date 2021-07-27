@@ -46,9 +46,13 @@ class AndroidTestRunner {
         return new ProjectBuilder(this.projectDir).runGradleWrapper('gradle');
     }
 
+    _log (...args) {
+        console.log.apply(console, [`[${this.testTitle}]`, ...args])
+    }
+
     run () {
         return Promise.resolve()
-            .then(_ => console.log(`[${this.testTitle}] Preparing Gradle wrapper for Java unit tests.`))
+            .then(_ => this._log('Staging Project Files'))
             .then(_ => {
                 // TODO we should probably not only copy these files, but instead create a new project from scratch
                 fs.copyFileSync(path.resolve(this.projectDir, '../../framework/cdv-gradle-config-defaults.json'), path.resolve(this.projectDir, 'cdv-gradle-config.json'));
@@ -57,28 +61,35 @@ class AndroidTestRunner {
                     path.join(this.projectDir, 'app/src/main/assets/www/cordova.js')
                 );
             })
+
+            .then(_ => this._log('Creating Gradle Wrapper'))
             .then(_ => this._createProjectBuilder())
+
+            .then(_ => this._log('Getting Gradle Wrapper Version Info'))
             .then(_ => this._gradlew('--version'))
-            .then(_ => console.log(`[${this.testTitle}] Gradle wrapper is ready. Running tests now.`))
+
+            .then(_ => this._log('Running Java Unit Tests'))
             .then(_ => this._gradlew('test'))
-            .then(_ => console.log(`[${this.testTitle}] Java unit tests completed successfully`))
+            .then(_ => this._log('Finished Java Unit Test'))
+
+            .then(_ => this._log('Running Java Instrumentation Tests'))
             .then(_ => this._gradlew('connectedAndroidTest'))
-            .then(_ => console.log(`[${this.testTitle}] Java instrumentation tests completed successfully`));
+            .then(_ => this._log('Finished Java Instrumentation Tests'))
     }
 }
 
 Promise.resolve()
-    .then(_ => console.log('Starting to run all android platform tests'))
+    .then(_ => console.log('Starting Android Platform Java Tests'))
 
     // AndroidX Test
     .then(_ => new AndroidTestRunner('AndroidX Project', path.resolve(__dirname, 'androidx')))
     .then(test => test.run())
 
-    .then(_ => console.log('Finished running all android platform tests'));
+    .then(_ => console.log('Finished Running Android Platform Java Tests'));
 
 process.on('unhandledRejection', err => {
     // If err has a stderr property, we have seen the message already
     if (!('stderr' in err)) console.error(err.message);
-    console.error('JAVA UNIT TESTS FAILED!');
+    console.error('JAVA TESTS FAILED!');
     process.exitCode = err.code || 1;
 });
