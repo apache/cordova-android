@@ -18,6 +18,7 @@
 */
 
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 String getCordovaAndroidVersion() {
    // Fetch Data from Cordova-Android package.json (Used only by framework build/publishing)
@@ -29,6 +30,22 @@ String getCordovaAndroidVersion() {
     }
 }
 
+// Enable signing by default when keyId and secretKeyRingFile is defined.
+ext.cdvEnableSigning = project.hasProperty('signing.keyId') && project.hasProperty('signing.secretKeyRingFile')
+if (cdvEnableSigning) {
+    logger.debug('[Cordova] Signing has been enabled by default because the signing keyId & secretKeyRingFile has been defined.')
+}
+
+if (project.hasProperty('signEnabled')) {
+    if(!cdvEnableSigning && Boolean.valueOf(signEnabled)) {
+        logger.debug("[Cordova] The \"signEnabled\" override can not be set to \"true\" when the signing properties are missing.")
+    } else {
+        // Override the default setting with the "signEnabled" property. (In this case it should only accept false)
+        logger.debug("[Cordova] The \"signEnabled\" property has been detected and forcing enabled signing to \"$signEnabled\".")
+        cdvEnableSigning = signEnabled
+    }
+}
+
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
@@ -36,7 +53,7 @@ task sourcesJar(type: Jar) {
 
 publishing {
     publications {
-        Cordova(MavenPublication) {
+        mavenJava(MavenPublication) {
             groupId = 'org.apache.cordova'
             artifactId = 'framework'
             version = getCordovaAndroidVersion()
@@ -75,5 +92,34 @@ publishing {
                 }
             }
         }
+    }
+
+    repositories {
+        maven {
+            def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases'
+            def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots'
+
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+
+            credentials {
+                if (project.hasProperty('apacheUsername') && project.hasProperty('apachePassword')) {
+                    username apacheUsername
+                    password apachePassword
+                }
+            }
+        }
+    }
+
+    signing {
+        if (Boolean.valueOf(cdvEnableSigning)) {
+            sign publishing.publications.mavenJava
+        }
+    }
+}
+
+tasks.whenTaskAdded {task ->
+    if(task.name.contains('sign')) {
+        logger.debug("[Cordova] The task \"${task.name}\" is enabled? ${cdvEnableSigning}")
+        task.enabled = cdvEnableSigning
     }
 }
