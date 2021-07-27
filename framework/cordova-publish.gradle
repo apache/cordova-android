@@ -83,7 +83,6 @@ publishing {
             def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases'
             def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots'
 
-            name = version.endsWith('SNAPSHOT') ? 'Apache Snapshots' : 'Apache Release'
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
 
             credentials {
