@@ -56,6 +56,8 @@ dependencies {
     androidTestImplementation('androidx.test.espresso:espresso-web:3.1.1', {
         exclude group: 'androidx.test.espresso', module: 'androidx.annotation'
     })
+
+    androidTestImplementation 'androidx.test:rules:1.4.0'
 }
 repositories {
     google()
