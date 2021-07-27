@@ -20,6 +20,20 @@
 -->
 ## Release Notes for Cordova (Android)
 
+### 10.0.1 (Jul 27, 2021)
+
+**Fixes:**
+
+* [GH-1295](https://github.com/apache/cordova-android/pull/1295) fix: `maven-publish` setup
+* [GH-1293](https://github.com/apache/cordova-android/pull/1293) fix: `gradle` build tools config
+* [GH-1294](https://github.com/apache/cordova-android/pull/1294) fix: automatic latest build tools finding
+* [GH-1287](https://github.com/apache/cordova-android/pull/1287) fix: Google Services Gradle Plugin version check failure
+
+**Chores:**
+
+* [GH-1291](https://github.com/apache/cordova-android/pull/1291) chore: add missing release notes
+* [GH-1286](https://github.com/apache/cordova-android/pull/1286) chore: update `README` requirements
+
 ### 10.0.0 (Jul 17, 2021)
 
 **Breaking:**
