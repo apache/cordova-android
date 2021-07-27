@@ -12,13 +12,13 @@
   ],
   "scripts": {
     "prepare": "cordova-js build > templates/project/assets/www/cordova.js",
-    "test": "npm run lint && npm run cover && npm run java-unit-tests",
+    "test": "npm run lint && npm run cover && npm run java-tests",
     "lint": "eslint lib spec test \"templates/cordova/**/!(*.*)\"",
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
     "cover": "nyc jasmine --config=spec/coverage.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
-    "java-unit-tests": "node test/run_java_unit_tests.js",
-    "clean:java-unit-tests": "node test/clean.js"
+    "java-tests": "node test/java_test_runner.js",
+    "clean:java-tests": "node test/clean.js"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",

@@ -21,7 +21,7 @@ const fs = require('fs-extra');
 const path = require('path');
 
 /**
- * This script is to be run manually (e.g. by npm run clean:java-unit-tests) if
+ * This script is to be run manually (e.g. by npm run clean:java-tests) if
  * you want to upgrade gradlew or test its proper generation.
  */
 
