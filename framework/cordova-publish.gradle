@@ -31,19 +31,18 @@ String getCordovaAndroidVersion() {
 }
 
 // Enable signing by default when keyId and secretKeyRingFile is defined.
-ext.cdvEnableSigning = (project.hasProperty('signing.keyId') && project.hasProperty('signing.secretKeyRingFile'))
+ext.cdvEnableSigning = project.hasProperty('signing.keyId') && project.hasProperty('signing.secretKeyRingFile')
 if (cdvEnableSigning) {
     logger.debug('[Cordova] Signing has been enabled by default because the signing keyId & secretKeyRingFile has been defined.')
 }
 
 if (project.hasProperty('signEnabled')) {
-    // Override the default setting with the "signEnabled" property.
-    logger.debug("[Cordova] The \"signEnabled\" property has been detected. Attempting to force enabled signing to \"$signEnabled\".")
-    cdvEnableSigning = signEnabled
-
-    if (cdvEnableSigning && !project.hasProperty('signing.keyId') && !project.hasProperty('signing.secretKeyRingFile')) {
-        logger.debug("[Cordova] The \"signEnabled\" override can not be \"true\" when the signing properties are missing.")
-        cdvEnableSigning = false
+    if(!cdvEnableSigning && Boolean.valueOf(signEnabled)) {
+        logger.debug("[Cordova] The \"signEnabled\" override can not be set to \"true\" when the signing properties are missing.")
+    } else {
+        // Override the default setting with the "signEnabled" property. (In this case it should only accept false)
+        logger.debug("[Cordova] The \"signEnabled\" property has been detected and forcing enabled signing to \"$signEnabled\".")
+        cdvEnableSigning = signEnabled
     }
 }
 
