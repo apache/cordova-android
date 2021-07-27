@@ -86,9 +86,9 @@ publishing {
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
 
             credentials {
-                if (apacheUserName && apachePassWord) {
-                    username apacheUserName
-                    password apachePassWord
+                if (apacheUsername && apachePassword) {
+                    username apacheUsername
+                    password apachePassword
                 }
             }
         }
