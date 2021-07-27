@@ -61,7 +61,9 @@ class AndroidTestRunner {
             .then(_ => this._gradlew('--version'))
             .then(_ => console.log(`[${this.testTitle}] Gradle wrapper is ready. Running tests now.`))
             .then(_ => this._gradlew('test'))
-            .then(_ => console.log(`[${this.testTitle}] Java unit tests completed successfully`));
+            .then(_ => console.log(`[${this.testTitle}] Java unit tests completed successfully`))
+            .then(_ => this._gradlew('connectedAndroidTest'))
+            .then(_ => console.log(`[${this.testTitle}] Java instrumentation tests completed successfully`));
     }
 }
 
