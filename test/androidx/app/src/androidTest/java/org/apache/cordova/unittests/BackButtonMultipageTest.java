@@ -158,7 +158,7 @@ public class BackButtonMultipageTest {
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
     }
 
-    private void assertPageSample(String url) {
+    private void assertPageSample(String url) throws Throwable {
         assertEquals(url, mActivity.onPageFinishedUrl.take());
     }
 }
