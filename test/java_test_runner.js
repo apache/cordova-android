@@ -47,7 +47,7 @@ class AndroidTestRunner {
     }
 
     _log (...args) {
-        console.log.apply(console, [`[${this.testTitle}]`, ...args])
+        console.log(...[`[${this.testTitle}]`, ...args]);
     }
 
     run () {
@@ -74,7 +74,7 @@ class AndroidTestRunner {
 
             .then(_ => this._log('Running Java Instrumentation Tests'))
             .then(_ => this._gradlew('connectedAndroidTest'))
-            .then(_ => this._log('Finished Java Instrumentation Tests'))
+            .then(_ => this._log('Finished Java Instrumentation Tests'));
     }
 }
 
