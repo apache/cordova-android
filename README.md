@@ -46,11 +46,6 @@ To use a **shared framework**, for example in development, link the appropriate 
 cordova platform add --link /path/to/cordova-android
 ```
 
-## Using Android Studio
-
-1. Create a project
-2. Import it via "Non-Android Studio Project"
-
 ## Updating a Cordova project
 
 When you install a new `cordova-cli` version that comes with a new Android platform version, from within your project:
@@ -59,6 +54,10 @@ When you install a new `cordova-cli` version that comes with a new Android platf
 cordova platform rm android
 cordova platform add android
 ```
+
+## Debugging in Android Studio
+
+Import project in Android Studio through _File > Open_ and targeting `/path/to/your-cdv-project/platforms/android/`.
 
 ## How to Test Repo Development
 
