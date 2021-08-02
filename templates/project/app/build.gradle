@@ -60,7 +60,13 @@ buildscript {
 
 // Allow plugins to declare Maven dependencies via build-extras.gradle.
 allprojects {
-    apply from: 'repositories.gradle'
+    def hasRepositoriesGradle = file('repositories.gradle').exists()
+    if (hasRepositoriesGradle) {
+        apply from: 'repositories.gradle'
+    } else {
+        apply from: "${project.rootDir}/repositories.gradle"
+    }
+
     repositories repos
 }
 
