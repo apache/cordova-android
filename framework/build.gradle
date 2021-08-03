@@ -29,7 +29,13 @@ buildscript {
 }
 
 allprojects {
-    apply from: 'repositories.gradle'
+    def hasRepositoriesGradle = file('repositories.gradle').exists()
+    if (hasRepositoriesGradle) {
+        apply from: 'repositories.gradle'
+    } else {
+        apply from: "${project.rootDir}/repositories.gradle"
+    }
+
     repositories repos
 }
 
