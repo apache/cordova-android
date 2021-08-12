@@ -29,6 +29,7 @@ import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.view.View;
 import android.webkit.ValueCallback;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView;
@@ -278,11 +279,20 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     public boolean goBack() {
         // Check webview first to see if there is a history
         // This is needed to support curPage#diffLink, since they are added to parentEngine's history, but not our history url array (JQMobile behavior)
-        if (webView.canGoBack()) {
-            webView.goBack();
-            return true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WebBackForwardList list = webView.copyBackForwardList();
+            if (list.getCurrentIndex() > 0) {
+                parentWebView.sendJavascript("history.back();");
+                return true;
+            }
+            return false;
+        } else {
+            if (webView.canGoBack()) {
+                webView.goBack();
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
     @Override
