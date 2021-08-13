@@ -20,6 +20,25 @@
 -->
 ## Release Notes for Cordova (Android)
 
+### 10.1.0 (Aug 13, 2021)
+
+**Features:**
+
+* [GH-1213](https://github.com/apache/cordova-android/pull/1213) feat: unify `create` default values & stop project name transform
+* [GH-1306](https://github.com/apache/cordova-android/pull/1306) feat: bump `ANDROIDX_APP_COMPAT@1.3.1`
+* [GH-1303](https://github.com/apache/cordova-android/pull/1303) feat: bump `Google Services Gradle Plugin@4.3.8`
+* [GH-1302](https://github.com/apache/cordova-android/pull/1302) feat: bump `kotlin@1.5.21`
+* [GH-1298](https://github.com/apache/cordova-android/pull/1298) feat: support `http` w/ `content` `src` fix
+
+**Fixes:**
+
+* [GH-1214](https://github.com/apache/cordova-android/pull/1214) fix: display project name in Android Studio
+* [GH-1300](https://github.com/apache/cordova-android/pull/1300) fix: fall back to project root `repositories.gradle`
+
+**Docs:**
+
+* [GH-1308](https://github.com/apache/cordova-android/pull/1308) doc: update `README` about development & testing
+
 ### 10.0.1 (Jul 27, 2021)
 
 **Fixes:**
