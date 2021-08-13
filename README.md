@@ -38,7 +38,7 @@ Cordova Android is an Android application library that allows for Cordova-based 
 
 ## Create a Cordova project
 
-Follow the instructions in the [**Command-Line Usage** section](https://cordova.apache.org/docs/en/edge/guide_cli_index.md.html#The%20Command-line%20Interface) of [Apache Cordova Docs](https://cordova.apache.org/docs/en/latest/)
+Follow the instructions in the [**Create your first Cordova app**](https://cordova.apache.org/docs/en/latest/guide/cli/index.html) section of [Apache Cordova Docs](https://cordova.apache.org/docs/en/latest/)
 
 To use a **shared framework**, for example in development, link the appropriate cordova-android platform folder path:
 
@@ -48,7 +48,7 @@ cordova platform add --link /path/to/cordova-android
 
 ## Updating a Cordova project
 
-When you install a new `cordova-cli` version that comes with a new Android platform version, from within your project:
+When you install a new version of the [`Cordova CLI`](https://www.npmjs.com/package/cordova) that pins a new version of the [`Cordova-Android`](https://www.npmjs.com/package/cordova-android) platform, you can follow these simple upgrade steps within your project:
 
 ```bash
 cordova platform rm android
