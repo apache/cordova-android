@@ -32,11 +32,6 @@ public class AllowListPlugin extends CordovaPlugin {
     public static final String PLUGIN_NAME = "CordovaAllowListPlugin";
     protected static final String LOG_TAG = "CordovaAllowListPlugin";
 
-    // @todo same as ConfigXmlParser. Research centralizing ideas, maybe create CordovaConstants
-    private static String SCHEME_HTTPS = "https";
-    // @todo same as ConfigXmlParser. Research centralizing ideas, maybe create CordovaConstants
-    private static String DEFAULT_HOSTNAME = "localhost";
-
     private AllowList allowedNavigations;
     private AllowList allowedIntents;
     private AllowList allowedRequests;
@@ -74,17 +69,7 @@ public class AllowListPlugin extends CordovaPlugin {
             this.allowedIntents = new AllowList();
             this.allowedRequests = new AllowList();
 
-            ConfigXmlParser pref = new CustomConfigXmlParser();
-            pref.parse(webView.getContext());
-
-            if (!this.preferences.getBoolean("AndroidInsecureFileModeEnabled", false)) {
-                String scheme = this.preferences.getString("scheme", SCHEME_HTTPS).toLowerCase();
-                String hostname = this.preferences.getString("hostname", DEFAULT_HOSTNAME);
-                String origin = scheme + "://" + hostname + "/*";
-
-                LOG.d(LOG_TAG, "Adding to Allowed Navigation: " + origin);
-                this.allowedNavigations.addAllowListEntry(origin, false);
-            }
+            new CustomConfigXmlParser().parse(webView.getContext());
         }
     }
 
