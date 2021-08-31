@@ -32,6 +32,11 @@ public class AllowListPlugin extends CordovaPlugin {
     public static final String PLUGIN_NAME = "CordovaAllowListPlugin";
     protected static final String LOG_TAG = "CordovaAllowListPlugin";
 
+    // @todo same as ConfigXmlParser. Research centralizing ideas, maybe create CordovaConstants
+    private static String SCHEME_HTTPS = "https";
+    // @todo same as ConfigXmlParser. Research centralizing ideas, maybe create CordovaConstants
+    private static String DEFAULT_HOSTNAME = "localhost";
+
     private AllowList allowedNavigations;
     private AllowList allowedIntents;
     private AllowList allowedRequests;
@@ -69,7 +74,17 @@ public class AllowListPlugin extends CordovaPlugin {
             this.allowedIntents = new AllowList();
             this.allowedRequests = new AllowList();
 
-            new CustomConfigXmlParser().parse(webView.getContext());
+            ConfigXmlParser pref = new CustomConfigXmlParser();
+            pref.parse(webView.getContext());
+
+            if (!this.preferences.getBoolean("AndroidInsecureFileModeEnabled", false)) {
+                String scheme = this.preferences.getString("scheme", SCHEME_HTTPS).toLowerCase();
+                String hostname = this.preferences.getString("hostname", DEFAULT_HOSTNAME);
+                String origin = scheme + "://" + hostname + "/*";
+
+                LOG.d(LOG_TAG, "Adding to Allowed Navigation: " + origin);
+                this.allowedNavigations.addAllowListEntry(origin, false);
+            }
         }
     }
 
@@ -82,11 +97,6 @@ public class AllowListPlugin extends CordovaPlugin {
             if (strNode.equals("content")) {
                 String startPage = xml.getAttributeValue(null, "src");
                 allowedNavigations.addAllowListEntry(startPage, false);
-
-                // Allow origin for WebViewAssetLoader
-                if (!this.prefs.getBoolean("AndroidInsecureFileModeEnabled", false)) {
-                    allowedNavigations.addAllowListEntry("https://" + this.prefs.getString("hostname", "localhost"), false);
-                }
             } else if (strNode.equals("allow-navigation")) {
                 String origin = xml.getAttributeValue(null, "href");
                 if ("*".equals(origin)) {
