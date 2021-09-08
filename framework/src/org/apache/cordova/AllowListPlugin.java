@@ -127,7 +127,7 @@ public class AllowListPlugin extends CordovaPlugin {
 
     @Override
     public Boolean shouldAllowRequest(String url) {
-        return (this.shouldAllowNavigation(url) || this.allowedRequests.isUrlAllowListed(url))
+        return (Boolean.TRUE.equals(this.shouldAllowNavigation(url)) || this.allowedRequests.isUrlAllowListed(url))
             ? true
             : null; // default policy
     }
