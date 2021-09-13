@@ -20,6 +20,14 @@
 -->
 ## Release Notes for Cordova (Android)
 
+### 10.1.1 (Sep 13, 2021)
+
+**Fixes:**
+
+* [GH-1349](https://github.com/apache/cordova-android/pull/1349) fix(`PluginManager`): `AllowNavigation` default policy to handle scheme & hostname
+* [GH-1342](https://github.com/apache/cordova-android/pull/1342) fix(`AllowListPlugin`): Safely handle default allow navigation policy in allow request
+* [GH-1332](https://github.com/apache/cordova-android/pull/1332) fix(`PluginManager`): `AllowBridgeAccess` default policy to handle scheme & hostname
+
 ### 10.1.0 (Aug 13, 2021)
 
 **Features:**
