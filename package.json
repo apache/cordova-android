@@ -1,6 +1,6 @@
 {
   "name": "cordova-android",
-  "version": "10.1.1",
+  "version": "10.1.2-dev",
   "description": "cordova-android release",
   "main": "lib/Api.js",
   "repository": "github:apache/cordova-android",
