@@ -455,7 +455,7 @@ public class PluginManager {
         }
 
         // Default policy:
-        return url.startsWith("file://") || url.startsWith("about:blank");
+        return url.startsWith(getLaunchUrlPrefix()) || url.startsWith("about:blank");
     }
 
 
