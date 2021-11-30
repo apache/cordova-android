@@ -32,7 +32,7 @@ Cordova Android is an Android application library that allows for Cordova-based 
 
 ## Requirements
 
-* Java Development Kit (JDK) 11
+* Java Development Kit (JDK) 8
 * [Android SDK](https://developer.android.com/)
 * [Node.js](https://nodejs.org)
 
