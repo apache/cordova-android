@@ -275,6 +275,13 @@ describe('create', function () {
                 });
             });
 
+            it('should interpolate the escaped project name into strings.xml', () => {
+                config_mock.name.and.returnValue('<Incredible&App>');
+                return create.create(project_path, config_mock, {}, events_mock).then(() => {
+                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'strings.xml'), /__NAME__/, '&lt;Incredible&amp;App&gt;');
+                });
+            });
+
             it('should copy template scripts into generated project', () => {
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(create.copyScripts).toHaveBeenCalledWith(project_path);
