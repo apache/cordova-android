@@ -179,6 +179,7 @@ public class CordovaActivity extends AppCompatActivity {
         appView.getView().setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+        appView.getView().setFilterTouchesWhenObscured(true);
 
         setContentView(appView.getView());
 
