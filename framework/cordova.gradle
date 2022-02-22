@@ -64,16 +64,16 @@ String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
 
     if (highestBuildToolsVersion == null) {
         throw new RuntimeException("""
-            No installed build tools found. Install the Android build tools
-            version ${minBuildToolsVersionString} or higher.
+            No installed build tools found. Please install the Android build tools
+            version ${minBuildToolsVersionString}.
         """.replaceAll(/\s+/, ' ').trim())
     }
 
     if (highestBuildToolsVersion.isLowerThan(minBuildToolsVersionString)) {
         throw new RuntimeException("""
             No usable Android build tools found. Highest ${minBuildToolsVersion.getMajor()}.x installed version is
-            ${highestBuildToolsVersion.getOriginalString()}; minimum version
-            required is ${minBuildToolsVersionString}.
+            ${highestBuildToolsVersion.getOriginalString()}; Recommended version
+            is ${minBuildToolsVersionString}.
         """.replaceAll(/\s+/, ' ').trim())
     }
 
