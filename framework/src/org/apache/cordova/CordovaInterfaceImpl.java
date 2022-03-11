@@ -219,7 +219,7 @@ public class CordovaInterfaceImpl implements CordovaInterface {
                                           int[] grantResults) throws JSONException {
         Pair<CordovaPlugin, Integer> callback = permissionResultCallbacks.getAndRemoveCallback(requestCode);
         if(callback != null) {
-            callback.first.onRequestPermissionResult(callback.second, permissions, grantResults);
+            callback.first.onRequestPermissionsResult(callback.second, permissions, grantResults);
         }
     }
 
