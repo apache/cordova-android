@@ -20,6 +20,20 @@
 -->
 ## Release Notes for Cordova (Android)
 
+### 10.1.2 (Apr 11, 2022)
+
+**Fixes:**
+
+* [GH-1372](https://github.com/apache/cordova-android/pull/1372) fix(`AndroidManifest`): explicitly define the `activity` attribute `android:exported`
+* [GH-1406](https://github.com/apache/cordova-android/pull/1406) fix: detect `JAVA_HOME` with Java 11
+* [GH-1401](https://github.com/apache/cordova-android/pull/1401) fix(GH-1391): Reword minimum build tools version to make it more clear what is actually required.
+* [GH-1384](https://github.com/apache/cordova-android/pull/1384) fix: escape `strings.xml` app name
+
+**Chores:**
+
+* [GH-1413](https://github.com/apache/cordova-android/pull/1413) chore: update `package-lock` to satisfy `npm audit`
+* [GH-1348](https://github.com/apache/cordova-android/pull/1348) chore: `npmrc`
+
 ### 10.1.1 (Sep 13, 2021)
 
 **Fixes:**
