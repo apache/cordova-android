@@ -17,9 +17,9 @@
     under the License.
 */
 
-var rewire = require('rewire');
-var path = require('path');
-var CordovaError = require('cordova-common').CordovaError;
+const rewire = require('rewire');
+const path = require('path');
+const CordovaError = require('cordova-common').CordovaError;
 const GradlePropertiesParser = require('../../lib/config/GradlePropertiesParser');
 
 const PATH_RESOURCE = path.join('platforms', 'android', 'app', 'src', 'main', 'res');
@@ -688,7 +688,7 @@ describe('prepare', () => {
             };
             const platformResourcesDir = PATH_RESOURCE;
 
-            var expectedResourceMapBackground = createResourceMap('ic_launcher_background.png');
+            const expectedResourceMapBackground = createResourceMap('ic_launcher_background.png');
 
             // mocking initial responses for mapImageResources
             prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {
@@ -719,7 +719,7 @@ describe('prepare', () => {
             };
             const platformResourcesDir = PATH_RESOURCE;
 
-            var expectedResourceMap = createResourceMap();
+            const expectedResourceMap = createResourceMap();
 
             // mocking initial responses for mapImageResources
             prepare.__set__('mapImageResources', function (rootDir, subDir, type, resourceName) {

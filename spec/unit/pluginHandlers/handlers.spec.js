@@ -17,34 +17,34 @@
     under the License.
 */
 
-var rewire = require('rewire');
-var common = rewire('../../../lib/pluginHandlers');
-var android = common.__get__('handlers');
-var path = require('path');
-var fs = require('fs-extra');
-var os = require('os');
-var temp = path.join(os.tmpdir(), 'plugman');
-var plugins_dir = path.join(temp, 'cordova/plugins');
-var dummyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.dummyplugin');
-var faultyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.faultyplugin');
-var android_studio_project = path.join(__dirname, '../../fixtures/android_studio_project');
+const rewire = require('rewire');
+const common = rewire('../../../lib/pluginHandlers');
+const android = common.__get__('handlers');
+const path = require('path');
+const fs = require('fs-extra');
+const os = require('os');
+const temp = path.join(os.tmpdir(), 'plugman');
+const plugins_dir = path.join(temp, 'cordova/plugins');
+const dummyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.dummyplugin');
+const faultyplugin = path.join(__dirname, '../../fixtures/org.test.plugins.faultyplugin');
+const android_studio_project = path.join(__dirname, '../../fixtures/android_studio_project');
 
-var PluginInfo = require('cordova-common').PluginInfo;
-var AndroidProject = require('../../../lib/AndroidProject');
+const PluginInfo = require('cordova-common').PluginInfo;
+const AndroidProject = require('../../../lib/AndroidProject');
 
-var dummyPluginInfo = new PluginInfo(dummyplugin);
-var valid_source = dummyPluginInfo.getSourceFiles('android');
-var valid_resources = dummyPluginInfo.getResourceFiles('android');
-var valid_libs = dummyPluginInfo.getLibFiles('android');
+const dummyPluginInfo = new PluginInfo(dummyplugin);
+const valid_source = dummyPluginInfo.getSourceFiles('android');
+const valid_resources = dummyPluginInfo.getResourceFiles('android');
+const valid_libs = dummyPluginInfo.getLibFiles('android');
 
-var faultyPluginInfo = new PluginInfo(faultyplugin);
-var invalid_source = faultyPluginInfo.getSourceFiles('android');
+const faultyPluginInfo = new PluginInfo(faultyplugin);
+const invalid_source = faultyPluginInfo.getSourceFiles('android');
 
 describe('android project handler', function () {
     describe('installation', function () {
-        var copyFileOrig = common.__get__('copyFile');
-        var copyFileSpy = jasmine.createSpy('copyFile');
-        var dummyProject;
+        const copyFileOrig = common.__get__('copyFile');
+        const copyFileSpy = jasmine.createSpy('copyFile');
+        let dummyProject;
 
         beforeEach(function () {
             fs.ensureDirSync(temp);
@@ -177,10 +177,10 @@ describe('android project handler', function () {
         });
 
         describe('of <framework> elements', function () {
-            var someString = jasmine.any(String);
+            const someString = jasmine.any(String);
 
-            var copyNewFileOrig = common.__get__('copyNewFile');
-            var copyNewFileSpy = jasmine.createSpy('copyNewFile');
+            const copyNewFileOrig = common.__get__('copyNewFile');
+            const copyNewFileSpy = jasmine.createSpy('copyNewFile');
 
             beforeEach(function () {
                 fs.copySync(android_studio_project, temp);
@@ -200,34 +200,34 @@ describe('android project handler', function () {
             });
 
             it('Test#008 : should install framework without "parent" attribute into project root', function () {
-                var framework = { src: 'plugin-lib' };
+                const framework = { src: 'plugin-lib' };
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
             it('Test#009 : should install framework with "parent" attribute into parent framework dir', function () {
-                var childFramework = { src: 'plugin-lib2', parent: 'plugin-lib' };
+                const childFramework = { src: 'plugin-lib2', parent: 'plugin-lib' };
                 android.framework.install(childFramework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(path.resolve(dummyProject.projectDir, childFramework.parent), someString);
             });
 
             it('Test#010 : should not copy anything if "custom" attribute is not set', function () {
-                var framework = { src: 'plugin-lib' };
-                var cpSpy = spyOn(fs, 'copySync');
+                const framework = { src: 'plugin-lib' };
+                const cpSpy = spyOn(fs, 'copySync');
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSystemLibrary).toHaveBeenCalledWith(someString, framework.src);
                 expect(cpSpy).not.toHaveBeenCalled();
             });
 
             it('Test#011 : should copy framework sources if "custom" attribute is set', function () {
-                var framework = { src: 'plugin-lib', custom: true };
+                const framework = { src: 'plugin-lib', custom: true };
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.addSubProject).toHaveBeenCalledWith(dummyProject.projectDir, someString);
                 expect(copyNewFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, framework.src, dummyProject.projectDir, someString, false);
             });
 
             it('Test#012 : should install gradleReference using project.addGradleReference', function () {
-                var framework = { src: 'plugin-lib', custom: true, type: 'gradleReference' };
+                const framework = { src: 'plugin-lib', custom: true, type: 'gradleReference' };
                 android.framework.install(framework, dummyPluginInfo, dummyProject);
                 expect(copyNewFileSpy).toHaveBeenCalledWith(dummyPluginInfo.dir, framework.src, dummyProject.projectDir, someString, false);
                 expect(dummyProject.addGradleReference).toHaveBeenCalledWith(dummyProject.projectDir, someString);
@@ -235,8 +235,8 @@ describe('android project handler', function () {
         });
 
         describe('of <js-module> elements', function () {
-            var jsModule = { src: 'www/dummyplugin.js' };
-            var wwwDest, platformWwwDest;
+            const jsModule = { src: 'www/dummyplugin.js' };
+            let wwwDest, platformWwwDest;
 
             beforeEach(function () {
                 spyOn(fs, 'writeFileSync');
@@ -258,7 +258,7 @@ describe('android project handler', function () {
         });
 
         describe('of <asset> elements', function () {
-            var asset;
+            let asset;
 
             beforeEach(function () {
                 asset = { src: 'www/dummyPlugin.js', target: 'foo/dummy.js' };
@@ -279,10 +279,10 @@ describe('android project handler', function () {
     });
 
     describe('uninstallation', function () {
-        var deleteJavaOrig = common.__get__('deleteJava');
+        const deleteJavaOrig = common.__get__('deleteJava');
         const originalRemoveSync = fs.removeSync;
-        var deleteJavaSpy = jasmine.createSpy('deleteJava');
-        var dummyProject;
+        const deleteJavaSpy = jasmine.createSpy('deleteJava');
+        let dummyProject;
         let removeSyncSpy;
 
         beforeEach(function () {
@@ -385,7 +385,7 @@ describe('android project handler', function () {
         });
 
         describe('of <framework> elements', function () {
-            var someString = jasmine.any(String);
+            const someString = jasmine.any(String);
 
             beforeEach(function () {
                 fs.ensureDirSync(path.join(dummyProject.projectDir, dummyPluginInfo.id));
@@ -400,26 +400,26 @@ describe('android project handler', function () {
             });
 
             it('Test#021 : should uninstall framework without "parent" attribute into project root', function () {
-                var framework = { src: 'plugin-lib' };
+                const framework = { src: 'plugin-lib' };
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSystemLibrary).toHaveBeenCalledWith(dummyProject.projectDir, someString);
             });
 
             it('Test#022 : should uninstall framework with "parent" attribute into parent framework dir', function () {
-                var childFramework = { src: 'plugin-lib2', parent: 'plugin-lib' };
+                const childFramework = { src: 'plugin-lib2', parent: 'plugin-lib' };
                 android.framework.uninstall(childFramework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSystemLibrary).toHaveBeenCalledWith(path.resolve(dummyProject.projectDir, childFramework.parent), someString);
             });
 
             it('Test#023 : should remove framework sources if "custom" attribute is set', function () {
-                var framework = { src: 'plugin-lib', custom: true };
+                const framework = { src: 'plugin-lib', custom: true };
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(dummyProject.removeSubProject).toHaveBeenCalledWith(dummyProject.projectDir, someString);
                 expect(removeSyncSpy).toHaveBeenCalledWith(someString);
             });
 
             it('Test#24 : should install gradleReference using project.removeGradleReference', function () {
-                var framework = { src: 'plugin-lib', custom: true, type: 'gradleReference' };
+                const framework = { src: 'plugin-lib', custom: true, type: 'gradleReference' };
                 android.framework.uninstall(framework, dummyPluginInfo, dummyProject);
                 expect(removeSyncSpy).toHaveBeenCalledWith(someString);
                 expect(dummyProject.removeGradleReference).toHaveBeenCalledWith(dummyProject.projectDir, someString);
@@ -427,15 +427,15 @@ describe('android project handler', function () {
         });
 
         describe('of <js-module> elements', function () {
-            var jsModule = { src: 'www/dummyPlugin.js' };
-            var wwwDest;
-            var platformWwwDest;
+            const jsModule = { src: 'www/dummyPlugin.js' };
+            let wwwDest;
+            let platformWwwDest;
 
             beforeEach(function () {
                 wwwDest = path.resolve(dummyProject.www, 'plugins', dummyPluginInfo.id, jsModule.src);
                 platformWwwDest = path.resolve(dummyProject.platformWww, 'plugins', dummyPluginInfo.id, jsModule.src);
 
-                var existsSyncOrig = fs.existsSync;
+                const existsSyncOrig = fs.existsSync;
                 spyOn(fs, 'existsSync').and.callFake(function (file) {
                     if ([wwwDest, platformWwwDest].indexOf(file) >= 0) return true;
                     return existsSyncOrig.call(fs, file);
@@ -456,14 +456,14 @@ describe('android project handler', function () {
         });
 
         describe('of <asset> elements', function () {
-            var asset = { src: 'www/dummyPlugin.js', target: 'foo/dummy.js' };
-            var wwwDest, platformWwwDest;
+            const asset = { src: 'www/dummyPlugin.js', target: 'foo/dummy.js' };
+            let wwwDest, platformWwwDest;
 
             beforeEach(function () {
                 wwwDest = path.resolve(dummyProject.www, asset.target);
                 platformWwwDest = path.resolve(dummyProject.platformWww, asset.target);
 
-                var existsSyncOrig = fs.existsSync;
+                const existsSyncOrig = fs.existsSync;
                 spyOn(fs, 'existsSync').and.callFake(function (file) {
                     if ([wwwDest, platformWwwDest].indexOf(file) >= 0) return true;
                     return existsSyncOrig.call(fs, file);

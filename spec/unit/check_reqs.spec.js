@@ -17,12 +17,12 @@
     under the License.
 */
 
-var rewire = require('rewire');
-var android_sdk = require('../../lib/android_sdk');
-var fs = require('fs-extra');
-var path = require('path');
-var events = require('cordova-common').events;
-var which = require('which');
+const rewire = require('rewire');
+const android_sdk = require('../../lib/android_sdk');
+const fs = require('fs-extra');
+const path = require('path');
+const events = require('cordova-common').events;
+const which = require('which');
 
 const {
     SDK_VERSION: DEFAULT_TARGET_API
@@ -34,7 +34,7 @@ describe('check_reqs', function () {
         check_reqs = rewire('../../lib/check_reqs');
     });
 
-    var original_env;
+    let original_env;
     beforeAll(function () {
         original_env = Object.assign({}, process.env);
     });
@@ -263,8 +263,8 @@ describe('check_reqs', function () {
 
     describe('get_target', function () {
         const projectRoot = 'fakeProjectRoot';
-        var ConfigParser;
-        var getPreferenceSpy;
+        let ConfigParser;
+        let getPreferenceSpy;
         beforeEach(function () {
             getPreferenceSpy = jasmine.createSpy();
             ConfigParser = jasmine.createSpy().and.returnValue({
@@ -274,7 +274,7 @@ describe('check_reqs', function () {
         });
 
         it('should retrieve DEFAULT_TARGET_API', function () {
-            var target = check_reqs.get_target(projectRoot);
+            const target = check_reqs.get_target(projectRoot);
             expect(target).toBeDefined();
             expect(target).toContain('android-' + DEFAULT_TARGET_API);
         });
@@ -283,7 +283,7 @@ describe('check_reqs', function () {
             spyOn(fs, 'existsSync').and.returnValue(true);
             getPreferenceSpy.and.returnValue(String(DEFAULT_TARGET_API + 1));
 
-            var target = check_reqs.get_target(projectRoot);
+            const target = check_reqs.get_target(projectRoot);
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
             expect(target).toBe('android-' + (DEFAULT_TARGET_API + 1));
@@ -293,7 +293,7 @@ describe('check_reqs', function () {
             spyOn(fs, 'existsSync').and.returnValue(true);
             getPreferenceSpy.and.returnValue('android-99');
 
-            var target = check_reqs.get_target(projectRoot);
+            const target = check_reqs.get_target(projectRoot);
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
             expect(target).toBe('android-' + DEFAULT_TARGET_API);
@@ -306,7 +306,7 @@ describe('check_reqs', function () {
 
             getPreferenceSpy.and.returnValue(String(DEFAULT_TARGET_API - 1));
 
-            var target = check_reqs.get_target(projectRoot);
+            const target = check_reqs.get_target(projectRoot);
 
             expect(getPreferenceSpy).toHaveBeenCalledWith('android-targetSdkVersion', 'android');
             expect(target).toBe('android-' + DEFAULT_TARGET_API);
@@ -316,7 +316,7 @@ describe('check_reqs', function () {
 
     describe('check_android_target', function () {
         it('should should return full list of supported targets if there is a match to ideal api level', () => {
-            var fake_targets = ['you are my fire', 'my one desire'];
+            const fake_targets = ['you are my fire', 'my one desire'];
             spyOn(android_sdk, 'list_targets').and.resolveTo(fake_targets);
             spyOn(check_reqs, 'get_target').and.returnValue('you are my fire');
             return check_reqs.check_android_target().then(function (targets) {
@@ -325,7 +325,7 @@ describe('check_reqs', function () {
             });
         });
         it('should error out if there is no match between ideal api level and installed targets', () => {
-            var fake_targets = ['you are my fire', 'my one desire'];
+            const fake_targets = ['you are my fire', 'my one desire'];
             spyOn(android_sdk, 'list_targets').and.resolveTo(fake_targets);
             spyOn(check_reqs, 'get_target').and.returnValue('and i knowwwwwwwwwwww');
             return check_reqs.check_android_target().then(() => {
