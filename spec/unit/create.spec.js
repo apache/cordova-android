@@ -17,17 +17,17 @@
     under the License.
 */
 
-var rewire = require('rewire');
-var utils = require('../../lib/utils');
-var create = rewire('../../lib/create');
-var check_reqs = require('../../lib/check_reqs');
-var fs = require('fs-extra');
-var path = require('path');
+const rewire = require('rewire');
+const utils = require('../../lib/utils');
+const create = rewire('../../lib/create');
+const check_reqs = require('../../lib/check_reqs');
+const fs = require('fs-extra');
+const path = require('path');
 
 describe('create', function () {
     describe('validatePackageName helper method', function () {
         describe('happy path (valid package names)', function () {
-            var valid = [
+            const valid = [
                 'org.apache.mobilespec',
                 'com.example',
                 'com.floors42.package',
@@ -82,7 +82,7 @@ describe('create', function () {
 
     describe('validateProjectName helper method', function () {
         describe('happy path (valid project names)', function () {
-            var valid = [
+            const valid = [
                 'mobilespec',
                 'package_name',
                 'PackageName',
@@ -111,14 +111,14 @@ describe('create', function () {
     });
 
     describe('main method', function () {
-        var config_mock;
-        var events_mock;
-        var Manifest_mock = function () {};
-        var revert_manifest_mock;
-        var project_path = path.join('some', 'path');
-        var app_path = path.join(project_path, 'app', 'src', 'main');
-        var default_templates = path.join(__dirname, '..', '..', 'templates', 'project');
-        var fake_android_target = 'android-1337';
+        let config_mock;
+        let events_mock;
+        const Manifest_mock = function () {};
+        let revert_manifest_mock;
+        const project_path = path.join('some', 'path');
+        const app_path = path.join(project_path, 'app', 'src', 'main');
+        const default_templates = path.join(__dirname, '..', '..', 'templates', 'project');
+        const fake_android_target = 'android-1337';
 
         beforeEach(function () {
             Manifest_mock.prototype = jasmine.createSpyObj('AndroidManifest instance mock', ['setPackageId', 'getActivity', 'setName', 'write']);
@@ -260,7 +260,7 @@ describe('create', function () {
             it('should copy, rename and interpolate the template Activity java class with the project-specific activity name and package name', () => {
                 config_mock.packageName.and.returnValue('org.apache.cordova');
                 config_mock.android_activityName.and.returnValue('CEEDEEVEE');
-                var activity_path = path.join(app_path, 'java', 'org', 'apache', 'cordova', 'CEEDEEVEE.java');
+                const activity_path = path.join(app_path, 'java', 'org', 'apache', 'cordova', 'CEEDEEVEE.java');
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
                     expect(fs.copySync).toHaveBeenCalledWith(path.join(default_templates, 'Activity.java'), activity_path);
                     expect(utils.replaceFileContents).toHaveBeenCalledWith(activity_path, /__ACTIVITY__/, 'CEEDEEVEE');

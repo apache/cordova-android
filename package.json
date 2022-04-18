@@ -36,7 +36,7 @@
     "which": "^2.0.2"
   },
   "devDependencies": {
-    "@cordova/eslint-config": "^3.0.0",
+    "@cordova/eslint-config": "^4.0.0",
     "cordova-js": "^6.1.0",
     "jasmine": "^4.1.0",
     "jasmine-spec-reporter": "^7.0.0",

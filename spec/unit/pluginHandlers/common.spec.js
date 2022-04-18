@@ -16,24 +16,24 @@
  *
 */
 
-var rewire = require('rewire');
-var common = rewire('../../../lib/pluginHandlers');
-var path = require('path');
-var fs = require('fs-extra');
-var osenv = require('os');
+const rewire = require('rewire');
+const common = rewire('../../../lib/pluginHandlers');
+const path = require('path');
+const fs = require('fs-extra');
+const osenv = require('os');
 
-var test_dir = path.join(osenv.tmpdir(), 'test_plugman');
-var project_dir = path.join(test_dir, 'project');
-var src = path.join(project_dir, 'src');
-var dest = path.join(project_dir, 'dest');
-var java_dir = path.join(src, 'one', 'two', 'three');
-var java_file = path.join(java_dir, 'test.java');
-var symlink_file = path.join(java_dir, 'symlink');
-var non_plugin_file = path.join(osenv.tmpdir(), 'non_plugin_file');
+const test_dir = path.join(osenv.tmpdir(), 'test_plugman');
+const project_dir = path.join(test_dir, 'project');
+const src = path.join(project_dir, 'src');
+const dest = path.join(project_dir, 'dest');
+const java_dir = path.join(src, 'one', 'two', 'three');
+const java_file = path.join(java_dir, 'test.java');
+const symlink_file = path.join(java_dir, 'symlink');
+const non_plugin_file = path.join(osenv.tmpdir(), 'non_plugin_file');
 
-var copyFile = common.__get__('copyFile');
-var deleteJava = common.__get__('deleteJava');
-var copyNewFile = common.__get__('copyNewFile');
+const copyFile = common.__get__('copyFile');
+const deleteJava = common.__get__('deleteJava');
+const copyNewFile = common.__get__('copyNewFile');
 
 describe('common platform handler', function () {
     afterEach(() => {
@@ -50,7 +50,7 @@ describe('common platform handler', function () {
         it('Test#002 : should throw if src not in plugin directory', function () {
             fs.ensureDirSync(project_dir);
             fs.outputFileSync(non_plugin_file, 'contents');
-            var outside_file = '../non_plugin_file';
+            const outside_file = '../non_plugin_file';
             expect(function () { copyFile(test_dir, outside_file, project_dir, dest); })
                 .toThrow(new Error('File "' + path.resolve(test_dir, outside_file) + '" is located outside the plugin directory "' + test_dir + '"'));
         });
@@ -88,8 +88,8 @@ describe('common platform handler', function () {
         it('Test#006 : should call mkdir -p on target path', function () {
             fs.outputFileSync(java_file, 'contents');
 
-            var s = spyOn(fs, 'ensureDirSync').and.callThrough();
-            var resolvedDest = path.resolve(project_dir, dest);
+            const s = spyOn(fs, 'ensureDirSync').and.callThrough();
+            const resolvedDest = path.resolve(project_dir, dest);
 
             copyFile(test_dir, java_file, project_dir, dest);
 
@@ -100,8 +100,8 @@ describe('common platform handler', function () {
         it('Test#007 : should call cp source/dest paths', function () {
             fs.outputFileSync(java_file, 'contents');
 
-            var s = spyOn(fs, 'copySync').and.callThrough();
-            var resolvedDest = path.resolve(project_dir, dest);
+            const s = spyOn(fs, 'copySync').and.callThrough();
+            const resolvedDest = path.resolve(project_dir, dest);
 
             copyFile(test_dir, java_file, project_dir, dest);
 
@@ -133,7 +133,7 @@ describe('common platform handler', function () {
         });
 
         it('Test#009 : should call fs.unlinkSync on the provided paths', function () {
-            var s = spyOn(fs, 'removeSync').and.callThrough();
+            const s = spyOn(fs, 'removeSync').and.callThrough();
             deleteJava(project_dir, java_file);
             expect(s).toHaveBeenCalled();
             expect(s).toHaveBeenCalledWith(path.resolve(project_dir, java_file));

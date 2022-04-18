@@ -19,7 +19,7 @@
        under the License.
 */
 
-var emulators = require('cordova-android/lib/emulator');
+const emulators = require('cordova-android/lib/emulator');
 
 // Usage support for when args are given
 require('cordova-android/lib/check_reqs').check_android().then(function () {
