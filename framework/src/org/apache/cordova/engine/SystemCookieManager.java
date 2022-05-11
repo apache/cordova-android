@@ -51,7 +51,6 @@ class SystemCookieManager implements ICordovaCookieManager {
         return cookieManager.getCookie(url);
     }
 
-    @SuppressWarnings("deprecation")
     public void clearCookies() {
         cookieManager.removeAllCookies(null);
     }
