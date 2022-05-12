@@ -1,6 +1,7 @@
 {
     "MIN_SDK_VERSION": 22,
     "SDK_VERSION": 32,
+    "COMPILE_SDK_VERSION": 32,
     "GRADLE_VERSION": "7.4.2",
     "MIN_BUILD_TOOLS_VERSION": "32.0.0",
     "AGP_VERSION": "7.1.0",

@@ -161,6 +161,9 @@ def doApplyCordovaConfigCustomization() {
     if (project.hasProperty('cdvSdkVersion')) {
         cordovaConfig.SDK_VERSION = Integer.parseInt('' + cdvSdkVersion)
     }
+    if (project.hasProperty('cdvCompileSdkVersion')) {
+        cordovaConfig.COMPILE_SDK_VERSION = Integer.parseInt('' + cdvCompileSdkVersion)
+    }
     if (project.hasProperty('cdvMaxSdkVersion')) {
         cordovaConfig.MAX_SDK_VERSION = Integer.parseInt('' + cdvMaxSdkVersion)
     }

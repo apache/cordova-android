@@ -42,7 +42,7 @@ dependencies {
 }
 
 android {
-    compileSdkVersion cordovaConfig.SDK_VERSION
+    compileSdkVersion cordovaConfig.COMPILE_SDK_VERSION
     buildToolsVersion cordovaConfig.BUILD_TOOLS_VERSION
 
     compileOptions {
