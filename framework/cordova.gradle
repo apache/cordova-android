@@ -191,6 +191,10 @@ def doApplyCordovaConfigCustomization() {
             but got Android Build Tools version ${cordovaConfig.BUILD_TOOLS_VERSION}. Please use version ${cordovaConfig.MIN_BUILD_TOOLS_VERSION} or later.
         """.replaceAll(/\s+/, ' ').trim())
     }
+
+    if (cordovaConfig.COMPILE_SDK_VERSION < cordovaConfig.SDK_VERSION) {
+        println "The compileSdkVersion (${cordovaConfig.COMPILE_SDK_VERSION}) should be greater than or equal to the the targetSdkVersion (${cordovaConfig.SDK_VERSION}.)"
+    }
 }
 
 // Properties exported here are visible to all plugins.
@@ -212,6 +216,10 @@ ext {
 
     def jsonFile = new File(targetConfigFilePath)
     cordovaConfig = new groovy.json.JsonSlurper().parseText(jsonFile.text)
+
+    if (cordovaConfig.COMPILE_SDK_VERSION == null) {
+        cordovaConfig.COMPILE_SDK_VERSION = cordovaConfig.SDK_VERSION
+    }
 
     // Apply Gradle Properties
     doApplyCordovaConfigCustomization()
