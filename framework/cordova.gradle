@@ -161,6 +161,9 @@ def doApplyCordovaConfigCustomization() {
     if (project.hasProperty('cdvSdkVersion')) {
         cordovaConfig.SDK_VERSION = Integer.parseInt('' + cdvSdkVersion)
     }
+    if (project.hasProperty('cdvCompileSdkVersion')) {
+        cordovaConfig.COMPILE_SDK_VERSION = Integer.parseInt('' + cdvCompileSdkVersion)
+    }
     if (project.hasProperty('cdvMaxSdkVersion')) {
         cordovaConfig.MAX_SDK_VERSION = Integer.parseInt('' + cdvMaxSdkVersion)
     }
@@ -190,6 +193,12 @@ def doApplyCordovaConfigCustomization() {
     }
 }
 
+def doVerifyCordovaConfigForBuild() {
+    if (cordovaConfig.COMPILE_SDK_VERSION < cordovaConfig.SDK_VERSION) {
+        println "The \"compileSdkVersion\" (${cordovaConfig.COMPILE_SDK_VERSION}) should be greater than or equal to the the \"targetSdkVersion\" (${cordovaConfig.SDK_VERSION})."
+    }
+}
+
 // Properties exported here are visible to all plugins.
 ext {
     def defaultsFilePath = './cdv-gradle-config-defaults.json'
@@ -210,6 +219,10 @@ ext {
     def jsonFile = new File(targetConfigFilePath)
     cordovaConfig = new groovy.json.JsonSlurper().parseText(jsonFile.text)
 
+    if (cordovaConfig.COMPILE_SDK_VERSION == null) {
+        cordovaConfig.COMPILE_SDK_VERSION = cordovaConfig.SDK_VERSION
+    }
+
     // Apply Gradle Properties
     doApplyCordovaConfigCustomization()
 
@@ -227,6 +240,8 @@ ext {
     cdvHelpers.getConfigXml = { doGetConfigXml() }
     // Returns the value for the desired <preference>. Added in 4.1.0.
     cdvHelpers.getConfigPreference = { name, defaultValue -> doGetConfigPreference(name, defaultValue) }
+    // Display warnings if any cordova config is not proper for build.
+    cdvHelpers.verifyCordovaConfigForBuild = { doVerifyCordovaConfigForBuild() }
 }
 
 buildscript {
