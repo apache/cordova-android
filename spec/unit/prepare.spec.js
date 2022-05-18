@@ -21,6 +21,8 @@ const rewire = require('rewire');
 const path = require('path');
 const CordovaError = require('cordova-common').CordovaError;
 const GradlePropertiesParser = require('../../lib/config/GradlePropertiesParser');
+const utils = require('../../lib/utils');
+const et = require('elementtree');
 
 const PATH_RESOURCE = path.join('platforms', 'android', 'app', 'src', 'main', 'res');
 
@@ -807,6 +809,155 @@ describe('prepare', () => {
                     });
                 })
             ).toBeResolved();
+        });
+    });
+
+    describe('relocate CordovaActivity class java file', () => {
+        // Rewire
+        let Api;
+        let api;
+        let prepare;
+
+        // Spies
+        let replaceFileContents;
+        let ensureDirSyncSpy;
+        let copySyncSpy;
+        let removeSyncSpy;
+
+        // Mock Data
+        let cordovaProject;
+        let options;
+        let packageName;
+
+        let initialJavaActivityPath;
+
+        beforeEach(() => {
+            Api = rewire('../../lib/Api');
+            prepare = rewire('../../lib/prepare');
+
+            cordovaProject = {
+                root: '/mock',
+                projectConfig: {
+                    path: '/mock/config.xml',
+                    cdvNamespacePrefix: 'cdv',
+                    shortName: () => 'rn',
+                    name: () => 'rename',
+                    android_versionCode: jasmine.createSpy('android_versionCode'),
+                    android_packageName: () => packageName,
+                    packageName: () => packageName,
+                    getPreference: jasmine.createSpy('getPreference'),
+                    version: () => '1.0.0'
+                },
+                locations: {
+                    plugins: '/mock/plugins',
+                    www: '/mock/www',
+                    strings: '/mock/res/values/strings.xml'
+                }
+            };
+
+            api = new Api('android', cordovaProject.root);
+            initialJavaActivityPath = path.join(api.locations.javaSrc, 'com/company/product/MainActivity.java');
+
+            options = {
+                options: {}
+            };
+
+            Api.__set__('ConfigParser',
+                jasmine.createSpy('ConfigParser')
+                    .and.returnValue(cordovaProject.projectConfig)
+            );
+
+            Api.__set__('prepare', prepare.prepare);
+
+            prepare.__set__('updateWww', jasmine.createSpy('updateWww'));
+            prepare.__set__('updateIcons', jasmine.createSpy('updateIcons').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateSplashes', jasmine.createSpy('updateSplashes').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateFileResources', jasmine.createSpy('updateFileResources').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateConfigFilesFrom',
+                jasmine.createSpy('updateConfigFilesFrom')
+                    .and.returnValue(cordovaProject.projectConfig
+                    ));
+            prepare.__set__('glob', {
+                sync: jasmine.createSpy('sync').and.returnValue({
+                    filter: jasmine.createSpy('filter').and.returnValue([
+                        initialJavaActivityPath
+                    ])
+                })
+            });
+            // prepare.__set__('events', {
+            //     emit: function () {
+            //         console.log(arguments);
+            //     }
+            // });
+            spyOn(GradlePropertiesParser.prototype, 'configure');
+
+            replaceFileContents = spyOn(utils, 'replaceFileContents');
+
+            prepare.__set__('AndroidManifest', jasmine.createSpy('AndroidManifest').and.returnValue({
+                getPackageId: () => packageName,
+                getActivity: jasmine.createSpy('getActivity').and.returnValue({
+                    setOrientation: jasmine.createSpy('setOrientation').and.returnValue({
+                        setLaunchMode: jasmine.createSpy('setLaunchValue')
+                    })
+                }),
+                setVersionName: jasmine.createSpy('setVersionName').and.returnValue({
+                    setVersionCode: jasmine.createSpy('setVersionCode').and.returnValue({
+                        setPackageId: jasmine.createSpy('setPackageId').and.returnValue({
+                            write: jasmine.createSpy('write')
+                        })
+                    })
+                })
+            }));
+
+            prepare.__set__('xmlHelpers', {
+                parseElementtreeSync: jasmine.createSpy('parseElementtreeSync').and.returnValue(et.parse(`<?xml version="1.0" encoding="utf-8"?>
+                <resources>
+                    <!-- App label shown within list of installed apps, battery & network usage screens. -->
+                    <string name="app_name">__NAME__</string>
+                    <!-- App label shown on the launcher. -->
+                    <string name="launcher_name">@string/app_name</string>
+                    <!-- App label shown on the task switcher. -->
+                    <string name="activity_name">@string/launcher_name</string>
+                </resources>
+                `))
+            });
+
+            ensureDirSyncSpy = jasmine.createSpy('ensureDirSync');
+            copySyncSpy = jasmine.createSpy('copySync');
+            removeSyncSpy = jasmine.createSpy('removeSync');
+
+            prepare.__set__('fs', {
+                writeFileSync: jasmine.createSpy('writeFileSync'),
+                writeJSONSync: jasmine.createSpy('writeJSONSync'),
+                ensureDirSync: ensureDirSyncSpy,
+                copySync: copySyncSpy,
+                removeSync: removeSyncSpy,
+                existsSync: jasmine.createSpy('existsSync')
+            });
+        });
+
+        it('moves main activity class java file to path that tracks the package name when package name changed', async () => {
+            packageName = 'com.company.renamed';
+            const renamedPath = path.join(api.locations.javaSrc, packageName.replace(/\./g, '/'));
+            const renamedJavaActivityPath = path.join(renamedPath, 'MainActivity.java');
+
+            await api.prepare(cordovaProject, options).then(() => {
+                expect(replaceFileContents).toHaveBeenCalledWith(renamedJavaActivityPath, /package [\w.]*;/, 'package ' + packageName + ';');
+                expect(ensureDirSyncSpy).toHaveBeenCalledWith(renamedPath);
+                expect(copySyncSpy).toHaveBeenCalledWith(initialJavaActivityPath, renamedJavaActivityPath);
+                expect(removeSyncSpy).toHaveBeenCalledWith(initialJavaActivityPath);
+            });
+        });
+
+        it('doesn\'t move main activity class java file when package name not changed', async () => {
+            packageName = 'com.company.product';
+
+            await api.prepare(cordovaProject, options).then(() => {
+                expect(replaceFileContents).toHaveBeenCalledTimes(0);
+                expect(ensureDirSyncSpy).toHaveBeenCalledTimes(0);
+                expect(copySyncSpy).toHaveBeenCalledTimes(0);
+                expect(removeSyncSpy).toHaveBeenCalledTimes(0);
+            });
         });
     });
 
