@@ -21,7 +21,7 @@ const rewire = require('rewire');
 const path = require('path');
 const CordovaError = require('cordova-common').CordovaError;
 const GradlePropertiesParser = require('../../lib/config/GradlePropertiesParser');
-const utils = require('../../bin/templates/cordova/lib/utils');
+const utils = require('../../lib/utils');
 const et = require('elementtree');
 
 const PATH_RESOURCE = path.join('platforms', 'android', 'app', 'src', 'main', 'res');
@@ -832,11 +832,8 @@ describe('prepare', () => {
         let initialJavaActivityPath;
 
         beforeEach(() => {
-            Api = rewire('../../bin/templates/cordova/Api');
-            prepare = rewire('../../bin/templates/cordova/lib/prepare');
-            api = new Api();
-
-            initialJavaActivityPath = path.join(api.locations.javaSrc, 'com/company/product/MainActivity.java');
+            Api = rewire('../../lib/Api');
+            prepare = rewire('../../lib/prepare');
 
             cordovaProject = {
                 root: '/mock',
@@ -857,6 +854,9 @@ describe('prepare', () => {
                     strings: '/mock/res/values/strings.xml'
                 }
             };
+
+            api = new Api('android', cordovaProject.root);
+            initialJavaActivityPath = path.join(api.locations.javaSrc, 'com/company/product/MainActivity.java');
 
             options = {
                 options: {}
@@ -928,6 +928,7 @@ describe('prepare', () => {
 
             prepare.__set__('fs', {
                 writeFileSync: jasmine.createSpy('writeFileSync'),
+                writeJSONSync: jasmine.createSpy('writeJSONSync'),
                 ensureDirSync: ensureDirSyncSpy,
                 copySync: copySyncSpy,
                 removeSync: removeSyncSpy,
