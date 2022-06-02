@@ -125,8 +125,6 @@ public class CordovaActivity extends AppCompatActivity {
             // (as was the case in previous cordova versions)
             if (!preferences.getBoolean("FullscreenNotImmersive", false)) {
                 immersiveMode = true;
-                // The splashscreen plugin needs the flags set before we're focused to prevent
-                // the nav and title bars from flashing in.
                 setImmersiveUiVisibility();
             } else {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
