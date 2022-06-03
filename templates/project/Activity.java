@@ -21,12 +21,16 @@ package __ID__;
 
 import android.os.Bundle;
 import org.apache.cordova.*;
+import androidx.core.splashscreen.SplashScreen;
 
 public class __ACTIVITY__ extends CordovaActivity
 {
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+        // Handle the splash screen transition.
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+
         super.onCreate(savedInstanceState);
 
         // enable Cordova apps to be started in the background

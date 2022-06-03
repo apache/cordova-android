@@ -35,7 +35,7 @@
         <activity android:name="__ACTIVITY__"
                 android:label="@string/activity_name"
                 android:launchMode="singleTop"
-                android:theme="@style/Theme.AppCompat.NoActionBar"
+                android:theme="@style/Theme.App.SplashScreen"
                 android:windowSoftInputMode="adjustResize"
                 android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
                 android:exported="true">
