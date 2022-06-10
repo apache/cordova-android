@@ -20,7 +20,7 @@
 <resources>
     <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
       <!-- Set the splash screen background, animated icon, and animation duration. -->
-      <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
+      <item name="windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
 
       <!-- Use windowSplashScreenAnimatedIcon to add either a drawable or an
             animated drawable. One of these is required. -->

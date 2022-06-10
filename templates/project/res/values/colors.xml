@@ -18,5 +18,5 @@
  under the License.
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <color name="splashscreen_background">#FFFFFFFF</color>
+    <color name="cdv_splashscreen_background">#FFFFFFFF</color>
 </resources>
