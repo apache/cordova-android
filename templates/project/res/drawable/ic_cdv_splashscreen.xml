@@ -1,1 +1,32 @@
-<!-- REPLACE ME -->
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <path
+        android:fillColor="#9D9D9C"
+        android:fillType="evenOdd"
+        android:pathData="M425.22,448h-62.16l4.34-54.86h-30.54L332.52,448H203.68l-4.34-54.86H168.8l4.34,54.86h-62.16L76.1,210.22
+	L163.38,64h209.44l87.28,146.22L425.22,448z M355.29,137.21h-56.02l3.79,27.43h-69.93l3.79-27.43h-56.02l-35.06,73.02l17.53,146.22
+	h209.44l17.53-146.22L355.29,137.21z M324.75,308.02c-4.88,0-8.67-15.13-8.67-34.05s3.98-34.05,8.67-34.05
+	c4.88,0,8.67,15.13,8.67,34.05S329.63,308.02,324.75,308.02z M214.7,310.86c-4.88,0-8.67-15.13-8.67-34.05s3.98-34.05,8.67-34.05
+	c4.88,0,8.67,15.13,8.67,34.05S219.4,310.86,214.7,310.86z" />
+</vector>
