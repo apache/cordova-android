@@ -18,7 +18,7 @@
  under the License.
 -->
 <resources>
-    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen.IconBackground">
       <!-- Optional: Set the splash screen background. (Default: #FFFFFF) -->
       <item name="windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
 
