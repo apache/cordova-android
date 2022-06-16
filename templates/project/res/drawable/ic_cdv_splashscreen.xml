@@ -22,7 +22,7 @@
     android:viewportWidth="512"
     android:viewportHeight="512">
     <group
-        android:pivotX="256"
+        android:pivotX="243"
         android:pivotY="256"
         android:scaleX="0.5"
         android:scaleY="0.5">
