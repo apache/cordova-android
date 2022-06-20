@@ -154,7 +154,7 @@ public class ConfigXmlParser {
             return "file:///android_asset/www/";
         } else {
             String scheme = prefs.getString("scheme", SCHEME_HTTPS).toLowerCase();
-            String hostname = prefs.getString("hostname", DEFAULT_HOSTNAME);
+            String hostname = prefs.getString("hostname", DEFAULT_HOSTNAME).toLowerCase();
 
             if (!scheme.contentEquals(SCHEME_HTTP) && !scheme.contentEquals(SCHEME_HTTPS)) {
                 LOG.d(TAG, "The provided scheme \"" + scheme + "\" is not valid. " +
