@@ -383,7 +383,7 @@ public class PluginManager {
     private String getLaunchUrlPrefix() {
         if (!app.getPreferences().getBoolean("AndroidInsecureFileModeEnabled", false)) {
             String scheme = app.getPreferences().getString("scheme", SCHEME_HTTPS).toLowerCase();
-            String hostname = app.getPreferences().getString("hostname", DEFAULT_HOSTNAME);
+            String hostname = app.getPreferences().getString("hostname", DEFAULT_HOSTNAME).toLowerCase();
             return scheme + "://" + hostname + '/';
         }
 
