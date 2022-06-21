@@ -20,11 +20,16 @@
 package __ID__;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+
 import org.apache.cordova.*;
 import androidx.core.splashscreen.SplashScreen;
 
 public class __ACTIVITY__ extends CordovaActivity
 {
+    private boolean splashScreenKeepOnScreen = true;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -32,6 +37,9 @@ public class __ACTIVITY__ extends CordovaActivity
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
 
         super.onCreate(savedInstanceState);
+
+        // Setup the splash screen delay based on preference settings
+        setupSplashScreenDelay(splashScreen);
 
         // enable Cordova apps to be started in the background
         Bundle extras = getIntent().getExtras();
@@ -41,5 +49,23 @@ public class __ACTIVITY__ extends CordovaActivity
 
         // Set by <content src="index.html" /> in config.xml
         loadUrl(launchUrl);
+    }
+
+    private void setupSplashScreenDelay(SplashScreen splashScreen) {
+        boolean splashScreenAutoHide = preferences.getBoolean("AutoHideSplashScreen", true);
+        int splashScreenDelay = preferences.getInteger("SplashScreenDelay", 3000);
+
+        Log.d("CdvSplashScreen", "Auto Hide: " + splashScreenAutoHide);
+
+        if (splashScreenAutoHide) {
+            Log.d("CdvSplashScreen", "Delay: " + splashScreenDelay + "ms");
+
+            splashScreen.setKeepOnScreenCondition(() -> splashScreenKeepOnScreen);
+            Handler splashScreenDelayHandler = new Handler();
+            splashScreenDelayHandler.postDelayed(
+                () -> splashScreenKeepOnScreen = false,
+                splashScreenDelay
+            );
+        }
     }
 }
