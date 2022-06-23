@@ -38,7 +38,10 @@ public class SplashScreenPlugin extends CordovaPlugin {
     static final String PLUGIN_NAME = "CordovaSplashScreenPlugin";
 
     // Default config preference values
+    private static final boolean DEFAULT_AUTO_HIDE = true;
     private static final int DEFAULT_DELAY_TIME = -1;
+    private static final boolean DEFAULT_FADE = true;
+    private static final int DEFAULT_FADE_TIME = 500;
 
     // Config preference values
     /**
@@ -54,7 +57,7 @@ public class SplashScreenPlugin extends CordovaPlugin {
      */
     private boolean isFadeEnabled;
     /**
-     * @param int fadeDuration in milliseconds (default=500)
+     * @param int fadeDuration fade out duration in milliseconds (default=500)
      */
     private int fadeDuration;
 
@@ -64,26 +67,22 @@ public class SplashScreenPlugin extends CordovaPlugin {
      */
     private boolean keepOnScreen = true;
 
-
     @Override
     protected void pluginInitialize() {
-        // Splash Screen Auto Hide Settings
-        autoHide = preferences.getBoolean("AutoHideSplashScreen", true);
-        LOG.d(PLUGIN_NAME, "Auto Hide: " + autoHide);
-
-        // Auto Hide Custom Delay Timer
+        // Auto Hide & Delay Settings
+        autoHide = preferences.getBoolean("AutoHideSplashScreen", DEFAULT_AUTO_HIDE);
         delayTime = preferences.getInteger("SplashScreenDelay", DEFAULT_DELAY_TIME);
+        LOG.d(PLUGIN_NAME, "Auto Hide: " + autoHide);
         if (delayTime != DEFAULT_DELAY_TIME) {
             LOG.d(PLUGIN_NAME, "Delay: " + delayTime + "ms");
         }
 
-        // Fade Splash Screen
-        isFadeEnabled = preferences.getBoolean("FadeSplashScreen", true);
-        fadeDuration = preferences.getInteger("FadeSplashScreenDuration", 500);
-
-        LOG.d(PLUGIN_NAME, "Fade: " + (isFadeEnabled ? "true" : "false"));
+        // Fade & Fade Duration
+        isFadeEnabled = preferences.getBoolean("FadeSplashScreen", DEFAULT_FADE);
+        fadeDuration = preferences.getInteger("FadeSplashScreenDuration", DEFAULT_FADE_TIME);
+        LOG.d(PLUGIN_NAME, "Fade: " + isFadeEnabled);
         if (isFadeEnabled) {
-            LOG.d(PLUGIN_NAME, "Delay Duration: " + fadeDuration + "ms");
+            LOG.d(PLUGIN_NAME, "Fade Duration: " + fadeDuration + "ms");
         }
     }
 
