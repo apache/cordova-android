@@ -158,8 +158,8 @@ public class CordovaActivity extends AppCompatActivity {
         }
         cordovaInterface.onCordovaInit(appView.getPluginManager());
 
-        // Setup the splash screen delay based on preference settings
-        cordovaInterface.pluginManager.postMessage("setupSplashScreenDelay", splashScreen);
+        // Setup the splash screen based on preference settings
+        cordovaInterface.pluginManager.postMessage("setupSplashScreen", splashScreen);
 
         // Wire the hardware volume controls to control media if desired.
         String volumePref = preferences.getString("DefaultVolumeStream", "");
