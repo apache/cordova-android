@@ -22,6 +22,9 @@
 var exec = require('cordova/exec');
 
 var splashscreen = {
+    show: function () {
+        console.log('"navigator.splashscreen.show()" is unsupported on Android.');
+    },
     hide: function () {
         exec(null, null, 'CordovaSplashScreenPlugin', 'hide', []);
     }
