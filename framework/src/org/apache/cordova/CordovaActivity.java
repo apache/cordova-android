@@ -32,6 +32,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,6 +43,7 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.splashscreen.SplashScreen;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -89,6 +91,9 @@ public class CordovaActivity extends AppCompatActivity {
     // when another application (activity) is started.
     protected boolean keepRunning = true;
 
+    // Splash Screen
+    private boolean splashScreenKeepOnScreen = true;
+
     // Flag to keep immersive mode if set to fullscreen
     protected boolean immersiveMode;
 
@@ -103,6 +108,9 @@ public class CordovaActivity extends AppCompatActivity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Handle the splash screen transition.
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
 
@@ -141,6 +149,9 @@ public class CordovaActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             cordovaInterface.restoreInstanceState(savedInstanceState);
         }
+
+        // Setup the splash screen delay based on preference settings
+        setupSplashScreenDelay(splashScreen);
     }
 
     protected void init() {
@@ -525,4 +536,21 @@ public class CordovaActivity extends AppCompatActivity {
 
     }
 
+    private void setupSplashScreenDelay(SplashScreen splashScreen) {
+        boolean splashScreenAutoHide = preferences.getBoolean("AutoHideSplashScreen", true);
+        int splashScreenDelay = preferences.getInteger("SplashScreenDelay", 3000);
+
+        LOG.d("CdvSplashScreen", "Auto Hide: " + splashScreenAutoHide);
+
+        if (splashScreenAutoHide) {
+            LOG.d("CdvSplashScreen", "Delay: " + splashScreenDelay + "ms");
+
+            splashScreen.setKeepOnScreenCondition(() -> splashScreenKeepOnScreen);
+            Handler splashScreenDelayHandler = new Handler();
+            splashScreenDelayHandler.postDelayed(
+                () -> splashScreenKeepOnScreen = false,
+                splashScreenDelay
+            );
+        }
+    }
 }
