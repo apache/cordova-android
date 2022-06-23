@@ -91,9 +91,6 @@ public class CordovaActivity extends AppCompatActivity {
     // when another application (activity) is started.
     protected boolean keepRunning = true;
 
-    // Splash Screen
-    private boolean splashScreenKeepOnScreen = true;
-
     // Flag to keep immersive mode if set to fullscreen
     protected boolean immersiveMode;
 
@@ -103,13 +100,15 @@ public class CordovaActivity extends AppCompatActivity {
     protected ArrayList<PluginEntry> pluginEntries;
     protected CordovaInterfaceImpl cordovaInterface;
 
+    private SplashScreen splashScreen;
+
     /**
      * Called when the activity is first created.
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         // Handle the splash screen transition.
-        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+        splashScreen = SplashScreen.installSplashScreen(this);
 
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
@@ -149,9 +148,6 @@ public class CordovaActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             cordovaInterface.restoreInstanceState(savedInstanceState);
         }
-
-        // Setup the splash screen delay based on preference settings
-        setupSplashScreenDelay(splashScreen);
     }
 
     protected void init() {
@@ -161,6 +157,9 @@ public class CordovaActivity extends AppCompatActivity {
             appView.init(cordovaInterface, pluginEntries, preferences);
         }
         cordovaInterface.onCordovaInit(appView.getPluginManager());
+
+        // Setup the splash screen delay based on preference settings
+        cordovaInterface.pluginManager.postMessage("setupSplashScreenDelay", splashScreen);
 
         // Wire the hardware volume controls to control media if desired.
         String volumePref = preferences.getString("DefaultVolumeStream", "");
@@ -534,23 +533,5 @@ public class CordovaActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-    }
-
-    private void setupSplashScreenDelay(SplashScreen splashScreen) {
-        boolean splashScreenAutoHide = preferences.getBoolean("AutoHideSplashScreen", true);
-        int splashScreenDelay = preferences.getInteger("SplashScreenDelay", 3000);
-
-        LOG.d("CdvSplashScreen", "Auto Hide: " + splashScreenAutoHide);
-
-        if (splashScreenAutoHide) {
-            LOG.d("CdvSplashScreen", "Delay: " + splashScreenDelay + "ms");
-
-            splashScreen.setKeepOnScreenCondition(() -> splashScreenKeepOnScreen);
-            Handler splashScreenDelayHandler = new Handler();
-            splashScreenDelayHandler.postDelayed(
-                () -> splashScreenKeepOnScreen = false,
-                splashScreenDelay
-            );
-        }
     }
 }
