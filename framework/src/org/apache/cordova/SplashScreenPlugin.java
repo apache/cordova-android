@@ -21,38 +21,34 @@ package org.apache.cordova;
 
 import android.annotation.SuppressLint;
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.core.splashscreen.SplashScreen;
 
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 
 @SuppressLint("LongLogTag")
 public class SplashScreenPlugin extends CordovaPlugin {
     public static final String PLUGIN_NAME = "CordovaSplashScreenPlugin";
-
-    // Flag that determines if the splash screen is still visible or hidden.
-    private boolean splashScreenKeepOnScreen = true;
-
     // Config Preferences
     boolean splashScreenAutoHide;
     int splashScreenDelay;
+    // Flag that determines if the splash screen is still visible or hidden.
+    private boolean splashScreenKeepOnScreen = true;
 
     @Override
     protected void pluginInitialize() {
-        Log.d(PLUGIN_NAME, "I AM HERE");
-
         // Update Config Preferences
         splashScreenAutoHide = preferences.getBoolean("AutoHideSplashScreen", true);
         splashScreenDelay = preferences.getInteger("SplashScreenDelay", 3000);
     }
 
     @Override
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    public boolean execute(
+        String action,
+        JSONArray args,
+        CallbackContext callbackContext
+    ) throws JSONException {
         if (action.equals("hide") && splashScreenAutoHide == false) {
             /*
              * The `.hide()` method can only be triggered if the `splashScreenAutoHide`
