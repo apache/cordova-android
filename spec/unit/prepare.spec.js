@@ -858,6 +858,7 @@ describe('prepare', () => {
 
             prepare.__set__('updateWww', jasmine.createSpy('updateWww'));
             prepare.__set__('updateIcons', jasmine.createSpy('updateIcons').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateProjectSplashScreen', jasmine.createSpy('updateProjectSplashScreen'));
             prepare.__set__('updateFileResources', jasmine.createSpy('updateFileResources').and.returnValue(Promise.resolve()));
             prepare.__set__('updateConfigFilesFrom',
                 jasmine.createSpy('updateConfigFilesFrom')
