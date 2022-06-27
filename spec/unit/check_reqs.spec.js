@@ -68,20 +68,20 @@ describe('check_reqs', function () {
                     spyOn(which, 'sync').and.returnValue(null);
                     spyOn(fs, 'existsSync').and.returnValue(true);
                 });
-                it('it should set ANDROID_SDK_ROOT on Windows', () => {
+                it('it should set ANDROID_HOME on Windows', () => {
                     spyOn(check_reqs, 'isWindows').and.returnValue(true);
                     process.env.LOCALAPPDATA = 'windows-local-app-data';
                     process.env.ProgramFiles = 'windows-program-files';
                     return check_reqs.check_android().then(function () {
-                        expect(process.env.ANDROID_SDK_ROOT).toContain('windows-local-app-data');
+                        expect(process.env.ANDROID_HOME).toContain('windows-local-app-data');
                     });
                 });
-                it('it should set ANDROID_SDK_ROOT on Darwin', () => {
+                it('it should set ANDROID_HOME on Darwin', () => {
                     spyOn(check_reqs, 'isWindows').and.returnValue(false);
                     spyOn(check_reqs, 'isDarwin').and.returnValue(true);
                     process.env.HOME = 'home is where the heart is';
                     return check_reqs.check_android().then(function () {
-                        expect(process.env.ANDROID_SDK_ROOT).toContain('home is where the heart is');
+                        expect(process.env.ANDROID_HOME).toContain('home is where the heart is');
                     });
                 });
             });
@@ -91,7 +91,7 @@ describe('check_reqs', function () {
                         return path;
                     });
                 });
-                it('should set ANDROID_SDK_ROOT based on `adb` command if command exists in a SDK-like directory structure', () => {
+                it('should set ANDROID_HOME based on `adb` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
                     spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'adb') {
@@ -101,7 +101,7 @@ describe('check_reqs', function () {
                         }
                     });
                     return check_reqs.check_android().then(function () {
-                        expect(process.env.ANDROID_SDK_ROOT).toEqual('/android/sdk');
+                        expect(process.env.ANDROID_HOME).toEqual('/android/sdk');
                     });
                 });
                 it('should error out if `adb` command exists in a non-SDK-like directory structure', () => {
@@ -119,7 +119,7 @@ describe('check_reqs', function () {
                         expect(err.message).toContain('update your PATH to include valid path');
                     });
                 });
-                it('should set ANDROID_SDK_ROOT based on `avdmanager` command if command exists in a SDK-like directory structure', () => {
+                it('should set ANDROID_HOME based on `avdmanager` command if command exists in a SDK-like directory structure', () => {
                     spyOn(fs, 'existsSync').and.returnValue(true);
                     spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'avdmanager') {
@@ -129,7 +129,7 @@ describe('check_reqs', function () {
                         }
                     });
                     return check_reqs.check_android().then(function () {
-                        expect(process.env.ANDROID_SDK_ROOT).toEqual('/android/sdk');
+                        expect(process.env.ANDROID_HOME).toEqual('/android/sdk');
                     });
                 });
                 it('should error out if `avdmanager` command exists in a non-SDK-like directory structure', () => {
@@ -179,7 +179,7 @@ describe('check_reqs', function () {
                 spyOn(fs, 'existsSync').and.returnValue(true);
                 process.env.ANDROID_HOME = '/android/sdk';
                 return check_reqs.check_android().then(() => {
-                    expect(process.env.ANDROID_SDK_ROOT).toContain(expectedAndroidSdkPath);
+                    expect(process.env.ANDROID_HOME).toContain(expectedAndroidSdkPath);
                 });
             });
 
@@ -203,7 +203,7 @@ describe('check_reqs', function () {
         describe('set PATH for various Android binaries if not available', function () {
             beforeEach(function () {
                 spyOn(which, 'sync').and.returnValue(null);
-                process.env.ANDROID_SDK_ROOT = 'let the children play';
+                process.env.ANDROID_HOME = 'let the children play';
                 spyOn(fs, 'existsSync').and.returnValue(true);
             });
             it('should add tools/bin,tools,platform-tools to PATH if `avdmanager`,`android`,`adb` is not found', () => {
