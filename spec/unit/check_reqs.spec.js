@@ -192,10 +192,10 @@ describe('check_reqs', function () {
                 });
             });
 
-            it('should throw if ANDROID_SDK_ROOT points to an invalid path', () => {
-                process.env.ANDROID_SDK_ROOT = '/android/sdk';
+            it('should throw if ANDROID_HOME points to an invalid path', () => {
+                process.env.ANDROID_HOME = '/android/sdk';
                 return check_reqs.check_android().catch((error) => {
-                    expect(error.toString()).toContain('\'ANDROID_SDK_ROOT\' environment variable is set to non-existent path:');
+                    expect(error.toString()).toContain('\'ANDROID_HOME\' environment variable is set to non-existent path:');
                 });
             });
         });
