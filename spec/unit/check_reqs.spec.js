@@ -222,7 +222,7 @@ describe('check_reqs', function () {
                 delete process.env.ANDROID_SDK_ROOT;
                 delete process.env.ANDROID_HOME;
                 spyOn(check_reqs, 'get_gradle_wrapper').and.callFake(() => {
-                    return path.normalize((process.env.ANDROID_SDK_ROOT || process.env.ANDROID_HOME) + '/bin/gradle');
+                    return path.normalize((process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT) + '/bin/gradle');
                 });
             });
 
@@ -234,7 +234,7 @@ describe('check_reqs', function () {
             it('with ANDROID_SDK_ROOT / with ANDROID_HOME', async () => {
                 process.env.ANDROID_SDK_ROOT = path.normalize('/android/sdk/root');
                 process.env.ANDROID_HOME = path.normalize('/android/sdk/home');
-                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo(path.normalize('/android/sdk/root/bin/gradle'));
+                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo(path.normalize('/android/sdk/home/bin/gradle'));
             });
 
             it('without ANDROID_SDK_ROOT / with ANDROID_HOME', async () => {
