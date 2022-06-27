@@ -222,7 +222,7 @@ describe('check_reqs', function () {
                 delete process.env.ANDROID_SDK_ROOT;
                 delete process.env.ANDROID_HOME;
                 spyOn(check_reqs, 'get_gradle_wrapper').and.callFake(() => {
-                    return (process.env.ANDROID_SDK_ROOT || process.env.ANDROID_HOME) + '/bin/gradle';
+                    return path.normalize((process.env.ANDROID_SDK_ROOT || process.env.ANDROID_HOME) + '/bin/gradle');
                 });
             });
 
