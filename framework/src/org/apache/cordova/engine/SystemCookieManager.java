@@ -19,8 +19,6 @@
 
 package org.apache.cordova.engine;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 
@@ -35,8 +33,12 @@ class SystemCookieManager implements ICordovaCookieManager {
         webView = webview;
         cookieManager = CookieManager.getInstance();
 
-        cookieManager.setAcceptFileSchemeCookies(true);
         cookieManager.setAcceptThirdPartyCookies(webView, true);
+    }
+
+    @SuppressWarnings("deprecation")
+    public void setAcceptFileSchemeCookies() {
+        cookieManager.setAcceptFileSchemeCookies(true);
     }
 
     public void setCookiesEnabled(boolean accept) {
