@@ -24,12 +24,6 @@ if (cordovaConfig.IS_GRADLE_PLUGIN_KOTLIN_ENABLED) {
     apply plugin: 'kotlin-android-extensions'
 }
 
-dependencies {
-    apply from: '../CordovaLib/cordova.gradle'
-
-    implementation "androidx.core:core-splashscreen:${cordovaConfig.ANDROIDX_CORE_SPLASHSCREEN_VERSION}"
-}
-
 buildscript {
     apply from: '../CordovaLib/cordova.gradle'
 
@@ -293,6 +287,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: '*.jar')
     implementation "androidx.appcompat:appcompat:${cordovaConfig.ANDROIDX_APP_COMPAT_VERSION}"
+    implementation "androidx.core:core-splashscreen:${cordovaConfig.ANDROIDX_CORE_SPLASHSCREEN_VERSION}"
 
     if (cordovaConfig.IS_GRADLE_PLUGIN_KOTLIN_ENABLED) {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${cordovaConfig.KOTLIN_VERSION}"
