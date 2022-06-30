@@ -20,6 +20,42 @@
 -->
 ## Release Notes for Cordova (Android)
 
+### 11.0.0 (Jun 30, 2022)
+
+**Breaking:**
+
+* [GH-1441](https://github.com/apache/cordova-android/pull/1441) feat!: **Android** 12 splash screen
+* [GH-1427](https://github.com/apache/cordova-android/pull/1427) feat!: API 32 support
+* [GH-1410](https://github.com/apache/cordova-android/pull/1410) feat!: API 31 support
+* [GH-1444](https://github.com/apache/cordova-android/pull/1444) fix!: set & use `ANDROID_HOME` as default
+* [GH-1411](https://github.com/apache/cordova-android/pull/1411) chore!: Drop Node 12 support
+
+**Features:**
+
+* [GH-1448](https://github.com/apache/cordova-android/pull/1448) feat: Update `androidx.appcompat` version
+* [GH-1446](https://github.com/apache/cordova-android/pull/1446) feat: Update gradle plugin version
+* [GH-1447](https://github.com/apache/cordova-android/pull/1447) feat: Update google services pluging
+* [GH-1431](https://github.com/apache/cordova-android/pull/1431) feat: support custom `compileSdk` setting
+* [GH-1311](https://github.com/apache/cordova-android/pull/1311) feat: added support for BoM imports
+
+**Fixes:**
+
+* [GH-1453](https://github.com/apache/cordova-android/pull/1453) fix: support installing platfrom from local git checkout
+* [GH-1449](https://github.com/apache/cordova-android/pull/1449) fix: accept file cookies only if `AndroidInsecureFileModeEnabled`
+* [GH-1443](https://github.com/apache/cordova-android/pull/1443) fix: force `hostname` to lowercase
+* [GH-1434](https://github.com/apache/cordova-android/pull/1434) fix: restore `checkReqs` in `prepare.js`
+* [GH-1154](https://github.com/apache/cordova-android/pull/1154) fix: move `MainActivity.java` to folder that tracks the app package name (widget id)
+
+**Chores, Dependencies & CI:**
+
+* [GH-1451](https://github.com/apache/cordova-android/pull/1451) chore: display warning on deprecated `<splash>` tag usage
+* [GH-1430](https://github.com/apache/cordova-android/pull/1430) chore: remove unneeded deprecated annotation
+* [GH-1421](https://github.com/apache/cordova-android/pull/1421) chore(npm): bump `@cordova/eslint-config@^4.0.0`
+* [GH-1420](https://github.com/apache/cordova-android/pull/1420) chore(npm): bump dependencies
+* [GH-1452](https://github.com/apache/cordova-android/pull/1452) dep: bump `jasmine@4.2.1` w/ `package-lock` rebuild
+* [GH-1439](https://github.com/apache/cordova-android/pull/1439) ci: update github action workflow
+* [GH-1424](https://github.com/apache/cordova-android/pull/1424) ci: Added Node 18 to test matrix
+
 ### 10.1.2 (Apr 11, 2022)
 
 **Fixes:**
