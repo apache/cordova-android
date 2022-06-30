@@ -39,7 +39,7 @@
     "@cordova/eslint-config": "^4.0.0",
     "cordova-js": "^6.1.0",
     "elementtree": "^0.1.7",
-    "jasmine": "^4.1.0",
+    "jasmine": "^4.2.1",
     "jasmine-spec-reporter": "^7.0.0",
     "nyc": "^15.1.0",
     "rewire": "^6.0.0"
