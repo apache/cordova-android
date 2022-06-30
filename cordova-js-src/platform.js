@@ -36,6 +36,9 @@ module.exports = {
         // TODO: Extract this as a proper plugin.
         modulemapper.clobbers('cordova/plugin/android/app', 'navigator.app');
 
+        // Core Splash Screen
+        modulemapper.clobbers('cordova/plugin/android/splashscreen', 'navigator.splashscreen');
+
         var APP_PLUGIN_NAME = Number(cordova.platformVersion.split('.')[0]) >= 4 ? 'CoreAndroid' : 'App';
 
         // Inject a listener for the backbutton on the document.

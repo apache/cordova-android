@@ -18,10 +18,17 @@
  under the License.
 -->
 <resources>
-    <!-- App label shown within list of installed apps, battery & network usage screens. -->
-    <string name="app_name">__NAME__</string>
-    <!-- App label shown on the launcher. -->
-    <string name="launcher_name">@string/app_name</string>
-    <!-- App label shown on the task switcher. -->
-    <string name="activity_name">@string/launcher_name</string>
+    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen.IconBackground">
+      <!-- Optional: Set the splash screen background. (Default: #FFFFFF) -->
+      <item name="windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
+
+      <!-- Required: Add either a drawable or an animated drawable -->
+      <item name="windowSplashScreenAnimatedIcon">@drawable/ic_cdv_splashscreen</item>
+
+      <!-- Required: For animated icons -->
+      <item name="windowSplashScreenAnimationDuration">200</item>
+
+      <!-- Required: Set the theme of the Activity that directly follows your splash screen. -->
+      <item name="postSplashScreenTheme">@style/Theme.AppCompat.NoActionBar</item>
+    </style>
 </resources>

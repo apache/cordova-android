@@ -17,11 +17,6 @@
  specific language governing permissions and limitations
  under the License.
 -->
-<resources>
-    <!-- App label shown within list of installed apps, battery & network usage screens. -->
-    <string name="app_name">__NAME__</string>
-    <!-- App label shown on the launcher. -->
-    <string name="launcher_name">@string/app_name</string>
-    <!-- App label shown on the task switcher. -->
-    <string name="activity_name">@string/launcher_name</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="cdv_splashscreen_background">#FFFFFFFF</color>
 </resources>

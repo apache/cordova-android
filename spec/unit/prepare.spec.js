@@ -83,18 +83,6 @@ function mockGetIconItem (data) {
     }, data);
 }
 
-/**
- * Create a mock item from the getSplashScreen collection with the supplied updated data.
- *
- * @param {Object} data Changes to apply to the mock getSplashScreen item
- */
-function mockGetSplashScreenItem (data) {
-    return Object.assign({}, {
-        src: undefined,
-        density: undefined
-    }, data);
-}
-
 describe('prepare', () => {
     // Rewire
     let prepare;
@@ -779,7 +767,6 @@ describe('prepare', () => {
             prepare.__set__('updateProjectAccordingTo', jasmine.createSpy('updateProjectAccordingTo')
                 .and.returnValue(Promise.resolve()));
             prepare.__set__('updateIcons', jasmine.createSpy('updateIcons').and.returnValue(Promise.resolve()));
-            prepare.__set__('updateSplashes', jasmine.createSpy('updateSplashes').and.returnValue(Promise.resolve()));
             prepare.__set__('updateFileResources', jasmine.createSpy('updateFileResources').and.returnValue(Promise.resolve()));
             prepare.__set__('updateConfigFilesFrom',
                 jasmine.createSpy('updateConfigFilesFrom')
@@ -871,7 +858,7 @@ describe('prepare', () => {
 
             prepare.__set__('updateWww', jasmine.createSpy('updateWww'));
             prepare.__set__('updateIcons', jasmine.createSpy('updateIcons').and.returnValue(Promise.resolve()));
-            prepare.__set__('updateSplashes', jasmine.createSpy('updateSplashes').and.returnValue(Promise.resolve()));
+            prepare.__set__('updateProjectSplashScreen', jasmine.createSpy('updateProjectSplashScreen'));
             prepare.__set__('updateFileResources', jasmine.createSpy('updateFileResources').and.returnValue(Promise.resolve()));
             prepare.__set__('updateConfigFilesFrom',
                 jasmine.createSpy('updateConfigFilesFrom')
@@ -958,112 +945,6 @@ describe('prepare', () => {
                 expect(copySyncSpy).toHaveBeenCalledTimes(0);
                 expect(removeSyncSpy).toHaveBeenCalledTimes(0);
             });
-        });
-    });
-
-    describe('updateSplashes method', function () {
-        // Mock Data
-        let cordovaProject;
-        let platformResourcesDir;
-
-        beforeEach(function () {
-            cordovaProject = {
-                root: '/mock',
-                projectConfig: {
-                    path: '/mock/config.xml',
-                    cdvNamespacePrefix: 'cdv'
-                },
-                locations: {
-                    plugins: '/mock/plugins',
-                    www: '/mock/www'
-                }
-            };
-            platformResourcesDir = PATH_RESOURCE;
-
-            // mocking initial responses for mapImageResources
-            prepare.__set__('makeSplashCleanupMap', (rootDir, resourcesDir) => ({
-                [path.join(resourcesDir, 'drawable-mdpi/screen.png')]: null,
-                [path.join(resourcesDir, 'drawable-mdpi/screen.webp')]: null
-            }));
-        });
-
-        it('Test#001 : Should detect no defined splash screens.', function () {
-            const updateSplashes = prepare.__get__('updateSplashes');
-
-            // mock data.
-            cordovaProject.projectConfig.getSplashScreens = function (platform) {
-                return [];
-            };
-
-            updateSplashes(cordovaProject, platformResourcesDir);
-
-            // The emit was called
-            expect(emitSpy).toHaveBeenCalled();
-
-            // The emit message was.
-            const actual = emitSpy.calls.argsFor(0)[1];
-            const expected = 'This app does not have splash screens defined';
-            expect(actual).toEqual(expected);
-        });
-
-        it('Test#02 : Should update splash png icon.', function () {
-            const updateSplashes = prepare.__get__('updateSplashes');
-
-            // mock data.
-            cordovaProject.projectConfig.getSplashScreens = function (platform) {
-                return [mockGetSplashScreenItem({
-                    density: 'mdpi',
-                    src: 'res/splash/android/mdpi-screen.png'
-                })];
-            };
-
-            updateSplashes(cordovaProject, platformResourcesDir);
-
-            // The emit was called
-            expect(emitSpy).toHaveBeenCalled();
-
-            // The emit message was.
-            const actual = emitSpy.calls.argsFor(0)[1];
-            const expected = 'Updating splash screens at ' + PATH_RESOURCE;
-            expect(actual).toEqual(expected);
-
-            const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-            const expectedResourceMap = {};
-            expectedResourceMap[path.join(PATH_RESOURCE, 'drawable-mdpi', 'screen.png')] = 'res/splash/android/mdpi-screen.png';
-            expectedResourceMap[path.join(PATH_RESOURCE, 'drawable-mdpi', 'screen.webp')] = null;
-
-            expect(actualResourceMap).toEqual(expectedResourceMap);
-        });
-
-        it('Test#03 : Should update splash webp icon.', function () {
-            const updateSplashes = prepare.__get__('updateSplashes');
-
-            // mock data.
-            cordovaProject.projectConfig.getSplashScreens = function (platform) {
-                return [mockGetSplashScreenItem({
-                    density: 'mdpi',
-                    src: 'res/splash/android/mdpi-screen.webp'
-                })];
-            };
-
-            // Creating Spies
-            updateSplashes(cordovaProject, platformResourcesDir);
-
-            // The emit was called
-            expect(emitSpy).toHaveBeenCalled();
-
-            // The emit message was.
-            const actual = emitSpy.calls.argsFor(0)[1];
-            const expected = 'Updating splash screens at ' + PATH_RESOURCE;
-            expect(actual).toEqual(expected);
-
-            const actualResourceMap = updatePathsSpy.calls.argsFor(0)[0];
-
-            const expectedResourceMap = {};
-            expectedResourceMap[path.join(PATH_RESOURCE, 'drawable-mdpi', 'screen.webp')] = 'res/splash/android/mdpi-screen.webp';
-            expectedResourceMap[path.join(PATH_RESOURCE, 'drawable-mdpi', 'screen.png')] = null;
-
-            expect(actualResourceMap).toEqual(expectedResourceMap);
         });
     });
 });

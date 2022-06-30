@@ -42,6 +42,7 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.splashscreen.SplashScreen;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -98,11 +99,16 @@ public class CordovaActivity extends AppCompatActivity {
     protected ArrayList<PluginEntry> pluginEntries;
     protected CordovaInterfaceImpl cordovaInterface;
 
+    private SplashScreen splashScreen;
+
     /**
      * Called when the activity is first created.
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Handle the splash screen transition.
+        splashScreen = SplashScreen.installSplashScreen(this);
+
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
 
@@ -125,8 +131,6 @@ public class CordovaActivity extends AppCompatActivity {
             // (as was the case in previous cordova versions)
             if (!preferences.getBoolean("FullscreenNotImmersive", false)) {
                 immersiveMode = true;
-                // The splashscreen plugin needs the flags set before we're focused to prevent
-                // the nav and title bars from flashing in.
                 setImmersiveUiVisibility();
             } else {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -152,6 +156,9 @@ public class CordovaActivity extends AppCompatActivity {
             appView.init(cordovaInterface, pluginEntries, preferences);
         }
         cordovaInterface.onCordovaInit(appView.getPluginManager());
+
+        // Setup the splash screen based on preference settings
+        cordovaInterface.pluginManager.postMessage("setupSplashScreen", splashScreen);
 
         // Wire the hardware volume controls to control media if desired.
         String volumePref = preferences.getString("DefaultVolumeStream", "");
@@ -526,5 +533,4 @@ public class CordovaActivity extends AppCompatActivity {
         }
 
     }
-
 }
