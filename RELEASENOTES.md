@@ -20,7 +20,7 @@
 -->
 ## Release Notes for Cordova (Android)
 
-### 11.0.0 (Jun 30, 2022)
+### 11.0.0 (Jul 04, 2022)
 
 **Breaking:**
 
@@ -40,6 +40,7 @@
 
 **Fixes:**
 
+* [GH-1455](https://github.com/apache/cordova-android/pull/1455) fix(`prepare`): `destFile` path separator
 * [GH-1453](https://github.com/apache/cordova-android/pull/1453) fix: support installing platfrom from local git checkout
 * [GH-1449](https://github.com/apache/cordova-android/pull/1449) fix: accept file cookies only if `AndroidInsecureFileModeEnabled`
 * [GH-1443](https://github.com/apache/cordova-android/pull/1443) fix: force `hostname` to lowercase
