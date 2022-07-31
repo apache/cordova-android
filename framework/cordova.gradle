@@ -83,9 +83,9 @@ String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
 String getAndroidSdkDir() {
     def rootDir = project.rootDir
     def androidSdkDir = null
-    String envVar = System.getenv("ANDROID_SDK_ROOT")
+    String envVar = System.getenv("ANDROID_HOME")
     if (envVar == null) {
-        envVar = System.getenv("ANDROID_HOME")
+        envVar = System.getenv("ANDROID_SDK_ROOT")
     }
 
     def localProperties = new File(rootDir, 'local.properties')

@@ -58,7 +58,7 @@ describe('check_reqs', function () {
     });
 
     describe('check_android', function () {
-        describe('find and set ANDROID_HOME when ANDROID_HOME and ANDROID_SDK_ROOT is not set', function () {
+        describe('find and set ANDROID_HOME when neither ANDROID_HOME nor ANDROID_SDK_ROOT is set', function () {
             beforeEach(function () {
                 delete process.env.ANDROID_HOME;
                 delete process.env.ANDROID_SDK_ROOT;
@@ -150,32 +150,24 @@ describe('check_reqs', function () {
             });
         });
 
-        describe('ANDROID_SDK_ROOT environment variable detection', () => {
+        describe('ANDROID_HOME environment variable detection', () => {
             beforeEach(() => {
-                delete process.env.ANDROID_SDK_ROOT;
                 delete process.env.ANDROID_HOME;
+                delete process.env.ANDROID_SDK_ROOT;
                 check_reqs.__set__('forgivingWhichSync', jasmine.createSpy().and.returnValue(''));
             });
 
             const expectedAndroidSdkPath = path.sep + 'android' + path.sep + 'sdk';
             const expectedAndroidRootSdkPath = path.sep + 'android' + path.sep + 'sdk' + path.sep + 'root';
 
-            it('should error if neither ANDROID_SDK_ROOT or ANDROID_HOME is defined', () => {
+            it('should error if neither ANDROID_HOME nor ANDROID_SDK_ROOT is defined', () => {
                 spyOn(fs, 'existsSync').and.returnValue(true);
                 return check_reqs.check_android().catch((error) => {
-                    expect(error.toString()).toContain('Failed to find \'ANDROID_SDK_ROOT\' environment variable.');
+                    expect(error.toString()).toContain('Failed to find \'ANDROID_HOME\' environment variable.');
                 });
             });
 
-            it('should use ANDROID_SDK_ROOT if defined', () => {
-                spyOn(fs, 'existsSync').and.returnValue(true);
-                process.env.ANDROID_SDK_ROOT = path.normalize('/android/sdk');
-                return check_reqs.check_android().then(() => {
-                    expect(process.env.ANDROID_SDK_ROOT).toContain(expectedAndroidSdkPath);
-                });
-            });
-
-            it('should use ANDROID_HOME if defined and ANDROID_SDK_ROOT is not defined', () => {
+            it('should use ANDROID_HOME if defined', () => {
                 spyOn(fs, 'existsSync').and.returnValue(true);
                 process.env.ANDROID_HOME = path.normalize('/android/sdk');
                 return check_reqs.check_android().then(() => {
@@ -183,12 +175,20 @@ describe('check_reqs', function () {
                 });
             });
 
-            it('should use ANDROID_HOME if defined and ANDROID_SDK_ROOT is defined', () => {
+            it('should use ANDROID_SDK_ROOT if defined and ANDROID_HOME is not defined', () => {
                 spyOn(fs, 'existsSync').and.returnValue(true);
                 process.env.ANDROID_SDK_ROOT = path.normalize('/android/sdk/root');
-                process.env.ANDROID_HOME = path.normalize('/android/sdk');
                 return check_reqs.check_android().then(() => {
                     expect(process.env.ANDROID_SDK_ROOT).toContain(expectedAndroidRootSdkPath);
+                });
+            });
+
+            it('should use ANDROID_HOME if defined and ANDROID_SDK_ROOT is defined', () => {
+                spyOn(fs, 'existsSync').and.returnValue(true);
+                process.env.ANDROID_HOME = path.normalize('/android/sdk');
+                process.env.ANDROID_SDK_ROOT = path.normalize('/android/sdk/root');
+                return check_reqs.check_android().then(() => {
+                    expect(process.env.ANDROID_HOME).toContain(expectedAndroidSdkPath);
                 });
             });
 
@@ -219,30 +219,30 @@ describe('check_reqs', function () {
     describe('check_gradle', () => {
         describe('environment variable checks', () => {
             beforeEach(() => {
-                delete process.env.ANDROID_SDK_ROOT;
                 delete process.env.ANDROID_HOME;
+                delete process.env.ANDROID_SDK_ROOT;
                 spyOn(check_reqs, 'get_gradle_wrapper').and.callFake(() => {
                     return path.normalize((process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT) + '/bin/gradle');
                 });
             });
 
-            it('with ANDROID_SDK_ROOT / without ANDROID_HOME', async () => {
+            it('with ANDROID_HOME / without ANDROID_SDK_ROOT', async () => {
+                process.env.ANDROID_HOME = path.normalize('/android/sdk/home');
+                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo(path.normalize('/android/sdk/home/bin/gradle'));
+            });
+
+            it('without ANDROID_HOME / with ANDROID_SDK_ROOT', async () => {
                 process.env.ANDROID_SDK_ROOT = path.normalize('/android/sdk/root');
                 await expectAsync(check_reqs.check_gradle()).toBeResolvedTo(path.normalize('/android/sdk/root/bin/gradle'));
             });
 
-            it('with ANDROID_SDK_ROOT / with ANDROID_HOME', async () => {
+            it('with ANDROID_HOME / with ANDROID_SDK_ROOT', async () => {
+                process.env.ANDROID_HOME = path.normalize('/android/sdk/home');
                 process.env.ANDROID_SDK_ROOT = path.normalize('/android/sdk/root');
-                process.env.ANDROID_HOME = path.normalize('/android/sdk/home');
                 await expectAsync(check_reqs.check_gradle()).toBeResolvedTo(path.normalize('/android/sdk/home/bin/gradle'));
             });
 
-            it('without ANDROID_SDK_ROOT / with ANDROID_HOME', async () => {
-                process.env.ANDROID_HOME = path.normalize('/android/sdk/home');
-                await expectAsync(check_reqs.check_gradle()).toBeResolvedTo(path.normalize('/android/sdk/home/bin/gradle'));
-            });
-
-            it('without ANDROID_SDK_ROOT / without ANDROID_HOME', () => {
+            it('without ANDROID_HOME / without ANDROID_SDK_ROOT', () => {
                 return check_reqs.check_gradle().catch((error) => {
                     expect(error.toString()).toContain('Could not find gradle wrapper within Android SDK. Could not find Android SDK directory.');
                 });
@@ -250,7 +250,7 @@ describe('check_reqs', function () {
         });
 
         it('should error if sdk is installed but no gradle found', () => {
-            process.env.ANDROID_SDK_ROOT = path.normalize('/android/sdk');
+            process.env.ANDROID_HOME = path.normalize('/android/sdk');
             spyOn(check_reqs, 'get_gradle_wrapper').and.callFake(() => {
                 return '';
             });
