@@ -67,6 +67,11 @@ public class SplashScreenPlugin extends CordovaPlugin {
      */
     private boolean keepOnScreen = true;
 
+    /**
+     * @param boolean delayHandlerCondition flag determins if the handler should continut to run
+     */
+    private boolean delayHandlerCondition = true;
+
     @Override
     protected void pluginInitialize() {
         // Auto Hide & Delay Settings
@@ -92,11 +97,8 @@ public class SplashScreenPlugin extends CordovaPlugin {
         JSONArray args,
         CallbackContext callbackContext
     ) throws JSONException {
-        if (action.equals("hide") && autoHide == false) {
-            /*
-             * The `.hide()` method can only be triggered if the `splashScreenAutoHide`
-             * is set to `false`.
-             */
+        if (action.equals("hide")) {
+            delayHandlerCondition = false;
             keepOnScreen = false;
         } else {
             return false;
@@ -127,8 +129,11 @@ public class SplashScreenPlugin extends CordovaPlugin {
 
         // auto hide splash screen when custom delay is defined.
         if (autoHide && delayTime != DEFAULT_DELAY_TIME) {
-            Handler splashScreenDelayHandler = new Handler();
-            splashScreenDelayHandler.postDelayed(() -> keepOnScreen = false, delayTime);
+            Handler delayHandler = new Handler();
+            delayHandler.postDelayed(
+                () -> delayHandlerCondition ? keepOnScreen = false : null,
+                delayTime
+            );
         }
 
         // auto hide splash screen with default delay (-1) delay is controlled by the
