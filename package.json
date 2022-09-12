@@ -2,6 +2,7 @@
   "name": "cordova-android",
   "version": "11.0.1-dev",
   "description": "cordova-android release",
+  "types": "./types/index.d.ts",
   "main": "lib/Api.js",
   "repository": "github:apache/cordova-android",
   "bugs": "https://github.com/apache/cordova-android/issues",
