@@ -46,73 +46,69 @@ if (project.hasProperty('signEnabled')) {
     }
 }
 
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
+afterEvaluate {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId = 'org.apache.cordova'
+                artifactId = 'framework'
+                version = getCordovaAndroidVersion()
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId = 'org.apache.cordova'
-            artifactId = 'framework'
-            version = getCordovaAndroidVersion()
+                from components.release
 
-            artifact(sourcesJar)
-            artifact("$buildDir/outputs/aar/framework-release.aar")
+                pom {
+                    name = 'Cordova'
+                    description = 'A library to build Cordova-based projects for the Android platform.'
+                    url = 'https://cordova.apache.org'
 
-            pom {
-                name = 'Cordova'
-                description = 'A library to build Cordova-based projects for the Android platform.'
-                url = 'https://cordova.apache.org'
-
-                licenses {
-                    license {
-                        name = 'Apache License, Version 2.0'
-                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    licenses {
+                        license {
+                            name = 'Apache License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
                     }
-                }
 
-                developers {
-                    developer {
-                        id = 'stevengill'
-                        name = 'Steve Gill'
+                    developers {
+                        developer {
+                            id = 'stevengill'
+                            name = 'Steve Gill'
+                        }
+                        developer {
+                            id = 'erisu'
+                            name = 'Bryan Ellis'
+                            email = 'erisu@apache.org'
+                        }
                     }
-                    developer {
-                        id = 'erisu'
-                        name = 'Bryan Ellis'
-                        email = 'erisu@apache.org'
-                    }
-                }
 
-                scm {
-                    connection = 'scm:git:https://github.com/apache/cordova-android.git'
-                    developerConnection = 'scm:git:git@github.com:apache/cordova-android.git'
-                    url = 'https://github.com/apache/cordova-android'
+                    scm {
+                        connection = 'scm:git:https://github.com/apache/cordova-android.git'
+                        developerConnection = 'scm:git:git@github.com:apache/cordova-android.git'
+                        url = 'https://github.com/apache/cordova-android'
+                    }
                 }
             }
         }
-    }
 
-    repositories {
-        maven {
-            def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases'
-            def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots'
+        repositories {
+            maven {
+                def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases'
+                def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots'
 
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
 
-            credentials {
-                if (project.hasProperty('apacheUsername') && project.hasProperty('apachePassword')) {
-                    username apacheUsername
-                    password apachePassword
+                credentials {
+                    if (project.hasProperty('apacheUsername') && project.hasProperty('apachePassword')) {
+                        username apacheUsername
+                        password apachePassword
+                    }
                 }
             }
         }
-    }
 
-    signing {
-        if (Boolean.valueOf(cdvEnableSigning)) {
-            sign publishing.publications.mavenJava
+        signing {
+            if (Boolean.valueOf(cdvEnableSigning)) {
+                sign publishing.publications.mavenJava
+            }
         }
     }
 }
