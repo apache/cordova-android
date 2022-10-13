@@ -18,14 +18,8 @@
 */
 package org.apache.cordova;
 
-import java.util.ArrayList;
-import java.util.Locale;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.AlertDialog;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -43,6 +37,12 @@ import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -169,7 +169,7 @@ public class CordovaActivity extends AppCompatActivity {
 
     @SuppressWarnings("deprecation")
     protected void loadConfig() {
-        ConfigXmlParser parser = new ConfigXmlParser();
+        IConfigParser parser = new ConfigJsonParser();
         parser.parse(this);
         preferences = parser.getPreferences();
         preferences.setPreferencesBundle(getIntent().getExtras());

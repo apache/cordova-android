@@ -19,16 +19,18 @@
 
 package org.apache.cordova;
 
+import android.content.Context;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import android.content.Context;
 
-public class ConfigXmlParser {
+public class ConfigXmlParser implements IConfigParser {
     private static String TAG = "ConfigXmlParser";
 
     private static String SCHEME_HTTP = "http";
