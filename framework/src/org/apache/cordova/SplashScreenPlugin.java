@@ -137,27 +137,29 @@ public class SplashScreenPlugin extends CordovaPlugin {
         // If auto hide is disabled (false), the hiding of the splash screen must be determined &
         // triggered by the front-end code with the `navigator.splashscreen.hide()` method.
 
-        // Setup the fade
-        splashScreen.setOnExitAnimationListener(new SplashScreen.OnExitAnimationListener() {
-            @Override
-            public void onSplashScreenExit(@NonNull SplashScreenViewProvider splashScreenViewProvider) {
-                View splashScreenView = splashScreenViewProvider.getView();
+        if (isFadeEnabled) {
+            // Setup the fade
+            splashScreen.setOnExitAnimationListener(new SplashScreen.OnExitAnimationListener() {
+                @Override
+                public void onSplashScreenExit(@NonNull SplashScreenViewProvider splashScreenViewProvider) {
+                    View splashScreenView = splashScreenViewProvider.getView();
 
-                splashScreenView
-                    .animate()
-                    .alpha(0.0f)
-                    .setDuration(isFadeEnabled ? fadeDuration : 0)
-                    .setStartDelay(isFadeEnabled ? 0 : fadeDuration)
-                    .setInterpolator(new AccelerateInterpolator())
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            splashScreenViewProvider.remove();
-                        }
-                    }).start();
-            }
-        });
+                    splashScreenView
+                            .animate()
+                            .alpha(0.0f)
+                            .setDuration(fadeDuration)
+                            .setStartDelay(0)
+                            .setInterpolator(new AccelerateInterpolator())
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    super.onAnimationEnd(animation);
+                                    splashScreenViewProvider.remove();
+                                }
+                            }).start();
+                }
+            });
+        }
     }
 
     private void attemptCloseOnPageFinished() {
