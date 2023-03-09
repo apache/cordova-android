@@ -26,7 +26,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "android-versions": "^1.7.0",
-    "cordova-common": "^4.0.2",
+    "cordova-common": "^5.0.0",
     "execa": "^5.1.1",
     "fast-glob": "^3.2.11",
     "fs-extra": "^10.1.0",
