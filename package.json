@@ -25,23 +25,23 @@
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "dependencies": {
-    "android-versions": "^1.7.0",
+    "android-versions": "^1.8.1",
     "cordova-common": "^5.0.0",
     "execa": "^5.1.1",
-    "fast-glob": "^3.2.11",
-    "fs-extra": "^10.1.0",
+    "fast-glob": "^3.2.12",
+    "fs-extra": "^11.1.0",
     "is-path-inside": "^3.0.3",
-    "nopt": "^5.0.0",
+    "nopt": "^7.0.0",
     "properties-parser": "^0.3.1",
-    "semver": "^7.3.7",
+    "semver": "^7.3.8",
     "untildify": "^4.0.0",
-    "which": "^2.0.2"
+    "which": "^3.0.0"
   },
   "devDependencies": {
     "@cordova/eslint-config": "^4.0.0",
     "cordova-js": "^6.1.0",
     "elementtree": "^0.1.7",
-    "jasmine": "^4.2.1",
+    "jasmine": "^4.5.0",
     "jasmine-spec-reporter": "^7.0.0",
     "nyc": "^15.1.0",
     "rewire": "^6.0.0"
