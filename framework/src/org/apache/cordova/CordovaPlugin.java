@@ -31,6 +31,8 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.webkit.RenderProcessGoneDetail;
+import android.webkit.WebView;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -441,5 +443,18 @@ public class CordovaPlugin {
      */
     public CordovaPluginPathHandler getPathHandler() {
         return null;
+    }
+
+    /**
+     * Called when the WebView's render process has exited.
+     *
+     * See <a href="https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)">WebViewClient#onRenderProcessGone</a>
+     *
+     * @return  true if the host application handled the situation that process has exited,
+     *          otherwise, application will crash if render process crashed, or be killed
+     *          if render process was killed by the system.
+     */
+    public boolean onRenderProcessGone(final WebView view, RenderProcessGoneDetail detail) {
+        return false;
     }
 }
