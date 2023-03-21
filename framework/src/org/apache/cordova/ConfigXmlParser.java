@@ -34,6 +34,7 @@ public class ConfigXmlParser {
     private static String SCHEME_HTTP = "http";
     private static String SCHEME_HTTPS = "https";
     private static String DEFAULT_HOSTNAME = "localhost";
+    private static final String DEFAULT_CONTENT_SRC = "index.html";
 
     private String launchUrl;
     private String contentSrc;
@@ -110,6 +111,18 @@ public class ConfigXmlParser {
                 e.printStackTrace();
             }
         }
+
+        onPostParse();
+    }
+
+    private void onPostParse() {
+        // After parsing, if contentSrc is still null, it signals
+        // that <content> tag was completely missing. In this case,
+        // default it.
+        // https://github.com/apache/cordova-android/issues/1432
+        if (contentSrc == null) {
+            contentSrc = DEFAULT_CONTENT_SRC;
+        }
     }
 
     public void handleStartTag(XmlPullParser xml) {
@@ -140,7 +153,7 @@ public class ConfigXmlParser {
                 contentSrc = src;
             } else {
                 // Default
-                contentSrc = "index.html";
+                contentSrc = DEFAULT_CONTENT_SRC;
             }
         }
     }
