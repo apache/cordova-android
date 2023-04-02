@@ -311,7 +311,7 @@ describe('prepare', () => {
                 return [mockGetIconItem({
                     density: 'mdpi',
                     background: 'res/icon/android/mdpi-background.png',
-                    foreground: 'res/icon/android/mdpi-foreground.png',
+                    foreground: 'res/icon/android/mdpi-foreground.xml',
                     monochrome: 'res/icon/android/mdpi-monochrome.png'
 
                 })];
