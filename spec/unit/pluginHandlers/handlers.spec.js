@@ -32,6 +32,9 @@ const android_studio_project = path.join(__dirname, '../../fixtures/android_stud
 const PluginInfo = require('cordova-common').PluginInfo;
 const AndroidProject = require('../../../lib/AndroidProject');
 
+const MockCordovaGradleConfigParser = require('../mocks/config/MockCordovaGradleConfigParser');
+const CordovaGradleConfigParserFactory = require('../../../lib/config/CordovaGradleConfigParserFactory');
+
 const dummyPluginInfo = new PluginInfo(dummyplugin);
 const valid_source = dummyPluginInfo.getSourceFiles('android');
 const valid_resources = dummyPluginInfo.getResourceFiles('android');
@@ -41,6 +44,12 @@ const faultyPluginInfo = new PluginInfo(faultyplugin);
 const invalid_source = faultyPluginInfo.getSourceFiles('android');
 
 describe('android project handler', function () {
+    const PROJECT_DIR = 'platforms/android';
+
+    beforeAll(() => {
+        spyOn(CordovaGradleConfigParserFactory, 'create').and.returnValue(new MockCordovaGradleConfigParser(PROJECT_DIR));
+    });
+
     describe('installation', function () {
         const copyFileOrig = common.__get__('copyFile');
         const copyFileSpy = jasmine.createSpy('copyFile');

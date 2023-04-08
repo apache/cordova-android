@@ -125,14 +125,6 @@ def doExtractIntFromManifest(name) {
     return new BigInteger(matcher.group(1))
 }
 
-def doExtractStringFromManifest(name) {
-    def manifestFile = file(android.sourceSets.main.manifest.srcFile)
-    def pattern = Pattern.compile(name + "=\"(\\S+)\"")
-    def matcher = pattern.matcher(manifestFile.getText())
-    matcher.find()
-    return matcher.group(1)
-}
-
 def doGetConfigXml() {
     def xml = file("src/main/res/xml/config.xml").getText()
     // Disable namespace awareness since Cordova doesn't use them properly
@@ -231,7 +223,6 @@ ext {
     privateHelpers.getProjectTarget = { doGetProjectTarget() }
     privateHelpers.applyCordovaConfigCustomization = { doApplyCordovaConfigCustomization() }
     privateHelpers.extractIntFromManifest = { name -> doExtractIntFromManifest(name) }
-    privateHelpers.extractStringFromManifest = { name -> doExtractStringFromManifest(name) }
     privateHelpers.ensureValueExists = { filePath, props, key -> doEnsureValueExists(filePath, props, key) }
 
     // These helpers can be used by plugins / projects and will not change.

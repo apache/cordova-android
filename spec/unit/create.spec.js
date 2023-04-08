@@ -23,8 +23,16 @@ const create = rewire('../../lib/create');
 const check_reqs = require('../../lib/check_reqs');
 const fs = require('fs-extra');
 const path = require('path');
+const MockCordovaGradleConfigParser = require('./mocks/config/MockCordovaGradleConfigParser');
+const CordovaGradleConfigParserFactory = require('../../lib/config/CordovaGradleConfigParserFactory');
 
 describe('create', function () {
+    const PROJECT_DIR = 'platforms/android';
+
+    beforeAll(() => {
+        spyOn(CordovaGradleConfigParserFactory, 'create').and.returnValue(new MockCordovaGradleConfigParser(PROJECT_DIR));
+    });
+
     describe('validatePackageName helper method', function () {
         describe('happy path (valid package names)', function () {
             const valid = [

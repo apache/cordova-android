@@ -19,9 +19,18 @@
 
 const rewire = require('rewire');
 const builders = require('../../lib/builders/builders');
+const MockCordovaGradleConfigParser = require('./mocks/config/MockCordovaGradleConfigParser');
+const CordovaGradleConfigParser = require('../../lib/config/CordovaGradleConfigParser');
+const CordovaGradleConfigParserFactory = require('../../lib/config/CordovaGradleConfigParserFactory');
 
 describe('run', () => {
     let run;
+
+    const PROJECT_DIR = 'platforms/android';
+
+    beforeAll(() => {
+        spyOn(CordovaGradleConfigParserFactory, 'create').and.returnValue(new MockCordovaGradleConfigParser(PROJECT_DIR));
+    });
 
     beforeEach(() => {
         run = rewire('../../lib/run');
@@ -84,7 +93,8 @@ describe('run', () => {
                         buildResults: {
                             buildType: 'debug',
                             apkPaths: ['fake.apk']
-                        }
+                        },
+                        cordovaGradleConfigParser: jasmine.any(CordovaGradleConfigParser)
                     }
                 );
             });

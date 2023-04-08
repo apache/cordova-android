@@ -110,18 +110,6 @@ describe('AndroidManifest', () => {
         });
     });
 
-    describe('packageId', () => {
-        it('should get the package ID', () => {
-            expect(manifest.getPackageId()).toBe(PACKAGE_ID);
-        });
-
-        it('should set the package ID', () => {
-            const newPackageId = `${PACKAGE_ID}new`;
-            manifest.setPackageId(newPackageId);
-            expect(manifest.getPackageId()).toBe(newPackageId);
-        });
-    });
-
     describe('activity', () => {
         let activity;
 

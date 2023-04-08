@@ -23,6 +23,8 @@ const CordovaError = require('cordova-common').CordovaError;
 const GradlePropertiesParser = require('../../lib/config/GradlePropertiesParser');
 const utils = require('../../lib/utils');
 const et = require('elementtree');
+const MockCordovaGradleConfigParser = require('./mocks/config/MockCordovaGradleConfigParser');
+const CordovaGradleConfigParserFactory = require('../../lib/config/CordovaGradleConfigParserFactory');
 
 const PATH_RESOURCE = path.join('platforms', 'android', 'app', 'src', 'main', 'res');
 
@@ -90,6 +92,12 @@ describe('prepare', () => {
     // Spies
     let emitSpy;
     let updatePathsSpy;
+
+    const PROJECT_DIR = 'platforms/android';
+
+    beforeAll(() => {
+        spyOn(CordovaGradleConfigParserFactory, 'create').and.returnValue(new MockCordovaGradleConfigParser(PROJECT_DIR));
+    });
 
     beforeEach(() => {
         prepare = rewire('../../lib/prepare');
@@ -893,9 +901,7 @@ describe('prepare', () => {
                 }),
                 setVersionName: jasmine.createSpy('setVersionName').and.returnValue({
                     setVersionCode: jasmine.createSpy('setVersionCode').and.returnValue({
-                        setPackageId: jasmine.createSpy('setPackageId').and.returnValue({
-                            write: jasmine.createSpy('write')
-                        })
+                        write: jasmine.createSpy('write')
                     })
                 })
             }));

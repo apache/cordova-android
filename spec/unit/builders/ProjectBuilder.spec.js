@@ -21,8 +21,6 @@ const fs = require('fs-extra');
 const path = require('path');
 const rewire = require('rewire');
 
-const CordovaError = require('cordova-common').CordovaError;
-
 describe('ProjectBuilder', () => {
     const rootDir = '/root';
 
@@ -143,30 +141,6 @@ describe('ProjectBuilder', () => {
             expect(execaSpy).not.toHaveBeenCalledWith('/my/sweet/gradle', jasmine.any(Array), jasmine.any(Object));
         });
     });
-
-    describe('extractRealProjectNameFromManifest', () => {
-        it('should get the project name from the Android Manifest', () => {
-            const projectName = 'unittestproject';
-            const projectId = `io.cordova.${projectName}`;
-            const manifest = `<?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="${projectId}"></manifest>`;
-
-            spyOn(fs, 'readFileSync').and.returnValue(manifest);
-
-            expect(builder.extractRealProjectNameFromManifest()).toBe(projectName);
-        });
-
-        it('should throw an error if there is no package in the Android manifest', () => {
-            const manifest = `<?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns:android="http://schemas.android.com/apk/res/android"></manifest>`;
-
-            spyOn(fs, 'readFileSync').and.returnValue(manifest);
-
-            expect(() => builder.extractRealProjectNameFromManifest()).toThrow(jasmine.any(CordovaError));
-        });
-    });
-
     describe('build', () => {
         beforeEach(() => {
             spyOn(builder, 'getArgs');
