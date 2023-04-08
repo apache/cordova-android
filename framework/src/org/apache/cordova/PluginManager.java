@@ -339,22 +339,11 @@ public class PluginManager {
     public Object postMessage(String id, Object data) {
         LOG.d(TAG, "postMessage: " + id);
         synchronized (this.pluginMap) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                this.pluginMap.forEach((s, plugin) -> {
-                    if (plugin != null) {
-                        plugin.onMessage(id, data);
-                    }
-                });
-            } else {
-                for (CordovaPlugin plugin : this.pluginMap.values()) {
-                    if (plugin != null) {
-                        Object obj = plugin.onMessage(id, data);
-                        if (obj != null) {
-                            return obj;
-                        }
-                    }
+            this.pluginMap.forEach((s, plugin) -> {
+                if (plugin != null) {
+                    plugin.onMessage(id, data);
                 }
-            }
+            });
         }
         return ctx.onMessage(id, data);
     }
