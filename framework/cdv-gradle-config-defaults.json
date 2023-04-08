@@ -12,5 +12,5 @@
     "GRADLE_PLUGIN_GOOGLE_SERVICES_VERSION": "4.3.15",
     "IS_GRADLE_PLUGIN_GOOGLE_SERVICES_ENABLED": false,
     "IS_GRADLE_PLUGIN_KOTLIN_ENABLED": false,
-    "PROJECT_NAMESPACE": "io.cordova.helloCordova"
+    "PACKAGE_NAMESPACE": "io.cordova.helloCordova"
 }

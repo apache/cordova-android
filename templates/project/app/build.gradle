@@ -179,11 +179,11 @@ task cdvPrintProps {
 }
 
 android {
-    namespace cordovaConfig.PROJECT_NAMESPACE
+    namespace cordovaConfig.PACKAGE_NAMESPACE
 
     defaultConfig {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
-        applicationId cordovaConfig.PROJECT_NAMESPACE
+        applicationId cordovaConfig.PACKAGE_NAMESPACE
 
         minSdkVersion cordovaConfig.MIN_SDK_VERSION
         if (cordovaConfig.MAX_SDK_VERSION != null) {
