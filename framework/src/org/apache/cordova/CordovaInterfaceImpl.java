@@ -237,14 +237,6 @@ public class CordovaInterfaceImpl implements CordovaInterface {
 
     public boolean hasPermission(String permission)
     {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
-            int result = activity.checkSelfPermission(permission);
-            return PackageManager.PERMISSION_GRANTED == result;
-        }
-        else
-        {
-            return true;
-        }
+        return PackageManager.PERMISSION_GRANTED == activity.checkSelfPermission(permission);
     }
 }
