@@ -19,9 +19,17 @@
 
 const rewire = require('rewire');
 const { CordovaError } = require('cordova-common');
+const MockCordovaGradleConfigParser = require('./mocks/config/MockCordovaGradleConfigParser');
+const CordovaGradleConfigParserFactory = require('../../lib/config/CordovaGradleConfigParserFactory');
 
 describe('target', () => {
     let target;
+
+    const PROJECT_DIR = 'platforms/android';
+
+    beforeAll(() => {
+        spyOn(CordovaGradleConfigParserFactory, 'create').and.returnValue(new MockCordovaGradleConfigParser(PROJECT_DIR));
+    });
 
     beforeEach(() => {
         target = rewire('../../lib/target');
@@ -228,14 +236,18 @@ describe('target', () => {
     describe('install', () => {
         let AdbSpy;
         let buildSpy;
-        let installTarget, manifest, appSpec;
+        let installTarget, manifest, cordovaGradleConfigParser, appSpec;
 
         beforeEach(() => {
             installTarget = { id: 'emulator-5556', type: 'emulator', arch: 'atari' };
 
-            manifest = jasmine.createSpyObj('manifestStub', ['getPackageId', 'getActivity']);
+            manifest = jasmine.createSpyObj('manifestStub', ['getActivity']);
             manifest.getActivity.and.returnValue(jasmine.createSpyObj('Activity', ['getName']));
-            appSpec = { manifest, buildResults: {} };
+
+            cordovaGradleConfigParser = jasmine.createSpyObj('cordovaGradleConfigParserStub', ['getPackageName']);
+            cordovaGradleConfigParser.getPackageName.and.returnValue('unittestapp');
+
+            appSpec = { manifest, buildResults: {}, cordovaGradleConfigParser };
 
             buildSpy = jasmine.createSpyObj('build', ['findBestApkForArchitecture']);
             target.__set__('build', buildSpy);
@@ -267,7 +279,7 @@ describe('target', () => {
             const apkPath = 'my/apk/path/app.apk';
             buildSpy.findBestApkForArchitecture.and.returnValue(apkPath);
 
-            return target.install(installTarget, { manifest, buildResults }).then(() => {
+            return target.install(installTarget, { manifest, buildResults, cordovaGradleConfigParser: CordovaGradleConfigParserFactory.create(PROJECT_DIR) }).then(() => {
                 expect(buildSpy.findBestApkForArchitecture).toHaveBeenCalledWith(buildResults, installTarget.arch);
 
                 expect(AdbSpy.install.calls.argsFor(0)[1]).toBe(apkPath);
@@ -308,7 +320,7 @@ describe('target', () => {
         it('should start the newly installed app on the device', () => {
             const packageId = 'unittestapp';
             const activityName = 'TestActivity';
-            manifest.getPackageId.and.returnValue(packageId);
+            cordovaGradleConfigParser.getPackageName.and.returnValue(packageId);
             manifest.getActivity().getName.and.returnValue(activityName);
 
             return target.install(installTarget, appSpec).then(() => {

@@ -18,7 +18,9 @@
        under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="__PACKAGE__" android:versionName="1.0" android:versionCode="1" android:hardwareAccelerated="true">
+    android:versionName="1.0"
+    android:versionCode="1"
+    android:hardwareAccelerated="true">
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"

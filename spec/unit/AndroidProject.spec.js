@@ -19,6 +19,8 @@
 
 const path = require('path');
 const rewire = require('rewire');
+const MockCordovaGradleConfigParser = require('./mocks/config/MockCordovaGradleConfigParser');
+const CordovaGradleConfigParserFactory = require('../../lib/config/CordovaGradleConfigParserFactory');
 
 describe('AndroidProject', () => {
     const PROJECT_DIR = 'platforms/android';
@@ -30,6 +32,8 @@ describe('AndroidProject', () => {
 
         AndroidStudioSpy = jasmine.createSpyObj('AndroidStudio', ['isAndroidStudioProject']);
         AndroidProject.__set__('AndroidStudio', AndroidStudioSpy);
+
+        spyOn(CordovaGradleConfigParserFactory, 'create').and.returnValue(new MockCordovaGradleConfigParser(PROJECT_DIR));
     });
 
     describe('constructor', () => {
@@ -87,26 +91,20 @@ describe('AndroidProject', () => {
     });
 
     describe('getPackageName', () => {
-        let AndroidManifestSpy;
-        let AndroidManifestFns;
         let androidProject;
 
         beforeEach(() => {
-            AndroidManifestFns = jasmine.createSpyObj('AndroidManifestFns', ['getPackageId']);
-            AndroidManifestSpy = jasmine.createSpy('AndroidManifest').and.returnValue(AndroidManifestFns);
-            AndroidProject.__set__('AndroidManifest', AndroidManifestSpy);
-
             androidProject = new AndroidProject(PROJECT_DIR);
         });
 
-        it('should get the package name AndroidManifest', () => {
+        it('should get the package name Cordova Gradle Config file', () => {
+            spyOn(MockCordovaGradleConfigParser.prototype, 'getPackageName');
             androidProject.getPackageName();
-            expect(AndroidManifestSpy).toHaveBeenCalledWith(path.join(PROJECT_DIR, 'app/src/main/AndroidManifest.xml'));
+            expect(MockCordovaGradleConfigParser.prototype.getPackageName).toHaveBeenCalled();
         });
 
         it('should return the package name', () => {
             const packageName = 'io.cordova.unittest';
-            AndroidManifestFns.getPackageId.and.returnValue(packageName);
 
             expect(androidProject.getPackageName()).toBe(packageName);
         });
