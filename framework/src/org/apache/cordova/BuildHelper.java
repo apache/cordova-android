@@ -51,7 +51,8 @@ public class BuildHelper {
     {
         try
         {
-            Class<?> clazz = Class.forName(ctx.getClass().getPackage().getName() + ".BuildConfig");
+            String packageName = ctx.getApplicationInfo().packageName;
+            Class<?> clazz = Class.forName(packageName + ".BuildConfig");
             Field field = clazz.getField(key);
             return field.get(null);
         } catch (ClassNotFoundException e) {
