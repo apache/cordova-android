@@ -53,40 +53,40 @@ describe('ProjectBuilder', () => {
 
         it('should set release argument', () => {
             const args = builder.getArgs('release', {});
-            expect(args[0]).toBe('cdvBuildRelease');
+            expect(args[args.length - 1]).toBe('cdvBuildRelease');
         });
 
         it('should set debug argument', () => {
             const args = builder.getArgs('debug', {});
-            expect(args[0]).toBe('cdvBuildDebug');
+            expect(args[args.length - 1]).toBe('cdvBuildDebug');
         });
 
         it('should set apk release', () => {
             const args = builder.getArgs('release', {
                 packageType: 'apk'
             });
-            expect(args[0]).withContext(args).toBe('cdvBuildRelease');
+            expect(args[args.length - 1]).withContext(args).toBe('cdvBuildRelease');
         });
 
         it('should set apk debug', () => {
             const args = builder.getArgs('debug', {
                 packageType: 'apk'
             });
-            expect(args[0]).withContext(args).toBe('cdvBuildDebug');
+            expect(args[args.length - 1]).withContext(args).toBe('cdvBuildDebug');
         });
 
         it('should set bundle release', () => {
             const args = builder.getArgs('release', {
                 packageType: 'bundle'
             });
-            expect(args[0]).withContext(args).toBe(':app:bundleRelease');
+            expect(args[args.length - 1]).withContext(args).toBe(':app:bundleRelease');
         });
 
         it('should set bundle debug', () => {
             const args = builder.getArgs('debug', {
                 packageType: 'bundle'
             });
-            expect(args[0]).withContext(args).toBe(':app:bundleDebug');
+            expect(args[args.length - 1]).withContext(args).toBe(':app:bundleDebug');
         });
 
         it('should add architecture if it is passed', () => {
@@ -100,14 +100,14 @@ describe('ProjectBuilder', () => {
             const args = builder.getArgs('clean', {
                 packageType: 'apk'
             });
-            expect(args[0]).toBe('clean');
+            expect(args[args.length - 1]).toBe('clean');
         });
 
         it('should clean bundle', () => {
             const args = builder.getArgs('clean', {
                 packageType: 'bundle'
             });
-            expect(args[0]).toBe('clean');
+            expect(args[args.length - 1]).toBe('clean');
         });
 
         describe('should accept extra arguments', () => {
@@ -176,6 +176,7 @@ describe('ProjectBuilder', () => {
         it('should reject if the spawn fails', () => {
             const errorMessage = 'Test error';
             execaSpy.and.rejectWith(new Error(errorMessage));
+            builder.getArgs.and.returnValue([]);
 
             return builder.build({}).then(
                 () => fail('Unexpectedly resolved'),
@@ -192,6 +193,7 @@ describe('ProjectBuilder', () => {
             ProjectBuilder.__set__('check_reqs', checkReqsSpy);
             checkReqsSpy.check_android_target.and.resolveTo();
             execaSpy.and.rejectWith(testError);
+            builder.getArgs.and.returnValue([]);
 
             return builder.build({}).then(
                 () => fail('Unexpectedly resolved'),
