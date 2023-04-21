@@ -197,7 +197,18 @@ public class PluginManager {
      * @param className         The plugin class name
      */
     public void addService(String service, String className) {
-        PluginEntry entry = new PluginEntry(service, className, false);
+        addService(service, className, false);
+    }
+
+    /**
+     * Add a plugin class that implements a service to the service entry table.
+     * 
+     * @param service           The service name
+     * @param className         The plugin class name
+     * @param onload            If true, the plugin will be instantiated immediately
+     */
+    public void addService(String service, String className, boolean onload) {
+        PluginEntry entry = new PluginEntry(service, className, onload);
         this.addService(entry);
     }
 
