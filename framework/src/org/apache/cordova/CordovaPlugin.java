@@ -446,9 +446,11 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called when the WebView's render process has exited.
+     * Called when the WebView's render process has exited. Can be used to collect information regarding the crash for crashlytics or optionally attempt to gracefully handle/recover the crashed webview by recreating it.
      *
      * See <a href="https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)">WebViewClient#onRenderProcessGone</a>
+     *
+     * Note: A plugin must not attempt to recover a webview that it does not own/manage.
      *
      * @return  true if the host application handled the situation that process has exited,
      *          otherwise, application will crash if render process crashed, or be killed
