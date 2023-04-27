@@ -216,32 +216,6 @@ public class SystemWebChromeClient extends WebChromeClient {
         return mVideoProgressView;
     }
 
-    // <input type=file> support:
-    // openFileChooser() is for pre KitKat and in KitKat mr1 (it's known broken in
-    // KitKat).
-    // For Lollipop, we use onShowFileChooser().
-    public void openFileChooser(ValueCallback<Uri> uploadMsg) {
-        this.openFileChooser(uploadMsg, "*/*");
-    }
-
-    public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
-        this.openFileChooser(uploadMsg, acceptType, null);
-    }
-
-    public void openFileChooser(final ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
-            @Override
-            public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
-                LOG.d(LOG_TAG, "Receive file chooser URL: " + result);
-                uploadMsg.onReceiveValue(result);
-            }
-        }, intent, FILECHOOSER_RESULTCODE);
-    }
-
     @Override
     public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback,
             final WebChromeClient.FileChooserParams fileChooserParams) {
