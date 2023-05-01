@@ -317,7 +317,7 @@ public class SystemWebChromeClient extends WebChromeClient {
 
     private Uri createUriForFile(Context context, File tempFile) throws IOException {
         String appId = context.getPackageName();
-        Uri uri = FileProvider.getUriForFile(context, appId + ".provider", tempFile);
+        Uri uri = FileProvider.getUriForFile(context, appId + ".cdv.core.file.provider", tempFile);
         return uri;
     }
 
