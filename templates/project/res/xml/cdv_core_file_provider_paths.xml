@@ -17,7 +17,14 @@
        specific language governing permissions and limitations
        under the License.
 -->
-<!-- https://developer.android.com/reference/androidx/core/content/FileProvider -->
+<!-- 
+  Note: This File provider may only be used by the Cordova core
+  itself and should not be used for responding to Intents because
+  it will expose the app's private data folders.
+
+  For more information about FileProviders see:
+  https://developer.android.com/reference/androidx/core/content/FileProvider
+-->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- cordova.file.dataDirectory -->
     <files-path name="files" path="." />
