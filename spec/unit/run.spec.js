@@ -106,4 +106,32 @@ describe('run', () => {
                 .toBeRejectedWithError(/Package type "bundle" is not supported/);
         });
     });
+
+    describe('--list option', () => {
+        beforeEach(() => {
+            spyOn(run, 'listDevices').and.returnValue(Promise.resolve());
+            spyOn(run, 'listEmulators').and.returnValue(Promise.resolve());
+        });
+
+        it('should delegate to "listDevices" when the "runListDevices" method options param contains "options.device".', () => {
+            return run.runListDevices({ options: { device: true } }).then(() => {
+                expect(run.listDevices).toHaveBeenCalled();
+                expect(run.listEmulators).not.toHaveBeenCalled();
+            });
+        });
+
+        it('should delegate to "listDevices" when the "runListDevices" method options param contains "options.emulator".', () => {
+            return run.runListDevices({ options: { emulator: true } }).then(() => {
+                expect(run.listDevices).not.toHaveBeenCalled();
+                expect(run.listEmulators).toHaveBeenCalled();
+            });
+        });
+
+        it('should delegate to both "listEmulators" and "listDevices" when the "runListDevices" method does not contain "options.device" or "options.emulator".', () => {
+            return run.runListDevices({ options: {} }).then(() => {
+                expect(run.listDevices).toHaveBeenCalled();
+                expect(run.listEmulators).toHaveBeenCalled();
+            });
+        });
+    });
 });
