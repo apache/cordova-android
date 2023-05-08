@@ -24,6 +24,8 @@ const EventEmitter = require('events');
 
 const Api = require('../../lib/Api');
 const AndroidProject = require('../../lib/AndroidProject');
+const check_reqs = require('../../lib/check_reqs');
+const run_mod = require('../../lib/run');
 
 const PluginInfo = common.PluginInfo;
 
@@ -57,6 +59,21 @@ describe('Api', () => {
         it('Test#002 : shouldn\'t trigger gradleBuilder.prepBuildFiles for plugins without android frameworks', () => {
             return api.addPlugin(getPluginFixture('cordova-plugin-fake-ios-frameworks')).then(() => {
                 expect(api._builder.prepBuildFiles).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe('listTargets', () => {
+        let api;
+
+        beforeEach(() => {
+            api = new Api('android', FAKE_PROJECT_DIR, new EventEmitter());
+            spyOn(check_reqs, 'run').and.returnValue(Promise.resolve());
+        });
+        it('should call into lib/run module', () => {
+            spyOn(run_mod, 'runListDevices');
+            return api.listTargets().then(() => {
+                expect(run_mod.runListDevices).toHaveBeenCalled();
             });
         });
     });
