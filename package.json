@@ -27,6 +27,7 @@
   "dependencies": {
     "android-versions": "^1.8.1",
     "cordova-common": "^5.0.0",
+    "dedent": "^1.0.1",
     "execa": "^5.1.1",
     "fast-glob": "^3.2.12",
     "fs-extra": "^11.1.1",

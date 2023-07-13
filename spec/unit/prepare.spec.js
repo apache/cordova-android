@@ -630,43 +630,106 @@ describe('prepare', () => {
         let preparedIcons;
         let resourceMap;
 
-        beforeEach(function () {
-            // Mocked Data
-            platformResourcesDir = PATH_RESOURCE;
-            preparedIcons = {
-                android_icons: {
-                    mdpi: mockGetIconItem({
-                        density: 'mdpi',
-                        background: 'res/icon/android/mdpi-background.png',
-                        foreground: 'res/icon/android/mdpi-foreground.png',
-                        monochrome: 'res/icon/android/mdpi-monochrome.png'
-                    })
-                },
-                default_icon: undefined
-            };
+        describe('without monochrome', () => {
+            beforeEach(function () {
+                // Mocked Data
+                platformResourcesDir = PATH_RESOURCE;
+                preparedIcons = {
+                    android_icons: {
+                        mdpi: mockGetIconItem({
+                            density: 'mdpi',
+                            background: 'res/icon/android/mdpi-background.png',
+                            foreground: 'res/icon/android/mdpi-foreground.png'
+                        })
+                    },
+                    default_icon: undefined
+                };
 
-            resourceMap = createResourceMap();
+                resourceMap = createResourceMap();
 
-            fsWriteFileSyncSpy = jasmine.createSpy('writeFileSync');
-            prepare.__set__('fs', {
-                writeFileSync: fsWriteFileSyncSpy
+                fsWriteFileSyncSpy = jasmine.createSpy('writeFileSync');
+                prepare.__set__('fs', {
+                    writeFileSync: fsWriteFileSyncSpy
+                });
+            });
+
+            it('Test#001 : Should update resource map with prepared icons.', function () {
+            // Get method for testing
+                const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
+
+                // Run Test
+                const expectedModification = {};
+                expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
+                expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
+
+                const expected = Object.assign({}, resourceMap, expectedModification);
+                const actual = updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
+
+                expect(actual).toEqual(expected);
             });
         });
 
-        it('Test#001 : Should update resource map with prepared icons.', function () {
-        // Get method for testing
-            const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
+        describe('with monochrome', () => {
+            beforeEach(function () {
+                // Mocked Data
+                platformResourcesDir = PATH_RESOURCE;
+                preparedIcons = {
+                    android_icons: {
+                        mdpi: mockGetIconItem({
+                            density: 'mdpi',
+                            background: 'res/icon/android/mdpi-background.png',
+                            foreground: 'res/icon/android/mdpi-foreground.png',
+                            monochrome: 'res/icon/android/mdpi-monochrome.png'
+                        })
+                    },
+                    default_icon: undefined
+                };
 
-            // Run Test
-            const expectedModification = {};
-            expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
-            expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
-            expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_monochrome.png')] = 'res/icon/android/mdpi-monochrome.png';
+                resourceMap = createResourceMap();
 
-            const expected = Object.assign({}, resourceMap, expectedModification);
-            const actual = updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
+                fsWriteFileSyncSpy = jasmine.createSpy('writeFileSync');
+                prepare.__set__('fs', {
+                    writeFileSync: fsWriteFileSyncSpy
+                });
+            });
 
-            expect(actual).toEqual(expected);
+            it('Test#002 : Should update resource map with prepared icons.', function () {
+            // Get method for testing
+                const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
+
+                // Run Test
+                const expectedModification = {};
+                expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_background.png')] = 'res/icon/android/mdpi-background.png';
+                expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_foreground.png')] = 'res/icon/android/mdpi-foreground.png';
+                expectedModification[path.join(PATH_RESOURCE, 'mipmap-mdpi-v26', 'ic_launcher_monochrome.png')] = 'res/icon/android/mdpi-monochrome.png';
+
+                const expected = Object.assign({}, resourceMap, expectedModification);
+                const actual = updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
+
+                expect(actual).toEqual(expected);
+            });
+
+            it('Test#003 : should emit if monochrome is supplied without adaptive background', () => {
+                const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
+
+                preparedIcons.android_icons.mdpi.background = undefined;
+                updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
+
+                const actualEmitArgs = emitSpy.calls.mostRecent().args;
+                expect(actualEmitArgs[0]).toBe('warn');
+                expect(actualEmitArgs[1]).toMatch(/Monochrome icon found but without adaptive properties./g);
+            });
+
+            it('Test#004 : should emit if monochrome is supplied without adaptive foreground', () => {
+                const updateIconResourceForAdaptive = prepare.__get__('updateIconResourceForAdaptive');
+
+                preparedIcons.android_icons.mdpi.foreground = undefined;
+                updateIconResourceForAdaptive(preparedIcons, resourceMap, platformResourcesDir);
+
+                const actualEmitArgs = emitSpy.calls.mostRecent().args;
+                expect(actualEmitArgs[0]).toBe('warn');
+                expect(actualEmitArgs[1]).toMatch(/Monochrome icon found but without adaptive properties./g);
+            });
         });
     });
 
