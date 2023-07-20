@@ -17,15 +17,29 @@
        under the License.
 */
 package org.apache.cordova.engine;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -41,6 +55,8 @@ import android.webkit.PermissionRequest;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.provider.MediaStore;
+import android.content.pm.ResolveInfo;
 
 import org.apache.cordova.CordovaDialogsHelper;
 import org.apache.cordova.CordovaPlugin;
@@ -211,46 +227,125 @@ public class SystemWebChromeClient extends WebChromeClient {
         return mVideoProgressView;
     }
 
+    private Uri outputFileUri;
     @Override
-    public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final WebChromeClient.FileChooserParams fileChooserParams) {
+    public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final FileChooserParams fileChooserParams) {
         // Check if multiple-select is specified
         Boolean selectMultiple = false;
-        if (fileChooserParams.getMode() == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
+        if (fileChooserParams.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) {
             selectMultiple = true;
         }
-        Intent intent = fileChooserParams.createIntent();
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, selectMultiple);
-        
-        // Uses Intent.EXTRA_MIME_TYPES to pass multiple mime types.
+
+       
+      String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+      final String imageFileName = "JPEG_" + timeStamp + "_.jpg";
+      File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), imageFileName);
+      
+      final String path = file.getAbsolutePath();
+      
+      outputFileUri = Uri.fromFile(file);
+
+        // Camera.
+        final List<Intent> cameraIntents = new ArrayList<Intent>();
+        final Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        final PackageManager packageManager = appContext.getPackageManager();
+        final List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
+        for (ResolveInfo res : listCam) {
+            final String packageName = res.activityInfo.packageName;
+            final Intent intent = new Intent(captureIntent);
+            intent.setComponent(new ComponentName(packageName, res.activityInfo.name));
+            intent.setPackage(packageName);
+            //intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+            cameraIntents.add(intent);
+        }
+
+        // Filesystem.
+        final Intent galleryIntent = new Intent();
+        galleryIntent.setType("image/*");
+        galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+        galleryIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, selectMultiple);
         String[] acceptTypes = fileChooserParams.getAcceptTypes();
         if (acceptTypes.length > 1) {
-            intent.setType("*/*"); // Accept all, filter mime types by Intent.EXTRA_MIME_TYPES.
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, acceptTypes);
+            galleryIntent.setType("*/*"); // Accept all, filter mime types by Intent.EXTRA_MIME_TYPES.
+            galleryIntent.putExtra(Intent.EXTRA_MIME_TYPES, acceptTypes);
         }
+
+        // Chooser of filesystem options.
+        final Intent chooserIntent = Intent.createChooser(galleryIntent, "Select Source");
+
+        // Add the camera options.
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toArray(new Parcelable[cameraIntents.size()]));
+
         try {
             parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
                 @Override
-                public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+                public void onActivityResult(int requestCode, int resultCode, Intent data) {
                     Uri[] result = null;
-                    if (resultCode ==  Activity.RESULT_OK && intent != null) {
-                        if (intent.getClipData() != null) {
-                            // handle multiple-selected files
-                            final int numSelectedFiles = intent.getClipData().getItemCount();
-                            result = new Uri[numSelectedFiles];
-                            for (int i = 0; i < numSelectedFiles; i++) {
-                                result[i] = intent.getClipData().getItemAt(i).getUri();
-                                LOG.d(LOG_TAG, "Receive file chooser URL: " + result[i]);
+                    if (data != null) {
+                        LOG.d(LOG_TAG, "Debug: ");
+                        // LOG.d(LOG_TAG, "Data action: " + data.getAction());
+                        LOG.d(LOG_TAG, "Data uri: " + outputFileUri);
+                        Bundle bundle = data.getExtras();
+                        if (bundle != null) {
+                            for (String key : bundle.keySet()) {
+                                LOG.d(LOG_TAG, key + " : " + (bundle.get(key) != null ? bundle.get(key) : "NULL"));
                             }
                         }
-                        else if (intent.getData() != null) {
-                            // handle single-selected file
-                            result = WebChromeClient.FileChooserParams.parseResult(resultCode, intent);
+
+
+                        if (resultCode == Activity.RESULT_OK) {
+
+                            final boolean isCamera;
+                            if (data == null) {
+                                isCamera = true;
+                            } else {
+                                final String action = data.getAction();
+                                if (action == null) {
+                                    isCamera = false;
+                                } else {
+                                    isCamera = action.equals(MediaStore.ACTION_IMAGE_CAPTURE) || action.equals("inline-data");
+                                }
+                            }
+                            result = new Uri[1];
+                            Uri selectedImageUri;
+                            if (isCamera) {
+                                
+                                 Bitmap bmp = (Bitmap) bundle.get("data");
+                                 try (FileOutputStream out = new FileOutputStream(path)) {
+                                     bmp.compress(Bitmap.CompressFormat.JPEG, 80, out); // bmp is your Bitmap instance
+                                 } catch (IOException e) {
+                                     e.printStackTrace();
+                                 }
+                                selectedImageUri = outputFileUri;
+                                result[0] = selectedImageUri;
+                            } else {
+                                selectedImageUri = data == null ? null : data.getData();
+                                if (data.getClipData() != null) {
+                                            // handle multiple-selected files
+                                            final int numSelectedFiles = data.getClipData().getItemCount();
+                                            result = new Uri[numSelectedFiles];
+                                            for (int i = 0; i < numSelectedFiles; i++) {
+                                                result[i] = data.getClipData().getItemAt(i).getUri();
+                                                LOG.d(LOG_TAG, "Receive file chooser URL: " + result[i]);
+                                            }
+                                        }
+                                        else if (data.getData() != null) {
+                                            // handle single-selected file
+                                            result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+                                            LOG.d(LOG_TAG, "Receive file chooser URL: " + result);
+                                        }
+                            }
+                            LOG.d(LOG_TAG, "IsCamera: " + isCamera);
+                            if (selectedImageUri == null) {
+                                selectedImageUri = Uri.EMPTY;
+                            }
                             LOG.d(LOG_TAG, "Receive file chooser URL: " + result);
                         }
+                        
                     }
                     filePathsCallback.onReceiveValue(result);
                 }
-            }, intent, FILECHOOSER_RESULTCODE);
+            }, chooserIntent, FILECHOOSER_RESULTCODE);
         } catch (ActivityNotFoundException e) {
             LOG.w("No activity found to handle file chooser intent.", e);
             filePathsCallback.onReceiveValue(null);
