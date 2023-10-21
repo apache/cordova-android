@@ -181,6 +181,10 @@ task cdvPrintProps {
 android {
     namespace cordovaConfig.PACKAGE_NAMESPACE
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
         applicationId cordovaConfig.PACKAGE_NAMESPACE
@@ -248,8 +252,14 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaLanguageVersion.of(cordovaConfig.JAVA_SOURCE_COMPATIBILITY)
+        targetCompatibility JavaLanguageVersion.of(cordovaConfig.JAVA_TARGET_COMPATIBILITY)
+    }
+
+    if (cordovaConfig.IS_GRADLE_PLUGIN_KOTLIN_ENABLED) {
+        kotlinOptions {
+            jvmTarget = cordovaConfig.KOTLIN_JVM_TARGET
+        }
     }
 
     if (cdvReleaseSigningPropertiesFile) {

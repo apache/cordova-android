@@ -42,8 +42,18 @@ class AndroidTestRunner {
         );
     }
 
+    _getGradleVersion () {
+        const config = JSON.parse(
+            fs.readFileSync(path.resolve(this.projectDir, '../../framework/cdv-gradle-config-defaults.json'), {
+                encoding: 'utf-8'
+            })
+        );
+
+        return config.GRADLE_VERSION;
+    }
+
     _createProjectBuilder () {
-        return new ProjectBuilder(this.projectDir).runGradleWrapper('gradle');
+        return new ProjectBuilder(this.projectDir).installGradleWrapper(this._getGradleVersion());
     }
 
     run () {
