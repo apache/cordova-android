@@ -1,0 +1,60 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Compiled list of allowed 3RD PARTY LICENSES from:
+#
+# ASF CATEGORY A: WHAT CAN WE INCLUDE IN AN ASF PROJECT
+# https://www.apache.org/legal/resolved.html#category-a
+#
+# Licenses converted into the SPDX standardized short identifier format.
+# https://spdx.org/licenses/
+allowed-licenses:
+  - 0BSD
+  - AFL-3.0
+  - Apache-1.1
+  - Apache-2.0
+  - APAFML
+  - BlueOak-1.0.0
+  - BSD-2-Clause
+  - BSD-3-Clause
+  - BSD-3-Clause-LBNL
+  - BSL-1.0
+  - CC-PDDC
+  - CC0-1.0
+  - EPICS
+  - HPND
+  - ICU
+  - ISC
+  - MIT
+  - MIT-0
+  - MS-PL
+  - MulanPSL-2.0
+  - NCSA
+  - OGL-UK-3.0
+  - PHP-3.01
+  - PostgreSQL
+  - PSF-2.0
+  - SMLNJ
+  - Unicode-DFS-2016
+  - Unlicense
+  - UPL-1.0
+  - W3C
+  - WTFPL
+  - X11
+  - Xnet
+  - Zlib
+  - ZPL-2.0
