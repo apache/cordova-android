@@ -275,10 +275,14 @@ public class SystemWebChromeClient extends WebChromeClient {
                     Uri[] result = null;
                     if (resultCode == Activity.RESULT_OK) {
                         List<Uri> uris = new ArrayList<Uri>();
-                        if (intent == null && captureUri != null) { // camera
+
+                        if (intent != null && intent.getData() != null) { // single file
+                            LOG.v(LOG_TAG, "Adding file (single): " + intent.getData());
+                            uris.add(intent.getData());
+                        } else if (captureUri != null) { // camera
                             LOG.v(LOG_TAG, "Adding camera capture: " + captureUri);
                             uris.add(captureUri);
-                        } else if (intent.getClipData() != null) { // multiple files
+                        } else if (intent != null && intent.getClipData() != null) { // multiple files
                             ClipData clipData = intent.getClipData();
                             int count = clipData.getItemCount();
                             for (int i = 0; i < count; i++) {
@@ -288,10 +292,6 @@ public class SystemWebChromeClient extends WebChromeClient {
                                     uris.add(uri);
                                 }
                             }
-
-                        } else if (intent.getData() != null) { // single file
-                            LOG.v(LOG_TAG, "Adding file (single): " + intent.getData());
-                            uris.add(intent.getData());
                         }
 
                         if (!uris.isEmpty()) {
