@@ -20,6 +20,11 @@
 -->
 ## Release Notes for Cordova (Android)
 
+### 12.0.1 (Aug 23, 2023)
+
+* [GH-1632](https://github.com/apache/cordova-android/pull/1632) fix(android): `monochrome` checks
+* [GH-1649](https://github.com/apache/cordova-android/pull/1649) chore: rebuild `package-lock` w/ lint corrections
+
 ### 12.0.0 (May 20, 2023)
 
 **Breaking:**
