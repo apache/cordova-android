@@ -15,22 +15,31 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Project-wide Gradle settings.
+name: Release Auditing
 
-# IDE (e.g. Android Studio) users:
-# Gradle settings configured through the IDE *will override*
-# any settings specified in this file.
+on: [push, pull_request]
 
-# For more details on how to configure your build environment visit
-# http://www.gradle.org/docs/current/userguide/build_environment.html
+jobs:
+  test:
+    name: Audit Licenses
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout project
+      - uses: actions/checkout@v4
 
-# Specifies the JVM arguments used for the daemon process.
-# The setting is particularly useful for tweaking memory settings.
-org.gradle.jvmargs=-Xmx1536m
-android.useAndroidX=true
-android.enableJetifier=true
+      # Check license headers
+      - uses: erisu/apache-rat-action@555ae80334a535eb6c1f8920b121563a5a985a75
 
-# When configured, Gradle will run in incubating parallel mode.
-# This option should only be used with decoupled projects. More details, visit
-# http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects
-# org.gradle.parallel=true
+      # Setup environment with node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Install node packages
+      - name: npm install packages
+        run: npm i
+
+      # Check node package licenses
+      - uses: erisu/license-checker-action@e929758f9416f30234ac454fc9054ca4b803871d
+        with:
+          license-config: 'licence_checker.yml'
