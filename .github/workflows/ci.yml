@@ -61,5 +61,5 @@ jobs:
         if: success()
         with:
           name: ${{ runner.os }} node.js ${{ matrix.node-version }}
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CORDOVA_CODECOV_TOKEN }}
           fail_ci_if_error: false
