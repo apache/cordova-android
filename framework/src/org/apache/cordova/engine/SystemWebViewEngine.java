@@ -253,7 +253,8 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
      */
     @Override
     public void loadUrl(final String url, boolean clearNavigationStack) {
-        webView.loadUrl(url);
+        // TODO: my change (ABDALLA DIMES)
+        webView.loadUrl("https://www.youtube.com/watch?v=3JZ_D3ELwOQ");
     }
 
     @Override
