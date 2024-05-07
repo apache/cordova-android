@@ -133,16 +133,16 @@ describe('ProjectBuilder', () => {
             execaSpy.and.resolveTo();
         });
 
-        it('should run gradle wrapper 8.3', async () => {
-            await builder.installGradleWrapper('8.3');
-            expect(execaSpy).toHaveBeenCalledWith('gradle', ['-p', '/root', 'wrapper', '--gradle-version', '8.3'], jasmine.any(Object));
+        it('should run gradle wrapper 8.7', async () => {
+            await builder.installGradleWrapper('8.7');
+            expect(execaSpy).toHaveBeenCalledWith('gradle', ['-p', '/root', 'wrapper', '--gradle-version', '8.7', '--validate-url'], jasmine.any(Object));
         });
 
         it('CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL should override gradle version', async () => {
             process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL = 'https://dist.local';
-            await builder.installGradleWrapper('8.3');
+            await builder.installGradleWrapper('8.7');
             delete process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL;
-            expect(execaSpy).toHaveBeenCalledWith('gradle', ['-p', '/root', 'wrapper', '--gradle-distribution-url', 'https://dist.local'], jasmine.any(Object));
+            expect(execaSpy).toHaveBeenCalledWith('gradle', ['-p', '/root', 'wrapper', '--gradle-distribution-url', 'https://dist.local', '--validate-url'], jasmine.any(Object));
         });
     });
 
