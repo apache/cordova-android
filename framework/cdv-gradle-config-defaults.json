@@ -15,5 +15,5 @@
     "PACKAGE_NAMESPACE": "io.cordova.helloCordova",
     "JAVA_SOURCE_COMPATIBILITY": 8,
     "JAVA_TARGET_COMPATIBILITY": 8,
-    "KOTLIN_JVM_TARGET": "1.8"
+    "KOTLIN_JVM_TARGET": null
 }
