@@ -261,12 +261,10 @@ android {
             // If the value is null, fallback to JAVA_TARGET_COMPATIBILITY,
             // as they generally should be equal
             def javaTarget = JavaLanguageVersion.of(cordovaConfig.JAVA_TARGET_COMPATIBILITY)
-            println "FALLBACK: " + javaTarget
 
             // check if javaTarget is <= 8; if so, we need to prefix it with "1."
             // Starting with 9 and later, the value can be used as is.
             if (javaTarget.compareTo(JavaLanguageVersion.of(8)) <= 0) {
-                println "PREFIXING 1."
                 javaTarget = "1." + javaTarget
             }
 
@@ -284,7 +282,6 @@ android {
             cordovaConfig.KOTLIN_JVM_TARGET = "1." + cordovaConfig.KOTLIN_JVM_TARGET
         }
 
-        println "KOTLINJVMTARGET: " + cordovaConfig.KOTLIN_JVM_TARGET
         kotlinOptions {
             jvmTarget = cordovaConfig.KOTLIN_JVM_TARGET
         }
