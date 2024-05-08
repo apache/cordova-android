@@ -118,7 +118,7 @@ public class SystemWebViewClient extends WebViewClient {
         });
 
         this.assetLoader = assetLoaderBuilder.build();
-        boolean setAsServiceWorkerClient = parentEngine.preferences.getBoolean("ResolveServiceWorkerRequests", false);
+        boolean setAsServiceWorkerClient = parentEngine.preferences.getBoolean("ResolveServiceWorkerRequests", true);
         ServiceWorkerController controller = null;
 
         if (setAsServiceWorkerClient) {
