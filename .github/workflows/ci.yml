@@ -60,6 +60,7 @@ jobs:
               - coverage
               - node_modules
               - templates/project/assets/www/cordova.js
+              - test/androidx/app/src/main/assets/www/cordova.js
 
       - name: npm install and test
         run: |
