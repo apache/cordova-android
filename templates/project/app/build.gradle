@@ -21,7 +21,11 @@ apply plugin: 'com.android.application'
 
 if (cordovaConfig.IS_GRADLE_PLUGIN_KOTLIN_ENABLED) {
     apply plugin: 'kotlin-android'
-    apply plugin: 'kotlin-android-extensions'
+
+    if(!cdvHelpers.isVersionGreaterThanEqual(cordovaConfig.KOTLIN_VERSION, '1.8.0')) {
+        println "Kotlin version < 1.8.0 detected. Applying kotlin-android-extensions plugin."
+        apply plugin: 'kotlin-android-extensions'
+    }
 }
 
 buildscript {
