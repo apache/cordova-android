@@ -8,3 +8,6 @@ intermediates
 reports
 test-results
 node_modules
+gradle
+gradlew
+gradlew.bat
