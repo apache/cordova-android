@@ -92,3 +92,4 @@ AUTHORS text
 *.woff binary
 *.pyc binary
 *.pdf binary
+*.jar binary
