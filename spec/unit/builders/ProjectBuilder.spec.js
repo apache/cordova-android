@@ -21,6 +21,7 @@ const { CordovaError } = require('cordova-common');
 const fs = require('fs-extra');
 const path = require('path');
 const rewire = require('rewire');
+const { isWindows } = require('../../../lib/utils');
 
 describe('ProjectBuilder', () => {
     const rootDir = '/root';
@@ -134,16 +135,21 @@ describe('ProjectBuilder', () => {
             execaSpy.and.resolveTo();
         });
 
+        let gradle = path.normalize('/root/gradlew');
+        if (isWindows()) {
+            gradle += '.bat';
+        }
+
         it('should run gradle wrapper 8.7', async () => {
             await builder.installGradleWrapper('8.7');
-            expect(execaSpy).toHaveBeenCalledWith(path.normalize('/root/gradlew'), ['-p', '/root', 'wrapper', '--gradle-version', '8.7', '--validate-url'], jasmine.any(Object));
+            expect(execaSpy).toHaveBeenCalledWith(gradle, ['-p', '/root', 'wrapper', '--gradle-version', '8.7', '--validate-url'], jasmine.any(Object));
         });
 
         it('CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL should override gradle version', async () => {
             process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL = 'https://dist.local';
             await builder.installGradleWrapper('8.7');
             delete process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL;
-            expect(execaSpy).toHaveBeenCalledWith(path.normalize('/root/gradlew'), ['-p', '/root', 'wrapper', '--gradle-distribution-url', 'https://dist.local', '--validate-url'], jasmine.any(Object));
+            expect(execaSpy).toHaveBeenCalledWith(gradle, ['-p', '/root', 'wrapper', '--gradle-distribution-url', 'https://dist.local', '--validate-url'], jasmine.any(Object));
         });
 
         it('should error if attempting to install an unacceptable gradle version', async () => {
@@ -182,7 +188,12 @@ describe('ProjectBuilder', () => {
 
             builder.build({});
 
-            expect(execaSpy).toHaveBeenCalledWith(path.join(rootDir, 'gradlew'), testArgs, jasmine.anything());
+            let gradle = path.join(rootDir, 'gradlew');
+            if (isWindows()) {
+                gradle += '.bat';
+            }
+
+            expect(execaSpy).toHaveBeenCalledWith(gradle, testArgs, jasmine.anything());
         });
 
         it('should reject if the spawn fails', () => {
@@ -239,8 +250,13 @@ describe('ProjectBuilder', () => {
             const gradleArgs = ['test', 'args', '-f'];
             builder.getArgs.and.returnValue(gradleArgs);
 
+            let gradle = path.join(rootDir, 'gradlew');
+            if (isWindows()) {
+                gradle += '.bat';
+            }
+
             return builder.clean(opts).then(() => {
-                expect(execaSpy).toHaveBeenCalledWith(path.join(rootDir, 'gradlew'), gradleArgs, jasmine.anything());
+                expect(execaSpy).toHaveBeenCalledWith(gradle, gradleArgs, jasmine.anything());
             });
         });
 
