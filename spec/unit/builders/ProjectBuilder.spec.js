@@ -17,6 +17,7 @@
     under the License.
 */
 
+const { CordovaError } = require('cordova-common');
 const fs = require('fs-extra');
 const path = require('path');
 const rewire = require('rewire');
@@ -135,14 +136,20 @@ describe('ProjectBuilder', () => {
 
         it('should run gradle wrapper 8.7', async () => {
             await builder.installGradleWrapper('8.7');
-            expect(execaSpy).toHaveBeenCalledWith('gradle', ['-p', '/root', 'wrapper', '--gradle-version', '8.7', '--validate-url'], jasmine.any(Object));
+            expect(execaSpy).toHaveBeenCalledWith('/root/gradlew', ['-p', '/root', 'wrapper', '--gradle-version', '8.7', '--validate-url'], jasmine.any(Object));
         });
 
         it('CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL should override gradle version', async () => {
             process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL = 'https://dist.local';
             await builder.installGradleWrapper('8.7');
             delete process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL;
-            expect(execaSpy).toHaveBeenCalledWith('gradle', ['-p', '/root', 'wrapper', '--gradle-distribution-url', 'https://dist.local', '--validate-url'], jasmine.any(Object));
+            expect(execaSpy).toHaveBeenCalledWith('/root/gradlew', ['-p', '/root', 'wrapper', '--gradle-distribution-url', 'https://dist.local', '--validate-url'], jasmine.any(Object));
+        });
+
+        it('should error if attempting to install an unacceptable gradle version', async () => {
+            const UNACCEPTABLE_VERSION = '8.5';
+            await expectAsync(builder.installGradleWrapper(UNACCEPTABLE_VERSION))
+                .toBeRejectedWithError(CordovaError, new RegExp(`^Cannot install Gradle ${UNACCEPTABLE_VERSION}.+`));
         });
     });
 

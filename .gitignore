@@ -30,9 +30,8 @@ example
 
 /test/.externalNativeBuild
 
-/test/androidx/gradle
-/test/androidx/gradlew
-/test/androidx/gradlew.bat
+!/templates/project/gradle/wrapper/gradle-wrapper.jar
+!/test/androidx/gradle/wrapper/gradle-wrapper.jar
 /test/androidx/cdv-gradle-config.json
 
 /test/assets/www/.tmp*
