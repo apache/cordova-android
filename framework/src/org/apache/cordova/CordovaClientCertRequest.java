@@ -41,6 +41,7 @@ public class CordovaClientCertRequest implements ICordovaClientCertRequest {
      * Cancel this request
      */
     @SuppressLint("NewApi")
+    @Override
     public void cancel()
     {
         request.cancel();
@@ -50,6 +51,7 @@ public class CordovaClientCertRequest implements ICordovaClientCertRequest {
      * Returns the host name of the server requesting the certificate.
      */
     @SuppressLint("NewApi")
+    @Override
     public String getHost()
     {
         return request.getHost();
@@ -59,6 +61,7 @@ public class CordovaClientCertRequest implements ICordovaClientCertRequest {
      * Returns the acceptable types of asymmetric keys (can be null).
      */
     @SuppressLint("NewApi")
+    @Override
     public String[] getKeyTypes()
     {
         return request.getKeyTypes();
@@ -68,6 +71,7 @@ public class CordovaClientCertRequest implements ICordovaClientCertRequest {
      * Returns the port number of the server requesting the certificate.
      */
     @SuppressLint("NewApi")
+    @Override
     public int getPort()
     {
         return request.getPort();
@@ -77,6 +81,7 @@ public class CordovaClientCertRequest implements ICordovaClientCertRequest {
      * Returns the acceptable certificate issuers for the certificate matching the private key (can be null).
      */
     @SuppressLint("NewApi")
+    @Override
     public Principal[] getPrincipals()
     {
         return request.getPrincipals();
@@ -86,6 +91,7 @@ public class CordovaClientCertRequest implements ICordovaClientCertRequest {
      * Ignore the request for now. Do not remember user's choice.
      */
     @SuppressLint("NewApi")
+    @Override
     public void ignore()
     {
         request.ignore();
@@ -98,6 +104,7 @@ public class CordovaClientCertRequest implements ICordovaClientCertRequest {
      * @param chain The certificate chain
      */
     @SuppressLint("NewApi")
+    @Override
     public void proceed(PrivateKey privateKey, X509Certificate[] chain)
     {
         request.proceed(privateKey, chain);

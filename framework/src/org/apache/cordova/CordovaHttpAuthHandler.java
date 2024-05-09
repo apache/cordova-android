@@ -35,6 +35,7 @@ public class CordovaHttpAuthHandler implements ICordovaHttpAuthHandler {
     /**
      * Instructs the WebView to cancel the authentication request.
      */
+    @Override
     public void cancel () {
         this.handler.cancel();
     }
@@ -45,6 +46,7 @@ public class CordovaHttpAuthHandler implements ICordovaHttpAuthHandler {
      * @param username
      * @param password
      */
+    @Override
     public void proceed (String username, String password) {
         this.handler.proceed(username, password);
     }

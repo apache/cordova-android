@@ -37,16 +37,19 @@ class SystemExposedJsApi implements ExposedJsApi {
     }
 
     @JavascriptInterface
+    @Override
     public String exec(int bridgeSecret, String service, String action, String callbackId, String arguments) throws JSONException, IllegalAccessException {
         return bridge.jsExec(bridgeSecret, service, action, callbackId, arguments);
     }
 
     @JavascriptInterface
+    @Override
     public void setNativeToJsBridgeMode(int bridgeSecret, int value) throws IllegalAccessException {
         bridge.jsSetNativeToJsBridgeMode(bridgeSecret, value);
     }
 
     @JavascriptInterface
+    @Override
     public String retrieveJsMessages(int bridgeSecret, boolean fromOnlineEvent) throws IllegalAccessException {
         return bridge.jsRetrieveJsMessages(bridgeSecret, fromOnlineEvent);
     }

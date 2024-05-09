@@ -69,30 +69,35 @@ public class BackButtonMultipageTest {
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
 
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 webInterface.sendJavascript("window.location = 'sample2.html';");
             }
         });
         assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 webInterface.sendJavascript("window.location = 'sample3.html';");
             }
         });
         assertPageSample(SAMPLE3_URL);
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 assertTrue(webInterface.backHistory());
             }
         });
         assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 assertTrue(webInterface.backHistory());
             }
         });
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 assertFalse(webInterface.backHistory());
             }
@@ -105,30 +110,35 @@ public class BackButtonMultipageTest {
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
 
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 webInterface.loadUrl(SAMPLE2_URL);
             }
         });
         assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 webInterface.loadUrl(SAMPLE3_URL);
             }
         });
         assertPageSample(SAMPLE3_URL);
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 assertTrue(webInterface.backHistory());
             }
         });
         assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 assertTrue(webInterface.backHistory());
             }
         });
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 assertFalse(webInterface.backHistory());
             }
@@ -141,12 +151,14 @@ public class BackButtonMultipageTest {
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
 
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 webInterface.loadUrl(SAMPLE2_URL);
             }
         });
         assertPageSample(SAMPLE2_URL);
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 webInterface.loadUrl(SAMPLE3_URL);
             }

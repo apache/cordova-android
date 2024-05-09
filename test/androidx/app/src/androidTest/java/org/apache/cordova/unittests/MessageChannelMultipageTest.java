@@ -79,6 +79,7 @@ public class MessageChannelMultipageTest {
         //load a page - this resets the plugin manager and nulls cordovaWebViewImpl.appPlugin
         //(previously this resets plugin manager but did not null cordovaWebViewImpl.appPlugin, leading to the issue)
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 cordovaWebView.loadUrl(START_URL);
             }

@@ -60,6 +60,7 @@ public class ErrorUrlTest {
         assertEquals(START_URL, mActivity.onPageFinishedUrl.take());
         assertEquals(ERROR_URL, mActivity.onPageFinishedUrl.take());
         mActivityRule.runOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 assertEquals(ERROR_URL, mActivity.getWebInterface().getUrl());
             }
