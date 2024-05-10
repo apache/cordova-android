@@ -29,11 +29,8 @@ example
 **/assets/www/cordova.js
 
 /test/.externalNativeBuild
-
-!/templates/project/gradle/wrapper/gradle-wrapper.jar
-!/test/androidx/gradle/wrapper/gradle-wrapper.jar
 /test/androidx/cdv-gradle-config.json
-
+/test/androidx/tools
 /test/assets/www/.tmp*
 /test/assets/www/cordova.js
 /test/bin
