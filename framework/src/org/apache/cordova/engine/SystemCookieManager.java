@@ -41,22 +41,27 @@ class SystemCookieManager implements ICordovaCookieManager {
         cookieManager.setAcceptFileSchemeCookies(true);
     }
 
+    @Override
     public void setCookiesEnabled(boolean accept) {
         cookieManager.setAcceptCookie(accept);
     }
 
+    @Override
     public void setCookie(final String url, final String value) {
         cookieManager.setCookie(url, value);
     }
 
+    @Override
     public String getCookie(final String url) {
         return cookieManager.getCookie(url);
     }
 
+    @Override
     public void clearCookies() {
         cookieManager.removeAllCookies(null);
     }
 
+    @Override
     public void flush() {
         cookieManager.flush();
     }

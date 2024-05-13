@@ -93,6 +93,7 @@ public class EmbeddedWebViewActivity extends AppCompatActivity {
      * @param permissions
      * @param grantResults
      */
+    @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[],
                                            int[] grantResults) {
         try

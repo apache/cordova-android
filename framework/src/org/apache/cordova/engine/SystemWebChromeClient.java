@@ -321,6 +321,7 @@ public class SystemWebChromeClient extends WebChromeClient {
         return uri;
     }
 
+    @Override
     public void onPermissionRequest(final PermissionRequest request) {
         LOG.d(LOG_TAG, "onPermissionRequest: " + Arrays.toString(request.getResources()));
         request.grant(request.getResources());
