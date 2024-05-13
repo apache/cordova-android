@@ -43,6 +43,10 @@ Boolean isVersionValid(version) {
     return !(new Version(version)).isEqual('0.0.0')
 }
 
+Boolean isVersionGreaterThanEqual(versionX, versionY) {
+    return (new Version(versionX)) >= (new Version(versionY))
+}
+
 String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
     def buildToolsDirContents
     try {
