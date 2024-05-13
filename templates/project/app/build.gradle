@@ -181,6 +181,10 @@ task cdvPrintProps {
 android {
     namespace cordovaConfig.PACKAGE_NAMESPACE
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         versionCode cdvVersionCode ?: new BigInteger("" + privateHelpers.extractIntFromManifest("versionCode"))
         applicationId cordovaConfig.PACKAGE_NAMESPACE
@@ -248,8 +252,39 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaLanguageVersion.of(cordovaConfig.JAVA_SOURCE_COMPATIBILITY)
+        targetCompatibility JavaLanguageVersion.of(cordovaConfig.JAVA_TARGET_COMPATIBILITY)
+    }
+
+    if (cordovaConfig.IS_GRADLE_PLUGIN_KOTLIN_ENABLED) {
+        if (cordovaConfig.KOTLIN_JVM_TARGET == null) {
+            // If the value is null, fallback to JAVA_TARGET_COMPATIBILITY,
+            // as they generally should be equal
+            def javaTarget = JavaLanguageVersion.of(cordovaConfig.JAVA_TARGET_COMPATIBILITY)
+
+            // check if javaTarget is <= 8; if so, we need to prefix it with "1."
+            // Starting with 9 and later, the value can be used as is.
+            if (javaTarget.compareTo(JavaLanguageVersion.of(8)) <= 0) {
+                javaTarget = "1." + javaTarget
+            }
+
+            cordovaConfig.KOTLIN_JVM_TARGET = javaTarget
+        }
+
+        // Similar to above, check if kotlin target is <= 8, if so prefix it.
+        // This allows the user to use consistent set of values in config.xml
+        // Rather than having to be aware whether the "1."" prefix is needed.
+        // This check is only done if the value isn't already prefixed with 1.
+        if (
+            !cordovaConfig.KOTLIN_JVM_TARGET.startsWith("1.") &&
+            JavaLanguageVersion.of(cordovaConfig.KOTLIN_JVM_TARGET).compareTo(JavaLanguageVersion.of(8)) <= 0
+        ) {
+            cordovaConfig.KOTLIN_JVM_TARGET = "1." + cordovaConfig.KOTLIN_JVM_TARGET
+        }
+
+        kotlinOptions {
+            jvmTarget = cordovaConfig.KOTLIN_JVM_TARGET
+        }
     }
 
     if (cdvReleaseSigningPropertiesFile) {

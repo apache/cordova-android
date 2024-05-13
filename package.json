@@ -19,8 +19,7 @@
     "unit-tests": "jasmine --config=spec/unit/jasmine.json",
     "cover": "nyc jasmine --config=spec/coverage.json",
     "e2e-tests": "jasmine --config=spec/e2e/jasmine.json",
-    "java-unit-tests": "node test/run_java_unit_tests.js",
-    "clean:java-unit-tests": "node test/clean.js"
+    "java-unit-tests": "node test/run_java_unit_tests.js"
   },
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",

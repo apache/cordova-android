@@ -23,7 +23,7 @@
 *.scm text
 *.sql text
 *.sh text
-*.bat text
+*.bat text eol=crlf
 
 # templates
 *.ejs text
@@ -92,3 +92,4 @@ AUTHORS text
 *.woff binary
 *.pyc binary
 *.pdf binary
+*.jar binary

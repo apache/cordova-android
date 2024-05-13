@@ -20,6 +20,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const rewire = require('rewire');
+const { isWindows } = require('../../../lib/utils');
 
 describe('ProjectBuilder', () => {
     const rootDir = '/root';
@@ -128,19 +129,24 @@ describe('ProjectBuilder', () => {
         });
     });
 
-    describe('runGradleWrapper', () => {
-        it('should run the provided gradle command if a gradle wrapper does not already exist', () => {
-            spyOn(fs, 'existsSync').and.returnValue(false);
-            builder.runGradleWrapper('/my/sweet/gradle');
-            expect(execaSpy).toHaveBeenCalledWith('/my/sweet/gradle', jasmine.any(Array), jasmine.any(Object));
+    describe('installGradleWrapper', () => {
+        beforeEach(() => {
+            execaSpy.and.resolveTo();
         });
 
-        it('should do nothing if a gradle wrapper exists in the project directory', () => {
-            spyOn(fs, 'existsSync').and.returnValue(true);
-            builder.runGradleWrapper('/my/sweet/gradle');
-            expect(execaSpy).not.toHaveBeenCalledWith('/my/sweet/gradle', jasmine.any(Array), jasmine.any(Object));
+        it('should run gradle wrapper 8.7', async () => {
+            await builder.installGradleWrapper('8.7');
+            expect(execaSpy).toHaveBeenCalledWith('gradle', ['-p', path.normalize('/root/tools'), 'wrapper', '--gradle-version', '8.7'], jasmine.any(Object));
+        });
+
+        it('CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL should override gradle version', async () => {
+            process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL = 'https://dist.local';
+            await builder.installGradleWrapper('8.7');
+            delete process.env.CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL;
+            expect(execaSpy).toHaveBeenCalledWith('gradle', ['-p', path.normalize('/root/tools'), 'wrapper', '--gradle-distribution-url', 'https://dist.local'], jasmine.any(Object));
         });
     });
+
     describe('build', () => {
         beforeEach(() => {
             spyOn(builder, 'getArgs');
@@ -170,7 +176,12 @@ describe('ProjectBuilder', () => {
 
             builder.build({});
 
-            expect(execaSpy).toHaveBeenCalledWith(path.join(rootDir, 'gradlew'), testArgs, jasmine.anything());
+            let gradle = path.join(rootDir, 'tools', 'gradlew');
+            if (isWindows()) {
+                gradle += '.bat';
+            }
+
+            expect(execaSpy).toHaveBeenCalledWith(gradle, testArgs, jasmine.anything());
         });
 
         it('should reject if the spawn fails', () => {
@@ -227,8 +238,13 @@ describe('ProjectBuilder', () => {
             const gradleArgs = ['test', 'args', '-f'];
             builder.getArgs.and.returnValue(gradleArgs);
 
+            let gradle = path.join(rootDir, 'tools', 'gradlew');
+            if (isWindows()) {
+                gradle += '.bat';
+            }
+
             return builder.clean(opts).then(() => {
-                expect(execaSpy).toHaveBeenCalledWith(path.join(rootDir, 'gradlew'), gradleArgs, jasmine.anything());
+                expect(execaSpy).toHaveBeenCalledWith(gradle, gradleArgs, jasmine.anything());
             });
         });
 

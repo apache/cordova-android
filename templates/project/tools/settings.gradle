@@ -17,16 +17,13 @@
        under the License.
 */
 
-const fs = require('fs-extra');
-const path = require('path');
-
-/**
- * This script is to be run manually (e.g. by npm run clean:java-unit-tests) if
- * you want to upgrade gradlew or test its proper generation.
- */
-
-for (const variant of ['androidx']) {
-    for (const file of ['gradlew', 'gradlew.bat']) {
-        fs.removeSync(path.join(__dirname, variant, file));
-    }
-}
+// This is an empty project used to provide Gradle Tooling
+// Using the main project which loads AGP will enforce a minimum version
+// requirement on the end-user, requiring a gradle install that satisfies AGP
+// version requirements.
+// To avoid that, we utilise this empty project of which we can
+// freely run the gradle wrapper task against to obtain the 
+// wrapper at the desired version, without being restricted by AGP's version
+// requirements.
+// Of course, the installed wrapper must still be of at least the minimum
+// required version of AGP for the build to work correctly.
