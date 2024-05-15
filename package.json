@@ -39,7 +39,7 @@
     "which": "^4.0.0"
   },
   "devDependencies": {
-    "@cordova/eslint-config": "^5.0.0",
+    "@cordova/eslint-config": "^5.1.0",
     "cordova-js": "^6.1.0",
     "elementtree": "^0.1.7",
     "jasmine": "^4.6.0",
