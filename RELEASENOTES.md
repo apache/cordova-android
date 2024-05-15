@@ -20,6 +20,38 @@
 -->
 ## Release Notes for Cordova (Android)
 
+### 13.0.0 (May 15, 2024)
+
+**Breaking Changes:**
+
+* [GH-1678](https://github.com/apache/cordova-android/pull/1678) feat!: API 34 Support
+* [GH-1543](https://github.com/apache/cordova-android/pull/1543) feat!: bump `kotlin@1.9.24` & drop `kotlin-android-extensions` when kotlin `>=1.8.0`
+
+**Features:**
+
+* [GH-1700](https://github.com/apache/cordova-android/pull/1700) feat(splash): Support `SplashScreenBackgroundColor` preference
+* [GH-1609](https://github.com/apache/cordova-android/pull/1609) feat: add camera intent with file input capture
+* [GH-1696](https://github.com/apache/cordova-android/pull/1696) feat: Add `ResolveServiceWorkerRequests` preference
+
+**Chores, Dependencies & CI:**
+
+* [GH-1677](https://github.com/apache/cordova-android/pull/1677) chore(deps-dev): bump `@babel/traverse` from `7.22.10` to `7.23.2`
+* [GH-1713](https://github.com/apache/cordova-android/pull/1713) dep: bump npm dependencies 20240515
+  * `semver@7.6.2`
+  * `rewire@7.0.0`
+  * `nopt@7.2.1`
+  * `jasmine@5.1.0`
+  * `fs-extra@11.2.0`
+  * `fast-glob@3.3.2`
+  * `dedent@1.5.3`
+  * `@cordova/eslint-config@5.1.0`
+  * `which@4.0.0`
+  * `properties-parser@0.6.0`
+  * `android-versions@2.0.0`
+* [GH-1711](https://github.com/apache/cordova-android/pull/1711) ci: Set up CodeQL analysis w/ fixes
+* [GH-1687](https://github.com/apache/cordova-android/pull/1687) ci(release-audit): add license header and dependency checker
+* [GH-1703](https://github.com/apache/cordova-android/pull/1703) ci: update `codecov@v4` w/ token
+
 ### 12.0.1 (Aug 23, 2023)
 
 * [GH-1632](https://github.com/apache/cordova-android/pull/1632) fix(android): `monochrome` checks

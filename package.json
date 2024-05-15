@@ -1,6 +1,6 @@
 {
   "name": "cordova-android",
-  "version": "13.0.0-dev",
+  "version": "13.0.0",
   "description": "cordova-android release",
   "types": "./types/index.d.ts",
   "main": "lib/Api.js",
