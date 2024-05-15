@@ -24,7 +24,7 @@
   "author": "Apache Software Foundation",
   "license": "Apache-2.0",
   "dependencies": {
-    "android-versions": "^1.8.1",
+    "android-versions": "^2.0.0",
     "cordova-common": "^5.0.0",
     "dedent": "^1.0.1",
     "execa": "^5.1.1",
