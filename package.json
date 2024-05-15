@@ -45,7 +45,7 @@
     "jasmine": "^5.1.0",
     "jasmine-spec-reporter": "^7.0.0",
     "nyc": "^15.1.0",
-    "rewire": "^6.0.0"
+    "rewire": "^7.0.0"
   },
   "engines": {
     "node": ">=16.13.0"
