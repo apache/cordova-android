@@ -31,7 +31,7 @@
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
     "is-path-inside": "^3.0.3",
-    "nopt": "^7.1.0",
+    "nopt": "^7.2.1",
     "properties-parser": "^0.6.0",
     "semver": "^7.3.8",
     "string-argv": "^0.3.1",
