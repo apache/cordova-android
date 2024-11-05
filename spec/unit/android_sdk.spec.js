@@ -17,7 +17,7 @@
     under the License.
 */
 
-const fs = require('fs');
+const fs = require('node:fs');
 const path = require('node:path');
 const rewire = require('rewire');
 
