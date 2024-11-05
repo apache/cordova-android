@@ -18,7 +18,7 @@
 */
 
 const fs = require('fs-extra');
-const path = require('path');
+const path = require('node:path');
 const rewire = require('rewire');
 const { isWindows } = require('../../../lib/utils');
 
