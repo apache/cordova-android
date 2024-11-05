@@ -18,7 +18,7 @@
 */
 
 const fs = require('fs');
-const os = require('os');
+const os = require('node:os');
 const path = require('node:path');
 const rewire = require('rewire');
 
