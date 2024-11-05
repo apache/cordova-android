@@ -18,7 +18,7 @@
 */
 
 const os = require('os');
-const path = require('path');
+const path = require('node:path');
 const common = require('cordova-common');
 const EventEmitter = require('events');
 

@@ -20,7 +20,7 @@
 const rewire = require('rewire');
 const common = rewire('../../../lib/pluginHandlers');
 const android = common.__get__('handlers');
-const path = require('path');
+const path = require('node:path');
 const fs = require('fs-extra');
 const os = require('os');
 const temp = path.join(os.tmpdir(), 'plugman');

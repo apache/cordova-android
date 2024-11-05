@@ -19,7 +19,7 @@
        under the License.
 */
 
-const path = require('path');
+const path = require('node:path');
 const execa = require('execa');
 const fs = require('fs-extra');
 const ProjectBuilder = require('../lib/builders/ProjectBuilder');
