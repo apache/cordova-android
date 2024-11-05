@@ -17,7 +17,7 @@
  under the License.
  */
 
-const os = require('os');
+const os = require('node:os');
 const fs = require('fs-extra');
 const path = require('node:path');
 const { EventEmitter } = require('events');
