@@ -29,7 +29,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 public class CordovaPreferences {
-    private HashMap<String, String> prefs = new HashMap<String, String>(20);
+    private HashMap<String, String> prefs = new HashMap<>(20);
     private Bundle preferencesBundleExtras;
 
     public void setPreferencesBundle(Bundle extras) {

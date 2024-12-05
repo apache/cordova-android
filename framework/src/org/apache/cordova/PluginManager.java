@@ -52,8 +52,8 @@ public class PluginManager {
     private static final int SLOW_EXEC_WARNING_THRESHOLD = Debug.isDebuggerConnected() ? 60 : 16;
 
     // List of service entries
-    private final Map<String, CordovaPlugin> pluginMap = Collections.synchronizedMap(new LinkedHashMap<String, CordovaPlugin>());
-    private final Map<String, PluginEntry> entryMap = Collections.synchronizedMap(new LinkedHashMap<String, PluginEntry>());
+    private final Map<String, CordovaPlugin> pluginMap = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<String, PluginEntry> entryMap = Collections.synchronizedMap(new LinkedHashMap<>());
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
@@ -609,7 +609,7 @@ public class PluginManager {
      * @return list of PathHandlers in no particular order
      */
     public ArrayList<CordovaPluginPathHandler> getPluginPathHandlers() {
-        ArrayList<CordovaPluginPathHandler> handlers = new ArrayList<CordovaPluginPathHandler>();
+        ArrayList<CordovaPluginPathHandler> handlers = new ArrayList<>();
         for (CordovaPlugin plugin : this.pluginMap.values()) {
             if (plugin != null && plugin.getPathHandler() != null) {
                 handlers.add(plugin.getPathHandler());

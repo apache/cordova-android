@@ -97,7 +97,7 @@ public class AllowList {
     public static final String TAG = "CordovaAllowList";
 
     public AllowList() {
-        this.allowList = new ArrayList<URLPattern>();
+        this.allowList = new ArrayList<>();
     }
 
     /* Match patterns (from http://developer.chrome.com/extensions/match_patterns.html)

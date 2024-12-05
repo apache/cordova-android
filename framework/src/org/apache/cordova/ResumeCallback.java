@@ -66,7 +66,7 @@ public class ResumeCallback extends CallbackContext {
         // the PluginResult passed to this CallbackContext into JSON twice.
         // The results are combined into an event payload before the event is
         // fired on the js side of things (see platform.js)
-        List<PluginResult> result = new ArrayList<PluginResult>();
+        List<PluginResult> result = new ArrayList<>();
         result.add(eventResult);
         result.add(pluginResult);
 

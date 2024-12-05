@@ -168,7 +168,7 @@ public class CoreAndroid extends CordovaPlugin {
         boolean clearHistory = false;
 
         // If there are properties, then set them on the Activity
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
         if (props != null) {
             JSONArray keys = props.names();
             for (int i = 0; i < keys.length(); i++) {
