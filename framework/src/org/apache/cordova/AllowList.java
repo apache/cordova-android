@@ -157,9 +157,7 @@ public class AllowList {
 
         Uri parsedUri = Uri.parse(uri);
         // Look for match in allow list
-        Iterator<URLPattern> pit = allowList.iterator();
-        while (pit.hasNext()) {
-            URLPattern p = pit.next();
+        for (URLPattern p : allowList) {
             if (p.matches(parsedUri)) {
                 return true;
             }
