@@ -72,7 +72,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
-    private Set<Integer> boundKeyCodes = new HashSet<Integer>();
+    private Set<Integer> boundKeyCodes = new HashSet<>();
 
     public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
         String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
@@ -91,7 +91,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     // Convenience method for when creating programmatically (not from Config.xml).
     public void init(CordovaInterface cordova) {
-        init(cordova, new ArrayList<PluginEntry>(), new CordovaPreferences());
+        init(cordova, new ArrayList<>(), new CordovaPreferences());
     }
 
     @SuppressLint("Assert")

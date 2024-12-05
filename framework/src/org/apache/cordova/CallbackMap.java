@@ -31,7 +31,7 @@ public class CallbackMap {
     private SparseArray<Pair<CordovaPlugin, Integer>> callbacks;
 
     public CallbackMap() {
-        this.callbacks = new SparseArray<Pair<CordovaPlugin, Integer>>();
+        this.callbacks = new SparseArray<>();
     }
 
     /**
@@ -45,7 +45,7 @@ public class CallbackMap {
      */
     public synchronized int registerCallback(CordovaPlugin receiver, int requestCode) {
         int mappedId = this.currentCallbackId++;
-        callbacks.put(mappedId, new Pair<CordovaPlugin, Integer>(receiver, requestCode));
+        callbacks.put(mappedId, new Pair<>(receiver, requestCode));
         return mappedId;
     }
 
