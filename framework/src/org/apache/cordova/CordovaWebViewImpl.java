@@ -148,23 +148,20 @@ public class CordovaWebViewImpl implements CordovaWebView {
         final int loadUrlTimeoutValue = preferences.getInteger("LoadUrlTimeoutValue", 20000);
 
         // Timeout error method
-        final Runnable loadError = new Runnable() {
-            @Override
-            public void run() {
-                stopLoading();
-                LOG.e(TAG, "CordovaWebView: TIMEOUT ERROR!");
+        final Runnable loadError = () -> {
+            stopLoading();
+            LOG.e(TAG, "CordovaWebView: TIMEOUT ERROR!");
 
-                // Handle other errors by passing them to the WebView in JS
-                JSONObject data = new JSONObject();
-                try {
-                    data.put("errorCode", -6);
-                    data.put("description", "The connection to the server was unsuccessful.");
-                    data.put("url", url);
-                } catch (JSONException e) {
-                    // Will never happen.
-                }
-                pluginManager.postMessage("onReceivedError", data);
+            // Handle other errors by passing them to the WebView in JS
+            JSONObject data = new JSONObject();
+            try {
+                data.put("errorCode", -6);
+                data.put("description", "The connection to the server was unsuccessful.");
+                data.put("url", url);
+            } catch (JSONException e) {
+                // Will never happen.
             }
+            pluginManager.postMessage("onReceivedError", data);
         };
 
         // Timeout timer method
@@ -190,14 +187,11 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         if (cordova.getActivity() != null) {
             final boolean _recreatePlugins = recreatePlugins;
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (loadUrlTimeoutValue > 0) {
-                        cordova.getThreadPool().execute(timeoutCheck);
-                    }
-                    engine.loadUrl(url, _recreatePlugins);
+            cordova.getActivity().runOnUiThread(() -> {
+                if (loadUrlTimeoutValue > 0) {
+                    cordova.getThreadPool().execute(timeoutCheck);
                 }
+                engine.loadUrl(url, _recreatePlugins);
             });
         } else {
             LOG.d(TAG, "Cordova activity does not exist.");
@@ -581,23 +575,15 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
             // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
             if (engine.getView().getVisibility() != View.VISIBLE) {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Thread.sleep(2000);
-                            if (cordova.getActivity() != null) {
-                                cordova.getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pluginManager.postMessage("spinner", "stop");
-                                    }
-                                });
-                            } else {
-                                LOG.d(TAG, "Cordova activity does not exist.");
-                            }
-                        } catch (InterruptedException e) {
+                Thread t = new Thread(() -> {
+                    try {
+                        Thread.sleep(2000);
+                        if (cordova.getActivity() != null) {
+                            cordova.getActivity().runOnUiThread(() -> pluginManager.postMessage("spinner", "stop"));
+                        } else {
+                            LOG.d(TAG, "Cordova activity does not exist.");
                         }
+                    } catch (InterruptedException e) {
                     }
                 });
                 t.start();
