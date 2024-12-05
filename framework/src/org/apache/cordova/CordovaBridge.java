@@ -136,9 +136,7 @@ public class CordovaBridge {
                 String callbackId = array.getString(3);
                 String r = jsExec(bridgeSecret, service, action, callbackId, message);
                 return r == null ? "" : r;
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+            } catch (JSONException | IllegalAccessException e) {
                 e.printStackTrace();
             }
             return "";
@@ -148,9 +146,7 @@ public class CordovaBridge {
             try {
                 int bridgeSecret = Integer.parseInt(defaultValue.substring(16));
                 jsSetNativeToJsBridgeMode(bridgeSecret, Integer.parseInt(message));
-            } catch (NumberFormatException e){
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+            } catch (NumberFormatException | IllegalAccessException e){
                 e.printStackTrace();
             }
             return "";
