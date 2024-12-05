@@ -22,7 +22,7 @@ const utils = require('../../lib/utils');
 const create = rewire('../../lib/create');
 const check_reqs = require('../../lib/check_reqs');
 const fs = require('fs-extra');
-const path = require('path');
+const path = require('node:path');
 const MockCordovaGradleConfigParser = require('./mocks/config/MockCordovaGradleConfigParser');
 const CordovaGradleConfigParserFactory = require('../../lib/config/CordovaGradleConfigParserFactory');
 

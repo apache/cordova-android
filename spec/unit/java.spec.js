@@ -17,7 +17,7 @@
     under the License.
 */
 
-const path = require('path');
+const path = require('node:path');
 const rewire = require('rewire');
 const { CordovaError } = require('cordova-common');
 const utils = require('../../lib/utils');

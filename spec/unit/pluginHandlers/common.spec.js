@@ -18,9 +18,9 @@
 
 const rewire = require('rewire');
 const common = rewire('../../../lib/pluginHandlers');
-const path = require('path');
+const path = require('node:path');
 const fs = require('fs-extra');
-const osenv = require('os');
+const osenv = require('node:os');
 
 const test_dir = path.join(osenv.tmpdir(), 'test_plugman');
 const project_dir = path.join(test_dir, 'project');
