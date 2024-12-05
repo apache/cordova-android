@@ -39,7 +39,7 @@ public class ConfigXmlParser {
     private String launchUrl;
     private String contentSrc;
     private CordovaPreferences prefs = new CordovaPreferences();
-    private ArrayList<PluginEntry> pluginEntries = new ArrayList<PluginEntry>(20);
+    private ArrayList<PluginEntry> pluginEntries = new ArrayList<>(20);
 
     public CordovaPreferences getPreferences() {
         return prefs;

@@ -51,12 +51,12 @@ public class NativeToJsMessageQueue {
     /**
      * The list of JavaScript statements to be sent to JavaScript.
      */
-    private final LinkedList<JsMessage> queue = new LinkedList<JsMessage>();
+    private final LinkedList<JsMessage> queue = new LinkedList<>();
 
     /**
      * The array of listeners that can be used to send messages to JS.
      */
-    private ArrayList<BridgeMode> bridgeModes = new ArrayList<BridgeMode>();
+    private ArrayList<BridgeMode> bridgeModes = new ArrayList<>();
 
     /**
      * When null, the bridge is disabled. This occurs during page transitions.

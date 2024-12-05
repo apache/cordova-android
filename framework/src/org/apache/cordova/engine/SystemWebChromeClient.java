@@ -275,7 +275,7 @@ public class SystemWebChromeClient extends WebChromeClient {
                     // Handle result
                     Uri[] result = null;
                     if (resultCode == Activity.RESULT_OK) {
-                        List<Uri> uris = new ArrayList<Uri>();
+                        List<Uri> uris = new ArrayList<>();
 
                         if (intent != null && intent.getData() != null) { // single file
                             LOG.v(LOG_TAG, "Adding file (single): " + intent.getData());
