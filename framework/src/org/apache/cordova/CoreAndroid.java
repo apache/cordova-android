@@ -87,12 +87,7 @@ public class CoreAndroid extends CordovaPlugin {
                 // This gets called from JavaScript onCordovaReady to show the WebView.
                 // I recommend we change the name of the Message as spinner/stop is not
                 // indicative of what this actually does (shows the WebView).
-                cordova.getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        webView.getPluginManager().postMessage("spinner", "stop");
-                    }
-                });
+                cordova.getActivity().runOnUiThread(() -> webView.getPluginManager().postMessage("spinner", "stop"));
             }
             else if (action.equals("loadUrl")) {
                 this.loadUrl(args.getString(0), args.optJSONObject(1));
@@ -146,12 +141,7 @@ public class CoreAndroid extends CordovaPlugin {
      * Clear the resource cache.
      */
     public void clearCache() {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webView.clearCache();
-            }
-        });
+        cordova.getActivity().runOnUiThread(() -> webView.clearCache());
     }
 
     /**
@@ -218,12 +208,7 @@ public class CoreAndroid extends CordovaPlugin {
      * Clear page history for the app.
      */
     public void clearHistory() {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webView.clearHistory();
-            }
-        });
+        cordova.getActivity().runOnUiThread(() -> webView.clearHistory());
     }
 
     /**
@@ -231,12 +216,7 @@ public class CoreAndroid extends CordovaPlugin {
      * This is the same as pressing the backbutton on Android device.
      */
     public void backHistory() {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webView.backHistory();
-            }
-        });
+        cordova.getActivity().runOnUiThread(() -> webView.backHistory());
     }
 
     /**

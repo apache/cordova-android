@@ -84,13 +84,11 @@ public class SystemWebChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-        dialogsHelper.showAlert(message, new CordovaDialogsHelper.Result() {
-            @Override public void gotResult(boolean success, String value) {
-                if (success) {
-                    result.confirm();
-                } else {
-                    result.cancel();
-                }
+        dialogsHelper.showAlert(message, (success, value) -> {
+            if (success) {
+                result.confirm();
+            } else {
+                result.cancel();
             }
         });
         return true;
@@ -101,14 +99,11 @@ public class SystemWebChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-        dialogsHelper.showConfirm(message, new CordovaDialogsHelper.Result() {
-            @Override
-            public void gotResult(boolean success, String value) {
-                if (success) {
-                    result.confirm();
-                } else {
-                    result.cancel();
-                }
+        dialogsHelper.showConfirm(message, (success, value) -> {
+            if (success) {
+                result.confirm();
+            } else {
+                result.cancel();
             }
         });
         return true;
@@ -129,14 +124,11 @@ public class SystemWebChromeClient extends WebChromeClient {
         if (handledRet != null) {
             result.confirm(handledRet);
         } else {
-            dialogsHelper.showPrompt(message, defaultValue, new CordovaDialogsHelper.Result() {
-                @Override
-                public void gotResult(boolean success, String value) {
-                    if (success) {
-                        result.confirm(value);
-                    } else {
-                        result.cancel();
-                    }
+            dialogsHelper.showPrompt(message, defaultValue, (success, value) -> {
+                if (success) {
+                    result.confirm(value);
+                } else {
+                    result.cancel();
                 }
             });
         }

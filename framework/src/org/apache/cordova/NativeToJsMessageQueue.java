@@ -299,13 +299,10 @@ public class NativeToJsMessageQueue {
 
         @Override
         public void onNativeToJsMessageAvailable(final NativeToJsMessageQueue queue) {
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    String js = queue.popAndEncodeAsJs();
-                    if (js != null) {
-                        engine.loadUrl("javascript:" + js, false);
-                    }
+            cordova.getActivity().runOnUiThread(() -> {
+                String js = queue.popAndEncodeAsJs();
+                if (js != null) {
+                    engine.loadUrl("javascript:" + js, false);
                 }
             });
         }
@@ -328,26 +325,20 @@ public class NativeToJsMessageQueue {
 
         @Override
         public void reset() {
-            delegate.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    online = false;
-                    // If the following call triggers a notifyOfFlush, then ignore it.
-                    ignoreNextFlush = true;
-                    delegate.setNetworkAvailable(true);
-                }
+            delegate.runOnUiThread(() -> {
+                online = false;
+                // If the following call triggers a notifyOfFlush, then ignore it.
+                ignoreNextFlush = true;
+                delegate.setNetworkAvailable(true);
             });
         }
 
         @Override
         public void onNativeToJsMessageAvailable(final NativeToJsMessageQueue queue) {
-            delegate.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!queue.isEmpty()) {
-                        ignoreNextFlush = false;
-                        delegate.setNetworkAvailable(online);
-                    }
+            delegate.runOnUiThread(() -> {
+                if (!queue.isEmpty()) {
+                    ignoreNextFlush = false;
+                    delegate.setNetworkAvailable(online);
                 }
             });
         }
@@ -372,13 +363,10 @@ public class NativeToJsMessageQueue {
 
         @Override
         public void onNativeToJsMessageAvailable(final NativeToJsMessageQueue queue) {
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    String js = queue.popAndEncodeAsJs();
-                    if (js != null) {
-                        engine.evaluateJavascript(js, null);
-                    }
+            cordova.getActivity().runOnUiThread(() -> {
+                String js = queue.popAndEncodeAsJs();
+                if (js != null) {
+                    engine.evaluateJavascript(js, null);
                 }
             });
         }
