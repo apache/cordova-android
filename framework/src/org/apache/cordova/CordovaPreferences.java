@@ -84,7 +84,11 @@ public class CordovaPreferences {
         name = name.toLowerCase(Locale.ENGLISH);
         String value = prefs.get(name);
         if (value != null) {
-            return Double.valueOf(value);
+            try {
+                return Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+                // Failed to parse value and will fallback with default value.
+            }
         }
         return defaultValue;
     }
