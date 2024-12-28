@@ -30,4 +30,4 @@ public interface ICordovaCookieManager {
     public void clearCookies();
 
     public void flush();
-};
+}
