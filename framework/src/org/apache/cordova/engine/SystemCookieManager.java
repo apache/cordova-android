@@ -65,4 +65,4 @@ class SystemCookieManager implements ICordovaCookieManager {
     public void flush() {
         cookieManager.flush();
     }
-};
+}
