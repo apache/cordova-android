@@ -92,7 +92,7 @@ public class SplashScreenPlugin extends CordovaPlugin {
         JSONArray args,
         CallbackContext callbackContext
     ) throws JSONException {
-        if (action.equals("hide") && autoHide == false) {
+        if (action.equals("hide") && !autoHide) {
             /*
              * The `.hide()` method can only be triggered if the `splashScreenAutoHide`
              * is set to `false`.
