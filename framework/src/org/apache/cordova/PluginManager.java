@@ -252,9 +252,7 @@ public class PluginManager {
      * @param handler           The HttpAuthHandler used to set the WebView's response
      * @param host              The host requiring authentication
      * @param realm             The realm for which authentication is required
-     *
-     * @return                  Returns True if there is a plugin which will resolve this auth challenge, otherwise False
-     *
+     * @return                  True if there is a plugin which will resolve this auth challenge, otherwise False
      */
     public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
         synchronized (this.pluginMap) {
@@ -273,9 +271,7 @@ public class PluginManager {
      *
      * @param view              The WebView that is initiating the callback
      * @param request           The client certificate request
-     *
-     * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
-     *
+     * @return                  True if plugin will resolve this auth challenge, otherwise False
      */
     public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
         synchronized (this.pluginMap) {
@@ -400,7 +396,7 @@ public class PluginManager {
      * the default policy is applied.
      *
      * @param url       The URL that is being requested.
-     * @return          Returns true to allow the resource to load,
+     * @return          true to allow the resource to load,
      *                  false to block the resource.
      */
     public boolean shouldAllowRequest(String url) {
@@ -440,7 +436,7 @@ public class PluginManager {
      * the default policy is applied.
      *
      * @param url       The URL that is being requested.
-     * @return          Returns true to allow the navigation,
+     * @return          true to allow the navigation,
      *                  false to block the navigation.
      */
     public boolean shouldAllowNavigation(String url) {
@@ -490,7 +486,7 @@ public class PluginManager {
      * the default policy is applied.
      *
      * @param url       The URL that is being requested.
-     * @return          Returns true to allow the URL to launch an intent,
+     * @return          true to allow the URL to launch an intent,
      *                  false to block the intent.
      */
     public Boolean shouldOpenExternalUrl(String url) {

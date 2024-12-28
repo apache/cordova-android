@@ -71,6 +71,7 @@ public class CoreAndroid extends CordovaPlugin {
      * @param action            The action to execute.
      * @param args              JSONArry of arguments for the plugin.
      * @param callbackContext   The callback context from which we were invoked.
+     *
      * @return                  A PluginResult object with a status and message.
      */
     @Override
@@ -354,9 +355,8 @@ public class CoreAndroid extends CordovaPlugin {
         }
     }
 
-    /*
+    /**
      * Unregister the receiver
-     *
      */
     @Override
     public void onDestroy()

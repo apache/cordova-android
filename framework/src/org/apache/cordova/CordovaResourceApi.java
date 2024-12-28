@@ -143,8 +143,7 @@ public class CordovaResourceApi {
     }
 
     /**
-     * Returns a File that points to the resource, or null if the resource
-     * is not on the local filesystem.
+     * @return A file that points to the resource, or null if the resource is not on the local filesystem.
      */
     public File mapUriToFile(Uri uri) {
         assertBackgroundThread();
@@ -223,6 +222,7 @@ public class CordovaResourceApi {
 
     /**
      * Opens a stream to the given URI, also providing the MIME type & length.
+     *
      * @return Never returns null.
      * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
      *     resolved before being passed into this function.
@@ -235,6 +235,7 @@ public class CordovaResourceApi {
 
     /**
      * Opens a stream to the given URI, also providing the MIME type & length.
+     *
      * @return Never returns null.
      * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
      *     resolved before being passed into this function.
@@ -320,6 +321,7 @@ public class CordovaResourceApi {
 
     /**
      * Opens a stream to the given URI.
+     *
      * @return Never returns null.
      * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
      *     resolved before being passed into this function.

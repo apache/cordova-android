@@ -192,6 +192,7 @@ public class SystemWebChromeClient extends WebChromeClient {
     /**
      * Ask the host application for a custom progress view to show while
      * a <video> is loading.
+     *
      * @return View The progress view.
      */
     public View getVideoLoadingProgressView() {

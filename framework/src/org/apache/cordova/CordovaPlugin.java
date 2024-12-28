@@ -79,7 +79,7 @@ public class CordovaPlugin {
     }
 
     /**
-     * Returns the plugin's service name (what you'd use when calling pluginManger.getPlugin())
+     * @return the plugin's service name (what you'd use when calling pluginManger.getPlugin())
      */
     public String getServiceName() {
         return serviceName;
@@ -289,7 +289,7 @@ public class CordovaPlugin {
      * Allows plugins to handle a link being clicked. Return true here to cancel the navigation.
      *
      * @param url           The URL that is trying to be loaded in the Cordova webview.
-     * @return              Return true to prevent the URL from loading. Default is false.
+     * @return              true to prevent the URL from loading. Default is false.
      */
     public boolean onOverrideUrlLoading(String url) {
         return false;
@@ -362,7 +362,6 @@ public class CordovaPlugin {
      * @param handler           The HttpAuthHandler used to set the WebView's response
      * @param host              The host requiring authentication
      * @param realm             The realm for which authentication is required
-     *
      * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
      *
      */
@@ -376,8 +375,7 @@ public class CordovaPlugin {
      *
      * @param view              The WebView that is initiating the callback
      * @param request           The client certificate request
-     *
-     * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
+     * @return                  True if plugin will resolve this auth challenge, otherwise False
      *
      */
     public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
@@ -396,20 +394,17 @@ public class CordovaPlugin {
      * Called by the Plugin Manager when we need to actually request permissions
      *
      * @param requestCode   Passed to the activity to track the request
-     *
-     * @return              Returns the permission that was stored in the plugin
+     * @return              The permission that was stored in the plugin
      */
-
     public void requestPermissions(int requestCode) {
     }
 
-    /*
+    /**
      * Called by the WebView implementation to check for geolocation permissions, can be used
      * by other Java methods in the event that a plugin is using this as a dependency.
      *
-     * @return          Returns true if the plugin has all the permissions it needs to operate.
+     * @return          True if the plugin has all the permissions it needs to operate.
      */
-
     public boolean hasPermisssion() {
         return true;
     }
@@ -420,7 +415,6 @@ public class CordovaPlugin {
      * @param requestCode
      * @param permissions
      * @param grantResults
-     *
      * @deprecated Use {@link #onRequestPermissionsResult} instead.
      */
     @Deprecated
@@ -443,6 +437,7 @@ public class CordovaPlugin {
 
     /**
      * Allow plugins to supply a PathHandler for the WebViewAssetHandler
+     *
      * @return a CordovaPluginPathHandler which listen for paths and returns a response
      */
     public CordovaPluginPathHandler getPathHandler() {

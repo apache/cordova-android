@@ -31,32 +31,32 @@ public interface ICordovaClientCertRequest {
      */
     public void cancel();
 
-    /*
-     * Returns the host name of the server requesting the certificate.
+    /**
+     * @return the host name of the server requesting the certificate.
      */
     public String getHost();
 
-    /*
-     * Returns the acceptable types of asymmetric keys (can be null).
+    /**
+     * @return the acceptable types of asymmetric keys (can be null).
      */
     public String[] getKeyTypes();
 
-    /*
-     * Returns the port number of the server requesting the certificate.
+    /**
+     * @return the port number of the server requesting the certificate.
      */
     public int getPort();
 
-    /*
-     * Returns the acceptable certificate issuers for the certificate matching the private key (can be null).
+    /**
+     * @return the acceptable certificate issuers for the certificate matching the private key (can be null).
      */
     public Principal[] getPrincipals();
 
-    /*
+    /**
      * Ignore the request for now. Do not remember user's choice.
      */
     public void ignore();
 
-    /*
+    /**
      * Proceed with the specified private key and client certificate chain. Remember the user's positive choice and use it for future requests.
      *
      * @param privateKey The privateKey

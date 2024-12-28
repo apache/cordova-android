@@ -332,7 +332,6 @@ public class SystemWebViewClient extends WebViewClient {
      *
      * @param host
      * @param realm
-     *
      * @return the authentication token or null if did not exist
      */
     public AuthenticationToken removeAuthenticationToken(String host, String realm) {
@@ -350,7 +349,6 @@ public class SystemWebViewClient extends WebViewClient {
      *
      * @param host
      * @param realm
-     *
      * @return the authentication token
      */
     public AuthenticationToken getAuthenticationToken(String host, String realm) {
