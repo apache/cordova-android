@@ -66,7 +66,7 @@ public interface CordovaWebViewEngine {
      * Used to retrieve the associated CordovaWebView given a View without knowing the type of Engine.
      * E.g. ((CordovaWebView.EngineView)activity.findViewById(android.R.id.webView)).getCordovaWebView();
      */
-    public interface EngineView {
+    interface EngineView {
         CordovaWebView getCordovaWebView();
     }
 
@@ -74,7 +74,7 @@ public interface CordovaWebViewEngine {
      * Contains methods that an engine uses to communicate with the parent CordovaWebView.
      * Methods may be added in future cordova versions, but never removed.
      */
-    public interface Client {
+    interface Client {
         Boolean onDispatchKeyEvent(KeyEvent event);
         void clearLoadTimeoutTimer();
         void onPageStarted(String newUrl);

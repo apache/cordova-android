@@ -76,14 +76,14 @@ import androidx.core.splashscreen.SplashScreen;
  * <p>The use of the set*Property() methods is deprecated in favor of the config.xml file.</p>
  */
 public class CordovaActivity extends AppCompatActivity {
-    public static String TAG = "CordovaActivity";
+    public static final String TAG = "CordovaActivity";
 
     // The WebView for our app
     protected CordovaWebView appView;
 
-    private static int ACTIVITY_STARTING = 0;
-    private static int ACTIVITY_RUNNING = 1;
-    private static int ACTIVITY_EXITING = 2;
+    private static final int ACTIVITY_STARTING = 0;
+    private static final int ACTIVITY_RUNNING = 1;
+    private static final int ACTIVITY_EXITING = 2;
 
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background

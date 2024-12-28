@@ -117,6 +117,6 @@ public class CordovaDialogsHelper {
     }
 
     public interface Result {
-        public void gotResult(boolean success, String value);
+        void gotResult(boolean success, String value);
     }
 }

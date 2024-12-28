@@ -27,8 +27,8 @@ import java.util.List;
 
 public class ResumeCallback extends CallbackContext {
     private final String TAG = "CordovaResumeCallback";
-    private String serviceName;
-    private PluginManager pluginManager;
+    private final String serviceName;
+    private final PluginManager pluginManager;
 
     public ResumeCallback(String serviceName, PluginManager pluginManager) {
         super("resumecallback", null);

@@ -28,7 +28,7 @@ import android.util.SparseArray;
  */
 public class CallbackMap {
     private int currentCallbackId = 0;
-    private SparseArray<Pair<CordovaPlugin, Integer>> callbacks;
+    private final SparseArray<Pair<CordovaPlugin, Integer>> callbacks;
 
     public CallbackMap() {
         this.callbacks = new SparseArray<>();

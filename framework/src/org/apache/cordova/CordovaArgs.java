@@ -25,7 +25,7 @@ import org.json.JSONObject;
 import android.util.Base64;
 
 public class CordovaArgs {
-    private JSONArray baseArgs;
+    private final JSONArray baseArgs;
 
     public CordovaArgs(JSONArray args) {
         this.baseArgs = args;

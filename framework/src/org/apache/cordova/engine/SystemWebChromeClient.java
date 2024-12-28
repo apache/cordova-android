@@ -61,14 +61,14 @@ public class SystemWebChromeClient extends WebChromeClient {
 
     private static final int FILECHOOSER_RESULTCODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
-    private long MAX_QUOTA = 100 * 1024 * 1024;
+    private final long MAX_QUOTA = 100 * 1024 * 1024;
     protected final SystemWebViewEngine parentEngine;
 
     // the video progress view
     private View mVideoProgressView;
 
-    private CordovaDialogsHelper dialogsHelper;
-    private Context appContext;
+    private final CordovaDialogsHelper dialogsHelper;
+    private final Context appContext;
 
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
     private View mCustomView;

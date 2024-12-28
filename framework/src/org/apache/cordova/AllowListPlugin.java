@@ -74,7 +74,7 @@ public class AllowListPlugin extends CordovaPlugin {
     }
 
     private class CustomConfigXmlParser extends ConfigXmlParser {
-        private CordovaPreferences prefs = new CordovaPreferences();
+        private final CordovaPreferences prefs = new CordovaPreferences();
 
         @Override
         public void handleStartTag(XmlPullParser xml) {

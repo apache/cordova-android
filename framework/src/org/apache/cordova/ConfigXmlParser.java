@@ -29,17 +29,17 @@ import org.xmlpull.v1.XmlPullParserException;
 import android.content.Context;
 
 public class ConfigXmlParser {
-    private static String TAG = "ConfigXmlParser";
+    private static final String TAG = "ConfigXmlParser";
 
-    private static String SCHEME_HTTP = "http";
-    private static String SCHEME_HTTPS = "https";
-    private static String DEFAULT_HOSTNAME = "localhost";
+    private static final String SCHEME_HTTP = "http";
+    private static final String SCHEME_HTTPS = "https";
+    private static final String DEFAULT_HOSTNAME = "localhost";
     private static final String DEFAULT_CONTENT_SRC = "index.html";
 
     private String launchUrl;
     private String contentSrc;
-    private CordovaPreferences prefs = new CordovaPreferences();
-    private ArrayList<PluginEntry> pluginEntries = new ArrayList<>(20);
+    private final CordovaPreferences prefs = new CordovaPreferences();
+    private final ArrayList<PluginEntry> pluginEntries = new ArrayList<>(20);
 
     public CordovaPreferences getPreferences() {
         return prefs;
