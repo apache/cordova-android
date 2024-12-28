@@ -19,8 +19,6 @@
 
 package org.apache.cordova;
 
-import org.apache.cordova.BuildHelper;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
