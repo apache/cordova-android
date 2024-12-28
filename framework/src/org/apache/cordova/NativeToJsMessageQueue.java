@@ -40,7 +40,7 @@ public class NativeToJsMessageQueue {
     // to send to the JavaScript in one shot.
     // This currently only chops up on message boundaries.
     // It may be useful to split and reassemble response messages someday.
-    private static int COMBINED_RESPONSE_CUTOFF = 16 * 1024 * 1024;
+    private static final int COMBINED_RESPONSE_CUTOFF = 16 * 1024 * 1024;
 
     /**
      * When true, the active listener is not fired upon enqueue. When set to false,
@@ -56,7 +56,7 @@ public class NativeToJsMessageQueue {
     /**
      * The array of listeners that can be used to send messages to JS.
      */
-    private ArrayList<BridgeMode> bridgeModes = new ArrayList<>();
+    private final ArrayList<BridgeMode> bridgeModes = new ArrayList<>();
 
     /**
      * When null, the bridge is disabled. This occurs during page transitions.

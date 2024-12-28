@@ -62,7 +62,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private CordovaPreferences preferences;
     private CoreAndroid appPlugin;
     private NativeToJsMessageQueue nativeToJsMessageQueue;
-    private EngineClient engineClient = new EngineClient();
+    private final EngineClient engineClient = new EngineClient();
     private boolean hasPausedEver;
 
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
@@ -72,7 +72,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
-    private Set<Integer> boundKeyCodes = new HashSet<>();
+    private final Set<Integer> boundKeyCodes = new HashSet<>();
 
     public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
         String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());

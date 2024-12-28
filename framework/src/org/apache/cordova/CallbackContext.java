@@ -27,8 +27,8 @@ import org.json.JSONObject;
 public class CallbackContext {
     private static final String LOG_TAG = "CordovaPlugin";
 
-    private String callbackId;
-    private CordovaWebView webView;
+    private final String callbackId;
+    private final CordovaWebView webView;
     protected boolean finished;
     private int changingThreads;
 
