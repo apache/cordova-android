@@ -303,15 +303,13 @@ public class SystemWebChromeClient extends WebChromeClient {
     }
 
     private File createTempFile(Context context) throws IOException {
-        // Create an image file name
-        File tempFile = File.createTempFile("temp", ".jpg", context.getCacheDir());
-        return tempFile;
+        // Create a temp image file name
+        return File.createTempFile("temp", ".jpg", context.getCacheDir());
     }
 
     private Uri createUriForFile(Context context, File tempFile) throws IOException {
         String appId = context.getPackageName();
-        Uri uri = FileProvider.getUriForFile(context, appId + ".cdv.core.file.provider", tempFile);
-        return uri;
+        return FileProvider.getUriForFile(context, appId + ".cdv.core.file.provider", tempFile);
     }
 
     @Override
