@@ -162,8 +162,7 @@ public class NativeToJsMessageQueue {
                 // Attach a char to indicate that there are more messages pending.
                 sb.append('*');
             }
-            String ret = sb.toString();
-            return ret;
+            return sb.toString();
         }
     }
 
@@ -209,8 +208,7 @@ public class NativeToJsMessageQueue {
             for (int i = willSendAllMessages ? 1 : 0; i < numMessagesToSend; ++i) {
                 sb.append('}');
             }
-            String ret = sb.toString();
-            return ret;
+            return sb.toString();
         }
     }
 
