@@ -19,9 +19,6 @@
 package org.apache.cordova;
 
 import org.json.JSONArray;
-
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.PluginResult;
 import org.json.JSONObject;
 
 public class CallbackContext {
