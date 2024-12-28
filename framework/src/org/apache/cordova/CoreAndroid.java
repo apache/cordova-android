@@ -178,13 +178,13 @@ public class CoreAndroid extends CordovaPlugin {
 
                     }
                     else if (value.getClass().equals(String.class)) {
-                        params.put(key, (String)value);
+                        params.put(key, value);
                     }
                     else if (value.getClass().equals(Boolean.class)) {
-                        params.put(key, (Boolean)value);
+                        params.put(key, value);
                     }
                     else if (value.getClass().equals(Integer.class)) {
-                        params.put(key, (Integer)value);
+                        params.put(key, value);
                     }
                 }
             }
