@@ -88,7 +88,7 @@ public class SystemWebViewClient extends WebViewClient {
                             if (response != null) {
                                 return response;
                             }
-                        };
+                        }
                     }
                 }
 
