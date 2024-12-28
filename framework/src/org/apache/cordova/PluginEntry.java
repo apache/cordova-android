@@ -18,8 +18,6 @@
  */
 package org.apache.cordova;
 
-import org.apache.cordova.CordovaPlugin;
-
 /**
  * This class represents a service entry object.
  */

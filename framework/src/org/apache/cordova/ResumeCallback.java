@@ -18,7 +18,6 @@
 */
 package org.apache.cordova;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
