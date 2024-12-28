@@ -40,6 +40,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.zip.GZIPInputStream;
 
@@ -462,11 +463,7 @@ public class CordovaResourceApi {
         if (base64) {
             data = Base64.decode(dataPartAsString, Base64.DEFAULT);
         } else {
-            try {
-                data = dataPartAsString.getBytes("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                data = dataPartAsString.getBytes();
-            }
+            data = dataPartAsString.getBytes(StandardCharsets.UTF_8);
         }
         InputStream inputStream = new ByteArrayInputStream(data);
         return new OpenForReadResult(uri, inputStream, contentType, data.length, null);
