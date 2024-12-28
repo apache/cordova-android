@@ -21,13 +21,13 @@ package org.apache.cordova;
 
 public interface ICordovaCookieManager {
 
-    public void setCookiesEnabled(boolean accept);
+    void setCookiesEnabled(boolean accept);
 
-    public void setCookie(final String url, final String value);
+    void setCookie(final String url, final String value);
 
-    public String getCookie(final String url);
+    String getCookie(final String url);
 
-    public void clearCookies();
+    void clearCookies();
 
-    public void flush();
+    void flush();
 }

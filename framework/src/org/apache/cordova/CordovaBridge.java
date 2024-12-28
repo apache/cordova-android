@@ -32,8 +32,8 @@ import org.json.JSONException;
  */
 public class CordovaBridge {
     private static final String LOG_TAG = "CordovaBridge";
-    private PluginManager pluginManager;
-    private NativeToJsMessageQueue jsMessageQueue;
+    private final PluginManager pluginManager;
+    private final NativeToJsMessageQueue jsMessageQueue;
     private volatile int expectedBridgeSecret = -1; // written by UI thread, read by JS thread.
 
     public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue) {
