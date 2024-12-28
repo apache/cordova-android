@@ -26,11 +26,9 @@ package org.apache.cordova;
  *
  */
 
-import android.app.Activity;
 import android.content.Context;
 
 import java.lang.reflect.Field;
-
 
 public class BuildHelper {
 

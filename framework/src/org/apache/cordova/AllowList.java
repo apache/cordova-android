@@ -20,11 +20,8 @@ package org.apache.cordova;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.cordova.LOG;
 
 import android.net.Uri;
 

@@ -18,8 +18,6 @@
 */
 package org.apache.cordova;
 
-import android.annotation.SuppressLint;
-
 import java.security.SecureRandom;
 
 import org.json.JSONArray;
