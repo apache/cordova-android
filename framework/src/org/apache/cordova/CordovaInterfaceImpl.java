@@ -40,12 +40,12 @@ import java.util.concurrent.Executors;
  */
 public class CordovaInterfaceImpl implements CordovaInterface {
     private static final String TAG = "CordovaInterfaceImpl";
-    protected AppCompatActivity activity;
-    protected ExecutorService threadPool;
+    protected final AppCompatActivity activity;
+    protected final ExecutorService threadPool;
     protected PluginManager pluginManager;
 
     protected ActivityResultHolder savedResult;
-    protected CallbackMap permissionResultCallbacks;
+    protected final CallbackMap permissionResultCallbacks;
     protected CordovaPlugin activityResultCallback;
     protected String initCallbackService;
     protected int activityResultRequestCode;
@@ -199,9 +199,9 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     }
 
     private static class ActivityResultHolder {
-        private int requestCode;
-        private int resultCode;
-        private Intent intent;
+        private final int requestCode;
+        private final int resultCode;
+        private final Intent intent;
 
         public ActivityResultHolder(int requestCode, int resultCode, Intent intent) {
             this.requestCode = requestCode;
