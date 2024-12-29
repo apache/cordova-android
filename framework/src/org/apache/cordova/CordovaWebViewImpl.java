@@ -75,13 +75,13 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private final Set<Integer> boundKeyCodes = new HashSet<>();
 
     public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
-        String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
+        String className = preferences.getString("WebView", SystemWebViewEngine.class.getCanonicalName());
         try {
             Class<?> webViewClass = Class.forName(className);
             Constructor<?> constructor = webViewClass.getConstructor(Context.class, CordovaPreferences.class);
             return (CordovaWebViewEngine) constructor.newInstance(context, preferences);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create webview. ", e);
+            throw new RuntimeException("Failed to create WebView. ", e);
         }
     }
 
@@ -222,7 +222,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
                 loadUrlIntoView(url, true);
                 return;
             } else {
-                LOG.w(TAG, "showWebPage: Refusing to load URL into webview since it is not in the <allow-navigation> allow list. URL=" + url);
+                LOG.w(TAG, "showWebPage: Refusing to load URL into WebView since it is not in the <allow-navigation> allow list. URL=" + url);
                 return;
             }
         }

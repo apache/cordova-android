@@ -59,7 +59,7 @@ import org.apache.cordova.LOG;
  */
 public class SystemWebChromeClient extends WebChromeClient {
 
-    private static final int FILECHOOSER_RESULTCODE = 5173;
+    private static final int FILE_CHOOSER_RESULT_CODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
     private final long MAX_QUOTA = 100 * 1024 * 1024;
     protected final SystemWebViewEngine parentEngine;
@@ -294,7 +294,7 @@ public class SystemWebChromeClient extends WebChromeClient {
                     }
                     filePathsCallback.onReceiveValue(result);
                 }
-            }, chooserIntent, FILECHOOSER_RESULTCODE);
+            }, chooserIntent, FILE_CHOOSER_RESULT_CODE);
         } catch (ActivityNotFoundException e) {
             LOG.w(LOG_TAG, "No activity found to handle file chooser intent.", e);
             filePathsCallback.onReceiveValue(null);

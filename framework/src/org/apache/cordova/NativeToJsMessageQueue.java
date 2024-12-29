@@ -491,9 +491,9 @@ public class NativeToJsMessageQueue {
                 case PluginResult.MESSAGE_TYPE_MULTIPART:
                     int size = pluginResult.getMultipartMessagesSize();
                     for (int i=0; i<size; i++) {
-                        PluginResult subresult = pluginResult.getMultipartMessage(i);
-                        JsMessage submessage = new JsMessage(subresult, jsPayloadOrCallbackId);
-                        submessage.buildJsMessage(sb);
+                        PluginResult subResult = pluginResult.getMultipartMessage(i);
+                        JsMessage subMessage = new JsMessage(subResult, jsPayloadOrCallbackId);
+                        subMessage.buildJsMessage(sb);
                         if (i < (size-1)) {
                             sb.append(",");
                         }

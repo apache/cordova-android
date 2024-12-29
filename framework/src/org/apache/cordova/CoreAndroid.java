@@ -273,7 +273,7 @@ public class CoreAndroid extends CordovaPlugin {
     private void initTelephonyReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        //final CordovaInterface mycordova = this.cordova;
+        //final CordovaInterface myCordova = this.cordova;
         this.telephonyReceiver = new BroadcastReceiver() {
 
             @Override
