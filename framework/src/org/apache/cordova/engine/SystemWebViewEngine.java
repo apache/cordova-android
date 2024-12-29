@@ -173,13 +173,13 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         // The default is to use the module's debuggable state to decide if the WebView inspector
         // should be enabled. However, users can configure InspectableWebView preference to forcefully enable
         // or disable the WebView inspector.
-        String inspectableWebview = preferences.getString("InspectableWebview", null);
+        String inspectableWebView = preferences.getString("InspectableWebView", null);
         boolean shouldEnableInspector = false;
-        if (inspectableWebview == null) {
+        if (inspectableWebView == null) {
             ApplicationInfo appInfo = webView.getContext().getApplicationContext().getApplicationInfo();
             shouldEnableInspector = (appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         }
-        else if ("true".equals(inspectableWebview)) {
+        else if ("true".equals(inspectableWebView)) {
             shouldEnableInspector = true;
         }
 

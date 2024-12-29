@@ -111,7 +111,7 @@ public class CordovaActivity extends AppCompatActivity {
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
 
-        String logLevel = preferences.getString("loglevel", "ERROR");
+        String logLevel = preferences.getString("LogLevel", "ERROR");
         LOG.setLogLevel(logLevel);
 
         LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebView.CORDOVA_VERSION + " is starting");
