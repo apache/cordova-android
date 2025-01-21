@@ -58,7 +58,7 @@ String doFindLatestInstalledBuildTools(String minBuildToolsVersionString) {
     }
 
     def minBuildToolsVersion = new Version(minBuildToolsVersionString)
-    def maxVersion = new Version((minBuildToolsVersion.getMajor() + 1) + ".0.0")
+    def maxVersion = new Version("999.0.0")
 
     def highestBuildToolsVersion = buildToolsDirContents
         .collect { new Version(it) }
