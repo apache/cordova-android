@@ -19,7 +19,7 @@
 const rewire = require('rewire');
 const common = rewire('../../../lib/pluginHandlers');
 const path = require('node:path');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const osenv = require('node:os');
 
 const test_dir = path.join(osenv.tmpdir(), 'test_plugman');
@@ -35,10 +35,16 @@ const copyFile = common.__get__('copyFile');
 const deleteJava = common.__get__('deleteJava');
 const copyNewFile = common.__get__('copyNewFile');
 
+function outputFileSync (file, content) {
+    const dir = path.dirname(file);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(file, content, 'utf-8');
+}
+
 describe('common platform handler', function () {
     afterEach(() => {
-        fs.removeSync(test_dir);
-        fs.removeSync(non_plugin_file);
+        fs.rmSync(test_dir, { recursive: true, force: true });
+        fs.rmSync(non_plugin_file, { recursive: true, force: true });
     });
 
     describe('copyFile', function () {
@@ -48,15 +54,15 @@ describe('common platform handler', function () {
         });
 
         it('Test#002 : should throw if src not in plugin directory', function () {
-            fs.ensureDirSync(project_dir);
-            fs.outputFileSync(non_plugin_file, 'contents');
+            fs.mkdirSync(project_dir, { recursive: true });
+            outputFileSync(non_plugin_file, 'contents');
             const outside_file = '../non_plugin_file';
             expect(function () { copyFile(test_dir, outside_file, project_dir, dest); })
                 .toThrow(new Error('File "' + path.resolve(test_dir, outside_file) + '" is located outside the plugin directory "' + test_dir + '"'));
         });
 
         it('Test#003 : should allow symlink src, if inside plugin', function () {
-            fs.outputFileSync(java_file, 'contents');
+            outputFileSync(java_file, 'contents');
 
             // This will fail on windows if not admin - ignore the error in that case.
             if (ignoreEPERMonWin32(java_file, symlink_file)) {
@@ -67,8 +73,8 @@ describe('common platform handler', function () {
         });
 
         it('Test#004 : should throw if symlink is linked to a file outside the plugin', function () {
-            fs.ensureDirSync(java_dir);
-            fs.outputFileSync(non_plugin_file, 'contents');
+            fs.mkdirSync(java_dir, { recursive: true });
+            outputFileSync(non_plugin_file, 'contents');
 
             // This will fail on windows if not admin - ignore the error in that case.
             if (ignoreEPERMonWin32(non_plugin_file, symlink_file)) {
@@ -80,37 +86,37 @@ describe('common platform handler', function () {
         });
 
         it('Test#005 : should throw if dest is outside the project directory', function () {
-            fs.outputFileSync(java_file, 'contents');
+            outputFileSync(java_file, 'contents');
             expect(function () { copyFile(test_dir, java_file, project_dir, non_plugin_file); })
                 .toThrow(new Error('Destination "' + path.resolve(project_dir, non_plugin_file) + '" for source file "' + path.resolve(test_dir, java_file) + '" is located outside the project'));
         });
 
-        it('Test#006 : should call mkdir -p on target path', function () {
-            fs.outputFileSync(java_file, 'contents');
+        it('Test#006 : should call mkdirSync target path', function () {
+            outputFileSync(java_file, 'contents');
 
-            const s = spyOn(fs, 'ensureDirSync').and.callThrough();
+            const s = spyOn(fs, 'mkdirSync').and.callThrough();
             const resolvedDest = path.resolve(project_dir, dest);
 
             copyFile(test_dir, java_file, project_dir, dest);
 
             expect(s).toHaveBeenCalled();
-            expect(s).toHaveBeenCalledWith(path.dirname(resolvedDest));
+            expect(s).toHaveBeenCalledWith(path.dirname(resolvedDest), { recursive: true });
         });
 
         it('Test#007 : should call cp source/dest paths', function () {
-            fs.outputFileSync(java_file, 'contents');
+            outputFileSync(java_file, 'contents');
 
-            const s = spyOn(fs, 'copySync').and.callThrough();
+            const s = spyOn(fs, 'cpSync').and.callThrough();
             const resolvedDest = path.resolve(project_dir, dest);
 
             copyFile(test_dir, java_file, project_dir, dest);
 
             expect(s).toHaveBeenCalled();
-            expect(s).toHaveBeenCalledWith(java_file, resolvedDest);
+            expect(s).toHaveBeenCalledWith(java_file, resolvedDest, { recursive: true });
         });
 
         it('should handle relative paths when checking for sub paths', () => {
-            fs.outputFileSync(java_file, 'contents');
+            outputFileSync(java_file, 'contents');
             const relativeProjectPath = path.relative(process.cwd(), project_dir);
 
             expect(() => {
@@ -121,7 +127,7 @@ describe('common platform handler', function () {
 
     describe('copyNewFile', function () {
         it('Test#008 : should throw if target path exists', function () {
-            fs.ensureDirSync(dest);
+            fs.mkdirSync(dest, { recursive: true });
             expect(function () { copyNewFile(test_dir, src, project_dir, dest); })
                 .toThrow(new Error('"' + dest + '" already exists!'));
         });
@@ -129,11 +135,11 @@ describe('common platform handler', function () {
 
     describe('deleteJava', function () {
         beforeEach(function () {
-            fs.outputFileSync(java_file, 'contents');
+            outputFileSync(java_file, 'contents');
         });
 
         it('Test#009 : should call fs.unlinkSync on the provided paths', function () {
-            const s = spyOn(fs, 'removeSync').and.callThrough();
+            const s = spyOn(fs, 'rmSync').and.callThrough();
             deleteJava(project_dir, java_file);
             expect(s).toHaveBeenCalled();
             expect(s).toHaveBeenCalledWith(path.resolve(project_dir, java_file));

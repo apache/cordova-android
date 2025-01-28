@@ -899,9 +899,9 @@ describe('prepare', () => {
 
         // Spies
         let replaceFileContents;
-        let ensureDirSyncSpy;
-        let copySyncSpy;
-        let removeSyncSpy;
+        let mkdirSyncSpy;
+        let cpSyncSpy;
+        let rmSyncSpy;
 
         // Mock Data
         let cordovaProject;
@@ -1001,16 +1001,15 @@ describe('prepare', () => {
                 `))
             });
 
-            ensureDirSyncSpy = jasmine.createSpy('ensureDirSync');
-            copySyncSpy = jasmine.createSpy('copySync');
-            removeSyncSpy = jasmine.createSpy('removeSync');
+            mkdirSyncSpy = jasmine.createSpy('mkdirSync');
+            cpSyncSpy = jasmine.createSpy('cpSync');
+            rmSyncSpy = jasmine.createSpy('rmSync');
 
             prepare.__set__('fs', {
                 writeFileSync: jasmine.createSpy('writeFileSync'),
-                writeJSONSync: jasmine.createSpy('writeJSONSync'),
-                ensureDirSync: ensureDirSyncSpy,
-                copySync: copySyncSpy,
-                removeSync: removeSyncSpy,
+                mkdirSync: mkdirSyncSpy,
+                cpSync: cpSyncSpy,
+                rmSync: rmSyncSpy,
                 existsSync: jasmine.createSpy('existsSync')
             });
         });
@@ -1022,9 +1021,9 @@ describe('prepare', () => {
 
             await api.prepare(cordovaProject, options).then(() => {
                 expect(replaceFileContents).toHaveBeenCalledWith(renamedJavaActivityPath, /package [\w.]*;/, 'package ' + packageName + ';');
-                expect(ensureDirSyncSpy).toHaveBeenCalledWith(renamedPath);
-                expect(copySyncSpy).toHaveBeenCalledWith(initialJavaActivityPath, renamedJavaActivityPath);
-                expect(removeSyncSpy).toHaveBeenCalledWith(initialJavaActivityPath);
+                expect(mkdirSyncSpy).toHaveBeenCalledWith(renamedPath, { recursive: true });
+                expect(cpSyncSpy).toHaveBeenCalledWith(initialJavaActivityPath, renamedJavaActivityPath);
+                expect(rmSyncSpy).toHaveBeenCalledWith(initialJavaActivityPath);
             });
         });
 
@@ -1033,9 +1032,9 @@ describe('prepare', () => {
 
             await api.prepare(cordovaProject, options).then(() => {
                 expect(replaceFileContents).toHaveBeenCalledTimes(0);
-                expect(ensureDirSyncSpy).toHaveBeenCalledTimes(0);
-                expect(copySyncSpy).toHaveBeenCalledTimes(0);
-                expect(removeSyncSpy).toHaveBeenCalledTimes(0);
+                expect(mkdirSyncSpy).toHaveBeenCalledTimes(0);
+                expect(cpSyncSpy).toHaveBeenCalledTimes(0);
+                expect(rmSyncSpy).toHaveBeenCalledTimes(0);
             });
         });
     });

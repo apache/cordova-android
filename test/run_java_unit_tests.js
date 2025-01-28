@@ -21,7 +21,7 @@
 
 const path = require('node:path');
 const execa = require('execa');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const ProjectBuilder = require('../lib/builders/ProjectBuilder');
 
 class AndroidTestRunner {
@@ -62,7 +62,7 @@ class AndroidTestRunner {
             .then(_ => {
                 // TODO we should probably not only copy these files, but instead create a new project from scratch
                 fs.copyFileSync(path.resolve(this.projectDir, '../../framework/cdv-gradle-config-defaults.json'), path.resolve(this.projectDir, 'cdv-gradle-config.json'));
-                fs.copySync(path.resolve(this.projectDir, '../../templates/project/tools'), path.resolve(this.projectDir, 'tools'));
+                fs.cpSync(path.resolve(this.projectDir, '../../templates/project/tools'), path.resolve(this.projectDir, 'tools'), { recursive: true });
                 fs.copyFileSync(
                     path.join(__dirname, '../templates/project/assets/www/cordova.js'),
                     path.join(this.projectDir, 'app/src/main/assets/www/cordova.js')
