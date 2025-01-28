@@ -250,7 +250,7 @@ describe('ProjectBuilder', () => {
 
         it('should remove "out" folder', () => {
             return builder.clean({}).then(() => {
-                expect(fs.rmSync).toHaveBeenCalledWith(path.join(rootDir, 'out'));
+                expect(fs.rmSync).toHaveBeenCalledWith(path.join(rootDir, 'out'), { recursive: true, force: true });
             });
         });
 
