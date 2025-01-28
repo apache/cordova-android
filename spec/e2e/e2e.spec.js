@@ -17,9 +17,9 @@
  under the License.
  */
 
-const os = require('os');
+const os = require('node:os');
 const fs = require('fs-extra');
-const path = require('path');
+const path = require('node:path');
 const { EventEmitter } = require('events');
 const { ConfigParser, PluginInfoProvider } = require('cordova-common');
 const Api = require('../../lib/Api');

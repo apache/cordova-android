@@ -18,7 +18,7 @@
 */
 
 const rewire = require('rewire');
-const path = require('path');
+const path = require('node:path');
 const CordovaError = require('cordova-common').CordovaError;
 const GradlePropertiesParser = require('../../lib/config/GradlePropertiesParser');
 const utils = require('../../lib/utils');
