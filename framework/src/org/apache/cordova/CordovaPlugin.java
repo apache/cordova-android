@@ -64,7 +64,11 @@ public class CordovaPlugin {
      * Called after plugin construction and fields have been initialized.
      * Prefer to use pluginInitialize instead since there is no value in
      * having parameters on the initialize() function.
+     *
+     * @deprecated Use {@link #pluginInitialize()} instead. This method is no longer recommended
+     *             and will be removed in future versions.
      */
+    @Deprecated
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     }
 
@@ -416,7 +420,7 @@ public class CordovaPlugin {
      * @param requestCode
      * @param permissions
      * @param grantResults
-     * 
+     *
      * @deprecated Use {@link #onRequestPermissionsResult} instead.
      */
     @Deprecated
