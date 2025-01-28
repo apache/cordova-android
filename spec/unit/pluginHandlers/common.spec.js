@@ -20,16 +20,19 @@ const rewire = require('rewire');
 const common = rewire('../../../lib/pluginHandlers');
 const path = require('node:path');
 const fs = require('node:fs');
-const osenv = require('node:os');
+const tmp = require('tmp');
 
-const test_dir = path.join(osenv.tmpdir(), 'test_plugman');
+tmp.setGracefulCleanup();
+
+const tempdir = tmp.dirSync({ unsafeCleanup: true });
+const test_dir = path.join(tempdir.name, 'test_plugman');
 const project_dir = path.join(test_dir, 'project');
 const src = path.join(project_dir, 'src');
 const dest = path.join(project_dir, 'dest');
 const java_dir = path.join(src, 'one', 'two', 'three');
 const java_file = path.join(java_dir, 'test.java');
 const symlink_file = path.join(java_dir, 'symlink');
-const non_plugin_file = path.join(osenv.tmpdir(), 'non_plugin_file');
+const non_plugin_file = path.join(tempdir.name, 'non_plugin_file');
 
 const copyFile = common.__get__('copyFile');
 const deleteJava = common.__get__('deleteJava');
@@ -42,6 +45,11 @@ function outputFileSync (file, content) {
 }
 
 describe('common platform handler', function () {
+    afterAll(() => {
+        // Remove tempdir after all specs complete
+        fs.rmSync(tempdir.name, { recursive: true, force: true });
+    });
+
     afterEach(() => {
         fs.rmSync(test_dir, { recursive: true, force: true });
         fs.rmSync(non_plugin_file, { recursive: true, force: true });
