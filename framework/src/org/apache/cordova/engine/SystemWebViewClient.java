@@ -228,7 +228,7 @@ public class SystemWebViewClient extends WebViewClient {
         }
         isCurrentlyLoading = false;
 
-        /**
+        /*
          * Because of a timing issue we need to clear this history in onPageFinished as well as
          * onPageStarted. However we only want to do this if the doClearHistory boolean is set to
          * true. You see when you load a url with a # in it which is common in jQuery applications
@@ -341,11 +341,11 @@ public class SystemWebViewClient extends WebViewClient {
     /**
      * Gets the authentication token.
      *
-     * In order it tries:
+     * <p>In order it tries:
      * 1- host + realm
      * 2- host
      * 3- realm
-     * 4- no host, no realm
+     * 4- no host, no realm</p>
      *
      * @param host
      * @param realm

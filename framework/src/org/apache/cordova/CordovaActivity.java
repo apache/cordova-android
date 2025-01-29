@@ -49,7 +49,7 @@ import androidx.core.splashscreen.SplashScreen;
  * application. It should be extended by the user to load the specific
  * html file that contains the application.
  *
- * As an example:
+ * <p>As an example:</p>
  *
  * <pre>
  *     package org.apache.cordova.examples;
@@ -68,12 +68,11 @@ import androidx.core.splashscreen.SplashScreen;
  *     }
  * </pre>
  *
- * Cordova xml configuration: Cordova uses a configuration file at
+ * <p>Cordova xml configuration: Cordova uses a configuration file at
  * res/xml/config.xml to specify its settings. See "The config.xml File"
- * guide in cordova-docs at http://cordova.apache.org/docs for the documentation
+ * guide in cordova-docs at https://cordova.apache.org/docs for the documentation
  * for the configuration. The use of the set*Property() methods is
- * deprecated in favor of the config.xml file.
- *
+ * deprecated in favor of the config.xml file.</p>
  */
 public class CordovaActivity extends AppCompatActivity {
     public static String TAG = "CordovaActivity";

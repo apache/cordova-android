@@ -38,8 +38,8 @@ import android.webkit.WebView;
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
  *
- * Calling native plugin code can be done by calling PluginManager.exec(...)
- * from JavaScript.
+ * <p>Calling native plugin code can be done by calling PluginManager.exec(...)
+ * from JavaScript.</p>
  */
 public class PluginManager {
     private static String TAG = "PluginManager";
@@ -121,9 +121,9 @@ public class PluginManager {
      * Receives a request for execution and fulfills it by finding the appropriate
      * Java class and calling it's execute method.
      *
-     * PluginManager.exec can be used either synchronously or async. In either case, a JSON encoded
+     * <p>PluginManager.exec can be used either synchronously or async. In either case, a JSON encoded
      * string is returned that will indicate if any errors have occurred when trying to find
-     * or execute the class denoted by the clazz argument.
+     * or execute the class denoted by the clazz argument.</p>
      *
      * @param service       String containing the service to run
      * @param action        String containing the action that the class is supposed to perform. This is
@@ -391,9 +391,9 @@ public class PluginManager {
     /**
      * Called when the WebView is going to request an external resource.
      *
-     * This delegates to the installed plugins, and returns true/false for the
+     * <p>This delegates to the installed plugins, and returns true/false for the
      * first plugin to provide a non-null result.  If no plugins respond, then
-     * the default policy is applied.
+     * the default policy is applied.</p>
      *
      * @param url       The URL that is being requested.
      * @return          true to allow the resource to load,
@@ -431,9 +431,9 @@ public class PluginManager {
     /**
      * Called when the WebView is going to change the URL of the loaded content.
      *
-     * This delegates to the installed plugins, and returns true/false for the
+     * <p>This delegates to the installed plugins, and returns true/false for the
      * first plugin to provide a non-null result.  If no plugins respond, then
-     * the default policy is applied.
+     * the default policy is applied.</p>
      *
      * @param url       The URL that is being requested.
      * @return          true to allow the navigation,
@@ -481,9 +481,9 @@ public class PluginManager {
      * Called when the WebView is going not going to navigate, but may launch
      * an Intent for an URL.
      *
-     * This delegates to the installed plugins, and returns true/false for the
+     * <p>This delegates to the installed plugins, and returns true/false for the
      * first plugin to provide a non-null result.  If no plugins respond, then
-     * the default policy is applied.
+     * the default policy is applied.</p>
      *
      * @param url       The URL that is being requested.
      * @return          true to allow the URL to launch an intent,
@@ -619,7 +619,7 @@ public class PluginManager {
     /**
      * Called when the WebView's render process has exited.
      *
-     * See https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)
+     * <p>See https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)</p>
      *
      * @return  true if the host application handled the situation that process has exited,
      *          otherwise, application will crash if render process crashed, or be killed 

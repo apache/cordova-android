@@ -119,8 +119,8 @@ public class SystemWebChromeClient extends WebChromeClient {
      * If the client returns true, WebView will assume that the client will
      * handle the prompt dialog and call the appropriate JsPromptResult method.
      *
-     * Since we are hacking prompts for our own purposes, we should not be using them for
-     * this purpose, perhaps we should hack console.log to do this instead!
+     * <p>Since we are hacking prompts for our own purposes, we should not be using them for
+     * this purpose, perhaps we should hack console.log to do this instead!</p>
      */
     @Override
     public boolean onJsPrompt(WebView view, String origin, String message, String defaultValue, final JsPromptResult result) {
@@ -155,15 +155,15 @@ public class SystemWebChromeClient extends WebChromeClient {
         quotaUpdater.updateQuota(MAX_QUOTA);
     }
 
-    @Override
     /**
      * Instructs the client to show a prompt to ask the user to set the Geolocation permission state for the specified origin.
      *
-     * This also checks for the Geolocation Plugin and requests permission from the application  to use Geolocation.
+     * <p>This also checks for the Geolocation Plugin and requests permission from the application  to use Geolocation.</p>
      *
      * @param origin
      * @param callback
      */
+    @Override
     public void onGeolocationPermissionsShowPrompt(String origin, Callback callback) {
         super.onGeolocationPermissionsShowPrompt(origin, callback);
         callback.invoke(origin, true, false);
@@ -188,13 +188,13 @@ public class SystemWebChromeClient extends WebChromeClient {
         parentEngine.getCordovaWebView().hideCustomView();
     }
 
-    @Override
     /**
      * Ask the host application for a custom progress view to show while
      * a <video> is loading.
      *
      * @return View The progress view.
      */
+    @Override
     public View getVideoLoadingProgressView() {
         if (mVideoProgressView == null) {
             // Create a new Loading view programmatically.

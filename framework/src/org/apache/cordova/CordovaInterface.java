@@ -51,7 +51,8 @@ public interface CordovaInterface {
     /**
      * Get the Android activity.
      *
-     * If a custom engine lives outside of the Activity's lifecycle the return value may be null.
+     * <p>If a custom engine lives outside of the Activity's lifecycle the return value
+     * may be null.</p>
      *
      * @return the Activity
      */

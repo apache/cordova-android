@@ -45,21 +45,22 @@ import java.util.zip.GZIPInputStream;
 
 /**
  * What this class provides:
- * 1. Helpers for reading & writing to URLs.
- *   - E.g. handles assets, resources, content providers, files, data URIs, http[s]
- *   - E.g. Can be used to query for mime-type & content length.
  *
- * 2. To allow plugins to redirect URLs (via remapUrl).
+ * <p>1. Helpers for reading & writing to URLs.
+ *   - E.g. handles assets, resources, content providers, files, data URIs, http[s]
+ *   - E.g. Can be used to query for mime-type & content length.</p>
+ *
+ * <p>2. To allow plugins to redirect URLs (via remapUrl).
  *   - All plugins should call remapUrl() on URLs they receive from JS *before*
  *     passing the URL onto other utility functions in this class.
- *   - For an example usage of this, refer to the org.apache.cordova.file plugin.
+ *   - For an example usage of this, refer to the org.apache.cordova.file plugin.</p>
  *
- * Future Work:
+ * <p>Future Work:
  *   - Consider using a Cursor to query content URLs for their size (like the file plugin does).
  *   - Allow plugins to remapUri to "cdv-plugin://plugin-name/foo", which CordovaResourceApi
  *     would then delegate to pluginManager.getPlugin(plugin-name).openForRead(url)
  *     - Currently, plugins *can* do this by remapping to a data: URL, but it's inefficient
- *       for large payloads.
+ *       for large payloads.</p>
  */
 public class CordovaResourceApi {
     @SuppressWarnings("unused")
