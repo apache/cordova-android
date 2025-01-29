@@ -371,12 +371,14 @@ public class PluginManager {
     }
 
     /**
-     * @todo should we move this somewhere public and accessible by all plugins?
-     * For now, it is placed where it is used and kept private so we can decide later and move without causing a breaking change.
-     * An ideal location might be in the "ConfigXmlParser" at the time it generates the "launchUrl".
+     * TODO: should we move this somewhere public and accessible by all plugins?
      *
-     * @todo should we be restrictive on the "file://" return? e.g. "file:///android_asset/www/"
-     * Would be considered as a breaking change if we apply a more granular check.
+     * <p>For now, it is placed where it is used and kept private so we can decide later and move without causing a breaking change.
+     * An ideal location might be in the "ConfigXmlParser" at the time it generates the "launchUrl".</p>
+     *
+     * TODO: should we be restrictive on the "file://" return? e.g. "file:///android_asset/www/"
+     *
+     * <p>Would be considered as a breaking change if we apply a more granular check.</p>
      */
     private String getLaunchUrlPrefix() {
         if (!app.getPreferences().getBoolean("AndroidInsecureFileModeEnabled", false)) {
