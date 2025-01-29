@@ -17,7 +17,7 @@
     under the License.
 */
 
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const path = require('node:path');
 const rewire = require('rewire');
 const { isWindows } = require('../../../lib/utils');
@@ -220,7 +220,7 @@ describe('ProjectBuilder', () => {
         beforeEach(() => {
             const marker = ProjectBuilder.__get__('MARKER');
             spyOn(fs, 'readFileSync').and.returnValue(`Some Header Here: ${marker}`);
-            spyOn(fs, 'removeSync');
+            spyOn(fs, 'rmSync');
             spyOn(builder, 'getArgs');
             execaSpy.and.returnValue(Promise.resolve());
         });
@@ -250,7 +250,7 @@ describe('ProjectBuilder', () => {
 
         it('should remove "out" folder', () => {
             return builder.clean({}).then(() => {
-                expect(fs.removeSync).toHaveBeenCalledWith(path.join(rootDir, 'out'));
+                expect(fs.rmSync).toHaveBeenCalledWith(path.join(rootDir, 'out'), { recursive: true, force: true });
             });
         });
 
@@ -261,8 +261,8 @@ describe('ProjectBuilder', () => {
             spyOn(fs, 'existsSync').and.returnValue(true);
 
             return builder.clean({}).then(() => {
-                expect(fs.removeSync).toHaveBeenCalledWith(debugSigningFile);
-                expect(fs.removeSync).toHaveBeenCalledWith(releaseSigningFile);
+                expect(fs.rmSync).toHaveBeenCalledWith(debugSigningFile);
+                expect(fs.rmSync).toHaveBeenCalledWith(releaseSigningFile);
             });
         });
 
@@ -273,8 +273,8 @@ describe('ProjectBuilder', () => {
             spyOn(fs, 'existsSync').and.returnValue(false);
 
             return builder.clean({}).then(() => {
-                expect(fs.removeSync).not.toHaveBeenCalledWith(debugSigningFile);
-                expect(fs.removeSync).not.toHaveBeenCalledWith(releaseSigningFile);
+                expect(fs.rmSync).not.toHaveBeenCalledWith(debugSigningFile);
+                expect(fs.rmSync).not.toHaveBeenCalledWith(releaseSigningFile);
             });
         });
     });
