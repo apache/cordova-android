@@ -225,10 +225,10 @@ public class CordovaResourceApi {
      * Opens a stream to the given URI, also providing the MIME type & length.
      *
      * @return Never returns null.
-     * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
-     *     resolved before being passed into this function.
-     * @throws Throws an IOException if the URI cannot be opened.
-     * @throws Throws an IllegalStateException if called on a foreground thread.
+     * @throws InvalidArgumentException For relative URIs. Relative URIs should be resolved before
+     *                                  being passed into this function.
+     * @throws IOException              If the URI cannot be opened.
+     * @throws IllegalStateException    If called on a foreground thread.
      */
     public OpenForReadResult openForRead(Uri uri) throws IOException {
         return openForRead(uri, false);
@@ -238,10 +238,10 @@ public class CordovaResourceApi {
      * Opens a stream to the given URI, also providing the MIME type & length.
      *
      * @return Never returns null.
-     * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
-     *     resolved before being passed into this function.
-     * @throws Throws an IOException if the URI cannot be opened.
-     * @throws Throws an IllegalStateException if called on a foreground thread and skipThreadCheck is false.
+     * @throws InvalidArgumentException For relative URIs. Relative URIs should be resolved before
+     *                                  being passed into this function.
+     * @throws IOException              If the URI cannot be opened.
+     * @throws IllegalStateException    If called on a foreground thread and skipThreadCheck is false.
      */
     public OpenForReadResult openForRead(Uri uri, boolean skipThreadCheck) throws IOException {
         if (!skipThreadCheck) {
@@ -324,9 +324,9 @@ public class CordovaResourceApi {
      * Opens a stream to the given URI.
      *
      * @return Never returns null.
-     * @throws Throws an InvalidArgumentException for relative URIs. Relative URIs should be
-     *     resolved before being passed into this function.
-     * @throws Throws an IOException if the URI cannot be opened.
+     * @throws InvalidArgumentException For relative URIs. Relative URIs should be resolved before
+     *                                  being passed into this function.
+     * @throws IOException              If the URI cannot be opened.
      */
     public OutputStream openOutputStream(Uri uri, boolean append) throws IOException {
         assertBackgroundThread();
