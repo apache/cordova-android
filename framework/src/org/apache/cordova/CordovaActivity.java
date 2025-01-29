@@ -69,10 +69,10 @@ import androidx.core.splashscreen.SplashScreen;
  * </pre>
  *
  * <p>Cordova xml configuration: Cordova uses a configuration file at
- * res/xml/config.xml to specify its settings. See "The config.xml File"
- * guide in cordova-docs at https://cordova.apache.org/docs for the documentation
- * for the configuration. The use of the set*Property() methods is
- * deprecated in favor of the config.xml file.</p>
+ * res/xml/config.xml to specify its settings. See the "Config.xml API" documentation for
+ * configuration details at <a href="https://cordova.apache.org/docs">Apache Cordova Docs</a>.</p>
+ *
+ * <p>The use of the set*Property() methods is deprecated in favor of the config.xml file.</p>
  */
 public class CordovaActivity extends AppCompatActivity {
     public static String TAG = "CordovaActivity";

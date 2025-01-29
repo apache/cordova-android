@@ -70,7 +70,7 @@ public interface CordovaWebView {
     /**
      * Send JavaScript statement back to JavaScript.
      *
-     * <p>Deprecated (https://issues.apache.org/jira/browse/CB-6851)
+     * <p>Deprecated (<a href="https://issues.apache.org/jira/browse/CB-6851">CB-6851</a>)
      * Instead of executing snippets of JS, you should use the exec bridge
      * to create a Java->JS communication channel.</p>
      *

@@ -24,7 +24,7 @@ import android.util.Log;
  * Log to Android logging system.
  *
  * <p>Log message can be a string or a printf formatted string with arguments.
- * See http://developer.android.com/reference/java/util/Formatter.html</p>
+ * See <a href="http://developer.android.com/reference/java/util/Formatter.html">Formatter</a></p>
  */
 public class LOG {
 

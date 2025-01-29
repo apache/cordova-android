@@ -619,9 +619,9 @@ public class PluginManager {
     /**
      * Called when the WebView's render process has exited.
      *
-     * <p>See https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)</p>
+     * <p>See <a href="https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)">WebViewClient#onRenderProcessGone</a></p>
      *
-     * @return  true if the host application handled the situation that process has exited,
+     * @return true if the host application handled the situation that process has exited,
      *          otherwise, application will crash if render process crashed, or be killed 
      *          if render process was killed by the system.
      */
