@@ -25,9 +25,9 @@ import android.view.View;
 import android.webkit.WebChromeClient.CustomViewCallback;
 
 /**
- * Main interface for interacting with a Cordova webview - implemented by CordovaWebViewImpl.
+ * Main interface for interacting with a Cordova WebView - implemented by CordovaWebViewImpl.
  * This is an interface so that it can be easily mocked in tests.
- * Methods may be added to this interface without a major version bump, as plugins & embedders
+ * Methods may be added to this interface without a major version bump, as plugins/developer
  * are not expected to implement it.
  */
 public interface CordovaWebView {
@@ -92,12 +92,12 @@ public interface CordovaWebView {
     void sendJavascript(String statememt);
 
     /**
-     * Load the specified URL in the Cordova webview or a new browser instance.
+     * Load the specified URL in the Cordova WebView or a new browser instance.
      *
      * NOTE: If openExternal is false, only allow listed URLs can be loaded.
      *
      * @param url           The url to load.
-     * @param openExternal  Load url in browser instead of Cordova webview.
+     * @param openExternal  Load url in browser instead of Cordova WebView.
      * @param clearHistory  Clear the history stack, so new page becomes top of history
      * @param params        Parameters for new app
      */

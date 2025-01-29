@@ -44,7 +44,7 @@ public class EmbeddedWebViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Set up the webview
+        // Set up the WebView
         ConfigXmlParser parser = new ConfigXmlParser();
         parser.parse(this);
 

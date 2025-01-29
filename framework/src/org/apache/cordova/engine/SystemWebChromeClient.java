@@ -205,7 +205,7 @@ public class SystemWebChromeClient extends WebChromeClient {
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
             layout.setLayoutParams(layoutParams);
-            // the proress bar
+            // the progress bar
             ProgressBar bar = new ProgressBar(parentEngine.getView().getContext());
             LinearLayout.LayoutParams barLayoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             barLayoutParams.gravity = Gravity.CENTER;

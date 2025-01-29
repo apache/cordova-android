@@ -87,7 +87,7 @@ public class PluginManager {
     }
 
     /**
-     * Init when loading a new HTML page into webview.
+     * Init when loading a new HTML page into WebView.
      */
     public void init() {
         LOG.d(TAG, "init()");
@@ -389,7 +389,7 @@ public class PluginManager {
     }
 
     /**
-     * Called when the webview is going to request an external resource.
+     * Called when the WebView is going to request an external resource.
      *
      * This delegates to the installed plugins, and returns true/false for the
      * first plugin to provide a non-null result.  If no plugins respond, then
@@ -421,7 +421,7 @@ public class PluginManager {
             return true;
         }
         if (url.startsWith("file://")) {
-            //This directory on WebKit/Blink based webviews contains SQLite databases!
+            //This directory on WebKit/Blink based WebViews contains SQLite databases!
             //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
             return !url.contains("/app_webview/");
         }
@@ -429,7 +429,7 @@ public class PluginManager {
     }
 
     /**
-     * Called when the webview is going to change the URL of the loaded content.
+     * Called when the WebView is going to change the URL of the loaded content.
      *
      * This delegates to the installed plugins, and returns true/false for the
      * first plugin to provide a non-null result.  If no plugins respond, then
@@ -458,7 +458,7 @@ public class PluginManager {
 
 
     /**
-     * Called when the webview is requesting the exec() bridge be enabled.
+     * Called when the WebView is requesting the exec() bridge be enabled.
      */
     public boolean shouldAllowBridgeAccess(String url) {
         synchronized (this.entryMap) {
@@ -478,7 +478,7 @@ public class PluginManager {
     }
 
     /**
-     * Called when the webview is going not going to navigate, but may launch
+     * Called when the WebView is going not going to navigate, but may launch
      * an Intent for an URL.
      *
      * This delegates to the installed plugins, and returns true/false for the
@@ -507,7 +507,7 @@ public class PluginManager {
     }
 
     /**
-     * Called when the URL of the webview changes.
+     * Called when the URL of the WebView changes.
      *
      * @param url               The URL that is being changed to.
      * @return                  Return false to allow the URL to load, return true to prevent the URL from loading.

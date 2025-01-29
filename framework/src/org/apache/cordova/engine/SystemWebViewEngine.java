@@ -110,7 +110,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         nativeToJsMessageQueue.addBridgeMode(new NativeToJsMessageQueue.OnlineEventsBridgeMode(new NativeToJsMessageQueue.OnlineEventsBridgeMode.OnlineEventsBridgeModeDelegate() {
             @Override
             public void setNetworkAvailable(boolean value) {
-                //sometimes this can be called after calling webview.destroy() on destroy()
+                //sometimes this can be called after calling webView.destroy() on destroy()
                 //thus resulting in a NullPointerException
                 if(webView!=null) {
                    webView.setNetworkAvailable(value);
@@ -175,9 +175,9 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         String databasePath = webView.getContext().getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
         settings.setDatabaseEnabled(true);
 
-        // The default is to use the module's debuggable state to decide if the webview inspecter
-        // should be enabled. However, users can configure InspectableWebview preference to forcefully enable
-        // or disable the webview inspecter.
+        // The default is to use the module's debuggable state to decide if the WebView inspector
+        // should be enabled. However, users can configure InspectableWebView preference to forcefully enable
+        // or disable the WebView inspector.
         String inspectableWebview = preferences.getString("InspectableWebview", null);
         boolean shouldEnableInspector = false;
         if (inspectableWebview == null) {
@@ -249,7 +249,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
 
 
     /**
-     * Load the url into the webview.
+     * Load the url into the WebView.
      */
     @Override
     public void loadUrl(final String url, boolean clearNavigationStack) {
@@ -288,7 +288,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
      */
     @Override
     public boolean goBack() {
-        // Check webview first to see if there is a history
+        // Check WebView first to see if there is a history
         // This is needed to support curPage#diffLink, since they are added to parentEngine's history, but not our history url array (JQMobile behavior)
         if (webView.canGoBack()) {
             webView.goBack();

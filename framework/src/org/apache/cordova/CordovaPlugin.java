@@ -250,7 +250,7 @@ public class CordovaPlugin {
 
     /**
      * Hook for blocking navigation by the Cordova WebView. This applies both to top-level and
-     * iframe navigations.
+     * iframe navigation.
      *
      * This will be called when the WebView's needs to know whether to navigate
      * to a new page. Return false to block the navigation: if any plugin
@@ -288,7 +288,7 @@ public class CordovaPlugin {
     /**
      * Allows plugins to handle a link being clicked. Return true here to cancel the navigation.
      *
-     * @param url           The URL that is trying to be loaded in the Cordova webview.
+     * @param url           The URL that is trying to be loaded in the Cordova WebView.
      * @return              true to prevent the URL from loading. Default is false.
      */
     public boolean onOverrideUrlLoading(String url) {
@@ -445,11 +445,11 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called when the WebView's render process has exited. Can be used to collect information regarding the crash for crashlytics or optionally attempt to gracefully handle/recover the crashed webview by recreating it.
+     * Called when the WebView's render process has exited. Can be used to collect information regarding the crash for crashlytics or optionally attempt to gracefully handle/recover the crashed WebView by recreating it.
      *
      * See <a href="https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)">WebViewClient#onRenderProcessGone</a>
      *
-     * Note: A plugin must not attempt to recover a webview that it does not own/manage.
+     * Note: A plugin must not attempt to recover a WebView that it does not own/manage.
      *
      * @return  true if the host application handled the situation that process has exited,
      *          otherwise, application will crash if render process crashed, or be killed

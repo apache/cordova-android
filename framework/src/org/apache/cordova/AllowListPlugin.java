@@ -39,7 +39,7 @@ public class AllowListPlugin extends CordovaPlugin {
     // Used when instantiated via reflection by PluginManager
     public AllowListPlugin() { }
 
-    // These can be used by embedders to allow Java-configuration of an allow list.
+    // These can be used by plugin developers to allow Java-configuration of an allow list.
     public AllowListPlugin(Context context) {
         this(new AllowList(), new AllowList(), null);
         new CustomConfigXmlParser().parse(context);
