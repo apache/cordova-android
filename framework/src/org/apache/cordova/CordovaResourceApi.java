@@ -239,7 +239,7 @@ public class CordovaResourceApi {
      * Opens a stream to the given URI, also providing the MIME type & length.
      *
      * @return Never returns null.
-     * @throws InvalidArgumentException For relative URIs. Relative URIs should be resolved before
+     * @throws IllegalArgumentException For relative URIs. Relative URIs should be resolved before
      *                                  being passed into this function.
      * @throws IOException              If the URI cannot be opened.
      * @throws IllegalStateException    If called on a foreground thread.
@@ -252,7 +252,7 @@ public class CordovaResourceApi {
      * Opens a stream to the given URI, also providing the MIME type & length.
      *
      * @return Never returns null.
-     * @throws InvalidArgumentException For relative URIs. Relative URIs should be resolved before
+     * @throws IllegalArgumentException For relative URIs. Relative URIs should be resolved before
      *                                  being passed into this function.
      * @throws IOException              If the URI cannot be opened.
      * @throws IllegalStateException    If called on a foreground thread and skipThreadCheck is false.
@@ -338,7 +338,7 @@ public class CordovaResourceApi {
      * Opens a stream to the given URI.
      *
      * @return Never returns null.
-     * @throws InvalidArgumentException For relative URIs. Relative URIs should be resolved before
+     * @throws IllegalArgumentException For relative URIs. Relative URIs should be resolved before
      *                                  being passed into this function.
      * @throws IOException              If the URI cannot be opened.
      */
