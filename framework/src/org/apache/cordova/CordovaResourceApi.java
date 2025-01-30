@@ -46,21 +46,35 @@ import java.util.zip.GZIPInputStream;
 /**
  * What this class provides:
  *
- * <p>1. Helpers for reading & writing to URLs.
- *   - E.g. handles assets, resources, content providers, files, data URIs, http[s]
- *   - E.g. Can be used to query for mime-type & content length.</p>
+ * <ol>
+ *   <li>
+ *     Helpers for reading & writing to URLs.
+ *     <ul>
+ *       <li>E.g. handles assets, resources, content providers, files, data URIs, http[s]</li>
+ *       <li>E.g. Can be used to query for mime-type & content length.</p></li>
+ *     </ul>
+ *   </li>
+ *   <li>
+ *     To allow plugins to redirect URLs (via remapUrl).
+ *     <ul>
+ *       <li>
+ *          All plugins should call remapUrl() on URLs they receive from JS *before* passing the URL onto other utility functions in this class.
+ *       </li>
+ *       <li>For an example usage of this, refer to the org.apache.cordova.file plugin.</li>
+ *     </ul>
+ *   </li>
+ * </ol>
  *
- * <p>2. To allow plugins to redirect URLs (via remapUrl).
- *   - All plugins should call remapUrl() on URLs they receive from JS *before*
- *     passing the URL onto other utility functions in this class.
- *   - For an example usage of this, refer to the org.apache.cordova.file plugin.</p>
- *
- * <p>Future Work:
- *   - Consider using a Cursor to query content URLs for their size (like the file plugin does).
- *   - Allow plugins to remapUri to "cdv-plugin://plugin-name/foo", which CordovaResourceApi
- *     would then delegate to pluginManager.getPlugin(plugin-name).openForRead(url)
- *     - Currently, plugins *can* do this by remapping to a data: URL, but it's inefficient
- *       for large payloads.</p>
+ * <p>Future Work:</p>
+ * <ul>
+ *   <li>Consider using a Cursor to query content URLs for their size (like the file plugin does).</li>
+ *   <li>
+ *     Allow plugins to remapUri to "cdv-plugin://plugin-name/foo", which CordovaResourceApi would then delegate to pluginManager.getPlugin(plugin-name).openForRead(url)
+ *     <ul>
+ *       <li>Currently, plugins *can* do this by remapping to a data: URL, but it's inefficient for large payloads.</li>
+ *     </ul>
+ *   </li>
+ * </ul>
  */
 public class CordovaResourceApi {
     @SuppressWarnings("unused")

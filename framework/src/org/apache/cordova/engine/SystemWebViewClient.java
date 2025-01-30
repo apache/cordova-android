@@ -341,11 +341,13 @@ public class SystemWebViewClient extends WebViewClient {
     /**
      * Gets the authentication token.
      *
-     * <p>In order it tries:
-     * 1- host + realm
-     * 2- host
-     * 3- realm
-     * 4- no host, no realm</p>
+     * <p>In order it tries:</p>
+     * <ol>
+     *  <li>host + realm</li>
+     *  <li>host</li>
+     *  <li>realm</li>
+     *  <li>no host, no realm</li>
+     * </ol>
      *
      * @param host
      * @param realm
