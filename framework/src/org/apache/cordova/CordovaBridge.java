@@ -18,8 +18,6 @@
 */
 package org.apache.cordova;
 
-import android.annotation.SuppressLint;
-
 import java.security.SecureRandom;
 
 import org.json.JSONArray;
@@ -32,8 +30,8 @@ import org.json.JSONException;
  */
 public class CordovaBridge {
     private static final String LOG_TAG = "CordovaBridge";
-    private PluginManager pluginManager;
-    private NativeToJsMessageQueue jsMessageQueue;
+    private final PluginManager pluginManager;
+    private final NativeToJsMessageQueue jsMessageQueue;
     private volatile int expectedBridgeSecret = -1; // written by UI thread, read by JS thread.
 
     public CordovaBridge(PluginManager pluginManager, NativeToJsMessageQueue jsMessageQueue) {
@@ -136,9 +134,7 @@ public class CordovaBridge {
                 String callbackId = array.getString(3);
                 String r = jsExec(bridgeSecret, service, action, callbackId, message);
                 return r == null ? "" : r;
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+            } catch (JSONException | IllegalAccessException e) {
                 e.printStackTrace();
             }
             return "";
@@ -148,9 +144,7 @@ public class CordovaBridge {
             try {
                 int bridgeSecret = Integer.parseInt(defaultValue.substring(16));
                 jsSetNativeToJsBridgeMode(bridgeSecret, Integer.parseInt(message));
-            } catch (NumberFormatException e){
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+            } catch (NumberFormatException | IllegalAccessException e){
                 e.printStackTrace();
             }
             return "";

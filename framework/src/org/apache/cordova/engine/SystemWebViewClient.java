@@ -68,7 +68,7 @@ public class SystemWebViewClient extends WebViewClient {
     boolean isCurrentlyLoading;
 
     /** The authorization tokens. */
-    private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
+    private final Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<>();
 
     public SystemWebViewClient(SystemWebViewEngine parentEngine) {
         this.parentEngine = parentEngine;
@@ -88,7 +88,7 @@ public class SystemWebViewClient extends WebViewClient {
                             if (response != null) {
                                 return response;
                             }
-                        };
+                        }
                     }
                 }
 

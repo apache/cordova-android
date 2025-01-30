@@ -54,7 +54,7 @@ public class Config {
     }
 
     public static String getErrorUrl() {
-        return parser.getPreferences().getString("errorurl", null);
+        return parser.getPreferences().getString("ErrorUrl", null);
     }
 
     public static List<PluginEntry> getPluginEntries() {

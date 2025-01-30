@@ -23,13 +23,10 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.cordova.LOG;
-
-import android.app.Activity;
 import android.os.Bundle;
 
 public class CordovaPreferences {
-    private HashMap<String, String> prefs = new HashMap<String, String>(20);
+    private final HashMap<String, String> prefs = new HashMap<>(20);
     private Bundle preferencesBundleExtras;
 
     public void setPreferencesBundle(Bundle extras) {
@@ -84,7 +81,11 @@ public class CordovaPreferences {
         name = name.toLowerCase(Locale.ENGLISH);
         String value = prefs.get(name);
         if (value != null) {
-            return Double.valueOf(value);
+            try {
+                return Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+                // Failed to parse value and will fallback with default value.
+            }
         }
         return defaultValue;
     }
