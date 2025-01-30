@@ -49,7 +49,7 @@ import androidx.core.splashscreen.SplashScreen;
  * application. It should be extended by the user to load the specific
  * html file that contains the application.
  *
- * As an example:
+ * <p>As an example:</p>
  *
  * <pre>
  *     package org.apache.cordova.examples;
@@ -68,17 +68,16 @@ import androidx.core.splashscreen.SplashScreen;
  *     }
  * </pre>
  *
- * Cordova xml configuration: Cordova uses a configuration file at
- * res/xml/config.xml to specify its settings. See "The config.xml File"
- * guide in cordova-docs at http://cordova.apache.org/docs for the documentation
- * for the configuration. The use of the set*Property() methods is
- * deprecated in favor of the config.xml file.
+ * <p>Cordova xml configuration: Cordova uses a configuration file at
+ * res/xml/config.xml to specify its settings. See the "Config.xml API" documentation for
+ * configuration details at <a href="https://cordova.apache.org/docs">Apache Cordova Docs</a>.</p>
  *
+ * <p>The use of the set*Property() methods is deprecated in favor of the config.xml file.</p>
  */
 public class CordovaActivity extends AppCompatActivity {
     public static String TAG = "CordovaActivity";
 
-    // The webview for our app
+    // The WebView for our app
     protected CordovaWebView appView;
 
     private static int ACTIVITY_STARTING = 0;
@@ -206,7 +205,7 @@ public class CordovaActivity extends AppCompatActivity {
     /**
      * Construct the default web view object.
      * <p/>
-     * Override this to customize the webview that is used.
+     * Override this to customize the WebView that is used.
      */
     protected CordovaWebView makeWebView() {
         return new CordovaWebViewImpl(makeWebViewEngine());
@@ -227,7 +226,7 @@ public class CordovaActivity extends AppCompatActivity {
     }
 
     /**
-     * Load the url into the webview.
+     * Load the url into the WebView.
      */
     public void loadUrl(String url) {
         if (appView == null) {
@@ -250,7 +249,7 @@ public class CordovaActivity extends AppCompatActivity {
 
         if (this.appView != null) {
             // CB-9382 If there is an activity that started for result and main activity is waiting for callback
-            // result, we shoudn't stop WebView Javascript timers, as activity for result might be using them
+            // result, we shouldn't stop WebView Javascript timers, as activity for result might be using them
             boolean keepRunning = this.keepRunning || this.cordovaInterface.activityResultCallback != null;
             this.appView.handlePause(keepRunning);
         }

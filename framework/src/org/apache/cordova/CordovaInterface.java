@@ -51,7 +51,8 @@ public interface CordovaInterface {
     /**
      * Get the Android activity.
      *
-     * If a custom engine lives outside of the Activity's lifecycle the return value may be null.
+     * <p>If a custom engine lives outside of the Activity's lifecycle the return value
+     * may be null.</p>
      *
      * @return the Activity
      */
@@ -74,7 +75,7 @@ public interface CordovaInterface {
     public Object onMessage(String id, Object data);
 
     /**
-     * Returns a shared thread pool that can be used for background tasks.
+     * @return a shared thread pool that can be used for background tasks.
      */
     public ExecutorService getThreadPool();
 
@@ -89,7 +90,9 @@ public interface CordovaInterface {
     public void requestPermissions(CordovaPlugin plugin, int requestCode, String [] permissions);
 
     /**
-     * Check for a permission.  Returns true if the permission is granted, false otherwise.
+     * Check for a permission.
+     *
+     * @return true if the permission is granted, false otherwise.
      */
     public boolean hasPermission(String permission);
 

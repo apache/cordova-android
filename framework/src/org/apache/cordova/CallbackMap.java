@@ -54,7 +54,7 @@ public class CallbackMap {
      * obtained from registerCallback()
      *
      * @param mappedId      The request code obtained from registerCallback()
-     * @return              The CordovaPlugin and orignal request code that correspond to the
+     * @return              The CordovaPlugin and original request code that correspond to the
      *                      given mappedCode
      */
     public synchronized Pair<CordovaPlugin, Integer> getAndRemoveCallback(int mappedId) {

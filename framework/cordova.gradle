@@ -150,7 +150,7 @@ def doGetConfigPreference(name, defaultValue) {
 }
 
 def doApplyCordovaConfigCustomization() {
-    // Apply user overide properties that comes from the "--gradleArg=-P" parameters
+    // Apply user override properties that comes from the "--gradleArg=-P" parameters
     if (project.hasProperty('cdvMinSdkVersion')) {
         cordovaConfig.MIN_SDK_VERSION = Integer.parseInt('' + cdvMinSdkVersion)
     }

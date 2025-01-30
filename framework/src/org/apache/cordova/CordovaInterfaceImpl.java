@@ -135,7 +135,9 @@ public class CordovaInterfaceImpl implements CordovaInterface {
     }
 
     /**
-     * Routes the result to the awaiting plugin. Returns false if no plugin was waiting.
+     * Routes the result to the awaiting plugin.
+     *
+     * @return false if no plugin was waiting.
      */
     public boolean onActivityResult(int requestCode, int resultCode, Intent intent) {
         CordovaPlugin callback = activityResultCallback;

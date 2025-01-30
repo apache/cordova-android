@@ -79,7 +79,7 @@ public class CordovaPlugin {
     }
 
     /**
-     * Returns the plugin's service name (what you'd use when calling pluginManger.getPlugin())
+     * @return the plugin's service name (what you'd use when calling pluginManger.getPlugin())
      */
     public String getServiceName() {
         return serviceName;
@@ -88,11 +88,14 @@ public class CordovaPlugin {
     /**
      * Executes the request.
      *
-     * This method is called from the WebView thread. To do a non-trivial amount of work, use:
-     *     cordova.getThreadPool().execute(runnable);
+     * <p>This method is called from the WebView thread. To do a non-trivial
+     * amount of work, use:</p>
      *
-     * To run on the UI thread, use:
-     *     cordova.getActivity().runOnUiThread(runnable);
+     * <pre>cordova.getThreadPool().execute(runnable);</pre>
+     *
+     * <p>To run on the UI thread, use:</p>
+     *
+     * <pre>cordova.getActivity().runOnUiThread(runnable);</pre>
      *
      * @param action          The action to execute.
      * @param rawArgs         The exec() arguments in JSON form.
@@ -107,11 +110,13 @@ public class CordovaPlugin {
     /**
      * Executes the request.
      *
-     * This method is called from the WebView thread. To do a non-trivial amount of work, use:
-     *     cordova.getThreadPool().execute(runnable);
+     * <p>This method is called from the WebView thread. To do a non-trivial amount of work, use:</p>
      *
-     * To run on the UI thread, use:
-     *     cordova.getActivity().runOnUiThread(runnable);
+     * <pre>cordova.getThreadPool().execute(runnable);</pre>
+     *
+     * <p>To run on the UI thread, use:</p>
+     *
+     * <pre>cordova.getActivity().runOnUiThread(runnable);</pre>
      *
      * @param action          The action to execute.
      * @param args            The exec() arguments.
@@ -126,10 +131,10 @@ public class CordovaPlugin {
     /**
      * Executes the request.
      *
-     * This method is called from the WebView thread. To do a non-trivial amount of work, use:
+     * <p>This method is called from the WebView thread. To do a non-trivial amount of work, use:</p>
      *     cordova.getThreadPool().execute(runnable);
      *
-     * To run on the UI thread, use:
+     * <p>To run on the UI thread, use:</p>
      *     cordova.getActivity().runOnUiThread(runnable);
      *
      * @param action          The action to execute.
@@ -231,18 +236,18 @@ public class CordovaPlugin {
     /**
      * Hook for blocking the loading of external resources.
      *
-     * This will be called when the WebView's shouldInterceptRequest wants to
+     * <p>This will be called when the WebView's shouldInterceptRequest wants to
      * know whether to open a connection to an external resource. Return false
      * to block the request: if any plugin returns false, Cordova will block
      * the request. If all plugins return null, the default policy will be
      * enforced. If at least one plugin returns true, and no plugins return
-     * false, then the request will proceed.
+     * false, then the request will proceed.</p>
      *
-     * Note that this only affects resource requests which are routed through
+     * <p>Note that this only affects resource requests which are routed through
      * WebViewClient.shouldInterceptRequest, such as XMLHttpRequest requests and
      * img tag loads. WebSockets and media requests (such as <video> and <audio>
      * tags) are not affected by this method. Use CSP headers to control access
-     * to such resources.
+     * to such resources.</p>
      */
     public Boolean shouldAllowRequest(String url) {
         return null;
@@ -250,13 +255,13 @@ public class CordovaPlugin {
 
     /**
      * Hook for blocking navigation by the Cordova WebView. This applies both to top-level and
-     * iframe navigations.
+     * iframe navigation.
      *
-     * This will be called when the WebView's needs to know whether to navigate
+     * <p>This will be called when the WebView's needs to know whether to navigate
      * to a new page. Return false to block the navigation: if any plugin
      * returns false, Cordova will block the navigation. If all plugins return
      * null, the default policy will be enforced. It at least one plugin returns
-     * true, and no plugins return false, then the navigation will proceed.
+     * true, and no plugins return false, then the navigation will proceed.</p>
      */
     public Boolean shouldAllowNavigation(String url) {
         return null;
@@ -274,12 +279,12 @@ public class CordovaPlugin {
     /**
      * Hook for blocking the launching of Intents by the Cordova application.
      *
-     * This will be called when the WebView will not navigate to a page, but
+     * <p>This will be called when the WebView will not navigate to a page, but
      * could launch an intent to handle the URL. Return false to block this: if
      * any plugin returns false, Cordova will block the navigation. If all
      * plugins return null, the default policy will be enforced. If at least one
      * plugin returns true, and no plugins return false, then the URL will be
-     * opened.
+     * opened.</p>
      */
     public Boolean shouldOpenExternalUrl(String url) {
         return null;
@@ -288,8 +293,8 @@ public class CordovaPlugin {
     /**
      * Allows plugins to handle a link being clicked. Return true here to cancel the navigation.
      *
-     * @param url           The URL that is trying to be loaded in the Cordova webview.
-     * @return              Return true to prevent the URL from loading. Default is false.
+     * @param url           The URL that is trying to be loaded in the Cordova WebView.
+     * @return              true to prevent the URL from loading. Default is false.
      */
     public boolean onOverrideUrlLoading(String url) {
         return false;
@@ -299,17 +304,20 @@ public class CordovaPlugin {
      * Hook for redirecting requests. Applies to WebView requests as well as requests made by plugins.
      * To handle the request directly, return a URI in the form:
      *
-     *    cdvplugin://pluginId/...
+     * <pre>cdvplugin://pluginId/...</pre>
      *
-     * And implement handleOpenForRead().
-     * To make this easier, use the toPluginUri() and fromPluginUri() helpers:
+     * <p>And implement handleOpenForRead().</p>
      *
+     * <p>To make this easier, use the toPluginUri() and fromPluginUri() helpers:</p>
+     *
+     * <pre>
      *     public Uri remapUri(Uri uri) { return toPluginUri(uri); }
      *
      *     public CordovaResourceApi.OpenForReadResult handleOpenForRead(Uri uri) throws IOException {
      *         Uri origUri = fromPluginUri(uri);
      *         ...
      *     }
+     * </pre>
      */
     public Uri remapUri(Uri uri) {
         return null;
@@ -347,9 +355,9 @@ public class CordovaPlugin {
     /**
      * Called when the WebView does a top-level navigation or refreshes.
      *
-     * Plugins should stop any long-running processes and clean up internal state.
+     * <p>Plugins should stop any long-running processes and clean up internal state.</p>
      *
-     * Does nothing by default.
+     * <p>Does nothing by default.</p>
      */
     public void onReset() {
     }
@@ -362,9 +370,7 @@ public class CordovaPlugin {
      * @param handler           The HttpAuthHandler used to set the WebView's response
      * @param host              The host requiring authentication
      * @param realm             The realm for which authentication is required
-     *
-     * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
-     *
+     * @return                  true if the plugin will resolve this auth challenge, else false
      */
     public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
         return false;
@@ -376,9 +382,7 @@ public class CordovaPlugin {
      *
      * @param view              The WebView that is initiating the callback
      * @param request           The client certificate request
-     *
-     * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
-     *
+     * @return                  True if plugin will resolve this auth challenge, otherwise False
      */
     public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
         return false;
@@ -396,20 +400,17 @@ public class CordovaPlugin {
      * Called by the Plugin Manager when we need to actually request permissions
      *
      * @param requestCode   Passed to the activity to track the request
-     *
-     * @return              Returns the permission that was stored in the plugin
+     * @return              The permission that was stored in the plugin
      */
-
     public void requestPermissions(int requestCode) {
     }
 
-    /*
+    /**
      * Called by the WebView implementation to check for geolocation permissions, can be used
      * by other Java methods in the event that a plugin is using this as a dependency.
      *
-     * @return          Returns true if the plugin has all the permissions it needs to operate.
+     * @return          True if the plugin has all the permissions it needs to operate.
      */
-
     public boolean hasPermisssion() {
         return true;
     }
@@ -420,7 +421,6 @@ public class CordovaPlugin {
      * @param requestCode
      * @param permissions
      * @param grantResults
-     *
      * @deprecated Use {@link #onRequestPermissionsResult} instead.
      */
     @Deprecated
@@ -443,6 +443,7 @@ public class CordovaPlugin {
 
     /**
      * Allow plugins to supply a PathHandler for the WebViewAssetHandler
+     *
      * @return a CordovaPluginPathHandler which listen for paths and returns a response
      */
     public CordovaPluginPathHandler getPathHandler() {
@@ -450,11 +451,13 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called when the WebView's render process has exited. Can be used to collect information regarding the crash for crashlytics or optionally attempt to gracefully handle/recover the crashed webview by recreating it.
+     * Called when the WebView's render process has exited. Can be used to collect information
+     * regarding the crash for crashlytics or optionally attempt to gracefully handle/recover the
+     * crashed WebView by recreating it.
      *
-     * See <a href="https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)">WebViewClient#onRenderProcessGone</a>
+     * <p>See <a href="https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)">WebViewClient#onRenderProcessGone</a></p>
      *
-     * Note: A plugin must not attempt to recover a webview that it does not own/manage.
+     * <p>Note: A plugin must not attempt to recover a WebView that it does not own/manage.</p>
      *
      * @return  true if the host application handled the situation that process has exited,
      *          otherwise, application will crash if render process crashed, or be killed

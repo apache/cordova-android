@@ -66,7 +66,7 @@ public class StandardActivityTest {
     @Test
     public void webViewCheck() {
         StandardActivity activity = (StandardActivity) mActivityRule.getActivity();
-        //Fish the webview out of the mostly locked down Activity using the Android SDK
+        // Fish the WebView out of the mostly locked down Activity using the Android SDK
         View view = activity.getWindow().getCurrentFocus();
         assertEquals(SystemWebView.class, view.getClass());
     }

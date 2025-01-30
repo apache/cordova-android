@@ -38,8 +38,8 @@ import android.webkit.WebView;
 /**
  * PluginManager is exposed to JavaScript in the Cordova WebView.
  *
- * Calling native plugin code can be done by calling PluginManager.exec(...)
- * from JavaScript.
+ * <p>Calling native plugin code can be done by calling PluginManager.exec(...)
+ * from JavaScript.</p>
  */
 public class PluginManager {
     private static String TAG = "PluginManager";
@@ -87,7 +87,7 @@ public class PluginManager {
     }
 
     /**
-     * Init when loading a new HTML page into webview.
+     * Init when loading a new HTML page into WebView.
      */
     public void init() {
         LOG.d(TAG, "init()");
@@ -121,9 +121,9 @@ public class PluginManager {
      * Receives a request for execution and fulfills it by finding the appropriate
      * Java class and calling it's execute method.
      *
-     * PluginManager.exec can be used either synchronously or async. In either case, a JSON encoded
+     * <p>PluginManager.exec can be used either synchronously or async. In either case, a JSON encoded
      * string is returned that will indicate if any errors have occurred when trying to find
-     * or execute the class denoted by the clazz argument.
+     * or execute the class denoted by the clazz argument.</p>
      *
      * @param service       String containing the service to run
      * @param action        String containing the action that the class is supposed to perform. This is
@@ -252,9 +252,7 @@ public class PluginManager {
      * @param handler           The HttpAuthHandler used to set the WebView's response
      * @param host              The host requiring authentication
      * @param realm             The realm for which authentication is required
-     *
-     * @return                  Returns True if there is a plugin which will resolve this auth challenge, otherwise False
-     *
+     * @return                  True if there is a plugin which will resolve this auth challenge, otherwise False
      */
     public boolean onReceivedHttpAuthRequest(CordovaWebView view, ICordovaHttpAuthHandler handler, String host, String realm) {
         synchronized (this.pluginMap) {
@@ -273,9 +271,7 @@ public class PluginManager {
      *
      * @param view              The WebView that is initiating the callback
      * @param request           The client certificate request
-     *
-     * @return                  Returns True if plugin will resolve this auth challenge, otherwise False
-     *
+     * @return                  True if plugin will resolve this auth challenge, otherwise False
      */
     public boolean onReceivedClientCertRequest(CordovaWebView view, ICordovaClientCertRequest request) {
         synchronized (this.pluginMap) {
@@ -375,12 +371,14 @@ public class PluginManager {
     }
 
     /**
-     * @todo should we move this somewhere public and accessible by all plugins?
-     * For now, it is placed where it is used and kept private so we can decide later and move without causing a breaking change.
-     * An ideal location might be in the "ConfigXmlParser" at the time it generates the "launchUrl".
+     * TODO: should we move this somewhere public and accessible by all plugins?
      *
-     * @todo should we be restrictive on the "file://" return? e.g. "file:///android_asset/www/"
-     * Would be considered as a breaking change if we apply a more granular check.
+     * <p>For now, it is placed where it is used and kept private so we can decide later and move without causing a breaking change.
+     * An ideal location might be in the "ConfigXmlParser" at the time it generates the "launchUrl".</p>
+     *
+     * TODO: should we be restrictive on the "file://" return? e.g. "file:///android_asset/www/"
+     *
+     * <p>Would be considered as a breaking change if we apply a more granular check.</p>
      */
     private String getLaunchUrlPrefix() {
         if (!app.getPreferences().getBoolean("AndroidInsecureFileModeEnabled", false)) {
@@ -393,14 +391,14 @@ public class PluginManager {
     }
 
     /**
-     * Called when the webview is going to request an external resource.
+     * Called when the WebView is going to request an external resource.
      *
-     * This delegates to the installed plugins, and returns true/false for the
+     * <p>This delegates to the installed plugins, and returns true/false for the
      * first plugin to provide a non-null result.  If no plugins respond, then
-     * the default policy is applied.
+     * the default policy is applied.</p>
      *
      * @param url       The URL that is being requested.
-     * @return          Returns true to allow the resource to load,
+     * @return          true to allow the resource to load,
      *                  false to block the resource.
      */
     public boolean shouldAllowRequest(String url) {
@@ -425,7 +423,7 @@ public class PluginManager {
             return true;
         }
         if (url.startsWith("file://")) {
-            //This directory on WebKit/Blink based webviews contains SQLite databases!
+            //This directory on WebKit/Blink based WebViews contains SQLite databases!
             //DON'T CHANGE THIS UNLESS YOU KNOW WHAT YOU'RE DOING!
             return !url.contains("/app_webview/");
         }
@@ -433,14 +431,14 @@ public class PluginManager {
     }
 
     /**
-     * Called when the webview is going to change the URL of the loaded content.
+     * Called when the WebView is going to change the URL of the loaded content.
      *
-     * This delegates to the installed plugins, and returns true/false for the
+     * <p>This delegates to the installed plugins, and returns true/false for the
      * first plugin to provide a non-null result.  If no plugins respond, then
-     * the default policy is applied.
+     * the default policy is applied.</p>
      *
      * @param url       The URL that is being requested.
-     * @return          Returns true to allow the navigation,
+     * @return          true to allow the navigation,
      *                  false to block the navigation.
      */
     public boolean shouldAllowNavigation(String url) {
@@ -462,7 +460,7 @@ public class PluginManager {
 
 
     /**
-     * Called when the webview is requesting the exec() bridge be enabled.
+     * Called when the WebView is requesting the exec() bridge be enabled.
      */
     public boolean shouldAllowBridgeAccess(String url) {
         synchronized (this.entryMap) {
@@ -482,15 +480,15 @@ public class PluginManager {
     }
 
     /**
-     * Called when the webview is going not going to navigate, but may launch
+     * Called when the WebView is going not going to navigate, but may launch
      * an Intent for an URL.
      *
-     * This delegates to the installed plugins, and returns true/false for the
+     * <p>This delegates to the installed plugins, and returns true/false for the
      * first plugin to provide a non-null result.  If no plugins respond, then
-     * the default policy is applied.
+     * the default policy is applied.</p>
      *
      * @param url       The URL that is being requested.
-     * @return          Returns true to allow the URL to launch an intent,
+     * @return          true to allow the URL to launch an intent,
      *                  false to block the intent.
      */
     public Boolean shouldOpenExternalUrl(String url) {
@@ -511,7 +509,7 @@ public class PluginManager {
     }
 
     /**
-     * Called when the URL of the webview changes.
+     * Called when the URL of the WebView changes.
      *
      * @param url               The URL that is being changed to.
      * @return                  Return false to allow the URL to load, return true to prevent the URL from loading.
@@ -623,9 +621,9 @@ public class PluginManager {
     /**
      * Called when the WebView's render process has exited.
      *
-     * See https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)
+     * <p>See <a href="https://developer.android.com/reference/android/webkit/WebViewClient#onRenderProcessGone(android.webkit.WebView,%20android.webkit.RenderProcessGoneDetail)">WebViewClient#onRenderProcessGone</a></p>
      *
-     * @return  true if the host application handled the situation that process has exited,
+     * @return true if the host application handled the situation that process has exited,
      *          otherwise, application will crash if render process crashed, or be killed 
      *          if render process was killed by the system.
      */

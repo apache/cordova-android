@@ -199,7 +199,7 @@ public class SystemWebViewClient extends WebViewClient {
      * one time for the main frame. This also means that onPageStarted will not be called when the contents of an
      * embedded frame changes, i.e. clicking a link whose target is an iframe.
      *
-     * @param view          The webview initiating the callback.
+     * @param view          The WebView initiating the callback.
      * @param url           The url of the page.
      */
     @Override
@@ -216,7 +216,7 @@ public class SystemWebViewClient extends WebViewClient {
      * This method is called only for main frame. When onPageFinished() is called, the rendering picture may not be updated yet.
      *
      *
-     * @param view          The webview initiating the callback.
+     * @param view          The WebView initiating the callback.
      * @param url           The url of the page.
      */
     @Override
@@ -228,7 +228,7 @@ public class SystemWebViewClient extends WebViewClient {
         }
         isCurrentlyLoading = false;
 
-        /**
+        /*
          * Because of a timing issue we need to clear this history in onPageFinished as well as
          * onPageStarted. However we only want to do this if the doClearHistory boolean is set to
          * true. You see when you load a url with a # in it which is common in jQuery applications
@@ -332,7 +332,6 @@ public class SystemWebViewClient extends WebViewClient {
      *
      * @param host
      * @param realm
-     *
      * @return the authentication token or null if did not exist
      */
     public AuthenticationToken removeAuthenticationToken(String host, String realm) {
@@ -342,15 +341,16 @@ public class SystemWebViewClient extends WebViewClient {
     /**
      * Gets the authentication token.
      *
-     * In order it tries:
-     * 1- host + realm
-     * 2- host
-     * 3- realm
-     * 4- no host, no realm
+     * <p>In order it tries:</p>
+     * <ol>
+     *  <li>host + realm</li>
+     *  <li>host</li>
+     *  <li>realm</li>
+     *  <li>no host, no realm</li>
+     * </ol>
      *
      * @param host
      * @param realm
-     *
      * @return the authentication token
      */
     public AuthenticationToken getAuthenticationToken(String host, String realm) {

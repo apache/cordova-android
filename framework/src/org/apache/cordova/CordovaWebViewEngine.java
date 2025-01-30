@@ -59,7 +59,7 @@ public interface CordovaWebViewEngine {
     /** Clean up all resources associated with the WebView. */
     void destroy();
 
-    /** Add the evaulate Javascript method **/
+    /** Add the evaluate Javascript method **/
     void evaluateJavascript(String js, ValueCallback<String> callback);
 
     /**

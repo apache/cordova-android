@@ -37,8 +37,7 @@ public class AuthenticationToken {
     /**
      * Sets the user name.
      *
-     * @param userName
-     *            the new user name
+     * @param userName the new user name
      */
     public void setUserName(String userName) {
         this.userName = userName;
@@ -56,8 +55,7 @@ public class AuthenticationToken {
     /**
      * Sets the password.
      *
-     * @param password
-     *            the new password
+     * @param password the new password
      */
     public void setPassword(String password) {
         this.password = password;

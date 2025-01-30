@@ -118,8 +118,7 @@ public class PluginResult {
     }
 
     /**
-     * If messageType == MESSAGE_TYPE_STRING, then returns the message string.
-     * Otherwise, returns null.
+     * @return message string when messageType is MESSAGE_TYPE_STRING otherwise null.
      */
     public String getStrMessage() {
         return strMessage;
