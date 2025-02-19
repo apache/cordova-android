@@ -28,7 +28,7 @@ class AndroidTestRunner {
     constructor (testTitle, projectDir) {
         this.testTitle = testTitle;
         this.projectDir = projectDir;
-        this.gradleWrapper = path.join(this.projectDir, 'tools/gradlew');
+        this.gradleWrapper = path.join(this.projectDir, 'gradlew');
     }
 
     _gradlew (...args) {
@@ -62,7 +62,6 @@ class AndroidTestRunner {
             .then(_ => {
                 // TODO we should probably not only copy these files, but instead create a new project from scratch
                 fs.copyFileSync(path.resolve(this.projectDir, '../../framework/cdv-gradle-config-defaults.json'), path.resolve(this.projectDir, 'cdv-gradle-config.json'));
-                fs.cpSync(path.resolve(this.projectDir, '../../templates/project/tools'), path.resolve(this.projectDir, 'tools'), { recursive: true });
                 fs.copyFileSync(
                     path.join(__dirname, '../templates/project/assets/www/cordova.js'),
                     path.join(this.projectDir, 'app/src/main/assets/www/cordova.js')

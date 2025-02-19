@@ -31,6 +31,9 @@ example
 /test/.externalNativeBuild
 /test/androidx/cdv-gradle-config.json
 /test/androidx/tools
+/test/androidx/gradle
+/test/androidx/gradlew
+/test/androidx/gradlew.bat
 /test/assets/www/.tmp*
 /test/assets/www/cordova.js
 /test/bin
@@ -39,6 +42,7 @@ example
 /test/libs
 tmp/**
 tmp/**/*
+
 !/spec/fixtures/org.test.plugins.dummyplugin/src/android/TestLib.jar
 # IntelliJ IDEA files
 **/.idea/**/*
