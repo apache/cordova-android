@@ -39,14 +39,14 @@ public interface CordovaInterface {
      * @param intent      The intent to start
      * @param requestCode   The request code that is passed to callback to identify the activity
      */
-    abstract public void startActivityForResult(CordovaPlugin command, Intent intent, int requestCode);
+    void startActivityForResult(CordovaPlugin command, Intent intent, int requestCode);
 
     /**
      * Set the plugin to be called when a sub-activity exits.
      *
      * @param plugin      The plugin on which onActivityResult is to be called
      */
-    abstract public void setActivityResultCallback(CordovaPlugin plugin);
+    void setActivityResultCallback(CordovaPlugin plugin);
 
     /**
      * Get the Android activity.
@@ -56,14 +56,14 @@ public interface CordovaInterface {
      *
      * @return the Activity
      */
-    public abstract AppCompatActivity getActivity();
+    AppCompatActivity getActivity();
 
     /**
      * Get the Android context.
      *
      * @return the Context
      */
-    public Context getContext();
+    Context getContext();
 
     /**
      * Called when a message is sent to plugin.
@@ -72,28 +72,28 @@ public interface CordovaInterface {
      * @param data          The message data
      * @return              Object or null
      */
-    public Object onMessage(String id, Object data);
+    Object onMessage(String id, Object data);
 
     /**
      * @return a shared thread pool that can be used for background tasks.
      */
-    public ExecutorService getThreadPool();
+    ExecutorService getThreadPool();
 
     /**
      * Sends a permission request to the activity for one permission.
      */
-    public void requestPermission(CordovaPlugin plugin, int requestCode, String permission);
+    void requestPermission(CordovaPlugin plugin, int requestCode, String permission);
 
     /**
      * Sends a permission request to the activity for a group of permissions
      */
-    public void requestPermissions(CordovaPlugin plugin, int requestCode, String [] permissions);
+    void requestPermissions(CordovaPlugin plugin, int requestCode, String[] permissions);
 
     /**
      * Check for a permission.
      *
      * @return true if the permission is granted, false otherwise.
      */
-    public boolean hasPermission(String permission);
+    boolean hasPermission(String permission);
 
 }
