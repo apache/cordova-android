@@ -19,8 +19,6 @@
 
 package org.apache.cordova;
 
-import org.apache.cordova.BuildHelper;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -87,12 +85,7 @@ public class CoreAndroid extends CordovaPlugin {
                 // This gets called from JavaScript onCordovaReady to show the WebView.
                 // I recommend we change the name of the Message as spinner/stop is not
                 // indicative of what this actually does (shows the WebView).
-                cordova.getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        webView.getPluginManager().postMessage("spinner", "stop");
-                    }
-                });
+                cordova.getActivity().runOnUiThread(() -> webView.getPluginManager().postMessage("spinner", "stop"));
             }
             else if (action.equals("loadUrl")) {
                 this.loadUrl(args.getString(0), args.optJSONObject(1));
@@ -146,12 +139,7 @@ public class CoreAndroid extends CordovaPlugin {
      * Clear the resource cache.
      */
     public void clearCache() {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webView.clearCache();
-            }
-        });
+        cordova.getActivity().runOnUiThread(() -> webView.clearCache());
     }
 
     /**
@@ -168,7 +156,7 @@ public class CoreAndroid extends CordovaPlugin {
         boolean clearHistory = false;
 
         // If there are properties, then set them on the Activity
-        HashMap<String, Object> params = new HashMap<String, Object>();
+        HashMap<String, Object> params = new HashMap<>();
         if (props != null) {
             JSONArray keys = props.names();
             for (int i = 0; i < keys.length(); i++) {
@@ -188,13 +176,13 @@ public class CoreAndroid extends CordovaPlugin {
 
                     }
                     else if (value.getClass().equals(String.class)) {
-                        params.put(key, (String)value);
+                        params.put(key, value);
                     }
                     else if (value.getClass().equals(Boolean.class)) {
-                        params.put(key, (Boolean)value);
+                        params.put(key, value);
                     }
                     else if (value.getClass().equals(Integer.class)) {
-                        params.put(key, (Integer)value);
+                        params.put(key, value);
                     }
                 }
             }
@@ -218,12 +206,7 @@ public class CoreAndroid extends CordovaPlugin {
      * Clear page history for the app.
      */
     public void clearHistory() {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webView.clearHistory();
-            }
-        });
+        cordova.getActivity().runOnUiThread(() -> webView.clearHistory());
     }
 
     /**
@@ -231,12 +214,7 @@ public class CoreAndroid extends CordovaPlugin {
      * This is the same as pressing the backbutton on Android device.
      */
     public void backHistory() {
-        cordova.getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                webView.backHistory();
-            }
-        });
+        cordova.getActivity().runOnUiThread(() -> webView.backHistory());
     }
 
     /**
@@ -295,7 +273,7 @@ public class CoreAndroid extends CordovaPlugin {
     private void initTelephonyReceiver() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        //final CordovaInterface mycordova = this.cordova;
+        //final CordovaInterface myCordova = this.cordova;
         this.telephonyReceiver = new BroadcastReceiver() {
 
             @Override

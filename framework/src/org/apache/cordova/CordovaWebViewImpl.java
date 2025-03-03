@@ -62,7 +62,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private CordovaPreferences preferences;
     private CoreAndroid appPlugin;
     private NativeToJsMessageQueue nativeToJsMessageQueue;
-    private EngineClient engineClient = new EngineClient();
+    private final EngineClient engineClient = new EngineClient();
     private boolean hasPausedEver;
 
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
@@ -72,16 +72,16 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
-    private Set<Integer> boundKeyCodes = new HashSet<Integer>();
+    private final Set<Integer> boundKeyCodes = new HashSet<>();
 
     public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
-        String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
+        String className = preferences.getString("WebView", SystemWebViewEngine.class.getCanonicalName());
         try {
             Class<?> webViewClass = Class.forName(className);
             Constructor<?> constructor = webViewClass.getConstructor(Context.class, CordovaPreferences.class);
             return (CordovaWebViewEngine) constructor.newInstance(context, preferences);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create webview. ", e);
+            throw new RuntimeException("Failed to create WebView. ", e);
         }
     }
 
@@ -91,7 +91,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     // Convenience method for when creating programmatically (not from Config.xml).
     public void init(CordovaInterface cordova) {
-        init(cordova, new ArrayList<PluginEntry>(), new CordovaPreferences());
+        init(cordova, new ArrayList<>(), new CordovaPreferences());
     }
 
     @SuppressLint("Assert")
@@ -148,23 +148,20 @@ public class CordovaWebViewImpl implements CordovaWebView {
         final int loadUrlTimeoutValue = preferences.getInteger("LoadUrlTimeoutValue", 20000);
 
         // Timeout error method
-        final Runnable loadError = new Runnable() {
-            @Override
-            public void run() {
-                stopLoading();
-                LOG.e(TAG, "CordovaWebView: TIMEOUT ERROR!");
+        final Runnable loadError = () -> {
+            stopLoading();
+            LOG.e(TAG, "CordovaWebView: TIMEOUT ERROR!");
 
-                // Handle other errors by passing them to the WebView in JS
-                JSONObject data = new JSONObject();
-                try {
-                    data.put("errorCode", -6);
-                    data.put("description", "The connection to the server was unsuccessful.");
-                    data.put("url", url);
-                } catch (JSONException e) {
-                    // Will never happen.
-                }
-                pluginManager.postMessage("onReceivedError", data);
+            // Handle other errors by passing them to the WebView in JS
+            JSONObject data = new JSONObject();
+            try {
+                data.put("errorCode", -6);
+                data.put("description", "The connection to the server was unsuccessful.");
+                data.put("url", url);
+            } catch (JSONException e) {
+                // Will never happen.
             }
+            pluginManager.postMessage("onReceivedError", data);
         };
 
         // Timeout timer method
@@ -190,14 +187,11 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         if (cordova.getActivity() != null) {
             final boolean _recreatePlugins = recreatePlugins;
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (loadUrlTimeoutValue > 0) {
-                        cordova.getThreadPool().execute(timeoutCheck);
-                    }
-                    engine.loadUrl(url, _recreatePlugins);
+            cordova.getActivity().runOnUiThread(() -> {
+                if (loadUrlTimeoutValue > 0) {
+                    cordova.getThreadPool().execute(timeoutCheck);
                 }
+                engine.loadUrl(url, _recreatePlugins);
             });
         } else {
             LOG.d(TAG, "Cordova activity does not exist.");
@@ -228,7 +222,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
                 loadUrlIntoView(url, true);
                 return;
             } else {
-                LOG.w(TAG, "showWebPage: Refusing to load URL into webview since it is not in the <allow-navigation> allow list. URL=" + url);
+                LOG.w(TAG, "showWebPage: Refusing to load URL into WebView since it is not in the <allow-navigation> allow list. URL=" + url);
                 return;
             }
         }
@@ -581,23 +575,15 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
             // Make app visible after 2 sec in case there was a JS error and Cordova JS never initialized correctly
             if (engine.getView().getVisibility() != View.VISIBLE) {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Thread.sleep(2000);
-                            if (cordova.getActivity() != null) {
-                                cordova.getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        pluginManager.postMessage("spinner", "stop");
-                                    }
-                                });
-                            } else {
-                                LOG.d(TAG, "Cordova activity does not exist.");
-                            }
-                        } catch (InterruptedException e) {
+                Thread t = new Thread(() -> {
+                    try {
+                        Thread.sleep(2000);
+                        if (cordova.getActivity() != null) {
+                            cordova.getActivity().runOnUiThread(() -> pluginManager.postMessage("spinner", "stop"));
+                        } else {
+                            LOG.d(TAG, "Cordova activity does not exist.");
                         }
+                    } catch (InterruptedException e) {
                     }
                 });
                 t.start();
