@@ -17,7 +17,7 @@
  specific language governing permissions and limitations
  under the License.
 -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen.IconBackground">
       <!-- Optional: Set the splash screen background. (Default: #FFFFFF) -->
       <item name="windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
@@ -30,5 +30,8 @@
 
       <!-- Required: Set the theme of the Activity that directly follows your splash screen. -->
       <item name="postSplashScreenTheme">@style/Theme.AppCompat.NoActionBar</item>
+
+      <!-- Disable Edge-to-Edge for SDK 35 -->
+      <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
 </resources>
