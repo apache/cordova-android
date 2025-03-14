@@ -169,7 +169,7 @@ public class PluginResult {
     public static final int MESSAGE_TYPE_BINARYSTRING = 7;
     public static final int MESSAGE_TYPE_MULTIPART = 8;
 
-    public static String[] StatusMessages = new String[] {
+    public static final String[] StatusMessages = new String[] {
         "No result",
         "OK",
         "Class not found",

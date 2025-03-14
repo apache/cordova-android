@@ -20,13 +20,11 @@
 package org.apache.cordova.engine;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
-import android.os.Build;
 import android.view.View;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
@@ -43,9 +41,6 @@ import org.apache.cordova.ICordovaCookieManager;
 import org.apache.cordova.LOG;
 import org.apache.cordova.NativeToJsMessageQueue;
 import org.apache.cordova.PluginManager;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 
 /**
@@ -178,13 +173,13 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         // The default is to use the module's debuggable state to decide if the WebView inspector
         // should be enabled. However, users can configure InspectableWebView preference to forcefully enable
         // or disable the WebView inspector.
-        String inspectableWebview = preferences.getString("InspectableWebview", null);
+        String inspectableWebView = preferences.getString("InspectableWebView", null);
         boolean shouldEnableInspector = false;
-        if (inspectableWebview == null) {
+        if (inspectableWebView == null) {
             ApplicationInfo appInfo = webView.getContext().getApplicationContext().getApplicationInfo();
             shouldEnableInspector = (appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         }
-        else if ("true".equals(inspectableWebview)) {
+        else if ("true".equals(inspectableWebView)) {
             shouldEnableInspector = true;
         }
 
