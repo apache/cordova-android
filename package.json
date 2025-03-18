@@ -32,7 +32,7 @@
     "is-path-inside": "^3.0.3",
     "nopt": "^7.2.1",
     "properties-parser": "^0.6.0",
-    "semver": "^7.6.2",
+    "semver": "^7.7.1",
     "string-argv": "^0.3.1",
     "untildify": "^4.0.0",
     "which": "^5.0.0"
