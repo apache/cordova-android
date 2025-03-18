@@ -35,7 +35,7 @@
     "semver": "^7.6.2",
     "string-argv": "^0.3.1",
     "untildify": "^4.0.0",
-    "which": "^4.0.0"
+    "which": "^5.0.0"
   },
   "devDependencies": {
     "@cordova/eslint-config": "^5.1.0",
