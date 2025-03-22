@@ -31,7 +31,6 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Debug;
-import android.os.Build;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebView;
 
@@ -42,18 +41,18 @@ import android.webkit.WebView;
  * from JavaScript.</p>
  */
 public class PluginManager {
-    private static String TAG = "PluginManager";
+    private static final String TAG = "PluginManager";
 
     // @todo same as ConfigXmlParser. Research centralizing ideas, maybe create CordovaConstants
-    private static String SCHEME_HTTPS = "https";
+    private static final String SCHEME_HTTPS = "https";
     // @todo same as ConfigXmlParser. Research centralizing ideas, maybe create CordovaConstants
-    private static String DEFAULT_HOSTNAME = "localhost";
+    private static final String DEFAULT_HOSTNAME = "localhost";
 
     private static final int SLOW_EXEC_WARNING_THRESHOLD = Debug.isDebuggerConnected() ? 60 : 16;
 
     // List of service entries
-    private final Map<String, CordovaPlugin> pluginMap = Collections.synchronizedMap(new LinkedHashMap<String, CordovaPlugin>());
-    private final Map<String, PluginEntry> entryMap = Collections.synchronizedMap(new LinkedHashMap<String, PluginEntry>());
+    private final Map<String, CordovaPlugin> pluginMap = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<String, PluginEntry> entryMap = Collections.synchronizedMap(new LinkedHashMap<>());
 
     private final CordovaInterface ctx;
     private final CordovaWebView app;
@@ -609,7 +608,7 @@ public class PluginManager {
      * @return list of PathHandlers in no particular order
      */
     public ArrayList<CordovaPluginPathHandler> getPluginPathHandlers() {
-        ArrayList<CordovaPluginPathHandler> handlers = new ArrayList<CordovaPluginPathHandler>();
+        ArrayList<CordovaPluginPathHandler> handlers = new ArrayList<>();
         for (CordovaPlugin plugin : this.pluginMap.values()) {
             if (plugin != null && plugin.getPathHandler() != null) {
                 handlers.add(plugin.getPathHandler());

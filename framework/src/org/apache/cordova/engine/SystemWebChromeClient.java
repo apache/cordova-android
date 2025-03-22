@@ -59,16 +59,16 @@ import org.apache.cordova.LOG;
  */
 public class SystemWebChromeClient extends WebChromeClient {
 
-    private static final int FILECHOOSER_RESULTCODE = 5173;
+    private static final int FILE_CHOOSER_RESULT_CODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
-    private long MAX_QUOTA = 100 * 1024 * 1024;
+    private final long MAX_QUOTA = 100 * 1024 * 1024;
     protected final SystemWebViewEngine parentEngine;
 
     // the video progress view
     private View mVideoProgressView;
 
-    private CordovaDialogsHelper dialogsHelper;
-    private Context appContext;
+    private final CordovaDialogsHelper dialogsHelper;
+    private final Context appContext;
 
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
     private View mCustomView;
@@ -84,13 +84,11 @@ public class SystemWebChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-        dialogsHelper.showAlert(message, new CordovaDialogsHelper.Result() {
-            @Override public void gotResult(boolean success, String value) {
-                if (success) {
-                    result.confirm();
-                } else {
-                    result.cancel();
-                }
+        dialogsHelper.showAlert(message, (success, value) -> {
+            if (success) {
+                result.confirm();
+            } else {
+                result.cancel();
             }
         });
         return true;
@@ -101,14 +99,11 @@ public class SystemWebChromeClient extends WebChromeClient {
      */
     @Override
     public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
-        dialogsHelper.showConfirm(message, new CordovaDialogsHelper.Result() {
-            @Override
-            public void gotResult(boolean success, String value) {
-                if (success) {
-                    result.confirm();
-                } else {
-                    result.cancel();
-                }
+        dialogsHelper.showConfirm(message, (success, value) -> {
+            if (success) {
+                result.confirm();
+            } else {
+                result.cancel();
             }
         });
         return true;
@@ -129,14 +124,11 @@ public class SystemWebChromeClient extends WebChromeClient {
         if (handledRet != null) {
             result.confirm(handledRet);
         } else {
-            dialogsHelper.showPrompt(message, defaultValue, new CordovaDialogsHelper.Result() {
-                @Override
-                public void gotResult(boolean success, String value) {
-                    if (success) {
-                        result.confirm(value);
-                    } else {
-                        result.cancel();
-                    }
+            dialogsHelper.showPrompt(message, defaultValue, (success, value) -> {
+                if (success) {
+                    result.confirm(value);
+                } else {
+                    result.cancel();
                 }
             });
         }
@@ -275,7 +267,7 @@ public class SystemWebChromeClient extends WebChromeClient {
                     // Handle result
                     Uri[] result = null;
                     if (resultCode == Activity.RESULT_OK) {
-                        List<Uri> uris = new ArrayList<Uri>();
+                        List<Uri> uris = new ArrayList<>();
 
                         if (intent != null && intent.getData() != null) { // single file
                             LOG.v(LOG_TAG, "Adding file (single): " + intent.getData());
@@ -302,7 +294,7 @@ public class SystemWebChromeClient extends WebChromeClient {
                     }
                     filePathsCallback.onReceiveValue(result);
                 }
-            }, chooserIntent, FILECHOOSER_RESULTCODE);
+            }, chooserIntent, FILE_CHOOSER_RESULT_CODE);
         } catch (ActivityNotFoundException e) {
             LOG.w(LOG_TAG, "No activity found to handle file chooser intent.", e);
             filePathsCallback.onReceiveValue(null);
@@ -311,15 +303,13 @@ public class SystemWebChromeClient extends WebChromeClient {
     }
 
     private File createTempFile(Context context) throws IOException {
-        // Create an image file name
-        File tempFile = File.createTempFile("temp", ".jpg", context.getCacheDir());
-        return tempFile;
+        // Create a temp image file name
+        return File.createTempFile("temp", ".jpg", context.getCacheDir());
     }
 
     private Uri createUriForFile(Context context, File tempFile) throws IOException {
         String appId = context.getPackageName();
-        Uri uri = FileProvider.getUriForFile(context, appId + ".cdv.core.file.provider", tempFile);
-        return uri;
+        return FileProvider.getUriForFile(context, appId + ".cdv.core.file.provider", tempFile);
     }
 
     @Override

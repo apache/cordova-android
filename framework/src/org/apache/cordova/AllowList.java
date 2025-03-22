@@ -20,11 +20,8 @@ package org.apache.cordova;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.cordova.LOG;
 
 import android.net.Uri;
 
@@ -97,7 +94,7 @@ public class AllowList {
     public static final String TAG = "CordovaAllowList";
 
     public AllowList() {
-        this.allowList = new ArrayList<URLPattern>();
+        this.allowList = new ArrayList<>();
     }
 
     /* Match patterns (from http://developer.chrome.com/extensions/match_patterns.html)
@@ -157,9 +154,7 @@ public class AllowList {
 
         Uri parsedUri = Uri.parse(uri);
         // Look for match in allow list
-        Iterator<URLPattern> pit = allowList.iterator();
-        while (pit.hasNext()) {
-            URLPattern p = pit.next();
+        for (URLPattern p : allowList) {
             if (p.matches(parsedUri)) {
                 return true;
             }

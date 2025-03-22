@@ -26,16 +26,14 @@ package org.apache.cordova;
  *
  */
 
-import android.app.Activity;
 import android.content.Context;
 
 import java.lang.reflect.Field;
 
-
 public class BuildHelper {
 
 
-    private static String TAG="BuildHelper";
+    private static final String TAG = "BuildHelper";
 
     /*
      * This needs to be implemented if you wish to use the Camera Plugin or other plugins

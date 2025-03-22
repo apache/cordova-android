@@ -18,7 +18,6 @@
 */
 package org.apache.cordova;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,8 +26,8 @@ import java.util.List;
 
 public class ResumeCallback extends CallbackContext {
     private final String TAG = "CordovaResumeCallback";
-    private String serviceName;
-    private PluginManager pluginManager;
+    private final String serviceName;
+    private final PluginManager pluginManager;
 
     public ResumeCallback(String serviceName, PluginManager pluginManager) {
         super("resumecallback", null);
@@ -66,7 +65,7 @@ public class ResumeCallback extends CallbackContext {
         // the PluginResult passed to this CallbackContext into JSON twice.
         // The results are combined into an event payload before the event is
         // fired on the js side of things (see platform.js)
-        List<PluginResult> result = new ArrayList<PluginResult>();
+        List<PluginResult> result = new ArrayList<>();
         result.add(eventResult);
         result.add(pluginResult);
 

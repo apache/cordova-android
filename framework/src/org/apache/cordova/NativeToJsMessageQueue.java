@@ -40,7 +40,7 @@ public class NativeToJsMessageQueue {
     // to send to the JavaScript in one shot.
     // This currently only chops up on message boundaries.
     // It may be useful to split and reassemble response messages someday.
-    private static int COMBINED_RESPONSE_CUTOFF = 16 * 1024 * 1024;
+    private static final int COMBINED_RESPONSE_CUTOFF = 16 * 1024 * 1024;
 
     /**
      * When true, the active listener is not fired upon enqueue. When set to false,
@@ -51,12 +51,12 @@ public class NativeToJsMessageQueue {
     /**
      * The list of JavaScript statements to be sent to JavaScript.
      */
-    private final LinkedList<JsMessage> queue = new LinkedList<JsMessage>();
+    private final LinkedList<JsMessage> queue = new LinkedList<>();
 
     /**
      * The array of listeners that can be used to send messages to JS.
      */
-    private ArrayList<BridgeMode> bridgeModes = new ArrayList<BridgeMode>();
+    private final ArrayList<BridgeMode> bridgeModes = new ArrayList<>();
 
     /**
      * When null, the bridge is disabled. This occurs during page transitions.
@@ -162,8 +162,7 @@ public class NativeToJsMessageQueue {
                 // Attach a char to indicate that there are more messages pending.
                 sb.append('*');
             }
-            String ret = sb.toString();
-            return ret;
+            return sb.toString();
         }
     }
 
@@ -209,8 +208,7 @@ public class NativeToJsMessageQueue {
             for (int i = willSendAllMessages ? 1 : 0; i < numMessagesToSend; ++i) {
                 sb.append('}');
             }
-            String ret = sb.toString();
-            return ret;
+            return sb.toString();
         }
     }
 
@@ -299,13 +297,10 @@ public class NativeToJsMessageQueue {
 
         @Override
         public void onNativeToJsMessageAvailable(final NativeToJsMessageQueue queue) {
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    String js = queue.popAndEncodeAsJs();
-                    if (js != null) {
-                        engine.loadUrl("javascript:" + js, false);
-                    }
+            cordova.getActivity().runOnUiThread(() -> {
+                String js = queue.popAndEncodeAsJs();
+                if (js != null) {
+                    engine.loadUrl("javascript:" + js, false);
                 }
             });
         }
@@ -328,26 +323,20 @@ public class NativeToJsMessageQueue {
 
         @Override
         public void reset() {
-            delegate.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    online = false;
-                    // If the following call triggers a notifyOfFlush, then ignore it.
-                    ignoreNextFlush = true;
-                    delegate.setNetworkAvailable(true);
-                }
+            delegate.runOnUiThread(() -> {
+                online = false;
+                // If the following call triggers a notifyOfFlush, then ignore it.
+                ignoreNextFlush = true;
+                delegate.setNetworkAvailable(true);
             });
         }
 
         @Override
         public void onNativeToJsMessageAvailable(final NativeToJsMessageQueue queue) {
-            delegate.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!queue.isEmpty()) {
-                        ignoreNextFlush = false;
-                        delegate.setNetworkAvailable(online);
-                    }
+            delegate.runOnUiThread(() -> {
+                if (!queue.isEmpty()) {
+                    ignoreNextFlush = false;
+                    delegate.setNetworkAvailable(online);
                 }
             });
         }
@@ -372,13 +361,10 @@ public class NativeToJsMessageQueue {
 
         @Override
         public void onNativeToJsMessageAvailable(final NativeToJsMessageQueue queue) {
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    String js = queue.popAndEncodeAsJs();
-                    if (js != null) {
-                        engine.evaluateJavascript(js, null);
-                    }
+            cordova.getActivity().runOnUiThread(() -> {
+                String js = queue.popAndEncodeAsJs();
+                if (js != null) {
+                    engine.evaluateJavascript(js, null);
                 }
             });
         }
@@ -505,9 +491,9 @@ public class NativeToJsMessageQueue {
                 case PluginResult.MESSAGE_TYPE_MULTIPART:
                     int size = pluginResult.getMultipartMessagesSize();
                     for (int i=0; i<size; i++) {
-                        PluginResult subresult = pluginResult.getMultipartMessage(i);
-                        JsMessage submessage = new JsMessage(subresult, jsPayloadOrCallbackId);
-                        submessage.buildJsMessage(sb);
+                        PluginResult subResult = pluginResult.getMultipartMessage(i);
+                        JsMessage subMessage = new JsMessage(subResult, jsPayloadOrCallbackId);
+                        subMessage.buildJsMessage(sb);
                         if (i < (size-1)) {
                             sb.append(",");
                         }
