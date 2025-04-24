@@ -20,7 +20,16 @@
 -->
 ## Release Notes for Cordova (Android)
 
+### 14.0.1 (Apr 24, 2025)
+
+**Fixes:**
+
+* [GH-1795](https://github.com/apache/cordova-android/pull/1795) fix: configure gradle `java.home`
+* [GH-1793](https://github.com/apache/cordova-android/pull/1793) fix(windows): get gradle path with `which` command
+
 ### 14.0.0 (Mar 23, 2025)
+
+**Breaking Changes:**
 
 * [GH-1788](https://github.com/apache/cordova-android/pull/1788) dep!: bump npm packages
   * nyc@17.1.0
