@@ -150,7 +150,7 @@ describe('common platform handler', function () {
             const s = spyOn(fs, 'rmSync').and.callThrough();
             deleteJava(project_dir, java_file);
             expect(s).toHaveBeenCalled();
-            expect(s).toHaveBeenCalledWith(path.resolve(project_dir, java_file));
+            expect(s).toHaveBeenCalledWith(path.resolve(project_dir, java_file), { recursive: true, force: true });
         });
 
         it('Test#010 : should delete empty directories after removing source code in a java src path hierarchy', function () {
