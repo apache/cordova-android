@@ -25,6 +25,9 @@ on:
     branches:
       - '*'
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Audit Licenses
