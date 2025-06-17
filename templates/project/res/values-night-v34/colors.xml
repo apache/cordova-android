@@ -17,7 +17,7 @@
  specific language governing permissions and limitations
  under the License.
 -->
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <color name="cdv_background_color">#FAF8FF</color>
+<resources>
+    <color name="cdv_background_color">@android:color/system_background_dark</color>
     <color name="cdv_splashscreen_background">@color/cdv_background_color</color>
 </resources>

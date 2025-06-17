@@ -19,19 +19,23 @@
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen.IconBackground">
-      <!-- Optional: Set the splash screen background. (Default: #FFFFFF) -->
-      <item name="windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
+        <!-- Optional: Set the splash screen background. (Default: #00000000) -->
+        <item name="windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
 
-      <!-- Required: Add either a drawable or an animated drawable -->
-      <item name="windowSplashScreenAnimatedIcon">@drawable/ic_cdv_splashscreen</item>
+        <!-- Required: Add either a drawable or an animated drawable -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_cdv_splashscreen</item>
 
-      <!-- Required: For animated icons -->
-      <item name="windowSplashScreenAnimationDuration">200</item>
+        <!-- Required: For animated icons -->
+        <item name="windowSplashScreenAnimationDuration">200</item>
 
-      <!-- Required: Set the theme of the Activity that directly follows your splash screen. -->
-      <item name="postSplashScreenTheme">@style/Theme.AppCompat.NoActionBar</item>
+        <!-- Required: Set the theme of the Activity that directly follows your splash screen. -->
+        <item name="postSplashScreenTheme">@style/Theme.Cordova.App.DayNight</item>
 
-      <!-- Disable Edge-to-Edge for SDK 35 -->
-      <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+        <!-- Disable Edge-to-Edge for SDK 35 -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+    </style>
+
+    <style name="Theme.Cordova.App.DayNight" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:colorBackground">@color/cdv_background_color</item>
     </style>
 </resources>
