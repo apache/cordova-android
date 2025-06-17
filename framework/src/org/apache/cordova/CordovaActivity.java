@@ -239,17 +239,6 @@ public class CordovaActivity extends AppCompatActivity {
             ViewCompat.requestApplyInsets(rootLayout);
         }
 
-        if (preferences.contains("BackgroundColor")) {
-            try {
-                int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
-                // Background of activity:
-                webView.setBackgroundColor(backgroundColor);
-            }
-            catch (NumberFormatException e){
-                e.printStackTrace();
-            }
-        }
-
         rootLayout.addView(webView);
         setContentView(rootLayout);
         webView.requestFocusFromTouch();
