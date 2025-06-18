@@ -29,7 +29,6 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -221,15 +220,18 @@ public class CordovaActivity extends AppCompatActivity {
                                 | WindowInsetsCompat.Type.displayCutout()
                 );
 
+                boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
+                int top = isStatusBarVisible ? bars.top : 0;
+
                 // Update the WebView's Margin LayoutParams
                 FrameLayout.LayoutParams newParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
-                newParams.setMargins(bars.left, bars.top, bars.right, bars.bottom);
+                newParams.setMargins(bars.left, top, bars.right, bars.bottom);
                 webView.setLayoutParams(newParams);
 
                 // Position the status bar view to overlay the top inset areas
                 statusBarView.setLayoutParams(new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        bars.top,
+                        top,
                         Gravity.TOP
                 ));
 

@@ -39,6 +39,10 @@ module.exports = {
         // Core Splash Screen
         modulemapper.clobbers('cordova/plugin/android/splashscreen', 'navigator.splashscreen');
 
+        // Attach the internal statusBar utility to window.statusbar
+        // see the file under plugin/android/statusbar.js
+        modulemapper.clobbers('cordova/plugin/android/statusbar', 'window.statusbar');
+
         var APP_PLUGIN_NAME = Number(cordova.platformVersion.split('.')[0]) >= 4 ? 'CoreAndroid' : 'App';
 
         // Inject a listener for the backbutton on the document.
