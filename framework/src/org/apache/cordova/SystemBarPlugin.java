@@ -29,11 +29,16 @@ import android.view.View;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 public class SystemBarPlugin extends CordovaPlugin {
     static final String PLUGIN_NAME = "SystemBarPlugin";
@@ -70,6 +75,63 @@ public class SystemBarPlugin extends CordovaPlugin {
             cordova.getActivity().runOnUiThread(this::updateSystemBars);
         }
         return null;
+    }
+
+    @Override
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+                && preferences.getBoolean("AndroidEdgeToEdge", false)
+        ) {
+            // Disable JS API in E2E mode (SDK >= 35)
+            return false;
+        }
+
+        if ("setStatusBarVisible".equals(action)) {
+            boolean visible = args.getBoolean(0);
+            cordova.getActivity().runOnUiThread(() -> setStatusBarVisible(visible));
+        } else if ("setStatusBarBackgroundColor".equals(action)) {
+            String bgColor = args.getString(0);
+            cordova.getActivity().runOnUiThread(() -> setStatusBarBackgroundColor(bgColor));
+        } else {
+            return false;
+        }
+
+        callbackContext.success();
+        return true;
+    }
+
+    private void setStatusBarVisible(final boolean visible) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            View statusBar = getStatusBarView(webView);
+            if (statusBar != null) {
+                statusBar.setVisibility(visible ? View.VISIBLE : View.GONE);
+
+                FrameLayout rootLayout = getRootLayout(webView);
+                if (rootLayout != null) {
+                    ViewCompat.requestApplyInsets(rootLayout);
+                }
+            }
+        } else {
+            Window window = cordova.getActivity().getWindow();
+            int uiOptions = window.getDecorView().getSystemUiVisibility();
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN;
+            if (visible) {
+                uiOptions &= ~flags;
+                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            } else {
+                uiOptions |= flags;
+                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
+            window.getDecorView().setSystemUiVisibility(uiOptions);
+        }
+    }
+
+    private void setStatusBarBackgroundColor(final String colorPref) {
+        int parsedColor = parseColorFromString(colorPref);
+        if (parsedColor == INVALID_COLOR) return;
+
+        overrideStatusBarBackgroundColor = Color.parseColor(colorPref);
+        updateStatusBar(overrideStatusBarBackgroundColor);
     }
 
     private void updateSystemBars() {
@@ -130,7 +192,9 @@ public class SystemBarPlugin extends CordovaPlugin {
     private void updateStatusBar(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
-        if (!preferences.getBoolean("AndroidEdgeToEdge", false)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+                && !preferences.getBoolean("AndroidEdgeToEdge", false)
+        ) {
             View statusBar = getStatusBarView(webView);
             if (statusBar != null) {
                 statusBar.setBackgroundColor(bgColor);
