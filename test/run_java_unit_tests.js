@@ -62,6 +62,8 @@ class AndroidTestRunner {
             .then(_ => {
                 // TODO we should probably not only copy these files, but instead create a new project from scratch
                 fs.copyFileSync(path.resolve(this.projectDir, '../../framework/cdv-gradle-config-defaults.json'), path.resolve(this.projectDir, 'cdv-gradle-config.json'));
+                fs.copyFileSync(path.resolve(this.projectDir, '../../framework/repositories.gradle'), path.resolve(this.projectDir, 'repositories.gradle'));
+                fs.copyFileSync(path.resolve(this.projectDir, '../../framework/repositories.gradle'), path.resolve(this.projectDir, 'app', 'repositories.gradle'));
                 fs.cpSync(path.resolve(this.projectDir, '../../templates/project/tools'), path.resolve(this.projectDir, 'tools'), { recursive: true });
                 fs.copyFileSync(
                     path.join(__dirname, '../templates/project/assets/www/cordova.js'),

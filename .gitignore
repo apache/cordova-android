@@ -30,6 +30,8 @@ example
 
 /test/.externalNativeBuild
 /test/androidx/cdv-gradle-config.json
+/test/androidx/repositories.gradle
+/test/androidx/app/repositories.gradle
 /test/androidx/tools
 /test/androidx/build
 /test/assets/www/.tmp*
