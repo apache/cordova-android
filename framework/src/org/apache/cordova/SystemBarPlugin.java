@@ -89,8 +89,7 @@ public class SystemBarPlugin extends CordovaPlugin {
             boolean visible = args.getBoolean(0);
             cordova.getActivity().runOnUiThread(() -> setStatusBarVisible(visible));
         } else if ("setStatusBarBackgroundColor".equals(action)) {
-            String bgColor = args.getString(0);
-            cordova.getActivity().runOnUiThread(() -> setStatusBarBackgroundColor(bgColor));
+            cordova.getActivity().runOnUiThread(() -> setStatusBarBackgroundColor(args));
         } else {
             return false;
         }
@@ -120,17 +119,27 @@ public class SystemBarPlugin extends CordovaPlugin {
 
     /**
      * Allow the app to override the status bar background color from JS API.
-     * If the supplied string is invalid and fails to parse, it will silently ignore
+     * If the supplied ARGB is invalid or fails to parse, it will silently ignore
      * the change request.
      *
-     * @param colorPref hex string
+     * @param argbVals {A, R, G, B}
      */
-    private void setStatusBarBackgroundColor(final String colorPref) {
-        int parsedColor = parseColorFromString(colorPref);
-        if (parsedColor == INVALID_COLOR) return;
+    private void setStatusBarBackgroundColor(JSONArray argbVals) {
+        try {
+            int a = argbVals.getInt(0);
+            int r = argbVals.getInt(1);
+            int g = argbVals.getInt(2);
+            int b = argbVals.getInt(3);
+            String hexColor = String.format("#%02X%02X%02X%02X", a, r, g, b);
 
-        overrideStatusBarBackgroundColor = parsedColor;
-        updateStatusBar(overrideStatusBarBackgroundColor);
+            int parsedColor = parseColorFromString(hexColor);
+            if (parsedColor == INVALID_COLOR) return;
+
+            overrideStatusBarBackgroundColor = parsedColor;
+            updateStatusBar(overrideStatusBarBackgroundColor);
+        } catch (JSONException e) {
+            // Silently skip
+        }
     }
 
     /**
