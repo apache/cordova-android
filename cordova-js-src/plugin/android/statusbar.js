@@ -54,16 +54,31 @@ Object.defineProperty(statusBar, 'setBackgroundColor', {
     enumerable: false,
     writable: false,
     value: function (value) {
-        // Confirm if value is a valid hex code is before passing to native-side
-        if (!(/^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value))) {
-            console.error('Invalid color hex code. Valid format: #RRGGBB or #AARRGGBB');
+        var script = document.querySelector('script[src$="cordova.js"]');
+        script.style.color = value;
+        var rgbStr = window.getComputedStyle(script).getPropertyValue('color');
+
+        if (!rgbStr.match(/^rgb/)) { return; }
+
+        var rgbVals = rgbStr.match(/\d+/g).map(function (v) { return parseInt(v, 10); });
+
+        if (rgbVals.length < 3) {
             return;
+        } else if (rgbVals.length === 3) {
+            rgbVals = [255].concat(rgbVals);
         }
 
+        const padRgb = (val) => val.toString(16).padStart(2, '0');
+        const a = padRgb(rgbVals[0]);
+        const r = padRgb(rgbVals[1]);
+        const g = padRgb(rgbVals[2]);
+        const b = padRgb(rgbVals[3]);
+        const hexStr = '#' + a + r + g + b;
+
         if (window.StatusBar) {
-            window.StatusBar.backgroundColorByHexString(value);
+            window.StatusBar.backgroundColorByHexString(hexStr);
         } else {
-            exec(null, null, 'SystemBarPlugin', 'setStatusBarBackgroundColor', [value]);
+            exec(null, null, 'SystemBarPlugin', 'setStatusBarBackgroundColor', rgbVals);
         }
     }
 });
