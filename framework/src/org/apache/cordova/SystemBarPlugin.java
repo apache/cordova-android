@@ -99,6 +99,13 @@ public class SystemBarPlugin extends CordovaPlugin {
         return true;
     }
 
+    /**
+     * Allow the app to override the status bar visibility from JS API.
+     * If for some reason the statusBarView could not be discovered, it will silently ignore
+     * the change request
+     *
+     * @param visible should the status bar be visible?
+     */
     private void setStatusBarVisible(final boolean visible) {
         View statusBar = getStatusBarView(webView);
         if (statusBar != null) {
@@ -111,14 +118,29 @@ public class SystemBarPlugin extends CordovaPlugin {
         }
     }
 
+    /**
+     * Allow the app to override the status bar background color from JS API.
+     * If the supplied string is invalid and fails to parse, it will silently ignore
+     * the change request.
+     *
+     * @param colorPref hex string
+     */
     private void setStatusBarBackgroundColor(final String colorPref) {
         int parsedColor = parseColorFromString(colorPref);
         if (parsedColor == INVALID_COLOR) return;
 
-        overrideStatusBarBackgroundColor = Color.parseColor(colorPref);
+        overrideStatusBarBackgroundColor = parsedColor;
         updateStatusBar(overrideStatusBarBackgroundColor);
     }
 
+    /**
+     * Attempt to update all system bars (status, navigation and gesture bars) in various points
+     * of the apps life cycle.
+     * For example:
+     *  1. Device configurations between (E.g. between dark and light mode)
+     *  2. User resumes the app
+     *  3. App transitions from SplashScreen Theme to App's Theme
+     */
     private void updateSystemBars() {
         // Update Root View Background Color
         int rootViewBackgroundColor = getPreferenceBackgroundColor();
@@ -142,6 +164,18 @@ public class SystemBarPlugin extends CordovaPlugin {
         updateStatusBar(statusBarBackgroundColor);
     }
 
+    /**
+     * Updates the root layout's background color with the supplied color int.
+     * It will also determine if the background color is light or dark to properly adjust the
+     * appearance of the navigation/gesture bar's icons so it will not clash with the background.
+     * <p>
+     * System bars (navigation & gesture) on SDK 25 or lower is forced to black as the appearance
+     * of the fonts can not be updated.
+     * System bars (navigation & gesture) on SDK 26 or greater allows custom background color.
+     * <p/>
+     *
+     * @param bgColor Background color
+     */
     private void updateRootView(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
@@ -166,14 +200,19 @@ public class SystemBarPlugin extends CordovaPlugin {
         controllerCompat.setAppearanceLightNavigationBars(isBackgroundColorLight);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Allow custom navigation bar background color for SDK 26 and greater.
             window.setNavigationBarColor(bgColor);
         } else {
-            // Force navigation bar to black for SDK 25 and less.
             window.setNavigationBarColor(Color.BLACK);
         }
     }
 
+    /**
+     * Updates the statusBarView background color with the supplied color int.
+     * It will also determine if the background color is light or dark to properly adjust the
+     * appearance of the status bar so the font will not clash with the background.
+     *
+     * @param bgColor Background color
+     */
     private void updateStatusBar(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
@@ -188,6 +227,12 @@ public class SystemBarPlugin extends CordovaPlugin {
         controllerCompat.setAppearanceLightStatusBars(isStatusBarBackgroundColorLight);
     }
 
+    /**
+     * Determines if the supplied color's appearance is light.
+     *
+     * @param color color
+     * @return boolean value true is returned when the color is light.
+     */
     private static boolean isColorLight(int color) {
         double r = Color.red(color) / 255.0;
         double g = Color.green(color) / 255.0;
@@ -196,6 +241,14 @@ public class SystemBarPlugin extends CordovaPlugin {
         return luminance > 0.5;
     }
 
+    /**
+     * Returns the StatusBarBackgroundColor preference value.
+     * If the value is missing or fails to parse, it will attempt to try to guess the background
+     * color by extracting from the apps R.color.cdv_background_color or determine from the uiModes.
+     * If all fails, the color normally used in light mode is returned.
+     *
+     * @return int
+     */
     private int getPreferenceStatusBarBackgroundColor() {
         String colorString = preferences.getString("StatusBarBackgroundColor", null);
 
@@ -205,6 +258,12 @@ public class SystemBarPlugin extends CordovaPlugin {
         return getUiModeColor(); // fallback
     }
 
+    /**
+     * Returns the BackgroundColor preference value.
+     * If missing or fails to decode, it will return INVALID_COLOR (-1).
+     *
+     * @return int
+     */
     private int getPreferenceBackgroundColor() {
         try {
             return preferences.getInteger("BackgroundColor", INVALID_COLOR);
@@ -214,6 +273,12 @@ public class SystemBarPlugin extends CordovaPlugin {
         }
     }
 
+    /**
+     * Tries to find and return the rootLayout.
+     *
+     * @param webView CordovaWebView
+     * @return FrameLayout|null
+     */
     private FrameLayout getRootLayout(CordovaWebView webView) {
         ViewParent parent = webView.getView().getParent();
         if (parent instanceof FrameLayout) {
@@ -223,6 +288,12 @@ public class SystemBarPlugin extends CordovaPlugin {
         return null;
     }
 
+    /**
+     * Tries to find and return the statusBarView.
+     *
+     * @param webView CordovaWebView
+     * @return View|null
+     */
     private View getStatusBarView(CordovaWebView webView) {
         FrameLayout rootView = getRootLayout(webView);
         for (int i = 0; i < (rootView != null ? rootView.getChildCount() : 0); i++) {
@@ -235,17 +306,37 @@ public class SystemBarPlugin extends CordovaPlugin {
         return null;
     }
 
+    /**
+     * Determines the background color for status bar & root layer.
+     * The color will come from the app's R.color.cdv_background_color.
+     * If for some reason the resource is missing, it will try to fallback on the uiMode.
+     * <p>
+     * The uiMode as follows.
+     *   If night mode: "#121318" (android.R.color.system_background_dark)
+     *   If day mode: "#FAF8FF" (android.R.color.system_background_light)
+     * If all fails, light mode will be returned.
+     * </p>
+     * The hex values are supplied instead of "android.R.color" for backwards compatibility.
+     *
+     * @return int color
+     */
+    @SuppressLint("DiscouragedApi")
     private int getUiModeColor() {
-        // Hardcoded fallback values matches system ui values (R.color) which were added in SDK 34.
-        return isNightMode()
-                ? getThemeColor("cdv_background_color_dark", "#121318")
-                : getThemeColor("cdv_background_color_light", "#FAF8FF");
+        boolean isNightMode = (resources.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        String fallbackColor = isNightMode ? "#121318" : "#FAF8FF";
+        int colorResId = resources.getIdentifier("cdv_background_color", "color", context.getPackageName());
+        return colorResId != 0
+                ? ContextCompat.getColor(context, colorResId)
+                : Color.parseColor(fallbackColor);
     }
 
-    private boolean isNightMode() {
-        return (resources.getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-    }
-
+    /**
+     * Parse color string that would be provided by app developers.
+     * If the color string is empty or unable to parse, it will return INVALID_COLOR (-1).
+     *
+     * @param colorPref hex string value, #AARRGGBB or #RRGGBB
+     * @return int
+     */
     private int parseColorFromString(final String colorPref) {
         if (colorPref.isEmpty()) return INVALID_COLOR;
 
@@ -255,13 +346,5 @@ public class SystemBarPlugin extends CordovaPlugin {
             LOG.e(PLUGIN_NAME, "Invalid color hex code. Valid format: #RRGGBB or #AARRGGBB");
             return INVALID_COLOR;
         }
-    }
-
-    @SuppressLint("DiscouragedApi")
-    private int getThemeColor(String colorKey, String fallbackColor) {
-        int colorResId = resources.getIdentifier(colorKey, "color", context.getPackageName());
-        return colorResId != 0
-                ? ContextCompat.getColor(context, colorResId)
-                : Color.parseColor(fallbackColor);
     }
 }
