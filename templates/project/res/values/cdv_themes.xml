@@ -19,7 +19,7 @@
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen.IconBackground">
-        <!-- Optional: Set the splash screen background. (Default: #00000000) -->
+        <!-- Optional: Set the splash screen background. (Default: @color/cdv_splashscreen_background) -->
         <item name="windowSplashScreenBackground">@color/cdv_splashscreen_background</item>
 
         <!-- Required: Add either a drawable or an animated drawable -->
