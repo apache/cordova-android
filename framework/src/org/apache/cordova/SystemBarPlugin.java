@@ -29,7 +29,6 @@ import android.view.View;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowInsetsController;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.core.content.ContextCompat;
@@ -50,11 +49,14 @@ public class SystemBarPlugin extends CordovaPlugin {
     private Resources resources;
     private int overrideStatusBarBackgroundColor = INVALID_COLOR;
 
+    private boolean canEdgeToEdge = false;
 
     @Override
     protected void pluginInitialize() {
         context = cordova.getContext();
         resources = context.getResources();
+        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
     }
 
     @Override
@@ -79,10 +81,7 @@ public class SystemBarPlugin extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
-                && preferences.getBoolean("AndroidEdgeToEdge", false)
-        ) {
-            // Disable JS API in E2E mode (SDK >= 35)
+        if(canEdgeToEdge) {
             return false;
         }
 
@@ -101,28 +100,14 @@ public class SystemBarPlugin extends CordovaPlugin {
     }
 
     private void setStatusBarVisible(final boolean visible) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            View statusBar = getStatusBarView(webView);
-            if (statusBar != null) {
-                statusBar.setVisibility(visible ? View.VISIBLE : View.GONE);
+        View statusBar = getStatusBarView(webView);
+        if (statusBar != null) {
+            statusBar.setVisibility(visible ? View.VISIBLE : View.GONE);
 
-                FrameLayout rootLayout = getRootLayout(webView);
-                if (rootLayout != null) {
-                    ViewCompat.requestApplyInsets(rootLayout);
-                }
+            FrameLayout rootLayout = getRootLayout(webView);
+            if (rootLayout != null) {
+                ViewCompat.requestApplyInsets(rootLayout);
             }
-        } else {
-            Window window = cordova.getActivity().getWindow();
-            int uiOptions = window.getDecorView().getSystemUiVisibility();
-            int flags = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN;
-            if (visible) {
-                uiOptions &= ~flags;
-                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            } else {
-                uiOptions |= flags;
-                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            }
-            window.getDecorView().setSystemUiVisibility(uiOptions);
         }
     }
 
@@ -138,7 +123,7 @@ public class SystemBarPlugin extends CordovaPlugin {
         // Update Root View Background Color
         int rootViewBackgroundColor = getPreferenceBackgroundColor();
         if (rootViewBackgroundColor == INVALID_COLOR) {
-            rootViewBackgroundColor = getUiModeColor();
+            rootViewBackgroundColor = canEdgeToEdge ? Color.TRANSPARENT : getUiModeColor();
         }
         updateRootView(rootViewBackgroundColor);
 
@@ -151,7 +136,7 @@ public class SystemBarPlugin extends CordovaPlugin {
         } else if(preferences.contains("BackgroundColor")){
             statusBarBackgroundColor =  rootViewBackgroundColor;
         } else {
-            statusBarBackgroundColor = getUiModeColor();
+            statusBarBackgroundColor = canEdgeToEdge ? Color.TRANSPARENT : getUiModeColor();
         }
 
         updateStatusBar(statusBarBackgroundColor);
@@ -192,22 +177,15 @@ public class SystemBarPlugin extends CordovaPlugin {
     private void updateStatusBar(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
-                && !preferences.getBoolean("AndroidEdgeToEdge", false)
-        ) {
-            View statusBar = getStatusBarView(webView);
-            if (statusBar != null) {
-                statusBar.setBackgroundColor(bgColor);
-            }
+        View statusBar = getStatusBarView(webView);
+        if (statusBar != null) {
+            statusBar.setBackgroundColor(bgColor);
         }
 
         // Automatically set the font and icon color of the system bars based on background color.
         boolean isStatusBarBackgroundColorLight = isColorLight(bgColor);
         WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
         controllerCompat.setAppearanceLightStatusBars(isStatusBarBackgroundColorLight);
-
-        // Allow custom background color for StatusBar.
-        window.setStatusBarColor(bgColor);
     }
 
     private static boolean isColorLight(int color) {
