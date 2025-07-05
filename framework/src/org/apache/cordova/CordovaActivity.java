@@ -29,9 +29,10 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,7 +43,10 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.core.splashscreen.SplashScreen;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -180,26 +184,62 @@ public class CordovaActivity extends AppCompatActivity {
     //Suppressing warnings in AndroidStudio
     @SuppressWarnings({"deprecation", "ResourceType"})
     protected void createViews() {
-        //Why are we setting a constant as the ID? This should be investigated
-        appView.getView().setId(100);
-        appView.getView().setLayoutParams(new FrameLayout.LayoutParams(
+        // Root FrameLayout
+        FrameLayout rootLayout = new FrameLayout(this);
+        rootLayout.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
 
-        setContentView(appView.getView());
+        // WebView
+        View webView = appView.getView();
+        webView.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
 
-        if (preferences.contains("BackgroundColor")) {
-            try {
-                int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
-                // Background of activity:
-                appView.getView().setBackgroundColor(backgroundColor);
-            }
-            catch (NumberFormatException e){
-                e.printStackTrace();
-            }
+        // Enable/Disable AndroidEdgeToEdge (Supported in SDK >= 35)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+                && !preferences.getBoolean("AndroidEdgeToEdge", false)
+        ) {
+            // Create StatusBar view that will overlay the top inset
+            View statusBarView = new View(this);
+            statusBarView.setTag("statusBarView");
+
+            // Add statusBarView to root layout.
+            rootLayout.addView(statusBarView);
+
+            // Handle Window Insets
+            ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
+                Insets bars = insets.getInsets(
+                        WindowInsetsCompat.Type.systemBars()
+                                | WindowInsetsCompat.Type.displayCutout()
+                );
+
+                boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
+                int top = isStatusBarVisible ? bars.top : 0;
+
+                // Update the WebView's Margin LayoutParams
+                FrameLayout.LayoutParams newParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
+                newParams.setMargins(bars.left, top, bars.right, bars.bottom);
+                webView.setLayoutParams(newParams);
+
+                // Position the status bar view to overlay the top inset areas
+                statusBarView.setLayoutParams(new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        top,
+                        Gravity.TOP
+                ));
+
+                return WindowInsetsCompat.CONSUMED;
+            });
+
+            ViewCompat.requestApplyInsets(rootLayout);
         }
 
-        appView.getView().requestFocusFromTouch();
+        rootLayout.addView(webView);
+        setContentView(rootLayout);
+        webView.requestFocusFromTouch();
     }
 
     /**
