@@ -930,7 +930,7 @@ describe('prepare', () => {
                 locations: {
                     plugins: '/mock/plugins',
                     www: '/mock/www',
-                    strings: '/mock/res/values/strings.xml'
+                    strings: '/mock/res/values/cdv_strings.xml'
                 }
             };
 

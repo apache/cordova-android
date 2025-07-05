@@ -276,17 +276,17 @@ describe('create', function () {
                 });
             });
 
-            it('should interpolate the project name into strings.xml', () => {
+            it('should interpolate the project name into cdv_strings.xml', () => {
                 config_mock.name.and.returnValue('IncredibleApp');
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'strings.xml'), /__NAME__/, 'IncredibleApp');
+                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'cdv_strings.xml'), /__NAME__/, 'IncredibleApp');
                 });
             });
 
-            it('should interpolate the escaped project name into strings.xml', () => {
+            it('should interpolate the escaped project name into cdv_strings.xml', () => {
                 config_mock.name.and.returnValue('<Incredible&App>');
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'strings.xml'), /__NAME__/, '&lt;Incredible&amp;App&gt;');
+                    expect(utils.replaceFileContents).toHaveBeenCalledWith(path.join(app_path, 'res', 'values', 'cdv_strings.xml'), /__NAME__/, '&lt;Incredible&amp;App&gt;');
                 });
             });
 
