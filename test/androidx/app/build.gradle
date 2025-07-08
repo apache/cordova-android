@@ -24,7 +24,7 @@ android {
     compileSdkVersion cordovaConfig.COMPILE_SDK_VERSION
     buildToolsVersion cordovaConfig.BUILD_TOOLS_VERSION
 
-    namespace 'org.apache.cordova.unittests'
+    namespace = 'org.apache.cordova.unittests'
 
     defaultConfig {
         applicationId "org.apache.cordova.unittests"
