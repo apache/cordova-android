@@ -194,7 +194,12 @@ public class SystemBarPlugin extends CordovaPlugin {
         if (root != null) root.setBackgroundColor(bgColor);
 
         // Automatically set the font and icon color of the system bars based on background color.
-        boolean isBackgroundColorLight = isColorLight(bgColor);
+        boolean isBackgroundColorLight;
+        if(bgColor == Color.TRANSPARENT) {
+            isBackgroundColorLight = isColorLight(getUiModeColor());
+        } else {
+            isBackgroundColorLight = isColorLight(bgColor);
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowInsetsController controller = window.getInsetsController();
             if (controller != null) {
@@ -232,7 +237,12 @@ public class SystemBarPlugin extends CordovaPlugin {
         }
 
         // Automatically set the font and icon color of the system bars based on background color.
-        boolean isStatusBarBackgroundColorLight = isColorLight(bgColor);
+        boolean isStatusBarBackgroundColorLight;
+        if(bgColor == Color.TRANSPARENT) {
+            isStatusBarBackgroundColorLight = isColorLight(getUiModeColor());
+        } else {
+            isStatusBarBackgroundColorLight = isColorLight(bgColor);
+        }
         WindowInsetsControllerCompat controllerCompat = WindowCompat.getInsetsController(window, window.getDecorView());
         controllerCompat.setAppearanceLightStatusBars(isStatusBarBackgroundColorLight);
     }
