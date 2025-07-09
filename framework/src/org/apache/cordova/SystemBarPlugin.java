@@ -185,6 +185,7 @@ public class SystemBarPlugin extends CordovaPlugin {
      *
      * @param bgColor Background color
      */
+    @SuppressWarnings("deprecation")
     private void updateRootView(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
