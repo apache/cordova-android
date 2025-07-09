@@ -306,7 +306,11 @@ public class SystemBarPlugin extends CordovaPlugin {
      */
     private View getStatusBarView(CordovaWebView webView) {
         FrameLayout rootView = getRootLayout(webView);
-        for (int i = 0; i < (rootView != null ? rootView.getChildCount() : 0); i++) {
+        if (rootView == null) {
+            return null;
+        }
+
+        for (int i = 0; i < rootView.getChildCount(); i++) {
             View child = rootView.getChildAt(i);
             Object tag = child.getTag();
             if ("statusBarView".equals(tag)) {
