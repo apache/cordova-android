@@ -235,7 +235,7 @@ public class CordovaActivity extends AppCompatActivity {
             );
             statusBarView.setLayoutParams(statusBarParams);
 
-            return WindowInsetsCompat.CONSUMED;
+            return insets;
         });
 
         rootLayout.addView(webView);
