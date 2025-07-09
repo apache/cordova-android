@@ -40,6 +40,18 @@ allprojects {
     }
 
     repositories repos
+
+    subprojects {
+        afterEvaluate {
+            tasks.withType(JavaCompile).tap {
+                configureEach {
+                    if (cordovaConfig.JAVA_SHOW_DEPRECATIONS == true) {
+                        options.compilerArgs += "-Xlint:deprecation"
+                    }
+                }
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {
