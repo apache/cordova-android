@@ -44,7 +44,7 @@ allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    namespace 'org.apache.cordova'
+    namespace = 'org.apache.cordova'
 
     compileSdkVersion cordovaConfig.COMPILE_SDK_VERSION
     buildToolsVersion cordovaConfig.BUILD_TOOLS_VERSION

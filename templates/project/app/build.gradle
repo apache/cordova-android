@@ -183,10 +183,10 @@ task cdvPrintProps {
 }
 
 android {
-    namespace cordovaConfig.PACKAGE_NAMESPACE
+    namespace = cordovaConfig.PACKAGE_NAMESPACE
 
     buildFeatures {
-        buildConfig true
+        buildConfig = true
     }
 
     defaultConfig {
@@ -202,7 +202,7 @@ android {
     }
 
     lintOptions {
-      abortOnError false
+      abortOnError = false
     }
 
     buildToolsVersion cordovaConfig.BUILD_TOOLS_VERSION
