@@ -106,7 +106,9 @@ public class CordovaActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         // Handle the splash screen transition.
-        splashScreen = SplashScreen.installSplashScreen(this);
+        if (showInitialSplashScreen()) {
+            splashScreen = SplashScreen.installSplashScreen(this);
+        }
 
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
@@ -157,7 +159,9 @@ public class CordovaActivity extends AppCompatActivity {
         cordovaInterface.onCordovaInit(appView.getPluginManager());
 
         // Setup the splash screen based on preference settings
-        cordovaInterface.pluginManager.postMessage("setupSplashScreen", splashScreen);
+        if (showInitialSplashScreen()) {
+            cordovaInterface.pluginManager.postMessage("setupSplashScreen", splashScreen);
+        }
 
         // Wire the hardware volume controls to control media if desired.
         String volumePref = preferences.getString("DefaultVolumeStream", "");
@@ -536,5 +540,21 @@ public class CordovaActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * Indicates whether to show the splash screen while the WebView is initially loading.
+     * <p>
+     * This method is available for native apps that embed a Cordova WebView.
+     * Native apps most likely already have their own splash screen setup.
+     * This option is not configurable for Cordova CLI–created apps.
+     *
+     * @return {@code true}
+     * <p>
+     * To disable the initial splash screen, override this method and return {@code false}
+     * in your activity that extends {@link CordovaActivity}.
+     */
+    protected boolean showInitialSplashScreen() {
+        return true;
     }
 }
