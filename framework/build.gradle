@@ -24,7 +24,7 @@ buildscript {
 
     dependencies {
         // Android Gradle Plugin (AGP) Build Tools
-        classpath "com.android.tools.build:gradle:${cordovaConfig.AGP_VERSION}"
+        classpath 'com.android.tools.build:gradle:8.1.0'
     }
 
     cdvHelpers.verifyCordovaConfigForBuild()
