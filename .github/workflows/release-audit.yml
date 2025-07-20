@@ -6,12 +6,12 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
 # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
+# KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
 
@@ -36,7 +36,7 @@ jobs:
       # Checkout project
       - uses: actions/checkout@v4
 
-      # Check license headers
+      # Check license headers (v1.2.0)
       - uses: erisu/apache-rat-action@3127a8c18f3bb10e91c60e835144085b31c5c463
 
       # Setup environment with node
@@ -48,7 +48,8 @@ jobs:
       - name: npm install packages
         run: npm i
 
-      # Check node package licenses
-      - uses: erisu/license-checker-action@e929758f9416f30234ac454fc9054ca4b803871d
+      # Check node package licenses (v2.0.0)
+      - uses: erisu/license-checker-action@1c222d0c2f5898a4c40b8bd6fd6888650bd6f68a
         with:
           license-config: 'licence_checker.yml'
+          include-asf-category-a: true
