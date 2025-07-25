@@ -91,7 +91,7 @@ function androidExec (success, fail, service, action, args) {
     var callbackId = service + cordova.callbackId++;
     var argsJson = JSON.stringify(args);
     if (success || fail) {
-        cordova.callbacks[callbackId] = { success: success, fail: fail };
+        cordova.callbacks[callbackId] = { success, fail };
     }
 
     var msgs = nativeApiProvider.get().exec(bridgeSecret, service, action, callbackId, argsJson);
