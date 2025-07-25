@@ -564,7 +564,7 @@ public class PluginManager {
                 c = Class.forName(className);
             }
             if (c != null & CordovaPlugin.class.isAssignableFrom(c)) {
-                ret = (CordovaPlugin) c.newInstance();
+                ret = (CordovaPlugin) c.getDeclaredConstructor().newInstance();
             }
         } catch (Exception e) {
             e.printStackTrace();
