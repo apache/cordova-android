@@ -30,19 +30,16 @@ module.exports = defineConfig([
         'test/android/app',
         'test/androidx/app'
     ]),
-    ...nodeConfig.map(config => ({
+    {
+        // Include these JavaScript files that do not have file extensions.
         files: [
-            'lib/**/*.js',
-            'templates/cordova/**/*.js',
             'templates/cordova/version',
             'templates/cordova/android_sdk_version',
             'templates/cordova/lib/list-devices',
-            'templates/cordova/lib/list-emulator-images',
-            'test/**/*.js',
-            '*.js' // Root files that are JavaScript
-        ],
-        ...config
-    })),
+            'templates/cordova/lib/list-emulator-images'
+        ]
+    },
+    ...nodeConfig,
     ...nodeTestConfig.map(config => ({
         files: ['spec/**/*.js'],
         ...config,
