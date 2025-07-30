@@ -28,9 +28,12 @@ import org.json.JSONObject;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.content.IntentFilter;
 import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import java.util.HashMap;
 
@@ -45,7 +48,9 @@ public class CoreAndroid extends CordovaPlugin {
     private CallbackContext messageChannel;
     private PluginResult pendingResume;
     private PluginResult pendingPause;
+    private OnBackInvokedCallback backCallback;
     private final Object messageChannelLock = new Object();
+    private final Object backButtonHandlerLock = new Object();
 
     /**
      * Send an event to be fired on the Javascript side.
@@ -63,6 +68,7 @@ public class CoreAndroid extends CordovaPlugin {
     @Override
     public void pluginInitialize() {
         this.initTelephonyReceiver();
+        backCallback = null;
     }
 
     /**
@@ -247,6 +253,29 @@ public class CoreAndroid extends CordovaPlugin {
      */
     public void overrideBackbutton(boolean override) {
         LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            if (override) {
+                synchronized (backButtonHandlerLock) {
+                    if (backCallback == null) {
+                        // The callback is intentionally empty. Since API 36, intercepting the back button is ignored, which means
+                        // the onDispatchKeyEvent boolean result won't actually stop native from consuming the back button and doing
+                        // it's own logic, UNLESS if there is an OnBackInvokedCallback registered on the dispatcher.
+                        // The key dispatch events will still fire, which still handles propagating back button events to the webview.
+                        // See https://developer.android.com/about/versions/16/behavior-changes-16#predictive-back for more info on the caveat.
+                        backCallback = () -> {};
+                        this.cordova.getActivity().getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+                    }
+                }
+            } else {
+                synchronized (backButtonHandlerLock) {
+                    if (backCallback != null) {
+                        this.cordova.getActivity().getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+                        backCallback = null;
+                    }
+                }
+            }
+        }
+
         webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, override);
     }
 
