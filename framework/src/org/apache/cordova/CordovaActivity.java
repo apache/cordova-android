@@ -29,9 +29,10 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,7 +43,11 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.core.splashscreen.SplashScreen;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -100,6 +105,9 @@ public class CordovaActivity extends AppCompatActivity {
 
     private SplashScreen splashScreen;
 
+    private boolean canEdgeToEdge = false;
+    private boolean isFullScreen = false;
+
     /**
      * Called when the activity is first created.
      */
@@ -112,6 +120,9 @@ public class CordovaActivity extends AppCompatActivity {
 
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
+
+        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
 
         String logLevel = preferences.getString("loglevel", "ERROR");
         LOG.setLogLevel(logLevel);
@@ -127,7 +138,10 @@ public class CordovaActivity extends AppCompatActivity {
             LOG.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
             preferences.set("Fullscreen", true);
         }
-        if (preferences.getBoolean("Fullscreen", false)) {
+
+        isFullScreen = preferences.getBoolean("Fullscreen", false);
+
+        if (isFullScreen) {
             // NOTE: use the FullscreenNotImmersive configuration key to set the activity in a REAL full screen
             // (as was the case in previous cordova versions)
             if (!preferences.getBoolean("FullscreenNotImmersive", false)) {
@@ -184,26 +198,56 @@ public class CordovaActivity extends AppCompatActivity {
     //Suppressing warnings in AndroidStudio
     @SuppressWarnings({"deprecation", "ResourceType"})
     protected void createViews() {
-        //Why are we setting a constant as the ID? This should be investigated
-        appView.getView().setId(100);
-        appView.getView().setLayoutParams(new FrameLayout.LayoutParams(
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
+        // Root FrameLayout
+        FrameLayout rootLayout = new FrameLayout(this);
+        rootLayout.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
 
-        setContentView(appView.getView());
+        // WebView
+        View webView = appView.getView();
+        webView.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
 
-        if (preferences.contains("BackgroundColor")) {
-            try {
-                int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
-                // Background of activity:
-                appView.getView().setBackgroundColor(backgroundColor);
-            }
-            catch (NumberFormatException e){
-                e.printStackTrace();
-            }
-        }
+        // Create StatusBar view that will overlay the top inset
+        View statusBarView = new View(this);
+        statusBarView.setTag("statusBarView");
 
-        appView.getView().requestFocusFromTouch();
+        // Handle Window Insets
+        ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
+            Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
+            );
+
+            boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
+            int top = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
+            int bottom = !canEdgeToEdge && !isFullScreen ? bars.bottom : 0;
+
+            FrameLayout.LayoutParams webViewParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
+            webViewParams.setMargins(bars.left, top, bars.right, bottom);
+            webView.setLayoutParams(webViewParams);
+
+            FrameLayout.LayoutParams statusBarParams = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    top,
+                    Gravity.TOP
+            );
+            statusBarView.setLayoutParams(statusBarParams);
+
+            return insets;
+        });
+
+        rootLayout.addView(webView);
+        rootLayout.addView(statusBarView);
+
+        setContentView(rootLayout);
+        rootLayout.post(() -> ViewCompat.requestApplyInsets(rootLayout));
+        webView.requestFocusFromTouch();
     }
 
     /**
