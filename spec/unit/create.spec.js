@@ -155,10 +155,10 @@ describe('create', function () {
         });
 
         describe('parameter values and defaults', function () {
-            it('should have a default package name of io.cordova.helloCordova', () => {
+            it('should have a default package name of org.apache.cordova.hellocordova', () => {
                 config_mock.packageName.and.returnValue(undefined);
                 return create.create(project_path, config_mock, {}, events_mock).then(() => {
-                    expect(create.validatePackageName).toHaveBeenCalledWith('io.cordova.helloCordova');
+                    expect(create.validatePackageName).toHaveBeenCalledWith('org.apache.cordova.hellocordova');
                 });
             });
 

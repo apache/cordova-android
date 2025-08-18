@@ -18,7 +18,7 @@
  under the License.
 -->
 <widget xmlns     = "http://www.w3.org/ns/widgets"
-        id        = "io.cordova.helloCordova"
+        id        = "org.apache.cordova.hellocordova"
         version   = "2.0.0">
 
     <!-- Preferences for Android -->
