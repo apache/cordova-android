@@ -155,10 +155,13 @@ public class SplashScreenPlugin extends CordovaPlugin {
                                 public void onAnimationEnd(Animator animation) {
                                     super.onAnimationEnd(animation);
                                     splashScreenViewProvider.remove();
+                                    webView.getPluginManager().postMessage("updateSystemBars", null);
                                 }
                             }).start();
                 }
             });
+        } else {
+            webView.getPluginManager().postMessage("updateSystemBars", null);
         }
     }
 
