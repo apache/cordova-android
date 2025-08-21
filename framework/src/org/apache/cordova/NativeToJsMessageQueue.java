@@ -154,7 +154,7 @@ public class NativeToJsMessageQueue {
 
             StringBuilder sb = new StringBuilder(totalPayloadLen);
             for (int i = 0; i < numMessagesToSend; ++i) {
-                JsMessage message = queue.removeFirst();
+                JsMessage message = queue.remove(0);
                 packMessage(message, sb);
             }
 
@@ -194,7 +194,7 @@ public class NativeToJsMessageQueue {
             // Wrap each statement in a try/finally so that if one throws it does
             // not affect the next.
             for (int i = 0; i < numMessagesToSend; ++i) {
-                JsMessage message = queue.removeFirst();
+                JsMessage message = queue.remove(0);
                 if (willSendAllMessages && (i + 1 == numMessagesToSend)) {
                     message.encodeAsJsMessage(sb);
                 } else {
