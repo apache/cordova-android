@@ -34,13 +34,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout project
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Check license headers (v1.2.0)
       - uses: erisu/apache-rat-action@3127a8c18f3bb10e91c60e835144085b31c5c463
 
       # Setup environment with node
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
 
