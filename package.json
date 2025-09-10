@@ -26,7 +26,7 @@
   "dependencies": {
     "android-versions": "^2.1.0",
     "cordova-common": "^6.0.0",
-    "dedent": "^1.5.3",
+    "dedent": "^1.7.0",
     "execa": "^5.1.1",
     "fast-glob": "^3.3.3",
     "is-path-inside": "^3.0.3",
