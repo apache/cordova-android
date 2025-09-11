@@ -49,7 +49,6 @@ tmp/**/*
 npm-debug.log
 node_modules/
 coverage/
-.nyc_output/
 # Eclipse Buildship files
 .project
 .settings
