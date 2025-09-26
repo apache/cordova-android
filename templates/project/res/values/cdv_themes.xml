@@ -37,5 +37,6 @@
 
     <style name="Theme.Cordova.App.DayNight" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:colorBackground">@color/cdv_background_color</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 </resources>
