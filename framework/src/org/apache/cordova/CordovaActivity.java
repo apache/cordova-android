@@ -227,9 +227,11 @@ public class CordovaActivity extends AppCompatActivity {
             boolean isStatusBarVisible = statusBarView.getVisibility() != View.GONE;
             int top = isStatusBarVisible && !canEdgeToEdge && !isFullScreen ? bars.top : 0;
             int bottom = !canEdgeToEdge && !isFullScreen ? bars.bottom : 0;
+            int left = !canEdgeToEdge && !isFullScreen ? bars.left : 0;
+            int right = !canEdgeToEdge && !isFullScreen ? bars.right : 0;
 
             FrameLayout.LayoutParams webViewParams = (FrameLayout.LayoutParams) webView.getLayoutParams();
-            webViewParams.setMargins(bars.left, top, bars.right, bottom);
+            webViewParams.setMargins(left, top, right, bottom);
             webView.setLayoutParams(webViewParams);
 
             FrameLayout.LayoutParams statusBarParams = new FrameLayout.LayoutParams(
