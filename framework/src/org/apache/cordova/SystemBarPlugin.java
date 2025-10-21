@@ -231,6 +231,10 @@ public class SystemBarPlugin extends CordovaPlugin {
     private void updateStatusBar(int bgColor) {
         Window window = cordova.getActivity().getWindow();
 
+        if (Build.VERSION.SDK_INT <= 35) {
+            window.setStatusBarColor(bgColor);
+        }
+
         View statusBar = getStatusBarView(webView);
         if (statusBar != null) {
             statusBar.setBackgroundColor(bgColor);
