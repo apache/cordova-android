@@ -131,6 +131,8 @@ function pollOnce (opt_fromOnlineEvent) {
     }
 }
 
+androidExec.pollOnce = pollOnce;
+
 function pollingTimerFunc () {
     if (pollEnabled) {
         pollOnce();
