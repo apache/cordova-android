@@ -204,7 +204,7 @@ public class NativeToJsMessageQueue {
                 }
             }
             if (!willSendAllMessages) {
-                sb.append("window.setTimeout(function(){cordova.require('cordova/plugin/android/polling').pollOnce();},0);");
+                sb.append("window.setTimeout(function(){cordova.require('cordova/exec').pollOnce();},0);");
             }
             for (int i = willSendAllMessages ? 1 : 0; i < numMessagesToSend; ++i) {
                 sb.append('}');
