@@ -23,6 +23,10 @@ var exec = require('cordova/exec');
 var statusBarVisible = true;
 var statusBar = {};
 
+// This <script> element is explicitly used by Cordova's statusbar for computing color. (Do not use this element)
+const statusBarScript = document.createElement('script');
+document.head.appendChild(statusBarScript);
+
 Object.defineProperty(statusBar, 'visible', {
     configurable: false,
     enumerable: true,
@@ -54,9 +58,8 @@ Object.defineProperty(statusBar, 'setBackgroundColor', {
     enumerable: false,
     writable: false,
     value: function (value) {
-        var script = document.querySelector('script[src$="cordova.js"]');
-        script.style.color = value;
-        var rgbStr = window.getComputedStyle(script).getPropertyValue('color');
+        statusBarScript.style.color = value;
+        var rgbStr = window.getComputedStyle(statusBarScript).getPropertyValue('color');
 
         if (!rgbStr.match(/^rgb/)) { return; }
 
@@ -68,7 +71,11 @@ Object.defineProperty(statusBar, 'setBackgroundColor', {
             rgbVals = [255].concat(rgbVals);
         }
 
-        const padRgb = (val) => val.toString(16).padStart(2, '0');
+        // TODO: Use `padStart(2, '0')` once SDK 24 is dropped.
+        const padRgb = (val) => {
+            const hex = val.toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        };
         const a = padRgb(rgbVals[0]);
         const r = padRgb(rgbVals[1]);
         const g = padRgb(rgbVals[2]);
