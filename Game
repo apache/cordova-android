@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>टिक-टैक-टो</title>
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;टिक-टैक-टो&quot;,&quot;short_name&quot;:&quot;TicTacToe&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#f3f4f6&quot;,&quot;theme_color&quot;:&quot;#4f46e5&quot;}">
+    
+    <!-- iOS Meta Tags for Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TicTacToe">
+    
+    <!-- Google Font: Inter & Noto Sans Devanagari -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-primary: #4f46e5; /* इंडिगो */
+            --color-primary-dark: #4338ca;
+            --color-x: #ef4444; /* लाल */
+            --color-o: #3b82f6; /* नीला */
+            --color-cell-bg: #e5e7eb;
+            --color-cell-hover: #d1d5db;
+            --color-bg: #f3f4f6;
+            --color-text: #1f2937;
+            --color-white: #ffffff;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* स्क्रॉलिंग रोकने के लिए */
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .main-container {
+            background-color: var(--color-white);
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 2.25rem; /* 36px */
+            font-weight: 700;
+            color: #111827;
+            margin-top: 0;
+            margin-bottom: 24px;
+        }
+
+        /* मोड चुनने की स्क्रीन */
+        #modeSelection {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .mode-btn {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            font-size: 1.125rem; /* 18px */
+            font-weight: 600;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .mode-btn:hover {
+            background-color: var(--color-primary-dark);
+        }
+        
+        .mode-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* गेम स्क्रीन */
+        #gameContainer {
+            display: none; /* शुरुआत में छिपी हुई */
+            flex-direction: column;
+        }
+
+        /* गेम बोर्ड (ग्रिड) */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            aspect-ratio: 1 / 1; /* बोर्ड को वर्गाकार रखता है */
+        }
+
+        /* बोर्ड के सेल */
+        .cell {
+            background-color: var(--color-cell-bg);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5rem; /* 56px */
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            -webkit-tap-highlight-color: transparent; /* मोबाइल पर टैप हाईलाइट हटाता है */
+        }
+        
+        /* होवर इफ़ेक्ट सिर्फ उन डिवाइस पर जहाँ होवर संभव है */
+        @media (hover: hover) {
+            .cell:not(.x):not(.o):hover {
+                background-color: var(--color-cell-hover);
+            }
+        }
+
+        /* X और O के लिए अलग-अलग रंग */
+        .cell.x {
+            color: var(--color-x);
+        }
+
+        .cell.o {
+            color: var(--color-o);
+        }
+
+        /* स्टेटस मैसेज (किसकी बारी है / कौन जीता) */
+        .status {
+            font-size: 1.25rem; /* 20px */
+            font-weight: 600;
+            margin-top: 20px;
+            min-height: 30px; /* जगह बनाए रखने के लिए */
+        }
+
+        /* बटन कंटेनर */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            background-color: #6b7280; /* ग्रे */
+            color: white;
+            font-size: 1rem; /* 16px */
+            font-weight: 600;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        
+        #restartButton {
+             background-color: var(--color-primary);
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>टिक-टैक-टो</h1>
+
+        <!-- मोड चुनने का सेक्शन -->
+        <div id="modeSelection">
+            <button class="mode-btn" id="vsRobotBtn">रोबोट के साथ खेलें</button>
+            <button class="mode-btn" id="vsPlayerBtn">दोस्त के साथ खेलें</button>
+        </div>
+
+        <!-- गेम का मुख्य हिस्सा (शुरुआत में छिपा हुआ) -->
+        <div id="gameContainer">
+            <!-- गेम बोर्ड -->
+            <div class="board" id="board">
+                <div class="cell" data-cell></div>
+                <div class="cell" data-cell></div>
+                <div class="cell" data-cell></div>
+                <div class="cell" data-cell></div>
+                <div class="cell" data-cell></div>
+                <div class="cell" data-cell></div>
+                <div class="cell" data-cell></div>
+                <div class="cell" data-cell></div>
+                <div class="cell" data-cell></div>
+            </div>
+
+            <!-- गेम स्टेटस -->
+            <div class="status" id="statusMessage"></div>
+
+            <!-- बटन -->
+            <div class="button-container">
+                <button class="action-btn" id="restartButton">फिर से खेलें</button>
+                <button class="action-btn" id="changeModeButton">मोड बदलें</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM एलिमेंट्स
+        const modeSelection = document.getElementById('modeSelection');
+        const gameContainer = document.getElementById('gameContainer');
+        const vsRobotBtn = document.getElementById('vsRobotBtn');
+        const vsPlayerBtn = document.getElementById('vsPlayerBtn');
+        
+        const cellElements = document.querySelectorAll('[data-cell]');
+        const board = document.getElementById('board');
+        const statusMessage = document.getElementById('statusMessage');
+        const restartButton = document.getElementById('restartButton');
+        const changeModeButton = document.getElementById('changeModeButton');
+
+        let gameActive = false;
+        let currentPlayer = 'X';
+        let gameState = ["", "", "", "", "", "", "", "", ""];
+        let gameMode = 'player'; // 'player' या 'robot'
+        const PLAYER_X = 'X';
+        const PLAYER_O = 'O'; // रोबोट हमेशा 'O' होगा
+
+        // जीतने के कॉम्बिनेशन्स
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]  // Diagonals
+        ];
+
+        // --- मोड सिलेक्शन ---
+        
+        vsRobotBtn.addEventListener('click', () => {
+            gameMode = 'robot';
+            startGameScreen();
+        });
+
+        vsPlayerBtn.addEventListener('click', () => {
+            gameMode = 'player';
+            startGameScreen();
+        });
+
+        function startGameScreen() {
+            modeSelection.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            startGame();
+        }
+
+        changeModeButton.addEventListener('click', () => {
+            gameContainer.style.display = 'none';
+            modeSelection.style.display = 'flex';
+        });
+
+        // --- गेम का लॉजिक ---
+
+        function startGame() {
+            gameActive = true;
+            currentPlayer = PLAYER_X;
+            gameState = ["", "", "", "", "", "", "", "", ""];
+            statusMessage.textContent = `खिलाड़ी ${currentPlayer} की बारी`;
+            
+            cellElements.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove(PLAYER_X.toLowerCase(), PLAYER_O.toLowerCase());
+                cell.removeEventListener('click', handleCellClick); // पुराने लिसनर हटाएं
+                cell.addEventListener('click', handleCellClick, { once: true });
+            });
+        }
+
+        function handleCellClick(e) {
+            // टच इवेंट पर ज़ूमिंग रोकें
+            e.preventDefault(); 
+            
+            const cell = e.target;
+            const cellIndex = Array.from(cellElements).indexOf(cell);
+
+            // अगर सेल पहले से भरा है या गेम खत्म हो गया है, तो कुछ न करें
+            if (gameState[cellIndex] !== "" || !gameActive) {
+                return;
+            }
+
+            // सेल को अपडेट करें
+            updateCell(cell, cellIndex);
+            
+            // विजेता की जाँच करें
+            if (checkWinner()) {
+                endGame(false);
+                return;
+            }
+
+            // ड्रॉ की जाँच
+            if (isDraw()) {
+                endGame(true);
+                return;
+            }
+
+            // खिलाड़ी बदलें
+            switchPlayer();
+
+            // अगर रोबोट मोड है और रोबोट की बारी है
+            if (gameMode === 'robot' && currentPlayer === PLAYER_O && gameActive) {
+                // रोबोट की चाल के लिए थोड़ा समय दें
+                statusMessage.textContent = `रोबोट (O) सोच रहा है...`;
+                setTimeout(robotMove, 500);
+            }
+        }
+
+        function updateCell(cell, index) {
+            gameState[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+        }
+
+        function switchPlayer() {
+            currentPlayer = currentPlayer === PLAYER_X ? PLAYER_O : PLAYER_X;
+            statusMessage.textContent = `खिलाड़ी ${currentPlayer} की बारी`;
+        }
+
+        function checkWinner() {
+            let roundWon = false;
+            for (let i = 0; i < winningCombinations.length; i++) {
+                const [a, b, c] = winningCombinations[i];
+                if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+                    roundWon = true;
+                    break;
+                }
+            }
+            return roundWon;
+        }
+
+        function isDraw() {
+            return !gameState.includes("");
+        }
+
+        function endGame(isDraw) {
+            gameActive = false;
+            if (isDraw) {
+                statusMessage.textContent = "गेम ड्रॉ हो गया!";
+            } else {
+                statusMessage.textContent = `खिलाड़ी ${currentPlayer} जीत गया!`;
+            }
+            // गेम खत्म होने पर क्लिक लिसनर्स हटा दें
+            cellElements.forEach(cell => {
+                cell.removeEventListener('click', handleCellClick);
+            });
+        }
+
+        restartButton.addEventListener('click', startGame);
+
+        // --- रोबोट (AI) का लॉजिक ---
+
+        function robotMove() {
+            if (!gameActive) return;
+
+            let bestMove = findBestMove();
+            
+            // अगर कोई चाल नहीं मिली (जो नहीं होना चाहिए)
+            if (bestMove === null) {
+                 // बस कोई भी खाली जगह ढूंढो
+                bestMove = gameState.indexOf("");
+            }
+            
+            if (bestMove !== -1) {
+                const cell = cellElements[bestMove];
+                
+                updateCell(cell, bestMove);
+                cell.removeEventListener('click', handleCellClick); 
+
+                if (checkWinner()) {
+                    endGame(false);
+                    return;
+                }
+                if (isDraw()) {
+                    endGame(true);
+                    return;
+                }
+
+                // खिलाड़ी को वापस X पर स्विच करें
+                switchPlayer();
+            }
+        }
+
+        function findBestMove() {
+            // 1. क्या रोबोट (O) जीत सकता है?
+            let winningMove = findWinningMove(PLAYER_O);
+            if (winningMove !== null) return winningMove;
+
+            // 2. क्या खिलाड़ी (X) जीतने वाला है? (ब्लॉक करें)
+            let blockingMove = findWinningMove(PLAYER_X);
+            if (blockingMove !== null) return blockingMove;
+
+            // 3. केंद्र (Center) लें (इंडेक्स 4)
+            if (gameState[4] === "") {
+                return 4;
+            }
+
+            // 4. कोई कोना (Corner) लें
+            const corners = [0, 2, 6, 8];
+            const availableCorners = corners.filter(index => gameState[index] === "");
+            if (availableCorners.length > 0) {
+                return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+            }
+
+            // 5. कोई किनारा (Side) लें
+            const sides = [1, 3, 5, 7];
+            const availableSides = sides.filter(index => gameState[index] === "");
+            if (availableSides.length > 0) {
+                return availableSides[Math.floor(Math.random() * availableSides.length)];
+            }
+            
+            return null; 
+        }
+
+        function findWinningMove(player) {
+            for (let i = 0; i < gameState.length; i++) {
+                if (gameState[i] === "") {
+                    // चाल चल कर देखें
+                    gameState[i] = player;
+                    
+                    if (checkWinner()) {
+                        gameState[i] = ""; // चाल वापस लें
+                        return i;
+                    }
+                    
+                    gameState[i] = ""; // चाल वापस लें
+                }
+            }
+            return null;
+        }
+
+    </script>
+
+</body>
+</html>
+
+
