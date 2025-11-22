@@ -34,22 +34,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout project
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      # Check license headers (v1.2.0)
-      - uses: erisu/apache-rat-action@3127a8c18f3bb10e91c60e835144085b31c5c463
+      # Check license headers (v2.0.0)
+      - uses: erisu/apache-rat-action@46fb01ce7d8f76bdcd7ab10e7af46e1ea95ca01c
 
       # Setup environment with node
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
 
       # Install node packages
       - name: npm install packages
-        run: npm i
+        run: npm ci
 
-      # Check node package licenses (v2.0.0)
-      - uses: erisu/license-checker-action@1c222d0c2f5898a4c40b8bd6fd6888650bd6f68a
+      # Check node package licenses (v2.0.1)
+      - uses: erisu/license-checker-action@99cffa11264fe545fd0baa6c13bca5a00ae608f2
         with:
           license-config: 'licence_checker.yml'
           include-asf-category-a: true
