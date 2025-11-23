@@ -66,6 +66,15 @@ public class CallbackContext {
      *
      * @param message           The message to add to the success result.
      */
+    public void success(boolean message) {
+        sendPluginResult(new PluginResult(PluginResult.Status.OK, message));
+    }
+
+    /**
+     * Helper for success callbacks that just returns the Status.OK by default
+     *
+     * @param message           The message to add to the success result.
+     */
     public void success(JSONObject message) {
         sendPluginResult(new PluginResult(PluginResult.Status.OK, message));
     }
