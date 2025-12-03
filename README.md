@@ -66,6 +66,20 @@ npm install
 npm test
 ```
 
+## Install Nightly Build
+
+```bash
+cordova platform add android@nightly
+```
+
+### Notes
+
+Nightly builds are **not recommended for production apps**. They are intended for testing purposes. This allows users either to check if recent changes in the main branch have fixed existing issues or to identify new bugs before an official release.
+
+Nightly builds are generated daily and may be **unstable**.
+
+See [Apache Cordova - Nightly Builds](https://cordova.apache.org/contribute/nightly_builds.html) for more details.
+
 ## Further reading
 
 * [Apache Cordova](https://cordova.apache.org/)
