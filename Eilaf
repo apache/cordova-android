@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق إدارة المخزون والمبيعات والزبائن والموردين</title>
+    <!-- تحميل Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- خط Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <style>
+        /* تطبيق خط Inter وضبط التنسيق العام */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .action-btn {
+            @apply px-3 py-1 text-sm font-medium rounded-lg transition duration-150 ease-in-out shadow-md;
+        }
+        input[type="text"], input[type="number"], select {
+            @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out;
+        }
+        .summary-card {
+            @apply bg-white p-5 rounded-xl shadow-lg border-r-8;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="app" class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-extrabold text-indigo-700 mb-2">نظام محاسبة المخزون، الزبائن، والموردين</h1>
+            <p class="text-gray-600">تتبع الأصناف، الأسعار، وإدارة ديون الزبائن والالتزامات للموردين.</p>
+        </header>
+
+        <!-- حالة تسجيل الدخول -->
+        <div id="auth-status" class="bg-white p-4 rounded-xl shadow-lg mb-8 text-sm text-gray-700 border-r-4 border-indigo-500">
+            جار التحميل...
+        </div>
+
+        <!-- 1. ملخص مالي -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">الملخص المالي الإجمالي</h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                
+                <div class="summary-card border-indigo-500">
+                    <p class="text-sm font-medium text-gray-500">رأس المال (قيمة التكلفة للمخزون)</p>
+                    <p id="total-capital" class="text-3xl font-bold text-indigo-700 mt-1">0.00</p>
+                </div>
+
+                <div class="summary-card border-green-500">
+                    <p class="text-sm font-medium text-gray-500">الربح المحتمل الإجمالي</p>
+                    <p id="potential-profit" class="text-3xl font-bold text-green-700 mt-1">0.00</p>
+                </div>
+
+                <div class="summary-card border-yellow-500">
+                    <p class="text-sm font-medium text-gray-500">القيمة الإجمالية للمخزون</p>
+                    <p id="total-value" class="text-3xl font-bold text-yellow-700 mt-1">0.00</p>
+                </div>
+
+                <div class="summary-card border-red-500">
+                    <p class="text-sm font-medium text-gray-500">إجمالي الديون المستحقة على الزبائن (أصول)</p>
+                    <p id="total-debt" class="text-3xl font-bold text-red-600 mt-1">0.00</p>
+                </div>
+
+                <div class="summary-card border-purple-500">
+                    <p class="text-sm font-medium text-gray-500">إجمالي المستحقات للموردين (التزامات)</p>
+                    <p id="total-owed" class="text-3xl font-bold text-purple-600 mt-1">0.00</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 2. إدارة الموردين -->
+        <section class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">إدارة الموردين (المبالغ المستحقة عليهم)</h2>
+            
+            <form id="add-supplier-form" class="flex gap-4 items-end mb-6">
+                <div class="flex-grow">
+                    <label for="supplier-name" class="block text-sm font-medium text-gray-700 mb-1">اسم المورد</label>
+                    <input type="text" id="supplier-name" placeholder="مثال: شركة النور للاستيراد" required>
+                </div>
+                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200">
+                    إضافة مورد
+                </button>
+            </form>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم المورد</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المستحق عليه (الالتزام)</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">تسجيل دفعة للمورد</th>
+                        </tr>
+                    </thead>
+                    <tbody id="suppliers-list" class="bg-white divide-y divide-gray-200">
+                        <tr id="loading-suppliers"><td colspan="3" class="text-center py-4 text-gray-500">جار تحميل الموردين...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="supplier-message" class="mt-4 text-sm text-center font-medium hidden"></div>
+        </section>
+
+        <!-- 3. تسجيل عملية شراء جديدة (فاتورة وارد) -->
+        <section class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">تسجيل عملية شراء جديدة (إضافة مخزون)</h2>
+            <form id="new-purchase-form" class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+                <!-- اختيار المورد -->
+                <div class="md:col-span-2">
+                    <label for="purchase-supplier-id" class="block text-sm font-medium text-gray-700 mb-1">المورد (مصدر البضاعة)</label>
+                    <select id="purchase-supplier-id" required>
+                        <option value="">-- اختر مورد أو شراء نقدي --</option>
+                        <!-- يتم تعبئتها بواسطة JS -->
+                    </select>
+                </div>
+                
+                <!-- اختيار الصنف -->
+                <div class="md:col-span-2">
+                    <label for="purchase-item-id" class="block text-sm font-medium text-gray-700 mb-1">الصنف الذي تم شراؤه</label>
+                    <select id="purchase-item-id" required>
+                        <option value="">-- اختر صنفاً --</option>
+                        <!-- يتم تعبئتها بواسطة JS -->
+                    </select>
+                </div>
+                
+                <!-- الكمية -->
+                <div class="md:col-span-1">
+                    <label for="purchase-quantity" class="block text-sm font-medium text-gray-700 mb-1">الكمية المشتراة</label>
+                    <input type="number" id="purchase-quantity" min="1" value="1" required>
+                </div>
+
+                <!-- تفاصيل الدفع والآجل -->
+                <div class="md:col-span-1">
+                    <p class="text-sm font-medium text-gray-700 mb-1">القيمة الإجمالية للشراء:</p>
+                    <p id="purchase-total-value" class="text-lg font-bold text-blue-600">0.00</p>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="purchase-immediate-payment" class="block text-sm font-medium text-gray-700 mb-1">الدفع العاجل (المقدم للمورد)</label>
+                    <input type="number" id="purchase-immediate-payment" step="0.01" min="0" value="0.00" required>
+                </div>
+                <div class="md:col-span-1">
+                    <p class="text-sm font-medium text-gray-700 mb-1">المبلغ الآجل (المستحق للمورد):</p>
+                    <p id="purchase-deferred-payment" class="text-lg font-bold text-purple-600">0.00</p>
+                </div>
+                
+                <!-- زر إتمام العملية -->
+                <div class="md:col-span-3">
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200">
+                        إتمام عملية الشراء (إضافة للمخزون)
+                    </button>
+                </div>
+            </form>
+            <div id="purchase-message" class="mt-4 text-sm text-center font-medium hidden"></div>
+        </section>
+
+
+        <!-- 4. إدارة الزبائن -->
+        <section class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">إدارة الزبائن (الدفعات المستحقة لك)</h2>
+            <form id="add-customer-form" class="flex gap-4 items-end mb-6">
+                <div class="flex-grow">
+                    <label for="customer-name" class="block text-sm font-medium text-gray-700 mb-1">اسم الزبون</label>
+                    <input type="text" id="customer-name" placeholder="مثال: أحمد محمد" required>
+                </div>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200">
+                    إضافة زبون
+                </button>
+            </form>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم الزبون</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الدين المستحق (الآجل)</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">تسجيل دفعة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-list" class="bg-white divide-y divide-gray-200">
+                        <tr id="loading-customers"><td colspan="3" class="text-center py-4 text-gray-500">جار تحميل الزبائن...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="customer-message" class="mt-4 text-sm text-center font-medium hidden"></div>
+        </section>
+
+        <!-- 5. تسجيل عملية بيع جديدة (فاتورة) -->
+        <section class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">تسجيل عملية بيع جديدة (فاتورة مبيعات)</h2>
+            <form id="new-sale-form" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div class="md:col-span-2">
+                    <label for="sale-item-id" class="block text-sm font-medium text-gray-700 mb-1">الصنف المباع</label>
+                    <select id="sale-item-id" required>
+                        <option value="">-- اختر صنفاً --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="sale-quantity" class="block text-sm font-medium text-gray-700 mb-1">الكمية</label>
+                    <input type="number" id="sale-quantity" min="1" value="1" required>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="sale-customer-id" class="block text-sm font-medium text-gray-700 mb-1">الزبون</label>
+                    <select id="sale-customer-id" required>
+                        <option value="">-- بيع نقدي (لا يسجل دين) --</option>
+                    </select>
+                </div>
+                <div class="md:col-span-1">
+                    <p class="text-sm font-medium text-gray-700 mb-1">القيمة الإجمالية للبيع:</p>
+                    <p id="sale-total-value" class="text-lg font-bold text-blue-600">0.00</p>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="sale-immediate-payment" class="block text-sm font-medium text-gray-700 mb-1">الدفع العاجل (المقدم)</label>
+                    <input type="number" id="sale-immediate-payment" step="0.01" min="0" value="0.00" required>
+                </div>
+                <div class="md:col-span-1">
+                    <p class="text-sm font-medium text-gray-700 mb-1">الدفع الآجل (الدين):</p>
+                    <p id="sale-deferred-payment" class="text-lg font-bold text-red-600">0.00</p>
+                </div>
+                <div class="md:col-span-1">
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200">
+                        إتمام عملية البيع
+                    </button>
+                </div>
+            </form>
+            <div id="sale-message" class="mt-4 text-sm text-center font-medium hidden"></div>
+        </section>
+
+        <!-- 6. المخزون الحالي (فقط عرض) -->
+        <section class="bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">تفاصيل المخزون الحالي (يتم التعديل عبر "عملية شراء")</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">صورة</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الاسم</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الرمز (SKU)</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التكلفة</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">البيع</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المخزون الحالي</th>
+                            <th scope="col" class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ربح الوحدة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-list" class="bg-white divide-y divide-gray-200">
+                        <!-- سيتم تعبئة البيانات هنا بواسطة JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="loading-indicator" class="text-center py-8 text-gray-500">جار تحميل المخزون...</p>
+            <p id="no-items-message" class="text-center py-8 text-gray-500 hidden">لا يوجد أصناف في المخزون حالياً. أضف صنفاً جديداً للبدء.</p>
+        </section>
+
+        <!-- 7. إضافة صنف جديد (بقي في الأسفل) -->
+        <section class="bg-white p-6 rounded-xl shadow-lg mb-8 mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">إضافة صنف جديد (يتم شراؤه لاحقاً عبر فاتورة الوارد)</h2>
+            
+            <form id="add-item-form" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+                <div class="lg:col-span-1 sm:col-span-2 md:col-span-1">
+                    <label for="item-name" class="block text-sm font-medium text-gray-700 mb-1">اسم الصنف</label>
+                    <input type="text" id="item-name" placeholder="اسم المنتج" required>
+                </div>
+                <div class="lg:col-span-1 sm:col-span-2 md:col-span-1">
+                    <label for="item-sku" class="block text-sm font-medium text-gray-700 mb-1">رمز تسلسلي / QR (SKU)</label>
+                    <input type="text" id="item-sku" placeholder="مثال: A-SKU-001" required>
+                </div>
+                <div class="lg:col-span-1">
+                    <label for="item-cost" class="block text-sm font-medium text-gray-700 mb-1">سعر التكلفة (الأولي)</label>
+                    <input type="number" id="item-cost" step="0.01" min="0.01" placeholder="مثال: 4.00" required>
+                </div>
+                <div class="lg:col-span-1">
+                    <label for="item-price" class="block text-sm font-medium text-gray-700 mb-1">سعر البيع</label>
+                    <input type="number" id="item-price" step="0.01" min="0.01" placeholder="مثال: 6.50" required>
+                </div>
+                <div class="lg:col-span-1">
+                    <label for="initial-stock" class="block text-sm font-medium text-gray-700 mb-1">الكمية الأولية</label>
+                    <input type="number" id="initial-stock" min="0" value="0" required>
+                </div>
+                <div class="lg:col-span-1">
+                    <label for="item-image-url" class="block text-sm font-medium text-gray-700 mb-1">رابط صورة المنتج (URL)</label>
+                    <input type="text" id="item-image-url" placeholder="رابط مباشر للصورة" value="https://placehold.co/40x40/4f46e5/ffffff?text=P" required>
+                </div>
+                
+                <div class="lg:col-span-6 text-center mt-2">
+                    <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200">
+                        إضافة صنف
+                    </button>
+                </div>
+            </form>
+        </section>
+
+    </div>
+
+    <!-- Firebase Imports and Setup -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, updateDoc, onSnapshot, collection, increment, serverTimestamp, setLogLevel, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        setLogLevel('debug');
+
+        // جلب المتغيرات العامة
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        if (!firebaseConfig) {
+            document.getElementById('auth-status').innerHTML = '<span class="text-red-600">خطأ: لم يتم العثور على إعدادات Firebase.</span>';
+            console.error("Firebase config is missing.");
+            // يجب أن تضمن بيئة Android Studio أو Cordova توفير هذه المتغيرات.
+            return; 
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let userId = null;
+        let isAuthReady = false;
+        let inventoryItems = []; 
+        let customersList = []; 
+        let suppliersList = []; // قائمة الموردين الجديدة
+
+        // المسارات الثابتة للمجموعات العامة
+        const inventoryCollectionPath = `/artifacts/${appId}/public/data/inventory`;
+        const customersCollectionPath = `/artifacts/${appId}/public/data/customers`;
+        const suppliersCollectionPath = `/artifacts/${appId}/public/data/suppliers`; // مسار جديد للموردين
+        const salesCollectionPath = `/artifacts/${appId}/public/data/sales`;
+        const purchasesCollectionPath = `/artifacts/${appId}/public/data/purchases`; // مسار جديد للمشتريات
+
+
+        // 1. مصادقة المستخدم
+        async function authenticateUser() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication Error:", error);
+            }
+        }
+
+        // 2. معالج حالة المصادقة
+        on
