@@ -27,6 +27,7 @@ const which = require('which');
 const {
     SDK_VERSION: DEFAULT_TARGET_API
 } = require('../../lib/gradle-config-defaults');
+const AndroidCommandLineTools = require('../../lib/env/AndroidCommandLineTools');
 
 describe('check_reqs', function () {
     let check_reqs;
@@ -58,6 +59,10 @@ describe('check_reqs', function () {
     });
 
     describe('check_android', function () {
+        beforeAll(() => {
+            spyOn(AndroidCommandLineTools, 'getAvailableVersions').and.returnValue(['latest']);
+        });
+
         describe('find and set ANDROID_HOME when neither ANDROID_HOME nor ANDROID_SDK_ROOT is set', function () {
             beforeEach(function () {
                 delete process.env.ANDROID_HOME;
@@ -123,13 +128,13 @@ describe('check_reqs', function () {
                     spyOn(fs, 'existsSync').and.returnValue(true);
                     spyOn(which, 'sync').and.callFake(function (cmd) {
                         if (cmd === 'avdmanager') {
-                            return path.normalize('/android/sdk/tools/bin/avdmanager');
+                            return path.resolve('/android/sdk/cmdline-tools/latest/bin/avdmanager');
                         } else {
                             return null;
                         }
                     });
                     return check_reqs.check_android().then(function () {
-                        expect(process.env.ANDROID_HOME).toEqual(path.normalize('/android/sdk'));
+                        expect(process.env.ANDROID_HOME).toEqual(path.resolve('/android/sdk'));
                     });
                 });
                 it('should error out if `avdmanager` command exists in a non-SDK-like directory structure', () => {
@@ -208,9 +213,8 @@ describe('check_reqs', function () {
             });
             it('should add tools/bin,tools,platform-tools to PATH if `avdmanager`,`android`,`adb` is not found', () => {
                 return check_reqs.check_android().then(function () {
-                    expect(process.env.PATH).toContain('let the children play' + path.sep + 'tools');
                     expect(process.env.PATH).toContain('let the children play' + path.sep + 'platform-tools');
-                    expect(process.env.PATH).toContain('let the children play' + path.sep + 'tools' + path.sep + 'bin');
+                    expect(process.env.PATH).toContain('let the children play' + path.sep + 'cmdline-tools' + path.sep + 'latest' + path.sep + 'bin');
                 });
             });
         });
