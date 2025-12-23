@@ -87,7 +87,7 @@ public class EmbeddedWebViewActivity extends AppCompatActivity {
      * Called by the system when the user grants permissions!
      *
      * Note: The fragment gets priority over the activity, since the activity doesn't call
-     * into the parent onRequestPermissionResult, which is why there's no override.
+     * into the parent onRequestPermissionsResult, which is why there's no override.
      *
      * @param requestCode
      * @param permissions
@@ -98,7 +98,7 @@ public class EmbeddedWebViewActivity extends AppCompatActivity {
                                            int[] grantResults) {
         try
         {
-            cordovaInterface.onRequestPermissionResult(requestCode, permissions, grantResults);
+            cordovaInterface.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
         catch (JSONException e)
         {
