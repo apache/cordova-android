@@ -317,7 +317,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
             try {
                 webView.getContext().unregisterReceiver(receiver);
             } catch (Exception e) {
-                LOG.e(TAG, "Error unregistering configuration receiver: " + e.getMessage(), e);
+                LOG.e(TAG, "Error unregistering configuration receiver", e);
             }
         }
     }

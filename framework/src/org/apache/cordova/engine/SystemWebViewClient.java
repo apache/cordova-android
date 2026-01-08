@@ -112,7 +112,7 @@ public class SystemWebViewClient extends WebViewClient {
                 return new WebResourceResponse(mimeType, null, is);
             } catch (Exception e) {
                 e.printStackTrace();
-                LOG.e(TAG, e.getMessage());
+                LOG.e(TAG, "Exception handling Web resource at \"" + path + "\"", e);
             }
             return null;
         });
