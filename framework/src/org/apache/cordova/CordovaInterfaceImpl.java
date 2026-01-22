@@ -217,11 +217,15 @@ public class CordovaInterfaceImpl implements CordovaInterface {
      * @param permissions
      * @param grantResults
      */
-    public void onRequestPermissionResult(int requestCode, String[] permissions,
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
         Pair<CordovaPlugin, Integer> callback = permissionResultCallbacks.getAndRemoveCallback(requestCode);
         if(callback != null) {
+            // This one is deprecated - see https://github.com/apache/cordova-android/issues/592
+            // and should be removed in a future release
             callback.first.onRequestPermissionResult(callback.second, permissions, grantResults);
+            // Call the new method
+            callback.first.onRequestPermissionsResult(callback.second, permissions, grantResults);
         }
     }
 
