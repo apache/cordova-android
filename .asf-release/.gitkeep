@@ -15,9 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-registry=https://registry.npmjs.org
-
-# ASF release settings
-git-tag-version=false
-preid=dev
-pack-destination=./.asf-release
+# ---
+# This directory is used as apart of the release process.
+# Package tarballs will be generated in stored temporarily
+# within this directory and should not be commited to repo.
+# ---
