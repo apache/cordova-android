@@ -22,9 +22,11 @@
 # Cordova Android
 
 [![npm - Latest](https://img.shields.io/npm/v/cordova-android/latest?label=Latest%20Release%20(npm))](https://npmjs.com/package/cordova-android)
+
 [![GitHub](https://img.shields.io/github/package-json/v/apache/cordova-android?label=Development%20(Git))](https://github.com/apache/cordova-android)
-[![Node CI](https://github.com/apache/cordova-android/workflows/Node%20CI/badge.svg?branch=master)](https://github.com/apache/cordova-android/actions?query=branch%3Amaster)
-[![codecov.io](https://codecov.io/github/apache/cordova-android/coverage.svg?branch=master)](https://codecov.io/github/apache/cordova-android?branch=master)
+[![GitHub - Node Workflow](https://github.com/apache/cordova-android/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/apache/cordova-android/actions/workflows/ci.yml?query=branch%3Amaster)
+[![GitHub - Release Audit Workflow](https://github.com/apache/cordova-android/actions/workflows/release-audit.yml/badge.svg?branch=master)](https://github.com/apache/cordova-android/actions/workflows/release-audit.yml?query=branch%3Amaster)
+[![Code Coverage](https://codecov.io/github/apache/cordova-android/coverage.svg?branch=master)](https://codecov.io/github/apache/cordova-android?branch=master)
 
 Cordova Android is an Android application library that allows for Cordova-based projects to be built for the Android Platform. Cordova based applications are, at the core, applications written with web technology: HTML, CSS and JavaScript.
 
@@ -32,19 +34,21 @@ Cordova Android is an Android application library that allows for Cordova-based 
 
 ## Requirements
 
-* Java Development Kit (JDK) 17
+* Java Development Kit (JDK)
 * [Android SDK](https://developer.android.com/)
+* [Gradle](https://gradle.org/)
 * [Node.js](https://nodejs.org)
+
+> [!TIP]
+> Refer to the official Apache Cordova documentation for details on the requirements and prerequisites for building Cordova-Android applications. These resources outline the necessary tools, supported versions, and platform requirements:
+>
+> * [System Requirements](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#system-requirements)
+> * [Required Software & Tools](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#the-required-software-&-tools)
+> * [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)
 
 ## Create a Cordova project
 
 Follow the instructions in the [**Create your first Cordova app**](https://cordova.apache.org/docs/en/latest/guide/cli/index.html) section of [Apache Cordova Docs](https://cordova.apache.org/docs/en/latest/)
-
-To use a **shared framework**, for example in development, link the appropriate cordova-android platform folder path:
-
-```bash
-cordova platform add --link /path/to/cordova-android
-```
 
 ## Updating a Cordova project
 
@@ -58,27 +62,6 @@ cordova platform add android
 ## Debugging in Android Studio
 
 Import project in Android Studio through _File > Open_ and targeting `/path/to/your-cdv-project/platforms/android/`.
-
-## How to Test Repo Development
-
-```bash
-npm install
-npm test
-```
-
-## Install Nightly Build
-
-```bash
-cordova platform add android@nightly
-```
-
-### Notes
-
-Nightly builds are **not recommended for production apps**. They are intended for testing purposes. This allows users either to check if recent changes in the main branch have fixed existing issues or to identify new bugs before an official release.
-
-Nightly builds are generated daily and may be **unstable**.
-
-See [Apache Cordova - Nightly Builds](https://cordova.apache.org/contribute/nightly_builds.html) for more details.
 
 ## Further reading
 
