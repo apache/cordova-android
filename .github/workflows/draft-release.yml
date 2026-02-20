@@ -1,0 +1,106 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+name: Draft Release
+
+on:
+  push:
+    tags:
+      - 'draft/**'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  upload-to-atr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Setup environment variables
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          TARGET_RELEASE_VERSION="${TAG_NAME#draft/}"
+
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "TARGET_RELEASE_VERSION=$TARGET_RELEASE_VERSION" >> $GITHUB_ENV
+
+          echo "REPO_NAME=$REPO_NAME"
+          echo "TAG_NAME=$TAG_NAME"
+          echo "TARGET_RELEASE_VERSION=$TARGET_RELEASE_VERSION"
+
+      - name: Verify Target Release Version
+        run: |
+          PACKAGE_VERSION=$(jq -r '.version' package.json)
+          if [ $PACKAGE_VERSION != "$TARGET_RELEASE_VERSION" ]; then
+            echo "Mismatch version detected between tag version ($TARGET_RELEASE_VERSION) and package version ($PACKAGE_VERSION)"
+            exit 1
+          fi
+
+          if [ -f "plugin.xml" ]; then
+            PLUGIN_VERSION=$(yq -p=xml -o=json '.plugin.+@version' plugin.xml)
+            if [ $PLUGIN_VERSION != "$TARGET_RELEASE_VERSION" ]; then
+              echo "Mismatch version detected between tag version ($TARGET_RELEASE_VERSION) and plugin version ($PLUGIN_VERSION)"
+              exit 1
+            fi
+          fi
+
+      - name: Generate "tgz" npm convenience package
+        run: |-
+          npm install
+          NPM_PKG_NAME=$(npm pack)
+          mv ./.asf-release/$NPM_PKG_NAME ./.asf-release/${REPO_NAME}-npm-${TARGET_RELEASE_VERSION}.tgz
+
+      - name: Generate "tar.gz" source archive
+        run: |-
+          git archive --format=tar.gz \
+            --prefix=${REPO_NAME}-source-${TARGET_RELEASE_VERSION}/ \
+            -o ./.asf-release/${REPO_NAME}-source-${TARGET_RELEASE_VERSION}.tar.gz \
+            ${TAG_NAME}
+
+      - name: Generate "zip" source archive
+        run: |-
+          git archive --format=zip \
+            --prefix=${REPO_NAME}-source-${TARGET_RELEASE_VERSION}/ \
+            -o ./.asf-release/${REPO_NAME}-source-${TARGET_RELEASE_VERSION}.zip \
+            ${TAG_NAME}
+
+      - name: Create Sign and Checksum
+        working-directory: .asf-release
+        run: |-
+          for f in *.tar.gz *.tgz *.zip; do
+            [ -e "$f" ] || continue
+            echo "$CORDOVA_GPG_SECRET_KEY" | gpg --batch --import --import-options import-show
+            gpg --armor --detach-sign "$f"
+            sha512sum "$f" > "${f}.sha512"
+          done
+        env:
+          CORDOVA_GPG_SECRET_KEY: ${{ secrets.CORDOVA_GPG_SECRET_KEY }}
+
+      - name: Upload to Apache Trusted Release (ATR)
+        uses: apache/tooling-actions/upload-to-atr@b7e972c11790ee16eca101900af1b3c7fd1b106e
+        with:
+          project: ${{ env.REPO_NAME }}
+          version: ${{ env.TARGET_RELEASE_VERSION }}
+          src: .asf-release

@@ -21,3 +21,6 @@ test
 spec
 framework/build
 cordova-js-src
+
+# ASF release workspace
+.asf-release/

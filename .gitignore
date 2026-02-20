@@ -70,3 +70,7 @@ coverage/
 .project
 .settings
 .classpath
+
+# ASF release workspace
+.asf-release/
+!.asf-release/.gitkeep
