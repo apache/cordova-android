@@ -25,8 +25,18 @@ import org.json.JSONException;
 import android.content.pm.PackageManager;
 
 /**
- * This class provides reflective methods for permission requesting and checking so that plugins
+ * This class is permission helper class when compiling against older versions of cordova-android pre 5.0.0
+ * and provides reflective methods for permission requesting and checking so that plugins
  * written for cordova-android 5.0.0+ can still compile with earlier cordova-android versions.
+ * 
+ * Some Cordova plugins still use this class, for example:
+ * - https://github.com/apache/cordova-plugin-file/blob/master/src/android/FileUtils.java#L42
+ * - https://github.com/apache/cordova-plugin-geolocation/blob/master/src/android/Geolocation.java#L27
+ * - https://github.com/apache/cordova-plugin-camera/blob/master/src/android/CameraLauncher.java#L52
+ * Before this class can be removed, those plugins need to be updated to call {@link CordovaInterface} methods directly.
+ *
+ * @deprecated As of cordova-android 5.0.0, this class is no longer needed and will be removed in a future release.
+ * You can call directly into {@link CordovaInterface} methods instead with {@link CordovaPlugin#cordova}.
  */
 public class PermissionHelper {
     private static final String LOG_TAG = "CordovaPermissionHelper";
@@ -40,6 +50,7 @@ public class PermissionHelper {
      * @param requestCode   A requestCode to be passed to the plugin's onRequestPermissionResult()
      *                      along with the result of the permission request
      * @param permission    The permission to be requested
+     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#requestPermission()} instead.
      */
     public static void requestPermission(CordovaPlugin plugin, int requestCode, String permission) {
         PermissionHelper.requestPermissions(plugin, requestCode, new String[] {permission});
@@ -54,6 +65,7 @@ public class PermissionHelper {
      * @param requestCode   A requestCode to be passed to the plugin's onRequestPermissionResult()
      *                      along with the result of the permissions request
      * @param permissions   The permissions to be requested
+     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#requestPermissions()} instead.
      */
     public static void requestPermissions(CordovaPlugin plugin, int requestCode, String[] permissions) {
         plugin.cordova.requestPermissions(plugin, requestCode, permissions);
@@ -67,6 +79,7 @@ public class PermissionHelper {
      * @param plugin        The plugin the permission is being checked against
      * @param permission    The permission to be checked
      * @return              True if the permission has already been granted and false otherwise
+     * @deprecated As of cordova-android 5.0.0, use {@link CordovaInterface#hasPermission()} instead.
      */
     public static boolean hasPermission(CordovaPlugin plugin, String permission) {
         return plugin.cordova.hasPermission(permission);
