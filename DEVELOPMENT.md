@@ -95,34 +95,32 @@ cordova platform add android@nightly
 
 3. **Install dependencies:**
 
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
-   Installs all production and development dependencies required for using and developing the package.
+    Installs all production and development dependencies required for using and developing the package.
 
 4. **Update sub-dependencies:**
 
-   ```bash
-   npm update
-   ```
+    ```bash
+    npm update
+    ```
 
-   Over time, `package-lock.json` can become stale and may trigger audit warnings. `npm update` refreshes dependencies within the pinned versions.
+    Over time, `package-lock.json` can become stale and may trigger audit warnings. `npm update` refreshes dependencies within the pinned versions.
 
-   > [!NOTE]
-   > When you install the published package from the npm registry (normal usage), it does **not** include a `package-lock.json` and automatically fetches the latest compatible dependencies. Running `npm update` locally simulates this behavior.
+    Under normal circumstances, users install the published package from the npm registry, which does **not** include its own `package-lock.json`. Instead, npm resolves and installs the latest compatible dependency versions at install time, which may result in no audit warnings.
+
+    Running `npm update` locally can provide a more accurate representation of current npm audit results for the project.
 
 5. **Generate a tarball:**
 
-   ```bash
-   npm pack
-   ```
+    ```bash
+    npm pack
+    ```
 
-   Creates a `.tgz` file that can be installed in a project via:
+    Creates a `.tgz` tarball file in the `.asf-release` directory. This tarball file can be installed in a Cordova project via:
 
-   ```bash
-   npm install /path/to/package.tgz
-   ```
-
-   > [!NOTE]
-   > Tarball will be created in the `.asf-release` directory within this repository directory.
+    ```bash
+    cordova platform add /path/to/package.tgz
+    ```
