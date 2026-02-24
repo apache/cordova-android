@@ -90,9 +90,6 @@ public class SystemWebChromeClient extends WebChromeClient {
         this.parentEngine = parentEngine;
         appContext = parentEngine.webView.getContext();
         dialogsHelper = new CordovaDialogsHelper(appContext);
-        ActivityResultCallback<Map<String, Boolean>> permissionCallback = (Map<String, Boolean> isGranted) -> {
-
-        };
         permissionLauncher = parentEngine.cordova.getActivity().registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), isGranted -> {
             if (permissionListener != null) {
                 boolean granted = true;
