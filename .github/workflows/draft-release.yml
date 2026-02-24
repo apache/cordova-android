@@ -66,6 +66,9 @@ jobs:
             fi
           fi
 
+      - name: Remove ".gitkeep" from ".asf-release"
+        run: rm -rf ./.asf-release/.gitkeep
+
       - name: Generate "tgz" npm convenience package
         run: |-
           npm install
