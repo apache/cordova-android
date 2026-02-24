@@ -98,6 +98,9 @@ jobs:
         env:
           CORDOVA_GPG_SECRET_KEY: ${{ secrets.CORDOVA_GPG_SECRET_KEY }}
 
+      - name: Remove ".gitkeep" from ".asf-release"
+        run: rm -rf ./.asf-release/.gitkeep
+
       - name: Upload to Apache Trusted Release (ATR)
         uses: apache/tooling-actions/upload-to-atr@b7e972c11790ee16eca101900af1b3c7fd1b106e
         with:

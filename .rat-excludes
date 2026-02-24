@@ -15,4 +15,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-/build
+# This file used by ATR
+
+**/*.txt
+.git/
+coverage/
+framework/build/
+node_modules/
+templates/project/gitignore
+test/androidx/app/.gitignore
+test/androidx/app/build/
+test/androidx/build/
+test/androidx/tools/
