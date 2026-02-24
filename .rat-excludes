@@ -17,11 +17,11 @@
 
 # This file used by ATR
 
+**/*.txt
 .git/
 coverage/
 framework/build/
 node_modules/
-spec/fixtures/
 templates/project/gitignore
 test/androidx/app/.gitignore
 test/androidx/app/build/
