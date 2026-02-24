@@ -66,6 +66,8 @@
 
 **Chores:**
 
+* chore: license, license headers & CI & draft workflow improvements ([#1891](https://github.com/apache/cordova-android/pull/1891)) [[d426e0ff](https://github.com/apache/cordova-android/commit/d426e0ff)]
+* chore: update changelog ([#1890](https://github.com/apache/cordova-android/pull/1890)) [[aaf46bb2](https://github.com/apache/cordova-android/commit/aaf46bb2)]
 * chore(ci): get npm package filename from json output ([#1889](https://github.com/apache/cordova-android/pull/1889)) [[7fbdee1e](https://github.com/apache/cordova-android/commit/7fbdee1e)]
 * chore: minor changes to DEVELOPMENT.md ([#1884](https://github.com/apache/cordova-android/pull/1884)) [[edf34400](https://github.com/apache/cordova-android/commit/edf34400)]
 * chore: add DEVELOPMENT.md & cleanup README.md ([#1883](https://github.com/apache/cordova-android/pull/1883)) [[31364a97](https://github.com/apache/cordova-android/commit/31364a97)]
