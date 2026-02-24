@@ -69,7 +69,7 @@ jobs:
       - name: Generate "tgz" npm convenience package
         run: |-
           npm install
-          NPM_PKG_NAME=$(npm pack)
+          NPM_PKG_NAME=$(npm pack --json | jq -r '.[0].filename')
           mv ./.asf-release/$NPM_PKG_NAME ./.asf-release/${REPO_NAME}-npm-${TARGET_RELEASE_VERSION}.tgz
 
       - name: Generate "tar.gz" source archive
