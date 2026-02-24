@@ -66,6 +66,7 @@
 
 **Chores:**
 
+* chore(ci): get npm package filename from json output ([#1889](https://github.com/apache/cordova-android/pull/1889)) [[7fbdee1e](https://github.com/apache/cordova-android/commit/7fbdee1e)]
 * chore: minor changes to DEVELOPMENT.md ([#1884](https://github.com/apache/cordova-android/pull/1884)) [[edf34400](https://github.com/apache/cordova-android/commit/edf34400)]
 * chore: add DEVELOPMENT.md & cleanup README.md ([#1883](https://github.com/apache/cordova-android/pull/1883)) [[31364a97](https://github.com/apache/cordova-android/commit/31364a97)]
 * chore: update release audit workflow & license headers ([#1870](https://github.com/apache/cordova-android/pull/1870)) [[d7afba0a](https://github.com/apache/cordova-android/commit/d7afba0a)]
