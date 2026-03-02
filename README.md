@@ -43,7 +43,6 @@ Cordova Android is an Android application library that allows for Cordova-based 
 > Refer to the official Apache Cordova documentation for details on the requirements and prerequisites for building Cordova-Android applications. These resources outline the necessary tools, supported versions, and platform requirements:
 >
 > * [System Requirements](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#system-requirements)
-> * [Required Software & Tools](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#the-required-software-&-tools)
 > * [Android API Level Support](https://cordova.apache.org/docs/en/latest/guide/platforms/android/index.html#android-api-level-support)
 
 ## Create a Cordova project
