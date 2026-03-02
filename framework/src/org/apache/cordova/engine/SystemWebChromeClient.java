@@ -23,6 +23,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
@@ -45,6 +48,10 @@ import android.webkit.PermissionRequest;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.FileProvider;
 
 import org.apache.cordova.CordovaDialogsHelper;
@@ -59,6 +66,12 @@ import org.apache.cordova.LOG;
  */
 public class SystemWebChromeClient extends WebChromeClient {
 
+    private interface PermissionListener {
+        void onPermissionSelect(Boolean isGranted);
+    }
+
+    private ActivityResultLauncher permissionLauncher;
+    private PermissionListener permissionListener;
     private static final int FILECHOOSER_RESULTCODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
     private long MAX_QUOTA = 100 * 1024 * 1024;
@@ -77,6 +90,15 @@ public class SystemWebChromeClient extends WebChromeClient {
         this.parentEngine = parentEngine;
         appContext = parentEngine.webView.getContext();
         dialogsHelper = new CordovaDialogsHelper(appContext);
+        permissionLauncher = parentEngine.cordova.getActivity().registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), isGranted -> {
+            if (permissionListener != null) {
+                boolean granted = true;
+                for (Map.Entry<String, Boolean> permission : isGranted.entrySet()) {
+                    if (!permission.getValue()) granted = false;
+                }
+                permissionListener.onPermissionSelect(granted);
+            }
+        });
     }
 
     /**
@@ -325,7 +347,27 @@ public class SystemWebChromeClient extends WebChromeClient {
     @Override
     public void onPermissionRequest(final PermissionRequest request) {
         LOG.d(LOG_TAG, "onPermissionRequest: " + Arrays.toString(request.getResources()));
-        request.grant(request.getResources());
+        List<String> permissionList = new ArrayList<>();
+        if (Arrays.asList(request.getResources()).contains("android.webkit.resource.VIDEO_CAPTURE")) {
+            permissionList.add(Manifest.permission.CAMERA);
+        }
+        if (Arrays.asList(request.getResources()).contains("android.webkit.resource.AUDIO_CAPTURE")) {
+            permissionList.add(Manifest.permission.MODIFY_AUDIO_SETTINGS);
+            permissionList.add(Manifest.permission.RECORD_AUDIO);
+        }
+        if (!permissionList.isEmpty()) {
+            String[] permissions = permissionList.toArray(new String[0]);
+            permissionListener = (isGranted) -> {
+                if (isGranted) {
+                    request.grant(request.getResources());
+                } else {
+                    request.deny();
+                }
+            };
+            permissionLauncher.launch(permissions);
+        } else {
+            request.grant(request.getResources());
+        }
     }
 
     public void destroyLastDialog(){
