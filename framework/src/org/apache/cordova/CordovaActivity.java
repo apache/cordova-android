@@ -578,7 +578,7 @@ public class CordovaActivity extends AppCompatActivity {
 
         try
         {
-            cordovaInterface.onRequestPermissionResult(requestCode, permissions, grantResults);
+            cordovaInterface.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
         catch (JSONException e)
         {
