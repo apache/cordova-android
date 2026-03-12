@@ -664,23 +664,33 @@ public class CordovaActivity extends AppCompatActivity {
     private String getWebViewVersion() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
-                String webViewPackageName = WebViewCompat.getCurrentWebViewPackage(this).packageName;
-                PackageManager pm = getPackageManager();
-                PackageInfo pi = pm.getPackageInfo(webViewPackageName, 0);
-                return pi.versionName;
+                PackageInfo webViewPackage = WebViewCompat.getCurrentWebViewPackage(this);
+                if (webViewPackage != null) {
+                    return webViewPackage.versionName;
+                }
             } catch (Exception e) {
                 LOG.d(TAG, "Could not get WebView version using WebViewCompat: " + e.getMessage());
             }
         }
 
         // Fallback for older API levels
-        try {
-            PackageManager pm = getPackageManager();
-            PackageInfo pi = pm.getPackageInfo("com.google.android.webview", 0);
-            return pi.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            LOG.d(TAG, "Could not find WebView package");
+        PackageManager pm = getPackageManager();
+        String[] fallbackPackages = new String[] {
+            "com.google.android.webview",
+            "com.android.webview",
+            "com.android.chrome"
+        };
+
+        for (String packageName : fallbackPackages) {
+            try {
+                PackageInfo pi = pm.getPackageInfo(packageName, 0);
+                return pi.versionName;
+            } catch (PackageManager.NameNotFoundException ignored) {
+                // Try next package
+            }
         }
+
+        LOG.d(TAG, "Could not find WebView package");
 
         return null;
     }
