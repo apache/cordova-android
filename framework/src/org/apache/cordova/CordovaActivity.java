@@ -111,6 +111,11 @@ public class CordovaActivity extends AppCompatActivity {
 
     private boolean canEdgeToEdge = false;
     private boolean isFullScreen = false;
+    /**
+     * Flag set in {@link #checkWebViewVersion} indicating whether the WebView version
+     * is below the minimum required version specified in config.xml.
+     */
+    private boolean isWebViewVersionBlocked = false;
 
     /**
      * Called when the activity is first created.
@@ -172,6 +177,10 @@ public class CordovaActivity extends AppCompatActivity {
     }
 
     protected void init() {
+        if (isWebViewVersionBlocked) {
+            return;
+        }
+
         appView = makeWebView();
         createViews();
         if (!appView.isInitialized()) {
@@ -286,6 +295,10 @@ public class CordovaActivity extends AppCompatActivity {
      * Load the url into the WebView.
      */
     public void loadUrl(String url) {
+        if (isWebViewVersionBlocked) {
+            return;
+        }
+
         if (appView == null) {
             init();
         }
@@ -596,8 +609,9 @@ public class CordovaActivity extends AppCompatActivity {
     }
 
     /**
-     * Check if the WebView version meets the minimum required version.
-     * If not, display an error dialog and exit the app.
+     * Check if the WebView version meets the minimum required version specified by
+     * preference `AndroidMinimumWebViewVersion` in config.xml.
+     * If not, display an error dialog and block the app from loading further.
      */
     private void checkWebViewVersion() {
         String minimumWebViewVersion = preferences.getString("AndroidMinimumWebViewVersion", null);
@@ -608,6 +622,7 @@ public class CordovaActivity extends AppCompatActivity {
         try {
             String currentWebViewVersion = getWebViewVersion();
             if (currentWebViewVersion != null && !isWebViewVersionSufficient(currentWebViewVersion, minimumWebViewVersion)) {
+                isWebViewVersionBlocked = true;
                 String title = getWebViewVersionTitle();
                 String message = getWebViewVersionMessage();
                 String button = getWebViewVersionButtonText();
