@@ -121,8 +121,7 @@ public class CordovaActivity extends AppCompatActivity {
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
 
-        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false)
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
+        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false);
 
         String logLevel = preferences.getString("loglevel", "ERROR");
         LOG.setLogLevel(logLevel);

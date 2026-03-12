@@ -55,8 +55,7 @@ public class SystemBarPlugin extends CordovaPlugin {
     protected void pluginInitialize() {
         context = cordova.getContext();
         resources = context.getResources();
-        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false)
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
+        canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false);
     }
 
     @Override
