@@ -24,4 +24,8 @@
     <string name="launcher_name">@string/app_name</string>
     <!-- App label shown on the task switcher. -->
     <string name="activity_name">@string/launcher_name</string>
+    <!-- WebView version check messages -->
+    <string name="webview_version_too_old_title">WebView Update Required</string>
+    <string name="webview_version_too_old_message">Your Android System WebView version is too old. Please update it through the Google Play Store.</string>
+    <string name="webview_version_ok_button">OK</string>
 </resources>

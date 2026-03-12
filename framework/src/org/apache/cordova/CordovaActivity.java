@@ -48,6 +48,10 @@ import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.webkit.WebViewCompat;
+
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -120,6 +124,9 @@ public class CordovaActivity extends AppCompatActivity {
 
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
+
+        // Check WebView version requirement
+        checkWebViewVersion();
 
         canEdgeToEdge = preferences.getBoolean("AndroidEdgeToEdge", false)
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
@@ -586,6 +593,112 @@ public class CordovaActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * Check if the WebView version meets the minimum required version.
+     * If not, display an error dialog and exit the app.
+     */
+    private void checkWebViewVersion() {
+        String minimumWebViewVersion = preferences.getString("AndroidMinimumWebViewVersion", null);
+        if (minimumWebViewVersion == null || minimumWebViewVersion.isEmpty()) {
+            return; // No minimum version requirement set
+        }
+
+        try {
+            String currentWebViewVersion = getWebViewVersion();
+            if (currentWebViewVersion != null && !isWebViewVersionSufficient(currentWebViewVersion, minimumWebViewVersion)) {
+                String title = getWebViewVersionTitle();
+                String message = getWebViewVersionMessage();
+                String button = getWebViewVersionButtonText();
+                displayError(title, message, button, true);
+            }
+        } catch (Exception e) {
+            LOG.e(TAG, "Error checking WebView version: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get the WebView version check dialog title from string resources.
+     */
+    private String getWebViewVersionTitle() {
+        int resId = getResources().getIdentifier("webview_version_too_old_title", "string", getPackageName());
+        return resId != 0 ? getString(resId) : "WebView Update Required";
+    }
+
+    /**
+     * Get the WebView version check dialog message from string resources.
+     */
+    private String getWebViewVersionMessage() {
+        int resId = getResources().getIdentifier("webview_version_too_old_message", "string", getPackageName());
+        return resId != 0 ? getString(resId) : "Your Android System WebView version is too old. Please update it through the Google Play Store.";
+    }
+
+    /**
+     * Get the WebView version check dialog button text from string resources.
+     */
+    private String getWebViewVersionButtonText() {
+        int resId = getResources().getIdentifier("webview_version_ok_button", "string", getPackageName());
+        return resId != 0 ? getString(resId) : "OK";
+    }
+
+    /**
+     * Get the current WebView version string.
+     * @return Version string (e.g., "80.0.1234.56") or null if unable to determine
+     */
+    private String getWebViewVersion() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                String webViewPackageName = WebViewCompat.getCurrentWebViewPackage(this).packageName;
+                PackageManager pm = getPackageManager();
+                PackageInfo pi = pm.getPackageInfo(webViewPackageName, 0);
+                return pi.versionName;
+            } catch (Exception e) {
+                LOG.d(TAG, "Could not get WebView version using WebViewCompat: " + e.getMessage());
+            }
+        }
+
+        // Fallback for older API levels
+        try {
+            PackageManager pm = getPackageManager();
+            PackageInfo pi = pm.getPackageInfo("com.google.android.webview", 0);
+            return pi.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            LOG.d(TAG, "Could not find WebView package");
+        }
+
+        return null;
+    }
+
+    /**
+     * Compare two version strings and determine if current version is >= minimum version.
+     * @param currentVersion Current version string (e.g., "80.0.1234.56")
+     * @param minimumVersion Minimum required version string (e.g., "80.0")
+     * @return true if currentVersion >= minimumVersion
+     */
+    private boolean isWebViewVersionSufficient(String currentVersion, String minimumVersion) {
+        try {
+            String[] currentParts = currentVersion.split("\\.");
+            String[] minimumParts = minimumVersion.split("\\.");
+
+            int maxLength = Math.max(currentParts.length, minimumParts.length);
+
+            for (int i = 0; i < maxLength; i++) {
+                int currentPart = i < currentParts.length ? Integer.parseInt(currentParts[i]) : 0;
+                int minimumPart = i < minimumParts.length ? Integer.parseInt(minimumParts[i]) : 0;
+
+                if (currentPart > minimumPart) {
+                    return true;
+                } else if (currentPart < minimumPart) {
+                    return false;
+                }
+            }
+
+            return true; // Versions are equal
+        } catch (NumberFormatException e) {
+            LOG.e(TAG, "Error parsing version strings: " + e.getMessage());
+            return true; // If we can't parse, assume it's OK
+        }
     }
 
     /**
