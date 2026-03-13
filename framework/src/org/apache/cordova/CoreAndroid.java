@@ -32,9 +32,11 @@ import android.os.Build;
 import android.content.IntentFilter;
 import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
-import android.window.OnBackInvokedCallback;
-import android.window.OnBackInvokedDispatcher;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 
 /**
@@ -48,7 +50,7 @@ public class CoreAndroid extends CordovaPlugin {
     private CallbackContext messageChannel;
     private PluginResult pendingResume;
     private PluginResult pendingPause;
-    private OnBackInvokedCallback backCallback;
+    private Object backCallback;
     private final Object messageChannelLock = new Object();
     private final Object backButtonHandlerLock = new Object();
 
@@ -262,21 +264,67 @@ public class CoreAndroid extends CordovaPlugin {
                         // it's own logic, UNLESS if there is an OnBackInvokedCallback registered on the dispatcher.
                         // The key dispatch events will still fire, which still handles propagating back button events to the webview.
                         // See https://developer.android.com/about/versions/16/behavior-changes-16#predictive-back for more info on the caveat.
-                        backCallback = () -> {};
-                        this.cordova.getActivity().getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+                        registerOnBackInvokedCallback();
                     }
                 }
             } else {
                 synchronized (backButtonHandlerLock) {
                     if (backCallback != null) {
-                        this.cordova.getActivity().getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
-                        backCallback = null;
+                        unregisterOnBackInvokedCallback();
                     }
                 }
             }
         }
 
         webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, override);
+    }
+
+    private void registerOnBackInvokedCallback() {
+        try {
+            Class<?> callbackClass = Class.forName("android.window.OnBackInvokedCallback");
+            Class<?> dispatcherClass = Class.forName("android.window.OnBackInvokedDispatcher");
+
+            Method getDispatcherMethod = this.cordova.getActivity().getClass().getMethod("getOnBackInvokedDispatcher");
+            Object dispatcher = getDispatcherMethod.invoke(this.cordova.getActivity());
+
+            Field priorityField = dispatcherClass.getField("PRIORITY_DEFAULT");
+            int priority = priorityField.getInt(null);
+
+            InvocationHandler noOpHandler = new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args) {
+                    return null;
+                }
+            };
+
+            Object callbackProxy = Proxy.newProxyInstance(
+                    callbackClass.getClassLoader(),
+                    new Class<?>[] { callbackClass },
+                    noOpHandler
+            );
+
+            Method registerMethod = dispatcherClass.getMethod("registerOnBackInvokedCallback", int.class, callbackClass);
+            registerMethod.invoke(dispatcher, priority, callbackProxy);
+            backCallback = callbackProxy;
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            LOG.d(TAG, "Unable to register OnBackInvokedCallback", ex);
+        }
+    }
+
+    private void unregisterOnBackInvokedCallback() {
+        try {
+            Class<?> callbackClass = Class.forName("android.window.OnBackInvokedCallback");
+            Class<?> dispatcherClass = Class.forName("android.window.OnBackInvokedDispatcher");
+
+            Method getDispatcherMethod = this.cordova.getActivity().getClass().getMethod("getOnBackInvokedDispatcher");
+            Object dispatcher = getDispatcherMethod.invoke(this.cordova.getActivity());
+
+            Method unregisterMethod = dispatcherClass.getMethod("unregisterOnBackInvokedCallback", callbackClass);
+            unregisterMethod.invoke(dispatcher, backCallback);
+            backCallback = null;
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            LOG.d(TAG, "Unable to unregister OnBackInvokedCallback", ex);
+        }
     }
 
     /**
