@@ -277,11 +277,6 @@ public class CoreAndroid extends CordovaPlugin {
      * platform-only back APIs.
      */
     private void registerBackPressedCallback() {
-        if (!(this.cordova.getActivity() instanceof OnBackPressedDispatcherOwner)) {
-            LOG.d(TAG, "Activity does not provide an OnBackPressedDispatcher");
-            return;
-        }
-
         final OnBackPressedDispatcherOwner backPressedDispatcherOwner =
                 (OnBackPressedDispatcherOwner) this.cordova.getActivity();
 
