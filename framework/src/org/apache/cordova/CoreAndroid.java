@@ -292,7 +292,9 @@ public class CoreAndroid extends CordovaPlugin {
         backCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                redispatchBackKeyEvent();
+                // Intentionally empty.
+                // On modern Android versions, registering a callback keeps back handling
+                // routed through Cordova's existing key dispatch path.
             }
         };
 
@@ -302,15 +304,6 @@ public class CoreAndroid extends CordovaPlugin {
     private void unregisterBackPressedCallback() {
         backCallback.remove();
         backCallback = null;
-    }
-
-    private void redispatchBackKeyEvent() {
-        if (webView == null || webView.getView() == null) {
-            return;
-        }
-
-        webView.getView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-        webView.getView().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
     }
 
     /**
