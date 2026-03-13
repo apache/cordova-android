@@ -254,21 +254,31 @@ public class CoreAndroid extends CordovaPlugin {
      */
     public void overrideBackbutton(boolean override) {
         LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
-        if (override) {
-            synchronized (backButtonHandlerLock) {
-                if (backCallback == null) {
-                    registerBackPressedCallback();
-                }
-            }
-        } else {
-            synchronized (backButtonHandlerLock) {
-                if (backCallback != null) {
-                    unregisterBackPressedCallback();
-                }
-            }
+        if (cordova.getActivity() == null) {
+            return;
         }
 
-        webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, override);
+        final boolean shouldOverride = override;
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (shouldOverride) {
+                    synchronized (backButtonHandlerLock) {
+                        if (backCallback == null) {
+                            registerBackPressedCallback();
+                        }
+                    }
+                } else {
+                    synchronized (backButtonHandlerLock) {
+                        if (backCallback != null) {
+                            unregisterBackPressedCallback();
+                        }
+                    }
+                }
+
+                webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, shouldOverride);
+            }
+        });
     }
 
     /**
