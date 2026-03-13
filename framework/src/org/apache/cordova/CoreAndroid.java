@@ -32,10 +32,11 @@ import android.os.Build;
 import android.content.IntentFilter;
 import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
-import android.window.OnBackInvokedCallback;
-import android.window.OnBackInvokedDispatcher;
 
 import java.util.HashMap;
+
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcherOwner;
 
 /**
  * This class exposes methods in Cordova that can be called from JavaScript.
@@ -48,7 +49,7 @@ public class CoreAndroid extends CordovaPlugin {
     private CallbackContext messageChannel;
     private PluginResult pendingResume;
     private PluginResult pendingPause;
-    private OnBackInvokedCallback backCallback;
+    private OnBackPressedCallback backCallback;
     private final Object messageChannelLock = new Object();
     private final Object backButtonHandlerLock = new Object();
 
@@ -253,30 +254,56 @@ public class CoreAndroid extends CordovaPlugin {
      */
     public void overrideBackbutton(boolean override) {
         LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-            if (override) {
-                synchronized (backButtonHandlerLock) {
-                    if (backCallback == null) {
-                        // The callback is intentionally empty. Since API 36, intercepting the back button is ignored, which means
-                        // the onDispatchKeyEvent boolean result won't actually stop native from consuming the back button and doing
-                        // it's own logic, UNLESS if there is an OnBackInvokedCallback registered on the dispatcher.
-                        // The key dispatch events will still fire, which still handles propagating back button events to the webview.
-                        // See https://developer.android.com/about/versions/16/behavior-changes-16#predictive-back for more info on the caveat.
-                        backCallback = () -> {};
-                        this.cordova.getActivity().getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
-                    }
-                }
-            } else {
-                synchronized (backButtonHandlerLock) {
-                    if (backCallback != null) {
-                        this.cordova.getActivity().getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
-                        backCallback = null;
-                    }
-                }
-            }
+        if (cordova.getActivity() == null) {
+            return;
         }
 
-        webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, override);
+        final boolean shouldOverride = override;
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (shouldOverride) {
+                    synchronized (backButtonHandlerLock) {
+                        if (backCallback == null) {
+                            registerBackPressedCallback();
+                        }
+                    }
+                } else {
+                    synchronized (backButtonHandlerLock) {
+                        if (backCallback != null) {
+                            unregisterBackPressedCallback();
+                        }
+                    }
+                }
+
+                webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, shouldOverride);
+            }
+        });
+    }
+
+    /**
+     * Registers an AndroidX back callback so Cordova can keep routing back presses through its
+     * existing key dispatch path across Android versions without directly referencing newer
+     * platform-only back APIs.
+     */
+    private void registerBackPressedCallback() {
+        final OnBackPressedDispatcherOwner backPressedDispatcherOwner = this.cordova.getActivity();
+
+        backCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // Intentionally empty.
+                // On modern Android versions, registering a callback keeps back handling
+                // routed through Cordova's existing key dispatch path.
+            }
+        };
+
+        backPressedDispatcherOwner.getOnBackPressedDispatcher().addCallback(backPressedDispatcherOwner, backCallback);
+    }
+
+    private void unregisterBackPressedCallback() {
+        backCallback.remove();
+        backCallback = null;
     }
 
     /**
