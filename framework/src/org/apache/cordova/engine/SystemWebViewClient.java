@@ -111,6 +111,13 @@ public class SystemWebViewClient extends WebViewClient {
 
                 return new WebResourceResponse(mimeType, null, is);
             } catch (Exception e) {
+                // Some files are requested by default but might not exist in a valid project setup.
+                // When these files are missing, the request should quietly fall through instead of
+                // being logged as an application error.
+                if (isOptionalMissingAsset(path, e)) {
+                    LOG.d(TAG, "Optional Web resource not found at \"" + path + "\"");
+                    return null;
+                }
                 e.printStackTrace();
                 LOG.e(TAG, "Exception handling Web resource at \"" + path + "\"", e);
             }
@@ -130,6 +137,24 @@ public class SystemWebViewClient extends WebViewClient {
                 }
             });
         }
+    }
+
+    /**
+     * Returns `true` when the request failure is expected and non-fatal.
+     *
+     * Some web resources are requested by default but might not exist in a valid project setup:
+     * - {@code cordova_plugins.js} can be absent when no plugins are installed.
+     * - {@code favicon.ico} is often requested by the WebView/Chromium engine automatically.
+     *
+     * When these files are missing, the request should quietly fall through instead of being logged
+     * as an application error.
+     */
+    private static boolean isOptionalMissingAsset(String path, Exception exception) {
+        if (!(exception instanceof FileNotFoundException)) {
+            return false;
+        }
+
+        return "cordova_plugins.js".equals(path) || "favicon.ico".equals(path);
     }
 
     /**
