@@ -17,6 +17,7 @@
     under the License.
 */
 
+import groovy.xml.XmlParser
 import java.util.regex.Pattern
 import io.github.g00fy2.versioncompare.Version
 
