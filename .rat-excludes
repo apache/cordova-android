@@ -22,8 +22,6 @@
 coverage/
 framework/build/
 node_modules/
-templates/project/gitignore
-test/androidx/app/.gitignore
 test/androidx/app/build/
 test/androidx/build/
 test/androidx/tools/
