@@ -29,6 +29,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.SystemClock;
 import android.content.IntentFilter;
 import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
@@ -292,13 +293,36 @@ public class CoreAndroid extends CordovaPlugin {
         backCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                // Intentionally empty.
-                // On modern Android versions, registering a callback keeps back handling
-                // routed through Cordova's existing key dispatch path.
+                dispatchBackKeyEvent();
             }
         };
 
         backPressedDispatcherOwner.getOnBackPressedDispatcher().addCallback(backPressedDispatcherOwner, backCallback);
+    }
+
+    private void dispatchBackKeyEvent() {
+        // Build a synthetic BACK key press (DOWN + UP) and route it through the WebView.
+        // This lets Cordova's existing key handling fire the JS "backbutton" event.
+        final long eventTime = SystemClock.uptimeMillis();
+        final KeyEvent downEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0);
+        final KeyEvent upEvent = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, 0);
+
+        final boolean handledDown = webView.getView().dispatchKeyEvent(downEvent);
+        final boolean handledUp = webView.getView().dispatchKeyEvent(upEvent);
+
+        // If either event was consumed, Cordova/WebView already handled back behavior.
+        if (handledDown || handledUp) {
+            return;
+        }
+
+        // Otherwise, delegate to Android's default back dispatcher.
+        // Temporarily disable this callback to avoid recursive re-entry.
+        backCallback.setEnabled(false);
+        try {
+            cordova.getActivity().getOnBackPressedDispatcher().onBackPressed();
+        } finally {
+            backCallback.setEnabled(true);
+        }
     }
 
     private void unregisterBackPressedCallback() {
