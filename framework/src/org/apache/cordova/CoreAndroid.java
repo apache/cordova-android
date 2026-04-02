@@ -254,7 +254,6 @@ public class CoreAndroid extends CordovaPlugin {
      * @param override		T=override, F=cancel override
      */
     public void overrideBackbutton(boolean override) {
-        LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
         if (cordova.getActivity() == null) {
             return;
         }
@@ -264,6 +263,7 @@ public class CoreAndroid extends CordovaPlugin {
             @Override
             public void run() {
                 if (shouldOverride) {
+                    LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");                    
                     synchronized (backButtonHandlerLock) {
                         if (backCallback == null) {
                             registerBackPressedCallback();
