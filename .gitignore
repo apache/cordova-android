@@ -74,3 +74,6 @@ coverage/
 # ASF release workspace
 .asf-release/
 !.asf-release/.gitkeep
+
+# Gradle problems report, build artifact
+problems-report.html
