@@ -266,13 +266,21 @@ public class CoreAndroid extends CordovaPlugin {
                     LOG.i("App", "WARNING: Back Button Default Behavior will be overridden.  The backbutton event will be fired!");
                     synchronized (backButtonHandlerLock) {
                         if (backCallback == null) {
-                            registerBackPressedCallback();
+                            backCallback = new OnBackPressedCallback(true) {
+                                @Override
+                                public void handleOnBackPressed() {
+                                    dispatchBackKeyEvent();
+                                }
+                            };
+                            OnBackPressedDispatcherOwner backPressedDispatcherOwner = cordova.getActivity();
+                            backPressedDispatcherOwner.getOnBackPressedDispatcher().addCallback(backPressedDispatcherOwner, backCallback);
                         }
                     }
                 } else {
                     synchronized (backButtonHandlerLock) {
                         if (backCallback != null) {
-                            unregisterBackPressedCallback();
+                            backCallback.remove();
+                            backCallback = null;
                         }
                     }
                 }
@@ -280,24 +288,6 @@ public class CoreAndroid extends CordovaPlugin {
                 webView.setButtonPlumbedToJs(KeyEvent.KEYCODE_BACK, shouldOverride);
             }
         });
-    }
-
-    /**
-     * Registers an AndroidX back callback so Cordova can keep routing back presses through its
-     * existing key dispatch path across Android versions without directly referencing newer
-     * platform-only back APIs.
-     */
-    private void registerBackPressedCallback() {
-        final OnBackPressedDispatcherOwner backPressedDispatcherOwner = this.cordova.getActivity();
-
-        backCallback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                dispatchBackKeyEvent();
-            }
-        };
-
-        backPressedDispatcherOwner.getOnBackPressedDispatcher().addCallback(backPressedDispatcherOwner, backCallback);
     }
 
     private void dispatchBackKeyEvent() {
@@ -323,11 +313,6 @@ public class CoreAndroid extends CordovaPlugin {
         } finally {
             backCallback.setEnabled(true);
         }
-    }
-
-    private void unregisterBackPressedCallback() {
-        backCallback.remove();
-        backCallback = null;
     }
 
     /**
